@@ -1,4 +1,4 @@
-# 🚀 BookingBot Platform
+# 🚀 MiyZapis - Multi-Platform Booking System
 
 A comprehensive multi-platform booking system with **Website**, **Telegram Bot**, and **Telegram Mini App** - all connected to a unified backend API.
 
@@ -59,8 +59,8 @@ A comprehensive multi-platform booking system with **Website**, **Telegram Bot**
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/yourusername/bookingbot-platform.git
-cd bookingbot-platform
+git clone https://github.com/xidik12/MiyZapis.git
+cd MiyZapis
 ```
 
 ### 2. Setup Backend
