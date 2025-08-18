@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#3b82f6" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <title>Booking Platform</title>
+    
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Prevent zoom on iOS -->
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- Preconnect to API -->
+    <link rel="preconnect" href="https://api.bookingplatform.com" />
+    
+    <!-- PWA manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- CSS Variables for Telegram theme -->
+    <style>
+      :root {
+        /* Default theme colors - will be overridden by Telegram */
+        --tg-color-bg: #ffffff;
+        --tg-color-text: #000000;
+        --tg-color-hint: #6b7280;
+        --tg-color-link: #3b82f6;
+        --tg-color-button: #3b82f6;
+        --tg-color-button-text: #ffffff;
+        --tg-color-secondary-bg: #f8fafc;
+        --tg-color-header-bg: #ffffff;
+        --tg-color-accent-text: #3b82f6;
+        --tg-color-destructive-text: #ef4444;
+        --tg-color-section-bg: #ffffff;
+        --tg-color-section-header-text: #374151;
+        --tg-color-subtitle-text: #6b7280;
+        --tg-viewport-height: 100vh;
+      }
+      
+      body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background-color: var(--tg-color-bg);
+        color: var(--tg-color-text);
+      }
+      
+      /* Disable text selection for better UX */
+      .no-select {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+      
+      /* Custom scrollbar for webkit browsers */
+      ::-webkit-scrollbar {
+        width: 4px;
+      }
+      
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      
+      ::-webkit-scrollbar-thumb {
+        background: var(--tg-color-hint);
+        border-radius: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

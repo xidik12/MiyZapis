@@ -1,0 +1,186 @@
+{
+  "summary": {
+    "total": 40,
+    "passed": 22,
+    "failed": 18,
+    "successRate": "55.0",
+    "duration": 5665
+  },
+  "failures": [
+    {
+      "test": "Root endpoint accessibility",
+      "details": "Status: 404, Duration: 14ms"
+    },
+    {
+      "test": "API info endpoint",
+      "details": "Status: 404, Duration: 3ms"
+    },
+    {
+      "test": "Customer registration",
+      "details": "Status: 409, Duration: 4ms"
+    },
+    {
+      "test": "Specialist registration",
+      "details": "Status: 409, Duration: 3ms"
+    },
+    {
+      "test": "Get current user info",
+      "details": "Status: 404, Duration: 3ms"
+    },
+    {
+      "test": "Update user settings",
+      "details": "Status: 404, Duration: 1ms"
+    },
+    {
+      "test": "Create specialist profile",
+      "details": "Status: 409, Duration: 5ms"
+    },
+    {
+      "test": "Get specialist profile",
+      "details": "Status: 404, Duration: 4ms"
+    },
+    {
+      "test": "Get specialist services",
+      "details": "Status: 404, Duration: 3ms"
+    },
+    {
+      "test": "Get specialist bookings",
+      "details": "Status: 404, Duration: 2ms"
+    },
+    {
+      "test": "Create service (specialist)",
+      "details": "Status: 500, Duration: 11ms"
+    },
+    {
+      "test": "Get service categories",
+      "details": "Status: 404, Duration: 2ms"
+    },
+    {
+      "test": "Service search with filters",
+      "details": "Status: 404, Duration: 1ms"
+    },
+    {
+      "test": "Specialist search with filters",
+      "details": "Status: 404, Duration: 2ms"
+    },
+    {
+      "test": "Get available locations",
+      "details": "Status: 404, Duration: 1ms"
+    },
+    {
+      "test": "File upload endpoint availability",
+      "details": "Status: 500, Duration: 3ms"
+    },
+    {
+      "test": "WebSocket connection",
+      "details": "Connection timeout"
+    },
+    {
+      "test": "WebSocket connection",
+      "details": "Error: WebSocket was closed before the connection was established"
+    }
+  ],
+  "performance": {
+    "http://localhost:3000": [
+      14
+    ],
+    "/health": [
+      2,
+      1,
+      8,
+      8,
+      9,
+      8,
+      9,
+      9,
+      10,
+      10,
+      10,
+      11
+    ],
+    "/": [
+      3
+    ],
+    "/auth/register": [
+      4,
+      3,
+      1,
+      6
+    ],
+    "/auth/login": [
+      264,
+      261,
+      3
+    ],
+    "/auth/refresh": [
+      3
+    ],
+    "/auth/logout": [
+      3
+    ],
+    "/auth/forgot-password": [
+      2
+    ],
+    "/users/profile": [
+      4,
+      4,
+      1,
+      2
+    ],
+    "/users/me": [
+      3
+    ],
+    "/users/settings": [
+      1
+    ],
+    "/specialists/profile": [
+      5,
+      4,
+      5
+    ],
+    "/specialists": [
+      4
+    ],
+    "/specialists/services": [
+      3
+    ],
+    "/specialists/bookings": [
+      2
+    ],
+    "/services": [
+      3,
+      11
+    ],
+    "/categories": [
+      2
+    ],
+    "/bookings": [
+      3,
+      3
+    ],
+    "/search/services?category=beauty&minPrice=100&maxPrice=1000": [
+      1
+    ],
+    "/search/specialists?city=Київ&rating=4": [
+      2
+    ],
+    "/locations": [
+      1
+    ],
+    "/non-existent-endpoint": [
+      1
+    ],
+    "/files/upload?purpose=avatar": [
+      3
+    ],
+    "/users/profile'; DROP TABLE users; --": [
+      5
+    ]
+  },
+  "security": {
+    "sqlInjection": true,
+    "xssProtection": true,
+    "rateLimiting": false
+  },
+  "timestamp": "2025-08-17T11:22:16.204Z"
+}

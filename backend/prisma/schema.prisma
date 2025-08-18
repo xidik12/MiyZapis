@@ -1,0 +1,724 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String?
+  firstName String
+  lastName  String
+  avatar    String?
+  userType  String   @default("CUSTOMER") // "CUSTOMER", "SPECIALIST", "ADMIN"
+
+  // Contact information
+  phoneNumber String?
+  telegramId  String? @unique
+
+  // Platform settings
+  isEmailVerified Boolean @default(false)
+  isPhoneVerified Boolean @default(false)
+  isActive        Boolean @default(true)
+  lastLoginAt     DateTime?
+  
+  // Preferences
+  language         String @default("en")
+  currency         String @default("USD")
+  timezone         String @default("UTC")
+  
+  // Notification preferences
+  emailNotifications     Boolean @default(true)
+  pushNotifications      Boolean @default(true)
+  telegramNotifications  Boolean @default(true)
+
+  // Loyalty program
+  loyaltyPoints          Int     @default(0)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  specialist           Specialist?
+  customerBookings     Booking[]            @relation("CustomerBookings")
+  specialistBookings   Booking[]            @relation("SpecialistBookings")
+  reviews              Review[]
+  payments             Payment[]
+  notifications        Notification[]
+  loyaltyTransactions  LoyaltyTransaction[]
+  refreshTokens        RefreshToken[]
+  sentMessages         Message[]            @relation("SentMessages")
+  receivedMessages     Message[]            @relation("ReceivedMessages")
+  customerConversations Conversation[]      @relation("CustomerConversations")
+  specialistConversations Conversation[]    @relation("SpecialistConversations")
+  uploadedFiles        File[]
+  reportsMade          Report[]             @relation("ReportsMade")
+  reportsReceived      Report[]             @relation("ReportsReceived")
+
+  // Indexes for performance
+  @@index([email])
+  @@index([telegramId])
+  @@index([userType, isActive])
+  @@index([lastLoginAt])
+
+  @@map("users")
+}
+
+model Specialist {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  
+  // Business profile
+  businessName String?
+  bio          String?
+  
+  // Professional details
+  specialties  String // JSON string of specialty tags
+  experience   Int      @default(0) // Years of experience
+  isVerified   Boolean  @default(false)
+  
+  // Location
+  address      String?
+  city         String?
+  state        String?
+  country      String?
+  latitude     Float?
+  longitude    Float?
+  timezone     String   @default("UTC")
+  workingHours String   // JSON string for working hours
+  
+  // Business metrics
+  rating           Float   @default(0.0)
+  reviewCount      Int     @default(0)
+  completedBookings Int    @default(0)
+  responseTime     Int     @default(0) // Average response time in minutes
+  
+  // Portfolio
+  portfolioImages  String? // JSON string of image URLs
+  certifications   String? // JSON string of certifications
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  services           Service[]
+  reviews            Review[]             @relation("SpecialistReviews")
+  availabilityBlocks AvailabilityBlock[]
+  analytics          SpecialistAnalytics[]
+
+  // Indexes for performance
+  @@index([city, isVerified])
+  @@index([rating])
+  @@index([specialties])
+  @@index([isVerified])
+
+  @@map("specialists")
+}
+
+model Service {
+  id          String  @id @default(cuid())
+  specialistId String
+  categoryId  String?
+  name        String
+  description String
+  category    String
+  
+  // Pricing
+  basePrice      Float
+  currency       String @default("USD")
+  
+  // Service details
+  duration       Int    // Duration in minutes
+  
+  // Requirements and deliverables
+  requirements  String // JSON string of requirements
+  deliverables  String // JSON string of deliverables
+  
+  // Settings
+  isActive         Boolean @default(true)
+  requiresApproval Boolean @default(true)
+  maxAdvanceBooking Int    @default(30) // Days
+  minAdvanceBooking Int    @default(1)  // Hours
+  
+  // Service images
+  images String? // JSON string of image URLs
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  specialist     Specialist @relation(fields: [specialistId], references: [id], onDelete: Cascade)
+  categoryModel  Category?  @relation(fields: [categoryId], references: [id])
+  bookings       Booking[]
+
+  // Indexes for performance
+  @@index([categoryId, isActive])
+  @@index([specialistId, isActive])
+  @@index([basePrice])
+  @@index([duration])
+  @@index([isActive])
+
+  @@map("services")
+}
+
+model Booking {
+  id          String        @id @default(cuid())
+  customerId  String
+  specialistId String
+  serviceId   String
+  promoCodeId String?
+  
+  // Booking details
+  status      String @default("PENDING") // PENDING, PENDING_PAYMENT, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED, REFUNDED
+  scheduledAt DateTime
+  duration    Int           // Duration in minutes
+  
+  // Pricing
+  totalAmount    Float
+  depositAmount  Float
+  remainingAmount Float
+  loyaltyPointsUsed Int @default(0)
+  
+  // Additional information
+  customerNotes    String?
+  specialistNotes  String?
+  preparationNotes String?
+  completionNotes  String?
+  deliverables     String // JSON string of deliverables
+  
+  // Time tracking
+  confirmedAt   DateTime?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  cancelledAt   DateTime?
+  
+  // Cancellation details
+  cancellationReason String?
+  cancelledBy        String? // customerId or specialistId
+  refundAmount       Float?
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Indexes for performance
+  @@index([status, scheduledAt])
+  @@index([customerId, status])
+  @@index([specialistId, status])
+  @@index([scheduledAt])
+
+  // Relations
+  customer      User        @relation("CustomerBookings", fields: [customerId], references: [id])
+  specialist    User        @relation("SpecialistBookings", fields: [specialistId], references: [id])
+  service       Service     @relation(fields: [serviceId], references: [id])
+  promoCode     PromoCode?  @relation(fields: [promoCodeId], references: [id])
+  payments      Payment[]
+  review        Review?
+  notifications Notification[]
+  conversations Conversation[]
+
+  @@map("bookings")
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  userId    String
+  bookingId String?
+  
+  // Payment details
+  status    String  // PENDING, PROCESSING, SUCCEEDED, FAILED, CANCELLED, REFUNDED
+  type      String  // DEPOSIT, FULL_PAYMENT, REFUND, LOYALTY_REDEMPTION
+  amount    Float
+  currency  String  @default("USD")
+  
+  // External payment provider info
+  stripePaymentIntentId String?
+  stripeChargeId        String?
+  
+  // Payment method
+  paymentMethodType String? // card, telegram_payment, etc.
+  
+  // Metadata
+  metadata String? // JSON string
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user    User     @relation(fields: [userId], references: [id])
+  booking Booking? @relation(fields: [bookingId], references: [id])
+
+  @@map("payments")
+}
+
+model Review {
+  id           String @id @default(cuid())
+  bookingId    String @unique
+  customerId   String
+  specialistId String
+  
+  // Review content
+  rating  Int    // 1-5 stars
+  comment String?
+  tags    String // JSON string of tags like "professional", "punctual", etc.
+  
+  // Review metadata
+  isPublic Boolean @default(true)
+  isVerified Boolean @default(false)
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  booking    Booking    @relation(fields: [bookingId], references: [id])
+  customer   User       @relation(fields: [customerId], references: [id])
+  specialist Specialist @relation("SpecialistReviews", fields: [specialistId], references: [id])
+
+  @@map("reviews")
+}
+
+model LoyaltyTransaction {
+  id     String                 @id @default(cuid())
+  userId String
+  
+  // Transaction details
+  type      String // EARNED, REDEEMED, EXPIRED, BONUS
+  points    Int
+  reason    String
+  description String?
+  
+  // Transaction metadata
+  referenceId String? // Reference to related booking, etc.
+  expiresAt   DateTime?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("loyalty_transactions")
+}
+
+model Notification {
+  id       String            @id @default(cuid())
+  userId   String
+  type     String // BOOKING_CREATED, BOOKING_CONFIRMED, etc.
+  
+  // Content
+  title    String
+  message  String
+  data     String? // JSON string - Additional data for the notification
+  
+  // Status
+  isRead   Boolean  @default(false)
+  readAt   DateTime?
+  
+  // Delivery channels
+  emailSent     Boolean @default(false)
+  pushSent      Boolean @default(false)
+  telegramSent  Boolean @default(false)
+  
+  // Optional booking reference
+  bookingId String?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user    User     @relation(fields: [userId], references: [id])
+  booking Booking? @relation(fields: [bookingId], references: [id])
+
+  @@map("notifications")
+}
+
+model AvailabilityBlock {
+  id           String @id @default(cuid())
+  specialistId String
+  
+  // Time block
+  startDateTime DateTime
+  endDateTime   DateTime
+  
+  // Block details
+  isAvailable Boolean @default(true)
+  reason      String? // Reason for unavailability
+  
+  // Recurring settings
+  isRecurring     Boolean @default(false)
+  recurringUntil  DateTime?
+  recurringDays   String? // JSON string of days: ["monday", "tuesday"]
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  specialist Specialist @relation(fields: [specialistId], references: [id], onDelete: Cascade)
+
+  @@map("availability_blocks")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  
+  // Device info
+  userAgent String?
+  ipAddress String?
+  
+  // Status
+  isRevoked Boolean @default(false)
+  revokedAt DateTime?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model SpecialistAnalytics {
+  id           String @id @default(cuid())
+  specialistId String
+  
+  // Time period
+  date    DateTime
+  
+  // Metrics
+  bookingsCount     Int   @default(0)
+  completedBookings Int   @default(0)
+  cancelledBookings Int   @default(0)
+  totalRevenue      Float @default(0.0)
+  averageRating     Float @default(0.0)
+  responseTimeAvg   Int   @default(0)
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  specialist Specialist @relation(fields: [specialistId], references: [id], onDelete: Cascade)
+
+  @@unique([specialistId, date])
+  @@map("specialist_analytics")
+}
+
+model SystemSettings {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String // JSON string
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+model AuditLog {
+  id        String @id @default(cuid())
+  userId    String?
+  entityType String  // Model name
+  entityId  String  // Record ID
+  action    String  // CREATE, UPDATE, DELETE
+  
+  // Details
+  changes    String? // JSON string
+  ipAddress  String?
+  userAgent  String?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+model Category {
+  id          String @id @default(cuid())
+  name        String
+  nameUk      String // Ukrainian translation
+  nameRu      String // Russian translation
+  description String?
+  descriptionUk String?
+  descriptionRu String?
+  slug        String @unique
+  icon        String?
+  color       String?
+  
+  // Hierarchy
+  parentId    String?
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  
+  // Settings
+  isActive    Boolean @default(true)
+  sortOrder   Int     @default(0)
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  services    Service[]
+
+  @@map("categories")
+}
+
+model Message {
+  id           String @id @default(cuid())
+  conversationId String
+  senderId     String
+  receiverId   String
+  
+  // Content
+  content      String
+  messageType  String @default("TEXT") // TEXT, IMAGE, FILE, SYSTEM
+  attachments  String? // JSON array of file URLs
+  
+  // Message status
+  isRead       Boolean @default(false)
+  readAt       DateTime?
+  isDelivered  Boolean @default(false)
+  deliveredAt  DateTime?
+  
+  // Metadata
+  editedAt     DateTime?
+  deletedAt    DateTime?
+  
+  // Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User @relation("SentMessages", fields: [senderId], references: [id])
+  receiver     User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
+  @@map("messages")
+}
+
+model Conversation {
+  id            String @id @default(cuid())
+  
+  // Participants
+  customerId    String
+  specialistId  String
+  
+  // Related booking (optional)
+  bookingId     String?
+  
+  // Conversation status
+  status        String @default("ACTIVE") // ACTIVE, ARCHIVED, BLOCKED
+  
+  // Last message info
+  lastMessageAt DateTime?
+  lastMessageContent String?
+  
+  // Unread counts
+  customerUnreadCount    Int @default(0)
+  specialistUnreadCount  Int @default(0)
+  
+  // Metadata
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  customer      User @relation("CustomerConversations", fields: [customerId], references: [id])
+  specialist    User @relation("SpecialistConversations", fields: [specialistId], references: [id])
+  booking       Booking? @relation(fields: [bookingId], references: [id])
+  messages      Message[]
+
+  @@unique([customerId, specialistId, bookingId])
+  @@map("conversations")
+}
+
+model File {
+  id          String @id @default(cuid())
+  filename    String
+  originalName String
+  mimeType    String
+  size        Int
+  path        String
+  url         String
+  
+  // File metadata
+  width       Int?
+  height      Int?
+  duration    Int? // For videos/audio in seconds
+  
+  // Upload info
+  uploadedBy  String
+  
+  // File purpose
+  purpose     String // AVATAR, SERVICE_IMAGE, MESSAGE_ATTACHMENT, PORTFOLIO, etc.
+  entityType  String? // Model name this file belongs to
+  entityId    String? // Record ID this file belongs to
+  
+  // Status
+  isProcessed Boolean @default(false)
+  isPublic    Boolean @default(false)
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+  
+  // Relations
+  uploader    User @relation(fields: [uploadedBy], references: [id])
+
+  @@map("files")
+}
+
+model EmailTemplate {
+  id          String @id @default(cuid())
+  name        String @unique
+  subject     String
+  subjectUk   String
+  subjectRu   String
+  htmlContent String
+  htmlContentUk String
+  htmlContentRu String
+  textContent String?
+  textContentUk String?
+  textContentRu String?
+  
+  // Template variables
+  variables   String // JSON array of variable names
+  
+  // Settings
+  isActive    Boolean @default(true)
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("email_templates")
+}
+
+model SMSTemplate {
+  id          String @id @default(cuid())
+  name        String @unique
+  content     String
+  contentUk   String
+  contentRu   String
+  
+  // Template variables
+  variables   String // JSON array of variable names
+  
+  // Settings
+  isActive    Boolean @default(true)
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("sms_templates")
+}
+
+model PromoCode {
+  id            String @id @default(cuid())
+  code          String @unique
+  name          String
+  description   String?
+  
+  // Discount details
+  discountType  String // PERCENTAGE, FIXED_AMOUNT
+  discountValue Float
+  maxDiscount   Float?
+  minOrderAmount Float?
+  
+  // Usage limits
+  maxUses       Int?
+  maxUsesPerUser Int @default(1)
+  usedCount     Int @default(0)
+  
+  // Validity
+  validFrom     DateTime
+  validUntil    DateTime
+  
+  // Restrictions
+  applicableFor String? // JSON array of service categories or specialist IDs
+  
+  // Settings
+  isActive      Boolean @default(true)
+  
+  // Metadata
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  bookings      Booking[]
+
+  @@map("promo_codes")
+}
+
+model FAQ {
+  id          String @id @default(cuid())
+  question    String
+  questionUk  String
+  questionRu  String
+  answer      String
+  answerUk    String
+  answerRu    String
+  
+  // Categorization
+  category    String
+  tags        String? // JSON array
+  
+  // Settings
+  isActive    Boolean @default(true)
+  sortOrder   Int @default(0)
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("faqs")
+}
+
+model Report {
+  id          String @id @default(cuid())
+  reporterId  String
+  reportedId  String
+  entityType  String // USER, SERVICE, REVIEW
+  entityId    String
+  
+  // Report details
+  reason      String
+  description String?
+  
+  // Status
+  status      String @default("PENDING") // PENDING, REVIEWING, RESOLVED, DISMISSED
+  resolution  String?
+  resolvedBy  String?
+  resolvedAt  DateTime?
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  reporter    User @relation("ReportsMade", fields: [reporterId], references: [id])
+  reported    User @relation("ReportsReceived", fields: [reportedId], references: [id])
+
+  @@map("reports")
+}

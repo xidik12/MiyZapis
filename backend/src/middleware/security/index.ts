@@ -1,0 +1,290 @@
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import { Request, Response, NextFunction } from 'express';
+import { config } from '@/config';
+import { redis } from '@/config/redis';
+import { RateLimitConfigs, ErrorCodes } from '@/types';
+import { createErrorResponse } from '@/utils/response';
+import { logger } from '@/utils/logger';
+
+// Security headers middleware
+export const securityHeaders = helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      fontSrc: ["'self'", "https:"],
+      connectSrc: ["'self'", "wss:", "https:"],
+      mediaSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true,
+  },
+  noSniff: true,
+  frameguard: { action: 'deny' },
+  xssFilter: true,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  crossOriginEmbedderPolicy: false, // Disable for file uploads
+});
+
+// Rate limiter store (Redis when available, in-memory fallback)
+class RateLimitStore {
+  private prefix: string;
+  private resetTime: number;
+  private memoryStore: Map<string, { hits: number; resetTime: number }> = new Map();
+
+  constructor(prefix = 'rl:', resetTime = 60) {
+    this.prefix = prefix;
+    this.resetTime = resetTime;
+  }
+
+  async increment(key: string): Promise<{ totalHits: number; timeToExpire?: number }> {
+    const storeKey = `${this.prefix}${key}`;
+    
+    if (redis) {
+      // Use Redis when available
+      try {
+        const current = await redis.get(storeKey);
+        const totalHits = current ? parseInt(current, 10) + 1 : 1;
+        
+        if (totalHits === 1) {
+          await redis.setex(storeKey, this.resetTime, '1');
+        } else {
+          await redis.set(storeKey, totalHits.toString());
+        }
+
+        const ttl = await redis.ttl(storeKey);
+        
+        return {
+          totalHits,
+          timeToExpire: ttl > 0 ? ttl * 1000 : undefined,
+        };
+      } catch (error) {
+        logger.error('Redis rate limit error:', error);
+        // Fall back to memory store on Redis error
+      }
+    }
+    
+    // Use in-memory store
+    const now = Date.now();
+    const entry = this.memoryStore.get(storeKey);
+    
+    if (!entry || now > entry.resetTime) {
+      // New window or expired
+      const resetTime = now + (this.resetTime * 1000);
+      this.memoryStore.set(storeKey, { hits: 1, resetTime });
+      return { totalHits: 1, timeToExpire: this.resetTime * 1000 };
+    } else {
+      // Increment existing
+      entry.hits += 1;
+      const timeToExpire = entry.resetTime - now;
+      return { totalHits: entry.hits, timeToExpire: Math.max(0, timeToExpire) };
+    }
+  }
+
+  async decrement(key: string): Promise<void> {
+    const storeKey = `${this.prefix}${key}`;
+    
+    if (redis) {
+      try {
+        await redis.decr(storeKey);
+        return;
+      } catch (error) {
+        logger.error('Redis rate limit decrement error:', error);
+      }
+    }
+    
+    // Memory store decrement
+    const entry = this.memoryStore.get(storeKey);
+    if (entry && entry.hits > 0) {
+      entry.hits -= 1;
+    }
+  }
+
+  async resetKey(key: string): Promise<void> {
+    const storeKey = `${this.prefix}${key}`;
+    
+    if (redis) {
+      try {
+        await redis.del(storeKey);
+        return;
+      } catch (error) {
+        logger.error('Redis rate limit reset error:', error);
+      }
+    }
+    
+    // Memory store reset
+    this.memoryStore.delete(storeKey);
+  }
+}
+
+// Create rate limiter with Redis store
+const createRateLimiter = (options: {
+  windowMs: number;
+  max: number;
+  keyGenerator?: (req: Request) => string;
+  skipSuccessfulRequests?: boolean;
+}) => {
+  const store = new RateLimitStore('rl:', Math.ceil(options.windowMs / 1000));
+
+  return rateLimit({
+    windowMs: options.windowMs,
+    max: options.max,
+    keyGenerator: options.keyGenerator || ((req: Request) => {
+      return req.ip || 'anonymous';
+    }),
+    skipSuccessfulRequests: options.skipSuccessfulRequests ?? false,
+    store: {
+      incr: async (key: string) => {
+        const result = await store.increment(key);
+        return result;
+      },
+      decrement: async (key: string) => {
+        await store.decrement(key);
+      },
+      resetKey: async (key: string) => {
+        await store.resetKey(key);
+      },
+    } as any,
+    handler: (req: Request, res: Response) => {
+      logger.warn('Rate limit exceeded', {
+        ip: req.ip,
+        path: req.path,
+        userAgent: req.get('User-Agent'),
+        userId: (req as any).user?.id,
+      });
+
+      res.status(429).json(
+        createErrorResponse(
+          ErrorCodes.RATE_LIMIT_EXCEEDED,
+          'Too many requests, please try again later',
+          req.headers['x-request-id'] as string
+        )
+      );
+    },
+  });
+};
+
+// Default rate limiter
+export const defaultRateLimit = createRateLimiter(RateLimitConfigs.DEFAULT);
+
+// Authentication rate limiter
+export const authRateLimit = createRateLimiter({
+  ...RateLimitConfigs.AUTH,
+  keyGenerator: (req: Request) => {
+    const email = req.body?.email;
+    return email ? `auth:${email}` : `auth:${req.ip}`;
+  },
+});
+
+// Booking rate limiter
+export const bookingRateLimit = createRateLimiter({
+  ...RateLimitConfigs.BOOKINGS,
+  keyGenerator: (req: Request) => {
+    const userId = (req as any).user?.id;
+    return userId ? `booking:${userId}` : `booking:${req.ip}`;
+  },
+});
+
+// Payment rate limiter
+export const paymentRateLimit = createRateLimiter({
+  ...RateLimitConfigs.PAYMENTS,
+  keyGenerator: (req: Request) => {
+    const userId = (req as any).user?.id;
+    return userId ? `payment:${userId}` : `payment:${req.ip}`;
+  },
+});
+
+// Search rate limiter
+export const searchRateLimit = createRateLimiter({
+  ...RateLimitConfigs.SEARCH,
+  skipSuccessfulRequests: true,
+});
+
+// Request ID middleware
+export const requestId = (req: Request, res: Response, next: NextFunction): void => {
+  const requestId = req.headers['x-request-id'] as string || 
+                   req.headers['x-correlation-id'] as string ||
+                   generateRequestId();
+  
+  req.headers['x-request-id'] = requestId;
+  res.setHeader('X-Request-ID', requestId);
+  
+  next();
+};
+
+// Generate unique request ID
+const generateRequestId = (): string => {
+  return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+};
+
+// CORS configuration
+export const corsOptions = {
+  origin: config.security.corsOrigin,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'Authorization',
+    'X-Request-ID',
+    'X-Correlation-ID',
+    'x-platform', // Allow x-platform header for frontend platform identification
+    'x-client-version', // Allow x-client-version header for client version tracking
+  ],
+  exposedHeaders: ['X-Request-ID'],
+  maxAge: 86400, // 24 hours
+};
+
+// Input sanitization middleware
+export const sanitizeInput = (req: Request, res: Response, next: NextFunction): void => {
+  // Sanitize request body
+  if (req.body && typeof req.body === 'object') {
+    sanitizeObject(req.body);
+  }
+
+  // Sanitize query parameters
+  if (req.query && typeof req.query === 'object') {
+    sanitizeObject(req.query);
+  }
+
+  next();
+};
+
+// Recursive object sanitization
+const sanitizeObject = (obj: any): void => {
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      if (typeof obj[key] === 'string') {
+        // Basic XSS prevention
+        obj[key] = obj[key]
+          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+          .replace(/javascript:/gi, '')
+          .replace(/on\w+\s*=/gi, '');
+      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+        sanitizeObject(obj[key]);
+      }
+    }
+  }
+};
+
+// Trust proxy middleware for production
+export const trustProxy = (req: Request, res: Response, next: NextFunction): void => {
+  if (config.isProduction) {
+    // Trust first proxy (load balancer)
+    req.app.set('trust proxy', 1);
+  }
+  next();
+};

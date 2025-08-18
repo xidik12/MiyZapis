@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ukrainian Theme Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .ukraine-gradient {
+            background: linear-gradient(135deg, #3b97f2 0%, #ffc41f 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .morph-shape {
+            background: linear-gradient(45deg, #3b97f2, #ffc41f);
+            animation: morph 8s ease-in-out infinite;
+        }
+        @keyframes morph {
+            0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+            50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-bold text-center mb-8">🇺🇦 Ukrainian Theme Test</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Ukrainian Gradient Card -->
+            <div class="ukraine-gradient text-white p-6 rounded-xl">
+                <h2 class="text-2xl font-bold mb-2">Ukrainian Gradient</h2>
+                <p>This uses Ukrainian flag colors: blue (#3b97f2) and yellow (#ffc41f)</p>
+            </div>
+            
+            <!-- Glass Effect Card -->
+            <div class="glass-effect text-gray-800 p-6 rounded-xl">
+                <h2 class="text-2xl font-bold mb-2">Glass Effect</h2>
+                <p>This demonstrates glassmorphism with backdrop blur</p>
+            </div>
+            
+            <!-- Morphing Shape -->
+            <div class="morph-shape w-32 h-32 mx-auto"></div>
+            
+            <!-- Floating Element -->
+            <div class="float-animation ukraine-gradient w-24 h-24 rounded-full mx-auto flex items-center justify-center text-white font-bold text-2xl">
+                Б
+            </div>
+        </div>
+        
+        <div class="text-center mt-8">
+            <p class="text-lg">If you can see styled elements above, the Ukrainian theme is working!</p>
+            <p class="text-sm text-gray-600 mt-2">The main app is running at: <a href="http://localhost:3000" class="text-blue-600 hover:underline">http://localhost:3000</a></p>
+        </div>
+    </div>
+</body>
+</html>

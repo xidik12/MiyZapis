@@ -1,0 +1,140 @@
+import { body } from 'express-validator';
+
+// Define user types as constants since we're using strings in SQLite
+const USER_TYPES = ['CUSTOMER', 'SPECIALIST', 'ADMIN'] as const;
+
+// Register validation
+export const validateRegister = [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Valid email is required'),
+  
+  body('password')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters long')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number'),
+  
+  body('firstName')
+    .trim()
+    .isLength({ min: 1, max: 50 })
+    .withMessage('First name must be between 1 and 50 characters'),
+  
+  body('lastName')
+    .trim()
+    .isLength({ min: 1, max: 50 })
+    .withMessage('Last name must be between 1 and 50 characters'),
+  
+  body('phoneNumber')
+    .optional()
+    .isMobilePhone('any')
+    .withMessage('Valid phone number is required'),
+  
+  body('userType')
+    .isIn(USER_TYPES)
+    .withMessage('Valid user type is required (CUSTOMER or SPECIALIST)'),
+  
+  body('telegramId')
+    .optional()
+    .isString()
+    .isLength({ min: 1, max: 20 })
+    .withMessage('Valid Telegram ID is required'),
+];
+
+// Login validation
+export const validateLogin = [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Valid email is required'),
+  
+  body('password')
+    .isLength({ min: 1 })
+    .withMessage('Password is required'),
+  
+  body('platform')
+    .optional()
+    .isIn(['web', 'telegram_bot', 'telegram_mini_app'])
+    .withMessage('Valid platform is required'),
+];
+
+// Telegram auth validation
+export const validateTelegramAuth = [
+  body('telegramId')
+    .isString()
+    .isLength({ min: 1, max: 20 })
+    .withMessage('Valid Telegram ID is required'),
+  
+  body('firstName')
+    .trim()
+    .isLength({ min: 1, max: 50 })
+    .withMessage('First name is required'),
+  
+  body('lastName')
+    .optional()
+    .trim()
+    .isLength({ max: 50 })
+    .withMessage('Last name must be less than 50 characters'),
+  
+  body('username')
+    .optional()
+    .trim()
+    .isLength({ max: 50 })
+    .withMessage('Username must be less than 50 characters'),
+  
+  body('authDate')
+    .isInt({ min: 1 })
+    .withMessage('Valid auth date is required'),
+  
+  body('hash')
+    .isString()
+    .isLength({ min: 1 })
+    .withMessage('Valid hash is required'),
+];
+
+// Refresh token validation
+export const validateRefreshToken = [
+  body('refreshToken')
+    .isString()
+    .isLength({ min: 1 })
+    .withMessage('Refresh token is required'),
+];
+
+// Email verification validation
+export const validateEmailVerification = [
+  body('token')
+    .isString()
+    .isLength({ min: 1 })
+    .withMessage('Verification token is required'),
+];
+
+// Password reset request validation
+export const validatePasswordResetRequest = [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Valid email is required'),
+];
+
+// Password reset validation
+export const validatePasswordReset = [
+  body('token')
+    .isString()
+    .isLength({ min: 1 })
+    .withMessage('Reset token is required'),
+  
+  body('password')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters long')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number'),
+  
+  body('confirmPassword')
+    .custom((value, { req }) => {
+      if (value !== req.body.password) {
+        throw new Error('Password confirmation does not match password');
+      }
+      return true;
+    }),
+];

@@ -1,0 +1,108 @@
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+
+type Currency = 'USD' | 'EUR' | 'UAH';
+
+interface CurrencyContextType {
+  currency: Currency;
+  setCurrency: (currency: Currency) => void;
+  convertPrice: (price: number, fromCurrency?: Currency) => number;
+  formatPrice: (price: number, fromCurrency?: Currency) => string;
+  getCurrencySymbol: (currency?: Currency) => string;
+  getCurrencyCode: (currency?: Currency) => string;
+}
+
+const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
+
+// Exchange rates relative to UAH (Ukrainian Hryvnia)
+// 1 USD = 37 UAH, 1 EUR = 40 UAH (approximate realistic rates)
+const EXCHANGE_RATES: Record<Currency, number> = {
+  UAH: 1,      // Base currency
+  USD: 37,     // 1 USD = 37 UAH
+  EUR: 40,     // 1 EUR = 40 UAH
+};
+
+const CURRENCY_SYMBOLS: Record<Currency, string> = {
+  USD: '$',
+  EUR: '€',
+  UAH: '₴',
+};
+
+const CURRENCY_CODES: Record<Currency, string> = {
+  USD: 'USD',
+  EUR: 'EUR',
+  UAH: 'UAH',
+};
+
+export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [currency, setCurrency] = useState<Currency>(() => {
+    const stored = localStorage.getItem('booking-currency');
+    return (stored === 'USD' || stored === 'EUR' || stored === 'UAH') ? stored : 'UAH';
+  });
+
+  const handleSetCurrency = (newCurrency: Currency) => {
+    setCurrency(newCurrency);
+    localStorage.setItem('booking-currency', newCurrency);
+  };
+
+  // Convert price from one currency to another
+  const convertPrice = (price: number, fromCurrency: Currency = 'UAH'): number => {
+    if (fromCurrency === currency) return price;
+    
+    // Convert to UAH first (base currency)
+    const priceInUAH = fromCurrency === 'UAH' ? price : price * EXCHANGE_RATES[fromCurrency];
+    
+    // Convert from UAH to target currency
+    if (currency === 'UAH') return priceInUAH;
+    return Math.round((priceInUAH / EXCHANGE_RATES[currency]) * 100) / 100;
+  };
+
+  // Format price with currency symbol
+  const formatPrice = (price: number, fromCurrency: Currency = 'UAH'): string => {
+    const convertedPrice = convertPrice(price, fromCurrency);
+    const symbol = getCurrencySymbol(currency);
+    
+    // Format numbers appropriately for each currency
+    if (currency === 'UAH') {
+      // Ukrainian Hryvnia: show as whole numbers for larger amounts, with comma separators
+      return convertedPrice >= 1000 
+        ? `${symbol}${Math.round(convertedPrice).toLocaleString('uk-UA')}`
+        : `${symbol}${convertedPrice}`;
+    } else {
+      // USD/EUR: show with 2 decimal places for smaller amounts, whole numbers for larger
+      return convertedPrice >= 100
+        ? `${symbol}${Math.round(convertedPrice)}`
+        : `${symbol}${convertedPrice.toFixed(2)}`;
+    }
+  };
+
+  const getCurrencySymbol = (targetCurrency?: Currency): string => {
+    return CURRENCY_SYMBOLS[targetCurrency || currency];
+  };
+
+  const getCurrencyCode = (targetCurrency?: Currency): string => {
+    return CURRENCY_CODES[targetCurrency || currency];
+  };
+
+  return (
+    <CurrencyContext.Provider 
+      value={{ 
+        currency, 
+        setCurrency: handleSetCurrency, 
+        convertPrice, 
+        formatPrice,
+        getCurrencySymbol,
+        getCurrencyCode
+      }}
+    >
+      {children}
+    </CurrencyContext.Provider>
+  );
+};
+
+export const useCurrency = () => {
+  const context = useContext(CurrencyContext);
+  if (!context) {
+    throw new Error('useCurrency must be used within a CurrencyProvider');
+  }
+  return context;
+};

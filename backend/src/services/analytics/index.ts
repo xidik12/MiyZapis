@@ -1,0 +1,586 @@
+import { PrismaClient } from '@prisma/client';
+import { logger } from '@/utils/logger';
+import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from 'date-fns';
+
+export class AnalyticsService {
+  private prisma: PrismaClient;
+
+  constructor(prisma: PrismaClient) {
+    this.prisma = prisma;
+  }
+
+  async getDashboardData(specialistId: string): Promise<any> {
+    try {
+      const now = new Date();
+      const startOfCurrentMonth = startOfMonth(now);
+      const endOfCurrentMonth = endOfMonth(now);
+      const startOfLastMonth = startOfMonth(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+      const endOfLastMonth = endOfMonth(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+
+      // Current month stats
+      const currentMonthBookings = await this.prisma.booking.count({
+        where: {
+          specialistId,
+          createdAt: {
+            gte: startOfCurrentMonth,
+            lte: endOfCurrentMonth
+          }
+        }
+      });
+
+      const currentMonthRevenue = await this.prisma.booking.aggregate({
+        where: {
+          specialistId,
+          status: 'COMPLETED',
+          createdAt: {
+            gte: startOfCurrentMonth,
+            lte: endOfCurrentMonth
+          }
+        },
+        _sum: { totalAmount: true }
+      });
+
+      // Last month stats for comparison
+      const lastMonthBookings = await this.prisma.booking.count({
+        where: {
+          specialistId,
+          createdAt: {
+            gte: startOfLastMonth,
+            lte: endOfLastMonth
+          }
+        }
+      });
+
+      const lastMonthRevenue = await this.prisma.booking.aggregate({
+        where: {
+          specialistId,
+          status: 'COMPLETED',
+          createdAt: {
+            gte: startOfLastMonth,
+            lte: endOfLastMonth
+          }
+        },
+        _sum: { totalAmount: true }
+      });
+
+      // Average rating
+      const ratingData = await this.prisma.review.aggregate({
+        where: { specialistId },
+        _avg: { rating: true },
+        _count: { rating: true }
+      });
+
+      // Pending bookings
+      const pendingBookings = await this.prisma.booking.count({
+        where: {
+          specialistId,
+          status: 'PENDING'
+        }
+      });
+
+      // Today's bookings
+      const todayBookings = await this.prisma.booking.count({
+        where: {
+          specialistId,
+          scheduledAt: {
+            gte: startOfDay(now),
+            lte: endOfDay(now)
+          }
+        }
+      });
+
+      // Calculate growth percentages
+      const bookingGrowth = lastMonthBookings > 0 
+        ? ((currentMonthBookings - lastMonthBookings) / lastMonthBookings) * 100 
+        : 0;
+
+      const revenueGrowth = (lastMonthRevenue._sum.totalAmount || 0) > 0 
+        ? (((currentMonthRevenue._sum.totalAmount || 0) - (lastMonthRevenue._sum.totalAmount || 0)) / (lastMonthRevenue._sum.totalAmount || 0)) * 100 
+        : 0;
+
+      return {
+        overview: {
+          totalBookings: currentMonthBookings,
+          totalRevenue: currentMonthRevenue._sum.totalAmount || 0,
+          averageRating: ratingData._avg.rating || 0,
+          totalReviews: ratingData._count.rating || 0,
+          pendingBookings,
+          todayBookings
+        },
+        growth: {
+          bookings: bookingGrowth,
+          revenue: revenueGrowth
+        },
+        period: {
+          current: {
+            start: startOfCurrentMonth,
+            end: endOfCurrentMonth
+          },
+          previous: {
+            start: startOfLastMonth,
+            end: endOfLastMonth
+          }
+        }
+      };
+    } catch (error) {
+      logger.error('Error getting dashboard data:', error);
+      throw error;
+    }
+  }
+
+  async getBookingAnalytics(
+    specialistId: string,
+    fromDate?: string,
+    toDate?: string,
+    groupBy: 'day' | 'week' | 'month' = 'day'
+  ): Promise<any> {
+    try {
+      const dateFilter = this.buildDateFilter(fromDate, toDate);
+
+      const bookings = await this.prisma.booking.findMany({
+        where: {
+          specialistId,
+          createdAt: dateFilter
+        },
+        select: {
+          id: true,
+          status: true,
+          createdAt: true,
+          totalAmount: true
+        }
+      });
+
+      // Group bookings by time period
+      const grouped = this.groupDataByPeriod(bookings, groupBy, 'createdAt');
+
+      return {
+        data: grouped,
+        summary: {
+          total: bookings.length,
+          byStatus: this.groupByStatus(bookings),
+          totalRevenue: bookings.reduce((sum, booking) => sum + (booking.totalAmount || 0), 0)
+        }
+      };
+    } catch (error) {
+      logger.error('Error getting booking analytics:', error);
+      throw error;
+    }
+  }
+
+  async getRevenueAnalytics(
+    specialistId: string,
+    fromDate?: string,
+    toDate?: string,
+    groupBy: 'day' | 'week' | 'month' = 'day'
+  ): Promise<any> {
+    try {
+      const dateFilter = this.buildDateFilter(fromDate, toDate);
+
+      const bookings = await this.prisma.booking.findMany({
+        where: {
+          specialistId,
+          status: 'COMPLETED',
+          createdAt: dateFilter
+        },
+        select: {
+          totalAmount: true,
+          createdAt: true,
+          service: {
+            select: {
+              name: true,
+              category: true
+            }
+          }
+        }
+      });
+
+      // Group revenue by time period
+      const grouped = this.groupRevenueByPeriod(bookings, groupBy, 'createdAt');
+
+      // Revenue by service category
+      const byCategory = this.groupRevenueByCategory(bookings);
+
+      return {
+        data: grouped,
+        byCategory,
+        summary: {
+          totalRevenue: bookings.reduce((sum, booking) => sum + booking.totalAmount, 0),
+          averageBookingValue: bookings.length > 0 ? bookings.reduce((sum, booking) => sum + booking.totalAmount, 0) / bookings.length : 0,
+          totalBookings: bookings.length
+        }
+      };
+    } catch (error) {
+      logger.error('Error getting revenue analytics:', error);
+      throw error;
+    }
+  }
+
+  async getReviewAnalytics(
+    specialistId: string,
+    fromDate?: string,
+    toDate?: string
+  ): Promise<any> {
+    try {
+      const dateFilter = this.buildDateFilter(fromDate, toDate);
+
+      const reviews = await this.prisma.review.findMany({
+        where: {
+          specialistId,
+          createdAt: dateFilter
+        },
+        select: {
+          rating: true,
+          createdAt: true,
+          tags: true
+        }
+      });
+
+      // Rating distribution
+      const ratingDistribution = [1, 2, 3, 4, 5].map(rating => ({
+        rating,
+        count: reviews.filter(review => review.rating === rating).length
+      }));
+
+      // Average rating over time
+      const ratingOverTime = this.groupRatingByPeriod(reviews, 'week');
+
+      // Most common tags
+      const allTags = reviews.flatMap(review => 
+        review.tags ? JSON.parse(review.tags) : []
+      );
+      const tagCounts = allTags.reduce((acc, tag) => {
+        acc[tag] = (acc[tag] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      const topTags = Object.entries(tagCounts)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 10)
+        .map(([tag, count]) => ({ tag, count }));
+
+      return {
+        summary: {
+          totalReviews: reviews.length,
+          averageRating: reviews.length > 0 ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0
+        },
+        ratingDistribution,
+        ratingOverTime,
+        topTags
+      };
+    } catch (error) {
+      logger.error('Error getting review analytics:', error);
+      throw error;
+    }
+  }
+
+  async getResponseTimeAnalytics(
+    specialistId: string,
+    fromDate?: string,
+    toDate?: string
+  ): Promise<any> {
+    try {
+      // This would require tracking message response times
+      // For now, return placeholder data
+      return {
+        averageResponseTime: 0,
+        responseTimeByPeriod: [],
+        summary: {
+          fastest: 0,
+          slowest: 0,
+          totalMessages: 0
+        }
+      };
+    } catch (error) {
+      logger.error('Error getting response time analytics:', error);
+      throw error;
+    }
+  }
+
+  async getServicePerformance(
+    specialistId: string,
+    fromDate?: string,
+    toDate?: string
+  ): Promise<any> {
+    try {
+      const dateFilter = this.buildDateFilter(fromDate, toDate);
+
+      const bookings = await this.prisma.booking.findMany({
+        where: {
+          specialistId,
+          createdAt: dateFilter
+        },
+        include: {
+          service: {
+            select: {
+              id: true,
+              name: true,
+              category: true,
+              basePrice: true
+            }
+          },
+          review: {
+            select: {
+              rating: true
+            }
+          }
+        }
+      });
+
+      // Group by service
+      const serviceGroups = bookings.reduce((acc, booking) => {
+        const serviceId = booking.service.id;
+        if (!acc[serviceId]) {
+          acc[serviceId] = {
+            service: booking.service,
+            bookings: [],
+            revenue: 0,
+            averageRating: 0,
+            reviewCount: 0
+          };
+        }
+        acc[serviceId].bookings.push(booking);
+        acc[serviceId].revenue += booking.totalAmount;
+        if (booking.review) {
+          acc[serviceId].reviewCount++;
+          acc[serviceId].averageRating += booking.review.rating;
+        }
+        return acc;
+      }, {} as any);
+
+      // Calculate averages and format data
+      const servicePerformance = Object.values(serviceGroups).map((group: any) => ({
+        service: group.service,
+        bookingCount: group.bookings.length,
+        revenue: group.revenue,
+        averageRating: group.reviewCount > 0 ? group.averageRating / group.reviewCount : 0,
+        conversionRate: 100 // Placeholder - would need booking flow tracking
+      }));
+
+      return {
+        services: servicePerformance.sort((a, b) => b.revenue - a.revenue),
+        summary: {
+          totalServices: servicePerformance.length,
+          bestPerforming: servicePerformance[0] || null,
+          totalRevenue: servicePerformance.reduce((sum, service) => sum + service.revenue, 0)
+        }
+      };
+    } catch (error) {
+      logger.error('Error getting service performance:', error);
+      throw error;
+    }
+  }
+
+  async getEarnings(
+    specialistId: string,
+    fromDate?: string,
+    toDate?: string,
+    period: 'day' | 'week' | 'month' = 'month'
+  ): Promise<any> {
+    try {
+      const dateFilter = this.buildDateFilter(fromDate, toDate);
+
+      const completedBookings = await this.prisma.booking.findMany({
+        where: {
+          specialistId,
+          status: 'COMPLETED',
+          completedAt: dateFilter
+        },
+        select: {
+          totalAmount: true,
+          completedAt: true
+        }
+      });
+
+      const earnings = this.groupRevenueByPeriod(completedBookings, period, 'completedAt');
+
+      return {
+        earnings,
+        summary: {
+          totalEarnings: completedBookings.reduce((sum, booking) => sum + booking.totalAmount, 0),
+          averageEarningsPerBooking: completedBookings.length > 0 
+            ? completedBookings.reduce((sum, booking) => sum + booking.totalAmount, 0) / completedBookings.length 
+            : 0,
+          totalCompletedBookings: completedBookings.length
+        }
+      };
+    } catch (error) {
+      logger.error('Error getting earnings:', error);
+      throw error;
+    }
+  }
+
+  async getCustomerInsights(
+    specialistId: string,
+    fromDate?: string,
+    toDate?: string
+  ): Promise<any> {
+    try {
+      const dateFilter = this.buildDateFilter(fromDate, toDate);
+
+      const bookings = await this.prisma.booking.findMany({
+        where: {
+          specialistId,
+          createdAt: dateFilter
+        },
+        include: {
+          customer: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              createdAt: true
+            }
+          }
+        }
+      });
+
+      // Customer analysis
+      const customerGroups = bookings.reduce((acc, booking) => {
+        const customerId = booking.customer.id;
+        if (!acc[customerId]) {
+          acc[customerId] = {
+            customer: booking.customer,
+            bookingCount: 0,
+            totalSpent: 0,
+            firstBooking: booking.createdAt,
+            lastBooking: booking.createdAt
+          };
+        }
+        acc[customerId].bookingCount++;
+        acc[customerId].totalSpent += booking.totalAmount;
+        if (booking.createdAt < acc[customerId].firstBooking) {
+          acc[customerId].firstBooking = booking.createdAt;
+        }
+        if (booking.createdAt > acc[customerId].lastBooking) {
+          acc[customerId].lastBooking = booking.createdAt;
+        }
+        return acc;
+      }, {} as any);
+
+      const customers = Object.values(customerGroups);
+      const newCustomers = customers.filter((customer: any) => 
+        customer.bookingCount === 1
+      ).length;
+
+      const repeatCustomers = customers.filter((customer: any) => 
+        customer.bookingCount > 1
+      ).length;
+
+      return {
+        summary: {
+          totalCustomers: customers.length,
+          newCustomers,
+          repeatCustomers,
+          retentionRate: customers.length > 0 ? (repeatCustomers / customers.length) * 100 : 0
+        },
+        topCustomers: customers
+          .sort((a: any, b: any) => b.totalSpent - a.totalSpent)
+          .slice(0, 10),
+        customersByBookingCount: {
+          oneTime: newCustomers,
+          repeat: repeatCustomers,
+          frequent: customers.filter((customer: any) => customer.bookingCount >= 5).length
+        }
+      };
+    } catch (error) {
+      logger.error('Error getting customer insights:', error);
+      throw error;
+    }
+  }
+
+  async exportData(
+    specialistId: string,
+    type: string,
+    format: 'csv' | 'xlsx',
+    fromDate?: string,
+    toDate?: string
+  ): Promise<string | Buffer> {
+    // This would implement data export functionality
+    // For now, return placeholder
+    return format === 'csv' ? 'CSV data would be here' : Buffer.from('Excel data');
+  }
+
+  // Helper methods
+  private buildDateFilter(fromDate?: string, toDate?: string) {
+    const filter: any = {};
+    if (fromDate) filter.gte = new Date(fromDate);
+    if (toDate) filter.lte = new Date(toDate);
+    return Object.keys(filter).length > 0 ? filter : undefined;
+  }
+
+  private groupDataByPeriod(data: any[], period: 'day' | 'week' | 'month', dateField: string) {
+    const grouped: Record<string, any[]> = {};
+    
+    data.forEach(item => {
+      const date = new Date(item[dateField]);
+      let key: string;
+      
+      switch (period) {
+        case 'day':
+          key = format(date, 'yyyy-MM-dd');
+          break;
+        case 'week':
+          key = format(startOfWeek(date), 'yyyy-MM-dd');
+          break;
+        case 'month':
+          key = format(date, 'yyyy-MM');
+          break;
+        default:
+          key = format(date, 'yyyy-MM-dd');
+      }
+      
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(item);
+    });
+
+    return Object.entries(grouped).map(([period, items]) => ({
+      period,
+      count: items.length,
+      items
+    }));
+  }
+
+  private groupRevenueByPeriod(data: any[], period: 'day' | 'week' | 'month', dateField: string) {
+    const grouped = this.groupDataByPeriod(data, period, dateField);
+    return grouped.map(group => ({
+      period: group.period,
+      revenue: group.items.reduce((sum, item) => sum + item.totalAmount, 0),
+      count: group.count
+    }));
+  }
+
+  private groupRatingByPeriod(reviews: any[], period: 'day' | 'week' | 'month') {
+    const grouped = this.groupDataByPeriod(reviews, period, 'createdAt');
+    return grouped.map(group => ({
+      period: group.period,
+      averageRating: group.items.reduce((sum, item) => sum + item.rating, 0) / group.items.length,
+      count: group.count
+    }));
+  }
+
+  private groupRevenueByCategory(bookings: any[]) {
+    const categoryGroups = bookings.reduce((acc, booking) => {
+      const category = booking.service.category;
+      if (!acc[category]) {
+        acc[category] = { revenue: 0, count: 0 };
+      }
+      acc[category].revenue += booking.totalAmount;
+      acc[category].count++;
+      return acc;
+    }, {} as Record<string, { revenue: number; count: number }>);
+
+    return Object.entries(categoryGroups).map(([category, data]) => ({
+      category,
+      revenue: data.revenue,
+      count: data.count
+    }));
+  }
+
+  private groupByStatus(bookings: any[]) {
+    return bookings.reduce((acc, booking) => {
+      const status = booking.status;
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+  }
+}

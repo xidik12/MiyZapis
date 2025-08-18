@@ -1,0 +1,361 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useAppSelector } from '@/hooks/redux';
+import { selectUser } from '@/store/slices/authSlice';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+// Status colors for bookings
+const statusColors = {
+  confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
+  pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  cancelled: 'bg-red-100 text-red-800 border-red-200',
+  completed: 'bg-green-100 text-green-800 border-green-200',
+  inProgress: 'bg-purple-100 text-purple-800 border-purple-200',
+  noShow: 'bg-gray-100 text-gray-800 border-gray-200'
+};
+import {
+  CalendarIcon,
+  HeartIcon,
+  CreditCardIcon,
+  StarIcon,
+  UserGroupIcon,
+  ClockIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
+  GiftIcon,
+  MagnifyingGlassIcon,
+  EyeIcon,
+  ChatBubbleLeftRightIcon,
+  MapPinIcon,
+  ChartBarIcon,
+  PlusIcon,
+  BookOpenIcon,
+} from '@heroicons/react/24/outline';
+import {
+  CalendarIcon as CalendarIconSolid,
+  HeartIcon as HeartIconSolid,
+  StarIcon as StarIconSolid,
+  GiftIcon as GiftIconSolid,
+} from '@heroicons/react/24/solid';
+
+const CustomerDashboard: React.FC = () => {
+  const user = useAppSelector(selectUser);
+  const { formatPrice } = useCurrency();
+  const { t, language } = useLanguage();
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update time every minute
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const getGreeting = () => {
+    const hour = currentTime.getHours();
+    if (hour < 12) return t('dashboard.welcome.morning');
+    if (hour < 17) return t('dashboard.welcome.afternoon');
+    return t('dashboard.welcome.evening');
+  };
+
+  const getStatusColor = (status: string) => {
+    return statusColors[status as keyof typeof statusColors] || statusColors.pending;
+  };
+
+  const getStatusText = (status: string) => {
+    return t(`dashboard.booking.status.${status}` as any) || status;
+  };
+
+  const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description }: any) => (
+    <div className="bg-surface rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{title}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{value}</p>
+          {description && (
+            <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
+          )}
+          {change && (
+            <div className={`flex items-center mt-2 text-sm ${
+              changeType === 'positive' ? 'text-success-600' : 'text-error-600'
+            }`}>
+              {changeType === 'positive' ? (
+                <ArrowTrendingUpIcon className="w-4 h-4 mr-1" />
+              ) : (
+                <ArrowTrendingDownIcon className="w-4 h-4 mr-1" />
+              )}
+              <span>{change}</span>
+            </div>
+          )}
+        </div>
+        <div className={`p-3 rounded-xl ${iconBg}`}>
+          <Icon className="w-6 h-6 text-white" />
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                {getGreeting()}, {user?.firstName}! 👋
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                {t('dashboard.today')} {currentTime.toLocaleDateString(
+                  language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
+                  { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  }
+                )}
+              </p>
+            </div>
+            <div className="mt-4 lg:mt-0 flex space-x-3">
+              <Link
+                to="/search"
+                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl hover:from-primary-700 hover:to-secondary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <MagnifyingGlassIcon className="w-5 h-5 mr-2" />
+                {t('dashboard.customer.findSpecialists')}
+              </Link>
+              <Link
+                to="/customer/bookings"
+                className="inline-flex items-center px-4 py-2 bg-surface-hover border-surface rounded-xl transition-all duration-200 font-medium text-secondary-content"
+              >
+                <CalendarIcon className="w-5 h-5 mr-2" />
+                {t('dashboard.nav.bookings')}
+              </Link>
+            </div>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard
+              title={t('dashboard.customer.totalSpent')}
+              value={formatPrice(mockCustomerData.stats.totalSpent, 'UAH')}
+              change={`+15% ${t('dashboard.specialist.thisMonthImprovement')}`}
+              changeType="positive"
+              icon={CreditCardIcon}
+              iconBg="bg-gradient-to-br from-primary-500 to-primary-600"
+              description={t('dashboard.specialist.allTime')}
+            />
+            <StatCard
+              title={t('dashboard.customer.loyaltyPoints')}
+              value={mockCustomerData.stats.loyaltyPoints}
+              change={`+340 ${t('dashboard.specialist.thisMonthImprovement')}`}
+              changeType="positive"
+              icon={GiftIconSolid}
+              iconBg="bg-gradient-to-br from-success-500 to-success-600"
+              description={`${formatPrice(mockCustomerData.stats.savedAmount, 'UAH')} ${t('dashboard.customer.savedAmount').toLowerCase()}`}
+            />
+            <StatCard
+              title={t('dashboard.customer.servicesUsed')}
+              value={mockCustomerData.stats.servicesUsed}
+              change={`${mockCustomerData.stats.completedBookings}/${mockCustomerData.stats.totalBookings} ${t('dashboard.booking.status.completed').toLowerCase()}`}
+              changeType="positive"
+              icon={StarIconSolid}
+              iconBg="bg-gradient-to-br from-warning-500 to-warning-600"
+              description={`${mockCustomerData.stats.averageRating}/5.0 ${t('dashboard.customer.averageRating').toLowerCase()}`}
+            />
+            <StatCard
+              title={t('dashboard.customer.favoriteSpecialists')}
+              value={mockCustomerData.stats.favoriteSpecialists}
+              change={`${mockCustomerData.stats.reviewsWritten} ${t('dashboard.nav.reviews').toLowerCase()}`}
+              changeType="positive"
+              icon={HeartIconSolid}
+              iconBg="bg-gradient-to-br from-info-500 to-info-600"
+              description={`${t('dashboard.customer.memberSince')} 2024`}
+            />
+          </div>
+
+          {/* Next Appointment Banner */}
+          {mockCustomerData.nextAppointment && (
+            <div className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl p-6 text-white shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">{t('dashboard.customer.nextAppointment')}</h3>
+                  <div className="space-y-1">
+                    <p className="text-primary-100">{mockCustomerData.nextAppointment.serviceName}</p>
+                    <p className="text-sm text-primary-200">
+                      {language === 'uk' ? 'з' : language === 'ru' ? 'с' : 'with'} {mockCustomerData.nextAppointment.specialistName}
+                    </p>
+                    <div className="flex items-center space-x-4 text-sm text-primary-200">
+                      <span className="flex items-center">
+                        <CalendarIcon className="w-4 h-4 mr-1" />
+                        {mockCustomerData.nextAppointment.date}
+                      </span>
+                      <span className="flex items-center">
+                        <ClockIcon className="w-4 h-4 mr-1" />
+                        {mockCustomerData.nextAppointment.time}
+                      </span>
+                      <span className="flex items-center">
+                        <MapPinIcon className="w-4 h-4 mr-1" />
+                        {mockCustomerData.nextAppointment.type === 'online' 
+                          ? t('dashboard.specialist.online')
+                          : mockCustomerData.nextAppointment.location
+                        }
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <Link
+                    to="/customer/bookings"
+                    className="inline-flex items-center px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors font-medium"
+                  >
+                    {t('dashboard.viewAll')}
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Recent Bookings */}
+            <div className="bg-surface rounded-2xl p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.customer.recentBookings')}</h3>
+                <Link 
+                  to="/customer/history"
+                  className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                >
+                  {t('dashboard.viewAll')}
+                </Link>
+              </div>
+              <div className="space-y-4">
+                {mockCustomerData.recentBookings.slice(0, 4).map((booking) => (
+                  <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+                        <span className="text-white font-semibold text-sm">
+                          {booking.specialistName?.split(' ').map(n => n[0]).join('')}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">{booking.specialistName}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{booking.serviceName}</p>
+                        <p className="text-xs text-gray-400">
+                          {booking.date} {language === 'uk' ? 'о' : language === 'ru' ? 'в' : 'at'} {booking.time}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-gray-900 dark:text-white">
+                        {formatPrice(booking.amount, booking.currency)}
+                      </p>
+                      <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
+                        {getStatusText(booking.status)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {mockCustomerData.recentBookings.length === 0 && (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <BookOpenIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>{t('dashboard.customer.noBookings')}</p>
+                  <p className="text-sm">{t('dashboard.customer.startBooking')}</p>
+                  <Link
+                    to="/search"
+                    className="inline-flex items-center mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                  >
+                    <PlusIcon className="w-4 h-4 mr-2" />
+                    {t('dashboard.customer.exploreServices')}
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Favorite Specialists */}
+            <div className="bg-surface rounded-2xl p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.customer.favoriteSpecialists')}</h3>
+                <Link 
+                  to="/customer/favorites"
+                  className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                >
+                  {t('dashboard.viewAll')}
+                </Link>
+              </div>
+              <div className="space-y-4">
+                {mockCustomerData.favoriteSpecialists.slice(0, 3).map((specialist) => (
+                  <div key={specialist.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center">
+                        <span className="text-white font-semibold text-sm">
+                          {specialist.name.split(' ').map(n => n[0]).join('')}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">{specialist.name}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{specialist.profession}</p>
+                        <div className="flex items-center space-x-2 text-xs text-gray-400">
+                          <span className="flex items-center">
+                            <StarIcon className="w-3 h-3 mr-1 text-warning-500" />
+                            {specialist.rating}
+                          </span>
+                          <span>•</span>
+                          <span>{formatPrice(specialist.priceFrom, specialist.currency)} {t('currency.from')}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Link
+                        to={`/specialist/${specialist.id}`}
+                        className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-lg transition-colors"
+                      >
+                        <EyeIcon className="w-4 h-4" />
+                      </Link>
+                      <Link
+                        to="/search"
+                        className="p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      >
+                        <CalendarIcon className="w-4 h-4" />
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Special Offers */}
+          {mockCustomerData.specialOffers && mockCustomerData.specialOffers.length > 0 && (
+            <div className="bg-surface rounded-2xl p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.customer.specialOffers')}</h3>
+                <GiftIcon className="w-5 h-5 text-primary-600" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {mockCustomerData.specialOffers.map((offer) => (
+                  <div key={offer.id} className="bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-xl p-4 border border-primary-200 dark:border-primary-700">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-900 px-2 py-1 rounded-full">
+                        -{offer.discount}%
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {language === 'uk' ? 'до' : language === 'ru' ? 'до' : 'until'} {offer.validUntil}
+                      </span>
+                    </div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{offer.title}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{offer.description}</p>
+                    <button className="w-full px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium">
+                      {t('dashboard.customer.viewOffers')}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+    </div>
+  );
+};
+
+export default CustomerDashboard;

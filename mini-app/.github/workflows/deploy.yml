@@ -1,0 +1,154 @@
+name: Deploy Telegram Mini App
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'mini-app/package-lock.json'
+    
+    - name: Install dependencies
+      working-directory: ./mini-app
+      run: npm ci
+    
+    - name: Run type checking
+      working-directory: ./mini-app
+      run: npm run type-check
+    
+    - name: Run linting
+      working-directory: ./mini-app
+      run: npm run lint
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'mini-app/package-lock.json'
+    
+    - name: Install dependencies
+      working-directory: ./mini-app
+      run: npm ci
+    
+    - name: Create environment file
+      working-directory: ./mini-app
+      run: |
+        echo "NODE_ENV=production" > .env
+        echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" >> .env
+        echo "VITE_WS_URL=${{ secrets.VITE_WS_URL }}" >> .env
+        echo "VITE_TELEGRAM_BOT_TOKEN=${{ secrets.VITE_TELEGRAM_BOT_TOKEN }}" >> .env
+        echo "VITE_TELEGRAM_PAYMENT_PROVIDER_TOKEN=${{ secrets.VITE_TELEGRAM_PAYMENT_PROVIDER_TOKEN }}" >> .env
+        echo "VITE_APP_NAME=Booking Platform" >> .env
+        echo "VITE_APP_VERSION=1.0.0" >> .env
+        echo "VITE_ENABLE_ANALYTICS=true" >> .env
+    
+    - name: Build application
+      working-directory: ./mini-app
+      run: npm run build
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: mini-app-dist
+        path: mini-app/dist/
+
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: mini-app-dist
+        path: dist/
+    
+    - name: Deploy to GitHub Pages (Staging)
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dist
+        publish_branch: gh-pages-staging
+        cname: staging-miniapp.yourdomain.com
+
+  deploy-production:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: mini-app-dist
+        path: dist/
+    
+    - name: Deploy to GitHub Pages (Production)
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dist
+        publish_branch: gh-pages
+        cname: miniapp.yourdomain.com
+    
+    - name: Notify Telegram
+      run: |
+        curl -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "chat_id": "${{ secrets.TELEGRAM_ADMIN_CHAT_ID }}",
+          "text": "🚀 Mini App deployed successfully to production!\n\nCommit: ${{ github.sha }}\nBranch: ${{ github.ref_name }}\nURL: https://miniapp.yourdomain.com",
+          "parse_mode": "Markdown"
+        }'
+
+  deploy-cdn:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: mini-app-dist
+        path: dist/
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    
+    - name: Deploy to S3
+      run: |
+        aws s3 sync dist/ s3://${{ secrets.S3_BUCKET_NAME }} --delete --cache-control "public,max-age=31536000,immutable" --exclude "*.html"
+        aws s3 sync dist/ s3://${{ secrets.S3_BUCKET_NAME }} --delete --cache-control "public,max-age=0,must-revalidate" --include "*.html"
+    
+    - name: Invalidate CloudFront
+      run: |
+        aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"

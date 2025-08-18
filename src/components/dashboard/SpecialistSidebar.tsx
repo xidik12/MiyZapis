@@ -1,0 +1,342 @@
+import React from 'react';
+import { useLocation, Link } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useAppSelector } from '@/hooks/redux';
+import { selectUser } from '@/store/slices/authSlice';
+import {
+  HomeIcon,
+  CalendarIcon,
+  CogIcon,
+  ChartBarIcon,
+  CurrencyDollarIcon,
+  StarIcon,
+  ChatBubbleLeftRightIcon,
+  UserIcon,
+  ClockIcon,
+  BellIcon,
+  ArrowRightOnRectangleIcon,
+  Bars3Icon,
+  XMarkIcon,
+  Cog6ToothIcon,
+  WrenchScrewdriverIcon,
+} from '@heroicons/react/24/outline';
+import {
+  HomeIcon as HomeIconSolid,
+  CalendarIcon as CalendarIconSolid,
+  CogIcon as CogIconSolid,
+  ChartBarIcon as ChartBarIconSolid,
+  CurrencyDollarIcon as CurrencyDollarIconSolid,
+  StarIcon as StarIconSolid,
+  ChatBubbleLeftRightIcon as ChatBubbleLeftRightIconSolid,
+  UserIcon as UserIconSolid,
+  ClockIcon as ClockIconSolid,
+  BellIcon as BellIconSolid,
+  Cog6ToothIcon as Cog6ToothIconSolid,
+  WrenchScrewdriverIcon as WrenchScrewdriverIconSolid,
+} from '@heroicons/react/24/solid';
+
+interface SpecialistSidebarProps {
+  isOpen?: boolean;
+  onToggle?: () => void;
+  className?: string;
+}
+
+interface NavigationItem {
+  name: string;
+  translationKey: string;
+  href: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  iconSolid: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  badge?: number;
+  comingSoon?: boolean;
+}
+
+const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
+  isOpen = false,
+  onToggle,
+  className = '',
+}) => {
+  const location = useLocation();
+  const { t } = useLanguage();
+  const user = useAppSelector(selectUser);
+
+  const navigationItems: NavigationItem[] = [
+    {
+      name: 'Dashboard',
+      translationKey: 'dashboard.nav.dashboard',
+      href: '/specialist/dashboard',
+      icon: HomeIcon,
+      iconSolid: HomeIconSolid,
+    },
+    {
+      name: 'Bookings',
+      translationKey: 'dashboard.nav.bookings',
+      href: '/specialist/bookings',
+      icon: CalendarIcon,
+      iconSolid: CalendarIconSolid,
+      badge: 3, // Mock unread count
+    },
+    {
+      name: 'Services',
+      translationKey: 'dashboard.nav.services',
+      href: '/specialist/services',
+      icon: WrenchScrewdriverIcon,
+      iconSolid: WrenchScrewdriverIconSolid,
+    },
+    {
+      name: 'Schedule',
+      translationKey: 'dashboard.nav.schedule',
+      href: '/specialist/schedule',
+      icon: ClockIcon,
+      iconSolid: ClockIconSolid,
+    },
+    {
+      name: 'Analytics',
+      translationKey: 'dashboard.nav.analytics',
+      href: '/specialist/analytics',
+      icon: ChartBarIcon,
+      iconSolid: ChartBarIconSolid,
+    },
+    {
+      name: 'Earnings',
+      translationKey: 'dashboard.nav.earnings',
+      href: '/specialist/earnings',
+      icon: CurrencyDollarIcon,
+      iconSolid: CurrencyDollarIconSolid,
+    },
+    {
+      name: 'Reviews',
+      translationKey: 'dashboard.nav.reviews',
+      href: '/specialist/reviews',
+      icon: StarIcon,
+      iconSolid: StarIconSolid,
+      badge: 2, // Mock unread reviews
+    },
+    {
+      name: 'Messages',
+      translationKey: 'dashboard.nav.messages',
+      href: '/specialist/messages',
+      icon: ChatBubbleLeftRightIcon,
+      iconSolid: ChatBubbleLeftRightIconSolid,
+      badge: 5, // Mock unread messages
+    },
+    {
+      name: 'Profile',
+      translationKey: 'dashboard.nav.profile',
+      href: '/specialist/profile',
+      icon: UserIcon,
+      iconSolid: UserIconSolid,
+    },
+    {
+      name: 'Settings',
+      translationKey: 'dashboard.nav.settings',
+      href: '/specialist/settings',
+      icon: Cog6ToothIcon,
+      iconSolid: Cog6ToothIconSolid,
+    },
+  ];
+
+  const bottomNavigationItems: NavigationItem[] = [
+    {
+      name: 'Notifications',
+      translationKey: 'dashboard.nav.notifications',
+      href: '/specialist/notifications',
+      icon: BellIcon,
+      iconSolid: BellIconSolid,
+      badge: 8, // Mock notification count
+    },
+  ];
+
+  const isActiveRoute = (href: string) => {
+    return location.pathname === href || location.pathname.startsWith(href + '/');
+  };
+
+  const handleLogout = () => {
+    // Implement logout logic
+    console.log('Logout clicked');
+  };
+
+  return (
+    <>
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+          onClick={onToggle}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`
+        fixed inset-y-0 left-0 z-50 w-72 bg-white dark:bg-gray-900 
+        shadow-xl transform transition-transform duration-300 ease-in-out
+        lg:translate-x-0 lg:static lg:inset-0 lg:h-screen
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+        border-r border-gray-200 dark:border-gray-700
+        ${className}
+      `}>
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-lg">
+                  {user?.firstName?.charAt(0) || 'S'}
+                </span>
+              </div>
+              <div className="hidden sm:block">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {user?.firstName} {user?.lastName}
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
+                  Specialist
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={onToggle}
+              className="lg:hidden p-2 rounded-lg text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            {navigationItems.map((item) => {
+              const isActive = isActiveRoute(item.href);
+              const Icon = isActive ? item.iconSolid : item.icon;
+
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`
+                    group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
+                    ${isActive 
+                      ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg transform scale-105' 
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                    }
+                    ${item.comingSoon ? 'opacity-50 cursor-not-allowed' : ''}
+                  `}
+                  onClick={(e) => {
+                    if (item.comingSoon) {
+                      e.preventDefault();
+                      return;
+                    }
+                    if (onToggle && window.innerWidth < 1024) {
+                      onToggle();
+                    }
+                  }}
+                >
+                  <Icon className={`
+                    mr-3 flex-shrink-0 h-6 w-6 transition-colors
+                    ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
+                  `} />
+                  <span className="flex-1">
+                    {t(item.translationKey)}
+                  </span>
+                  {item.badge && item.badge > 0 && (
+                    <span className={`
+                      inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full
+                      ${isActive 
+                        ? 'bg-white bg-opacity-20 text-white' 
+                        : 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200'
+                      }
+                    `}>
+                      {item.badge > 99 ? '99+' : item.badge}
+                    </span>
+                  )}
+                  {item.comingSoon && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                      Soon
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Bottom section */}
+          <div className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-2">
+            {bottomNavigationItems.map((item) => {
+              const isActive = isActiveRoute(item.href);
+              const Icon = isActive ? item.iconSolid : item.icon;
+
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`
+                    group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
+                    ${isActive 
+                      ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg' 
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                    }
+                  `}
+                  onClick={() => {
+                    if (onToggle && window.innerWidth < 1024) {
+                      onToggle();
+                    }
+                  }}
+                >
+                  <Icon className={`
+                    mr-3 flex-shrink-0 h-6 w-6 transition-colors
+                    ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
+                  `} />
+                  <span className="flex-1">
+                    {t(item.translationKey)}
+                  </span>
+                  {item.badge && item.badge > 0 && (
+                    <span className={`
+                      inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full
+                      ${isActive 
+                        ? 'bg-white bg-opacity-20 text-white' 
+                        : 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200'
+                      }
+                    `}>
+                      {item.badge > 99 ? '99+' : item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+
+            {/* Logout button */}
+            <button
+              onClick={handleLogout}
+              className="w-full group flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200"
+            >
+              <ArrowRightOnRectangleIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-red-500" />
+              <span>Logout</span>
+            </button>
+          </div>
+
+          {/* Brand footer */}
+          <div className="border-t border-gray-200 dark:border-gray-700 p-4">
+            <div className="text-center">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {t('brand.name')} Specialist
+              </p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                v2.0.0
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile toggle button */}
+      {!isOpen && (
+        <button
+          onClick={onToggle}
+          className="fixed top-4 left-4 z-30 lg:hidden p-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+        >
+          <Bars3Icon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+        </button>
+      )}
+    </>
+  );
+};
+
+export default SpecialistSidebar;
