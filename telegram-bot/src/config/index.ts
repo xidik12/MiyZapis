@@ -8,7 +8,7 @@ export const config = {
   webhookUrl: process.env.WEBHOOK_URL,
   
   // API Configuration
-  apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:8000',
+  apiBaseUrl: process.env.API_BASE_URL || process.env.BACKEND_URL || 'http://localhost:8000',
   apiTimeout: parseInt(process.env.API_TIMEOUT || '10000'),
   
   // Server Configuration

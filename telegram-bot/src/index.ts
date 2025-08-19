@@ -133,6 +133,15 @@ class BookingBot {
         logger.info('API connection successful');
       }
 
+      // Stop any existing bot instances to prevent conflicts
+      try {
+        await this.bot.telegram.deleteWebhook({ drop_pending_updates: true });
+        logger.info('Cleared any existing webhook');
+      } catch (error) {
+        // Ignore errors when clearing webhook
+        logger.debug('No existing webhook to clear');
+      }
+
       // Start the bot
       if (config.nodeEnv === 'production' && config.webhookUrl) {
         // Production with webhook
