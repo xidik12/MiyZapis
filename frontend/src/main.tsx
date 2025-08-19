@@ -126,7 +126,6 @@ const initializeApp = () => {
                   theme="auto"
                   toastClassName="custom-toast"
                 />
-              </Elements>
             </BrowserRouter>
           </PersistGate>
         </Provider>
