@@ -80,7 +80,11 @@ export default defineConfig({
       'localhost',
       '127.0.0.1',
       '0.0.0.0'
-    ]
+    ],
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+      'Cross-Origin-Embedder-Policy': 'credentialless'
+    }
   },
   build: {
     outDir: 'dist',
