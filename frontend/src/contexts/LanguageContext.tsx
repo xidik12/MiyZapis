@@ -216,9 +216,7 @@ const translations: Translations = {
   'auth.login.title': { en: 'Sign in to your account', uk: 'Увійдіть у свій обліковий запис', ru: 'Войдите в свой аккаунт' },
   'auth.login.subtitle': { en: 'Or', uk: 'Або', ru: 'Или' },
   'auth.login.createAccount': { en: 'create a new account', uk: 'створити новий обліковий запис', ru: 'создать новый аккаунт' },
-  'auth.login.demoAccounts': { en: 'Demo Accounts', uk: 'Демо облікові записи', ru: 'Демо аккаунты' },
-  'auth.login.useDemoCustomer': { en: 'Use Demo Customer Account', uk: 'Використати демо обліковий запис клієнта', ru: 'Использовать демо аккаунт клиента' },
-  'auth.login.useDemoSpecialist': { en: 'Use Demo Specialist Account', uk: 'Використати демо обліковий запис спеціаліста', ru: 'Использовать демо аккаунт специалиста' },
+
   'auth.login.emailLabel': { en: 'Email address', uk: 'Електронна адреса', ru: 'Электронная почта' },
   'auth.login.emailPlaceholder': { en: 'Enter your email', uk: 'Введіть вашу електронну адресу', ru: 'Введите ваш email' },
   'auth.login.passwordLabel': { en: 'Password', uk: 'Пароль', ru: 'Пароль' },
