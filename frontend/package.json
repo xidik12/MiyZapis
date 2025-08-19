@@ -58,8 +58,8 @@
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.6",
     "typescript": "^5.2.2",
-    "vite": "^6.0.6",
-    "vite-plugin-pwa": "^0.21.1",
+    "vite": "^5.4.10",
+    "vite-plugin-pwa": "^0.17.4",
     "ws": "^8.18.3"
   }
 }
