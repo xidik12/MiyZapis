@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node -r tsconfig-paths/register dist/server.js",
     "dev": "tsx watch src/server.ts",
     "dev:debug": "tsx watch --inspect src/server.ts",
     "test": "jest",
@@ -24,7 +24,9 @@
     "docker:run": "docker-compose up -d",
     "docker:stop": "docker-compose down",
     "prepare": "husky install",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "railway:migrate": "prisma migrate deploy",
+    "railway:seed": "tsx prisma/seed.ts"
   },
   "keywords": [
     "booking",
@@ -79,6 +81,7 @@
     "socket.io": "^4.7.4",
     "stripe": "^14.15.0",
     "telegraf": "^4.16.3",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.3",
     "uuid": "^9.0.1",
     "winston": "^3.11.0",

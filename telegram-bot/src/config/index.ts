@@ -4,7 +4,7 @@ dotenv.config();
 
 export const config = {
   // Bot Configuration
-  botToken: process.env.BOT_TOKEN || '',
+  botToken: process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN || '',
   webhookUrl: process.env.WEBHOOK_URL,
   
   // API Configuration
@@ -33,7 +33,7 @@ export const config = {
 
 // Validate required configuration
 if (!config.botToken && config.nodeEnv !== 'test') {
-  throw new Error('BOT_TOKEN is required');
+  throw new Error('TELEGRAM_BOT_TOKEN is required');
 }
 
 export default config;
