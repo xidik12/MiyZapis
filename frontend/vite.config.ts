@@ -75,6 +75,8 @@ export default defineConfig({
     host: '0.0.0.0',
     allowedHosts: [
       'miyzapis-frontend.up.railway.app',
+      'miyzapis.com',
+      'www.miyzapis.com',
       'localhost',
       '127.0.0.1',
       '0.0.0.0'
