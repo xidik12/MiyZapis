@@ -7,7 +7,7 @@ dotenv.config();
 // Environment validation schema
 const envSchema = z.object({
   // Environment
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  NODE_ENV: z.string().default('production'),
   PORT: z.string().transform(Number).default('3000'),
   API_VERSION: z.string().default('v1'),
 
@@ -40,7 +40,7 @@ const envSchema = z.object({
   SMTP_SECURE: z.string().transform(val => val === 'true').default('false'),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
-  EMAIL_FROM: z.string().email('Invalid email from address').default('noreply@miyzapis.com'),
+  EMAIL_FROM: z.string().default('noreply@miyzapis.com'),
 
   // AWS S3 (optional for development)
   AWS_REGION: z.string().default('us-east-1'),
@@ -50,7 +50,7 @@ const envSchema = z.object({
   AWS_S3_URL: z.string().optional(),
 
   // Logging
-  LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
+  LOG_LEVEL: z.string().default('info'),
   LOG_FILE_ENABLED: z.string().transform(val => val === 'true').default('false'),
   LOG_FILE_PATH: z.string().default('/tmp/logs'),
 
