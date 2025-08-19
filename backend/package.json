@@ -4,8 +4,8 @@
   "description": "Production-ready backend API for booking platform supporting web, Telegram bot, and mini app clients",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc --skipLibCheck --noEmitOnError false --outDir dist --rootDir src || echo 'Build completed with warnings' && ls -la dist/",
-    "start": "node -r tsconfig-paths/register dist/server.js",
+    "build": "tsc --skipLibCheck --noEmitOnError false --outDir dist --rootDir src && npx tsc-alias -p tsconfig.json",
+    "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "dev:debug": "tsx watch --inspect src/server.ts",
     "test": "jest",
