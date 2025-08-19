@@ -23,7 +23,8 @@
     "docker:build": "docker build -t booking-platform-api .",
     "docker:run": "docker-compose up -d",
     "docker:stop": "docker-compose down",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "postinstall": "prisma generate"
   },
   "keywords": [
     "booking",

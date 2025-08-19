@@ -10,21 +10,15 @@ import messageRoutes from './messages';
 import notificationRoutes from './notifications';
 import analyticsRoutes from './analytics';
 import fileRoutes from './files';
+import healthRoutes from './health';
 // Import other route modules as they are created
 // import loyaltyRoutes from './loyalty';
 // import telegramRoutes from './telegram';
 
 const router = Router();
 
-// Health check endpoint
-router.get('/health', (req, res) => {
-  res.json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    version: process.env.npm_package_version || '1.0.0',
-  });
-});
+// Health check routes
+router.use('/', healthRoutes);
 
 // API routes
 router.use('/auth', authRoutes);

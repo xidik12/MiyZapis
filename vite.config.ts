@@ -60,6 +60,7 @@ export default defineConfig({
     global: 'globalThis'
   },
   server: {
+    host: '0.0.0.0',
     port: 3000,
     proxy: {
       '/api': {
@@ -68,6 +69,10 @@ export default defineConfig({
         secure: false
       }
     }
+  },
+  preview: {
+    port: 3000,
+    host: '0.0.0.0'
   },
   build: {
     outDir: 'dist',
