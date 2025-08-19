@@ -155,14 +155,14 @@ const RegisterPage: React.FC = () => {
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg">
             {error}
           </div>
         )}
 
         {/* Account Type Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             {t('auth.register.accountType')}
           </label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -175,16 +175,16 @@ const RegisterPage: React.FC = () => {
               />
               <div className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
                 watchUserType === 'customer' 
-                  ? 'border-primary-600 bg-primary-50' 
-                  : 'border-gray-300 hover:border-gray-400'
+                  ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20' 
+                  : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
               }`}>
                 <div className="flex items-center">
                   <div className={`w-4 h-4 rounded-full mr-3 ${
-                    watchUserType === 'customer' ? 'bg-primary-600' : 'bg-gray-300'
+                    watchUserType === 'customer' ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
                   }`}></div>
                   <div>
-                    <div className="font-medium text-gray-900">{t('auth.register.bookServices')}</div>
-                    <div className="text-sm text-gray-600">{t('auth.register.bookServicesDesc')}</div>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">{t('auth.register.bookServices')}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">{t('auth.register.bookServicesDesc')}</div>
                   </div>
                 </div>
               </div>
@@ -199,30 +199,30 @@ const RegisterPage: React.FC = () => {
               />
               <div className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
                 watchUserType === 'specialist' 
-                  ? 'border-primary-600 bg-primary-50' 
-                  : 'border-gray-300 hover:border-gray-400'
+                  ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20' 
+                  : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
               }`}>
                 <div className="flex items-center">
                   <div className={`w-4 h-4 rounded-full mr-3 ${
-                    watchUserType === 'specialist' ? 'bg-primary-600' : 'bg-gray-300'
+                    watchUserType === 'specialist' ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
                   }`}></div>
                   <div>
-                    <div className="font-medium text-gray-900">{t('auth.register.offerServices')}</div>
-                    <div className="text-sm text-gray-600">{t('auth.register.offerServicesDesc')}</div>
+                    <div className="font-medium text-gray-900 dark:text-gray-100">{t('auth.register.offerServices')}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">{t('auth.register.offerServicesDesc')}</div>
                   </div>
                 </div>
               </div>
             </label>
           </div>
           {errors.userType && (
-            <p className="mt-2 text-sm text-red-600">{errors.userType.message}</p>
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.userType.message}</p>
           )}
         </div>
 
         {/* Name Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               {t('auth.register.firstNameLabel')}
             </label>
             <input
@@ -235,18 +235,18 @@ const RegisterPage: React.FC = () => {
               })}
               type="text"
               autoComplete="given-name"
-              className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white ${
-                errors.firstName ? 'border-red-300' : 'border-gray-300'
+              className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${
+                errors.firstName ? 'border-red-300 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
               }`}
               placeholder={t('auth.register.firstNamePlaceholder')}
             />
             {errors.firstName && (
-              <p className="mt-2 text-sm text-red-600">{errors.firstName.message}</p>
+              <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.firstName.message}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               {t('auth.register.lastNameLabel')}
             </label>
             <input
@@ -259,20 +259,20 @@ const RegisterPage: React.FC = () => {
               })}
               type="text"
               autoComplete="family-name"
-              className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white ${
-                errors.lastName ? 'border-red-300' : 'border-gray-300'
+              className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${
+                errors.lastName ? 'border-red-300 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
               }`}
               placeholder={t('auth.register.lastNamePlaceholder')}
             />
             {errors.lastName && (
-              <p className="mt-2 text-sm text-red-600">{errors.lastName.message}</p>
+              <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.lastName.message}</p>
             )}
           </div>
         </div>
 
         {/* Email */}
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             {t('auth.register.emailLabel')}
           </label>
           <input
@@ -285,19 +285,19 @@ const RegisterPage: React.FC = () => {
             })}
             type="email"
             autoComplete="email"
-            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white ${
-              errors.email ? 'border-red-300' : 'border-gray-300'
+            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${
+              errors.email ? 'border-red-300 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
             }`}
             placeholder={t('auth.register.emailPlaceholder')}
           />
           {errors.email && (
-            <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
           )}
         </div>
 
         {/* Phone Number */}
         <div>
-          <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             {t('auth.register.phoneLabel')}
           </label>
           <input
@@ -309,19 +309,19 @@ const RegisterPage: React.FC = () => {
             })}
             type="tel"
             autoComplete="tel"
-            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white ${
-              errors.phoneNumber ? 'border-red-300' : 'border-gray-300'
+            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${
+              errors.phoneNumber ? 'border-red-300 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
             }`}
             placeholder={t('auth.register.phonePlaceholder')}
           />
           {errors.phoneNumber && (
-            <p className="mt-2 text-sm text-red-600">{errors.phoneNumber.message}</p>
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.phoneNumber.message}</p>
           )}
         </div>
 
         {/* Password */}
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             {t('auth.register.passwordLabel')}
           </label>
           <div className="relative mt-1">
@@ -339,8 +339,8 @@ const RegisterPage: React.FC = () => {
               })}
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
-              className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10 text-gray-900 bg-white ${
-                errors.password ? 'border-red-300' : 'border-gray-300'
+              className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${
+                errors.password ? 'border-red-300 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
               }`}
               placeholder={t('auth.register.passwordPlaceholder')}
             />
@@ -350,20 +350,20 @@ const RegisterPage: React.FC = () => {
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? (
-                <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                <EyeSlashIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
               ) : (
-                <EyeIcon className="h-5 w-5 text-gray-400" />
+                <EyeIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
               )}
             </button>
           </div>
           {errors.password && (
-            <p className="mt-2 text-sm text-red-600">{errors.password.message}</p>
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.password.message}</p>
           )}
         </div>
 
         {/* Confirm Password */}
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             {t('auth.register.confirmPasswordLabel')}
           </label>
           <div className="relative mt-1">
@@ -374,8 +374,8 @@ const RegisterPage: React.FC = () => {
               })}
               type={showConfirmPassword ? 'text' : 'password'}
               autoComplete="new-password"
-              className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10 text-gray-900 bg-white ${
-                errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+              className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${
+                errors.confirmPassword ? 'border-red-300 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
               }`}
               placeholder={t('auth.register.confirmPasswordPlaceholder')}
             />
@@ -385,14 +385,14 @@ const RegisterPage: React.FC = () => {
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             >
               {showConfirmPassword ? (
-                <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                <EyeSlashIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
               ) : (
-                <EyeIcon className="h-5 w-5 text-gray-400" />
+                <EyeIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
               )}
             </button>
           </div>
           {errors.confirmPassword && (
-            <p className="mt-2 text-sm text-red-600">{errors.confirmPassword.message}</p>
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.confirmPassword.message}</p>
           )}
         </div>
 
@@ -405,24 +405,24 @@ const RegisterPage: React.FC = () => {
               })}
               id="agree-terms"
               type="checkbox"
-              className="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300 rounded"
+              className="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800"
             />
           </div>
           <div className="ml-3 text-sm">
-            <label htmlFor="agree-terms" className="text-gray-700">
+            <label htmlFor="agree-terms" className="text-gray-700 dark:text-gray-300">
               {t('auth.register.agreeToTerms')}{' '}
-              <Link to="/terms" className="text-primary-600 hover:text-primary-500">
+              <Link to="/terms" className="text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300">
                 {t('auth.register.termsOfService')}
               </Link>{' '}
               {t('auth.register.and')}{' '}
-              <Link to="/privacy" className="text-primary-600 hover:text-primary-500">
+              <Link to="/privacy" className="text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300">
                 {t('auth.register.privacyPolicy')}
               </Link>
             </label>
           </div>
         </div>
         {errors.agreeToTerms && (
-          <p className="text-sm text-red-600">{errors.agreeToTerms.message}</p>
+          <p className="text-sm text-red-600 dark:text-red-400">{errors.agreeToTerms.message}</p>
         )}
 
         {/* Submit Button */}
@@ -430,7 +430,7 @@ const RegisterPage: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 focus:ring-offset-white dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <LoadingSpinner size="sm" color="white" className="mr-2" />
