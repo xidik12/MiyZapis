@@ -11,7 +11,8 @@ import {
   TelegramAuthRequest,
   JwtPayload, 
   RefreshTokenPayload,
-  ErrorCodes 
+  ErrorCodes,
+  UserType 
 } from '@/types';
 import { User } from '@prisma/client';
 
@@ -297,7 +298,7 @@ export class AuthService {
   }> {
     try {
       // Verify refresh token
-      const decoded = jwt.verify(refreshToken, config.jwt.refreshSecret) as RefreshTokenPayload;
+      const decoded = jwt.verify(refreshToken, config.jwt.refreshSecret!) as RefreshTokenPayload;
 
       // Check if refresh token exists in database
       const tokenRecord = await prisma.refreshToken.findUnique({
@@ -317,7 +318,7 @@ export class AuthService {
       const accessToken = this.generateAccessToken({
         userId: tokenRecord.user.id,
         email: tokenRecord.user.email,
-        userType: tokenRecord.user.userType,
+        userType: tokenRecord.user.userType as UserType,
       });
 
       const expiresIn = this.getTokenExpirationTime(config.jwt.expiresIn);
@@ -396,7 +397,7 @@ export class AuthService {
   // Generate access token
   private static generateAccessToken(payload: JwtPayload): string {
     return jwt.sign(payload, config.jwt.secret, {
-      expiresIn: config.jwt.expiresIn,
+      expiresIn: config.jwt.expiresIn
     });
   }
 

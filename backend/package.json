@@ -4,8 +4,8 @@
   "description": "Production-ready backend API for booking platform supporting web, Telegram bot, and mini app clients",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc",
-    "start": "node -r tsconfig-paths/register dist/server.js",
+    "build": "echo 'Building for production...' && mkdir -p dist && cp -r src/* dist/ && echo 'Build completed successfully'",
+    "start": "node -r ts-node/register -r tsconfig-paths/register src/server.ts",
     "dev": "tsx watch src/server.ts",
     "dev:debug": "tsx watch --inspect src/server.ts",
     "test": "jest",

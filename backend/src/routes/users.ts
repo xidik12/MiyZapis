@@ -74,7 +74,7 @@ router.get('/profile', authenticateToken, async (req: AuthenticatedRequest, res:
       }
     });
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       id: user.id,
       email: user.email,
       firstName: user.firstName,
@@ -175,7 +175,7 @@ router.put('/profile', authenticateToken, validateUpdateProfile, async (req: Aut
       }
     });
 
-    res.json(createSuccessResponse(user));
+    return res.json(createSuccessResponse(user));
   } catch (error) {
     logger.error('Update profile error:', error);
     res.status(500).json(
@@ -238,7 +238,7 @@ router.post('/avatar', authenticateToken, validateUploadAvatar, async (req: Auth
       }
     });
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -322,7 +322,7 @@ router.put('/password', authenticateToken, validateUpdatePassword, async (req: A
       }
     });
 
-    res.json(createSuccessResponse({ 
+    return res.json(createSuccessResponse({ 
       message: 'Password updated successfully. Please log in again with your new password.' 
     }));
   } catch (error) {
@@ -386,7 +386,7 @@ router.post('/telegram/link', authenticateToken, validateLinkTelegram, async (re
       }
     });
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -439,7 +439,7 @@ router.post('/telegram/unlink', authenticateToken, validateUnlinkTelegram, async
       }
     });
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -599,7 +599,7 @@ router.get('/activity', authenticateToken, validateGetUserActivity, async (req: 
     
     const paginationMeta = createPaginationMeta(Number(page), Number(limit), activities.length);
 
-    res.json(createSuccessResponse(paginatedActivities, { 
+    return res.json(createSuccessResponse(paginatedActivities, { 
       pagination: paginationMeta, 
       total: activities.length 
     }));
@@ -647,7 +647,7 @@ router.post('/export', authenticateToken, validateExportUserData, async (req: Au
           customerBookings: {
             include: {
               service: true,
-              specialist: { select: { businessName: true, user: { select: { firstName: true, lastName: true } } } }
+              specialist: { select: { user: { select: { firstName: true, lastName: true } } } }
             }
           },
           specialistBookings: {
@@ -702,7 +702,7 @@ router.post('/export', authenticateToken, validateExportUserData, async (req: Au
       exportedAt: new Date().toISOString()
     };
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       format,
       data: exportData,
       summary: {
@@ -821,7 +821,7 @@ router.delete('/account', authenticateToken, validateDeleteAccount, async (req: 
       timestamp: new Date().toISOString()
     });
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       message: 'Account has been successfully deleted. Thank you for using our service.',
       deletedAt: new Date().toISOString()
     }));

@@ -67,6 +67,7 @@ export class UserService {
           isEmailVerified: true,
           isPhoneVerified: true,
           isActive: true,
+          lastLoginAt: true,
           loyaltyPoints: true,
           language: true,
           currency: true,
