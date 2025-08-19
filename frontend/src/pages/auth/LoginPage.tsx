@@ -83,16 +83,6 @@ const LoginPage: React.FC = () => {
     console.error('Social login error:', error);
   };
 
-  // Demo credentials helper
-  const fillDemoCredentials = (userType: 'customer' | 'specialist') => {
-    if (userType === 'customer') {
-      setValue('email', 'customer@example.com');
-      setValue('password', 'demo123456');
-    } else {
-      setValue('email', 'specialist@example.com');
-      setValue('password', 'demo123456');
-    }
-  };
 
   return (
     <div className="space-y-8">
@@ -111,38 +101,6 @@ const LoginPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Mock API indicator */}
-      {environment.MOCK_API && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <div className="flex items-center">
-            <div className="h-2 w-2 bg-amber-400 rounded-full mr-2"></div>
-            <span className="text-sm font-medium text-amber-800">
-              Mock Authentication Enabled - Development Mode
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Demo credentials */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-blue-800 mb-2">{t('auth.login.demoAccounts')}</h3>
-        <div className="space-y-2">
-          <button
-            type="button"
-            onClick={() => fillDemoCredentials('customer')}
-            className="text-xs text-blue-600 hover:text-blue-700 block"
-          >
-            {t('auth.login.useDemoCustomer')}
-          </button>
-          <button
-            type="button"
-            onClick={() => fillDemoCredentials('specialist')}
-            className="text-xs text-blue-600 hover:text-blue-700 block"
-          >
-            {t('auth.login.useDemoSpecialist')}
-          </button>
-        </div>
-      </div>
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
         {error && (
@@ -249,8 +207,8 @@ const LoginPage: React.FC = () => {
           </button>
         </div>
 
-{/* Social login - only show if at least one provider is configured */}
-        {(import.meta.env.VITE_GOOGLE_CLIENT_ID || import.meta.env.VITE_TELEGRAM_BOT_USERNAME) && (
+{/* Social login - only show if Google is configured (Telegram temporarily disabled) */}
+        {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -270,11 +228,12 @@ const LoginPage: React.FC = () => {
                 disabled={isLoading}
               />
               
-              <TelegramLogin
+              {/* Telegram Login temporarily disabled */}
+              {/* <TelegramLogin
                 onSuccess={handleSocialLoginSuccess}
                 onError={handleSocialLoginError}
                 disabled={isLoading}
-              />
+              /> */}
             </div>
           </div>
         )}

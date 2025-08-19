@@ -116,8 +116,8 @@ const RegisterPage: React.FC = () => {
         </p>
       </div>
 
-{/* Social Registration - only show if at least one provider is configured */}
-      {(import.meta.env.VITE_GOOGLE_CLIENT_ID || import.meta.env.VITE_TELEGRAM_BOT_USERNAME) && (
+{/* Social Registration - only show if Google is configured (Telegram temporarily disabled) */}
+      {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
         <div className="space-y-4">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -135,11 +135,12 @@ const RegisterPage: React.FC = () => {
               disabled={isLoading}
             />
             
-            <TelegramLogin
+            {/* Telegram Login temporarily disabled */}
+            {/* <TelegramLogin
               onSuccess={handleSocialLoginSuccess}
               onError={handleSocialLoginError}
               disabled={isLoading}
-            />
+            /> */}
           </div>
 
           <div className="relative">
