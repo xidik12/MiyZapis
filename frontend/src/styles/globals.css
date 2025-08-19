@@ -268,6 +268,39 @@
     @apply border-l-4 border-l-info-500;
   }
 
+  /* React Toastify Dark Theme Override */
+  .custom-toast {
+    @apply bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 !important;
+  }
+
+  .Toastify__toast {
+    @apply bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 !important;
+  }
+
+  .Toastify__toast--error {
+    @apply bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800 !important;
+  }
+
+  .Toastify__toast--success {
+    @apply bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border-green-200 dark:border-green-800 !important;
+  }
+
+  .Toastify__toast--info {
+    @apply bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800 !important;
+  }
+
+  .Toastify__toast--warning {
+    @apply bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800 !important;
+  }
+
+  .Toastify__close-button {
+    @apply text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 !important;
+  }
+
+  .Toastify__progress-bar {
+    @apply bg-primary-500 dark:bg-primary-400 !important;
+  }
+
   /* Loading Components */
   .spinner {
     @apply w-4 h-4 border-2 border-gray-200 border-t-primary-500 rounded-full animate-spin;

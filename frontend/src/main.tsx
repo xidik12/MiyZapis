@@ -118,7 +118,7 @@ const initializeApp = () => {
                   pauseOnFocusLoss
                   draggable
                   pauseOnHover
-                  theme="light"
+                  theme="auto"
                   toastClassName="custom-toast"
                 />
               </Elements>
