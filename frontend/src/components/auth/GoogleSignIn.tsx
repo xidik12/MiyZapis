@@ -55,7 +55,6 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({ onSuccess, onError, disable
         {
           theme: 'outline',
           size: 'large',
-          width: '100%',
           text: 'signin_with',
           shape: 'rectangular',
         }
@@ -86,7 +85,10 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({ onSuccess, onError, disable
 
   return (
     <div className="w-full">
-      <div id="google-signin-button" className={disabled ? 'opacity-50 pointer-events-none' : ''}></div>
+      <div 
+        id="google-signin-button" 
+        className={`w-full flex justify-center ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
+      ></div>
     </div>
   );
 };

@@ -61,12 +61,12 @@ const TelegramLogin: React.FC<TelegramLoginProps> = ({ onSuccess, onError, disab
         throw new Error('Invalid Telegram authentication data');
       }
 
-      // Prepare data for backend
+      // Prepare data for backend - only include username if it exists
       const telegramData = {
         telegramId: user.id.toString(),
         firstName: user.first_name,
         lastName: user.last_name || '',
-        username: user.username,
+        ...(user.username && { username: user.username }),
         authDate: user.auth_date,
         hash: user.hash,
       };
