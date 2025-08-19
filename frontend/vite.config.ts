@@ -64,15 +64,21 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: process.env.VITE_API_URL || 'http://localhost:8000',
+        target: process.env.VITE_API_URL || 'https://miyzapis-backend-production.up.railway.app',
         changeOrigin: true,
-        secure: false
+        secure: true
       }
     }
   },
   preview: {
     port: 3000,
-    host: '0.0.0.0'
+    host: '0.0.0.0',
+    allowedHosts: [
+      'miyzapis-frontend.up.railway.app',
+      'localhost',
+      '127.0.0.1',
+      '0.0.0.0'
+    ]
   },
   build: {
     outDir: 'dist',

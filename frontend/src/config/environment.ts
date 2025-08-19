@@ -7,8 +7,8 @@ console.log('Loading environment:', {
 });
 
 export const environment: Environment = {
-  API_URL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1', // Backend API URL
-  WS_URL: import.meta.env.VITE_WS_URL || 'ws://localhost:8000',
+  API_URL: import.meta.env.VITE_API_URL || 'https://miyzapis-backend-production.up.railway.app/api/v1', // Backend API URL
+  WS_URL: import.meta.env.VITE_WS_URL || 'wss://miyzapis-backend-production.up.railway.app',
   STRIPE_PUBLISHABLE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '',
   GOOGLE_MAPS_API_KEY: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
   APP_NAME: import.meta.env.VITE_APP_NAME || 'МійЗапис',
