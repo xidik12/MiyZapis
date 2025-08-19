@@ -14,8 +14,8 @@ import { environment } from './config/environment';
 import './styles/globals.css';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Initialize Stripe
-const stripePromise = loadStripe(environment.STRIPE_PUBLISHABLE_KEY);
+// Initialize Stripe (only if publishable key is provided)
+const stripePromise = environment.STRIPE_PUBLISHABLE_KEY ? loadStripe(environment.STRIPE_PUBLISHABLE_KEY) : null;
 
 // Loading component for PersistGate
 const LoadingComponent = () => (
@@ -106,9 +106,14 @@ const initializeApp = () => {
                 v7_relativeSplatPath: true
               }}
             >
-              <Elements stripe={stripePromise}>
+              {stripePromise ? (
+                <Elements stripe={stripePromise}>
+                  <App />
+                </Elements>
+              ) : (
                 <App />
-                <ToastContainer
+              )}
+              <ToastContainer
                   position="top-right"
                   autoClose={5000}
                   hideProgressBar={false}

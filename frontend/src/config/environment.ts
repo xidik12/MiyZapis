@@ -9,7 +9,7 @@ console.log('Loading environment:', {
 export const environment: Environment = {
   API_URL: import.meta.env.VITE_API_URL || 'https://miyzapis-backend-production.up.railway.app/api/v1', // Backend API URL
   WS_URL: import.meta.env.VITE_WS_URL || 'wss://miyzapis-backend-production.up.railway.app',
-  STRIPE_PUBLISHABLE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '',
+  STRIPE_PUBLISHABLE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || null,
   GOOGLE_MAPS_API_KEY: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
   APP_NAME: import.meta.env.VITE_APP_NAME || 'МійЗапис',
   APP_VERSION: import.meta.env.VITE_APP_VERSION || '1.0.0',
