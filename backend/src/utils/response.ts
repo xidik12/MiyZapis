@@ -6,11 +6,16 @@ export const createSuccessResponse = <T>(
   data: T,
   meta?: ResponseMeta
 ): ApiResponse<T> => {
-  return {
+  const response: ApiResponse<T> = {
     success: true,
     data,
-    meta,
   };
+  
+  if (meta !== undefined) {
+    response.meta = meta;
+  }
+  
+  return response;
 };
 
 // Create error response
@@ -27,10 +32,13 @@ export const createErrorResponse = (
   const error: ApiError = {
     code,
     message,
-    details,
     requestId: requestId || uuidv4(),
     timestamp: new Date().toISOString(),
   };
+
+  if (details !== undefined) {
+    error.details = details;
+  }
 
   return {
     success: false,
