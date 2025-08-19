@@ -27,6 +27,7 @@ const RegisterPage = React.lazy(() => import('./pages/auth/RegisterPage'));
 const ForgotPasswordPage = React.lazy(() => import('./pages/auth/ForgotPasswordPage'));
 const ResetPasswordPage = React.lazy(() => import('./pages/auth/ResetPasswordPage'));
 const VerifyEmailPage = React.lazy(() => import('./pages/auth/VerifyEmailPage'));
+const AuthCallbackPage = React.lazy(() => import('./pages/auth/AuthCallbackPage'));
 
 // Customer pages
 const CustomerDashboard = React.lazy(() => import('./pages/customer/Dashboard'));
@@ -168,6 +169,7 @@ function App() {
                     <Route path="forgot-password" element={<ForgotPasswordPage />} />
                     <Route path="reset-password" element={<ResetPasswordPage />} />
                     <Route path="verify-email" element={<VerifyEmailPage />} />
+                    <Route path="callback" element={<AuthCallbackPage />} />
                     <Route path="*" element={<Navigate to="/auth/login" replace />} />
                   </Routes>
                 </Suspense>

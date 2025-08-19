@@ -311,4 +311,57 @@ router.get('/google/url', (req, res) => {
   }
 });
 
+// Handle Google OAuth callback (for redirect flow)
+router.get('/google/callback', async (req, res) => {
+  try {
+    const { code, state } = req.query;
+    
+    if (!code) {
+      return res.status(400).json(
+        createErrorResponse('MISSING_AUTH_CODE', 'Authorization code is required', req.id)
+      );
+    }
+
+    // Exchange authorization code for tokens
+    const { tokens } = await googleClient.getToken(code as string);
+    googleClient.setCredentials(tokens);
+
+    // Get user info
+    const ticket = await googleClient.verifyIdToken({
+      idToken: tokens.id_token!,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload) {
+      return res.status(400).json(
+        createErrorResponse('GOOGLE_AUTH_FAILED', 'Invalid Google credential', req.id)
+      );
+    }
+
+    // Authenticate with Google data
+    const googleData = {
+      id: payload.sub,
+      email: payload.email!,
+      verified_email: payload.email_verified || false,
+      name: payload.name!,
+      given_name: payload.given_name!,
+      family_name: payload.family_name || '',
+      picture: payload.picture || '',
+    };
+
+    const result = await EnhancedAuthService.authenticateWithGoogle(googleData);
+
+    // Redirect to frontend with tokens
+    const frontendUrl = process.env.FRONTEND_URL || 'https://miyzapis.com';
+    const redirectUrl = `${frontendUrl}/auth/callback?token=${result.tokens.accessToken}&refreshToken=${result.tokens.refreshToken}`;
+    
+    res.redirect(redirectUrl);
+  } catch (error: any) {
+    logger.error('Google OAuth callback error:', error);
+    const frontendUrl = process.env.FRONTEND_URL || 'https://miyzapis.com';
+    res.redirect(`${frontendUrl}/auth/error?error=google_auth_failed`);
+  }
+});
+
 export default router;
