@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/redux';
-import { setAuthTokens } from '@/services/auth.service';
+import { setAuthTokens } from '@/services';
 import { toast } from 'react-toastify';
 
 /**
