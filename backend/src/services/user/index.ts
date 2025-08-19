@@ -130,7 +130,7 @@ export class UserService {
   }
 
   // Upload avatar (placeholder implementation)
-  static async uploadAvatar(userId: string, file: any): Promise<string> {
+  static async uploadAvatar(userId: string, _file: any): Promise<string> {
     try {
       // TODO: Implement actual file upload to S3 or similar service
       // For now, return a placeholder URL
@@ -351,11 +351,20 @@ export class UserService {
             avatar: true,
             userType: true,
             phoneNumber: true,
+            telegramId: true,
             isEmailVerified: true,
             isPhoneVerified: true,
             isActive: true,
             lastLoginAt: true,
+            language: true,
+            currency: true,
+            timezone: true,
+            emailNotifications: true,
+            pushNotifications: true,
+            telegramNotifications: true,
+            loyaltyPoints: true,
             createdAt: true,
+            updatedAt: true,
           },
           skip,
           take: limit,
