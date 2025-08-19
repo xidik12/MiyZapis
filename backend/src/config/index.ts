@@ -66,6 +66,11 @@ const envSchema = z.object({
 
   // External APIs
   GOOGLE_MAPS_API_KEY: z.string().optional(),
+  
+  // Google OAuth
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_REDIRECT_URI: z.string().optional(),
 
   // WebSocket
   WEBSOCKET_PORT: z.string().transform(Number).default('3001'),
@@ -113,8 +118,9 @@ export const config = {
   redis: {
     url: env.REDIS_URL,
     password: env.REDIS_PASSWORD,
-    retryDelayOnFailover: 100,
-    maxRetriesPerRequest: 3,
+    maxRetriesPerRequest: 1,
+    connectTimeout: 5000,
+    lazyConnect: true,
   },
 
   // JWT
@@ -188,6 +194,13 @@ export const config = {
   // External APIs
   externalApis: {
     googleMaps: env.GOOGLE_MAPS_API_KEY,
+  },
+
+  // Google OAuth
+  google: {
+    clientId: env.GOOGLE_CLIENT_ID,
+    clientSecret: env.GOOGLE_CLIENT_SECRET,
+    redirectUri: env.GOOGLE_REDIRECT_URI,
   },
 
   // WebSocket

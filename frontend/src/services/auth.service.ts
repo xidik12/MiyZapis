@@ -62,13 +62,46 @@ export class AuthService {
     }
   }
 
+  // Google authentication
+  async googleAuth(credential: string): Promise<{ user: User; tokens: AuthTokens }> {
+    try {
+      const response = await apiClient.post<{ user: User; tokens: AuthTokens }>('/auth-enhanced/google', { credential });
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Google authentication failed');
+      }
+      
+      // Transform backend user format to frontend format
+      const userData = response.data;
+      if (userData.user) {
+        userData.user = this.transformUserFromBackend(userData.user);
+      }
+      
+      return userData;
+    } catch (error: any) {
+      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Google authentication failed';
+      throw new Error(errorMessage);
+    }
+  }
+
   // Telegram authentication
   async telegramAuth(data: TelegramAuthRequest): Promise<{ user: User; tokens: AuthTokens; isNewUser: boolean }> {
-    const response = await apiClient.post<{ user: User; tokens: AuthTokens; isNewUser: boolean }>(API_ENDPOINTS.AUTH.TELEGRAM_AUTH, data);
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Telegram authentication failed');
+    try {
+      const response = await apiClient.post<{ user: User; tokens: AuthTokens; isNewUser: boolean }>('/auth-enhanced/telegram', data);
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Telegram authentication failed');
+      }
+      
+      // Transform backend user format to frontend format
+      const userData = response.data;
+      if (userData.user) {
+        userData.user = this.transformUserFromBackend(userData.user);
+      }
+      
+      return userData;
+    } catch (error: any) {
+      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Telegram authentication failed';
+      throw new Error(errorMessage);
     }
-    return response.data;
   }
 
   // Refresh access token

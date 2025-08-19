@@ -53,7 +53,14 @@
       "Bash(railway variables:*)",
       "Bash(railway logs:*)",
       "Bash(railway run npx prisma migrate:*)",
-      "Bash(railway service:*)"
+      "Bash(railway service:*)",
+      "Bash(railway deploy:*)",
+      "Bash(railway up:*)",
+      "Bash(railway add:*)",
+      "Bash(railway link:*)",
+      "Bash(railway run:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma db push)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npm run db:seed)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

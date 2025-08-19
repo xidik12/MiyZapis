@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import authRoutes from './auth';
+import authEnhancedRoutes from './auth-enhanced';
 import userRoutes from './users';
 import serviceRoutes from './services';
 import specialistRoutes from './specialists';
@@ -22,6 +23,7 @@ router.use('/', healthRoutes);
 
 // API routes
 router.use('/auth', authRoutes);
+router.use('/auth-enhanced', authEnhancedRoutes);
 router.use('/users', userRoutes);
 router.use('/services', serviceRoutes);
 router.use('/specialists', specialistRoutes);

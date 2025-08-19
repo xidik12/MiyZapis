@@ -7,6 +7,8 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { RegisterRequest, UserType } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
+import GoogleSignIn from '@/components/auth/GoogleSignIn';
+import TelegramLogin from '@/components/auth/TelegramLogin';
 
 interface RegisterFormData {
   firstName: string;
@@ -89,6 +91,14 @@ const RegisterPage: React.FC = () => {
     }
   };
 
+  const handleSocialLoginSuccess = () => {
+    navigate('/', { replace: true });
+  };
+
+  const handleSocialLoginError = (error: string) => {
+    console.error('Social login error:', error);
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -104,6 +114,41 @@ const RegisterPage: React.FC = () => {
             {t('auth.register.signInHere')}
           </Link>
         </p>
+      </div>
+
+      {/* Social Registration */}
+      <div className="space-y-4">
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">Quick Registration</span>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <GoogleSignIn
+            onSuccess={handleSocialLoginSuccess}
+            onError={handleSocialLoginError}
+            disabled={isLoading}
+          />
+          
+          <TelegramLogin
+            onSuccess={handleSocialLoginSuccess}
+            onError={handleSocialLoginError}
+            disabled={isLoading}
+          />
+        </div>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">Or register with email</span>
+          </div>
+        </div>
       </div>
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
@@ -188,7 +233,7 @@ const RegisterPage: React.FC = () => {
               })}
               type="text"
               autoComplete="given-name"
-              className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 ${
+              className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white ${
                 errors.firstName ? 'border-red-300' : 'border-gray-300'
               }`}
               placeholder={t('auth.register.firstNamePlaceholder')}
@@ -212,7 +257,7 @@ const RegisterPage: React.FC = () => {
               })}
               type="text"
               autoComplete="family-name"
-              className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 ${
+              className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white ${
                 errors.lastName ? 'border-red-300' : 'border-gray-300'
               }`}
               placeholder={t('auth.register.lastNamePlaceholder')}
@@ -238,7 +283,7 @@ const RegisterPage: React.FC = () => {
             })}
             type="email"
             autoComplete="email"
-            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 ${
+            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white ${
               errors.email ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder={t('auth.register.emailPlaceholder')}
@@ -262,7 +307,7 @@ const RegisterPage: React.FC = () => {
             })}
             type="tel"
             autoComplete="tel"
-            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 ${
+            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white ${
               errors.phoneNumber ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder={t('auth.register.phonePlaceholder')}
@@ -292,7 +337,7 @@ const RegisterPage: React.FC = () => {
               })}
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
-              className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10 ${
+              className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10 text-gray-900 bg-white ${
                 errors.password ? 'border-red-300' : 'border-gray-300'
               }`}
               placeholder={t('auth.register.passwordPlaceholder')}
@@ -327,7 +372,7 @@ const RegisterPage: React.FC = () => {
               })}
               type={showConfirmPassword ? 'text' : 'password'}
               autoComplete="new-password"
-              className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10 ${
+              className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10 text-gray-900 bg-white ${
                 errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
               }`}
               placeholder={t('auth.register.confirmPasswordPlaceholder')}

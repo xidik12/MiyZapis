@@ -169,9 +169,15 @@ const startServer = async () => {
     const dbConnected = await testDatabaseConnection();
     const redisConnected = await testRedisConnection();
 
-    if (!dbConnected || !redisConnected) {
-      logger.error('❌ Failed to connect to required services');
+    if (!dbConnected) {
+      logger.error('❌ Failed to connect to database - this is required');
       process.exit(1);
+    }
+
+    if (!redisConnected) {
+      logger.warn('⚠️ Redis connection failed - continuing without cache');
+    } else {
+      logger.info('✅ All services connected successfully');
     }
 
     // Start server

@@ -8,10 +8,10 @@ let redis: Redis | null = null;
 if (config.redis.url) {
   redis = new Redis(config.redis.url, {
     password: config.redis.password,
-    retryDelayOnFailover: config.redis.retryDelayOnFailover,
     maxRetriesPerRequest: config.redis.maxRetriesPerRequest,
-    enableReadyCheck: true,
-    lazyConnect: true,
+    connectTimeout: config.redis.connectTimeout,
+    enableReadyCheck: false,
+    lazyConnect: config.redis.lazyConnect,
     connectionName: 'booking-platform-api',
   });
 } else {
@@ -29,7 +29,7 @@ if (redis) {
   });
 
   redis.on('error', (error) => {
-    logger.error('❌ Redis connection error:', error);
+    logger.warn('⚠️ Redis connection error (continuing without cache):', error);
   });
 
   redis.on('close', () => {
@@ -69,7 +69,7 @@ export const closeRedisConnection = async (): Promise<void> => {
     await redis.quit();
     logger.info('Redis connection closed');
   } catch (error) {
-    logger.error('Error closing Redis connection:', error);
+    logger.warn('Error closing Redis connection (non-fatal):', error);
   }
 };
 

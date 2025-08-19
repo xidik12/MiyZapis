@@ -46,6 +46,32 @@ export const register = createAsyncThunk(
   }
 );
 
+export const googleLogin = createAsyncThunk(
+  'auth/googleLogin',
+  async ({ credential }: { credential: string }, { rejectWithValue }) => {
+    try {
+      const response = await authService.googleAuth(credential);
+      setAuthTokens(response.tokens);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Google authentication failed');
+    }
+  }
+);
+
+export const telegramLogin = createAsyncThunk(
+  'auth/telegramLogin',
+  async (telegramData: TelegramAuthRequest, { rejectWithValue }) => {
+    try {
+      const response = await authService.telegramAuth(telegramData);
+      setAuthTokens(response.tokens);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Telegram authentication failed');
+    }
+  }
+);
+
 export const telegramAuth = createAsyncThunk(
   'auth/telegramAuth',
   async (telegramData: TelegramAuthRequest, { rejectWithValue }) => {
@@ -249,6 +275,44 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(register.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+        state.isAuthenticated = false;
+      });
+
+    // Google Login
+    builder
+      .addCase(googleLogin.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(googleLogin.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
+        state.tokens = action.payload.tokens;
+        state.isAuthenticated = true;
+        state.error = null;
+      })
+      .addCase(googleLogin.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+        state.isAuthenticated = false;
+      });
+
+    // Telegram Login
+    builder
+      .addCase(telegramLogin.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(telegramLogin.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
+        state.tokens = action.payload.tokens;
+        state.isAuthenticated = true;
+        state.error = null;
+      })
+      .addCase(telegramLogin.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
         state.isAuthenticated = false;

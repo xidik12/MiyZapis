@@ -11,6 +11,7 @@
     "lint:fix": "eslint . --ext ts,tsx --fix"
   },
   "dependencies": {
+    "@google-cloud/local-auth": "^3.0.1",
     "@heroicons/react": "^2.2.0",
     "@reduxjs/toolkit": "^2.0.1",
     "@stripe/react-stripe-js": "^2.4.0",
@@ -20,6 +21,7 @@
     "clsx": "^2.0.0",
     "date-fns": "^3.0.6",
     "framer-motion": "^10.16.16",
+    "google-auth-library": "^10.2.1",
     "i18next": "^23.7.16",
     "i18next-browser-languagedetector": "^7.2.0",
     "i18next-http-backend": "^2.4.2",
