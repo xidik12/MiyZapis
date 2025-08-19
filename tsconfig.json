@@ -32,5 +32,6 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": ["src"],
+  "exclude": ["backend", "telegram-bot", "mini-app", "node_modules", "dist"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

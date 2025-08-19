@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "cd backend && npm install && npm run build",
-    "start": "cd backend && npm start",
+    "build": "vite build",
+    "start": "vite preview --port 3000 --host 0.0.0.0",
+    "backend:build": "cd backend && npm install && npm run build",
+    "backend:start": "cd backend && npm start",
     "frontend:build": "vite build",
     "frontend:preview": "vite preview --port 3000 --host 0.0.0.0",
     "frontend:start": "npm run frontend:preview",

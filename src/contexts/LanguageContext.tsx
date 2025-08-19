@@ -1141,8 +1141,8 @@ const translations: Translations = {
   // Schedule reasons
   'schedule.personalAppointment': { en: 'Personal appointment', uk: 'Особиста зустріч', ru: 'Личная встреча' },
   
-  // Time abbreviations
-  'time.hours': { en: 'hr', uk: 'год', ru: 'ч' },
+      // Time abbreviations (fixed duplicate)
+    'time.hrs': { en: 'hr', uk: 'год', ru: 'ч' },
   
   // Rating and reviews
   'rating.reviews': { en: 'reviews', uk: 'відгуків', ru: 'отзывов' },
