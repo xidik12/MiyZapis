@@ -1,6 +1,9 @@
 # Multi-stage build for production
 FROM node:18-alpine AS builder
 
+# Install OpenSSL for Prisma binary generation
+RUN apk add --no-cache openssl-dev openssl
+
 # Set working directory
 WORKDIR /app
 
@@ -14,7 +17,8 @@ RUN npm ci --only=production && npm cache clean --force
 # Copy source code
 COPY . .
 
-# Generate Prisma client
+# Generate Prisma client with correct binary targets
+ENV PRISMA_CLI_BINARY_TARGETS="linux-musl-openssl-3.0.x"
 RUN npx prisma generate
 
 # Build the application
@@ -23,8 +27,8 @@ RUN npm run build
 # Production stage
 FROM node:18-alpine AS production
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install dumb-init and OpenSSL for Prisma compatibility
+RUN apk add --no-cache dumb-init openssl-dev openssl
 
 # Create app user
 RUN addgroup -g 1001 -S nodejs && \
