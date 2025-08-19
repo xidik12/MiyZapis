@@ -40,7 +40,7 @@ const envSchema = z.object({
   SMTP_SECURE: z.string().transform(val => val === 'true').default('false'),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
-  EMAIL_FROM: z.string().email('Invalid email from address'),
+  EMAIL_FROM: z.string().email('Invalid email from address').default('noreply@miyzapis.com'),
 
   // AWS S3 (optional for development)
   AWS_REGION: z.string().default('us-east-1'),
@@ -61,7 +61,7 @@ const envSchema = z.object({
 
   // Security
   BCRYPT_ROUNDS: z.string().transform(Number).default('12'),
-  SESSION_SECRET: z.string().min(32, 'Session secret must be at least 32 characters'),
+  SESSION_SECRET: z.string().min(32, 'Session secret must be at least 32 characters').default('miyzapis-default-session-secret-change-in-production-32chars'),
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
 
   // External APIs
