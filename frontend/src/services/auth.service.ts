@@ -1,5 +1,5 @@
 import { apiClient } from './api';
-import { API_ENDPOINTS, environment } from '../config/environment';
+import { API_ENDPOINTS, environment, STORAGE_KEYS } from '../config/environment';
 import {
   User,
   AuthTokens,
@@ -118,10 +118,23 @@ export class AuthService {
   // Logout user
   async logout(): Promise<void> {
     try {
-      await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT);
+      // Get refresh token for logout request
+      const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+      
+      // Set a short timeout for logout request due to backend Redis issues
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+      
+      await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT, 
+        { refreshToken }, 
+        { signal: controller.signal }
+      );
+      
+      clearTimeout(timeoutId);
     } catch (error) {
       // Even if logout fails on server, we should clear local tokens
-      console.warn('Logout request failed:', error);
+      // This handles the Redis connection issues on backend
+      console.warn('Logout request failed (backend issue), continuing with client-side logout:', error);
     }
   }
 

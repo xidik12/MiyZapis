@@ -2,20 +2,24 @@ import Redis from 'ioredis';
 import { config } from './index';
 import { logger } from '@/utils/logger';
 
-// Create Redis client only if URL is provided
+// Create Redis client only if URL is provided and Redis is not explicitly disabled
 let redis: Redis | null = null;
 
-if (config.redis.url) {
+const isRedisDisabled = process.env.REDIS_DISABLED === 'true' || !config.redis.url || config.redis.url === '';
+
+if (!isRedisDisabled && config.redis.url) {
   redis = new Redis(config.redis.url, {
     password: config.redis.password,
-    maxRetriesPerRequest: config.redis.maxRetriesPerRequest,
-    connectTimeout: config.redis.connectTimeout,
+    maxRetriesPerRequest: 1, // Reduce retries to fail fast
+    connectTimeout: 3000, // Reduce timeout to fail fast
+    commandTimeout: 2000, // Add command timeout
     enableReadyCheck: false,
-    lazyConnect: config.redis.lazyConnect,
+    lazyConnect: true,
     connectionName: 'booking-platform-api',
+    retryDelayOnFailover: 100,
   });
 } else {
-  logger.info('Redis disabled for development - no Redis URL provided');
+  logger.info('Redis disabled - no Redis URL provided or Redis explicitly disabled');
 }
 
 // Redis event handlers (only if Redis is enabled)
