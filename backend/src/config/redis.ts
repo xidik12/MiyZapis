@@ -5,7 +5,7 @@ import { logger } from '@/utils/logger';
 // Create Redis client only if URL is provided and Redis is not explicitly disabled
 let redis: Redis | null = null;
 
-const isRedisDisabled = process.env.REDIS_DISABLED === 'true' || !config.redis.url || config.redis.url === '';
+const isRedisDisabled = process.env.REDIS_DISABLED === 'true' || !config.redis.url || config.redis.url === '' || config.redis.url === 'disabled' || config.redis.url.includes('redis.railway.internal');
 
 if (!isRedisDisabled && config.redis.url) {
   redis = new Redis(config.redis.url, {
