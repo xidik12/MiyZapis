@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview --port 3000 --host 0.0.0.0",
-    "start": "npm run preview",
+    "build": "cd backend && npm install && npm run build",
+    "start": "cd backend && npm start",
+    "frontend:build": "vite build",
+    "frontend:preview": "vite preview --port 3000 --host 0.0.0.0",
+    "frontend:start": "npm run frontend:preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix"
   },
