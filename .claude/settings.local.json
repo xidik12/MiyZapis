@@ -40,7 +40,12 @@
       "Bash(chmod:*)",
       "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot/simple_api_test.sh:*)",
       "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot/advanced_api_test.sh:*)",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

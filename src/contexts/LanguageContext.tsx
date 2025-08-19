@@ -721,8 +721,6 @@ const translations: Translations = {
   
   // Notification dropdown
   'notifications.title': { en: 'Notifications', uk: 'Уведомления', ru: 'Уведомления' },
-  'notifications.markAllRead': { en: 'Mark all read', uk: 'Отметить все как прочитанные', ru: 'Отметить все как прочитанные' },
-  'notifications.noNotifications': { en: 'No notifications yet', uk: 'Пока нет уведомлений', ru: 'Пока нет уведомлений' },
   'notifications.viewAll': { en: 'View all notifications', uk: 'Просмотреть все уведомления', ru: 'Просмотреть все уведомления' },
   
   // Notification messages
@@ -736,7 +734,6 @@ const translations: Translations = {
   'time.minutesAgo': { en: '{count} min ago', uk: '{count} хв тому', ru: '{count} мин назад' },
   'time.hoursAgo': { en: '{count} hours ago', uk: '{count} год тому', ru: '{count} час назад' },
   'time.daysAgo': { en: '{count} days ago', uk: '{count} день тому', ru: '{count} дней назад' },
-  'time.minutes': { en: '{count} minutes', uk: '{count} хвилин', ru: '{count} минут' },
   
   // Services for notifications
   'services.psychologyConsultation': { en: 'Psychology Consultation', uk: 'Психологічна консультація', ru: 'Психологическая консультация' },
@@ -1143,11 +1140,10 @@ const translations: Translations = {
 
   // Schedule reasons
   'schedule.personalAppointment': { en: 'Personal appointment', uk: 'Особиста зустріч', ru: 'Личная встреча' },
-
+  
   // Time abbreviations
-  'time.minutes': { en: 'min', uk: 'хв', ru: 'мин' },
   'time.hours': { en: 'hr', uk: 'год', ru: 'ч' },
-
+  
   // Rating and reviews
   'rating.reviews': { en: 'reviews', uk: 'відгуків', ru: 'отзывов' },
   
@@ -1257,11 +1253,7 @@ const translations: Translations = {
   'customer.nav.loyalty': { en: 'Loyalty Points', uk: 'Бали лояльності', ru: 'Баллы лояльности' },
   'customer.nav.profile': { en: 'Profile', uk: 'Профіль', ru: 'Профиль' },
   'customer.nav.help': { en: 'Help & Support', uk: 'Допомога та підтримка', ru: 'Помощь и поддержка' },
-
-  // Theme
-  'theme.light': { en: 'Light Theme', uk: 'Світла тема', ru: 'Светлая тема' },
-  'theme.dark': { en: 'Dark Theme', uk: 'Темна тема', ru: 'Темная тема' },
-
+  
   // Admin Panel
   'admin.dashboard.title': { en: 'Admin Dashboard', uk: 'Панель адміністратора', ru: 'Панель администратора' },
   'admin.dashboard.subtitle': { en: 'Manage platform users, analytics, and system settings', uk: 'Керуйте користувачами платформи, аналітикою та системними налаштуваннями', ru: 'Управляйте пользователями платформы, аналитикой и системными настройками' },

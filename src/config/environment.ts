@@ -116,6 +116,12 @@ export const API_ENDPOINTS = {
   ANALYTICS: {
     SPECIALIST: '/analytics/specialist',
     PLATFORM: '/analytics/platform',
+    OVERVIEW: '/analytics/overview',
+    BOOKINGS: '/analytics/bookings',
+    REVENUE: '/analytics/revenue',
+    CUSTOMERS: '/analytics/customers',
+    PERFORMANCE: '/analytics/performance',
+    SERVICES: '/analytics/services',
   },
 };
 
