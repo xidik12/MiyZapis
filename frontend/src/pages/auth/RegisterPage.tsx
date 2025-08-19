@@ -102,54 +102,56 @@ const RegisterPage: React.FC = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-3xl font-bold text-gray-900 text-center">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 text-center">
           {t('auth.register.title')}
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-300">
           {t('auth.register.subtitle')}{' '}
           <Link
             to="/auth/login"
-            className="font-medium text-primary-600 hover:text-primary-500"
+            className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
           >
             {t('auth.register.signInHere')}
           </Link>
         </p>
       </div>
 
-      {/* Social Registration */}
-      <div className="space-y-4">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300" />
+{/* Social Registration - only show if at least one provider is configured */}
+      {(import.meta.env.VITE_GOOGLE_CLIENT_ID || import.meta.env.VITE_TELEGRAM_BOT_USERNAME) && (
+        <div className="space-y-4">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300 dark:border-gray-600" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400">Quick Registration</span>
+            </div>
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Quick Registration</span>
-          </div>
-        </div>
 
-        <div className="space-y-3">
-          <GoogleSignIn
-            onSuccess={handleSocialLoginSuccess}
-            onError={handleSocialLoginError}
-            disabled={isLoading}
-          />
-          
-          <TelegramLogin
-            onSuccess={handleSocialLoginSuccess}
-            onError={handleSocialLoginError}
-            disabled={isLoading}
-          />
-        </div>
+          <div className="space-y-3">
+            <GoogleSignIn
+              onSuccess={handleSocialLoginSuccess}
+              onError={handleSocialLoginError}
+              disabled={isLoading}
+            />
+            
+            <TelegramLogin
+              onSuccess={handleSocialLoginSuccess}
+              onError={handleSocialLoginError}
+              disabled={isLoading}
+            />
+          </div>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Or register with email</span>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300 dark:border-gray-600" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400">Or register with email</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
         {error && (

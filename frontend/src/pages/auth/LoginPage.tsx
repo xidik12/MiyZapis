@@ -97,14 +97,14 @@ const LoginPage: React.FC = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-3xl font-bold text-gray-900 text-center">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 text-center">
           {t('auth.login.title')}
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-300">
           {t('auth.login.subtitle')}{' '}
           <Link
             to="/auth/register"
-            className="font-medium text-primary-600 hover:text-primary-500"
+            className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
           >
             {t('auth.login.createAccount')}
           </Link>
@@ -146,13 +146,13 @@ const LoginPage: React.FC = () => {
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg">
             {error}
           </div>
         )}
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             {t('auth.login.emailLabel')}
           </label>
           <input
@@ -165,18 +165,18 @@ const LoginPage: React.FC = () => {
             })}
             type="email"
             autoComplete="email"
-            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white ${
-              errors.email ? 'border-red-300' : 'border-gray-300'
+            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${
+              errors.email ? 'border-red-300 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
             }`}
             placeholder={t('auth.login.emailPlaceholder')}
           />
           {errors.email && (
-            <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             {t('auth.login.passwordLabel')}
           </label>
           <div className="relative mt-1">
@@ -190,8 +190,8 @@ const LoginPage: React.FC = () => {
               })}
               type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
-              className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10 text-gray-900 bg-white ${
-                errors.password ? 'border-red-300' : 'border-gray-300'
+              className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${
+                errors.password ? 'border-red-300 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
               }`}
               placeholder={t('auth.login.passwordPlaceholder')}
             />
@@ -201,14 +201,14 @@ const LoginPage: React.FC = () => {
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? (
-                <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                <EyeSlashIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
               ) : (
-                <EyeIcon className="h-5 w-5 text-gray-400" />
+                <EyeIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
               )}
             </button>
           </div>
           {errors.password && (
-            <p className="mt-2 text-sm text-red-600">{errors.password.message}</p>
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.password.message}</p>
           )}
         </div>
 
@@ -221,7 +221,7 @@ const LoginPage: React.FC = () => {
               type="checkbox"
               className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
             />
-            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
               {t('auth.login.rememberMe')}
             </label>
           </div>
@@ -229,7 +229,7 @@ const LoginPage: React.FC = () => {
           <div className="text-sm">
             <Link
               to="/auth/forgot-password"
-              className="font-medium text-primary-600 hover:text-primary-500"
+              className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
             >
               {t('auth.login.forgotPassword')}
             </Link>
@@ -249,31 +249,35 @@ const LoginPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Social login */}
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
+{/* Social login - only show if at least one provider is configured */}
+        {(import.meta.env.VITE_GOOGLE_CLIENT_ID || import.meta.env.VITE_TELEGRAM_BOT_USERNAME) && (
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300 dark:border-gray-600" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400">
+                  {t('auth.login.orContinueWith')}
+                </span>
+              </div>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">{t('auth.login.orContinueWith')}</span>
-            </div>
-          </div>
 
-          <div className="mt-6 space-y-3">
-            <GoogleSignIn
-              onSuccess={handleSocialLoginSuccess}
-              onError={handleSocialLoginError}
-              disabled={isLoading}
-            />
-            
-            <TelegramLogin
-              onSuccess={handleSocialLoginSuccess}
-              onError={handleSocialLoginError}
-              disabled={isLoading}
-            />
+            <div className="mt-6 space-y-3">
+              <GoogleSignIn
+                onSuccess={handleSocialLoginSuccess}
+                onError={handleSocialLoginError}
+                disabled={isLoading}
+              />
+              
+              <TelegramLogin
+                onSuccess={handleSocialLoginSuccess}
+                onError={handleSocialLoginError}
+                disabled={isLoading}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </form>
     </div>
   );

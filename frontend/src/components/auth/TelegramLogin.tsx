@@ -86,12 +86,8 @@ const TelegramLogin: React.FC<TelegramLoginProps> = ({ onSuccess, onError, disab
     }
   };
 
-  if (!botUsername) {
-    return (
-      <div className="text-center text-sm text-gray-500">
-        Telegram login not configured
-      </div>
-    );
+  if (!botUsername || botUsername === 'your_bot_username') {
+    return null; // Don't render if not configured
   }
 
   return (

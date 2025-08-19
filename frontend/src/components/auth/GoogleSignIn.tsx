@@ -16,6 +16,12 @@ declare global {
 
 const GoogleSignIn: React.FC<GoogleSignInProps> = ({ onSuccess, onError, disabled = false }) => {
   const dispatch = useAppDispatch();
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+  // Don't render if Google OAuth is not configured
+  if (!clientId) {
+    return null;
+  }
 
   useEffect(() => {
     // Load Google Identity Services script
@@ -38,7 +44,7 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({ onSuccess, onError, disable
   const initializeGoogleSignIn = () => {
     if (window.google) {
       window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        client_id: clientId,
         callback: handleCredentialResponse,
         auto_select: false,
         cancel_on_tap_outside: true,
