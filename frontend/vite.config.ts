@@ -78,13 +78,6 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
     rollupOptions: {
-      external: (id) => {
-        // Handle Rollup native module issues
-        if (id.includes('@rollup/rollup-')) {
-          return false;
-        }
-        return false;
-      },
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],

@@ -134,12 +134,8 @@ class BookingBot {
       }
 
       // Start the bot
-      if (config.nodeEnv === 'production') {
-        // Production: use webhooks
-        if (!config.webhookUrl) {
-          throw new Error('WEBHOOK_URL is required in production');
-        }
-
+      if (config.nodeEnv === 'production' && config.webhookUrl) {
+        // Production with webhook
         await this.bot.telegram.setWebhook(config.webhookUrl);
         logger.info(`Webhook set to: ${config.webhookUrl}`);
         
@@ -151,9 +147,13 @@ class BookingBot {
           }
         });
       } else {
-        // Development: use polling
+        // Development or production without webhook: use polling
         await this.bot.launch();
-        logger.info('Bot started with polling');
+        logger.info(`Bot started with polling in ${config.nodeEnv} mode`);
+        
+        if (config.nodeEnv === 'production') {
+          logger.warn('Production bot using polling - consider setting WEBHOOK_URL for better performance');
+        }
       }
 
       logger.info(`Booking Bot started successfully in ${config.nodeEnv} mode`);

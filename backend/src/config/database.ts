@@ -39,11 +39,17 @@ process.on('beforeExit', async () => {
 // Test database connection
 export const testDatabaseConnection = async (): Promise<boolean> => {
   try {
+    await prisma.$connect();
     await prisma.$queryRaw`SELECT 1`;
     logger.info('✅ Database connection successful');
     return true;
   } catch (error) {
     logger.error('❌ Database connection failed:', error);
+    // For development, continue without database
+    if (config.isDevelopment) {
+      logger.warn('Continuing in development mode without database');
+      return true;
+    }
     return false;
   }
 };

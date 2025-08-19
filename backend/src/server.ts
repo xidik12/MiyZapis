@@ -119,9 +119,13 @@ const gracefulShutdown = async (signal: string) => {
 
     try {
       // Stop Telegram bot
-      if (bot) {
-        bot.stop('SIGTERM');
-        logger.info('🤖 Telegram bot stopped');
+      if (bot && bot.botInfo) {
+        try {
+          await bot.stop('SIGTERM');
+          logger.info('🤖 Telegram bot stopped');
+        } catch (botError) {
+          logger.warn('Bot stop error (bot may not have been running):', botError instanceof Error ? botError.message : botError);
+        }
       }
       
       // Close database connections

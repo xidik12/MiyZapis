@@ -23,7 +23,7 @@
     "docker:build": "docker build -t booking-platform-api .",
     "docker:run": "docker-compose up -d",
     "docker:stop": "docker-compose down",
-    "postinstall": "prisma generate",
+    "postinstall": "PRISMA_CLI_BINARY_TARGETS=native,linux-openssl-1.1.x prisma generate",
     "railway:migrate": "prisma migrate deploy",
     "railway:seed": "tsx prisma/seed.ts"
   },
