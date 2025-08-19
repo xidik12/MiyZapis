@@ -29,33 +29,38 @@ const transports: winston.transport[] = [
   }),
 ];
 
-// Add file transports if enabled
+// Add file transports if enabled and possible
 if (config.logging.fileEnabled) {
-  // Ensure logs directory exists
-  const logsDir = path.resolve(config.logging.filePath);
-  
-  // Error log file
-  transports.push(
-    new DailyRotateFile({
-      filename: path.join(logsDir, 'error-%DATE%.log'),
-      datePattern: 'YYYY-MM-DD',
-      level: 'error',
-      maxSize: '20m',
-      maxFiles: '14d',
-      format: logFormat,
-    })
-  );
+  try {
+    // Ensure logs directory exists
+    const logsDir = path.resolve(config.logging.filePath);
+    
+    // Error log file
+    transports.push(
+      new DailyRotateFile({
+        filename: path.join(logsDir, 'error-%DATE%.log'),
+        datePattern: 'YYYY-MM-DD',
+        level: 'error',
+        maxSize: '20m',
+        maxFiles: '14d',
+        format: logFormat,
+      })
+    );
 
-  // Combined log file
-  transports.push(
-    new DailyRotateFile({
-      filename: path.join(logsDir, 'combined-%DATE%.log'),
-      datePattern: 'YYYY-MM-DD',
-      maxSize: '20m',
-      maxFiles: '14d',
-      format: logFormat,
-    })
-  );
+    // Combined log file
+    transports.push(
+      new DailyRotateFile({
+        filename: path.join(logsDir, 'combined-%DATE%.log'),
+        datePattern: 'YYYY-MM-DD',
+        maxSize: '20m',
+        maxFiles: '14d',
+        format: logFormat,
+      })
+    );
+  } catch (error) {
+    // If file logging fails (e.g., permission denied), just use console logging
+    console.warn('File logging disabled due to permission error:', error instanceof Error ? error.message : error);
+  }
 }
 
 // Create logger instance

@@ -51,8 +51,8 @@ const envSchema = z.object({
 
   // Logging
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
-  LOG_FILE_ENABLED: z.string().transform(val => val === 'true').default('true'),
-  LOG_FILE_PATH: z.string().default('./logs'),
+  LOG_FILE_ENABLED: z.string().transform(val => val === 'true').default('false'),
+  LOG_FILE_PATH: z.string().default('/tmp/logs'),
 
   // Rate Limiting
   RATE_LIMIT_WINDOW_MS: z.string().transform(Number).default('900000'),
