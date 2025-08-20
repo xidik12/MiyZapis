@@ -82,15 +82,15 @@ export const Header: React.FC = () => {
   ];
 
   return (
-    <header className="glass-effect sticky top-0 z-50 transition-all duration-300"
+    <header className="glass-effect sticky top-0 z-50 transition-all duration-300 w-full"
       style={{
         backgroundColor: 'rgb(var(--bg-primary) / 0.8)',
         backdropFilter: 'blur(12px)',
         borderBottom: '1px solid rgb(var(--border-primary) / 0.2)',
       }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="w-full max-w-7xl mx-auto mobile-container">
+        <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Logo and brand */}
           <div className="flex items-center">
             <Link 
@@ -248,7 +248,7 @@ export const Header: React.FC = () => {
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="sm:hidden p-2 text-gray-400 hover:text-primary-500 transition-all duration-300 rounded-lg hover:glass-effect"
+              className="sm:hidden mobile-touch-target p-2 text-gray-400 hover:text-primary-500 transition-all duration-300 rounded-lg hover:glass-effect mobile-touch"
             >
               {isMobileMenuOpen ? (
                 <XMarkIcon className="w-6 h-6" />
@@ -263,13 +263,13 @@ export const Header: React.FC = () => {
 
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="sm:hidden glass-card border-t border-gray-200/20 dark:border-gray-700/20"
+        <div className="sm:hidden glass-card border-t border-gray-200/20 dark:border-gray-700/20 w-full"
           style={{
             backgroundColor: 'rgb(var(--bg-primary) / 0.9)',
             backdropFilter: 'blur(16px)',
           }}
         >
-          <div className="px-4 py-3 space-y-3">
+          <div className="mobile-container py-4 space-y-3 mobile-scroll">
             {navigationItems.map((item) => {
               if (item.isHashLink) {
                 return (
@@ -293,10 +293,10 @@ export const Header: React.FC = () => {
                         element?.scrollIntoView({ behavior: 'smooth' });
                       }
                     }}
-                    className={`block px-3 py-2 text-base font-medium rounded-md cursor-pointer ${
+                    className={`block px-4 py-3 text-base font-medium rounded-lg cursor-pointer mobile-touch-target transition-colors duration-200 ${
                       item.current
-                        ? 'text-primary-600 bg-primary-50'
-                        : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
+                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400'
+                        : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                   >
                     {item.name}
@@ -308,10 +308,10 @@ export const Header: React.FC = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`block px-3 py-2 text-base font-medium rounded-md ${
+                  className={`block px-4 py-3 text-base font-medium rounded-lg mobile-touch-target transition-colors duration-200 ${
                     item.current
-                      ? 'text-primary-600 bg-primary-50'
-                      : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
+                      ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
                   {item.name}
@@ -320,16 +320,16 @@ export const Header: React.FC = () => {
             })}
             
             {!isAuthenticated && (
-              <div className="pt-4 border-t border-gray-200 space-y-2">
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
                 <Link
                   to="/auth/login"
-                  className="block w-full text-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="block w-full text-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 mobile-touch-target transition-colors duration-200"
                 >
                   {t('nav.signIn')}
                 </Link>
                 <Link
                   to="/auth/register"
-                  className="block w-full text-center px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700"
+                  className="block w-full text-center px-4 py-3 bg-primary-600 text-white rounded-lg text-base font-medium hover:bg-primary-700 mobile-touch-target transition-colors duration-200"
                 >
                   {t('nav.getStarted')}
                 </Link>

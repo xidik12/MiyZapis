@@ -157,16 +157,16 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative ukraine-gradient text-white overflow-hidden min-h-[90vh] sm:min-h-[80vh] flex items-center">
+      <section className="relative ukraine-gradient text-white overflow-hidden min-h-[100vh] sm:min-h-[90vh] lg:min-h-[80vh] flex items-center w-full">
         <div className="absolute inset-0 bg-black bg-opacity-10"></div>
         
         {/* Animated background elements - hide some on mobile */}
-        <div className="hidden sm:block absolute top-20 right-20 w-32 h-32 rounded-full morph-shape opacity-20 float-animation"></div>
-        <div className="hidden sm:block absolute bottom-20 left-20 w-48 h-48 rounded-full bg-white/10 animate-pulse"></div>
-        <div className="hidden sm:block absolute top-1/2 right-1/4 w-16 h-16 ukraine-gradient rounded-full animate-bounce"></div>
+        <div className="hidden lg:block absolute top-20 right-20 w-32 h-32 rounded-full morph-shape opacity-20 float-animation"></div>
+        <div className="hidden lg:block absolute bottom-20 left-20 w-48 h-48 rounded-full bg-white/10 animate-pulse"></div>
+        <div className="hidden lg:block absolute top-1/2 right-1/4 w-16 h-16 ukraine-gradient rounded-full animate-bounce"></div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
-          <div className="text-center">
+        <div className="relative w-full max-w-7xl mx-auto mobile-container py-16 sm:py-20 lg:py-24">
+          <div className="text-center w-full">
             <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-6 leading-tight animate-fade-in">
               {t('hero.title1')}
               <br />
@@ -177,11 +177,11 @@ const HomePage: React.FC = () => {
             </p>
 
             {/* Search Bar */}
-            <div className="max-w-2xl mx-auto mb-8">
+            <div className="w-full max-w-2xl mx-auto mb-8 px-4 sm:px-0">
               <SearchBar
                 placeholder={t('hero.searchPlaceholder')}
                 onSearch={handleSearch}
-                className="text-lg"
+                className="text-base sm:text-lg"
               />
             </div>
 
@@ -233,8 +233,8 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Service Categories */}
-      <section className="py-12 sm:py-20" style={{ backgroundColor: 'rgb(var(--bg-secondary))' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-12 sm:py-20 w-full" style={{ backgroundColor: 'rgb(var(--bg-secondary))' }}>
+        <div className="w-full max-w-7xl mx-auto mobile-container">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold ukraine-text-gradient mb-4">
               {t('categories.title')}
