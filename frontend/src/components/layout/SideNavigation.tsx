@@ -81,21 +81,21 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
   const userNavItems = isAuthenticated ? [
     {
       name: t('nav.profile'),
-      href: `/${user?.accountType || 'customer'}/profile`,
+      href: user?.accountType === 'specialist' ? '/specialist/profile' : '/profile',
       icon: UserCircleIcon,
       activeIcon: UserCircleIconSolid,
       current: location.pathname.includes('/profile'),
     },
     {
       name: t('nav.bookings'),
-      href: `/${user?.accountType || 'customer'}/bookings`,
+      href: user?.accountType === 'specialist' ? '/specialist/bookings' : '/bookings',
       icon: CalendarIcon,
       activeIcon: CalendarIconSolid,
       current: location.pathname.includes('/bookings'),
     },
     {
       name: t('nav.favorites'),
-      href: '/customer/favorites',
+      href: '/favorites',
       icon: HeartIcon,
       activeIcon: HeartIconSolid,
       current: location.pathname.includes('/favorites'),
@@ -103,7 +103,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
     },
     {
       name: t('nav.settings'),
-      href: `/${user?.accountType || 'customer'}/settings`,
+      href: user?.accountType === 'specialist' ? '/specialist/settings' : '/settings',
       icon: Cog6ToothIcon,
       activeIcon: Cog6ToothIcon,
       current: location.pathname.includes('/settings'),
