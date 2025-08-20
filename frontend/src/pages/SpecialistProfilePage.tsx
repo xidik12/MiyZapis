@@ -19,6 +19,42 @@ import {
   HeartIcon as HeartIconSolid,
 } from '@heroicons/react/24/solid';
 
+// Temporary mock data until backend integration is complete
+const mockCustomerData = {
+  favoriteSpecialists: [
+    {
+      id: '1',
+      name: 'Олена Іванова',
+      service: 'Перукар-стиліст',
+      rating: 4.9,
+      bookings: 3,
+      avatar: '/images/specialist-avatar-1.jpg',
+      description: 'Професійний перукар з 8-річним досвідом роботи',
+      location: 'Київ, Печерський район',
+      price: 800,
+      verified: true,
+      responseTime: '~15 хв',
+      completedBookings: 245,
+      experience: '8 років'
+    },
+    {
+      id: '2',
+      name: 'Марія Петрова',
+      service: 'Масажист',
+      rating: 4.8,
+      bookings: 2,
+      avatar: '/images/specialist-avatar-2.jpg',
+      description: 'Сертифікований масажист з медичною освітою',
+      location: 'Київ, Шевченківський район',
+      price: 600,
+      verified: true,
+      responseTime: '~20 хв',
+      completedBookings: 189,
+      experience: '5 років'
+    }
+  ]
+};
+
 const SpecialistProfilePage: React.FC = () => {
   const { specialistId } = useParams();
   const { t, language } = useLanguage();

@@ -38,6 +38,72 @@ import {
   GiftIcon as GiftIconSolid,
 } from '@heroicons/react/24/solid';
 
+// Temporary mock data until backend integration is complete
+const mockCustomerData = {
+  stats: {
+    totalSpent: 2450,
+    loyaltyPoints: 1240,
+    savedAmount: 340,
+    servicesUsed: 12,
+    completedBookings: 8,
+    totalBookings: 10,
+    averageRating: 4.8,
+    favoriteSpecialists: 3,
+    reviewsWritten: 6
+  },
+  nextAppointment: {
+    serviceName: 'Стрижка та укладання',
+    specialistName: 'Олена Іванова',
+    date: '2025-08-25',
+    time: '14:00',
+    type: 'offline' as const,
+    location: 'вул. Хрещатик, 25'
+  },
+  recentBookings: [
+    {
+      id: '1',
+      specialistName: 'Марія Петрова',
+      serviceName: 'Масаж',
+      date: '2025-08-18',
+      status: 'completed' as const,
+      amount: 800
+    },
+    {
+      id: '2',
+      specialistName: 'Андрій Коваль',
+      serviceName: 'Репетиторство з англійської',
+      date: '2025-08-20',
+      status: 'confirmed' as const,
+      amount: 500
+    }
+  ],
+  favoriteSpecialists: [
+    {
+      id: '1',
+      name: 'Олена Іванова',
+      service: 'Перукар-стиліст',
+      rating: 4.9,
+      bookings: 3
+    },
+    {
+      id: '2',
+      name: 'Марія Петрова',
+      service: 'Масажист',
+      rating: 4.8,
+      bookings: 2
+    }
+  ],
+  specialOffers: [
+    {
+      id: '1',
+      title: 'Знижка на масаж',
+      description: '20% знижка на перший візит',
+      discount: 20,
+      expiryDate: '2025-09-01'
+    }
+  ]
+};
+
 const CustomerDashboard: React.FC = () => {
   const user = useAppSelector(selectUser);
   const { formatPrice } = useCurrency();

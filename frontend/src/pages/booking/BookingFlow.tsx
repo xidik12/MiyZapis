@@ -27,6 +27,27 @@ interface BookingStep {
   completed: boolean;
 }
 
+// Temporary mock data until backend integration is complete
+const mockCustomerData = {
+  favoriteSpecialists: [
+    {
+      id: '1',
+      name: 'Олена Іванова',
+      service: 'Перукар-стиліст',
+      rating: 4.9,
+      bookings: 3,
+      avatar: '/images/specialist-avatar-1.jpg',
+      description: 'Професійний перукар з 8-річним досвідом роботи',
+      location: 'Київ, Печерський район',
+      price: 800,
+      verified: true,
+      responseTime: '~15 хв',
+      completedBookings: 245,
+      experience: '8 років'
+    }
+  ]
+};
+
 const BookingFlow: React.FC = () => {
   const { serviceId } = useParams();
   const navigate = useNavigate();

@@ -125,6 +125,7 @@ const initializeApp = () => {
                   pauseOnHover
                   theme="auto"
                   toastClassName="custom-toast"
+                  style={{ zIndex: 9999 }}
                 />
             </BrowserRouter>
           </PersistGate>

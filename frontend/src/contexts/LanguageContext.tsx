@@ -29,6 +29,20 @@ const translations: Translations = {
   'nav.forSpecialists': { en: 'For Specialists', uk: 'Для спеціалістів', ru: 'Для специалистов' },
   'nav.signIn': { en: 'Sign in', uk: 'Увійти', ru: 'Войти' },
   'nav.getStarted': { en: 'Get Started', uk: 'Почати', ru: 'Начать' },
+  'nav.signOut': { en: 'Sign out', uk: 'Вийти', ru: 'Выйти' },
+  'nav.main': { en: 'Main', uk: 'Основне', ru: 'Основное' },
+  'nav.account': { en: 'Account', uk: 'Акаунт', ru: 'Аккаунт' },
+  'nav.profile': { en: 'Profile', uk: 'Профіль', ru: 'Профиль' },
+  'nav.bookings': { en: 'Bookings', uk: 'Бронювання', ru: 'Бронирования' },
+  'nav.settings': { en: 'Settings', uk: 'Налаштування', ru: 'Настройки' },
+  'nav.favorites': { en: 'Favorites', uk: 'Улюблені', ru: 'Избранное' },
+  'nav.notifications': { en: 'Notifications', uk: 'Сповіщення', ru: 'Уведомления' },
+
+  // Settings
+  'settings.title': { en: 'Settings', uk: 'Налаштування', ru: 'Настройки' },
+  'settings.language': { en: 'Language', uk: 'Мова', ru: 'Язык' },
+  'settings.currency': { en: 'Currency', uk: 'Валюта', ru: 'Валюта' },
+  'settings.theme': { en: 'Theme', uk: 'Тема', ru: 'Тема' },
 
   // Hero Section
   'hero.title1': { en: 'Book Professional Services', uk: 'Замовте професійні послуги', ru: 'Заказывайте профессиональные услуги' },
@@ -1178,7 +1192,6 @@ const translations: Translations = {
   'common.inDevelopment': { en: 'In Development', uk: 'Функціонал в розробці', ru: 'В разработке' },
 
   // Specialist Settings
-  'settings.title': { en: 'Settings', uk: 'Налаштування', ru: 'Настройки' },
   'settings.subtitle': { en: 'Manage your account preferences and business settings', uk: 'Керуйте налаштуваннями облікового запису та бізнесу', ru: 'Управляйте настройками аккаунта и бизнеса' },
   'settings.account': { en: 'Account', uk: 'Обліковий запис', ru: 'Аккаунт' },
   'settings.accountDescription': { en: 'Manage your account and booking preferences', uk: 'Керуйте обліковим записом та налаштуваннями бронювання', ru: 'Управляйте аккаунтом и настройками бронирования' },
@@ -1188,10 +1201,9 @@ const translations: Translations = {
   'settings.privacyDescription': { en: 'Control your privacy and data sharing preferences', uk: 'Контролюйте конфіденційність та обмін даними', ru: 'Контролируйте конфиденциальность и обмен данными' },
   'settings.business': { en: 'Business', uk: 'Бізнес', ru: 'Бизнес' },
   'settings.businessDescription': { en: 'Configure your business and payment settings', uk: 'Налаштуйте бізнес та платіжні параметри', ru: 'Настройте бизнес и платежные параметры' },
-  'settings.language': { en: 'Language & Currency', uk: 'Мова та валюта', ru: 'Язык и валюта' },
+  'settings.languageAndCurrency': { en: 'Language & Currency', uk: 'Мова та валюта', ru: 'Язык и валюта' },
   'settings.languageDescription': { en: 'Set your preferred language and currency', uk: 'Встановіть бажану мову та валюту', ru: 'Установите предпочитаемый язык и валюту' },
   'settings.interfaceLanguage': { en: 'Interface Language', uk: 'Мова інтерфейсу', ru: 'Язык интерфейса' },
-  'settings.currency': { en: 'Currency', uk: 'Валюта', ru: 'Валюта' },
 
   // Account Settings
   'settings.autoAcceptBookings': { en: 'Auto-accept bookings', uk: 'Автоматично приймати записи', ru: 'Автоматически принимать записи' },
