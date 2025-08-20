@@ -1,3 +1,6 @@
+/* Import custom navigation styles */
+@import './navigation.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
