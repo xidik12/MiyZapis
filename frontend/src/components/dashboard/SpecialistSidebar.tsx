@@ -74,7 +74,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       href: '/specialist/bookings',
       icon: CalendarIcon,
       iconSolid: CalendarIconSolid,
-      badge: 3, // Mock unread count
+      badge: 0, // Dynamic count from API
     },
     {
       name: 'Services',
@@ -110,7 +110,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       href: '/specialist/reviews',
       icon: StarIcon,
       iconSolid: StarIconSolid,
-      badge: 2, // Mock unread reviews
+      badge: 0, // Dynamic count from API
     },
     {
       name: 'Messages',
@@ -118,7 +118,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       href: '/specialist/messages',
       icon: ChatBubbleLeftRightIcon,
       iconSolid: ChatBubbleLeftRightIconSolid,
-      badge: 5, // Mock unread messages
+      badge: 0, // Dynamic count from API
     },
     {
       name: 'Profile',
@@ -143,7 +143,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       href: '/specialist/notifications',
       icon: BellIcon,
       iconSolid: BellIconSolid,
-      badge: 8, // Mock notification count
+      badge: 0, // Dynamic count from API
     },
   ];
 

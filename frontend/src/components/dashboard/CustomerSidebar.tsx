@@ -79,7 +79,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       href: '/customer/bookings',
       icon: CalendarIcon,
       iconSolid: CalendarIconSolid,
-      badge: 2, // Mock upcoming bookings count
+      badge: 0, // Dynamic count from API
     },
     {
       name: 'Booking History',
@@ -94,7 +94,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       href: '/customer/favorites',
       icon: HeartIcon,
       iconSolid: HeartIconSolid,
-      badge: 5, // Mock favorite specialists count
+      badge: 0, // Dynamic count from API
     },
     {
       name: 'Reviews',
@@ -116,7 +116,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       href: '/customer/loyalty',
       icon: GiftIcon,
       iconSolid: GiftIconSolid,
-      badge: Math.floor((user?.loyaltyPoints || 0) / 100), // Points in hundreds
+      badge: 0, // Dynamic count from API
     },
     {
       name: 'Profile',
@@ -134,7 +134,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       href: '/customer/notifications',
       icon: BellIcon,
       iconSolid: BellIconSolid,
-      badge: 3, // Mock notification count
+      badge: 0, // Dynamic count from API
     },
     {
       name: 'Support',
