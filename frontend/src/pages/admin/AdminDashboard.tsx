@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import {
@@ -46,78 +46,18 @@ interface SearchAnalytics {
   trend: 'up' | 'down' | 'stable';
 }
 
-// Mock data
-const sampleAdminStats: AdminStats = {
-  totalUsers: 2847,
-  totalSpecialists: 456,
-  totalBookings: 12693,
-  totalRevenue: 2847632, // UAH
-  pendingVerifications: 23,
-  reportedUsers: 7,
-  activeUsers24h: 342,
-  popularSearches: ['Hair stylist', 'Personal trainer', 'Massage therapist', 'Psychologist', 'Plumber'],
+// Initial empty stats for new instances
+const initialAdminStats: AdminStats = {
+  totalUsers: 0,
+  totalSpecialists: 0,
+  totalBookings: 0,
+  totalRevenue: 0,
+  pendingVerifications: 0,
+  reportedUsers: 0,
+  activeUsers24h: 0,
+  popularSearches: [],
 };
 
-const sampleUsers: User[] = [
-  {
-    id: '1',
-    name: 'Олена Петренко',
-    email: 'olena.petrenko@example.com',
-    type: 'specialist',
-    status: 'active',
-    verified: true,
-    joinDate: '2024-01-15',
-    lastActive: '2025-08-15T10:30:00Z',
-    totalBookings: 87,
-    totalRevenue: 69600,
-  },
-  {
-    id: '2',
-    name: 'Максим Коваленко',
-    email: 'maksym.kovalenko@example.com',
-    type: 'customer',
-    status: 'active',
-    verified: true,
-    joinDate: '2024-03-22',
-    lastActive: '2025-08-14T15:45:00Z',
-    totalBookings: 23,
-  },
-  {
-    id: '3',
-    name: 'Анна Шевченко',
-    email: 'anna.shevchenko@example.com',
-    type: 'specialist',
-    status: 'pending',
-    verified: false,
-    joinDate: '2025-08-10',
-    lastActive: '2025-08-15T08:15:00Z',
-    totalBookings: 0,
-    totalRevenue: 0,
-  },
-  {
-    id: '4',
-    name: 'Ігор Сидоренко',
-    email: 'ihor.sydorenko@example.com',
-    type: 'specialist',
-    status: 'suspended',
-    verified: true,
-    joinDate: '2023-11-08',
-    lastActive: '2025-08-12T12:20:00Z',
-    totalBookings: 156,
-    totalRevenue: 124800,
-  },
-];
-
-const sampleSearchAnalytics: SearchAnalytics[] = [
-  { query: 'Hair stylist Kyiv', count: 1247, trend: 'up' },
-  { query: 'Personal trainer', count: 892, trend: 'up' },
-  { query: 'Massage therapist', count: 687, trend: 'stable' },
-  { query: 'Psychologist online', count: 543, trend: 'up' },
-  { query: 'Plumber emergency', count: 432, trend: 'down' },
-  { query: 'Math tutor', count: 321, trend: 'stable' },
-  { query: 'Business consultant', count: 298, trend: 'up' },
-  { query: 'Cleaning service', count: 267, trend: 'down' },
-];
 
 const AdminDashboard: React.FC = () => {
   const { t } = useLanguage();
@@ -125,10 +65,42 @@ const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'analytics' | 'verification'>('overview');
   const [userFilter, setUserFilter] = useState<'all' | 'customers' | 'specialists' | 'pending' | 'suspended'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<AdminStats>(initialAdminStats);
+  const [users, setUsers] = useState<User[]>([]);
+  const [searchAnalytics, setSearchAnalytics] = useState<SearchAnalytics[]>([]);
 
-  const stats = sampleAdminStats;
+  // Fetch admin data
+  useEffect(() => {
+    const fetchAdminData = async () => {
+      try {
+        setLoading(true);
+        // TODO: Replace with actual API calls when backend is ready
+        // const [statsResponse, usersResponse, analyticsResponse] = await Promise.all([
+        //   adminApi.getStats(),
+        //   adminApi.getUsers(),
+        //   adminApi.getSearchAnalytics()
+        // ]);
+        // setStats(statsResponse.data);
+        // setUsers(usersResponse.data);
+        // setSearchAnalytics(analyticsResponse.data);
+        
+        // For now, simulate loading and set empty data
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setStats(initialAdminStats);
+        setUsers([]);
+        setSearchAnalytics([]);
+      } catch (error) {
+        console.error('Failed to fetch admin data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const filteredUsers = sampleUsers.filter(user => {
+    fetchAdminData();
+  }, []);
+
+  const filteredUsers = users.filter(user => {
     if (userFilter === 'all') return true;
     if (userFilter === 'customers') return user.type === 'customer';
     if (userFilter === 'specialists') return user.type === 'specialist';
@@ -142,8 +114,19 @@ const AdminDashboard: React.FC = () => {
 
   const handleUserAction = (userId: string, action: 'verify' | 'suspend' | 'activate' | 'delete') => {
     console.log(`Action ${action} for user ${userId}`);
-    // Implement user management actions here
+    // TODO: Implement user management actions here when backend is ready
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading admin dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   const getStatusBadge = (status: string) => {
     const statusStyles = {
@@ -453,7 +436,7 @@ const AdminDashboard: React.FC = () => {
                 Search Analytics
               </h3>
               <div className="space-y-4">
-                {sampleSearchAnalytics.map((item, index) => (
+                {searchAnalytics.map((item, index) => (
                   <div key={index} className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
                     <div className="flex-1">
                       <p className="text-sm font-medium text-gray-900 dark:text-gray-100">

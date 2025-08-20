@@ -1,0 +1,187 @@
+// Enhanced Prisma schema additions for multi-platform support
+// Add these models to your existing schema.prisma
+
+model PushToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  platform  String   // "web", "ios", "android", "telegram"
+  
+  // Device info
+  deviceId  String?
+  userAgent String?
+  
+  // Status
+  isActive  Boolean  @default(true)
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, platform])
+  @@map("push_tokens")
+}
+
+model TelegramSession {
+  id           String   @id @default(cuid())
+  userId       String?
+  telegramId   String   @unique
+  chatId       String?
+  
+  // Session data
+  sessionData  String?  // JSON string for bot session state
+  currentStep  String?  // Current conversation step
+  
+  // Platform info
+  platform     String   // "bot" or "miniapp"
+  lastActivity DateTime @default(now())
+  
+  // Status
+  isActive     Boolean  @default(true)
+  
+  // Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("telegram_sessions")
+}
+
+model SearchHistory {
+  id        String   @id @default(cuid())
+  userId    String?
+  
+  // Search details
+  query     String
+  filters   String   // JSON string of applied filters
+  results   Int      @default(0)
+  
+  // Platform info
+  platform  String   // "web", "telegram_bot", "telegram_miniapp"
+  ipAddress String?
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user      User?    @relation(fields: [userId], references: [id])
+  
+  @@index([userId, createdAt])
+  @@map("search_history")
+}
+
+model PlatformAnalytics {
+  id        String   @id @default(cuid())
+  
+  // Time period
+  date      DateTime @db.Date
+  platform  String   // "web", "telegram_bot", "telegram_miniapp"
+  
+  // Metrics
+  activeUsers       Int @default(0)
+  newUsers          Int @default(0)
+  bookingsCreated   Int @default(0)
+  revenue           Float @default(0.0)
+  avgSessionDuration Int @default(0)
+  
+  // Platform-specific metrics
+  botCommands       Int? // For Telegram bot
+  miniAppSessions   Int? // For mini app
+  webPageViews      Int? // For web
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([date, platform])
+  @@map("platform_analytics")
+}
+
+model RateLimitRecord {
+  id        String   @id @default(cuid())
+  
+  // Identifier
+  key       String   // IP address, user ID, or other identifier
+  type      String   // "ip", "user", "endpoint"
+  
+  // Rate limit data
+  requests  Int      @default(1)
+  windowStart DateTime
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([key, type, windowStart])
+  @@map("rate_limit_records")
+}
+
+model WebSocketConnection {
+  id        String   @id @default(cuid())
+  userId    String
+  socketId  String   @unique
+  
+  // Connection info
+  rooms     String   // JSON array of joined rooms
+  platform  String   // "web", "telegram_miniapp"
+  
+  // Status
+  isActive  Boolean  @default(true)
+  lastPing  DateTime @default(now())
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, isActive])
+  @@map("websocket_connections")
+}
+
+model ApiUsageLog {
+  id         String   @id @default(cuid())
+  
+  // Request details
+  userId     String?
+  endpoint   String
+  method     String
+  platform   String   // "web", "telegram_bot", "telegram_miniapp"
+  
+  // Response details
+  statusCode Int
+  responseTime Int    // Response time in milliseconds
+  
+  // Client info
+  ipAddress  String?
+  userAgent  String?
+  
+  // Timestamps
+  createdAt  DateTime @default(now())
+  
+  // Relations
+  user       User?    @relation(fields: [userId], references: [id])
+  
+  @@index([userId, createdAt])
+  @@index([endpoint, createdAt])
+  @@map("api_usage_logs")
+}
+
+// Add these relations to existing User model
+model User {
+  // ... existing fields ...
+  
+  pushTokens           PushToken[]
+  telegramSessions     TelegramSession[]
+  searchHistory        SearchHistory[]
+  websocketConnections WebSocketConnection[]
+  apiUsageLogs         ApiUsageLog[]
+  
+  // ... existing relations ...
+}

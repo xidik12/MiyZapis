@@ -83,6 +83,8 @@ const CustomerSettings: React.FC = () => {
 
   const [activeSection, setActiveSection] = useState('account');
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
+  const [showAddAddressModal, setShowAddAddressModal] = useState(false);
 
   const handleNotificationChange = (key: keyof typeof notifications) => {
     setNotifications(prev => ({
@@ -104,6 +106,43 @@ const CustomerSettings: React.FC = () => {
 
   const handleRemoveAddress = (id: string) => {
     setAddresses(prev => prev.filter(addr => addr.id !== id));
+  };
+
+  const handleAddPaymentMethod = () => {
+    setShowAddPaymentModal(true);
+  };
+
+  const handleAddAddress = () => {
+    setShowAddAddressModal(true);
+  };
+
+  const handleSavePaymentMethod = (paymentData: any) => {
+    // TODO: Integrate with payment API when backend is ready
+    const newMethod: PaymentMethod = {
+      id: Date.now().toString(),
+      type: paymentData.type,
+      name: paymentData.name,
+      last4: paymentData.last4 || '',
+      isDefault: paymentMethods.length === 0, // First method becomes default
+    };
+    setPaymentMethods(prev => [...prev, newMethod]);
+    setShowAddPaymentModal(false);
+  };
+
+  const handleSaveAddress = (addressData: any) => {
+    // TODO: Integrate with address API when backend is ready
+    const newAddress: Address = {
+      id: Date.now().toString(),
+      type: addressData.type,
+      label: addressData.label,
+      street: addressData.street,
+      city: addressData.city,
+      postalCode: addressData.postalCode,
+      country: addressData.country,
+      isDefault: addresses.length === 0, // First address becomes default
+    };
+    setAddresses(prev => [...prev, newAddress]);
+    setShowAddAddressModal(false);
   };
 
   const sections = [
@@ -486,7 +525,10 @@ const CustomerSettings: React.FC = () => {
                     <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                       {t('customer.settings.payments')}
                     </h2>
-                    <button className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center">
+                    <button 
+                      onClick={handleAddPaymentMethod}
+                      className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
+                    >
                       <PlusIcon className="h-4 w-4 mr-2" />
                       Add Payment Method
                     </button>
@@ -497,7 +539,10 @@ const CustomerSettings: React.FC = () => {
                       <div className="text-center py-8">
                         <CreditCardIcon className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
                         <p className="text-gray-500 dark:text-gray-400 mb-4">No payment methods added yet</p>
-                        <button className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto">
+                        <button 
+                          onClick={handleAddPaymentMethod}
+                          className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
+                        >
                           <PlusIcon className="h-4 w-4 mr-2" />
                           Add Your First Payment Method
                         </button>
@@ -546,7 +591,10 @@ const CustomerSettings: React.FC = () => {
                     <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                       {t('customer.settings.addresses')}
                     </h2>
-                    <button className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center">
+                    <button 
+                      onClick={handleAddAddress}
+                      className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
+                    >
                       <PlusIcon className="h-4 w-4 mr-2" />
                       Add Address
                     </button>
@@ -557,7 +605,10 @@ const CustomerSettings: React.FC = () => {
                       <div className="text-center py-8">
                         <MapPinIcon className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
                         <p className="text-gray-500 dark:text-gray-400 mb-4">No addresses added yet</p>
-                        <button className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto">
+                        <button 
+                          onClick={handleAddAddress}
+                          className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
+                        >
                           <PlusIcon className="h-4 w-4 mr-2" />
                           Add Your First Address
                         </button>
@@ -604,6 +655,209 @@ const CustomerSettings: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Add Payment Method Modal */}
+      {showAddPaymentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+              Add Payment Method
+            </h3>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target as HTMLFormElement);
+              handleSavePaymentMethod({
+                type: 'card',
+                name: formData.get('cardName'),
+                last4: formData.get('cardNumber')?.toString().slice(-4) || ''
+              });
+            }}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Payment Type
+                  </label>
+                  <select 
+                    name="paymentType"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                  >
+                    <option value="card">Bank Card</option>
+                    <option value="privat">PrivatBank</option>
+                    <option value="mono">Monobank</option>
+                    <option value="ukrsib">UkrSibbank</option>
+                    <option value="oschadbank">Oschadbank</option>
+                    <option value="paypal">PayPal</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Card Name
+                  </label>
+                  <input
+                    type="text"
+                    name="cardName"
+                    placeholder="Visa •••• 4242"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Card Number
+                  </label>
+                  <input
+                    type="text"
+                    name="cardNumber"
+                    placeholder="1234 5678 9012 3456"
+                    maxLength={19}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                    onChange={(e) => {
+                      // Format card number with spaces
+                      let value = e.target.value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+                      e.target.value = value;
+                    }}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowAddPaymentModal(false)}
+                  className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+                >
+                  Add Payment Method
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Address Modal */}
+      {showAddAddressModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+              Add Address
+            </h3>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target as HTMLFormElement);
+              handleSaveAddress({
+                type: formData.get('addressType'),
+                label: formData.get('label'),
+                street: formData.get('street'),
+                city: formData.get('city'),
+                postalCode: formData.get('postalCode'),
+                country: formData.get('country') || 'Ukraine'
+              });
+            }}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Address Type
+                  </label>
+                  <select 
+                    name="addressType"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                  >
+                    <option value="home">Home</option>
+                    <option value="work">Work</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Label
+                  </label>
+                  <input
+                    type="text"
+                    name="label"
+                    placeholder="Home"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Street Address
+                  </label>
+                  <input
+                    type="text"
+                    name="street"
+                    placeholder="вул. Хрещатик, 1"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      name="city"
+                      placeholder="Київ"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Postal Code
+                    </label>
+                    <input
+                      type="text"
+                      name="postalCode"
+                      placeholder="01001"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                      required
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Country
+                  </label>
+                  <select 
+                    name="country"
+                    defaultValue="Ukraine"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                  >
+                    <option value="Ukraine">Ukraine</option>
+                    <option value="Poland">Poland</option>
+                    <option value="Germany">Germany</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowAddAddressModal(false)}
+                  className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+                >
+                  Add Address
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -63,7 +63,6 @@ const navigation: SidebarNavItem[] = [
     href: '/bookings',
     icon: CalendarIcon,
     iconActive: CalendarIcon,
-    count: 2,
   },
   {
     name: 'History',
@@ -78,7 +77,6 @@ const navigation: SidebarNavItem[] = [
     href: '/favorites',
     icon: HeartIcon,
     iconActive: HeartIcon,
-    count: 5,
   },
   {
     name: 'Reviews',
@@ -100,7 +98,6 @@ const navigation: SidebarNavItem[] = [
     href: '/loyalty',
     icon: GiftIcon,
     iconActive: GiftIcon,
-    count: 1,
   },
   {
     name: 'Profile',
@@ -354,7 +351,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
             {/* Notifications */}
             <button className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               <BellIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-              <span className="absolute top-1 right-1 w-3 h-3 bg-red-400 rounded-full"></span>
+              {/* TODO: Show notification badge only when there are actual notifications */}
             </button>
 
             {/* Settings */}
