@@ -48,6 +48,9 @@
     @apply scroll-smooth;
     /* Prevent horizontal scroll on mobile */
     overflow-x: hidden;
+    /* Force mobile viewport to use device width */
+    width: 100%;
+    height: 100%;
   }
 
   body {
@@ -60,6 +63,10 @@
     -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Ensure body takes full width */
+    width: 100%;
+    min-width: 100%;
+    max-width: 100vw;
   }
 
   /* Root container fix for mobile */
@@ -67,6 +74,8 @@
     min-height: 100vh;
     overflow-x: hidden;
     width: 100%;
+    max-width: 100vw;
+    position: relative;
   }
 
   /* Hide scrollbar but keep functionality */
@@ -394,7 +403,12 @@
   }
 
   .section-padding {
-    @apply py-12 sm:py-16 lg:py-20;
+    @apply py-8 sm:py-12 md:py-16 lg:py-20;
+  }
+  
+  /* Mobile-optimized section padding */
+  .section-padding-mobile {
+    @apply py-6 sm:py-8 md:py-12 lg:py-16;
   }
 
   .text-balance {
@@ -509,42 +523,54 @@
 }
 
 @layer utilities {
-  /* Responsive text utilities */
+  /* Enhanced responsive text utilities */
   .text-responsive-xs {
-    @apply text-xs sm:text-sm;
+    @apply text-xs xs:text-sm sm:text-sm;
   }
 
   .text-responsive-sm {
-    @apply text-sm sm:text-base;
+    @apply text-sm xs:text-sm sm:text-base;
   }
 
   .text-responsive-base {
-    @apply text-base sm:text-lg;
+    @apply text-sm xs:text-base sm:text-lg;
   }
 
   .text-responsive-lg {
-    @apply text-lg sm:text-xl;
+    @apply text-base xs:text-lg sm:text-xl;
   }
 
   .text-responsive-xl {
-    @apply text-xl sm:text-2xl;
+    @apply text-lg xs:text-xl sm:text-2xl;
   }
 
   .text-responsive-2xl {
-    @apply text-2xl sm:text-3xl;
+    @apply text-xl xs:text-2xl sm:text-3xl;
   }
 
   .text-responsive-3xl {
-    @apply text-3xl sm:text-4xl lg:text-5xl;
+    @apply text-2xl xs:text-3xl sm:text-4xl lg:text-5xl;
   }
 
-  /* Spacing utilities */
+  .text-responsive-4xl {
+    @apply text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl;
+  }
+
+  /* Enhanced spacing utilities */
   .space-y-responsive {
-    @apply space-y-4 sm:space-y-6 lg:space-y-8;
+    @apply space-y-3 xs:space-y-4 sm:space-y-6 lg:space-y-8;
   }
 
   .gap-responsive {
-    @apply gap-4 sm:gap-6 lg:gap-8;
+    @apply gap-3 xs:gap-4 sm:gap-6 lg:gap-8;
+  }
+
+  .padding-responsive {
+    @apply p-3 xs:p-4 sm:p-6 lg:p-8;
+  }
+
+  .margin-responsive {
+    @apply m-3 xs:m-4 sm:m-6 lg:m-8;
   }
 
   /* Animation utilities */
@@ -602,7 +628,12 @@
 
   /* Mobile-first utilities */
   .mobile-container {
-    @apply w-full max-w-none px-4 sm:px-6 lg:px-8 mx-auto;
+    @apply w-full max-w-none px-3 xs:px-4 sm:px-6 lg:px-8 mx-auto;
+    /* Ensure container never exceeds viewport width */
+    max-width: 100vw;
+    box-sizing: border-box;
+    /* Prevent any child elements from causing overflow */
+    overflow-x: hidden;
   }
 
   .mobile-safe-area {
@@ -637,6 +668,26 @@
     min-height: 44px;
     min-width: 44px;
     @apply flex items-center justify-center;
+    /* Better touch feedback */
+    touch-action: manipulation;
+  }
+  
+  /* Mobile-first responsive containers */
+  .responsive-container {
+    @apply w-full max-w-sm mx-auto sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl;
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+    /* Ensure container never exceeds viewport */
+    max-width: min(100vw, var(--max-width));
+    box-sizing: border-box;
+  }
+  
+  .responsive-grid {
+    @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+  }
+  
+  .responsive-flex {
+    @apply flex flex-col gap-4 sm:flex-row sm:items-center;
   }
 
   /* Prevent zoom on input focus on iOS */
@@ -657,11 +708,81 @@
     width: 100vw;
     margin-left: calc(-50vw + 50%);
   }
+  
+  /* Prevent horizontal overflow on all screen sizes */
+  .prevent-overflow {
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  
+  /* Force full width layout on mobile */
+  .mobile-full-layout {
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+    box-sizing: border-box;
+  }
+  
+  @media (min-width: 640px) {
+    .mobile-full-layout {
+      width: auto;
+      max-width: none;
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
 
   /* Safe scrolling for mobile */
   .mobile-scroll {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
+  }
+
+  /* Additional mobile utilities for width constraints */
+  .mobile-width-safe {
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .mobile-section {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Mobile-first grid layouts */
+  .mobile-grid-1 {
+    @apply grid grid-cols-1 gap-4;
+  }
+
+  .mobile-grid-2 {
+    @apply grid grid-cols-1 xs:grid-cols-2 gap-3 xs:gap-4;
+  }
+
+  .mobile-grid-3 {
+    @apply grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3 xs:gap-4 sm:gap-6;
+  }
+
+  .mobile-grid-4 {
+    @apply grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 xs:gap-4 md:gap-6;
+  }
+
+  /* Flexible layout utilities */
+  .mobile-flex-col {
+    @apply flex flex-col gap-3 xs:gap-4;
+  }
+
+  .mobile-flex-row {
+    @apply flex flex-col xs:flex-row gap-3 xs:gap-4 items-start xs:items-center;
   }
 
   /* Print utilities */

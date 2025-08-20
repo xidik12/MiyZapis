@@ -89,8 +89,8 @@ export const Header: React.FC = () => {
         borderBottom: '1px solid rgb(var(--border-primary) / 0.2)',
       }}
     >
-      <div className="w-full max-w-7xl mx-auto mobile-container">
-        <div className="flex justify-between items-center h-14 sm:h-16">
+      <div className="w-full max-w-7xl mx-auto mobile-container prevent-overflow">
+        <div className="flex justify-between items-center h-14 xs:h-16 sm:h-16">
           {/* Logo and brand */}
           <div className="flex items-center">
             <Link 
@@ -101,11 +101,11 @@ export const Header: React.FC = () => {
                 window.scrollTo(0, 0);
               }}
             >
-              <div className="w-10 h-10 ukraine-gradient rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300 morph-shape">
-                <span className="text-white font-bold text-lg">М</span>
+              <div className="w-8 h-8 xs:w-10 xs:h-10 ukraine-gradient rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300 morph-shape">
+                <span className="text-white font-bold text-sm xs:text-lg">М</span>
               </div>
               <div className="flex items-center space-x-2">
-                <span className="text-xl font-bold ukraine-text-gradient hidden sm:block group-hover:text-primary-500 transition-colors duration-300">
+                <span className="text-lg xs:text-xl font-bold ukraine-text-gradient hidden xs:block group-hover:text-primary-500 transition-colors duration-300">
                   {environment.APP_NAME}
                 </span>
                 {/* <UkrainianFlag className="hidden sm:block" animated /> */}
@@ -168,13 +168,17 @@ export const Header: React.FC = () => {
 
 
           {/* Right side actions */}
-          <div className="flex items-center space-x-3">
-            {/* Currency toggle */}
-            <CurrencyToggle />
-            {/* Language toggle */}
-            <LanguageToggle />
-            {/* Theme toggle */}
-            <ThemeToggle size="md" />
+          <div className="flex items-center space-x-1 xs:space-x-2 sm:space-x-3">
+            {/* Hide toggles on small mobile screens, show on larger mobile and up */}
+            <div className="hidden md:flex items-center space-x-2 lg:space-x-3">
+              <CurrencyToggle />
+              <LanguageToggle />
+            </div>
+            {/* Theme toggle - smaller on mobile */}
+            <div className="flex items-center">
+              <ThemeToggle size="sm" className="sm:hidden" />
+              <ThemeToggle size="md" className="hidden sm:block" />
+            </div>
 
             {isAuthenticated ? (
               <>
@@ -318,6 +322,20 @@ export const Header: React.FC = () => {
                 </Link>
               );
             })}
+            
+            {/* Mobile-only settings section - now shows on both small and medium screens */}
+            <div className="md:hidden pt-4 border-t border-gray-200/30 dark:border-gray-700/30 space-y-4">
+              <div className="flex justify-center gap-6">
+                <div className="flex flex-col items-center space-y-2">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t('settings.language')}</span>
+                  <LanguageToggle />
+                </div>
+                <div className="flex flex-col items-center space-y-2">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t('settings.currency')}</span>
+                  <CurrencyToggle />
+                </div>
+              </div>
+            </div>
             
             {!isAuthenticated && (
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-3">

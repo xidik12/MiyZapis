@@ -13,37 +13,37 @@ export const LanguageToggle: React.FC<LanguageToggleProps> = ({ className = '' }
       {/* Ukrainian - First */}
       <button
         onClick={() => setLanguage('uk')}
-        className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 whitespace-nowrap ${
+        className={`px-1.5 sm:px-2 md:px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 whitespace-nowrap mobile-touch-target ${
           language === 'uk'
             ? 'bg-secondary-500 text-white shadow-md'
             : 'text-gray-700 dark:text-gray-300 hover:bg-white/20'
         }`}
       >
-        🇺🇦 UK
+        <span className="hidden xs:inline">🇺🇦 </span>UK
       </button>
       
       {/* English - Second with flag and circle */}
       <button
         onClick={() => setLanguage('en')}
-        className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 whitespace-nowrap ${
+        className={`px-1.5 sm:px-2 md:px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 whitespace-nowrap mobile-touch-target ${
           language === 'en'
             ? 'bg-primary-500 text-white shadow-md'
             : 'text-gray-700 dark:text-gray-300 hover:bg-white/20'
         }`}
       >
-        🇬🇧 EN
+        <span className="hidden xs:inline">🇬🇧 </span>EN
       </button>
       
       {/* Russian - Third */}
       <button
         onClick={() => setLanguage('ru')}
-        className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 whitespace-nowrap ${
+        className={`px-1.5 sm:px-2 md:px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 whitespace-nowrap mobile-touch-target ${
           language === 'ru'
             ? 'bg-red-500 text-white shadow-md'
             : 'text-gray-700 dark:text-gray-300 hover:bg-white/20'
         }`}
       >
-        🇷🇺 RU
+        <span className="hidden xs:inline">🇷🇺 </span>RU
       </button>
     </div>
   );

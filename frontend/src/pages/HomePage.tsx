@@ -155,9 +155,9 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen w-full prevent-overflow">
       {/* Hero Section */}
-      <section className="relative ukraine-gradient text-white overflow-hidden min-h-[100vh] sm:min-h-[90vh] lg:min-h-[80vh] flex items-center w-full">
+      <section className="relative ukraine-gradient text-white overflow-hidden min-h-[100vh] xs:min-h-[90vh] sm:min-h-[85vh] lg:min-h-[80vh] flex items-center w-full prevent-overflow">
         <div className="absolute inset-0 bg-black bg-opacity-10"></div>
         
         {/* Animated background elements - hide some on mobile */}
@@ -165,14 +165,14 @@ const HomePage: React.FC = () => {
         <div className="hidden lg:block absolute bottom-20 left-20 w-48 h-48 rounded-full bg-white/10 animate-pulse"></div>
         <div className="hidden lg:block absolute top-1/2 right-1/4 w-16 h-16 ukraine-gradient rounded-full animate-bounce"></div>
         
-        <div className="relative w-full max-w-7xl mx-auto mobile-container py-16 sm:py-20 lg:py-24">
-          <div className="text-center w-full">
-            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-6 leading-tight animate-fade-in">
+        <div className="relative w-full max-w-7xl mx-auto mobile-container py-12 xs:py-16 sm:py-20 lg:py-24 prevent-overflow">
+          <div className="text-center w-full prevent-overflow">
+            <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-6xl font-bold mb-4 xs:mb-6 leading-tight animate-fade-in px-2 xs:px-0">
               {t('hero.title1')}
               <br />
               <span className="text-secondary-200 shimmer">{t('hero.title2')}</span>
             </h1>
-            <p className="text-lg sm:text-xl md:text-2xl text-primary-100 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base xs:text-lg sm:text-xl md:text-2xl text-primary-100 mb-6 xs:mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-2 xs:px-0">
               {t('hero.subtitle')}
             </p>
 
@@ -186,41 +186,41 @@ const HomePage: React.FC = () => {
             </div>
 
             {/* Quick Actions */}
-            <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mb-8 sm:mb-12">
+            <div className="flex flex-wrap justify-center gap-2 xs:gap-3 sm:gap-4 mb-6 xs:mb-8 sm:mb-12 px-2 xs:px-0">
               <Link
                 to="/search?category=beauty-wellness"
-                className="glass-effect text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full font-semibold hover:scale-105 transition-all duration-300 hover:glow-primary text-sm sm:text-base"
+                className="glass-effect text-white px-3 xs:px-4 sm:px-6 py-2 xs:py-2 sm:py-3 rounded-full font-semibold hover:scale-105 transition-all duration-300 hover:glow-primary text-xs xs:text-sm sm:text-base whitespace-nowrap"
               >
                 {t('category.beautyWellness')}
               </Link>
               <Link
                 to="/search?category=health-fitness"
-                className="glass-effect text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full font-semibold hover:scale-105 transition-all duration-300 hover:glow-primary text-sm sm:text-base"
+                className="glass-effect text-white px-3 xs:px-4 sm:px-6 py-2 xs:py-2 sm:py-3 rounded-full font-semibold hover:scale-105 transition-all duration-300 hover:glow-primary text-xs xs:text-sm sm:text-base whitespace-nowrap"
               >
                 {t('category.healthFitness')}
               </Link>
               <Link
                 to="/search?category=home-services"
-                className="glass-effect text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full font-semibold hover:scale-105 transition-all duration-300 hover:glow-primary text-sm sm:text-base"
+                className="glass-effect text-white px-3 xs:px-4 sm:px-6 py-2 xs:py-2 sm:py-3 rounded-full font-semibold hover:scale-105 transition-all duration-300 hover:glow-primary text-xs xs:text-sm sm:text-base whitespace-nowrap"
               >
                 {t('category.homeServices')}
               </Link>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 xs:gap-4 sm:gap-6 max-w-4xl mx-auto px-2 xs:px-0">
               {stats.map((stat, index) => (
                 <div
                   key={index} 
-                  className="glass-effect text-center p-4 sm:p-6 hover:scale-105 transition-all duration-300 rounded-lg border border-white/20"
+                  className="glass-effect text-center p-3 xs:p-4 sm:p-6 hover:scale-105 transition-all duration-300 rounded-lg border border-white/20"
                   style={{
                     background: 'rgba(255, 255, 255, 0.15)',
                     backdropFilter: 'blur(20px)'
                   }}
                 >
-                  <stat.icon className="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 sm:mb-3 text-secondary-200" />
-                  <div className="text-xl sm:text-2xl font-bold mb-1 text-white drop-shadow-lg">{stat.value}</div>
-                  <div className="text-white/90 text-xs sm:text-sm font-medium drop-shadow-md">{stat.label}</div>
+                  <stat.icon className="w-6 h-6 xs:w-8 xs:h-8 sm:w-10 sm:h-10 mx-auto mb-2 xs:mb-2 sm:mb-3 text-secondary-200" />
+                  <div className="text-lg xs:text-xl sm:text-2xl font-bold mb-1 text-white drop-shadow-lg">{stat.value}</div>
+                  <div className="text-white/90 text-xs xs:text-xs sm:text-sm font-medium drop-shadow-md leading-tight">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -233,23 +233,23 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Service Categories */}
-      <section className="py-12 sm:py-20 w-full" style={{ backgroundColor: 'rgb(var(--bg-secondary))' }}>
-        <div className="w-full max-w-7xl mx-auto mobile-container">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold ukraine-text-gradient mb-4">
+      <section className="py-8 xs:py-12 sm:py-20 w-full prevent-overflow" style={{ backgroundColor: 'rgb(var(--bg-secondary))' }}>
+        <div className="w-full max-w-7xl mx-auto mobile-container prevent-overflow">
+          <div className="text-center mb-8 xs:mb-12 sm:mb-16">
+            <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold ukraine-text-gradient mb-4 px-2 xs:px-0">
               {t('categories.title')}
             </h2>
-            <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            <p className="text-base xs:text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-2 xs:px-0">
               {t('categories.subtitle')}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-6 md:gap-8">
             {serviceCategories.map((category, index) => (
               <Link
                 key={category.id}
                 to={category.href}
-                className="group glass-effect p-8 rounded-xl hover:scale-105 transition-all duration-300 block h-full"
+                className="group glass-effect p-4 xs:p-6 sm:p-8 rounded-xl hover:scale-105 transition-all duration-300 block h-full"
               >
                 <div className="text-5xl mb-6 animate-bounce">{category.icon}</div>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 group-hover:ukraine-text-gradient transition-all duration-300">
@@ -271,32 +271,32 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+      <section id="how-it-works" className="py-8 xs:py-12 sm:py-16 lg:py-20 bg-gray-50 dark:bg-gray-800/50 w-full prevent-overflow">
+        <div className="max-w-7xl mx-auto mobile-container prevent-overflow">
+          <div className="text-center mb-8 xs:mb-12 sm:mb-16">
+            <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4 px-2 xs:px-0">
               {t('howItWorks.title')}
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-base xs:text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-2 xs:px-0">
               {t('howItWorks.subtitle')}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 xs:gap-8">
             {howItWorksSteps.map((step, index) => (
               <div key={step.step} className="text-center">
-                <div className="relative mb-8">
-                  <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-4 relative">
-                    <step.icon className="w-8 h-8 text-white" />
-                    <div className="absolute -top-2 -right-2 bg-secondary-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
+                <div className="relative mb-6 xs:mb-8">
+                  <div className="w-12 h-12 xs:w-16 xs:h-16 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-4 relative">
+                    <step.icon className="w-6 h-6 xs:w-8 xs:h-8 text-white" />
+                    <div className="absolute -top-1 -right-1 xs:-top-2 xs:-right-2 bg-secondary-500 text-white w-6 h-6 xs:w-8 xs:h-8 rounded-full flex items-center justify-center text-xs xs:text-sm font-bold shadow-lg">
                       {step.step}
                     </div>
                   </div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                <h3 className="text-lg xs:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
                   {step.title}
                 </h3>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-sm xs:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
                   {step.description}
                 </p>
               </div>
@@ -306,23 +306,23 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Featured Specialists */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+      <section className="py-8 xs:py-12 sm:py-16 lg:py-20 bg-white dark:bg-gray-900 w-full prevent-overflow">
+        <div className="max-w-7xl mx-auto mobile-container prevent-overflow">
+          <div className="text-center mb-8 xs:mb-12 sm:mb-16">
+            <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4 px-2 xs:px-0">
               {t('featuredSpecialists.title')}
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-base xs:text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-2 xs:px-0">
               {t('featuredSpecialists.subtitle')}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-6 md:gap-8">
             {featuredSpecialists.map((specialist) => (
               <Link
                 key={specialist.id}
                 to={`/specialist/${specialist.id}`}
-                className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-primary-200 transition-all duration-300"
+                className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:shadow-lg hover:border-primary-200 dark:hover:border-primary-600 transition-all duration-300"
               >
                 <div className="aspect-w-16 aspect-h-12">
                   <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
@@ -366,14 +366,14 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* For Specialists Section */}
-      <section id="for-specialists" className="py-20 bg-primary-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+      <section id="for-specialists" className="py-8 xs:py-12 sm:py-16 lg:py-20 bg-primary-600 text-white w-full prevent-overflow">
+        <div className="max-w-7xl mx-auto mobile-container prevent-overflow">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 xs:gap-12 items-center">
+            <div className="px-2 xs:px-0">
+              <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold mb-4 xs:mb-6">
                 {t('forSpecialists.title')}
               </h2>
-              <p className="text-xl text-primary-100 mb-8 leading-relaxed">
+              <p className="text-base xs:text-lg sm:text-xl text-primary-100 mb-6 xs:mb-8 leading-relaxed">
                 {t('forSpecialists.subtitle')}
               </p>
 
@@ -435,12 +435,12 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+      <section className="py-8 xs:py-12 sm:py-16 lg:py-20 bg-white dark:bg-gray-900 w-full prevent-overflow">
+        <div className="max-w-4xl mx-auto mobile-container prevent-overflow text-center">
+          <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4 px-2 xs:px-0">
             {t('cta.title')}
           </h2>
-          <p className="text-xl text-gray-600 mb-8">
+          <p className="text-base xs:text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-6 xs:mb-8 px-2 xs:px-0">
             {user 
               ? t('cta.subtitle.loggedIn')
               : t('cta.subtitle.loggedOut')

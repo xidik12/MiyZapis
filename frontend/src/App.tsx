@@ -154,7 +154,7 @@ function App() {
       <LanguageProvider>
         <CurrencyProvider>
           {/* <SocketProvider> */}
-            <div className="App min-h-screen transition-colors duration-300 relative">
+            <div className="App min-h-screen transition-colors duration-300 relative prevent-overflow">
               {/* <FloatingElements /> */}
               <Routes>
           {/* Auth routes first */}
