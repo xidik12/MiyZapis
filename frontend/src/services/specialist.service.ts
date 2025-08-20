@@ -367,7 +367,7 @@ export class SpecialistService {
       }
     });
 
-    const response = await apiClient.get<{ specialists: Specialist[]; pagination: Pagination }>(`/specialists/search?${params}`);
+    const response = await apiClient.get<{ specialists: Specialist[]; pagination: Pagination }>(`/specialists?${params}`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to search specialists');
     }

@@ -73,14 +73,9 @@ const SearchPage: React.FC = () => {
     const fetchSpecialists = async () => {
       try {
         setLoading(true);
-        const data = await specialistService.searchSpecialists({
-          query: searchQuery,
-          category: selectedCategory,
+        const data = await specialistService.searchSpecialists(searchQuery, {
           location: selectedLocation,
-          minPrice: priceRange.min,
-          maxPrice: priceRange.max,
-          minRating: selectedRating,
-          sortBy,
+          rating: selectedRating,
         });
         setSpecialists(data.specialists || []);
         setFilteredSpecialists(data.specialists || []);

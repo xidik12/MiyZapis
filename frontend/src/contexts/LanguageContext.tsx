@@ -1310,6 +1310,26 @@ const translations: Translations = {
   'booking.offline': { en: 'Offline', uk: 'Офлайн', ru: 'Офлайн' },
   'booking.confirmBooking': { en: 'Confirm Booking', uk: 'Підтвердити бронювання', ru: 'Подтвердить бронирование' },
   'booking.next': { en: 'Next', uk: 'Далі', ru: 'Далее' },
+
+  // Search Page
+  'search.title': { en: 'Find Services', uk: 'Пошук послуг', ru: 'Поиск услуг' },
+  'search.subtitle': { en: 'Find the perfect specialist for your needs', uk: 'Знайдіть ідеального спеціаліста для ваших потреб', ru: 'Найдите идеального специалиста для ваших нужд' },
+  'search.placeholder': { en: 'Search for services...', uk: 'Пошук послуг...', ru: 'Поиск услуг...' },
+  'search.filters': { en: 'Filters', uk: 'Фільтри', ru: 'Фильтры' },
+  'search.showing': { en: 'Showing', uk: 'Показано', ru: 'Показано' },
+  'search.results': { en: 'results', uk: 'результатів', ru: 'результатов' },
+  'search.noResults': { en: 'No specialists found', uk: 'Спеціалістів не знайдено', ru: 'Специалисты не найдены' },
+  'search.noResultsDescription': { en: 'Try adjusting your search criteria or browse different categories', uk: 'Спробуйте змінити критерії пошуку або перегляньте інші категорії', ru: 'Попробуйте изменить критерии поиска или просмотрите другие категории' },
+  'search.clearFilters': { en: 'Clear all filters', uk: 'Очистити всі фільтри', ru: 'Очистить все фильтры' },
+  'search.sortBy.rating': { en: 'Sort by Rating', uk: 'Сортувати за рейтингом', ru: 'Сортировать по рейтингу' },
+  'search.sortBy.price': { en: 'Sort by Price', uk: 'Сортувати за ціною', ru: 'Сортировать по цене' },
+  'search.sortBy.experience': { en: 'Sort by Experience', uk: 'Сортувати за досвідом', ru: 'Сортировать по опыту' },
+  'search.sortBy.reviews': { en: 'Sort by Reviews', uk: 'Сортувати за відгуками', ru: 'Сортировать по отзывам' },
+
+  // Categories
+  'category.all': { en: 'All Categories', uk: 'Всі категорії', ru: 'Все категории' },
+  'category.automotive': { en: 'Automotive', uk: 'Автомобільні послуги', ru: 'Автомобильные услуги' },
+  'category.technology': { en: 'Technology', uk: 'Технології', ru: 'Технологии' },
 };
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
