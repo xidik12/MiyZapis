@@ -1330,6 +1330,16 @@ const translations: Translations = {
   'category.all': { en: 'All Categories', uk: 'Всі категорії', ru: 'Все категории' },
   'category.automotive': { en: 'Automotive', uk: 'Автомобільні послуги', ru: 'Автомобильные услуги' },
   'category.technology': { en: 'Technology', uk: 'Технології', ru: 'Технологии' },
+
+  // User Type Selection
+  'auth.userType.title': { en: 'Choose Account Type', uk: 'Оберіть тип акаунта', ru: 'Выберите тип аккаунта' },
+  'auth.userType.description': { en: 'How would you like to use our platform?', uk: 'Як ви хочете використовувати нашу платформу?', ru: 'Как вы хотите использовать нашу платформу?' },
+  'auth.userType.welcomeMessage': { en: 'Welcome to МійЗапис!', uk: 'Ласкаво просимо до МійЗапис!', ru: 'Добро пожаловать в МийЗапис!' },
+  'auth.userType.customer.title': { en: 'I\'m a Customer', uk: 'Я клієнт', ru: 'Я клиент' },
+  'auth.userType.customer.description': { en: 'I want to book services from specialists', uk: 'Я хочу бронювати послуги у спеціалістів', ru: 'Я хочу бронировать услуги у специалистов' },
+  'auth.userType.specialist.title': { en: 'I\'m a Specialist', uk: 'Я спеціаліст', ru: 'Я специалист' },
+  'auth.userType.specialist.description': { en: 'I want to offer my services to customers', uk: 'Я хочу надавати свої послуги клієнтам', ru: 'Я хочу предлагать свои услуги клиентам' },
+  'auth.userType.footerNote': { en: 'You can change this later in your profile settings', uk: 'Ви можете змінити це пізніше в налаштуваннях профілю', ru: 'Вы можете изменить это позже в настройках профиля' },
 };
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

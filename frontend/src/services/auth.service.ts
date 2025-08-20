@@ -63,15 +63,25 @@ export class AuthService {
   }
 
   // Google authentication
-  async googleAuth(credential: string): Promise<{ user: User; tokens: AuthTokens }> {
+  async googleAuth(credential: string, userType?: 'customer' | 'specialist'): Promise<{ user: User; tokens: AuthTokens } | { requiresUserTypeSelection: true; googleData: any }> {
     try {
-      const response = await apiClient.post<{ user: User; tokens: AuthTokens }>('/auth-enhanced/google', { credential });
+      const payload: any = { credential };
+      if (userType) {
+        payload.userType = userType;
+      }
+      
+      const response = await apiClient.post<{ user: User; tokens: AuthTokens } | { requiresUserTypeSelection: true; googleData: any }>('/auth-enhanced/google', payload);
       if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Google authentication failed');
       }
       
+      // Check if user type selection is required
+      if ('requiresUserTypeSelection' in response.data) {
+        return response.data;
+      }
+      
       // Transform backend user format to frontend format
-      const userData = response.data;
+      const userData = response.data as { user: User; tokens: AuthTokens };
       if (userData.user) {
         userData.user = this.transformUserFromBackend(userData.user);
       }
@@ -121,21 +131,40 @@ export class AuthService {
       // Get refresh token for logout request
       const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
       
-      // Set a short timeout for logout request due to backend Redis issues
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
-      
-      await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT, 
-        { refreshToken }, 
-        { signal: controller.signal }
-      );
-      
-      clearTimeout(timeoutId);
+      if (refreshToken) {
+        // Set a short timeout for logout request due to backend Redis issues
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
+        
+        try {
+          await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT, 
+            { refreshToken }, 
+            { 
+              signal: controller.signal,
+              timeout: 2000 // Additional axios timeout
+            }
+          );
+          clearTimeout(timeoutId);
+        } catch (requestError: any) {
+          clearTimeout(timeoutId);
+          // Don't log network/timeout errors as they're expected
+          if (!requestError.name?.includes('Cancel') && !requestError.code?.includes('TIMEOUT')) {
+            console.warn('Logout request failed (backend issue), continuing with client-side logout');
+          }
+        }
+      }
     } catch (error) {
-      // Even if logout fails on server, we should clear local tokens
-      // This handles the Redis connection issues on backend
-      console.warn('Logout request failed (backend issue), continuing with client-side logout:', error);
+      // Silently handle logout errors - client-side logout is sufficient
+    } finally {
+      // Always clear local tokens regardless of server response
+      this.clearAuthTokens();
     }
+  }
+  
+  // Clear authentication tokens
+  private clearAuthTokens(): void {
+    localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
   }
 
   // Forgot password
