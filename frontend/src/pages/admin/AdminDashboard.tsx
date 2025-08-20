@@ -47,7 +47,7 @@ interface SearchAnalytics {
 }
 
 // Mock data
-const mockAdminStats: AdminStats = {
+const sampleAdminStats: AdminStats = {
   totalUsers: 2847,
   totalSpecialists: 456,
   totalBookings: 12693,
@@ -58,7 +58,7 @@ const mockAdminStats: AdminStats = {
   popularSearches: ['Hair stylist', 'Personal trainer', 'Massage therapist', 'Psychologist', 'Plumber'],
 };
 
-const mockUsers: User[] = [
+const sampleUsers: User[] = [
   {
     id: '1',
     name: 'Олена Петренко',
@@ -108,7 +108,7 @@ const mockUsers: User[] = [
   },
 ];
 
-const mockSearchAnalytics: SearchAnalytics[] = [
+const sampleSearchAnalytics: SearchAnalytics[] = [
   { query: 'Hair stylist Kyiv', count: 1247, trend: 'up' },
   { query: 'Personal trainer', count: 892, trend: 'up' },
   { query: 'Massage therapist', count: 687, trend: 'stable' },
@@ -126,9 +126,9 @@ const AdminDashboard: React.FC = () => {
   const [userFilter, setUserFilter] = useState<'all' | 'customers' | 'specialists' | 'pending' | 'suspended'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const stats = mockAdminStats;
+  const stats = sampleAdminStats;
 
-  const filteredUsers = mockUsers.filter(user => {
+  const filteredUsers = sampleUsers.filter(user => {
     if (userFilter === 'all') return true;
     if (userFilter === 'customers') return user.type === 'customer';
     if (userFilter === 'specialists') return user.type === 'specialist';
@@ -453,7 +453,7 @@ const AdminDashboard: React.FC = () => {
                 Search Analytics
               </h3>
               <div className="space-y-4">
-                {mockSearchAnalytics.map((item, index) => (
+                {sampleSearchAnalytics.map((item, index) => (
                   <div key={index} className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
                     <div className="flex-1">
                       <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -484,7 +484,7 @@ const AdminDashboard: React.FC = () => {
                 Pending Verifications
               </h3>
               <div className="space-y-4">
-                {mockUsers.filter(user => !user.verified || user.status === 'pending').map((user) => (
+                {sampleUsers.filter(user => !user.verified || user.status === 'pending').map((user) => (
                   <div key={user.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                     <div className="flex items-center space-x-4">
                       <div className="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center">

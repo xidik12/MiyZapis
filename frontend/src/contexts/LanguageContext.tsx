@@ -387,6 +387,7 @@ const translations: Translations = {
   'dashboard.nav.earnings': { en: 'Earnings', uk: 'Заробітки', ru: 'Заработки' },
   'dashboard.nav.profile': { en: 'Profile', uk: 'Профіль', ru: 'Профиль' },
   'dashboard.nav.reviews': { en: 'Reviews', uk: 'Відгуки', ru: 'Отзывы' },
+  'dashboard.reviews': { en: 'Reviews', uk: 'Відгуки', ru: 'Отзывы' },
   'dashboard.nav.messages': { en: 'Messages', uk: 'Повідомлення', ru: 'Сообщения' },
   'dashboard.nav.settings': { en: 'Settings', uk: 'Налаштування', ru: 'Настройки' },
   'dashboard.nav.favorites': { en: 'Favorites', uk: 'Обране', ru: 'Избранное' },
@@ -1262,6 +1263,7 @@ const translations: Translations = {
   'customer.nav.payments': { en: 'Payments', uk: 'Платежі', ru: 'Платежи' },
   'customer.nav.loyalty': { en: 'Loyalty Points', uk: 'Бали лояльності', ru: 'Баллы лояльности' },
   'customer.nav.profile': { en: 'Profile', uk: 'Профіль', ru: 'Профиль' },
+  'customer.nav.settings': { en: 'Settings', uk: 'Налаштування', ru: 'Настройки' },
   'customer.nav.help': { en: 'Help & Support', uk: 'Допомога та підтримка', ru: 'Помощь и поддержка' },
   
   // Admin Panel

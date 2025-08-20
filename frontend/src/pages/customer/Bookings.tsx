@@ -40,98 +40,14 @@ interface Booking {
   hasReview: boolean;
 }
 
-// Mock data for bookings
-const getMockBookings = (t: (key: string) => string): Booking[] => [
-  {
-    id: '1',
-    serviceId: 'service-1',
-    serviceName: t('service.hairCutStyle'),
-    specialistId: 'specialist-1',
-    specialistName: t('specialist.sarahJohnson'),
-    specialistAvatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-    specialistRating: 4.9,
-    date: '2024-01-15',
-    time: '14:00',
-    duration: 90,
-    price: 1200,
-    currency: 'UAH',
-    status: 'upcoming',
-    location: {
-      type: 'specialist_location',
-      address: t('location.beautyStudio'),
-    },
-    notes: t('notes.bringPhotos'),
-    canCancel: true,
-    canReschedule: true,
-    hasReview: false,
-  },
-  {
-    id: '2',
-    serviceId: 'service-2',
-    serviceName: t('service.personalTraining'),
-    specialistId: 'specialist-2',
-    specialistName: t('specialist.michaelChen'),
-    specialistAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-    specialistRating: 4.8,
-    date: '2024-01-10',
-    time: '10:00',
-    duration: 60,
-    price: 800,
-    currency: 'UAH',
-    status: 'completed',
-    location: {
-      type: 'specialist_location',
-      address: t('location.fitLifeGym'),
-    },
-    canCancel: false,
-    canReschedule: false,
-    hasReview: false,
-  },
-  {
-    id: '3',
-    serviceId: 'service-3',
-    serviceName: t('service.businessConsultation'),
-    specialistId: 'specialist-3',
-    specialistName: t('specialist.emilyRodriguez'),
-    specialistAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-    specialistRating: 5.0,
-    date: '2024-01-08',
-    time: '16:00',
-    duration: 120,
-    price: 2000,
-    currency: 'UAH',
-    status: 'completed',
-    location: {
-      type: 'online',
-      notes: 'Zoom meeting link will be provided',
-    },
-    canCancel: false,
-    canReschedule: false,
-    hasReview: true,
-  },
-  {
-    id: '4',
-    serviceId: 'service-4',
-    serviceName: t('service.massageTherapy'),
-    specialistId: 'specialist-4',
-    specialistName: t('specialist.davidKumar'),
-    specialistAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-    specialistRating: 4.7,
-    date: '2024-01-05',
-    time: '11:00',
-    duration: 90,
-    price: 1000,
-    currency: 'UAH',
-    status: 'cancelled',
-    location: {
-      type: 'specialist_location',
-      address: t('location.zenWellness'),
-    },
-    canCancel: false,
-    canReschedule: false,
-    hasReview: false,
-  },
-];
+// Status color mapping
+const statusColors = {
+  upcoming: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+  confirmed: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+  completed: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
+  cancelled: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+  rescheduled: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+};
 
 const CustomerBookings: React.FC = () => {
   const { t } = useLanguage();
@@ -142,12 +58,26 @@ const CustomerBookings: React.FC = () => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setBookings(getMockBookings(t));
-      setIsLoading(false);
-    }, 1000);
-  }, [t]);
+    const fetchBookings = async () => {
+      try {
+        setIsLoading(true);
+        // TODO: Replace with actual API call when backend is ready
+        // const response = await bookingApi.getCustomerBookings();
+        // setBookings(response.data);
+        
+        // For now, set empty bookings for new users
+        await new Promise(resolve => setTimeout(resolve, 800)); // Simulate loading
+        setBookings([]);
+      } catch (error) {
+        console.error('Failed to fetch bookings:', error);
+        setBookings([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, []);
 
   const filteredBookings = bookings.filter(booking => {
     if (activeTab === 'upcoming') return booking.status === 'upcoming' || booking.status === 'in_progress';

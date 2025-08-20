@@ -187,21 +187,21 @@ const SpecialistAnalytics: React.FC = () => {
     }
   };
   
-  const stats = mockSpecialistData.stats;
+  const stats = analyticsData.stats;
   
   // Get the appropriate data based on selected period
   const getDataForPeriod = () => {
     switch (selectedPeriod) {
       case 'daily':
-        return mockSpecialistData.dailyStats;
+        return analyticsData.dailyStats;
       case 'weekly':
-        return mockSpecialistData.weeklyStats;
+        return analyticsData.weeklyStats;
       case 'monthly':
-        return mockSpecialistData.monthlyStats;
+        return analyticsData.monthlyStats;
       case 'yearly':
-        return mockSpecialistData.yearlyStats;
+        return analyticsData.yearlyStats;
       default:
-        return mockSpecialistData.monthlyStats;
+        return analyticsData.monthlyStats;
     }
   };
   
@@ -234,14 +234,14 @@ const SpecialistAnalytics: React.FC = () => {
   const periodStats = getCurrentPeriodStats();
   
   // Service performance data for pie chart
-  const serviceData = mockSpecialistData.services.map((service, index) => ({
+  const serviceData = analyticsData.services.map((service, index) => ({
     label: getTranslatedServiceName(service.name),
     value: service.bookings,
     color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444'][index] || '#6B7280'
   }));
   
   // Revenue by service for bar chart
-  const serviceRevenue = mockSpecialistData.services.map(service => service.price * service.bookings);
+  const serviceRevenue = analyticsData.services.map(service => service.price * service.bookings);
   
   return (
     
@@ -451,7 +451,7 @@ const SpecialistAnalytics: React.FC = () => {
           <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('analytics.revenueByService')}</h2>
           <SimpleBarChart
             data={serviceRevenue}
-            labels={mockSpecialistData.services.map(s => getTranslatedServiceName(s.name))}
+            labels={analyticsData.services.map(s => getTranslatedServiceName(s.name))}
             color="#10B981"
             height="300px"
           />

@@ -109,7 +109,7 @@ interface AccessibilitySettings {
   specialRequests: string;
 }
 
-const mockProfile: CustomerProfile = {
+const defaultProfile: CustomerProfile = {
   id: '1',
   firstName: 'Олена',
   lastName: 'Петренко',
@@ -224,7 +224,7 @@ const mockProfile: CustomerProfile = {
 const CustomerProfile: React.FC = () => {
   const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
-  const [profile, setProfile] = useState<CustomerProfile>(mockProfile);
+  const [profile, setProfile] = useState<CustomerProfile>(defaultProfile);
   const [activeTab, setActiveTab] = useState<'personal' | 'addresses' | 'payments' | 'preferences' | 'notifications' | 'privacy' | 'loyalty'>('personal');
   const [isEditing, setIsEditing] = useState(false);
 

@@ -101,7 +101,7 @@ interface PrivacySettings {
   requireApproval: boolean;
 }
 
-const mockProfile: SpecialistProfile = {
+const defaultProfile: SpecialistProfile = {
   id: '1',
   firstName: 'Катерина',
   lastName: 'Мельник',
@@ -224,7 +224,7 @@ const SpecialistProfile: React.FC = () => {
     }
     return item[field];
   };
-  const [profile, setProfile] = useState<SpecialistProfile>(mockProfile);
+  const [profile, setProfile] = useState<SpecialistProfile>(defaultProfile);
   const [activeTab, setActiveTab] = useState<'personal' | 'professional' | 'business' | 'portfolio' | 'security'>('personal');
   const [isEditing, setIsEditing] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);

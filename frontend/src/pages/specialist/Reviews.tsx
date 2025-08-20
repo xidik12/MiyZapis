@@ -7,7 +7,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 const SpecialistReviews: React.FC = () => {
   const { t, language } = useLanguage();
   
-  const mockReviewsData = {
+  const sampleReviewsData = {
     uk: [
       {
         id: '1',
@@ -97,7 +97,7 @@ const SpecialistReviews: React.FC = () => {
     ],
   };
 
-  const mockReviews = mockReviewsData[language] || mockReviewsData.en;
+  const sampleReviews = sampleReviewsData[language] || sampleReviewsData.en;
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, index) => (
@@ -165,7 +165,7 @@ const SpecialistReviews: React.FC = () => {
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('reviews.recentReviews')}</h3>
         </div>
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {mockReviews.map((review) => (
+          {sampleReviews.map((review) => (
             <div key={review.id} className="p-6">
               <div className="flex items-start space-x-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center flex-shrink-0">

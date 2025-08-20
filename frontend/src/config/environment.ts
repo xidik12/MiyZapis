@@ -2,8 +2,7 @@ import { Environment } from '../types';
 
 // Environment configuration
 console.log('Loading environment:', { 
-  VITE_API_URL: import.meta.env.VITE_API_URL,
-  VITE_MOCK_API: import.meta.env.VITE_MOCK_API 
+  VITE_API_URL: import.meta.env.VITE_API_URL
 });
 
 export const environment: Environment = {
@@ -20,7 +19,7 @@ export const environment: Environment = {
   ENABLE_ANALYTICS: import.meta.env.VITE_ENABLE_ANALYTICS === 'true',
   ENABLE_TELEGRAM_INTEGRATION: import.meta.env.VITE_ENABLE_TELEGRAM_INTEGRATION === 'true',
   DEBUG: import.meta.env.VITE_DEBUG === 'true',
-  MOCK_API: false, // API integration - no mock data
+  // All data comes from backend API - no mock data used
 };
 
 // API endpoints

@@ -109,6 +109,13 @@ const navigation: SidebarNavItem[] = [
     icon: UserIcon,
     iconActive: UserIcon,
   },
+  {
+    name: 'Settings',
+    nameKey: 'customer.nav.settings',
+    href: '/settings',
+    icon: Cog6ToothIcon,
+    iconActive: Cog6ToothIcon,
+  },
 ];
 
 const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {

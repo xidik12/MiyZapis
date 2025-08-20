@@ -33,7 +33,7 @@ interface Service {
   timeSlots: string[];
 }
 
-const mockServices: Service[] = [
+const sampleServices: Service[] = [
   {
     id: '1',
     name: 'Individual Psychology Consultation',
@@ -160,7 +160,7 @@ const categories = [
 const SpecialistServices: React.FC = () => {
   const { t, language } = useLanguage();
   const { formatPrice, currency } = useCurrency();
-  const [services, setServices] = useState<Service[]>(mockServices);
+  const [services, setServices] = useState<Service[]>(sampleServices);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');

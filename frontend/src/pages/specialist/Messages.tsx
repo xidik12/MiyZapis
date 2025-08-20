@@ -15,7 +15,7 @@ const SpecialistMessages: React.FC = () => {
   const [selectedChat, setSelectedChat] = useState('1');
   const [newMessage, setNewMessage] = useState('');
 
-  const mockConversations = [
+  const sampleConversations = [
     {
       id: '1',
       customerName: 'Олена Петренко',
@@ -45,7 +45,7 @@ const SpecialistMessages: React.FC = () => {
     },
   ];
 
-  const mockMessages = [
+  const sampleMessages = [
     {
       id: '1',
       senderId: 'customer',
@@ -85,7 +85,7 @@ const SpecialistMessages: React.FC = () => {
     }
   };
 
-  const selectedConversation = mockConversations.find(c => c.id === selectedChat);
+  const selectedConversation = sampleConversations.find(c => c.id === selectedChat);
 
   return (
     
@@ -114,7 +114,7 @@ const SpecialistMessages: React.FC = () => {
 
           {/* Conversations */}
           <div className="flex-1 overflow-y-auto">
-            {mockConversations.map((conversation) => (
+            {sampleConversations.map((conversation) => (
               <div
                 key={conversation.id}
                 onClick={() => setSelectedChat(conversation.id)}
@@ -200,7 +200,7 @@ const SpecialistMessages: React.FC = () => {
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {mockMessages.map((message) => (
+                {sampleMessages.map((message) => (
                   <div
                     key={message.id}
                     className={`flex ${

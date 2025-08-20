@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { 
   QuestionMarkCircleIcon,
   ChatBubbleLeftRightIcon,
@@ -33,6 +34,9 @@ const CustomerHelpSupport: React.FC = () => {
   const { t } = useLanguage();
   const [activeCategory, setActiveCategory] = useState('all');
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null);
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [contactMethods, setContactMethods] = useState<ContactMethod[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [feedbackForm, setFeedbackForm] = useState({
     subject: '',
     message: '',
@@ -40,87 +44,36 @@ const CustomerHelpSupport: React.FC = () => {
     email: '',
   });
 
-  // Mock FAQ data
-  const faqs: FAQ[] = [
-    {
-      id: '1',
-      question: t('faq.howToBook'),
-      answer: t('faq.howToBookAnswer'),
-      category: 'booking',
-    },
-    {
-      id: '2',
-      question: t('faq.cancelReschedule'),
-      answer: t('faq.cancelRescheduleAnswer'),
-      category: 'booking',
-    },
-    {
-      id: '3',
-      question: t('faq.howPaymentsWork'),
-      answer: t('faq.howPaymentsWorkAnswer'),
-      category: 'payment',
-    },
-    {
-      id: '4',
-      question: t('faq.notSatisfied'),
-      answer: t('faq.notSatisfiedAnswer'),
-      category: 'general',
-    },
-    {
-      id: '5',
-      question: t('faq.specialistsVerified'),
-      answer: t('faq.specialistsVerifiedAnswer'),
-      category: 'general',
-    },
-    {
-      id: '6',
-      question: t('faq.leaveReview'),
-      answer: t('faq.leaveReviewAnswer'),
-      category: 'reviews',
-    },
-    {
-      id: '7',
-      question: t('faq.personalInfoSecure'),
-      answer: t('faq.personalInfoSecureAnswer'),
-      category: 'account',
-    },
-    {
-      id: '8',
-      question: t('faq.updateProfile'),
-      answer: t('faq.updateProfileAnswer'),
-      category: 'account',
-    },
-  ];
+  useEffect(() => {
+    const fetchHelpData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // TODO: Implement actual API calls when backend is ready
+        // const [faqsResponse, contactResponse] = await Promise.all([
+        //   helpApi.getFAQs(),
+        //   helpApi.getContactMethods()
+        // ]);
+        // setFaqs(faqsResponse.data);
+        // setContactMethods(contactResponse.data);
+        
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // Initialize with empty arrays for new installations
+        setFaqs([]);
+        setContactMethods([]);
+      } catch (error) {
+        console.error('Failed to fetch help data:', error);
+        setFaqs([]);
+        setContactMethods([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const contactMethods: ContactMethod[] = [
-    {
-      id: '1',
-      type: 'email',
-      title: t('help.emailSupport'),
-      description: t('help.getHelpViaEmail'),
-      value: 'support@miyzapys.com',
-      availability: t('help.responseWithin24h'),
-      icon: EnvelopeIcon,
-    },
-    {
-      id: '2',
-      type: 'phone',
-      title: t('help.phoneSupport'),
-      description: t('help.speakWithSupport'),
-      value: '+380 44 123 4567',
-      availability: t('help.monFri9to6'),
-      icon: PhoneIcon,
-    },
-    {
-      id: '3',
-      type: 'chat',
-      title: t('help.liveChat'),
-      description: t('help.chatRealTime'),
-      value: t('help.startChat'),
-      availability: t('help.monFri9to6'),
-      icon: ChatBubbleLeftRightIcon,
-    },
-  ];
+    fetchHelpData();
+  }, []);
 
   const categories = [
     { id: 'all', label: t('help.allTopics') },
@@ -139,16 +92,25 @@ const CustomerHelpSupport: React.FC = () => {
     setExpandedFAQ(expandedFAQ === faqId ? null : faqId);
   };
 
-  const handleFeedbackSubmit = (e: React.FormEvent) => {
+  const handleFeedbackSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would submit the feedback
-    alert(t('feedback.thankYou'));
-    setFeedbackForm({
-      subject: '',
-      message: '',
-      category: 'general',
-      email: '',
-    });
+    
+    try {
+      // TODO: Implement actual API call to submit feedback
+      // await helpApi.submitFeedback(feedbackForm);
+      
+      alert(t('feedback.thankYou'));
+      setFeedbackForm({
+        subject: '',
+        message: '',
+        category: 'general',
+        email: '',
+      });
+    } catch (error) {
+      console.error('Failed to submit feedback:', error);
+      // TODO: Show error message to user
+      alert('Failed to submit feedback. Please try again.');
+    }
   };
 
   const handleContactMethod = (method: ContactMethod) => {
@@ -165,6 +127,14 @@ const CustomerHelpSupport: React.FC = () => {
         break;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -210,28 +180,40 @@ const CustomerHelpSupport: React.FC = () => {
               </div>
 
               <div className="p-6">
-                <div className="space-y-4">
-                  {filteredFAQs.map((faq) => (
-                    <div key={faq.id} className="border border-gray-200 rounded-lg">
-                      <button
-                        onClick={() => handleFAQToggle(faq.id)}
-                        className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50"
-                      >
-                        <span className="font-medium text-gray-900">{faq.question}</span>
-                        {expandedFAQ === faq.id ? (
-                          <ChevronUpIcon className="h-5 w-5 text-gray-500" />
-                        ) : (
-                          <ChevronDownIcon className="h-5 w-5 text-gray-500" />
+                {filteredFAQs.length === 0 ? (
+                  <div className="text-center py-8">
+                    <QuestionMarkCircleIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      {t('help.noFAQsAvailable')}
+                    </h3>
+                    <p className="text-gray-500">
+                      {t('help.faqsWillBeAddedSoon')}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredFAQs.map((faq) => (
+                      <div key={faq.id} className="border border-gray-200 rounded-lg">
+                        <button
+                          onClick={() => handleFAQToggle(faq.id)}
+                          className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50"
+                        >
+                          <span className="font-medium text-gray-900">{faq.question}</span>
+                          {expandedFAQ === faq.id ? (
+                            <ChevronUpIcon className="h-5 w-5 text-gray-500" />
+                          ) : (
+                            <ChevronDownIcon className="h-5 w-5 text-gray-500" />
+                          )}
+                        </button>
+                        {expandedFAQ === faq.id && (
+                          <div className="px-4 pb-3 text-gray-600">
+                            {faq.answer}
+                          </div>
                         )}
-                      </button>
-                      {expandedFAQ === faq.id && (
-                        <div className="px-4 pb-3 text-gray-600">
-                          {faq.answer}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -294,34 +276,46 @@ const CustomerHelpSupport: React.FC = () => {
                   </h2>
                 </div>
 
-                <div className="space-y-4">
-                  {contactMethods.map((method) => {
-                    const Icon = method.icon;
-                    return (
-                      <button
-                        key={method.id}
-                        onClick={() => handleContactMethod(method)}
-                        className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
-                      >
-                        <div className="flex items-start">
-                          <Icon className="h-6 w-6 text-blue-600 mr-3 mt-1" />
-                          <div className="flex-1">
-                            <h3 className="font-medium text-gray-900 mb-1">
-                              {method.title}
-                            </h3>
-                            <p className="text-sm text-gray-600 mb-2">
-                              {method.description}
-                            </p>
-                            <div className="flex items-center text-xs text-gray-500">
-                              <ClockIcon className="h-3 w-3 mr-1" />
-                              {method.availability}
+                {contactMethods.length === 0 ? (
+                  <div className="text-center py-8">
+                    <ChatBubbleLeftRightIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      {t('help.noContactMethodsAvailable')}
+                    </h3>
+                    <p className="text-gray-500">
+                      {t('help.contactMethodsWillBeAddedSoon')}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {contactMethods.map((method) => {
+                      const Icon = method.icon;
+                      return (
+                        <button
+                          key={method.id}
+                          onClick={() => handleContactMethod(method)}
+                          className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                        >
+                          <div className="flex items-start">
+                            <Icon className="h-6 w-6 text-blue-600 mr-3 mt-1" />
+                            <div className="flex-1">
+                              <h3 className="font-medium text-gray-900 mb-1">
+                                {method.title}
+                              </h3>
+                              <p className="text-sm text-gray-600 mb-2">
+                                {method.description}
+                              </p>
+                              <div className="flex items-center text-xs text-gray-500">
+                                <ClockIcon className="h-3 w-3 mr-1" />
+                                {method.availability}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 

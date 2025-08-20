@@ -1,520 +1,492 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
-// Mock customer data removed - now using real API data
+import { specialistService, serviceService, bookingService } from '../../services';
 import {
   CalendarIcon,
   ClockIcon,
   MapPinIcon,
   CreditCardIcon,
-  UserIcon,
   CheckCircleIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
-  StarIcon,
-  ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline';
-import {
-  StarIcon as StarIconSolid,
-} from '@heroicons/react/24/solid';
 
 interface BookingStep {
-  id: number;
+  id: string;
   title: string;
   completed: boolean;
 }
 
-// Temporary mock data until backend integration is complete
-const mockCustomerData = {
-  favoriteSpecialists: [
-    {
-      id: '1',
-      name: 'Олена Іванова',
-      service: 'Перукар-стиліст',
-      rating: 4.9,
-      bookings: 3,
-      avatar: '/images/specialist-avatar-1.jpg',
-      description: 'Професійний перукар з 8-річним досвідом роботи',
-      location: 'Київ, Печерський район',
-      price: 800,
-      verified: true,
-      responseTime: '~15 хв',
-      completedBookings: 245,
-      experience: '8 років'
-    }
-  ]
-};
-
 const BookingFlow: React.FC = () => {
-  const { serviceId } = useParams();
+  const { specialistId } = useParams();
+  const [searchParams] = useSearchParams();
+  const serviceId = searchParams.get('service');
   const navigate = useNavigate();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { formatPrice } = useCurrency();
   const user = useAppSelector(selectUser);
   
-  // Mock service data based on serviceId
-  const service = {
-    id: serviceId || '1',
-    name: t('booking.individualPsychConsultation'),
-    description: t('booking.professionalPsychSupport'),
-    price: 800,
-    currency: 'UAH',
-    duration: '60 ' + t('specialistProfile.minutes'),
-    specialist: mockCustomerData.favoriteSpecialists[0],
-  };
-
-  const [currentStep, setCurrentStep] = useState(1);
-  const [bookingData, setBookingData] = useState({
-    date: '',
-    time: '',
-    type: 'online' as 'online' | 'offline',
-    notes: '',
-    paymentMethod: 'card',
-  });
+  const [specialist, setSpecialist] = useState<any>(null);
+  const [service, setService] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string>('');
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [bookingNotes, setBookingNotes] = useState('');
 
   const steps: BookingStep[] = [
-    { id: 1, title: t('booking.step.dateTime'), completed: currentStep > 1 },
-    { id: 2, title: t('booking.step.details'), completed: currentStep > 2 },
-    { id: 3, title: t('booking.step.payment'), completed: currentStep > 3 },
-    { id: 4, title: t('booking.step.confirmation'), completed: false },
+    { id: 'service', title: t('booking.selectService'), completed: false },
+    { id: 'datetime', title: t('booking.selectDateTime'), completed: false },
+    { id: 'details', title: t('booking.bookingDetails'), completed: false },
+    { id: 'payment', title: t('booking.payment'), completed: false },
+    { id: 'confirmation', title: t('booking.confirmation'), completed: false },
   ];
 
-  // Mock available time slots
-  const timeSlots = [
-    '09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00'
-  ];
+  useEffect(() => {
+    const fetchBookingData = async () => {
+      if (!specialistId) return;
 
-  // Mock available dates (next 7 days)
-  const availableDates = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() + i + 1);
-    return date.toISOString().split('T')[0];
-  });
+      try {
+        setLoading(true);
+        
+        // Fetch specialist data
+        const specialistData = await specialistService.getSpecialist(specialistId);
+        setSpecialist(specialistData);
 
-  const handleNext = () => {
-    if (currentStep < 4) {
+        // If service ID is provided, fetch service data
+        if (serviceId) {
+          const serviceData = await serviceService.getService(serviceId);
+          setService(serviceData);
+        } else {
+          // Fetch specialist's services
+          const services = await specialistService.getSpecialistServices(specialistId);
+          if (services.length > 0) {
+            setService(services[0]); // Select first service by default
+          }
+        }
+
+      } catch (error) {
+        console.error('Error fetching booking data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookingData();
+  }, [specialistId, serviceId]);
+
+  useEffect(() => {
+    // Fetch available time slots when date is selected
+    const fetchAvailableSlots = async () => {
+      if (!specialistId || !selectedDate) return;
+
+      try {
+        const dateStr = selectedDate.toISOString().split('T')[0];
+        const slots = await specialistService.getAvailableSlots(specialistId, dateStr);
+        setAvailableSlots(slots || []);
+      } catch (error) {
+        console.error('Error fetching available slots:', error);
+        setAvailableSlots([]);
+      }
+    };
+
+    fetchAvailableSlots();
+  }, [specialistId, selectedDate]);
+
+  const handleNextStep = () => {
+    if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
 
-  const handlePrevious = () => {
-    if (currentStep > 1) {
+  const handlePrevStep = () => {
+    if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
 
-  const handleBookingComplete = () => {
-    // In a real app, this would make an API call
-    navigate('/bookings');
+  const handleBookingSubmit = async () => {
+    if (!specialist || !service || !selectedDate || !selectedTime) {
+      return;
+    }
+
+    try {
+      const bookingData = {
+        specialistId,
+        serviceId: service.id,
+        date: selectedDate.toISOString().split('T')[0],
+        time: selectedTime,
+        notes: bookingNotes,
+      };
+
+      const booking = await bookingService.createBooking(bookingData);
+      
+      // Navigate to confirmation step
+      setCurrentStep(steps.length - 1);
+    } catch (error) {
+      console.error('Error creating booking:', error);
+    }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(
-      language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
-      { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      }
+  // Generate available dates (next 30 days)
+  const getAvailableDates = () => {
+    const dates = [];
+    const today = new Date();
+    
+    for (let i = 1; i <= 30; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      dates.push(date);
+    }
+    
+    return dates;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
     );
-  };
+  }
 
-  const renderStepIndicator = () => (
-    <div className="mb-8">
-      <div className="flex items-center justify-between">
-        {steps.map((step, index) => (
-          <div key={step.id} className="flex items-center">
-            <div className={`
-              flex items-center justify-center w-10 h-10 rounded-full border-2 font-medium
-              ${currentStep === step.id 
-                ? 'bg-primary-600 border-primary-600 text-white' 
-                : step.completed 
-                  ? 'bg-success-600 border-success-600 text-white'
-                  : 'border-gray-300 text-gray-500'
-              }
-            `}>
-              {step.completed ? (
-                <CheckCircleIcon className="w-6 h-6" />
-              ) : (
-                step.id
-              )}
+  if (!specialist || !service) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            {t('errors.bookingDataNotFound')}
+          </h2>
+          <button
+            onClick={() => navigate(-1)}
+            className="text-primary-600 hover:text-primary-700 font-medium"
+          >
+            {t('navigation.goBack')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0: // Service Selection
+        return (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                {t('booking.selectedService')}
+              </h3>
+              
+              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900 dark:text-white">
+                      {service.name}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      {service.description}
+                    </p>
+                    <div className="flex items-center mt-2 text-sm text-gray-500">
+                      <ClockIcon className="w-4 h-4 mr-1" />
+                      <span>{service.duration} {t('time.minutes')}</span>
+                    </div>
+                  </div>
+                  <div className="text-right ml-4">
+                    <p className="text-lg font-bold text-gray-900 dark:text-white">
+                      {formatPrice(service.price, service.currency)}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <span className={`ml-2 text-sm font-medium ${
-              currentStep === step.id ? 'text-primary-600' : 'text-gray-500'
-            }`}>
-              {step.title}
-            </span>
-            {index < steps.length - 1 && (
-              <div className={`w-16 h-0.5 mx-4 ${
-                step.completed ? 'bg-success-600' : 'bg-gray-300'
-              }`} />
+          </div>
+        );
+
+      case 1: // Date & Time Selection
+        return (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                {t('booking.selectDate')}
+              </h3>
+              
+              <div className="grid grid-cols-7 gap-2">
+                {getAvailableDates().slice(0, 14).map((date) => (
+                  <button
+                    key={date.toISOString()}
+                    onClick={() => setSelectedDate(date)}
+                    className={`p-2 text-sm rounded-lg border transition-colors ${
+                      selectedDate?.toDateString() === date.toDateString()
+                        ? 'bg-primary-600 text-white border-primary-600'
+                        : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="font-medium">{date.getDate()}</div>
+                      <div className="text-xs opacity-75">
+                        {date.toLocaleDateString(language, { weekday: 'short' })}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {selectedDate && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                  {t('booking.selectTime')}
+                </h3>
+                
+                {availableSlots.length > 0 ? (
+                  <div className="grid grid-cols-4 gap-3">
+                    {availableSlots.map((time) => (
+                      <button
+                        key={time}
+                        onClick={() => setSelectedTime(time)}
+                        className={`p-3 text-sm rounded-lg border transition-colors ${
+                          selectedTime === time
+                            ? 'bg-primary-600 text-white border-primary-600'
+                            : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300'
+                        }`}
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+                    {t('booking.noAvailableSlots')}
+                  </p>
+                )}
+              </div>
             )}
           </div>
-        ))}
-      </div>
-    </div>
-  );
+        );
 
-  const renderStep1 = () => (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-        Оберіть дату та час
-      </h2>
-      
-      {/* Date Selection */}
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-          Доступні дати
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {availableDates.map((date) => (
-            <button
-              key={date}
-              onClick={() => setBookingData({ ...bookingData, date })}
-              className={`p-3 text-center rounded-xl border transition-colors ${
-                bookingData.date === date
-                  ? 'bg-primary-600 border-primary-600 text-white'
-                  : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
-            >
-              <div className="text-sm font-medium">
-                {formatDate(date)}
+      case 2: // Booking Details
+        return (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                {t('booking.bookingDetails')}
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('booking.additionalNotes')}
+                  </label>
+                  <textarea
+                    value={bookingNotes}
+                    onChange={(e) => setBookingNotes(e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    placeholder={t('booking.notesPlaceholder')}
+                  />
+                </div>
               </div>
-            </button>
-          ))}
-        </div>
-      </div>
+            </div>
 
-      {/* Time Selection */}
-      {bookingData.date && (
-        <div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-            Доступний час
-          </h3>
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {timeSlots.map((time) => (
+            {/* Booking Summary */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                {t('booking.summary')}
+              </h3>
+              
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">{t('booking.specialist')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {specialist.user?.firstName} {specialist.user?.lastName}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">{t('booking.service')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {service.name}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">{t('booking.dateTime')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {selectedDate?.toLocaleDateString(language)} {selectedTime}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">{t('booking.duration')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {service.duration} {t('time.minutes')}
+                  </span>
+                </div>
+                
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
+                  <div className="flex justify-between">
+                    <span className="text-lg font-bold text-gray-900 dark:text-white">{t('booking.total')}</span>
+                    <span className="text-lg font-bold text-gray-900 dark:text-white">
+                      {formatPrice(service.price, service.currency)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 3: // Payment
+        return (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                {t('booking.payment')}
+              </h3>
+              
+              <p className="text-gray-600 dark:text-gray-400 text-center py-8">
+                {t('booking.paymentIntegrationPending')}
+              </p>
+              
               <button
-                key={time}
-                onClick={() => setBookingData({ ...bookingData, time })}
-                className={`p-3 text-center rounded-lg border transition-colors ${
-                  bookingData.time === time
-                    ? 'bg-primary-600 border-primary-600 text-white'
-                    : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                }`}
+                onClick={handleBookingSubmit}
+                className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center"
               >
-                {time}
+                <CreditCardIcon className="w-5 h-5 mr-2" />
+                {t('booking.confirmBooking')}
               </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-
-  const renderStep2 = () => (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-        Деталі бронювання
-      </h2>
-
-      {/* Meeting Type */}
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-          Тип зустрічі
-        </h3>
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={() => setBookingData({ ...bookingData, type: 'online' })}
-            className={`p-4 rounded-xl border transition-colors ${
-              bookingData.type === 'online'
-                ? 'bg-primary-50 border-primary-600 text-primary-600'
-                : 'border-gray-300 dark:border-gray-600'
-            }`}
-          >
-            <div className="text-center">
-              <ChatBubbleLeftRightIcon className="w-8 h-8 mx-auto mb-2" />
-              <div className="font-medium">Онлайн</div>
-              <div className="text-sm text-gray-500">{t('booking.videoCall')}</div>
-            </div>
-          </button>
-          <button
-            onClick={() => setBookingData({ ...bookingData, type: 'offline' })}
-            className={`p-4 rounded-xl border transition-colors ${
-              bookingData.type === 'offline'
-                ? 'bg-primary-50 border-primary-600 text-primary-600'
-                : 'border-gray-300 dark:border-gray-600'
-            }`}
-          >
-            <div className="text-center">
-              <MapPinIcon className="w-8 h-8 mx-auto mb-2" />
-              <div className="font-medium">Офлайн</div>
-              <div className="text-sm text-gray-500">В офісі спеціаліста</div>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      {/* Notes */}
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-          {t('booking.additionalNotes')}
-        </h3>
-        <textarea
-          value={bookingData.notes}
-          onChange={(e) => setBookingData({ ...bookingData, notes: e.target.value })}
-          placeholder="Опишіть що вас турбує або що ви хотіли б обговорити..."
-          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none h-24 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-        />
-      </div>
-    </div>
-  );
-
-  const renderStep3 = () => (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-        Оплата
-      </h2>
-
-      {/* Payment Method */}
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-          Спосіб оплати
-        </h3>
-        <div className="space-y-3">
-          <label className="flex items-center p-4 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer">
-            <input
-              type="radio"
-              name="paymentMethod"
-              value="card"
-              checked={bookingData.paymentMethod === 'card'}
-              onChange={(e) => setBookingData({ ...bookingData, paymentMethod: e.target.value })}
-              className="mr-3"
-            />
-            <CreditCardIcon className="w-6 h-6 mr-3 text-gray-400" />
-            <div>
-              <div className="font-medium">Банківська картка</div>
-              <div className="text-sm text-gray-500">Visa, Mastercard</div>
-            </div>
-          </label>
-          <label className="flex items-center p-4 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer">
-            <input
-              type="radio"
-              name="paymentMethod"
-              value="cash"
-              checked={bookingData.paymentMethod === 'cash'}
-              onChange={(e) => setBookingData({ ...bookingData, paymentMethod: e.target.value })}
-              className="mr-3"
-            />
-            <div className="w-6 h-6 mr-3 bg-green-500 rounded flex items-center justify-center">
-              <span className="text-white text-xs">₴</span>
-            </div>
-            <div>
-              <div className="font-medium">Готівка</div>
-              <div className="text-sm text-gray-500">Оплата після сеансу</div>
-            </div>
-          </label>
-        </div>
-      </div>
-
-      {/* Price Summary */}
-      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-        <h4 className="font-medium text-gray-900 dark:text-white mb-3">
-          Підсумок оплати
-        </h4>
-        <div className="space-y-2">
-          <div className="flex justify-between">
-            <span>Послуга</span>
-            <span>{formatPrice(service.price, service.currency)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Тривалість</span>
-            <span>{service.duration}</span>
-          </div>
-          <div className="border-t border-gray-200 dark:border-gray-600 pt-2 mt-2">
-            <div className="flex justify-between font-bold text-lg">
-              <span>Всього</span>
-              <span>{formatPrice(service.price, service.currency)}</span>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  );
+        );
 
-  const renderStep4 = () => (
-    <div className="space-y-6 text-center">
-      <div className="w-16 h-16 bg-success-100 rounded-full flex items-center justify-center mx-auto">
-        <CheckCircleIcon className="w-10 h-10 text-success-600" />
-      </div>
-      
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-        Бронювання підтверджено!
-      </h2>
-      
-      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 max-w-md mx-auto">
-        <h3 className="font-medium text-gray-900 dark:text-white mb-4">
-          Деталі вашого бронювання:
-        </h3>
-        <div className="space-y-3 text-sm">
-          <div className="flex justify-between">
-            <span>Спеціаліст:</span>
-            <span className="font-medium">{service.specialist.name}</span>
+      case 4: // Confirmation
+        return (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 text-center">
+              <CheckCircleIcon className="w-16 h-16 text-green-600 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                {t('booking.bookingConfirmed')}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                {t('booking.confirmationMessage')}
+              </p>
+              
+              <button
+                onClick={() => navigate('/customer/bookings')}
+                className="bg-primary-600 text-white py-2 px-6 rounded-lg hover:bg-primary-700 transition-colors"
+              >
+                {t('booking.viewBookings')}
+              </button>
+            </div>
           </div>
-          <div className="flex justify-between">
-            <span>Послуга:</span>
-            <span className="font-medium">{service.name}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Дата:</span>
-            <span className="font-medium">{formatDate(bookingData.date)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Час:</span>
-            <span className="font-medium">{bookingData.time}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Тип:</span>
-            <span className="font-medium">
-              {bookingData.type === 'online' ? t('booking.online') : t('booking.offline')}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span>Вартість:</span>
-            <span className="font-medium">{formatPrice(service.price, service.currency)}</span>
-          </div>
-        </div>
-      </div>
+        );
 
-      <div className="space-y-3">
-        <p className="text-gray-600 dark:text-gray-400">
-          Ми надіслали підтвердження на вашу електронну пошту.
-        </p>
-        <div className="flex justify-center space-x-4">
-          <Link
-            to="/bookings"
-            className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            Переглянути бронювання
-          </Link>
-          <Link
-            to="/dashboard"
-            className="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          >
-            На головну
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-
-  const canProceed = () => {
-    switch (currentStep) {
-      case 1:
-        return bookingData.date && bookingData.time;
-      case 2:
-        return bookingData.type;
-      case 3:
-        return bookingData.paymentMethod;
       default:
-        return false;
+        return null;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="bg-surface rounded-2xl shadow-lg p-6 mb-8">
-          <div className="flex items-center space-x-4 mb-6">
-            <button
-              onClick={() => navigate(-1)}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              <ArrowLeftIcon className="w-6 h-6" />
-            </button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Бронювання послуги
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                {service.name}
-              </p>
-            </div>
-          </div>
+        <div className="mb-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4"
+          >
+            <ArrowLeftIcon className="w-5 h-5 mr-2" />
+            {t('navigation.back')}
+          </button>
+          
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            {t('booking.bookService')}
+          </h1>
+          
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            {specialist.user?.firstName} {specialist.user?.lastName} - {specialist.businessName}
+          </p>
+        </div>
 
-          {/* Specialist Info */}
-          <div className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">
-                {service.specialist.name.split(' ').map(n => n[0]).join('')}
-              </span>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">
-                {service.specialist.name}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {service.specialist.profession}
-              </p>
-              <div className="flex items-center space-x-2 text-sm">
-                <div className="flex items-center">
-                  <StarIconSolid className="w-4 h-4 text-yellow-400 mr-1" />
-                  <span>{service.specialist.rating}</span>
+        {/* Progress Steps */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            {steps.map((step, index) => (
+              <div key={step.id} className="flex items-center">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
+                    index <= currentStep
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                  }`}
+                >
+                  {index + 1}
                 </div>
-                <span className="text-gray-400">•</span>
-                <span>{service.specialist.reviewCount} відгуків</span>
+                <div className="ml-3 hidden sm:block">
+                  <p
+                    className={`text-sm font-medium ${
+                      index <= currentStep
+                        ? 'text-primary-600'
+                        : 'text-gray-500 dark:text-gray-400'
+                    }`}
+                  >
+                    {step.title}
+                  </p>
+                </div>
+                {index < steps.length - 1 && (
+                  <div
+                    className={`w-12 h-0.5 mx-4 ${
+                      index < currentStep
+                        ? 'bg-primary-600'
+                        : 'bg-gray-200 dark:bg-gray-700'
+                    }`}
+                  />
+                )}
               </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="bg-surface rounded-2xl shadow-lg p-8">
-          {renderStepIndicator()}
-
-          <div className="mb-8">
-            {currentStep === 1 && renderStep1()}
-            {currentStep === 2 && renderStep2()}
-            {currentStep === 3 && renderStep3()}
-            {currentStep === 4 && renderStep4()}
-          </div>
-
-          {/* Navigation */}
-          {currentStep < 4 && (
-            <div className="flex justify-between">
-              <button
-                onClick={handlePrevious}
-                disabled={currentStep === 1}
-                className={`px-6 py-3 rounded-lg transition-colors ${
-                  currentStep === 1
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                <ArrowLeftIcon className="w-5 h-5 mr-2 inline" />
-                Назад
-              </button>
-              
-              <button
-                onClick={currentStep === 3 ? handleBookingComplete : handleNext}
-                disabled={!canProceed()}
-                className={`px-6 py-3 rounded-lg transition-colors ${
-                  canProceed()
-                    ? 'bg-primary-600 text-white hover:bg-primary-700'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                {currentStep === 3 ? t('booking.confirmBooking') : t('booking.next')}
-                {currentStep < 3 && <ArrowRightIcon className="w-5 h-5 ml-2 inline" />}
-              </button>
-            </div>
-          )}
+        {/* Step Content */}
+        <div className="mb-8">
+          {renderStepContent()}
         </div>
+
+        {/* Navigation Buttons */}
+        {currentStep < steps.length - 1 && (
+          <div className="flex justify-between">
+            <button
+              onClick={handlePrevStep}
+              disabled={currentStep === 0}
+              className={`flex items-center px-6 py-2 rounded-lg transition-colors ${
+                currentStep === 0
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              <ArrowLeftIcon className="w-5 h-5 mr-2" />
+              {t('navigation.previous')}
+            </button>
+            
+            <button
+              onClick={handleNextStep}
+              disabled={
+                (currentStep === 1 && (!selectedDate || !selectedTime)) ||
+                (currentStep === 2 && !service)
+              }
+              className="flex items-center px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              {t('navigation.next')}
+              <ArrowRightIcon className="w-5 h-5 ml-2" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

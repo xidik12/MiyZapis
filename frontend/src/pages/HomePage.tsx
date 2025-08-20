@@ -19,7 +19,7 @@ import {
   ArrowRightIcon,
 } from '@heroicons/react/24/outline';
 
-// Mock data for categories and featured specialists
+// Service categories and featured specialists - data from API
 const getServiceCategories = (t: (key: string) => string) => [
   {
     id: '1',

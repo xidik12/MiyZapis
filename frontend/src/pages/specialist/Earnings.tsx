@@ -62,7 +62,7 @@ const SpecialistEarnings: React.FC = () => {
     return methodMapping[method] ? t(methodMapping[method]) : method;
   };
 
-  const mockEarnings: EarningsData = {
+  const sampleEarnings: EarningsData = {
     totalEarnings: 1232, // USD (converted from screenshot)
     thisMonth: 241, // USD
     pending: 32.43, // USD
@@ -155,7 +155,7 @@ const SpecialistEarnings: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.totalEarnings')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                ${mockEarnings.totalEarnings}
+                ${sampleEarnings.totalEarnings}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-600">
@@ -169,7 +169,7 @@ const SpecialistEarnings: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.thisMonth')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                ${mockEarnings.thisMonth}
+                ${sampleEarnings.thisMonth}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600">
@@ -183,7 +183,7 @@ const SpecialistEarnings: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.pending')}</p>
               <p className="text-2xl font-bold text-orange-600">
-                ${mockEarnings.pending}
+                ${sampleEarnings.pending}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600">
@@ -197,7 +197,7 @@ const SpecialistEarnings: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.lastPayout')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                ${mockEarnings.lastPayout}
+                ${sampleEarnings.lastPayout}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600">
@@ -214,7 +214,7 @@ const SpecialistEarnings: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.completedBookings')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {mockEarnings.completedBookings}
+                {sampleEarnings.completedBookings}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600">
@@ -228,7 +228,7 @@ const SpecialistEarnings: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.activeClients')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {mockEarnings.activeClients}
+                {sampleEarnings.activeClients}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600">
@@ -242,7 +242,7 @@ const SpecialistEarnings: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.averageBookingValue')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                ${mockEarnings.averageBookingValue}
+                ${sampleEarnings.averageBookingValue}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600">
@@ -256,7 +256,7 @@ const SpecialistEarnings: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.monthlyGrowth')}</p>
               <p className="text-2xl font-bold text-green-600">
-                +{mockEarnings.monthlyGrowth}%
+                +{sampleEarnings.monthlyGrowth}%
               </p>
             </div>
             <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-600">
@@ -364,7 +364,7 @@ const SpecialistEarnings: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">{t('earnings.avgSessionValue')}</span>
-                <span className="font-medium text-gray-900 dark:text-white">${mockEarnings.averageBookingValue}</span>
+                <span className="font-medium text-gray-900 dark:text-white">${sampleEarnings.averageBookingValue}</span>
               </div>
             </div>
           </div>
@@ -394,7 +394,7 @@ const SpecialistEarnings: React.FC = () => {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">{t('earnings.monthlyGrowth')}</span>
-                <span className="font-medium text-green-600">+{mockEarnings.monthlyGrowth}%</span>
+                <span className="font-medium text-green-600">+{sampleEarnings.monthlyGrowth}%</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">{t('earnings.newCustomers')}</span>

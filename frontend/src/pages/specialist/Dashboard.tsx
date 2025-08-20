@@ -4,6 +4,7 @@ import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { analyticsService, bookingService } from '../../services';
 // Removed SpecialistSidebar import - layout is handled by SpecialistLayout
 // Status colors for bookings
 const statusColors = {
@@ -41,6 +42,24 @@ const SpecialistDashboard: React.FC = () => {
   const { formatPrice } = useCurrency();
   const { t, language } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [dashboardData, setDashboardData] = useState<any>({
+    stats: {
+      totalBookings: 0,
+      monthlyRevenue: 0,
+      rating: 0,
+      reviewCount: 0,
+      responseTime: 0,
+      profileViews: 0,
+      favoriteCount: 0,
+      conversionRate: 0,
+      completionRate: 0,
+      repeatClients: 0,
+      punctuality: 0
+    },
+    recentBookings: [],
+    upcomingAppointments: []
+  });
+  const [loading, setLoading] = useState(true);
   // Removed sidebarOpen state - layout is handled by SpecialistLayout
 
   // Update time every minute
@@ -134,7 +153,7 @@ const SpecialistDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title={t('dashboard.specialist.totalBookings')}
-          value={mockSpecialistData.stats.totalBookings}
+          value={dashboardData.stats.totalBookings}
           change={`+12% ${t('dashboard.specialist.thisMonthImprovement')}`}
           changeType="positive"
           icon={CalendarIconSolid}
@@ -143,7 +162,7 @@ const SpecialistDashboard: React.FC = () => {
         />
         <StatCard
           title={t('dashboard.specialist.monthlyRevenue')}
-          value={formatPrice(mockSpecialistData.stats.monthlyRevenue, 'UAH')}
+          value={formatPrice(dashboardData.stats.monthlyRevenue, 'UAH')}
           change={`+8% ${t('dashboard.specialist.improvement')}`}
           changeType="positive"
           icon={CurrencyDollarIcon}
@@ -152,16 +171,16 @@ const SpecialistDashboard: React.FC = () => {
         />
         <StatCard
           title={t('dashboard.specialist.averageRating')}
-          value={`${mockSpecialistData.stats.rating}/5.0`}
+          value={`${dashboardData.stats.rating}/5.0`}
           change={`+0.2 ${t('dashboard.specialist.thisMonthImprovement')}`}
           changeType="positive"
           icon={StarIconSolid}
           iconBg="bg-gradient-to-br from-warning-500 to-warning-600"
-          description={`${mockSpecialistData.stats.reviewCount} ${t('dashboard.nav.reviews').toLowerCase()}`}
+          description={`${dashboardData.stats.reviewCount} ${t('dashboard.nav.reviews').toLowerCase()}`}
         />
         <StatCard
           title={t('dashboard.specialist.responseTime')}
-          value={`${mockSpecialistData.stats.responseTime} ${t('time.minutes')}`}
+          value={`${dashboardData.stats.responseTime} ${t('time.minutes')}`}
           change={`-3 ${t('time.minutes')} ${t('dashboard.specialist.improvement')}`}
           changeType="positive"
           icon={ClockIcon}
@@ -180,15 +199,15 @@ const SpecialistDashboard: React.FC = () => {
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.profileViews')}</span>
-              <span className="font-semibold text-gray-900 dark:text-white">{mockSpecialistData.stats.profileViews}</span>
+              <span className="font-semibold text-gray-900 dark:text-white">{dashboardData.stats.profileViews}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.favoriteCount')}</span>
-              <span className="font-semibold text-gray-900 dark:text-white">{mockSpecialistData.stats.favoriteCount}</span>
+              <span className="font-semibold text-gray-900 dark:text-white">{dashboardData.stats.favoriteCount}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.conversionRate')}</span>
-              <span className="font-semibold text-success-600">{mockSpecialistData.stats.conversionRate}%</span>
+              <span className="font-semibold text-success-600">{dashboardData.stats.conversionRate}%</span>
             </div>
           </div>
         </div>
@@ -201,15 +220,15 @@ const SpecialistDashboard: React.FC = () => {
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.completionRate')}</span>
-              <span className="font-semibold text-success-600">{mockSpecialistData.stats.completionRate}%</span>
+              <span className="font-semibold text-success-600">{dashboardData.stats.completionRate}%</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.repeatClients')}</span>
-              <span className="font-semibold text-gray-900 dark:text-white">{mockSpecialistData.stats.repeatClients}%</span>
+              <span className="font-semibold text-gray-900 dark:text-white">{dashboardData.stats.repeatClients}%</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.punctuality')}</span>
-              <span className="font-semibold text-primary-600">{mockSpecialistData.stats.punctuality}%</span>
+              <span className="font-semibold text-primary-600">{dashboardData.stats.punctuality}%</span>
             </div>
           </div>
         </div>
@@ -259,7 +278,7 @@ const SpecialistDashboard: React.FC = () => {
             </Link>
           </div>
           <div className="space-y-4">
-            {mockSpecialistData.recentBookings.slice(0, 4).map((booking) => (
+            {dashboardData.recentBookings.slice(0, 4).map((booking) => (
               <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
@@ -300,7 +319,7 @@ const SpecialistDashboard: React.FC = () => {
             </span>
           </div>
           <div className="space-y-4">
-            {mockSpecialistData.upcomingAppointments.map((appointment) => (
+            {dashboardData.upcomingAppointments.map((appointment) => (
               <div key={appointment.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center">
@@ -335,7 +354,7 @@ const SpecialistDashboard: React.FC = () => {
                 </div>
               </div>
             ))}
-            {mockSpecialistData.upcomingAppointments.length === 0 && (
+            {dashboardData.upcomingAppointments.length === 0 && (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 <p>{t('dashboard.specialist.noAppointments')}</p>

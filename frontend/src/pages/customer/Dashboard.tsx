@@ -30,6 +30,7 @@ import {
   ChartBarIcon,
   PlusIcon,
   BookOpenIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import {
   CalendarIcon as CalendarIconSolid,
@@ -38,77 +39,67 @@ import {
   GiftIcon as GiftIconSolid,
 } from '@heroicons/react/24/solid';
 
-// Temporary mock data until backend integration is complete
-const mockCustomerData = {
-  stats: {
-    totalSpent: 2450,
-    loyaltyPoints: 1240,
-    savedAmount: 340,
-    servicesUsed: 12,
-    completedBookings: 8,
-    totalBookings: 10,
-    averageRating: 4.8,
-    favoriteSpecialists: 3,
-    reviewsWritten: 6
-  },
-  nextAppointment: {
-    serviceName: 'Стрижка та укладання',
-    specialistName: 'Олена Іванова',
-    date: '2025-08-25',
-    time: '14:00',
-    type: 'offline' as const,
-    location: 'вул. Хрещатик, 25'
-  },
-  recentBookings: [
-    {
-      id: '1',
-      specialistName: 'Марія Петрова',
-      serviceName: 'Масаж',
-      date: '2025-08-18',
-      status: 'completed' as const,
-      amount: 800
-    },
-    {
-      id: '2',
-      specialistName: 'Андрій Коваль',
-      serviceName: 'Репетиторство з англійської',
-      date: '2025-08-20',
-      status: 'confirmed' as const,
-      amount: 500
-    }
-  ],
-  favoriteSpecialists: [
-    {
-      id: '1',
-      name: 'Олена Іванова',
-      service: 'Перукар-стиліст',
-      rating: 4.9,
-      bookings: 3
-    },
-    {
-      id: '2',
-      name: 'Марія Петрова',
-      service: 'Масажист',
-      rating: 4.8,
-      bookings: 2
-    }
-  ],
-  specialOffers: [
-    {
-      id: '1',
-      title: 'Знижка на масаж',
-      description: '20% знижка на перший візит',
-      discount: 20,
-      expiryDate: '2025-09-01'
-    }
-  ]
-};
+// Interface definitions for type safety
+interface CustomerStats {
+  totalSpent: number;
+  loyaltyPoints: number;
+  savedAmount: number;
+  servicesUsed: number;
+  completedBookings: number;
+  totalBookings: number;
+  averageRating: number;
+  favoriteSpecialists: number;
+  reviewsWritten: number;
+}
+
+interface NextAppointment {
+  serviceName: string;
+  specialistName: string;
+  date: string;
+  time: string;
+  type: 'online' | 'offline';
+  location?: string;
+}
+
+interface RecentBooking {
+  id: string;
+  specialistName: string;
+  serviceName: string;
+  date: string;
+  status: 'completed' | 'confirmed' | 'pending' | 'cancelled';
+  amount: number;
+}
+
+interface FavoriteSpecialist {
+  id: string;
+  name: string;
+  service: string;
+  rating: number;
+  bookings: number;
+}
+
+interface SpecialOffer {
+  id: string;
+  title: string;
+  description: string;
+  discount: number;
+  expiryDate: string;
+}
 
 const CustomerDashboard: React.FC = () => {
   const user = useAppSelector(selectUser);
   const { formatPrice } = useCurrency();
   const { t, language } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
+  
+  // State management for dashboard data
+  const [stats, setStats] = useState<CustomerStats | null>(null);
+  const [nextAppointment, setNextAppointment] = useState<NextAppointment | null>(null);
+  const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
+  const [favoriteSpecialists, setFavoriteSpecialists] = useState<FavoriteSpecialist[]>([]);
+  const [specialOffers, setSpecialOffers] = useState<SpecialOffer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Update time every minute
   useEffect(() => {
@@ -118,12 +109,85 @@ const CustomerDashboard: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // Fetch dashboard data
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (!user) return;
+      
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // TODO: Replace with actual API calls when backend is ready
+        // For now, we'll show empty states for new users
+        
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Set empty initial data for new users
+        setStats({
+          totalSpent: 0,
+          loyaltyPoints: 0,
+          savedAmount: 0,
+          servicesUsed: 0,
+          completedBookings: 0,
+          totalBookings: 0,
+          averageRating: 0,
+          favoriteSpecialists: 0,
+          reviewsWritten: 0
+        });
+        setNextAppointment(null);
+        setRecentBookings([]);
+        setFavoriteSpecialists([]);
+        setSpecialOffers([]);
+        
+      } catch (err) {
+        console.error('Failed to fetch dashboard data:', err);
+        setError('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [user]);
+
   const getGreeting = () => {
     const hour = currentTime.getHours();
     if (hour < 12) return t('dashboard.welcome.morning');
     if (hour < 17) return t('dashboard.welcome.afternoon');
     return t('dashboard.welcome.evening');
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 mb-4">
+            <ExclamationTriangleIcon className="w-12 h-12 mx-auto" />
+          </div>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const getStatusColor = (status: string) => {
     return statusColors[status as keyof typeof statusColors] || statusColors.pending;
@@ -204,7 +268,7 @@ const CustomerDashboard: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <StatCard
               title={t('dashboard.customer.totalSpent')}
-              value={formatPrice(mockCustomerData.stats.totalSpent, 'UAH')}
+              value={stats ? formatPrice(stats.totalSpent, 'UAH') : '₴0'}
               change={`+15% ${t('dashboard.specialist.thisMonthImprovement')}`}
               changeType="positive"
               icon={CreditCardIcon}
@@ -213,26 +277,26 @@ const CustomerDashboard: React.FC = () => {
             />
             <StatCard
               title={t('dashboard.customer.loyaltyPoints')}
-              value={mockCustomerData.stats.loyaltyPoints}
+              value={stats ? stats.loyaltyPoints : 0}
               change={`+340 ${t('dashboard.specialist.thisMonthImprovement')}`}
               changeType="positive"
               icon={GiftIconSolid}
               iconBg="bg-gradient-to-br from-success-500 to-success-600"
-              description={`${formatPrice(mockCustomerData.stats.savedAmount, 'UAH')} ${t('dashboard.customer.savedAmount').toLowerCase()}`}
+              description={`${stats ? formatPrice(stats.savedAmount, 'UAH') : '₴0'} ${t('dashboard.customer.savedAmount').toLowerCase()}`}
             />
             <StatCard
               title={t('dashboard.customer.servicesUsed')}
-              value={mockCustomerData.stats.servicesUsed}
-              change={`${mockCustomerData.stats.completedBookings}/${mockCustomerData.stats.totalBookings} ${t('dashboard.booking.status.completed').toLowerCase()}`}
+              value={stats ? stats.servicesUsed : 0}
+              change={`${stats ? stats.completedBookings : 0}/${stats ? stats.totalBookings : 0} ${t('dashboard.booking.status.completed').toLowerCase()}`}
               changeType="positive"
               icon={StarIconSolid}
               iconBg="bg-gradient-to-br from-warning-500 to-warning-600"
-              description={`${mockCustomerData.stats.averageRating}/5.0 ${t('dashboard.customer.averageRating').toLowerCase()}`}
+              description={`${stats ? stats.averageRating : 0}/5.0 ${t('dashboard.customer.averageRating').toLowerCase()}`}
             />
             <StatCard
               title={t('dashboard.customer.favoriteSpecialists')}
-              value={mockCustomerData.stats.favoriteSpecialists}
-              change={`${mockCustomerData.stats.reviewsWritten} ${t('dashboard.nav.reviews').toLowerCase()}`}
+              value={stats ? stats.favoriteSpecialists : 0}
+              change={`${stats ? stats.reviewsWritten : 0} ${t('dashboard.nav.reviews').toLowerCase()}`}
               changeType="positive"
               icon={HeartIconSolid}
               iconBg="bg-gradient-to-br from-info-500 to-info-600"
@@ -241,30 +305,30 @@ const CustomerDashboard: React.FC = () => {
           </div>
 
           {/* Next Appointment Banner */}
-          {mockCustomerData.nextAppointment && (
+          {nextAppointment && (
             <div className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl p-6 text-white shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold mb-2">{t('dashboard.customer.nextAppointment')}</h3>
                   <div className="space-y-1">
-                    <p className="text-primary-100">{mockCustomerData.nextAppointment.serviceName}</p>
+                    <p className="text-primary-100">{nextAppointment.serviceName}</p>
                     <p className="text-sm text-primary-200">
-                      {language === 'uk' ? 'з' : language === 'ru' ? 'с' : 'with'} {mockCustomerData.nextAppointment.specialistName}
+                      {language === 'uk' ? 'з' : language === 'ru' ? 'с' : 'with'} {nextAppointment.specialistName}
                     </p>
                     <div className="flex items-center space-x-4 text-sm text-primary-200">
                       <span className="flex items-center">
                         <CalendarIcon className="w-4 h-4 mr-1" />
-                        {mockCustomerData.nextAppointment.date}
+                        {nextAppointment.date}
                       </span>
                       <span className="flex items-center">
                         <ClockIcon className="w-4 h-4 mr-1" />
-                        {mockCustomerData.nextAppointment.time}
+                        {nextAppointment.time}
                       </span>
                       <span className="flex items-center">
                         <MapPinIcon className="w-4 h-4 mr-1" />
-                        {mockCustomerData.nextAppointment.type === 'online' 
+                        {nextAppointment.type === 'online' 
                           ? t('dashboard.specialist.online')
-                          : mockCustomerData.nextAppointment.location
+                          : nextAppointment.location
                         }
                       </span>
                     </div>
@@ -296,7 +360,7 @@ const CustomerDashboard: React.FC = () => {
                 </Link>
               </div>
               <div className="space-y-4">
-                {mockCustomerData.recentBookings.slice(0, 4).map((booking) => (
+                {recentBookings.slice(0, 4).map((booking) => (
                   <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
@@ -323,7 +387,7 @@ const CustomerDashboard: React.FC = () => {
                   </div>
                 ))}
               </div>
-              {mockCustomerData.recentBookings.length === 0 && (
+              {recentBookings.length === 0 && (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <BookOpenIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
                   <p>{t('dashboard.customer.noBookings')}</p>
@@ -351,7 +415,19 @@ const CustomerDashboard: React.FC = () => {
                 </Link>
               </div>
               <div className="space-y-4">
-                {mockCustomerData.favoriteSpecialists.slice(0, 3).map((specialist) => (
+                {favoriteSpecialists.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <HeartIconSolid className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>{t('customer.favorites.noSpecialists')}</p>
+                  <Link 
+                    to="/search" 
+                    className="text-primary-600 dark:text-primary-400 text-sm hover:underline mt-2 inline-block"
+                  >
+                    {t('dashboard.customer.exploreServices')}
+                  </Link>
+                </div>
+              ) : (
+                favoriteSpecialists.slice(0, 3).map((specialist) => (
                   <div key={specialist.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center">
@@ -387,20 +463,21 @@ const CustomerDashboard: React.FC = () => {
                       </Link>
                     </div>
                   </div>
-                ))}
+                ))
+              )}
               </div>
             </div>
           </div>
 
           {/* Special Offers */}
-          {mockCustomerData.specialOffers && mockCustomerData.specialOffers.length > 0 && (
+          {specialOffers && specialOffers.length > 0 && (
             <div className="bg-surface rounded-2xl p-6 shadow-lg">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.customer.specialOffers')}</h3>
                 <GiftIcon className="w-5 h-5 text-primary-600" />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {mockCustomerData.specialOffers.map((offer) => (
+                {specialOffers.map((offer) => (
                   <div key={offer.id} className="bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-xl p-4 border border-primary-200 dark:border-primary-700">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-900 px-2 py-1 rounded-full">

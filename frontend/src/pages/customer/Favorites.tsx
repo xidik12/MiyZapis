@@ -43,83 +43,6 @@ interface FavoriteService {
   };
 }
 
-// Mock data for favorite specialists
-const getMockFavoriteSpecialists = (t: (key: string) => string): FavoriteSpecialist[] => [
-  {
-    id: '1',
-    name: 'Sarah Johnson',
-    profession: t('profession.hairStylistColorist'),
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-    rating: 4.9,
-    reviewCount: 127,
-    location: t('location.newYork'),
-    responseTime: `10 ${t('time.minutes')}`,
-    priceFrom: 1200,
-    isOnline: true,
-    isVerified: true,
-  },
-  {
-    id: '2',
-    name: 'Michael Chen',
-    profession: t('profession.personalTrainer'),
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-    rating: 4.8,
-    reviewCount: 94,
-    location: t('location.sanFrancisco'),
-    responseTime: `15 ${t('time.minutes')}`,
-    priceFrom: 800,
-    isOnline: false,
-    isVerified: true,
-  },
-  {
-    id: '3',
-    name: 'Emily Rodriguez',
-    profession: t('profession.businessConsultant'),
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-    rating: 5.0,
-    reviewCount: 76,
-    location: t('location.austin'),
-    responseTime: `5 ${t('time.minutes')}`,
-    priceFrom: 2000,
-    isOnline: true,
-    isVerified: true,
-  },
-];
-
-// Mock data for favorite services
-const getMockFavoriteServices = (): FavoriteService[] => [
-  {
-    id: '1',
-    name: 'Premium Hair Cut & Style',
-    description: 'Professional hair cutting and styling service with consultation',
-    price: 1200,
-    duration: 90,
-    category: 'Beauty & Wellness',
-    images: ['https://images.unsplash.com/photo-1560066984-138dadb4c035?w=300&h=200&fit=crop'],
-    specialist: {
-      id: '1',
-      name: 'Sarah Johnson',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-      rating: 4.9,
-    },
-  },
-  {
-    id: '2',
-    name: 'Personal Training Session',
-    description: 'One-on-one fitness training session with personalized workout plan',
-    price: 800,
-    duration: 60,
-    category: 'Health & Fitness',
-    images: ['https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=200&fit=crop'],
-    specialist: {
-      id: '2',
-      name: 'Michael Chen',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-      rating: 4.8,
-    },
-  },
-];
-
 const CustomerFavorites: React.FC = () => {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
@@ -130,20 +53,59 @@ const CustomerFavorites: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'specialists' | 'services'>('specialists');
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setFavoriteSpecialists(getMockFavoriteSpecialists(t));
-      setFavoriteServices(getMockFavoriteServices());
-      setIsLoading(false);
-    }, 1000);
-  }, [t]);
+    const fetchFavorites = async () => {
+      try {
+        setIsLoading(true);
+        
+        // TODO: Implement actual API calls when backend is ready
+        // const [specialistsResponse, servicesResponse] = await Promise.all([
+        //   favoritesApi.getFavoriteSpecialists(),
+        //   favoritesApi.getFavoriteServices()
+        // ]);
+        // setFavoriteSpecialists(specialistsResponse.data);
+        // setFavoriteServices(servicesResponse.data);
+        
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // Initialize with empty arrays for new users
+        setFavoriteSpecialists([]);
+        setFavoriteServices([]);
+      } catch (error) {
+        console.error('Failed to fetch favorites:', error);
+        // Set empty arrays on error
+        setFavoriteSpecialists([]);
+        setFavoriteServices([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const handleRemoveSpecialist = (specialistId: string) => {
-    setFavoriteSpecialists(prev => prev.filter(s => s.id !== specialistId));
+    fetchFavorites();
+  }, []);
+
+  const handleRemoveSpecialist = async (specialistId: string) => {
+    try {
+      // TODO: Implement API call to remove specialist from favorites
+      // await favoritesApi.removeSpecialistFromFavorites(specialistId);
+      
+      setFavoriteSpecialists(prev => prev.filter(s => s.id !== specialistId));
+    } catch (error) {
+      console.error('Failed to remove specialist from favorites:', error);
+      // TODO: Show error message to user
+    }
   };
 
-  const handleRemoveService = (serviceId: string) => {
-    setFavoriteServices(prev => prev.filter(s => s.id !== serviceId));
+  const handleRemoveService = async (serviceId: string) => {
+    try {
+      // TODO: Implement API call to remove service from favorites
+      // await favoritesApi.removeServiceFromFavorites(serviceId);
+      
+      setFavoriteServices(prev => prev.filter(s => s.id !== serviceId));
+    } catch (error) {
+      console.error('Failed to remove service from favorites:', error);
+      // TODO: Show error message to user
+    }
   };
 
   const handleViewSpecialist = (specialistId: string) => {

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAppSelector } from '../../hooks/redux';
+import { selectUser } from '../../store/slices/authSlice';
 import { 
   UserCircleIcon,
   BellIcon,
@@ -43,13 +45,14 @@ const CustomerSettings: React.FC = () => {
   const { currency, setCurrency } = useCurrency();
   const { theme, setTheme } = useTheme();
   
-  // Mock user data
+  // Get actual user data from Redux store
+  const currentUser = useAppSelector(selectUser);
   const [user, setUser] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    phone: '+380123456789',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    firstName: currentUser?.firstName || '',
+    lastName: currentUser?.lastName || '',
+    email: currentUser?.email || '',
+    phone: currentUser?.phone || '',
+    avatar: currentUser?.avatar || '',
   });
 
   // Notification settings
@@ -72,51 +75,11 @@ const CustomerSettings: React.FC = () => {
     dataProcessing: true,
   });
 
-  // Payment methods
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
-    {
-      id: '1',
-      type: 'card',
-      name: 'Visa ending in 4242',
-      last4: '4242',
-      expiryMonth: 12,
-      expiryYear: 2025,
-      isDefault: true,
-    },
-    {
-      id: '2',
-      type: 'card',
-      name: 'Mastercard ending in 5555',
-      last4: '5555',
-      expiryMonth: 6,
-      expiryYear: 2024,
-      isDefault: false,
-    },
-  ]);
+  // Payment methods - start with empty array for new users
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
 
-  // Addresses
-  const [addresses, setAddresses] = useState<Address[]>([
-    {
-      id: '1',
-      type: 'home',
-      label: 'Home',
-      street: '123 Main Street, Apt 4B',
-      city: 'Kyiv',
-      postalCode: '01001',
-      country: 'Ukraine',
-      isDefault: true,
-    },
-    {
-      id: '2',
-      type: 'work',
-      label: 'Office',
-      street: '456 Business Ave, Suite 200',
-      city: 'Kyiv',
-      postalCode: '01002',
-      country: 'Ukraine',
-      isDefault: false,
-    },
-  ]);
+  // Addresses - start with empty array for new users
+  const [addresses, setAddresses] = useState<Address[]>([]);
 
   const [activeSection, setActiveSection] = useState('account');
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -201,11 +164,19 @@ const CustomerSettings: React.FC = () => {
                   
                   {/* Profile Picture */}
                   <div className="flex items-center mb-6">
-                    <img
-                      src={user.avatar}
-                      alt="Profile"
-                      className="w-20 h-20 rounded-full object-cover"
-                    />
+                    {user.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt="Profile"
+                        className="w-20 h-20 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
+                        <span className="text-white font-bold text-2xl">
+                          {user.firstName?.[0]}{user.lastName?.[0]}
+                        </span>
+                      </div>
+                    )}
                     <div className="ml-4">
                       <button className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors">
                         {t('profile.changePhoto')}
@@ -522,7 +493,17 @@ const CustomerSettings: React.FC = () => {
                   </div>
 
                   <div className="space-y-4">
-                    {paymentMethods.map((method) => (
+                    {paymentMethods.length === 0 ? (
+                      <div className="text-center py-8">
+                        <CreditCardIcon className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                        <p className="text-gray-500 dark:text-gray-400 mb-4">No payment methods added yet</p>
+                        <button className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto">
+                          <PlusIcon className="h-4 w-4 mr-2" />
+                          Add Your First Payment Method
+                        </button>
+                      </div>
+                    ) : (
+                      paymentMethods.map((method) => (
                       <div key={method.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex items-center justify-between">
                         <div className="flex items-center">
                           <CreditCardIcon className="h-8 w-8 text-gray-400 dark:text-gray-500 mr-3" />
@@ -552,7 +533,8 @@ const CustomerSettings: React.FC = () => {
                           </button>
                         </div>
                       </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </div>
               )}
@@ -571,7 +553,17 @@ const CustomerSettings: React.FC = () => {
                   </div>
 
                   <div className="space-y-4">
-                    {addresses.map((address) => (
+                    {addresses.length === 0 ? (
+                      <div className="text-center py-8">
+                        <MapPinIcon className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                        <p className="text-gray-500 dark:text-gray-400 mb-4">No addresses added yet</p>
+                        <button className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto">
+                          <PlusIcon className="h-4 w-4 mr-2" />
+                          Add Your First Address
+                        </button>
+                      </div>
+                    ) : (
+                      addresses.map((address) => (
                       <div key={address.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex items-start justify-between">
                         <div className="flex items-start">
                           <MapPinIcon className="h-8 w-8 text-gray-400 dark:text-gray-500 mr-3 mt-1" />
@@ -603,7 +595,8 @@ const CustomerSettings: React.FC = () => {
                           </button>
                         </div>
                       </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </div>
               )}
