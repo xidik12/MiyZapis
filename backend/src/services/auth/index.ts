@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
 import { config } from '@/config';
 import { prisma } from '@/config/database';
@@ -68,10 +68,14 @@ export class AuthService {
           isEmailVerified: true,
           isPhoneVerified: true,
           isActive: true,
+          lastLoginAt: true,
           loyaltyPoints: true,
           language: true,
           currency: true,
           timezone: true,
+          emailNotifications: true,
+          pushNotifications: true,
+          telegramNotifications: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -140,6 +144,9 @@ export class AuthService {
           currency: true,
           timezone: true,
           lastLoginAt: true,
+          emailNotifications: true,
+          pushNotifications: true,
+          telegramNotifications: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -214,10 +221,14 @@ export class AuthService {
           isEmailVerified: true,
           isPhoneVerified: true,
           isActive: true,
+          lastLoginAt: true,
           loyaltyPoints: true,
           language: true,
           currency: true,
           timezone: true,
+          emailNotifications: true,
+          pushNotifications: true,
+          telegramNotifications: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -248,10 +259,14 @@ export class AuthService {
             isEmailVerified: true,
             isPhoneVerified: true,
             isActive: true,
+            lastLoginAt: true,
             loyaltyPoints: true,
             language: true,
             currency: true,
             timezone: true,
+            emailNotifications: true,
+            pushNotifications: true,
+            telegramNotifications: true,
             createdAt: true,
             updatedAt: true,
           },
@@ -369,7 +384,7 @@ export class AuthService {
     const refreshToken = jwt.sign(
       { userId: user.id, tokenId: refreshTokenId },
       config.jwt.refreshSecret,
-      { expiresIn: config.jwt.refreshExpiresIn }
+      { expiresIn: config.jwt.refreshExpiresIn } as SignOptions
     );
 
     // Store refresh token in database
@@ -398,7 +413,7 @@ export class AuthService {
   private static generateAccessToken(payload: JwtPayload): string {
     return jwt.sign(payload, config.jwt.secret, {
       expiresIn: config.jwt.expiresIn
-    });
+    } as SignOptions);
   }
 
   // Get token expiration time in seconds

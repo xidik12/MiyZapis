@@ -1,9 +1,12 @@
 import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import { AuthService } from '@/services/auth';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import { ErrorCodes, LoginRequest, RegisterRequest, TelegramAuthRequest } from '@/types';
+import { ErrorCodes, LoginRequest, RegisterRequest, TelegramAuthRequest, JwtPayload } from '@/types';
 import { validationResult } from 'express-validator';
+import { config } from '@/config';
+import { redis } from '@/config/redis';
 
 export class AuthController {
   // Register new user
@@ -265,9 +268,34 @@ export class AuthController {
   static async logout(req: Request, res: Response): Promise<void> {
     try {
       const { refreshToken } = req.body;
+      const authHeader = req.headers.authorization;
+      
+      // Extract user ID from JWT token if available
+      let userId: string | null = null;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        try {
+          const token = authHeader.substring(7);
+          const decoded = jwt.verify(token, config.jwt.secret) as JwtPayload;
+          userId = decoded.userId;
+        } catch (tokenError) {
+          logger.warn('Invalid token in logout request:', tokenError);
+        }
+      }
 
+      // Logout from refresh token service
       if (refreshToken) {
         await AuthService.logout(refreshToken);
+      }
+
+      // Clear user cache if userId is available
+      if (userId && redis) {
+        try {
+          await redis.del(`user:${userId}`);
+          await redis.del(`auth:${userId}:*`);
+          logger.info('User cache cleared for logout', { userId });
+        } catch (cacheError) {
+          logger.warn('Failed to clear user cache on logout:', cacheError);
+        }
       }
 
       res.json(

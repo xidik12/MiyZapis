@@ -328,8 +328,8 @@ export class MultiPlatformAuthService {
       iat: Math.floor(Date.now() / 1000)
     };
 
-    const accessToken = jwt.sign(payload, config.jwt.accessSecret!, {
-      expiresIn: config.jwt.accessTokenExpiry
+    const accessToken = jwt.sign(payload, config.jwt.secret!, {
+      expiresIn: config.jwt.expiresIn
     });
 
     const refreshTokenPayload = {
@@ -339,7 +339,7 @@ export class MultiPlatformAuthService {
     };
 
     const refreshToken = jwt.sign(refreshTokenPayload, config.jwt.refreshSecret!, {
-      expiresIn: config.jwt.refreshTokenExpiry
+      expiresIn: config.jwt.refreshExpiresIn
     });
 
     // Store refresh token
@@ -427,8 +427,8 @@ export class MultiPlatformAuthService {
           platform: decoded.platform,
           iat: Math.floor(Date.now() / 1000)
         },
-        config.jwt.accessSecret!,
-        { expiresIn: config.jwt.accessTokenExpiry }
+        config.jwt.secret!,
+        { expiresIn: config.jwt.expiresIn }
       );
 
       return {

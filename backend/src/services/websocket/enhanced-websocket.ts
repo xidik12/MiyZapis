@@ -39,7 +39,7 @@ export class EnhancedWebSocketService {
         }
 
         // Verify JWT token
-        const decoded = jwt.verify(token, config.jwt.accessSecret!) as any;
+        const decoded = jwt.verify(token, config.jwt.secret!) as any;
         
         // Get user data
         const user = await prisma.user.findUnique({

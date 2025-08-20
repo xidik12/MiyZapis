@@ -19,7 +19,21 @@ API_VERSION=v1
 # No manual configuration needed
 ```
 
-### 3. JWT Authentication (REQUIRED - Generated Secure Values)
+### 3. Redis Configuration (REQUIRED for Sessions and Caching)
+```
+# Get these values from your Railway Redis service
+REDIS_URL=redis://default:your-redis-password@redis.railway.internal:6379
+REDIS_PASSWORD=your-redis-password
+```
+
+**How to get Redis credentials:**
+1. Go to Railway Dashboard → Your Project
+2. Click on your **Redis service** (not backend)
+3. Go to **Variables** tab
+4. Copy `REDIS_URL` and `REDIS_PASSWORD` values
+5. Add them to your **Backend service** variables
+
+### 4. JWT Authentication (REQUIRED - Generated Secure Values)
 ```
 JWT_SECRET=EEIvVim9Gfj1CbafVDGUL7IBigQNMq7FH5Ln+A6+7zEZJhkl5mTyMlHkpdvrf4Wt
 JWT_EXPIRES_IN=1h
@@ -27,18 +41,18 @@ JWT_REFRESH_SECRET=PRzF2A+kEZF6G7AJa/sILee91ocBoUWbwcgqgYEQUk8Ts+gxA+0cSZWP3dBI8
 JWT_REFRESH_EXPIRES_IN=30d
 ```
 
-### 4. Session Security (REQUIRED)
+### 5. Session Security (REQUIRED)
 ```
 SESSION_SECRET=LqU/cQYx2pv/pOlYFtChl0K+Ay7G6b7JwaKpNgHGEJ8jdG5qaXCX5ovV0zoVi4+z
 BCRYPT_ROUNDS=12
 ```
 
-### 5. CORS Configuration (REQUIRED)
+### 6. CORS Configuration (REQUIRED)
 ```
 CORS_ORIGIN=https://miyzapis-frontend.up.railway.app,https://miyzapis-miniapp.up.railway.app,http://localhost:3000
 ```
 
-### 6. Email Configuration (Gmail SMTP)
+### 7. Email Configuration (Gmail SMTP)
 ```
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
@@ -48,28 +62,28 @@ SMTP_PASS=your-gmail-app-password
 EMAIL_FROM=your-gmail-address@gmail.com
 ```
 
-### 7. Google OAuth Configuration (REQUIRED for Google Sign-In)
+### 8. Google OAuth Configuration (REQUIRED for Google Sign-In)
 ```
 GOOGLE_CLIENT_ID=your-google-oauth-client-id
 GOOGLE_CLIENT_SECRET=your-google-oauth-client-secret
 GOOGLE_REDIRECT_URI=https://miyzapis-backend.up.railway.app/api/v1/auth-enhanced/google/callback
 ```
 
-### 8. Rate Limiting & Security
+### 9. Rate Limiting & Security
 ```
 RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=100
 RATE_LIMIT_SKIP_SUCCESSFUL_REQUESTS=false
 ```
 
-### 9. Logging Configuration
+### 10. Logging Configuration
 ```
 LOG_LEVEL=info
 LOG_FILE_ENABLED=false
 LOG_FILE_PATH=/tmp/logs
 ```
 
-### 10. Optional: Telegram Bot (if configured)
+### 11. Optional: Telegram Bot (if configured)
 ```
 TELEGRAM_BOT_TOKEN=your-telegram-bot-token
 TELEGRAM_WEBHOOK_URL=https://miyzapis-backend.up.railway.app/api/v1/telegram/webhook
@@ -94,7 +108,7 @@ railway variables --set "JWT_REFRESH_SECRET=PRzF2A+kEZF6G7AJa/sILee91ocBoUWbwcgq
 
 ## Critical Variables for Immediate Fix
 
-The **minimum variables** needed to fix the 502 error:
+The **minimum variables** needed to fix the 502 error and Redis connection:
 
 ```
 NODE_ENV=production
@@ -104,7 +118,15 @@ JWT_REFRESH_SECRET=PRzF2A+kEZF6G7AJa/sILee91ocBoUWbwcgqgYEQUk8Ts+gxA+0cSZWP3dBI8
 SESSION_SECRET=LqU/cQYx2pv/pOlYFtChl0K+Ay7G6b7JwaKpNgHGEJ8jdG5qaXCX5ovV0zoVi4+z
 EMAIL_FROM=noreply@miyzapis.com
 CORS_ORIGIN=https://miyzapis-frontend.up.railway.app,http://localhost:3000
+REDIS_URL=redis://default:your-redis-password@redis.railway.internal:6379
+REDIS_PASSWORD=your-redis-password
 ```
+
+**🔴 CRITICAL: Redis variables are required for:**
+- User session storage
+- Authentication token caching
+- Google OAuth session management
+- Logout functionality
 
 ## After Configuration
 

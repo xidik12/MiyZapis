@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
 import { config } from '@/config';
 import { prisma } from '@/config/database';
@@ -39,6 +39,11 @@ export class EnhancedAuthService {
     refreshToken: string;
     expiresIn: number;
   }> {
+    // Validate JWT configuration
+    if (!config.jwt.secret || !config.jwt.refreshSecret) {
+      throw new Error('JWT configuration is missing. Please check JWT_SECRET and JWT_REFRESH_SECRET environment variables.');
+    }
+
     const jwtPayload: JwtPayload = {
       userId: user.id,
       email: user.email,
@@ -46,8 +51,8 @@ export class EnhancedAuthService {
     };
 
     const accessToken = jwt.sign(jwtPayload, config.jwt.secret, {
-      expiresIn: config.jwt.expiresIn,
-    });
+      expiresIn: config.jwt.expiresIn
+    } as SignOptions);
 
     const refreshTokenId = crypto.randomUUID();
     const refreshPayload: RefreshTokenPayload = {
@@ -56,8 +61,8 @@ export class EnhancedAuthService {
     };
 
     const refreshToken = jwt.sign(refreshPayload, config.jwt.refreshSecret, {
-      expiresIn: config.jwt.refreshExpiresIn,
-    });
+      expiresIn: config.jwt.refreshExpiresIn
+    } as SignOptions);
 
     // Store refresh token in database
     await prisma.refreshToken.create({
@@ -69,8 +74,9 @@ export class EnhancedAuthService {
       },
     });
 
-    // Cache user data
+    // Cache user data and session info
     await cacheUtils.set(`user:${user.id}`, user, 3600);
+    await cacheUtils.set(`session:${refreshTokenId}`, { userId: user.id, tokenId: refreshTokenId, createdAt: new Date() }, 30 * 24 * 3600); // 30 days
 
     const expiresIn = 3600; // 1 hour in seconds
     return { accessToken, refreshToken, expiresIn };
@@ -502,7 +508,9 @@ export class EnhancedAuthService {
 
       logger.info('Google authentication successful', { 
         userId: user.id, 
-        isNewUser 
+        email: user.email,
+        isNewUser,
+        tokensCreated: !!tokens.accessToken && !!tokens.refreshToken
       });
 
       return {
