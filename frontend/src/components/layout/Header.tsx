@@ -168,17 +168,15 @@ export const Header: React.FC = () => {
 
 
           {/* Right side actions */}
-          <div className="flex items-center space-x-1 xs:space-x-2 sm:space-x-3">
-            {/* Hide toggles on small mobile screens, show on larger mobile and up */}
-            <div className="hidden md:flex items-center space-x-2 lg:space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Hide currency/language toggles on mobile and small tablets */}
+            <div className="hidden lg:flex items-center space-x-2">
               <CurrencyToggle />
               <LanguageToggle />
             </div>
-            {/* Theme toggle - smaller on mobile */}
-            <div className="flex items-center">
-              <ThemeToggle size="sm" className="sm:hidden" />
-              <ThemeToggle size="md" className="hidden sm:block" />
-            </div>
+            
+            {/* Theme toggle */}
+            <ThemeToggle size="md" />
 
             {isAuthenticated ? (
               <>
@@ -236,13 +234,13 @@ export const Header: React.FC = () => {
               <>
                 <Link
                   to="/auth/login"
-                  className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 px-3 py-2 rounded-lg transition-all duration-300 hover:glass-effect"
+                  className="hidden sm:flex text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 px-3 py-2 rounded-lg transition-all duration-300 hover:glass-effect"
                 >
                   {t('nav.signIn')}
                 </Link>
                 <Link
                   to="/auth/register"
-                  className="ukraine-gradient text-white px-6 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg shadow-primary"
+                  className="ukraine-gradient text-white px-3 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg shadow-primary whitespace-nowrap"
                 >
                   {t('nav.getStarted')}
                 </Link>
