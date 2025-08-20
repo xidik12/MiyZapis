@@ -68,43 +68,43 @@ const CustomerDashboard: React.FC = () => {
   };
 
   const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description }: any) => (
-    <div className="bg-surface rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+    <div className="bg-surface rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300">
       <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{value}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1 truncate">{title}</p>
+          <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">{value}</p>
           {description && (
             <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
           )}
           {change && (
-            <div className={`flex items-center mt-2 text-sm ${
+            <div className={`flex items-center mt-2 text-xs sm:text-sm ${
               changeType === 'positive' ? 'text-success-600' : 'text-error-600'
             }`}>
               {changeType === 'positive' ? (
-                <ArrowTrendingUpIcon className="w-4 h-4 mr-1" />
+                <ArrowTrendingUpIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
               ) : (
-                <ArrowTrendingDownIcon className="w-4 h-4 mr-1" />
+                <ArrowTrendingDownIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
               )}
-              <span>{change}</span>
+              <span className="truncate">{change}</span>
             </div>
           )}
         </div>
-        <div className={`p-3 rounded-xl ${iconBg}`}>
-          <Icon className="w-6 h-6 text-white" />
+        <div className={`p-2 sm:p-3 rounded-xl ${iconBg} flex-shrink-0`}>
+          <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
         </div>
       </div>
     </div>
   );
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
           {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 {getGreeting()}, {user?.firstName}! 👋
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                 {t('dashboard.today')} {currentTime.toLocaleDateString(
                   language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
                   { 
@@ -116,26 +116,26 @@ const CustomerDashboard: React.FC = () => {
                 )}
               </p>
             </div>
-            <div className="mt-4 lg:mt-0 flex space-x-3">
+            <div className="mt-4 lg:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               <Link
                 to="/search"
-                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl hover:from-primary-700 hover:to-secondary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl hover:from-primary-700 hover:to-secondary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
               >
-                <MagnifyingGlassIcon className="w-5 h-5 mr-2" />
+                <MagnifyingGlassIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 {t('dashboard.customer.findSpecialists')}
               </Link>
               <Link
                 to="/customer/bookings"
-                className="inline-flex items-center px-4 py-2 bg-surface-hover border-surface rounded-xl transition-all duration-200 font-medium text-secondary-content"
+                className="inline-flex items-center justify-center px-4 py-2 bg-surface-hover border-surface rounded-xl transition-all duration-200 font-medium text-secondary-content text-sm sm:text-base"
               >
-                <CalendarIcon className="w-5 h-5 mr-2" />
+                <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 {t('dashboard.nav.bookings')}
               </Link>
             </div>
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <StatCard
               title={t('dashboard.customer.totalSpent')}
               value={formatPrice(mockCustomerData.stats.totalSpent, 'UAH')}

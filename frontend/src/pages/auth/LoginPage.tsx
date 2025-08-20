@@ -85,16 +85,16 @@ const LoginPage: React.FC = () => {
 
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 text-center">
           {t('auth.login.title')}
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-300">
           {t('auth.login.subtitle')}{' '}
           <Link
             to="/auth/register"
-            className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+            className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 transition-colors duration-200"
           >
             {t('auth.login.createAccount')}
           </Link>
@@ -123,7 +123,7 @@ const LoginPage: React.FC = () => {
             })}
             type="email"
             autoComplete="email"
-            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${
+            className={`mt-1 block w-full px-3 py-3 sm:py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 transition-all duration-200 ${
               errors.email ? 'border-red-300 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
             }`}
             placeholder={t('auth.login.emailPlaceholder')}
@@ -148,7 +148,7 @@ const LoginPage: React.FC = () => {
               })}
               type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
-              className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${
+              className={`block w-full px-3 py-3 sm:py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 pr-10 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 transition-all duration-200 ${
                 errors.password ? 'border-red-300 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
               }`}
               placeholder={t('auth.login.passwordPlaceholder')}
@@ -170,7 +170,7 @@ const LoginPage: React.FC = () => {
           )}
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
           <div className="flex items-center">
             <input
               {...register('rememberMe')}
@@ -187,7 +187,7 @@ const LoginPage: React.FC = () => {
           <div className="text-sm">
             <Link
               to="/auth/forgot-password"
-              className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+              className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 transition-colors duration-200"
             >
               {t('auth.login.forgotPassword')}
             </Link>
@@ -198,7 +198,7 @@ const LoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
           >
             {isLoading ? (
               <LoadingSpinner size="sm" color="white" className="mr-2" />

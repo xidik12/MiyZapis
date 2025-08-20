@@ -36,19 +36,19 @@ export const Footer: React.FC = () => {
 
   return (
     <footer className="bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           {/* Company */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3 sm:mb-4">
               {t('footer.company')}
             </h3>
-            <ul className="space-y-3">
+            <ul className="space-y-2 sm:space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-gray-400 hover:text-white text-sm transition-colors"
+                    className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -59,15 +59,15 @@ export const Footer: React.FC = () => {
 
           {/* Support */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3 sm:mb-4">
               {t('footer.support')}
             </h3>
-            <ul className="space-y-3">
+            <ul className="space-y-2 sm:space-y-3">
               {footerLinks.support.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-gray-400 hover:text-white text-sm transition-colors"
+                    className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -78,15 +78,15 @@ export const Footer: React.FC = () => {
 
           {/* Legal */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3 sm:mb-4">
               {t('footer.legal')}
             </h3>
-            <ul className="space-y-3">
+            <ul className="space-y-2 sm:space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-gray-400 hover:text-white text-sm transition-colors"
+                    className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -97,15 +97,15 @@ export const Footer: React.FC = () => {
 
           {/* For Specialists */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-4">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3 sm:mb-4">
               {t('footer.forSpecialists')}
             </h3>
-            <ul className="space-y-3">
+            <ul className="space-y-2 sm:space-y-3">
               {footerLinks.specialists.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-gray-400 hover:text-white text-sm transition-colors"
+                    className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -116,7 +116,7 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Brand and social */}
-        <div className="mt-12 pt-8 border-t border-gray-800">
+        <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
               <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
@@ -126,13 +126,13 @@ export const Footer: React.FC = () => {
             </div>
 
             {/* Social links */}
-            <div className="flex space-x-6">
+            <div className="flex space-x-4 sm:space-x-6">
               <a
                 href="#"
                 className="text-gray-400 hover:text-white transition-colors"
                 aria-label="Facebook"
               >
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                 </svg>
               </a>
@@ -166,12 +166,12 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-8 text-center md:text-left">
-            <p className="text-gray-400 text-sm">
+          <div className="mt-6 sm:mt-8 text-center md:text-left">
+            <p className="text-gray-400 text-xs sm:text-sm">
               © {currentYear} {environment.APP_NAME}. {t('footer.allRightsReserved')} 
-              Version {environment.APP_VERSION}
+              <span className="hidden sm:inline">Version {environment.APP_VERSION}</span>
             </p>
-            <p className="text-gray-500 text-xs mt-2">
+            <p className="text-gray-500 text-xs mt-1 sm:mt-2">
               {t('footer.tagline')}
             </p>
           </div>

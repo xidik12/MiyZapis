@@ -100,16 +100,16 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 text-center">
           {t('auth.register.title')}
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-300">
           {t('auth.register.subtitle')}{' '}
           <Link
             to="/auth/login"
-            className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+            className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 transition-colors duration-200"
           >
             {t('auth.register.signInHere')}
           </Link>
