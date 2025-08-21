@@ -128,21 +128,25 @@ export class AuthService {
   // Logout user
   async logout(): Promise<void> {
     try {
-      // Get refresh token for logout request
+      // Get refresh token for logout request - works for both regular and Google OAuth users
       const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
       
-      if (refreshToken) {
+      // Always attempt server logout if we have a refresh token
+      if (refreshToken && refreshToken.trim()) {
         // Set a very short timeout for logout request - prioritize user experience
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 800); // 0.8 second timeout
         
         try {
           await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT, 
-            { refreshToken }, 
+            { refreshToken: refreshToken.trim() }, 
             { 
               signal: controller.signal,
-              timeout: 1000, // Additional axios timeout
-              validateStatus: () => true // Accept all status codes as success
+              timeout: 800, // Additional axios timeout
+              validateStatus: () => true, // Accept all status codes as success
+              headers: {
+                'Content-Type': 'application/json'
+              }
             }
           );
           clearTimeout(timeoutId);
@@ -156,6 +160,7 @@ export class AuthService {
       // Silently handle logout errors - client-side logout is sufficient
     } finally {
       // Always clear local tokens regardless of server response
+      // This works for both regular login and Google OAuth users
       this.clearAuthTokens();
     }
   }

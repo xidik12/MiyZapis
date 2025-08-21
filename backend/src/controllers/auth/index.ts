@@ -270,6 +270,12 @@ export class AuthController {
       const { refreshToken } = req.body;
       const authHeader = req.headers.authorization;
       
+      logger.debug('Logout request received', { 
+        hasRefreshToken: !!refreshToken,
+        hasAuthHeader: !!authHeader,
+        refreshTokenLength: refreshToken?.length || 0
+      });
+      
       // Extract user ID from JWT token if available
       let userId: string | null = null;
       if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -277,20 +283,23 @@ export class AuthController {
           const token = authHeader.substring(7);
           const decoded = jwt.verify(token, config.jwt.secret) as JwtPayload;
           userId = decoded.userId;
+          logger.debug('User ID extracted from token', { userId });
         } catch (tokenError) {
           // Token might be expired or invalid, that's OK for logout
           logger.debug('Token verification failed during logout (expected):', tokenError);
         }
       }
 
-      // Always attempt to logout from refresh token service
-      if (refreshToken) {
+      // Always attempt to logout from refresh token service (works for Google OAuth and regular users)
+      if (refreshToken && typeof refreshToken === 'string' && refreshToken.trim()) {
         try {
-          await AuthService.logout(refreshToken);
+          await AuthService.logout(refreshToken.trim());
           logger.debug('Refresh token revoked successfully');
         } catch (refreshError) {
           logger.debug('Refresh token revocation failed (token may not exist):', refreshError);
         }
+      } else {
+        logger.debug('No valid refresh token provided for logout');
       }
 
       // Clear user cache if userId is available and Redis is connected
@@ -298,20 +307,23 @@ export class AuthController {
         try {
           // Clear specific user cache keys
           const userCacheKey = `user:${userId}`;
-          const sessionCacheKey = `session:*`;
           
           await redis.del(userCacheKey);
           logger.debug('User cache cleared for logout', { userId });
           
           // Clear session cache keys that may contain the user ID
-          // Note: Redis del with wildcards requires a different approach
           try {
             const keys = await redis.keys(`session:*`);
             const userSessionKeys = [];
             for (const key of keys) {
-              const sessionData = await redis.get(key);
-              if (sessionData && sessionData.includes(userId)) {
-                userSessionKeys.push(key);
+              try {
+                const sessionData = await redis.get(key);
+                if (sessionData && sessionData.includes(userId)) {
+                  userSessionKeys.push(key);
+                }
+              } catch (sessionReadError) {
+                // Skip this key if we can't read it
+                continue;
               }
             }
             if (userSessionKeys.length > 0) {
