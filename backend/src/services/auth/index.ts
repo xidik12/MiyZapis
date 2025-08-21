@@ -353,14 +353,20 @@ export class AuthService {
   // Logout user (revoke refresh token)
   static async logout(refreshToken: string): Promise<void> {
     try {
+      // Try to delete the refresh token
       await prisma.refreshToken.delete({
         where: { token: refreshToken },
       });
 
-      logger.info('User logged out successfully');
-    } catch (error) {
-      logger.error('Logout error:', error);
-      // Don't throw error for logout
+      logger.debug('Refresh token deleted successfully');
+    } catch (error: any) {
+      // If token doesn't exist, that's fine - user is already logged out
+      if (error.code === 'P2025') {
+        logger.debug('Refresh token not found (already logged out)');
+      } else {
+        logger.debug('Logout error (non-critical):', error);
+      }
+      // Never throw error for logout - always succeed from user perspective
     }
   }
 

@@ -278,36 +278,65 @@ export class AuthController {
           const decoded = jwt.verify(token, config.jwt.secret) as JwtPayload;
           userId = decoded.userId;
         } catch (tokenError) {
-          logger.warn('Invalid token in logout request:', tokenError);
+          // Token might be expired or invalid, that's OK for logout
+          logger.debug('Token verification failed during logout (expected):', tokenError);
         }
       }
 
-      // Logout from refresh token service
+      // Always attempt to logout from refresh token service
       if (refreshToken) {
-        await AuthService.logout(refreshToken);
+        try {
+          await AuthService.logout(refreshToken);
+          logger.debug('Refresh token revoked successfully');
+        } catch (refreshError) {
+          logger.debug('Refresh token revocation failed (token may not exist):', refreshError);
+        }
       }
 
-      // Clear user cache if userId is available
+      // Clear user cache if userId is available and Redis is connected
       if (userId && redis) {
         try {
-          await redis.del(`user:${userId}`);
-          await redis.del(`auth:${userId}:*`);
-          logger.info('User cache cleared for logout', { userId });
+          // Clear specific user cache keys
+          const userCacheKey = `user:${userId}`;
+          const sessionCacheKey = `session:*`;
+          
+          await redis.del(userCacheKey);
+          logger.debug('User cache cleared for logout', { userId });
+          
+          // Clear session cache keys that may contain the user ID
+          // Note: Redis del with wildcards requires a different approach
+          try {
+            const keys = await redis.keys(`session:*`);
+            const userSessionKeys = [];
+            for (const key of keys) {
+              const sessionData = await redis.get(key);
+              if (sessionData && sessionData.includes(userId)) {
+                userSessionKeys.push(key);
+              }
+            }
+            if (userSessionKeys.length > 0) {
+              await redis.del(...userSessionKeys);
+              logger.debug('Session cache cleared for logout', { userId, keys: userSessionKeys.length });
+            }
+          } catch (sessionError) {
+            logger.debug('Session cache clearing failed (non-critical):', sessionError);
+          }
         } catch (cacheError) {
-          logger.warn('Failed to clear user cache on logout:', cacheError);
+          logger.debug('Cache clearing failed during logout (non-critical):', cacheError);
         }
       }
 
-      res.json(
+      // Always return success for logout
+      res.status(200).json(
         createSuccessResponse({
           message: 'Logged out successfully',
         })
       );
     } catch (error: any) {
-      logger.error('Logout controller error:', error);
+      logger.debug('Logout controller error (returning success anyway):', error);
 
-      // Even if logout fails, return success to client
-      res.json(
+      // Always return success to client - logout should never fail from user perspective
+      res.status(200).json(
         createSuccessResponse({
           message: 'Logged out successfully',
         })
