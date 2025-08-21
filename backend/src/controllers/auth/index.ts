@@ -266,94 +266,97 @@ export class AuthController {
 
   // Logout user
   static async logout(req: Request, res: Response): Promise<void> {
-    try {
-      const { refreshToken } = req.body;
-      const authHeader = req.headers.authorization;
-      
-      logger.debug('Logout request received', { 
-        hasRefreshToken: !!refreshToken,
-        hasAuthHeader: !!authHeader,
-        refreshTokenLength: refreshToken?.length || 0
-      });
-      
-      // Extract user ID from JWT token if available
-      let userId: string | null = null;
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        try {
-          const token = authHeader.substring(7);
-          const decoded = jwt.verify(token, config.jwt.secret) as JwtPayload;
-          userId = decoded.userId;
-          logger.debug('User ID extracted from token', { userId });
-        } catch (tokenError) {
-          // Token might be expired or invalid, that's OK for logout
-          logger.debug('Token verification failed during logout (expected):', tokenError);
-        }
-      }
+    // Immediately return success to client - don't wait for cleanup operations
+    res.status(200).json(
+      createSuccessResponse({
+        message: 'Logged out successfully',
+      })
+    );
 
-      // Always attempt to logout from refresh token service (works for Google OAuth and regular users)
-      if (refreshToken && typeof refreshToken === 'string' && refreshToken.trim()) {
-        try {
-          await AuthService.logout(refreshToken.trim());
-          logger.debug('Refresh token revoked successfully');
-        } catch (refreshError) {
-          logger.debug('Refresh token revocation failed (token may not exist):', refreshError);
-        }
-      } else {
-        logger.debug('No valid refresh token provided for logout');
-      }
-
-      // Clear user cache if userId is available and Redis is connected
-      if (userId && redis) {
-        try {
-          // Clear specific user cache keys
-          const userCacheKey = `user:${userId}`;
-          
-          await redis.del(userCacheKey);
-          logger.debug('User cache cleared for logout', { userId });
-          
-          // Clear session cache keys that may contain the user ID
+    // Perform cleanup operations asynchronously in the background
+    // This ensures the client gets an immediate response
+    setImmediate(async () => {
+      try {
+        const { refreshToken } = req.body;
+        const authHeader = req.headers.authorization;
+        
+        logger.debug('Logout cleanup started', { 
+          hasRefreshToken: !!refreshToken,
+          hasAuthHeader: !!authHeader,
+          refreshTokenLength: refreshToken?.length || 0
+        });
+        
+        // Extract user ID from JWT token if available
+        let userId: string | null = null;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
           try {
-            const keys = await redis.keys(`session:*`);
-            const userSessionKeys = [];
-            for (const key of keys) {
-              try {
-                const sessionData = await redis.get(key);
-                if (sessionData && sessionData.includes(userId)) {
-                  userSessionKeys.push(key);
-                }
-              } catch (sessionReadError) {
-                // Skip this key if we can't read it
-                continue;
-              }
-            }
-            if (userSessionKeys.length > 0) {
-              await redis.del(...userSessionKeys);
-              logger.debug('Session cache cleared for logout', { userId, keys: userSessionKeys.length });
-            }
-          } catch (sessionError) {
-            logger.debug('Session cache clearing failed (non-critical):', sessionError);
+            const token = authHeader.substring(7);
+            const decoded = jwt.verify(token, config.jwt.secret) as JwtPayload;
+            userId = decoded.userId;
+            logger.debug('User ID extracted from token', { userId });
+          } catch (tokenError) {
+            // Token might be expired or invalid, that's OK for logout
+            logger.debug('Token verification failed during logout (expected):', tokenError);
           }
-        } catch (cacheError) {
-          logger.debug('Cache clearing failed during logout (non-critical):', cacheError);
         }
+
+        // Cleanup operations in background - don't block the response
+        const cleanupPromises = [];
+
+        // Revoke refresh token
+        if (refreshToken && typeof refreshToken === 'string' && refreshToken.trim()) {
+          cleanupPromises.push(
+            AuthService.logout(refreshToken.trim())
+              .then(() => logger.debug('Refresh token revoked successfully'))
+              .catch((error) => logger.debug('Refresh token revocation failed (non-critical):', error))
+          );
+        }
+
+        // Clear user cache
+        if (userId && redis) {
+          cleanupPromises.push(
+            redis.del(`user:${userId}`)
+              .then(() => logger.debug('User cache cleared', { userId }))
+              .catch((error) => logger.debug('User cache clearing failed (non-critical):', error))
+          );
+
+          // Clear session cache (simplified - just delete the most likely keys)
+          cleanupPromises.push(
+            redis.keys(`session:*`)
+              .then(async (keys) => {
+                const keysToDelete = [];
+                // Limit to first 10 keys to avoid performance issues
+                for (const key of keys.slice(0, 10)) {
+                  try {
+                    const sessionData = await redis.get(key);
+                    if (sessionData && sessionData.includes(userId)) {
+                      keysToDelete.push(key);
+                    }
+                  } catch (error) {
+                    // Skip this key
+                    continue;
+                  }
+                }
+                if (keysToDelete.length > 0) {
+                  await redis.del(...keysToDelete);
+                  logger.debug('Session cache cleared', { userId, keys: keysToDelete.length });
+                }
+              })
+              .catch((error) => logger.debug('Session cache clearing failed (non-critical):', error))
+          );
+        }
+
+        // Wait for all cleanup operations to complete (or timeout after 5 seconds)
+        await Promise.race([
+          Promise.allSettled(cleanupPromises),
+          new Promise(resolve => setTimeout(resolve, 5000))
+        ]);
+
+        logger.debug('Logout cleanup completed');
+      } catch (error: any) {
+        logger.debug('Logout cleanup error (non-critical):', error);
       }
-
-      // Always return success for logout
-      res.status(200).json(
-        createSuccessResponse({
-          message: 'Logged out successfully',
-        })
-      );
-    } catch (error: any) {
-      logger.debug('Logout controller error (returning success anyway):', error);
-
-      // Always return success to client - logout should never fail from user perspective
-      res.status(200).json(
-        createSuccessResponse({
-          message: 'Logged out successfully',
-        })
-      );
-    }
+    });
   }
 
   // Get current user (from token)

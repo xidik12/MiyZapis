@@ -133,16 +133,16 @@ export class AuthService {
       
       // Always attempt server logout if we have a refresh token
       if (refreshToken && refreshToken.trim()) {
-        // Set a very short timeout for logout request - prioritize user experience
+        // Backend now responds immediately, but keep timeout for network issues
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 800); // 0.8 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
         
         try {
           await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT, 
             { refreshToken: refreshToken.trim() }, 
             { 
               signal: controller.signal,
-              timeout: 800, // Additional axios timeout
+              timeout: 2000, // Additional axios timeout
               validateStatus: () => true, // Accept all status codes as success
               headers: {
                 'Content-Type': 'application/json'
@@ -153,7 +153,7 @@ export class AuthService {
         } catch (requestError: any) {
           clearTimeout(timeoutId);
           // Silently handle all logout errors - they don't affect the user experience
-          // Backend logout is now guaranteed to return 200, but network issues may still occur
+          // Backend now responds immediately, so any errors are likely network issues
         }
       }
     } catch (error) {
