@@ -13,15 +13,16 @@ export const securityHeaders = helmet({
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      fontSrc: ["'self'", "https:"],
-      connectSrc: ["'self'", "wss:", "https:"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://accounts.google.com", "https://apis.google.com"],
+      imgSrc: ["'self'", "data:", "https:", "https://*.googleusercontent.com"],
+      fontSrc: ["'self'", "https:", "https://fonts.gstatic.com"],
+      connectSrc: ["'self'", "wss:", "https:", "https://accounts.google.com", "https://oauth2.googleapis.com"],
       mediaSrc: ["'self'"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
-      formAction: ["'self'"],
+      formAction: ["'self'", "https://accounts.google.com"],
       frameAncestors: ["'none'"],
+      frameSrc: ["https://accounts.google.com"],
       upgradeInsecureRequests: [],
     },
   },
@@ -31,10 +32,11 @@ export const securityHeaders = helmet({
     preload: true,
   },
   noSniff: true,
-  frameguard: { action: 'deny' },
+  frameguard: { action: 'sameorigin' }, // Changed from 'deny' to 'sameorigin' for Google OAuth
   xssFilter: true,
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
-  crossOriginEmbedderPolicy: false, // Disable for file uploads
+  crossOriginEmbedderPolicy: false, // Disable for file uploads and OAuth
+  crossOriginOpenerPolicy: false, // Disable for OAuth popups
 });
 
 // Rate limiter store (Redis when available, in-memory fallback)
@@ -230,7 +232,26 @@ const generateRequestId = (): string => {
 
 // CORS configuration
 export const corsOptions = {
-  origin: config.security.corsOrigin,
+  origin: (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:5173', 
+      'https://miyzapis.com',
+      'https://www.miyzapis.com',
+      'https://miyzapis-frontend-production.up.railway.app',
+      ...config.security.corsOrigin
+    ];
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      logger.warn(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: [
