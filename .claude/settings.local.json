@@ -61,7 +61,10 @@
       "Bash(railway run:*)",
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma db push)",
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npm run db:seed)",
-      "Bash(railway whoami:*)"
+      "Bash(railway whoami:*)",
+      "Bash(export:*)",
+      "Bash(npm start)",
+      "Bash(./test_all_apis.sh:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

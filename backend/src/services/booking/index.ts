@@ -33,6 +33,28 @@ export class BookingService {
   // Create a new booking
   static async createBooking(data: CreateBookingData): Promise<BookingWithDetails> {
     try {
+      // Validate required fields
+      if (!data.customerId) {
+        throw new Error('CUSTOMER_ID_REQUIRED');
+      }
+
+      if (!data.serviceId) {
+        throw new Error('SERVICE_ID_REQUIRED');
+      }
+
+      if (!data.scheduledAt) {
+        throw new Error('SCHEDULED_AT_REQUIRED');
+      }
+
+      if (!data.duration || data.duration <= 0) {
+        throw new Error('INVALID_DURATION');
+      }
+
+      // Validate scheduled time is in the future
+      if (data.scheduledAt <= new Date()) {
+        throw new Error('SCHEDULED_TIME_MUST_BE_FUTURE');
+      }
+
       // Validate service exists and is active
       const service = await prisma.service.findUnique({
         where: { id: data.serviceId },

@@ -85,8 +85,17 @@ export const formatValidationErrors = (errors: any[]): Array<{
   code?: string;
 }> => {
   return errors.map(error => ({
-    field: error.path?.join('.') || error.field,
+    field: Array.isArray(error.path) ? error.path.join('.') : error.path || error.field,
     message: error.message,
     code: error.code,
   }));
+};
+
+// Express response helpers
+export const successResponse = (res: any, data: any, message?: string, statusCode: number = 200) => {
+  return res.status(statusCode).json(createSuccessResponse(data, message ? { message } : undefined));
+};
+
+export const errorResponse = (res: any, message: string, statusCode: number = 500, code?: string) => {
+  return res.status(statusCode).json(createErrorResponse(code || 'ERROR', message));
 };

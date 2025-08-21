@@ -14,8 +14,9 @@ import {
   validateRespondToReview
 } from '@/middleware/validation/reviews';
 import { createSuccessResponse, createErrorResponse, calculatePaginationOffset, createPaginationMeta, formatValidationErrors } from '@/utils/response';
-import { ErrorCodes } from '@/types';
+import { ErrorCodes, AuthenticatedRequest } from '@/types';
 import { logger } from '@/utils/logger';
+import { ReviewController } from '@/controllers/reviews';
 
 const router = Router();
 
@@ -778,5 +779,16 @@ router.post('/:id/report', authenticateToken, validateReportReview, async (req: 
     );
   }
 });
+
+// Specialist response to review
+router.post('/:id/response', authenticateToken, validateRespondToReview, ReviewController.addSpecialistResponse);
+
+// Enhanced endpoints using service pattern
+router.get('/enhanced', ReviewController.getReviews);
+router.get('/enhanced/:id', ReviewController.getReview);
+router.post('/enhanced', authenticateToken, validateCreateReview, ReviewController.createReview);
+router.put('/enhanced/:id', authenticateToken, validateUpdateReview, ReviewController.updateReview);
+router.delete('/enhanced/:id', authenticateToken, ReviewController.deleteReview);
+router.get('/specialist/:specialistId/stats', ReviewController.getSpecialistReviewStats);
 
 export default router;

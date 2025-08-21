@@ -24,6 +24,19 @@ export class PaymentService {
     try {
       const { bookingId, amount, currency, paymentMethodType = 'card', customerId, metadata = {} } = data;
 
+      // Validate required parameters
+      if (!bookingId) {
+        throw new Error('BOOKING_ID_REQUIRED');
+      }
+
+      if (!amount || amount <= 0) {
+        throw new Error('INVALID_AMOUNT');
+      }
+
+      if (!currency) {
+        throw new Error('CURRENCY_REQUIRED');
+      }
+
       // Get booking details
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },

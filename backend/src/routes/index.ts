@@ -13,9 +13,10 @@ import notificationRoutes from './notifications';
 import analyticsRoutes from './analytics';
 import fileRoutes from './files';
 import healthRoutes from './health';
-// Import other route modules as they are created
-// import loyaltyRoutes from './loyalty';
-// import telegramRoutes from './telegram';
+// New API routes
+import loyaltyRoutes from './loyalty';
+import availabilityRoutes from './availability';
+import analyticsEnhancedRoutes from './analytics-enhanced';
 
 const router = Router();
 
@@ -36,7 +37,10 @@ router.use('/messages', messageRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/files', fileRoutes);
-// router.use('/loyalty', loyaltyRoutes);
-// router.use('/telegram', telegramRoutes);
+
+// New enhanced API routes
+router.use('/loyalty', loyaltyRoutes);
+router.use('/availability', availabilityRoutes);
+router.use('/analytics-enhanced', analyticsEnhancedRoutes);
 
 export default router;

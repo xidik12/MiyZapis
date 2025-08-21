@@ -1,0 +1,120 @@
+import { Router } from 'express';
+import { authenticateToken } from '@/middleware/auth/jwt';
+import { body } from 'express-validator';
+import { AvailabilityController } from '@/controllers/specialists/availability';
+
+const router = Router();
+
+// Validation middleware
+const validateCreateAvailabilityBlock = [
+  body('startDateTime')
+    .notEmpty()
+    .withMessage('Start date time is required')
+    .isISO8601()
+    .withMessage('Start date time must be a valid ISO 8601 date'),
+  body('endDateTime')
+    .notEmpty()
+    .withMessage('End date time is required')
+    .isISO8601()
+    .withMessage('End date time must be a valid ISO 8601 date'),
+  body('isAvailable')
+    .optional()
+    .isBoolean()
+    .withMessage('Is available must be a boolean'),
+  body('reason')
+    .optional()
+    .isLength({ max: 200 })
+    .withMessage('Reason must not exceed 200 characters'),
+  body('isRecurring')
+    .optional()
+    .isBoolean()
+    .withMessage('Is recurring must be a boolean'),
+  body('recurringUntil')
+    .optional()
+    .isISO8601()
+    .withMessage('Recurring until must be a valid ISO 8601 date'),
+  body('recurringDays')
+    .optional()
+    .isArray()
+    .withMessage('Recurring days must be an array')
+    .custom((value) => {
+      const validDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+      if (Array.isArray(value)) {
+        return value.every(day => validDays.includes(day.toLowerCase()));
+      }
+      return true;
+    })
+    .withMessage('Recurring days must contain valid day names'),
+];
+
+const validateUpdateAvailabilityBlock = [
+  body('startDateTime')
+    .optional()
+    .isISO8601()
+    .withMessage('Start date time must be a valid ISO 8601 date'),
+  body('endDateTime')
+    .optional()
+    .isISO8601()
+    .withMessage('End date time must be a valid ISO 8601 date'),
+  body('isAvailable')
+    .optional()
+    .isBoolean()
+    .withMessage('Is available must be a boolean'),
+  body('reason')
+    .optional()
+    .isLength({ max: 200 })
+    .withMessage('Reason must not exceed 200 characters'),
+  body('isRecurring')
+    .optional()
+    .isBoolean()
+    .withMessage('Is recurring must be a boolean'),
+  body('recurringUntil')
+    .optional()
+    .isISO8601()
+    .withMessage('Recurring until must be a valid ISO 8601 date'),
+  body('recurringDays')
+    .optional()
+    .isArray()
+    .withMessage('Recurring days must be an array')
+    .custom((value) => {
+      const validDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+      if (Array.isArray(value)) {
+        return value.every(day => validDays.includes(day.toLowerCase()));
+      }
+      return true;
+    })
+    .withMessage('Recurring days must contain valid day names'),
+];
+
+const validateCheckTimeSlot = [
+  body('startDateTime')
+    .notEmpty()
+    .withMessage('Start date time is required')
+    .isISO8601()
+    .withMessage('Start date time must be a valid ISO 8601 date'),
+  body('endDateTime')
+    .notEmpty()
+    .withMessage('End date time is required')
+    .isISO8601()
+    .withMessage('End date time must be a valid ISO 8601 date'),
+];
+
+// Get specialist availability for date range
+router.get('/specialists/:id/availability', AvailabilityController.getSpecialistAvailability);
+
+// Check specific time slot availability
+router.post('/specialists/:id/availability/check', validateCheckTimeSlot, AvailabilityController.checkTimeSlotAvailability);
+
+// Create availability block (specialist only)
+router.post('/specialists/availability/blocks', authenticateToken, validateCreateAvailabilityBlock, AvailabilityController.createAvailabilityBlock);
+
+// Get availability blocks (specialist/admin only)
+router.get('/specialists/availability/blocks', authenticateToken, AvailabilityController.getAvailabilityBlocks);
+
+// Update availability block (specialist/admin only)
+router.put('/specialists/availability/blocks/:id', authenticateToken, validateUpdateAvailabilityBlock, AvailabilityController.updateAvailabilityBlock);
+
+// Delete availability block (specialist/admin only)
+router.delete('/specialists/availability/blocks/:id', authenticateToken, AvailabilityController.deleteAvailabilityBlock);
+
+export default router;

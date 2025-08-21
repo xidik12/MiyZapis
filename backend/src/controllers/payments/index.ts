@@ -86,6 +86,39 @@ export class PaymentController {
         return;
       }
 
+      if (error.message === 'BOOKING_ID_REQUIRED') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Booking ID is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'INVALID_AMOUNT') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid amount. Amount must be greater than 0',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'CURRENCY_REQUIRED') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Currency is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
       res.status(500).json(
         createErrorResponse(
           ErrorCodes.INTERNAL_SERVER_ERROR,

@@ -1,85 +1,52 @@
 import { Router } from 'express';
 import { body, param, query } from 'express-validator';
-import { authenticateToken as authMiddleware } from '@/middleware/auth/jwt';
-import { validateRequest } from '@/middleware/validation';
+import { authenticateToken } from '@/middleware/auth/jwt';
 import { NotificationController } from '@/controllers/notifications';
 
 const router = Router();
-const notificationController = new NotificationController();
 
-// All routes require authentication
-router.use(authMiddleware);
+// Validation middleware
+const validateNotificationPreferences = [
+  body('emailNotifications').optional().isBoolean().withMessage('Email notifications must be a boolean'),
+  body('pushNotifications').optional().isBoolean().withMessage('Push notifications must be a boolean'),
+  body('telegramNotifications').optional().isBoolean().withMessage('Telegram notifications must be a boolean'),
+  body('notificationTypes').optional().isObject().withMessage('Notification types must be an object'),
+];
+
+const validateBulkNotification = [
+  body('type').notEmpty().withMessage('Notification type is required'),
+  body('title').notEmpty().withMessage('Title is required').isLength({ min: 1, max: 100 }).withMessage('Title must be between 1 and 100 characters'),
+  body('message').notEmpty().withMessage('Message is required').isLength({ min: 1, max: 500 }).withMessage('Message must be between 1 and 500 characters'),
+  body('userIds').optional().isArray().withMessage('User IDs must be an array'),
+  body('sendToAll').optional().isBoolean().withMessage('Send to all must be a boolean'),
+  body('data').optional().isObject().withMessage('Data must be an object'),
+];
 
 // Get user notifications
-router.get(
-  '/',
-  [
-    query('page').optional().isInt({ min: 1 }),
-    query('limit').optional().isInt({ min: 1, max: 100 }),
-    query('type').optional().isString(),
-    query('isRead').optional().isBoolean()
-  ],
-  validateRequest,
-  notificationController.getNotifications
-);
+router.get('/', authenticateToken, NotificationController.getNotifications);
 
 // Get unread notification count
-router.get(
-  '/unread-count',
-  notificationController.getUnreadCount
-);
+router.get('/unread-count', authenticateToken, NotificationController.getUnreadCount);
 
 // Get notification preferences
-router.get(
-  '/preferences',
-  notificationController.getPreferences
-);
+router.get('/settings', authenticateToken, NotificationController.getPreferences);
 
 // Mark notification as read
-router.put(
-  '/:id/read',
-  [param('id').isString().notEmpty()],
-  validateRequest,
-  notificationController.markAsRead
-);
+router.put('/:id/read', authenticateToken, NotificationController.markAsRead);
 
 // Mark all notifications as read
-router.put(
-  '/mark-all-read',
-  notificationController.markAllAsRead
-);
+router.put('/read-all', authenticateToken, NotificationController.markAllAsRead);
 
 // Update notification preferences
-router.put(
-  '/preferences',
-  [
-    body('emailNotifications').optional().isBoolean(),
-    body('pushNotifications').optional().isBoolean(),
-    body('telegramNotifications').optional().isBoolean(),
-    body('notificationTypes').optional().isObject()
-  ],
-  validateRequest,
-  notificationController.updatePreferences
-);
+router.put('/settings', authenticateToken, validateNotificationPreferences, NotificationController.updatePreferences);
 
 // Delete notification
-router.delete(
-  '/:id',
-  [param('id').isString().notEmpty()],
-  validateRequest,
-  notificationController.deleteNotification
-);
+router.delete('/:id', authenticateToken, NotificationController.deleteNotification);
 
-// Test notification (development only)
-router.post(
-  '/test',
-  [
-    body('type').optional().isString(),
-    body('title').optional().isString(),
-    body('message').optional().isString()
-  ],
-  validateRequest,
-  notificationController.testNotification
-);
+// Send test notification (development only)
+router.post('/test', authenticateToken, NotificationController.sendTestNotification);
+
+// Send bulk notification (Admin only)
+router.post('/bulk', authenticateToken, validateBulkNotification, NotificationController.sendBulkNotification);
 
 export default router;
