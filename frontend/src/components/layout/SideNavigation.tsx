@@ -8,9 +8,6 @@ import {
   HomeIcon,
   MagnifyingGlassIcon,
   UserCircleIcon,
-  CalendarIcon,
-  HeartIcon,
-  Cog6ToothIcon,
   QuestionMarkCircleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -21,8 +18,6 @@ import {
   HomeIcon as HomeIconSolid,
   MagnifyingGlassIcon as MagnifyingGlassIconSolid,
   UserCircleIcon as UserCircleIconSolid,
-  CalendarIcon as CalendarIconSolid,
-  HeartIcon as HeartIconSolid,
 } from '@heroicons/react/24/solid';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { LanguageToggle } from '../ui/LanguageToggle';
@@ -80,42 +75,22 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
 
   const userNavItems = isAuthenticated ? [
     {
-      name: t('nav.profile'),
-      href: user?.accountType === 'specialist' ? '/specialist/profile' : '/profile',
+      name: user?.userType === 'specialist' ? t('nav.dashboard') : t('nav.dashboard'), 
+      href: user?.userType === 'specialist' ? '/specialist/dashboard' : '/dashboard',
       icon: UserCircleIcon,
       activeIcon: UserCircleIconSolid,
-      current: location.pathname.includes('/profile'),
+      current: location.pathname.includes('/dashboard'),
     },
-    {
-      name: t('nav.bookings'),
-      href: user?.accountType === 'specialist' ? '/specialist/bookings' : '/bookings',
-      icon: CalendarIcon,
-      activeIcon: CalendarIconSolid,
-      current: location.pathname.includes('/bookings'),
-    },
-    {
-      name: t('nav.favorites'),
-      href: '/favorites',
-      icon: HeartIcon,
-      activeIcon: HeartIconSolid,
-      current: location.pathname.includes('/favorites'),
-      show: user?.accountType === 'customer',
-    },
-    {
-      name: t('nav.settings'),
-      href: user?.accountType === 'specialist' ? '/specialist/settings' : '/settings',
-      icon: Cog6ToothIcon,
-      activeIcon: Cog6ToothIcon,
-      current: location.pathname.includes('/settings'),
-    },
-  ].filter(item => item.show !== false) : [];
+  ] : [];
 
   const handleLogout = async () => {
     try {
       await dispatch(logout()).unwrap();
       navigate('/');
     } catch (error) {
-      console.error('Logout failed:', error);
+      // Silently handle any logout errors - client-side logout always succeeds
+      // Navigate anyway since tokens are cleared regardless
+      navigate('/');
     }
   };
 
@@ -228,7 +203,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
           <div>
             {!isCollapsed && (
               <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                {t('nav.account')}
+                {t('nav.myAccount')}
               </h3>
             )}
             <nav className="space-y-1">

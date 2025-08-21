@@ -212,7 +212,7 @@ router.post('/google', validateGoogleAuth, async (req, res) => {
       );
     }
 
-    const { credential } = req.body;
+    const { credential, userType } = req.body;
 
     // Verify Google credential
     const ticket = await googleClient.verifyIdToken({
@@ -238,7 +238,7 @@ router.post('/google', validateGoogleAuth, async (req, res) => {
       picture: payload.picture!,
     };
 
-    const result = await EnhancedAuthService.authenticateWithGoogle(googleData);
+    const result = await EnhancedAuthService.authenticateWithGoogle(googleData, userType);
 
     res.json(createSuccessResponse(result));
   } catch (error: any) {

@@ -3,6 +3,7 @@ import { useAppSelector } from '../../hooks/redux';
 import { selectIsAuthenticated, selectUser } from '../../store/slices/authSlice';
 import { MainLayout } from './MainLayout';
 import CustomerLayout from './CustomerLayout';
+import SpecialistLayout from './SpecialistLayout';
 
 interface ConditionalLayoutProps {
   children: React.ReactNode;
@@ -12,11 +13,15 @@ export const ConditionalLayout: React.FC<ConditionalLayoutProps> = ({ children }
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const user = useAppSelector(selectUser);
 
-  // If user is authenticated and is a customer, use CustomerLayout (with sidebar)
+  // If user is authenticated, use the appropriate layout based on user type
   if (isAuthenticated && user?.userType === 'customer') {
     return <CustomerLayout>{children}</CustomerLayout>;
   }
+  
+  if (isAuthenticated && user?.userType === 'specialist') {
+    return <SpecialistLayout>{children}</SpecialistLayout>;
+  }
 
-  // Otherwise, use MainLayout (without sidebar)
+  // For non-authenticated users or other user types, use MainLayout
   return <MainLayout>{children}</MainLayout>;
 };

@@ -293,9 +293,13 @@ const authSlice = createSlice({
       })
       .addCase(googleLogin.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.user;
-        state.tokens = action.payload.tokens;
-        state.isAuthenticated = true;
+        // Only set user and tokens if they exist (not in requiresUserTypeSelection response)
+        if ('user' in action.payload && 'tokens' in action.payload) {
+          state.user = action.payload.user;
+          state.tokens = action.payload.tokens;
+          state.isAuthenticated = true;
+        }
+        // For requiresUserTypeSelection response, keep loading state false but don't authenticate yet
         state.error = null;
       })
       .addCase(googleLogin.rejected, (state, action) => {

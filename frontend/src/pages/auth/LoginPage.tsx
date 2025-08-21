@@ -8,7 +8,7 @@ import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { LoginRequest } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { environment } from '@/config/environment';
-import GoogleSignIn from '@/components/auth/GoogleSignIn';
+import EnhancedGoogleSignIn from '@/components/auth/EnhancedGoogleSignIn';
 import TelegramLogin from '@/components/auth/TelegramLogin';
 
 interface LoginFormData {
@@ -224,7 +224,7 @@ const LoginPage: React.FC = () => {
             </div>
 
             <div className="mt-6 space-y-3">
-              <GoogleSignIn
+              <EnhancedGoogleSignIn
                 onSuccess={handleSocialLoginSuccess}
                 onError={handleSocialLoginError}
                 disabled={isLoading}

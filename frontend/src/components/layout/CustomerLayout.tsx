@@ -21,7 +21,6 @@ import {
   MoonIcon,
   ChevronDownIcon,
   BellIcon,
-  MagnifyingGlassIcon,
   ClockIcon,
   CreditCardIcon,
   ArrowRightOnRectangleIcon,
@@ -49,13 +48,6 @@ const navigation: SidebarNavItem[] = [
     href: '/dashboard',
     icon: HomeIcon,
     iconActive: HomeIconSolid,
-  },
-  {
-    name: 'Search Services',
-    nameKey: 'customer.nav.searchServices',
-    href: '/search',
-    icon: MagnifyingGlassIcon,
-    iconActive: MagnifyingGlassIcon,
   },
   {
     name: 'Bookings',
@@ -148,7 +140,9 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
       await dispatch(logout()).unwrap();
       navigate('/');
     } catch (error) {
-      console.error('Logout failed:', error);
+      // Silently handle any logout errors - client-side logout always succeeds
+      // Navigate anyway since tokens are cleared regardless
+      navigate('/');
     }
   };
 

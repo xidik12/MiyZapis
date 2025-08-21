@@ -1,8 +1,8 @@
 import React from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAppSelector } from '@/hooks/redux';
-import { selectUser } from '@/store/slices/authSlice';
+import { useAppSelector, useAppDispatch } from '@/hooks/redux';
+import { selectUser, logout } from '@/store/slices/authSlice';
 import {
   HomeIcon,
   CalendarIcon,
@@ -149,9 +149,18 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
     return location.pathname === href || location.pathname.startsWith(href + '/');
   };
 
-  const handleLogout = () => {
-    // Implement logout logic
-    console.log('Logout clicked');
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout()).unwrap();
+      navigate('/');
+    } catch (error) {
+      // Silently handle any logout errors - client-side logout always succeeds
+      // Navigate anyway since tokens are cleared regardless
+      navigate('/');
+    }
   };
 
   return (

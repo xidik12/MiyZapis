@@ -7,7 +7,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { RegisterRequest, UserType } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
-import GoogleSignIn from '@/components/auth/GoogleSignIn';
+import EnhancedGoogleSignIn from '@/components/auth/EnhancedGoogleSignIn';
 import TelegramLogin from '@/components/auth/TelegramLogin';
 
 interface RegisterFormData {
@@ -129,7 +129,7 @@ const RegisterPage: React.FC = () => {
           </div>
 
           <div className="space-y-3">
-            <GoogleSignIn
+            <EnhancedGoogleSignIn
               onSuccess={handleSocialLoginSuccess}
               onError={handleSocialLoginError}
               disabled={isLoading}

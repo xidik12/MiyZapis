@@ -435,18 +435,18 @@ function App() {
             </MainLayout>
           } />
           <Route path="/search" element={
-            <MainLayout>
+            <ConditionalLayout>
               <Suspense fallback={<SuspenseLoader />}>
                 <SearchPageRouter />
               </Suspense>
-            </MainLayout>
+            </ConditionalLayout>
           } />
           <Route path="/service/:serviceId" element={
-            <MainLayout>
+            <ConditionalLayout>
               <Suspense fallback={<SuspenseLoader />}>
                 <ServiceDetailPage />
               </Suspense>
-            </MainLayout>
+            </ConditionalLayout>
           } />
           <Route 
             path="/specialist/:specialistId" 
@@ -473,11 +473,11 @@ function App() {
             </MainLayout>
           } />
           <Route path="/book/:serviceId" element={
-            <MainLayout>
+            <ConditionalLayout>
               <Suspense fallback={<SuspenseLoader />}>
                 <BookingRouter />
               </Suspense>
-            </MainLayout>
+            </ConditionalLayout>
           } />
           <Route path="/payment/:bookingId" element={
             <MainLayout>

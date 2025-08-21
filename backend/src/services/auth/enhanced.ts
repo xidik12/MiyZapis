@@ -411,10 +411,13 @@ export class EnhancedAuthService {
   }
 
   // Google OAuth authentication
-  static async authenticateWithGoogle(googleData: GoogleAuthData): Promise<{
+  static async authenticateWithGoogle(googleData: GoogleAuthData, userType?: string): Promise<{
     user: Omit<User, 'password'>;
     tokens: { accessToken: string; refreshToken: string; expiresIn: number };
     isNewUser: boolean;
+  } | {
+    requiresUserTypeSelection: true;
+    googleData: GoogleAuthData;
   }> {
     try {
       // Check if user exists
@@ -448,6 +451,17 @@ export class EnhancedAuthService {
       let isNewUser = false;
 
       if (!user) {
+        // If no userType is provided, return selection required response
+        if (!userType) {
+          return {
+            requiresUserTypeSelection: true,
+            googleData,
+          };
+        }
+
+        // Validate userType
+        const validUserType = userType.toUpperCase() === 'SPECIALIST' ? 'SPECIALIST' : 'CUSTOMER';
+
         // Create new user from Google data
         user = await prisma.user.create({
           data: {
@@ -455,7 +469,7 @@ export class EnhancedAuthService {
             firstName: googleData.given_name,
             lastName: googleData.family_name,
             avatar: googleData.picture,
-            userType: 'CUSTOMER',
+            userType: validUserType,
             isEmailVerified: googleData.verified_email,
             isActive: true,
           },
@@ -484,6 +498,27 @@ export class EnhancedAuthService {
           },
         });
         isNewUser = true;
+
+        // Create specialist profile if user is a specialist
+        if (validUserType === 'SPECIALIST') {
+          await prisma.specialist.create({
+            data: {
+              userId: user.id,
+              businessName: `${googleData.given_name} ${googleData.family_name}`,
+              bio: '',
+              specialties: '[]',
+              workingHours: JSON.stringify({
+                monday: { isWorking: true, start: '09:00', end: '17:00' },
+                tuesday: { isWorking: true, start: '09:00', end: '17:00' },
+                wednesday: { isWorking: true, start: '09:00', end: '17:00' },
+                thursday: { isWorking: true, start: '09:00', end: '17:00' },
+                friday: { isWorking: true, start: '09:00', end: '17:00' },
+                saturday: { isWorking: false, start: '09:00', end: '17:00' },
+                sunday: { isWorking: false, start: '09:00', end: '17:00' }
+              }),
+            },
+          });
+        }
 
         // Send welcome email for new users
         await emailService.sendWelcomeEmail(user.email, user.firstName);

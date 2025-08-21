@@ -71,7 +71,10 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
       navigate('/');
       onClose();
     } catch (error) {
-      console.error('Logout failed:', error);
+      // Silently handle any logout errors - client-side logout always succeeds
+      // Navigate anyway since tokens are cleared regardless
+      navigate('/');
+      onClose();
     }
   };
 
