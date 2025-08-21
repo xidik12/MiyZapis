@@ -234,6 +234,7 @@ const RegisterPage: React.FC = () => {
                   message: t('auth.error.firstNameMinLength'),
                 },
               })}
+              id="firstName"
               type="text"
               autoComplete="given-name"
               className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${
@@ -258,6 +259,7 @@ const RegisterPage: React.FC = () => {
                   message: t('auth.error.lastNameMinLength'),
                 },
               })}
+              id="lastName"
               type="text"
               autoComplete="family-name"
               className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${
@@ -284,6 +286,7 @@ const RegisterPage: React.FC = () => {
                 message: t('auth.error.emailInvalid'),
               },
             })}
+            id="email"
             type="email"
             autoComplete="email"
             className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${
@@ -308,6 +311,7 @@ const RegisterPage: React.FC = () => {
                 message: t('auth.error.phoneInvalid'),
               },
             })}
+            id="phoneNumber"
             type="tel"
             autoComplete="tel"
             className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${
@@ -338,6 +342,7 @@ const RegisterPage: React.FC = () => {
                   message: t('auth.error.passwordPattern'),
                 },
               })}
+              id="password"
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
               className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${
@@ -373,6 +378,7 @@ const RegisterPage: React.FC = () => {
                 required: t('auth.error.confirmPasswordRequired'),
                 validate: value => value === watchPassword || t('auth.error.passwordsDoNotMatch'),
               })}
+              id="confirmPassword"
               type={showConfirmPassword ? 'text' : 'password'}
               autoComplete="new-password"
               className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 pr-10 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${

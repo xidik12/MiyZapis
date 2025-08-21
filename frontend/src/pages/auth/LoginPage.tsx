@@ -121,6 +121,7 @@ const LoginPage: React.FC = () => {
                 message: t('auth.error.emailInvalid'),
               },
             })}
+            id="email"
             type="email"
             autoComplete="email"
             className={`mt-1 block w-full px-3 py-3 sm:py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 transition-all duration-200 ${
@@ -146,6 +147,7 @@ const LoginPage: React.FC = () => {
                   message: t('auth.error.passwordMinLength'),
                 },
               })}
+              id="password"
               type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
               className={`block w-full px-3 py-3 sm:py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 pr-10 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 transition-all duration-200 ${

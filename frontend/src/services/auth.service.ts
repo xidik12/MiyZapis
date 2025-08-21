@@ -132,25 +132,24 @@ export class AuthService {
       const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
       
       if (refreshToken) {
-        // Set a short timeout for logout request due to backend Redis issues
+        // Set a short timeout for logout request due to backend issues
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 1500); // 1.5 second timeout
         
         try {
           await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT, 
             { refreshToken }, 
             { 
               signal: controller.signal,
-              timeout: 2000 // Additional axios timeout
+              timeout: 1500, // Additional axios timeout
+              validateStatus: (status) => status < 500 // Accept 4xx errors as success
             }
           );
           clearTimeout(timeoutId);
         } catch (requestError: any) {
           clearTimeout(timeoutId);
-          // Don't log network/timeout errors as they're expected
-          if (!requestError.name?.includes('Cancel') && !requestError.code?.includes('TIMEOUT')) {
-            console.warn('Logout request failed (backend issue), continuing with client-side logout');
-          }
+          // Silently handle all logout errors - they don't affect the user experience
+          // as client-side logout is always performed regardless
         }
       }
     } catch (error) {

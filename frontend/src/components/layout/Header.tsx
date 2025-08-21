@@ -66,9 +66,11 @@ export const Header: React.FC = () => {
   const handleLogout = async () => {
     try {
       await dispatch(logout()).unwrap();
-      navigate('/');
+      navigate('/', { replace: true });
     } catch (error) {
-      console.error('Logout failed:', error);
+      // Silently handle logout errors - user is logged out regardless
+      // Navigate anyway since client-side logout always succeeds
+      navigate('/', { replace: true });
     }
   };
 

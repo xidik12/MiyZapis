@@ -203,6 +203,7 @@ export const logout = createAsyncThunk(
     } catch (error: any) {
       // Still clear tokens even if logout request fails
       clearAuthTokens();
+      // Always return success for logout to prevent error toasts
       return null;
     }
   }

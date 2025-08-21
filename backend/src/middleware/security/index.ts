@@ -12,17 +12,38 @@ export const securityHeaders = helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://accounts.google.com", "https://apis.google.com"],
-      imgSrc: ["'self'", "data:", "https:", "https://*.googleusercontent.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      scriptSrc: [
+        "'self'", 
+        "'unsafe-inline'", 
+        "'unsafe-eval'", // Allow eval for Stripe and Google OAuth
+        "https://accounts.google.com", 
+        "https://apis.google.com",
+        "https://js.stripe.com",
+        "https://checkout.stripe.com"
+      ],
+      imgSrc: ["'self'", "data:", "https:", "https://*.googleusercontent.com", "https://*.stripe.com"],
       fontSrc: ["'self'", "https:", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "wss:", "https:", "https://accounts.google.com", "https://oauth2.googleapis.com"],
+      connectSrc: [
+        "'self'", 
+        "wss:", 
+        "https:", 
+        "https://accounts.google.com", 
+        "https://oauth2.googleapis.com",
+        "https://api.stripe.com",
+        "https://checkout.stripe.com"
+      ],
       mediaSrc: ["'self'"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
-      formAction: ["'self'", "https://accounts.google.com"],
+      formAction: ["'self'", "https://accounts.google.com", "https://checkout.stripe.com"],
       frameAncestors: ["'none'"],
-      frameSrc: ["https://accounts.google.com"],
+      frameSrc: [
+        "https://accounts.google.com", 
+        "https://js.stripe.com", 
+        "https://checkout.stripe.com",
+        "https://hooks.stripe.com"
+      ],
       upgradeInsecureRequests: [],
     },
   },
@@ -32,11 +53,12 @@ export const securityHeaders = helmet({
     preload: true,
   },
   noSniff: true,
-  frameguard: { action: 'sameorigin' }, // Changed from 'deny' to 'sameorigin' for Google OAuth
+  frameguard: { action: 'sameorigin' }, // Allow same-origin framing for OAuth
   xssFilter: true,
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
-  crossOriginEmbedderPolicy: false, // Disable for file uploads and OAuth
+  crossOriginEmbedderPolicy: false, // Disable for third-party integrations
   crossOriginOpenerPolicy: false, // Disable for OAuth popups
+  crossOriginResourcePolicy: false, // Disable to allow cross-origin resources
 });
 
 // Rate limiter store (Redis when available, in-memory fallback)
