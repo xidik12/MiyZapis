@@ -22,6 +22,7 @@ import {
   ChevronDownIcon,
   BellIcon,
   ChatBubbleLeftRightIcon,
+  MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import { ChartBarIcon as ChartBarIconSolid } from '@heroicons/react/24/solid';
 
@@ -46,6 +47,13 @@ const navigation: SidebarNavItem[] = [
     href: '/specialist/dashboard',
     icon: ChartBarIcon,
     iconActive: ChartBarIconSolid,
+  },
+  {
+    name: 'Find Services',
+    nameUk: 'Пошук послуг',
+    href: '/search',
+    icon: MagnifyingGlassIcon,
+    iconActive: MagnifyingGlassIcon,
   },
   {
     name: 'Bookings',

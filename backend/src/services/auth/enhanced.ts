@@ -324,14 +324,17 @@ export class EnhancedAuthService {
     }
   }
 
-  // Login with email verification check
-  static async login(data: LoginRequest): Promise<{
+  // Login with email verification check and multi-role support
+  static async login(data: LoginRequest, userType?: string): Promise<{
     user: Omit<User, 'password'>;
     tokens: { accessToken: string; refreshToken: string; expiresIn: number };
     requiresVerification?: boolean;
+  } | {
+    requiresUserTypeSelection: true;
+    loginData: LoginRequest;
   }> {
     try {
-      // Find user by email
+      // Find user by email and check their available roles
       const user = await prisma.user.findUnique({
         where: { email: data.email },
         select: {
@@ -357,6 +360,13 @@ export class EnhancedAuthService {
           telegramNotifications: true,
           createdAt: true,
           updatedAt: true,
+          specialist: {
+            select: {
+              id: true,
+              businessName: true,
+              isVerified: true,
+            },
+          },
         },
       });
 
@@ -383,21 +393,50 @@ export class EnhancedAuthService {
         throw new Error('EMAIL_NOT_VERIFIED');
       }
 
-      // Update last login
+      // Check available roles for multi-role support
+      const hasCustomerRole = user.userType === 'CUSTOMER' || user.userType === 'ADMIN';
+      const hasSpecialistRole = user.specialist !== null;
+      
+      // If user has both roles and no specific role is requested, ask for selection
+      if (hasCustomerRole && hasSpecialistRole && !userType) {
+        return {
+          requiresUserTypeSelection: true,
+          loginData: data,
+        };
+      }
+      
+      // If user has only one role, use that role
+      if (!userType) {
+        if (hasSpecialistRole && !hasCustomerRole) {
+          userType = 'specialist';
+        } else {
+          userType = 'customer';
+        }
+      }
+      
+      // Update user type if switching roles (for users with multiple roles)
+      const targetUserType = userType.toLowerCase() === 'specialist' ? 'SPECIALIST' : 'CUSTOMER';
+      
+      // Update last login and potentially switch active role
       await prisma.user.update({
         where: { id: user.id },
-        data: { lastLoginAt: new Date() },
+        data: { 
+          lastLoginAt: new Date(),
+          userType: targetUserType, // Switch active role
+        },
       });
 
-      // Remove password from user object
+      // Remove password from user object and update user type
       const { password, ...userWithoutPassword } = user;
+      userWithoutPassword.userType = targetUserType;
 
       // Create tokens
       const tokens = await this.createTokens(userWithoutPassword);
 
       logger.info('User logged in successfully', { 
         userId: user.id, 
-        platform: data.platform 
+        platform: data.platform,
+        selectedRole: targetUserType
       });
 
       return {
@@ -420,7 +459,7 @@ export class EnhancedAuthService {
     googleData: GoogleAuthData;
   }> {
     try {
-      // Check if user exists
+      // Check if user exists and get their available roles
       let user = await prisma.user.findUnique({
         where: { email: googleData.email },
         select: {
@@ -445,13 +484,20 @@ export class EnhancedAuthService {
           telegramNotifications: true,
           createdAt: true,
           updatedAt: true,
+          specialist: {
+            select: {
+              id: true,
+              businessName: true,
+              isVerified: true,
+            },
+          },
         },
       });
 
       let isNewUser = false;
 
       if (!user) {
-        // If no userType is provided, return selection required response
+        // New user - always require user type selection
         if (!userType) {
           return {
             requiresUserTypeSelection: true,
@@ -495,6 +541,13 @@ export class EnhancedAuthService {
             telegramNotifications: true,
             createdAt: true,
             updatedAt: true,
+            specialist: {
+              select: {
+                id: true,
+                businessName: true,
+                isVerified: true,
+              },
+            },
           },
         });
         isNewUser = true;
@@ -523,15 +576,43 @@ export class EnhancedAuthService {
         // Send welcome email for new users
         await emailService.sendWelcomeEmail(user.email, user.firstName);
       } else {
-        // Update last login for existing users
+        // Existing user - check available roles
+        const hasCustomerRole = user.userType === 'CUSTOMER' || user.userType === 'ADMIN';
+        const hasSpecialistRole = user.specialist !== null;
+        
+        // If user has both roles and no specific role is requested, ask for selection
+        if (hasCustomerRole && hasSpecialistRole && !userType) {
+          return {
+            requiresUserTypeSelection: true,
+            googleData,
+          };
+        }
+        
+        // If user has only one role, use that role
+        if (!userType) {
+          if (hasSpecialistRole && !hasCustomerRole) {
+            userType = 'specialist';
+          } else {
+            userType = 'customer';
+          }
+        }
+        
+        // Update user type if switching roles (for users with multiple roles)
+        const targetUserType = userType.toLowerCase() === 'specialist' ? 'SPECIALIST' : 'CUSTOMER';
+        
+        // Update last login and potentially switch active role
         await prisma.user.update({
           where: { id: user.id },
           data: { 
             lastLoginAt: new Date(),
+            userType: targetUserType, // Switch active role
             // Update avatar if user doesn't have one
             ...(user.avatar ? {} : { avatar: googleData.picture }),
           },
         });
+        
+        // Update the user object to reflect the current role
+        user.userType = targetUserType;
       }
 
       if (!user.isActive) {
@@ -760,6 +841,81 @@ export class EnhancedAuthService {
         success: false,
         message: 'Failed to resend verification email. Please try again later.',
       };
+    }
+  }
+
+  // Refresh access token using refresh token
+  static async refreshAuthToken(refreshToken: string): Promise<{
+    accessToken: string;
+    expiresIn: number;
+  }> {
+    try {
+      // Verify refresh token
+      const decoded = jwt.verify(refreshToken, config.jwt.refreshSecret) as RefreshTokenPayload;
+
+      // Check if refresh token exists in database
+      const tokenRecord = await prisma.refreshToken.findUnique({
+        where: { token: refreshToken },
+        include: { 
+          user: {
+            select: {
+              id: true,
+              email: true,
+              userType: true,
+              isActive: true,
+            },
+          },
+        },
+      });
+
+      if (!tokenRecord || tokenRecord.expiresAt < new Date()) {
+        throw new Error('INVALID_REFRESH_TOKEN');
+      }
+
+      if (!tokenRecord.user.isActive) {
+        throw new Error('ACCOUNT_DEACTIVATED');
+      }
+
+      // Generate new access token
+      const jwtPayload: JwtPayload = {
+        userId: tokenRecord.user.id,
+        email: tokenRecord.user.email,
+        userType: tokenRecord.user.userType as UserType,
+      };
+
+      const accessToken = jwt.sign(jwtPayload, config.jwt.secret, {
+        expiresIn: config.jwt.expiresIn
+      } as SignOptions);
+
+      logger.info('Token refreshed successfully', { userId: tokenRecord.user.id });
+
+      return {
+        accessToken,
+        expiresIn: 3600, // 1 hour
+      };
+    } catch (error) {
+      logger.error('Token refresh error:', error);
+      throw error;
+    }
+  }
+
+  // Revoke refresh token (logout)
+  static async revokeRefreshToken(refreshToken: string): Promise<void> {
+    try {
+      // Try to delete the refresh token
+      await prisma.refreshToken.delete({
+        where: { token: refreshToken },
+      });
+
+      logger.debug('Refresh token revoked successfully');
+    } catch (error: any) {
+      // If token doesn't exist, that's fine - user is already logged out
+      if (error.code === 'P2025') {
+        logger.debug('Refresh token not found (already logged out)');
+      } else {
+        logger.debug('Logout error (non-critical):', error);
+      }
+      // Never throw error for logout - always succeed from user perspective
     }
   }
 }

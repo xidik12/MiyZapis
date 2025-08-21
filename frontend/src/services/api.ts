@@ -130,42 +130,45 @@ api.interceptors.response.use(
         timestamp: new Date().toISOString(),
       };
 
-      // Check if this is a login request - don't show toast for login failures
+      // Check if this is a login or logout request - don't show toast for these failures
       const isLoginRequest = originalRequest.url?.includes('/auth/login');
+      const isLogoutRequest = originalRequest.url?.includes('/auth/logout') || originalRequest.url?.includes('/logout');
       
-      // Show user-friendly error messages (except for login 401 errors)
-      switch (error.response.status) {
-        case 400:
-          toast.error(apiError.message || 'Invalid request data');
-          break;
-        case 401:
-          // Don't show toast for login failures - let the form handle it
-          if (!isLoginRequest) {
-            toast.error('Authentication failed. Please log in again.');
-          }
-          break;
-        case 403:
-          toast.error('You do not have permission to perform this action');
-          break;
-        case 404:
-          toast.error('The requested resource was not found');
-          break;
-        case 409:
-          toast.error(apiError.message || 'A conflict occurred');
-          break;
-        case 422:
-          toast.error(apiError.message || 'Unable to process the request');
-          break;
-        case 429:
-          toast.error('Too many requests. Please try again later');
-          break;
-        case 500:
-          toast.error('Server error. Please try again later');
-          break;
-        default:
-          if (error.response.status >= 500) {
+      // Show user-friendly error messages (except for login/logout errors)
+      if (!isLogoutRequest) {
+        switch (error.response.status) {
+          case 400:
+            toast.error(apiError.message || 'Invalid request data');
+            break;
+          case 401:
+            // Don't show toast for login failures - let the form handle it
+            if (!isLoginRequest) {
+              toast.error('Authentication failed. Please log in again.');
+            }
+            break;
+          case 403:
+            toast.error('You do not have permission to perform this action');
+            break;
+          case 404:
+            toast.error('The requested resource was not found');
+            break;
+          case 409:
+            toast.error(apiError.message || 'A conflict occurred');
+            break;
+          case 422:
+            toast.error(apiError.message || 'Unable to process the request');
+            break;
+          case 429:
+            toast.error('Too many requests. Please try again later');
+            break;
+          case 500:
             toast.error('Server error. Please try again later');
-          }
+            break;
+          default:
+            if (error.response.status >= 500) {
+              toast.error('Server error. Please try again later');
+            }
+        }
       }
 
       return Promise.reject({
@@ -173,8 +176,10 @@ api.interceptors.response.use(
         apiError,
       });
     } else if (error.request) {
-      // Network error
-      toast.error('Network error. Please check your connection');
+      // Network error - don't show toast for logout requests
+      if (!isLogoutRequest) {
+        toast.error('Network error. Please check your connection');
+      }
       return Promise.reject({
         ...error,
         apiError: {

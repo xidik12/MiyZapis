@@ -23,6 +23,7 @@ import {
   BellIcon,
   ClockIcon,
   CreditCardIcon,
+  MagnifyingGlassIcon,
   ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 import { HomeIcon as HomeIconSolid } from '@heroicons/react/24/solid';
@@ -48,6 +49,13 @@ const navigation: SidebarNavItem[] = [
     href: '/dashboard',
     icon: HomeIcon,
     iconActive: HomeIconSolid,
+  },
+  {
+    name: 'Find Services',
+    nameKey: 'customer.nav.searchServices',
+    href: '/search',
+    icon: MagnifyingGlassIcon,
+    iconActive: MagnifyingGlassIcon,
   },
   {
     name: 'Bookings',

@@ -22,6 +22,7 @@ if (process.env.NODE_ENV === 'production') {
 // Public routes
 router.post('/register', validateRegister, AuthController.register);
 router.post('/login', validateLogin, AuthController.login);
+router.post('/google', AuthController.googleAuth);
 router.post('/telegram', validateTelegramAuth, AuthController.telegramAuth);
 router.post('/refresh', validateRefreshToken, AuthController.refreshToken);
 router.post('/logout', AuthController.logout);

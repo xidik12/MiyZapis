@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { AuthService } from '@/services/auth';
+import { EnhancedAuthService as AuthService } from '@/services/auth/enhanced';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { ErrorCodes, LoginRequest, RegisterRequest, TelegramAuthRequest, JwtPayload } from '@/types';
@@ -21,8 +21,8 @@ export class AuthController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: error.param,
-              message: error.msg,
+              field: (error as any).param || (error as any).path || 'unknown',
+              message: (error as any).msg || error.toString(),
               code: 'INVALID_VALUE',
             }))
           )
@@ -33,10 +33,12 @@ export class AuthController {
       const data: RegisterRequest = req.body;
       const result = await AuthService.register(data);
 
+      // Enhanced service returns verification requirement
       res.status(201).json(
         createSuccessResponse({
+          message: result.message,
+          requiresVerification: result.requiresVerification,
           user: result.user,
-          tokens: result.tokens,
         })
       );
     } catch (error: any) {
@@ -74,7 +76,7 @@ export class AuthController {
     }
   }
 
-  // Login user
+  // Login user with multi-role support
   static async login(req: Request, res: Response): Promise<void> {
     try {
       // Check validation errors
@@ -86,8 +88,8 @@ export class AuthController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: error.param,
-              message: error.msg,
+              field: (error as any).param || (error as any).path || 'unknown',
+              message: (error as any).msg || error.toString(),
               code: 'INVALID_VALUE',
             }))
           )
@@ -96,7 +98,20 @@ export class AuthController {
       }
 
       const data: LoginRequest = req.body;
-      const result = await AuthService.login(data);
+      const { userType } = req.body; // Extract userType from request body
+      const result = await AuthService.login(data, userType);
+
+      // Check if user type selection is required
+      if ('requiresUserTypeSelection' in result) {
+        res.status(200).json(
+          createSuccessResponse({
+            requiresUserTypeSelection: true,
+            loginData: result.loginData,
+            message: 'Please select your role to continue',
+          })
+        );
+        return;
+      }
 
       res.json(
         createSuccessResponse({
@@ -112,6 +127,17 @@ export class AuthController {
           createErrorResponse(
             ErrorCodes.INVALID_CREDENTIALS,
             'Invalid email or password',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'EMAIL_NOT_VERIFIED') {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.ACCESS_DENIED,
+            'Please verify your email address before logging in',
             req.headers['x-request-id'] as string
           )
         );
@@ -151,8 +177,8 @@ export class AuthController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: error.param,
-              message: error.msg,
+              field: (error as any).param || (error as any).path || 'unknown',
+              message: (error as any).msg || error.toString(),
               code: 'INVALID_VALUE',
             }))
           )
@@ -161,7 +187,7 @@ export class AuthController {
       }
 
       const data: TelegramAuthRequest = req.body;
-      const result = await AuthService.authenticateTelegram(data);
+      const result = await AuthService.authenticateWithTelegram(data);
 
       res.json(
         createSuccessResponse({
@@ -205,6 +231,84 @@ export class AuthController {
     }
   }
 
+  // Google OAuth authentication with multi-role support
+  static async googleAuth(req: Request, res: Response): Promise<void> {
+    try {
+      // Check validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid request data',
+            req.headers['x-request-id'] as string,
+            errors.array().map(error => ({
+              field: (error as any).param || (error as any).path || 'unknown',
+              message: (error as any).msg || error.toString(),
+              code: 'INVALID_VALUE',
+            }))
+          )
+        );
+        return;
+      }
+
+      const { googleData, userType } = req.body;
+      const result = await AuthService.authenticateWithGoogle(googleData, userType);
+
+      // Check if user type selection is required
+      if ('requiresUserTypeSelection' in result) {
+        res.status(200).json(
+          createSuccessResponse({
+            requiresUserTypeSelection: true,
+            googleData: result.googleData,
+            message: 'Please select your role to continue',
+          })
+        );
+        return;
+      }
+
+      res.json(
+        createSuccessResponse({
+          user: result.user,
+          tokens: result.tokens,
+          isNewUser: result.isNewUser,
+        })
+      );
+    } catch (error: any) {
+      logger.error('Google auth controller error:', error);
+
+      if (error.message === 'INVALID_GOOGLE_TOKEN') {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.INVALID_CREDENTIALS,
+            'Invalid Google authentication token',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'ACCOUNT_DEACTIVATED') {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.ACCESS_DENIED,
+            'Account is deactivated',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Google authentication failed',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
   // Refresh access token
   static async refreshToken(req: Request, res: Response): Promise<void> {
     try {
@@ -221,7 +325,7 @@ export class AuthController {
         return;
       }
 
-      const result = await AuthService.refreshToken(refreshToken);
+      const result = await AuthService.refreshAuthToken(refreshToken);
 
       res.json(
         createSuccessResponse({
@@ -306,7 +410,7 @@ export class AuthController {
         // Revoke refresh token
         if (refreshToken && typeof refreshToken === 'string' && refreshToken.trim()) {
           cleanupPromises.push(
-            AuthService.logout(refreshToken.trim())
+            AuthService.revokeRefreshToken(refreshToken.trim())
               .then(() => logger.debug('Refresh token revoked successfully'))
               .catch((error) => logger.debug('Refresh token revocation failed (non-critical):', error))
           );
@@ -396,10 +500,43 @@ export class AuthController {
   // Verify email
   static async verifyEmail(req: Request, res: Response): Promise<void> {
     try {
-      // TODO: Implement email verification logic
+      // Check validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid request data',
+            req.headers['x-request-id'] as string,
+            errors.array().map(error => ({
+              field: (error as any).param || (error as any).path || 'unknown',
+              message: (error as any).msg || error.toString(),
+              code: 'INVALID_VALUE',
+            }))
+          )
+        );
+        return;
+      }
+
+      const { token } = req.body;
+      const result = await AuthService.verifyEmail(token);
+
+      if (!result.success) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            result.message,
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
       res.json(
         createSuccessResponse({
-          message: 'Email verification not yet implemented',
+          message: result.message,
+          user: result.user,
+          tokens: result.tokens,
         })
       );
     } catch (error: any) {
