@@ -69,7 +69,9 @@
       "Bash(mv:*)",
       "Bash(redis-cli:*)",
       "Bash(brew install:*)",
-      "Bash(railway redeploy:*)"
+      "Bash(railway redeploy:*)",
+      "Bash(railway domains:*)",
+      "Bash(railway domain:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

@@ -5,6 +5,41 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { RootState, AppDispatch } from '../../store';
 import { analyticsService } from '../../services/analytics.service';
 
+// Mock analytics data structure
+interface AnalyticsData {
+  stats: {
+    totalRevenue: number;
+    totalBookings: number;
+    totalClients: number;
+    avgRating: number;
+  };
+  services: Array<{
+    name: string;
+    bookings: number;
+    price: number;
+  }>;
+  dailyStats: {
+    revenue: number[];
+    bookings: number[];
+    labels: string[];
+  };
+  weeklyStats: {
+    revenue: number[];
+    bookings: number[];
+    labels: string[];
+  };
+  monthlyStats: {
+    revenue: number[];
+    bookings: number[];
+    labels: string[];
+  };
+  yearlyStats: {
+    revenue: number[];
+    bookings: number[];
+    labels: string[];
+  };
+}
+
 // Category colors for charts
 const categoryColors = {
   'Психологічна консультація': '#3B82F6', // blue
@@ -145,6 +180,40 @@ const SpecialistAnalytics: React.FC = () => {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
   const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
+    stats: {
+      totalRevenue: 15420,
+      totalBookings: 89,
+      totalClients: 62,
+      avgRating: 4.8
+    },
+    services: [
+      { name: 'Психологічна консультація', bookings: 25, price: 800 },
+      { name: 'Індивідуальна терапія', bookings: 18, price: 1200 },
+      { name: 'Сімейна консультація', bookings: 12, price: 1500 },
+      { name: 'Групова терапія', bookings: 8, price: 600 }
+    ],
+    dailyStats: {
+      revenue: [1200, 1500, 980, 1800, 1350, 2100, 1750],
+      bookings: [3, 4, 2, 5, 3, 6, 4],
+      labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
+    },
+    weeklyStats: {
+      revenue: [4200, 5800, 3900, 6200],
+      bookings: [12, 16, 10, 18],
+      labels: ['Тиж 1', 'Тиж 2', 'Тиж 3', 'Тиж 4']
+    },
+    monthlyStats: {
+      revenue: [12500, 15200, 8900, 18600, 14200, 16800],
+      bookings: [45, 52, 38, 67, 48, 58],
+      labels: ['Лют', 'Бер', 'Кві', 'Тра', 'Чер', 'Лип']
+    },
+    yearlyStats: {
+      revenue: [89000, 125000, 156000],
+      bookings: [320, 445, 567],
+      labels: ['2022', '2023', '2024']
+    }
+  });
   const [selectedView, setSelectedView] = useState<'revenue' | 'bookings' | 'customers'>('revenue');
   
   // Service name translation mapping

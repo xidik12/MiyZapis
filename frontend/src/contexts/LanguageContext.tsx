@@ -1344,6 +1344,14 @@ const translations: Translations = {
   'auth.userType.specialist.title': { en: 'I\'m a Specialist', uk: 'Я спеціаліст', ru: 'Я специалист' },
   'auth.userType.specialist.description': { en: 'I want to offer my services to customers', uk: 'Я хочу надавати свої послуги клієнтам', ru: 'Я хочу предлагать свои услуги клиентам' },
   'auth.userType.footerNote': { en: 'You can change this later in your profile settings', uk: 'Ви можете змінити це пізніше в налаштуваннях профілю', ru: 'Вы можете изменить это позже в настройках профиля' },
+
+  // Pricing
+  'pricing.from': { en: 'From', uk: 'Від', ru: 'От' },
+
+  // Actions
+  'actions.viewProfile': { en: 'View Profile', uk: 'Переглянути профіль', ru: 'Посмотреть профиль' },
+  'actions.book': { en: 'Book', uk: 'Забронювати', ru: 'Забронировать' },
+  'actions.bookNow': { en: 'Book Now', uk: 'Забронювати зараз', ru: 'Забронировать сейчас' },
 };
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

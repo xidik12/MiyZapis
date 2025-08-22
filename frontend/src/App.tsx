@@ -12,6 +12,7 @@ import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { MainLayout } from './components/layout/MainLayout';
 import { AuthLayout } from './components/layout/AuthLayout';
 import { ConditionalLayout } from './components/layout/ConditionalLayout';
+import { UserTypeRedirect } from './components/routing/UserTypeRedirect';
 // import { FloatingElements } from './components/ui/UkrainianElements';
 
 // Lazy load pages for better performance
@@ -430,7 +431,7 @@ function App() {
           <Route path="/" element={
             <MainLayout>
               <Suspense fallback={<SuspenseLoader />}>
-                <HomePage />
+                <UserTypeRedirect />
               </Suspense>
             </MainLayout>
           } />
