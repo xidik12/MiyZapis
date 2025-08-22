@@ -9,6 +9,7 @@ import {
   PencilIcon
 } from '@heroicons/react/24/outline';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { specialistService } from '../../services/specialist.service';
 
 interface TimeSlot {
   id: string;
@@ -234,58 +235,111 @@ const SpecialistSchedule: React.FC = () => {
   const { t } = useLanguage();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingSlot, setEditingSlot] = useState<TimeSlot | null>(null);
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([
-    {
-      id: '1',
-      date: '2025-08-18',
-      startTime: '09:00',
-      endTime: '17:00',
-      isAvailable: true,
-      isRecurring: true,
-      recurringDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
-    },
-    {
-      id: '2',
-      date: '2025-08-19',
-      startTime: '10:00',
-      endTime: '15:00',
-      isAvailable: true,
-      isRecurring: false
-    },
-    {
-      id: '3',
-      date: '2025-08-20',
-      startTime: '09:00',
-      endTime: '17:00',
-      isAvailable: false,
-      reason: 'Personal appointment',
-      isRecurring: false
-    }
-  ]);
-
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  const handleAddTimeSlot = (newSlot: Omit<TimeSlot, 'id'>) => {
-    const slot: TimeSlot = {
-      ...newSlot,
-      id: Date.now().toString()
+  // Load blocked slots from API
+  useEffect(() => {
+    const loadBlockedSlots = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Get blocked slots for the next 30 days
+        const startDate = new Date().toISOString().split('T')[0];
+        const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        
+        const blockedSlots = await specialistService.getBlockedSlots(startDate, endDate);
+        
+        // Convert blocked slots to time slots format
+        const formattedSlots: TimeSlot[] = blockedSlots.map(slot => ({
+          id: slot.id,
+          date: slot.startDateTime.split('T')[0],
+          startTime: slot.startDateTime.split('T')[1].substring(0, 5),
+          endTime: slot.endDateTime.split('T')[1].substring(0, 5),
+          isAvailable: false,
+          reason: slot.reason,
+          isRecurring: slot.recurring || false,
+        }));
+        
+        setTimeSlots(formattedSlots);
+      } catch (err: any) {
+        setError(err.message || 'Failed to load schedule');
+        console.error('Error loading blocked slots:', err);
+      } finally {
+        setLoading(false);
+      }
     };
-    setTimeSlots(prev => [...prev, slot].sort((a, b) => new Date(a.date + ' ' + a.startTime).getTime() - new Date(b.date + ' ' + b.startTime).getTime()));
-  };
 
-  const handleEditTimeSlot = (updatedSlot: Omit<TimeSlot, 'id'>) => {
-    if (editingSlot) {
-      setTimeSlots(prev => prev.map(slot => 
-        slot.id === editingSlot.id 
-          ? { ...updatedSlot, id: editingSlot.id }
-          : slot
+    loadBlockedSlots();
+  }, []);
+
+  const handleAddTimeSlot = async (newSlot: Omit<TimeSlot, 'id'>) => {
+    try {
+      const startDateTime = `${newSlot.date}T${newSlot.startTime}:00`;
+      const endDateTime = `${newSlot.date}T${newSlot.endTime}:00`;
+      
+      const result = await specialistService.blockTimeSlot({
+        startDateTime,
+        endDateTime,
+        reason: newSlot.reason || 'Blocked time',
+        recurring: newSlot.isRecurring,
+      });
+      
+      const slot: TimeSlot = {
+        id: result.blockedSlot.id,
+        ...newSlot,
+      };
+      
+      setTimeSlots(prev => [...prev, slot].sort((a, b) => 
+        new Date(a.date + ' ' + a.startTime).getTime() - new Date(b.date + ' ' + b.startTime).getTime()
       ));
-      setEditingSlot(null);
+    } catch (err: any) {
+      console.error('Error adding time slot:', err);
+      setError(err.message || 'Failed to add time slot');
     }
   };
 
-  const handleDeleteTimeSlot = (id: string) => {
-    setTimeSlots(prev => prev.filter(slot => slot.id !== id));
+  const handleEditTimeSlot = async (updatedSlot: Omit<TimeSlot, 'id'>) => {
+    if (!editingSlot) return;
+    
+    try {
+      // Delete the old slot and create a new one (since there's no direct edit API)
+      await specialistService.unblockTimeSlot(editingSlot.id);
+      
+      const startDateTime = `${updatedSlot.date}T${updatedSlot.startTime}:00`;
+      const endDateTime = `${updatedSlot.date}T${updatedSlot.endTime}:00`;
+      
+      const result = await specialistService.blockTimeSlot({
+        startDateTime,
+        endDateTime,
+        reason: updatedSlot.reason || 'Blocked time',
+        recurring: updatedSlot.isRecurring,
+      });
+      
+      setTimeSlots(prev => prev.map(slot => 
+        slot.id === editingSlot.id 
+          ? { ...updatedSlot, id: result.blockedSlot.id }
+          : slot
+      ));
+      
+      setEditingSlot(null);
+    } catch (err: any) {
+      console.error('Error editing time slot:', err);
+      setError(err.message || 'Failed to edit time slot');
+    }
+  };
+
+  const handleDeleteTimeSlot = async (id: string) => {
+    try {
+      await specialistService.unblockTimeSlot(id);
+      setTimeSlots(prev => prev.filter(slot => slot.id !== id));
+    } catch (err: any) {
+      console.error('Error deleting time slot:', err);
+      setError(err.message || 'Failed to delete time slot');
+    }
   };
 
   const openEditModal = (slot: TimeSlot) => {
@@ -320,6 +374,34 @@ const SpecialistSchedule: React.FC = () => {
     const today = new Date().toISOString().split('T')[0];
     return timeSlots.filter(slot => slot.date >= today).slice(0, 10);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading schedule...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-xl mb-4">Error loading schedule</div>
+          <p className="text-gray-600 dark:text-gray-400">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto">

@@ -3,8 +3,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { useAppSelector } from '../../hooks/redux';
-import { selectUser } from '../../store/slices/authSlice';
+import { useAppSelector, useAppDispatch } from '../../hooks/redux';
+import { selectUser, logout } from '../../store/slices/authSlice';
+import { fetchNotifications } from '../../store/slices/notificationSlice';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import {
   ChartBarIcon,
@@ -23,6 +24,7 @@ import {
   BellIcon,
   ChatBubbleLeftRightIcon,
   MagnifyingGlassIcon,
+  ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 import { ChartBarIcon as ChartBarIconSolid } from '@heroicons/react/24/solid';
 
@@ -61,8 +63,6 @@ const navigation: SidebarNavItem[] = [
     href: '/specialist/bookings',
     icon: CalendarIcon,
     iconActive: CalendarIcon,
-    count: 3,
-    isNew: true,
   },
   {
     name: 'Services',
@@ -98,7 +98,6 @@ const navigation: SidebarNavItem[] = [
     href: '/specialist/reviews',
     icon: StarIcon,
     iconActive: StarIcon,
-    count: 2,
   },
   {
     name: 'Messages',
@@ -106,7 +105,6 @@ const navigation: SidebarNavItem[] = [
     href: '/specialist/messages',
     icon: ChatBubbleLeftRightIcon,
     iconActive: ChatBubbleLeftRightIcon,
-    count: 5,
   },
   {
     name: 'Profile',
@@ -121,7 +119,6 @@ const navigation: SidebarNavItem[] = [
     href: '/specialist/notifications',
     icon: BellIcon,
     iconActive: BellIcon,
-    count: 8,
   },
 ];
 
@@ -132,7 +129,10 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
   const { currency, setCurrency, getCurrencySymbol } = useCurrency();
   const { t } = useLanguage();
   const user = useAppSelector(selectUser);
+  const dispatch = useAppDispatch();
   const location = useLocation();
+  const notificationState = useAppSelector((state: any) => state.notifications);
+  const unreadCount = notificationState?.unreadCount || 0;
 
   // Check if mobile view
   useEffect(() => {
@@ -149,7 +149,18 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
+  // Fetch notifications on mount
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchNotifications({ limit: 50 }));
+    }
+  }, [user, dispatch]);
+
   const isCurrentPath = (path: string) => location.pathname === path;
+
+  const handleLogout = () => {
+    dispatch(logout());
+  };
 
   const currencyOptions = [
     { value: 'UAH', label: 'Гривня (₴)', flag: '🇺🇦' },
@@ -327,6 +338,19 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
               <ChevronDownIcon className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
           )}
+
+          {/* Logout button */}
+          <button
+            onClick={handleLogout}
+            className={`
+              flex items-center w-full px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200
+              text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20
+              ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
+            `}
+          >
+            <ArrowRightOnRectangleIcon className="w-5 h-5" />
+            {!isCollapsed && <span>{t('auth.logout')}</span>}
+          </button>
         </div>
       </aside>
 
@@ -348,7 +372,11 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
               className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <BellIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-              <span className="absolute top-1 right-1 w-3 h-3 bg-red-400 rounded-full"></span>
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
             </Link>
 
             {/* Settings */}

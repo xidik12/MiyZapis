@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
+import { useAppSelector } from '../../hooks/redux';
+import { selectUser } from '../../store/slices/authSlice';
+import { specialistService } from '../../services/specialist.service';
+import { userService } from '../../services/user.service';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
 import { FloatingElements, UkrainianOrnament } from '../../components/ui/UkrainianElements';
 
@@ -101,118 +105,77 @@ interface PrivacySettings {
   requireApproval: boolean;
 }
 
-const defaultProfile: SpecialistProfile = {
+const getEmptyProfile = (): SpecialistProfile => ({
   id: '1',
-  firstName: 'Катерина',
-  lastName: 'Мельник',
-  email: 'k.melnyk@example.com',
-  phone: '+380501234567',
-  profession: 'Психолог',
-  bio: 'Experienced psychologist specializing in family therapy, anxiety, and depression treatment. 8 years of practice with evidence-based therapeutic approaches.',
-  bioUk: 'Досвідчений психолог, який спеціалізується на сімейній терапії, лікуванні тривожності та депресії. 8 років практики з доказовими терапевтичними підходами.',
-  bioRu: 'Опытный психолог, специализирующийся на семейной терапии, лечении тревожности и депрессии. 8 лет практики с доказательными терапевтическими подходами.',
-  experience: 8,
-  education: 'Master of Psychology, Taras Shevchenko National University of Kyiv',
-  educationUk: 'Магістр психології, Київський національний університет імені Тараса Шевченка',
-  educationRu: 'Магистр психологии, Киевский национальный университет имени Тараса Шевченко',
-  certifications: [
-    {
-      id: '1',
-      name: 'Certified Family Therapist',
-      issuer: 'Ukrainian Psychological Association',
-      dateIssued: '2020-05-15',
-      expiryDate: '2025-05-15',
-    },
-    {
-      id: '2',
-      name: 'CBT Practitioner Certificate',
-      issuer: 'International CBT Institute',
-      dateIssued: '2019-09-20',
-    },
-  ],
-  portfolio: [
-    {
-      id: '1',
-      title: 'Family Therapy Session Setup',
-      titleUk: 'Налаштування сімейної терапії',
-      titleRu: 'Настройка семейной терапии',
-      description: 'Professional consultation environment',
-      descriptionUk: 'Професійне консультаційне середовище',
-      descriptionRu: 'Профессиональная консультационная среда',
-      imageUrl: '/portfolio/therapy-room.jpg',
-      category: 'Workspace',
-      categoryUk: 'Робоче місце',
-      categoryRu: 'Рабочее место',
-      dateAdded: '2024-01-15',
-    },
-    {
-      id: '2',
-      title: 'Workshop on Stress Management',
-      titleUk: 'Майстер-клас з управління стресом',
-      titleRu: 'Мастер-класс по управлению стрессом',
-      description: 'Group workshop conducted in 2023',
-      descriptionUk: 'Груповий майстер-клас, проведений у 2023 році',
-      descriptionRu: 'Групповой мастер-класс, проведенный в 2023 году',
-      imageUrl: '/portfolio/workshop.jpg',
-      category: 'Workshop',
-      categoryUk: 'Майстер-клас',
-      categoryRu: 'Мастер-класс',
-      dateAdded: '2023-11-20',
-    },
-  ],
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  profession: '',
+  bio: '',
+  bioUk: '',
+  bioRu: '',
+  experience: 0,
+  education: '',
+  educationUk: '',
+  educationRu: '',
+  certifications: [],
+  portfolio: [],
   location: {
-    address: 'вул. Хрещатик, 25',
-    city: 'Київ',
-    region: 'Київська область',
-    country: 'Україна',
+    address: '',
+    city: '',
+    region: '',
+    country: '',
   },
   serviceArea: {
-    radius: 15,
-    cities: ['Київ', 'Бровари', 'Ірпінь', 'Буча'],
+    radius: 0,
+    cities: [],
   },
   businessHours: {
-    monday: { isOpen: true, startTime: '09:00', endTime: '18:00' },
-    tuesday: { isOpen: true, startTime: '09:00', endTime: '18:00' },
-    wednesday: { isOpen: true, startTime: '09:00', endTime: '18:00' },
-    thursday: { isOpen: true, startTime: '09:00', endTime: '18:00' },
-    friday: { isOpen: true, startTime: '09:00', endTime: '17:00' },
-    saturday: { isOpen: true, startTime: '10:00', endTime: '15:00' },
+    monday: { isOpen: false, startTime: '', endTime: '' },
+    tuesday: { isOpen: false, startTime: '', endTime: '' },
+    wednesday: { isOpen: false, startTime: '', endTime: '' },
+    thursday: { isOpen: false, startTime: '', endTime: '' },
+    friday: { isOpen: false, startTime: '', endTime: '' },
+    saturday: { isOpen: false, startTime: '', endTime: '' },
     sunday: { isOpen: false, startTime: '', endTime: '' },
   },
-  paymentMethods: ['card', 'cash', 'bank_transfer', 'apple_pay'],
+  paymentMethods: [],
   notifications: {
-    emailBookings: true,
-    emailReviews: true,
-    emailMessages: true,
-    pushBookings: true,
+    emailBookings: false,
+    emailReviews: false,
+    emailMessages: false,
+    pushBookings: false,
     pushReviews: false,
-    pushMessages: true,
+    pushMessages: false,
     smsBookings: false,
   },
   privacy: {
-    showPhone: true,
+    showPhone: false,
     showEmail: false,
-    showAddress: true,
-    allowDirectBooking: true,
-    requireApproval: false,
+    showAddress: false,
+    allowDirectBooking: false,
+    requireApproval: true,
   },
   verification: {
-    isVerified: true,
-    verifiedDate: '2024-01-10',
-    documentsSubmitted: ['diploma', 'certificate', 'id_card'],
+    isVerified: false,
+    verifiedDate: '',
+    documentsSubmitted: [],
   },
   socialMedia: {
-    website: 'https://k-melnyk-psychology.com.ua',
-    instagram: '@k.melnyk.psychology',
-    linkedin: 'kateryna-melnyk-psychologist',
+    website: '',
+    instagram: '',
+    facebook: '',
+    linkedin: '',
   },
-  languages: ['uk', 'en', 'ru'],
-  specialties: ['Family Therapy', 'Anxiety Treatment', 'Depression', 'Stress Management'],
-};
+  languages: [],
+  specialties: [],
+});
 
 const SpecialistProfile: React.FC = () => {
   const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
+  const user = useAppSelector(selectUser);
   
   // Helper function to get localized portfolio item content
   const getPortfolioItemText = (item: PortfolioItem, field: 'title' | 'description' | 'category'): string => {
@@ -224,10 +187,70 @@ const SpecialistProfile: React.FC = () => {
     }
     return item[field];
   };
-  const [profile, setProfile] = useState<SpecialistProfile>(defaultProfile);
+  
+  const [profile, setProfile] = useState<SpecialistProfile>(getEmptyProfile());
   const [activeTab, setActiveTab] = useState<'personal' | 'professional' | 'business' | 'portfolio' | 'security'>('personal');
   const [isEditing, setIsEditing] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load profile data from API
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) return;
+      
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Initialize profile with user data
+        const initialProfile: SpecialistProfile = {
+          ...getEmptyProfile(),
+          id: user.id,
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          email: user.email || '',
+          phone: user.phoneNumber || '',
+          // Add other user fields as available
+        };
+        
+        setProfile(initialProfile);
+        
+        // If user is a specialist, try to load specialist profile
+        if (user.userType === 'specialist') {
+          try {
+            const specialistData = await specialistService.getProfile();
+            // Map specialist data to profile format
+            setProfile(prev => ({
+              ...prev,
+              bio: specialistData.description || '',
+              profession: specialistData.businessName || '',
+              experience: specialistData.experience || 0,
+              specialties: specialistData.specialties || [],
+              verification: {
+                ...prev.verification,
+                isVerified: specialistData.isVerified || false,
+                verifiedDate: specialistData.isVerified ? new Date().toISOString().split('T')[0] : '',
+              },
+              // Portfolio stays empty since it's not part of the backend structure
+              // Users can add images through their services
+            }));
+          } catch (specialistError) {
+            // Specialist profile might not exist yet, which is fine for new users
+            console.log('No specialist profile yet:', specialistError);
+          }
+        }
+      } catch (err: any) {
+        setError(err.message || 'Failed to load profile');
+        console.error('Error loading profile:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [user]);
 
   const getLocalizedText = (field: string) => {
     if (language === 'uk' && (profile as any)[`${field}Uk`]) {
@@ -315,10 +338,37 @@ const SpecialistProfile: React.FC = () => {
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-xl mb-4">Error loading profile</div>
+          <p className="text-gray-600 dark:text-gray-400">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
-        <FloatingElements />
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
+      <FloatingElements />
       
       <div className="relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

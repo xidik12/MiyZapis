@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
+import { specialistService } from '../../services/specialist.service';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
 import { FloatingElements, UkrainianOrnament } from '../../components/ui/UkrainianElements';
 
@@ -49,11 +50,32 @@ const categories = [
 const SpecialistServices: React.FC = () => {
   const { t, language } = useLanguage();
   const { formatPrice, currency } = useCurrency();
-  const [services, setServices] = useState<Service[]>(sampleServices);
+  const [services, setServices] = useState<Service[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load services from API
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const servicesData = await specialistService.getServices();
+        setServices(servicesData);
+      } catch (err: any) {
+        setError(err.message || 'Failed to load services');
+        console.error('Error loading services:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadServices();
+  }, []);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -177,15 +199,14 @@ const SpecialistServices: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) {
       return;
     }
     
-    const serviceData: Service = {
-      id: editingService?.id || Date.now().toString(),
+    const serviceData = {
       name: formData.name,
       nameUk: formData.nameUk || formData.name,
       nameRu: formData.nameRu || formData.name,
@@ -193,27 +214,30 @@ const SpecialistServices: React.FC = () => {
       descriptionUk: formData.descriptionUk || formData.description,
       descriptionRu: formData.descriptionRu || formData.description,
       category: formData.category,
-      categoryUk: categories.find(c => c.en === formData.category)?.uk || formData.category,
-      categoryRu: categories.find(c => c.en === formData.category)?.ru || formData.category,
       price: parseFloat(formData.price),
       currency: currency,
       duration: parseInt(formData.duration),
       isActive: formData.isActive,
-      bookings: editingService?.bookings || 0,
-      rating: editingService?.rating || 5.0,
       availability: { ...formData.availability },
       timeSlots: formData.timeSlots.filter(slot => slot.trim())
     };
     
-    if (editingService) {
-      setServices(prev => prev.map(service => 
-        service.id === editingService.id ? serviceData : service
-      ));
-    } else {
-      setServices(prev => [serviceData, ...prev]);
+    try {
+      let updatedService;
+      if (editingService) {
+        updatedService = await specialistService.updateService(editingService.id, serviceData);
+        setServices(prev => prev.map(service => 
+          service.id === editingService.id ? updatedService : service
+        ));
+      } else {
+        updatedService = await specialistService.createService(serviceData);
+        setServices(prev => [updatedService, ...prev]);
+      }
+      closeModal();
+    } catch (err: any) {
+      console.error('Error saving service:', err);
+      setError(err.message || 'Failed to save service');
     }
-    
-    closeModal();
   };
 
   const addTimeSlot = () => {
@@ -253,19 +277,36 @@ const SpecialistServices: React.FC = () => {
     return item[field];
   };
 
+  const handleDeleteService = async (serviceId: string) => {
+    if (!confirm('Are you sure you want to delete this service?')) return;
+    
+    try {
+      await specialistService.deleteService(serviceId);
+      setServices(prev => prev.filter(service => service.id !== serviceId));
+    } catch (err: any) {
+      console.error('Error deleting service:', err);
+      setError(err.message || 'Failed to delete service');
+    }
+  };
+
+  const handleToggleServiceStatus = async (serviceId: string, isActive: boolean) => {
+    try {
+      const updatedService = await specialistService.toggleServiceStatus(serviceId, isActive);
+      setServices(prev => prev.map(service => 
+        service.id === serviceId ? updatedService : service
+      ));
+    } catch (err: any) {
+      console.error('Error toggling service status:', err);
+      setError(err.message || 'Failed to update service status');
+    }
+  };
+
   const filteredServices = services.filter(service => {
     const matchesCategory = selectedCategory === 'all' || service.category === selectedCategory;
     const matchesSearch = getLocalizedText(service, 'name').toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
-  const toggleServiceStatus = (serviceId: string) => {
-    setServices(services.map(service => 
-      service.id === serviceId 
-        ? { ...service, isActive: !service.isActive }
-        : service
-    ));
-  };
 
   const getDayName = (day: string) => {
     const dayNames = {
@@ -399,6 +440,34 @@ const SpecialistServices: React.FC = () => {
       </div>
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading services...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-xl mb-4">Error loading services</div>
+          <p className="text-gray-600 dark:text-gray-400">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
