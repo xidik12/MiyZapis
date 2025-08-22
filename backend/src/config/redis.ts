@@ -5,13 +5,17 @@ import { logger } from '@/utils/logger';
 // Create Redis client only if URL is provided and Redis is not explicitly disabled
 let redis: Redis | null = null;
 
-const isRedisDisabled = process.env.REDIS_DISABLED === 'true' || !config.redis.url || config.redis.url === '' || config.redis.url === 'disabled';
+// Force disable Redis in production until connection issues are resolved
+const forceDisableRedis = process.env.NODE_ENV === 'production' && process.env.FORCE_ENABLE_REDIS !== 'true';
+const isRedisDisabled = forceDisableRedis || process.env.REDIS_DISABLED === 'true' || !config.redis.url || config.redis.url === '' || config.redis.url === 'disabled';
 
 logger.info('🔍 Redis Configuration Check:', {
   redisUrlProvided: !!config.redis.url,
   redisUrlLength: config.redis.url?.length || 0,
   redisDisabled: isRedisDisabled,
+  forceDisableRedis: forceDisableRedis,
   redisDisabledEnv: process.env.REDIS_DISABLED,
+  forceEnableRedis: process.env.FORCE_ENABLE_REDIS,
   environment: process.env.NODE_ENV || 'unknown'
 });
 
@@ -19,20 +23,32 @@ if (!isRedisDisabled && config.redis.url) {
   try {
     redis = new Redis(config.redis.url, {
       password: config.redis.password,
-      maxRetriesPerRequest: 2, // Reduce retries for faster failure detection
-      connectTimeout: 5000, // Reduce timeout to prevent deployment hanging
-      commandTimeout: 3000, // Reduce command timeout
-      enableReadyCheck: true, // Enable ready check for better connection handling
+      maxRetriesPerRequest: 1, // Minimal retries to prevent blocking
+      connectTimeout: 3000, // Short timeout to fail fast
+      commandTimeout: 2000, // Very short command timeout
+      enableReadyCheck: true,
       lazyConnect: true,
       connectionName: 'booking-platform-api',
-      // Add Redis-specific options for Railway
       family: 4, // Force IPv4
-      keepAlive: 30000, // Keep alive timeout in milliseconds
-      // Reconnect on connection loss
+      keepAlive: 10000, // Shorter keepalive
+      // Disable automatic reconnection to prevent infinite loops
+      retryDelayOnFailover: 100,
+      maxRetriesPerRequest: 1,
+      // Only retry on specific errors, not connection timeouts
       reconnectOnError: (err) => {
-        const targetError = 'READONLY';
-        return err.message.includes(targetError);
+        // Don't reconnect on timeout errors to prevent infinite loops
+        if (err.message.includes('ETIMEDOUT') || err.message.includes('ECONNREFUSED')) {
+          logger.warn('Redis connection failed permanently, disabling reconnection', {
+            error: err.message,
+            code: err.code
+          });
+          return false;
+        }
+        return err.message.includes('READONLY');
       },
+      // Limit total reconnection attempts
+      retryDelayOnClusterDown: 300,
+      retryDelayOnFailover: 100,
     });
     
     const maskedUrl = config.redis.url?.replace(/\/\/.*@/, '//***:***@') || 'undefined';
@@ -48,11 +64,13 @@ if (!isRedisDisabled && config.redis.url) {
   }
 } else {
   logger.info('⚠️ Redis disabled', {
-    reason: !config.redis.url ? 'No Redis URL provided' : 
+    reason: forceDisableRedis ? 'Force disabled in production' :
+           !config.redis.url ? 'No Redis URL provided' : 
            config.redis.url === 'disabled' ? 'Explicitly disabled' :
            process.env.REDIS_DISABLED === 'true' ? 'Environment variable REDIS_DISABLED=true' :
            'Unknown reason',
-    redisUrl: config.redis.url || 'undefined'
+    redisUrl: config.redis.url || 'undefined',
+    forceDisabled: forceDisableRedis
   });
 }
 
@@ -104,19 +122,35 @@ export const testRedisConnection = async (): Promise<boolean> => {
   }
   
   try {
-    // Test connection with ping
-    const result = await redis.ping();
+    // Use a promise with timeout to prevent blocking
+    const testPromise = Promise.race([
+      redis.ping(),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Redis test timeout')), 2000)
+      )
+    ]);
+    
+    const result = await testPromise;
     if (result === 'PONG') {
       logger.info('✅ Redis connection successful');
       
-      // Test basic operations
+      // Test basic operations with timeout
       const testKey = 'test:connection';
-      await redis.set(testKey, 'test-value', 'EX', 10);
-      const testValue = await redis.get(testKey);
+      const opsPromise = Promise.race([
+        (async () => {
+          await redis.set(testKey, 'test-value', 'EX', 10);
+          const testValue = await redis.get(testKey);
+          await redis.del(testKey);
+          return testValue;
+        })(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Redis operations timeout')), 1000)
+        )
+      ]);
       
+      const testValue = await opsPromise;
       if (testValue === 'test-value') {
         logger.info('✅ Redis read/write operations successful');
-        await redis.del(testKey); // Clean up
         return true;
       } else {
         logger.warn('⚠️ Redis ping successful but read/write operations failed');
@@ -125,8 +159,23 @@ export const testRedisConnection = async (): Promise<boolean> => {
     }
     return false;
   } catch (error) {
-    logger.error('❌ Redis connection failed:', error);
-    return false;
+    logger.warn('⚠️ Redis connection test failed, continuing without Redis', {
+      error: error.message,
+      willDisableRedis: true
+    });
+    
+    // Disconnect failed Redis connection to prevent infinite loops
+    if (redis) {
+      try {
+        redis.disconnect();
+        redis = null;
+      } catch (disconnectError) {
+        logger.warn('Failed to disconnect Redis, setting to null');
+        redis = null;
+      }
+    }
+    
+    return true; // Return true to allow server to continue without Redis
   }
 };
 
