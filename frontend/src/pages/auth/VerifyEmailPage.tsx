@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/redux';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { CheckCircleIcon, XCircleIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
@@ -8,6 +8,7 @@ type VerificationStatus = 'loading' | 'success' | 'error' | 'expired' | 'invalid
 
 const VerifyEmailPage: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   
@@ -18,8 +19,18 @@ const VerifyEmailPage: React.FC = () => {
   const [resendMessage, setResendMessage] = useState('');
 
   const token = searchParams.get('token');
+  const navigationState = location.state as { email?: string; message?: string } | null;
 
   useEffect(() => {
+    // Check if we came from registration (with email and message in navigation state)
+    if (!token && navigationState?.email && navigationState?.message) {
+      setStatus('success');
+      setEmail(navigationState.email);
+      setMessage(navigationState.message);
+      return;
+    }
+
+    // Original flow - verify token from email link
     if (!token) {
       setStatus('invalid');
       setMessage('No verification token provided.');
@@ -27,7 +38,7 @@ const VerifyEmailPage: React.FC = () => {
     }
 
     handleEmailVerification();
-  }, [token]);
+  }, [token, navigationState]);
 
   const handleEmailVerification = async () => {
     try {
