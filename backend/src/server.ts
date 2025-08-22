@@ -25,6 +25,7 @@ import apiRoutes from '@/routes';
 
 // Telegram Bot
 import { bot } from '@/bot';
+import { enhancedTelegramBot } from '@/services/telegram/enhanced-bot';
 
 // Create Express app
 const app = express();
@@ -118,14 +119,21 @@ const gracefulShutdown = async (signal: string) => {
     logger.info('HTTP server closed');
 
     try {
-      // Stop Telegram bot
+      // Stop Telegram bots
       if (bot && bot.botInfo) {
         try {
           await bot.stop('SIGTERM');
-          logger.info('🤖 Telegram bot stopped');
+          logger.info('🤖 Basic Telegram bot stopped');
         } catch (botError) {
-          logger.warn('Bot stop error (bot may not have been running):', botError instanceof Error ? botError.message : botError);
+          logger.warn('Basic bot stop error (bot may not have been running):', botError instanceof Error ? botError.message : botError);
         }
+      }
+      
+      try {
+        await enhancedTelegramBot.stop();
+        logger.info('🚀 Enhanced Telegram bot stopped');
+      } catch (botError) {
+        logger.warn('Enhanced bot stop error (bot may not have been running):', botError instanceof Error ? botError.message : botError);
       }
       
       // Close database connections
@@ -187,13 +195,28 @@ const startServer = async () => {
       logger.info(`🌍 Environment: ${config.env}`);
       logger.info(`🔌 WebSocket server running on port ${config.port}`);
       
-      // Start Telegram bot in development mode
-      if (bot && config.env === 'development') {
-        bot.launch().then(() => {
-          logger.info('🤖 Telegram bot started in polling mode');
-        }).catch((error) => {
-          logger.warn('Failed to start Telegram bot:', error.message);
-        });
+      // Start Telegram bots in development mode
+      if (config.env === 'development') {
+        // Start basic bot
+        if (bot) {
+          bot.launch().then(() => {
+            logger.info('🤖 Basic Telegram bot started in polling mode');
+          }).catch((error) => {
+            logger.warn('Failed to start basic Telegram bot:', error.message);
+          });
+        }
+        
+        // Initialize and start enhanced bot
+        try {
+          enhancedTelegramBot.initialize();
+          enhancedTelegramBot.launch().then(() => {
+            logger.info('🚀 Enhanced Telegram bot started in polling mode');
+          }).catch((error) => {
+            logger.warn('Failed to start enhanced Telegram bot:', error.message);
+          });
+        } catch (error) {
+          logger.warn('Failed to initialize enhanced Telegram bot:', error instanceof Error ? error.message : error);
+        }
       }
     });
 

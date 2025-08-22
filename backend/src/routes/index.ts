@@ -17,6 +17,7 @@ import healthRoutes from './health';
 import loyaltyRoutes from './loyalty';
 import availabilityRoutes from './availability';
 import analyticsEnhancedRoutes from './analytics-enhanced';
+import telegramEnhancedRoutes from './telegram-enhanced';
 
 const router = Router();
 
@@ -42,5 +43,6 @@ router.use('/files', fileRoutes);
 router.use('/loyalty', loyaltyRoutes);
 router.use('/availability', availabilityRoutes);
 router.use('/analytics-enhanced', analyticsEnhancedRoutes);
+router.use('/telegram', telegramEnhancedRoutes);
 
 export default router;
