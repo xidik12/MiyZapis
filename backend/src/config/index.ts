@@ -4,6 +4,15 @@ import { z } from 'zod';
 // Load environment variables
 dotenv.config();
 
+// Early logging to track configuration loading
+console.log('📋 Loading configuration...', {
+  nodeEnv: process.env.NODE_ENV || 'undefined',
+  port: process.env.PORT || 'undefined',
+  databaseUrl: process.env.DATABASE_URL ? `${process.env.DATABASE_URL.substring(0, 20)}...` : 'undefined',
+  redisUrl: process.env.REDIS_URL ? 'provided' : 'not provided',
+  timestamp: new Date().toISOString()
+});
+
 // Environment validation schema
 const envSchema = z.object({
   // Environment

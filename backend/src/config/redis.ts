@@ -7,6 +7,14 @@ let redis: Redis | null = null;
 
 const isRedisDisabled = process.env.REDIS_DISABLED === 'true' || !config.redis.url || config.redis.url === '' || config.redis.url === 'disabled';
 
+logger.info('🔍 Redis Configuration Check:', {
+  redisUrlProvided: !!config.redis.url,
+  redisUrlLength: config.redis.url?.length || 0,
+  redisDisabled: isRedisDisabled,
+  redisDisabledEnv: process.env.REDIS_DISABLED,
+  environment: process.env.NODE_ENV || 'unknown'
+});
+
 if (!isRedisDisabled && config.redis.url) {
   try {
     redis = new Redis(config.redis.url, {
@@ -27,35 +35,64 @@ if (!isRedisDisabled && config.redis.url) {
       },
     });
     
-    logger.info('Redis client initialized with URL:', config.redis.url?.replace(/\/\/.*@/, '//***:***@'));
+    const maskedUrl = config.redis.url?.replace(/\/\/.*@/, '//***:***@') || 'undefined';
+    logger.info('✅ Redis client initialized successfully', {
+      maskedUrl,
+      connectTimeout: 5000,
+      commandTimeout: 3000,
+      maxRetries: 2
+    });
   } catch (error) {
     logger.error('Failed to initialize Redis client:', error);
     redis = null;
   }
 } else {
-  logger.info('Redis disabled - no Redis URL provided or Redis explicitly disabled');
+  logger.info('⚠️ Redis disabled', {
+    reason: !config.redis.url ? 'No Redis URL provided' : 
+           config.redis.url === 'disabled' ? 'Explicitly disabled' :
+           process.env.REDIS_DISABLED === 'true' ? 'Environment variable REDIS_DISABLED=true' :
+           'Unknown reason',
+    redisUrl: config.redis.url || 'undefined'
+  });
 }
 
 // Redis event handlers (only if Redis is enabled)
 if (redis) {
   redis.on('connect', () => {
-    logger.info('✅ Redis connection established');
+    logger.info('✅ Redis connection established', {
+      status: 'connected',
+      timestamp: new Date().toISOString()
+    });
   });
 
   redis.on('ready', () => {
-    logger.info('Redis client ready for commands');
+    logger.info('✅ Redis client ready for commands', {
+      status: 'ready',
+      timestamp: new Date().toISOString()
+    });
   });
 
   redis.on('error', (error) => {
-    logger.warn('⚠️ Redis connection error (continuing without cache):', error);
+    logger.warn('⚠️ Redis connection error (continuing without cache)', {
+      error: error.message,
+      code: error.code || 'UNKNOWN',
+      timestamp: new Date().toISOString()
+    });
   });
 
   redis.on('close', () => {
-    logger.info('Redis connection closed');
+    logger.info('Redis connection closed', {
+      status: 'closed',
+      timestamp: new Date().toISOString()
+    });
   });
 
-  redis.on('reconnecting', () => {
-    logger.info('Redis reconnecting...');
+  redis.on('reconnecting', (retryDelayTime) => {
+    logger.info('Redis reconnecting...', {
+      status: 'reconnecting',
+      retryDelay: retryDelayTime,
+      timestamp: new Date().toISOString()
+    });
   });
 }
 

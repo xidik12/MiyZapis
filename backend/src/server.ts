@@ -172,24 +172,69 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // Start server
 const startServer = async () => {
+  const startTime = Date.now();
+  logger.info('🚀 Starting server initialization...', {
+    environment: config.env,
+    port: config.port,
+    apiVersion: config.apiVersion,
+    timestamp: new Date().toISOString()
+  });
+
   try {
+    logger.info('🔍 Testing service connections...', {
+      step: 'connection_testing',
+      timestamp: new Date().toISOString()
+    });
+
     // Test connections
     const dbConnected = await testDatabaseConnection();
     const redisConnected = await testRedisConnection();
 
+    logger.info('📊 Service connection results:', {
+      database: dbConnected ? 'connected' : 'failed',
+      redis: redisConnected ? 'connected' : 'failed',
+      timestamp: new Date().toISOString()
+    });
+
     if (!dbConnected) {
-      logger.error('❌ Failed to connect to database - this is required');
+      logger.error('❌ Failed to connect to database - this is required', {
+        exitCode: 1,
+        timestamp: new Date().toISOString()
+      });
       process.exit(1);
     }
 
     if (!redisConnected) {
-      logger.warn('⚠️ Redis connection failed - continuing without cache');
+      logger.warn('⚠️ Redis connection failed - continuing without cache', {
+        impact: 'No caching available',
+        timestamp: new Date().toISOString()
+      });
     } else {
-      logger.info('✅ All services connected successfully');
+      logger.info('✅ All services connected successfully', {
+        database: 'connected',
+        redis: 'connected',
+        timestamp: new Date().toISOString()
+      });
     }
 
     // Start server
+    logger.info('🌐 Starting HTTP server...', {
+      port: config.port,
+      timestamp: new Date().toISOString()
+    });
+
     server.listen(config.port, () => {
+      const totalStartTime = Date.now() - startTime;
+      logger.info('✅ Server started successfully', {
+        port: config.port,
+        environment: config.env,
+        apiVersion: config.apiVersion,
+        totalStartupTime: `${totalStartTime}ms`,
+        apiEndpoint: `/api/${config.apiVersion}`,
+        websocketEnabled: true,
+        timestamp: new Date().toISOString()
+      });
+      
       logger.info(`🚀 Server running on port ${config.port}`);
       logger.info(`📖 API documentation: http://localhost:${config.port}/api/${config.apiVersion}`);
       logger.info(`🌍 Environment: ${config.env}`);
