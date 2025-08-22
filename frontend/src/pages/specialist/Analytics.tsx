@@ -12,6 +12,14 @@ interface AnalyticsData {
     totalBookings: number;
     totalClients: number;
     avgRating: number;
+    profileViews: number;
+    messagesReceived: number;
+    responseRate: number;
+    rating: number;
+    reviewCount: number;
+    responseTime: number;
+    completionRate: number;
+    conversionRate: number;
   };
   services: Array<{
     name: string;
@@ -185,7 +193,15 @@ const SpecialistAnalytics: React.FC = () => {
       totalRevenue: 15420,
       totalBookings: 89,
       totalClients: 62,
-      avgRating: 4.8
+      avgRating: 4.8,
+      profileViews: 1247,
+      messagesReceived: 156,
+      responseRate: 95,
+      rating: 4.8,
+      reviewCount: 24,
+      responseTime: 15,
+      completionRate: 98,
+      conversionRate: 85
     },
     services: [
       { name: 'Психологічна консультація', bookings: 25, price: 800 },
@@ -355,7 +371,7 @@ const SpecialistAnalytics: React.FC = () => {
                   {selectedPeriod === 'yearly' ? t('analytics.total') : t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.revenue')}
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {formatPrice(selectedPeriod === 'yearly' ? stats.totalRevenue : periodStats.currentRevenue)}
+                  {formatPrice(selectedPeriod === 'yearly' ? (stats?.totalRevenue || 0) : (periodStats?.currentRevenue || 0))}
                 </p>
                 <div className="flex items-center mt-2">
                   <div className={`flex items-center ${
@@ -411,7 +427,7 @@ const SpecialistAnalytics: React.FC = () => {
                   {selectedPeriod === 'yearly' ? t('analytics.total') : t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.bookings')}
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {(selectedPeriod === 'yearly' ? stats.totalBookings : periodStats.currentBookings).toLocaleString()}
+                  {(selectedPeriod === 'yearly' ? (stats?.totalBookings || 0) : (periodStats?.currentBookings || 0)).toLocaleString()}
                 </p>
                 <div className="flex items-center mt-2">
                   <div className={`flex items-center ${
@@ -445,7 +461,7 @@ const SpecialistAnalytics: React.FC = () => {
                   {t('dashboard.specialist.averageRating')}
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {stats.rating}
+                  {stats?.rating || 0}
                 </p>
                 <div className="flex items-center mt-2">
                   <div className="flex">
@@ -453,7 +469,7 @@ const SpecialistAnalytics: React.FC = () => {
                       <svg
                         key={i}
                         className={`w-4 h-4 ${
-                          i < Math.floor(stats.rating) ? 'text-yellow-400' : 'text-gray-300'
+                          i < Math.floor(stats?.rating || 0) ? 'text-yellow-400' : 'text-gray-300'
                         }`}
                         fill="currentColor"
                         viewBox="0 0 20 20"
@@ -463,7 +479,7 @@ const SpecialistAnalytics: React.FC = () => {
                     ))}
                   </div>
                   <span className="text-xs text-gray-500 ml-2">
-                    {stats.reviewCount} {t('rating.reviews')}
+                    {stats?.reviewCount || 0} {t('rating.reviews')}
                   </span>
                 </div>
               </div>
@@ -535,7 +551,7 @@ const SpecialistAnalytics: React.FC = () => {
                   {t('analytics.responseTime')}
                 </p>
                 <p className="text-xl font-bold text-gray-900">
-                  {stats.responseTime}m
+                  {stats?.responseTime || 0}m
                 </p>
                 <p className="text-xs text-green-600 mt-1">{t('analytics.excellent')}</p>
               </div>
@@ -554,7 +570,7 @@ const SpecialistAnalytics: React.FC = () => {
                   {t('analytics.completionRate')}
                 </p>
                 <p className="text-xl font-bold text-gray-900">
-                  {stats.completionRate}%
+                  {stats?.completionRate || 0}%
                 </p>
                 <p className="text-xs text-green-600 mt-1">{t('analytics.outstanding')}</p>
               </div>
@@ -573,7 +589,7 @@ const SpecialistAnalytics: React.FC = () => {
                   {t('analytics.profileViews')}
                 </p>
                 <p className="text-xl font-bold text-gray-900">
-                  {stats.profileViews.toLocaleString()}
+                  {(stats?.profileViews || 0).toLocaleString()}
                 </p>
                 <p className="text-xs text-blue-600 mt-1">+12% {t('analytics.thisMonth')}</p>
               </div>
@@ -593,7 +609,7 @@ const SpecialistAnalytics: React.FC = () => {
                   {t('analytics.conversionRate')}
                 </p>
                 <p className="text-xl font-bold text-gray-900">
-                  {stats.conversionRate}%
+                  {stats?.conversionRate || 0}%
                 </p>
                 <p className="text-xs text-orange-600 mt-1">{t('analytics.industryAvg')} 18%</p>
               </div>

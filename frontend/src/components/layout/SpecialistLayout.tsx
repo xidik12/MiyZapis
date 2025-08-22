@@ -149,10 +149,13 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Fetch notifications on mount
+  // Fetch notifications on mount with error handling
   useEffect(() => {
     if (user) {
-      dispatch(fetchNotifications({ limit: 50 }));
+      dispatch(fetchNotifications({ limit: 50 })).catch((error) => {
+        console.warn('Failed to fetch notifications:', error);
+        // Don't show error to user, just log it - notifications are not critical
+      });
     }
   }, [user, dispatch]);
 
