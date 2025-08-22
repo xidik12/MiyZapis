@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { login, selectIsAuthenticated, selectAuthError, selectIsLoading, clearError } from '@/store/slices/authSlice';
@@ -19,7 +19,9 @@ interface LoginFormData {
 
 const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { t } = useLanguage();
@@ -42,6 +44,16 @@ const LoginPage: React.FC = () => {
       rememberMe: false,
     },
   });
+
+  // Handle navigation state messages (e.g., from email verification)
+  useEffect(() => {
+    const navigationState = location.state as { message?: string } | null;
+    if (navigationState?.message) {
+      setSuccessMessage(navigationState.message);
+      // Clear the message from browser history
+      window.history.replaceState(null, '', location.pathname);
+    }
+  }, [location]);
 
   // Clear error when component unmounts or when user starts typing
   useEffect(() => {
@@ -103,6 +115,12 @@ const LoginPage: React.FC = () => {
 
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        {successMessage && (
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 px-4 py-3 rounded-lg">
+            {successMessage}
+          </div>
+        )}
+        
         {error && (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg">
             {error}

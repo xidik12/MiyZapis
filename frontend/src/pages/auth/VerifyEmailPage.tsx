@@ -4,7 +4,7 @@ import { useAppDispatch } from '@/hooks/redux';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { CheckCircleIcon, XCircleIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 
-type VerificationStatus = 'loading' | 'success' | 'error' | 'expired' | 'invalid';
+type VerificationStatus = 'loading' | 'success' | 'pending' | 'error' | 'expired' | 'invalid';
 
 const VerifyEmailPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -24,7 +24,7 @@ const VerifyEmailPage: React.FC = () => {
   useEffect(() => {
     // Check if we came from registration (with email and message in navigation state)
     if (!token && navigationState?.email && navigationState?.message) {
-      setStatus('success');
+      setStatus('pending');
       setEmail(navigationState.email);
       setMessage(navigationState.message);
       return;
@@ -65,9 +65,11 @@ const VerifyEmailPage: React.FC = () => {
           localStorage.setItem('refreshToken', result.data.tokens.refreshToken);
         }
         
-        // Redirect to dashboard after 3 seconds
+        // Redirect to login after 3 seconds (user needs to login after verification)
         setTimeout(() => {
-          navigate('/dashboard');
+          navigate('/auth/login', { 
+            state: { message: 'Email verified successfully! Please sign in to continue.' } 
+          });
         }, 3000);
       } else {
         setStatus('error');
@@ -146,14 +148,69 @@ const VerifyEmailPage: React.FC = () => {
               {message}
             </p>
             <p className="text-sm text-gray-500">
-              You will be redirected to your dashboard in a few seconds...
+              You will be redirected to the login page in a few seconds...
             </p>
             <Link
-              to="/dashboard"
+              to="/auth/login"
               className="inline-block mt-4 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
             >
-              Go to Dashboard
+              Go to Login
             </Link>
+          </div>
+        );
+
+      case 'pending':
+        return (
+          <div className="text-center">
+            <EnvelopeIcon className="h-16 w-16 text-blue-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Email Verification Required
+            </h2>
+            <p className="text-gray-600 mb-4">
+              {message}
+            </p>
+            <p className="text-sm text-gray-500 mb-6">
+              Please check your email ({email}) and click the verification link to activate your account.
+            </p>
+            
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Didn't receive the email?
+              </h3>
+              
+              <button
+                onClick={handleResendVerification}
+                disabled={isResending}
+                className="w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isResending ? (
+                  <>
+                    <LoadingSpinner className="w-4 h-4 mr-2" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <EnvelopeIcon className="w-4 h-4 mr-2" />
+                    Resend Verification Email
+                  </>
+                )}
+              </button>
+              
+              {resendMessage && (
+                <div className={`text-sm mt-4 ${resendMessage.includes('sent') ? 'text-green-600' : 'text-red-600'}`}>
+                  {resendMessage}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6">
+              <Link
+                to="/auth/login"
+                className="text-primary-600 hover:text-primary-500 text-sm font-medium"
+              >
+                Back to Login
+              </Link>
+            </div>
           </div>
         );
 
