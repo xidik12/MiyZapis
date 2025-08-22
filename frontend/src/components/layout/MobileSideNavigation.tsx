@@ -166,9 +166,11 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
               onClose();
             }}
           >
-            <div className="w-10 h-10 ukraine-gradient rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300 morph-shape">
-              <span className="text-white font-bold text-lg">М</span>
-            </div>
+            <img 
+              src="/logo.svg" 
+              alt="МійЗапис Logo" 
+              className="w-10 h-10 group-hover:scale-110 transition-all duration-300"
+            />
             <span className="text-xl font-bold ukraine-text-gradient group-hover:text-primary-500 transition-colors duration-300">
               {environment.APP_NAME}
             </span>

@@ -198,9 +198,11 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
                 window.scrollTo(0, 0);
               }}
             >
-              <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-all duration-300">
-                <span className="text-white font-bold text-sm">М</span>
-              </div>
+              <img 
+                src="/logo.svg" 
+                alt="МійЗапис Logo" 
+                className="w-8 h-8 group-hover:scale-110 transition-all duration-300"
+              />
               <span className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-500 transition-colors duration-300">
                 МійЗапис
               </span>

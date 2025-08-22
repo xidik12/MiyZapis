@@ -183,9 +183,11 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
           {!isCollapsed && (
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">М</span>
-              </div>
+              <img 
+                src="/logo.svg" 
+                alt="МійЗапис Logo" 
+                className="w-8 h-8"
+              />
               <span className="text-lg font-bold text-gray-900 dark:text-white">
                 МійЗапис
               </span>

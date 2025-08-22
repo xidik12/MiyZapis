@@ -103,9 +103,11 @@ export const Header: React.FC = () => {
                 window.scrollTo(0, 0);
               }}
             >
-              <div className="w-8 h-8 xs:w-10 xs:h-10 ukraine-gradient rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300 morph-shape">
-                <span className="text-white font-bold text-sm xs:text-lg">М</span>
-              </div>
+              <img 
+                src="/logo.svg" 
+                alt="МійЗапис Logo" 
+                className="w-8 h-8 xs:w-10 xs:h-10 group-hover:scale-110 transition-all duration-300"
+              />
               <div className="flex items-center space-x-2">
                 <span className="text-lg xs:text-xl font-bold ukraine-text-gradient hidden xs:block group-hover:text-primary-500 transition-colors duration-300">
                   {environment.APP_NAME}

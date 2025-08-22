@@ -153,9 +153,11 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
       <div className="flex items-center justify-between p-4 border-b border-gray-200/20 dark:border-gray-700/20">
         {!isCollapsed && (
           <Link to="/" className="flex items-center space-x-2 group">
-            <div className="w-8 h-8 ukraine-gradient rounded-lg flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
-              <span className="text-white font-bold text-sm">М</span>
-            </div>
+            <img 
+              src="/logo.svg" 
+              alt="МійЗапис Logo" 
+              className="w-8 h-8 group-hover:scale-110 transition-all duration-300"
+            />
             <span className="text-lg font-bold ukraine-text-gradient">
               {environment.APP_NAME}
             </span>
@@ -164,9 +166,11 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
         
         {isCollapsed && (
           <Link to="/" className="flex justify-center w-full">
-            <div className="w-8 h-8 ukraine-gradient rounded-lg flex items-center justify-center shadow-lg hover:scale-110 transition-all duration-300">
-              <span className="text-white font-bold text-sm">М</span>
-            </div>
+            <img 
+              src="/logo.svg" 
+              alt="МійЗапис Logo" 
+              className="w-8 h-8 hover:scale-110 transition-all duration-300"
+            />
           </Link>
         )}
         
