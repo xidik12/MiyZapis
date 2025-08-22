@@ -14,10 +14,11 @@ import {
 
 const router = Router();
 
-// Apply auth rate limiting to all auth routes - use simpler rate limiter for development
-if (process.env.NODE_ENV === 'production') {
-  router.use(authRateLimit);
-}
+// Temporarily disable auth rate limiting due to Redis hanging issue
+// TODO: Re-enable after investigating Redis connectivity in rate limiter
+// if (process.env.NODE_ENV === 'production') {
+//   router.use(authRateLimit);
+// }
 
 // Public routes
 router.post('/register', validateRegister, AuthController.register);
