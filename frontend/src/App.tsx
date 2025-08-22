@@ -37,6 +37,7 @@ const CustomerLoyalty = React.lazy(() => import('./pages/customer/Loyalty'));
 const CustomerFavorites = React.lazy(() => import('./pages/customer/Favorites'));
 const CustomerSettings = React.lazy(() => import('./pages/customer/Settings'));
 const CustomerHelpSupport = React.lazy(() => import('./pages/customer/HelpSupport'));
+const PaymentMethods = React.lazy(() => import('./pages/customer/PaymentMethods'));
 
 // Specialist pages
 const SpecialistDashboard = React.lazy(() => import('./pages/specialist/Dashboard'));
@@ -413,10 +414,9 @@ function App() {
             element={
               <ProtectedRoute requiredUserType="customer">
                 <CustomerLayout>
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">Payment Methods</h1>
-                    <p className="text-gray-600 mt-2">Manage your payment methods and transaction history</p>
-                  </div>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <PaymentMethods />
+                  </Suspense>
                 </CustomerLayout>
               </ProtectedRoute>
             }

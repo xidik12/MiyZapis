@@ -64,7 +64,12 @@
       "Bash(railway whoami:*)",
       "Bash(export:*)",
       "Bash(npm start)",
-      "Bash(./test_all_apis.sh:*)"
+      "Bash(./test_all_apis.sh:*)",
+      "Bash(timeout:*)",
+      "Bash(mv:*)",
+      "Bash(redis-cli:*)",
+      "Bash(brew install:*)",
+      "Bash(railway redeploy:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

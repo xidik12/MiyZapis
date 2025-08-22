@@ -1,4 +1,4 @@
-import { Payment, Booking } from '@prisma/client';
+import { Payment, Booking, PaymentMethod } from '@prisma/client';
 import { logger } from '@/utils/logger';
 import { config } from '@/config';
 import { prisma } from '@/config/database';
@@ -453,6 +453,214 @@ export class PaymentService {
       };
     } catch (error) {
       logger.error('Error processing refund:', error);
+      throw error;
+    }
+  }
+
+  // Get user payment methods
+  static async getUserPaymentMethods(userId: string): Promise<PaymentMethod[]> {
+    try {
+      return await prisma.paymentMethod.findMany({
+        where: {
+          userId,
+          isActive: true,
+        },
+        orderBy: [
+          { isDefault: 'desc' }, // Default payment method first
+          { createdAt: 'asc' }, // Then by creation date
+        ],
+      });
+    } catch (error) {
+      logger.error('Error getting user payment methods:', error);
+      throw error;
+    }
+  }
+
+  // Add payment method
+  static async addPaymentMethod(data: {
+    userId: string;
+    type: string;
+    cardLast4?: string;
+    cardBrand?: string;
+    cardExpMonth?: number;
+    cardExpYear?: number;
+    nickname?: string;
+    stripeCustomerId?: string;
+    stripePaymentMethodId?: string;
+  }): Promise<PaymentMethod> {
+    try {
+      const {
+        userId,
+        type,
+        cardLast4,
+        cardBrand,
+        cardExpMonth,
+        cardExpYear,
+        nickname,
+        stripeCustomerId,
+        stripePaymentMethodId,
+      } = data;
+
+      // Check if this is the user's first payment method to make it default
+      const existingMethods = await prisma.paymentMethod.count({
+        where: { userId, isActive: true },
+      });
+
+      const isFirstMethod = existingMethods === 0;
+
+      const paymentMethod = await prisma.paymentMethod.create({
+        data: {
+          userId,
+          type,
+          cardLast4,
+          cardBrand,
+          cardExpMonth,
+          cardExpYear,
+          nickname,
+          stripeCustomerId,
+          stripePaymentMethodId,
+          isDefault: isFirstMethod, // Make first payment method default
+        },
+      });
+
+      logger.info('Payment method added successfully', {
+        paymentMethodId: paymentMethod.id,
+        userId,
+        type,
+      });
+
+      return paymentMethod;
+    } catch (error) {
+      logger.error('Error adding payment method:', error);
+      throw error;
+    }
+  }
+
+  // Update payment method
+  static async updatePaymentMethod(
+    methodId: string,
+    userId: string,
+    data: {
+      nickname?: string;
+      cardExpMonth?: number;
+      cardExpYear?: number;
+    }
+  ): Promise<PaymentMethod | null> {
+    try {
+      const paymentMethod = await prisma.paymentMethod.findFirst({
+        where: { id: methodId, userId, isActive: true },
+      });
+
+      if (!paymentMethod) {
+        return null;
+      }
+
+      const updatedPaymentMethod = await prisma.paymentMethod.update({
+        where: { id: methodId },
+        data: {
+          ...data,
+          updatedAt: new Date(),
+        },
+      });
+
+      logger.info('Payment method updated successfully', {
+        paymentMethodId: methodId,
+        userId,
+      });
+
+      return updatedPaymentMethod;
+    } catch (error) {
+      logger.error('Error updating payment method:', error);
+      throw error;
+    }
+  }
+
+  // Delete payment method
+  static async deletePaymentMethod(methodId: string, userId: string): Promise<boolean> {
+    try {
+      const paymentMethod = await prisma.paymentMethod.findFirst({
+        where: { id: methodId, userId, isActive: true },
+      });
+
+      if (!paymentMethod) {
+        return false;
+      }
+
+      // Soft delete - mark as inactive
+      await prisma.paymentMethod.update({
+        where: { id: methodId },
+        data: {
+          isActive: false,
+          isDefault: false, // Remove default status when deleting
+          updatedAt: new Date(),
+        },
+      });
+
+      // If this was the default payment method, set another one as default
+      if (paymentMethod.isDefault) {
+        const nextPaymentMethod = await prisma.paymentMethod.findFirst({
+          where: { userId, isActive: true },
+          orderBy: { createdAt: 'asc' },
+        });
+
+        if (nextPaymentMethod) {
+          await prisma.paymentMethod.update({
+            where: { id: nextPaymentMethod.id },
+            data: { isDefault: true },
+          });
+        }
+      }
+
+      logger.info('Payment method deleted successfully', {
+        paymentMethodId: methodId,
+        userId,
+      });
+
+      return true;
+    } catch (error) {
+      logger.error('Error deleting payment method:', error);
+      throw error;
+    }
+  }
+
+  // Set default payment method
+  static async setDefaultPaymentMethod(methodId: string, userId: string): Promise<PaymentMethod | null> {
+    try {
+      const paymentMethod = await prisma.paymentMethod.findFirst({
+        where: { id: methodId, userId, isActive: true },
+      });
+
+      if (!paymentMethod) {
+        return null;
+      }
+
+      // Transaction to ensure atomicity
+      await prisma.$transaction(async (tx) => {
+        // Remove default status from all user's payment methods
+        await tx.paymentMethod.updateMany({
+          where: { userId, isActive: true },
+          data: { isDefault: false },
+        });
+
+        // Set this payment method as default
+        await tx.paymentMethod.update({
+          where: { id: methodId },
+          data: { isDefault: true },
+        });
+      });
+
+      const updatedPaymentMethod = await prisma.paymentMethod.findUnique({
+        where: { id: methodId },
+      });
+
+      logger.info('Default payment method set successfully', {
+        paymentMethodId: methodId,
+        userId,
+      });
+
+      return updatedPaymentMethod;
+    } catch (error) {
+      logger.error('Error setting default payment method:', error);
       throw error;
     }
   }

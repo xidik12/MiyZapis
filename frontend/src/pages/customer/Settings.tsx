@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
+import { PaymentMethod } from '../../types';
+import { PaymentMethodsService } from '../../services/paymentMethods';
+import { toast } from 'react-toastify';
 import { 
   UserCircleIcon,
   BellIcon,
@@ -19,15 +22,6 @@ import {
   PlusIcon
 } from '@heroicons/react/24/outline';
 
-interface PaymentMethod {
-  id: string;
-  type: 'card' | 'bank_account' | 'paypal';
-  name: string;
-  last4: string;
-  expiryMonth?: number;
-  expiryYear?: number;
-  isDefault: boolean;
-}
 
 interface Address {
   id: string;
@@ -77,6 +71,7 @@ const CustomerSettings: React.FC = () => {
 
   // Payment methods - start with empty array for new users
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [loading, setLoading] = useState(false);
 
   // Addresses - start with empty array for new users
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -85,6 +80,26 @@ const CustomerSettings: React.FC = () => {
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
+
+  // Load payment methods when component mounts
+  useEffect(() => {
+    const loadPaymentMethods = async () => {
+      try {
+        setLoading(true);
+        const methods = await PaymentMethodsService.getPaymentMethods();
+        setPaymentMethods(methods);
+      } catch (error) {
+        console.error('Failed to load payment methods:', error);
+        // Silent error for Settings page - user can still add new methods
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (currentUser) {
+      loadPaymentMethods();
+    }
+  }, [currentUser]);
 
   const handleNotificationChange = (key: keyof typeof notifications) => {
     setNotifications(prev => ({
@@ -100,8 +115,18 @@ const CustomerSettings: React.FC = () => {
     }));
   };
 
-  const handleRemovePaymentMethod = (id: string) => {
-    setPaymentMethods(prev => prev.filter(pm => pm.id !== id));
+  const handleRemovePaymentMethod = async (id: string) => {
+    try {
+      setLoading(true);
+      await PaymentMethodsService.deletePaymentMethod(id);
+      setPaymentMethods(prev => prev.filter(pm => pm.id !== id));
+      toast.success(language === 'uk' ? 'Спосіб оплати видалено' : language === 'ru' ? 'Способ оплаты удален' : 'Payment method removed');
+    } catch (error) {
+      console.error('Failed to remove payment method:', error);
+      toast.error(language === 'uk' ? 'Помилка видалення способу оплати' : language === 'ru' ? 'Ошибка удаления способа оплаты' : 'Failed to remove payment method');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRemoveAddress = (id: string) => {
@@ -116,17 +141,27 @@ const CustomerSettings: React.FC = () => {
     setShowAddAddressModal(true);
   };
 
-  const handleSavePaymentMethod = (paymentData: any) => {
-    // TODO: Integrate with payment API when backend is ready
-    const newMethod: PaymentMethod = {
-      id: Date.now().toString(),
-      type: paymentData.type,
-      name: paymentData.name,
-      last4: paymentData.last4 || '',
-      isDefault: paymentMethods.length === 0, // First method becomes default
-    };
-    setPaymentMethods(prev => [...prev, newMethod]);
-    setShowAddPaymentModal(false);
+  const handleSavePaymentMethod = async (paymentData: any) => {
+    try {
+      setLoading(true);
+      const newMethod = await PaymentMethodsService.addPaymentMethod({
+        type: 'CARD', // Default to card type
+        cardLast4: paymentData.last4 || '',
+        cardBrand: paymentData.name?.toLowerCase().includes('visa') ? 'visa' : 'mastercard',
+        cardExpMonth: paymentData.expiryMonth,
+        cardExpYear: paymentData.expiryYear,
+        nickname: paymentData.name,
+      });
+      
+      setPaymentMethods(prev => [...prev, newMethod]);
+      setShowAddPaymentModal(false);
+      toast.success(language === 'uk' ? 'Спосіб оплати додано' : language === 'ru' ? 'Способ оплаты добавлен' : 'Payment method added');
+    } catch (error) {
+      console.error('Failed to add payment method:', error);
+      toast.error(language === 'uk' ? 'Помилка додавання способу оплати' : language === 'ru' ? 'Ошибка добавления способа оплаты' : 'Failed to add payment method');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSaveAddress = (addressData: any) => {
@@ -553,14 +588,17 @@ const CustomerSettings: React.FC = () => {
                         <div className="flex items-center">
                           <CreditCardIcon className="h-8 w-8 text-gray-400 dark:text-gray-500 mr-3" />
                           <div>
-                            <p className="font-medium text-gray-900 dark:text-gray-100">{method.name}</p>
-                            {method.expiryMonth && method.expiryYear && (
-                              <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Expires {method.expiryMonth.toString().padStart(2, '0')}/{method.expiryYear}
-                              </p>
-                            )}
+                            <p className="font-medium text-gray-900 dark:text-gray-100">{method.nickname || `${method.cardBrand} •••• ${method.cardLast4}`}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              **** **** **** {method.cardLast4}
+                              {method.cardExpMonth && method.cardExpYear && (
+                                <span className="ml-2">
+                                  Expires {method.cardExpMonth.toString().padStart(2, '0')}/{method.cardExpYear}
+                                </span>
+                              )}
+                            </p>
                             {method.isDefault && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
                                 Default
                               </span>
                             )}

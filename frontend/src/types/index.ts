@@ -245,6 +245,20 @@ export interface ProcessPaymentRequest {
   loyaltyPointsUsed?: number;
 }
 
+export interface PaymentMethod extends BaseEntity {
+  userId: string;
+  type: string; // 'CARD', 'APPLE_PAY', 'GOOGLE_PAY', 'BANK_TRANSFER'
+  cardLast4?: string;
+  cardBrand?: string; // 'visa', 'mastercard', 'amex', etc.
+  cardExpMonth?: number;
+  cardExpYear?: number;
+  stripeCustomerId?: string;
+  stripePaymentMethodId?: string;
+  nickname?: string;
+  isDefault: boolean;
+  isActive: boolean;
+}
+
 // Review Types
 export interface Review extends BaseEntity {
   bookingId: string;
