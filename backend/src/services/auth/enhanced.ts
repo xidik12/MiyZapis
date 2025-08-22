@@ -176,22 +176,26 @@ export class EnhancedAuthService {
         },
       });
 
-      // Send verification email
+      // Send verification email (non-blocking)
       const verificationLink = `${config.isProduction ? 'https://miyzapis-frontend.up.railway.app' : 'http://localhost:3000'}/auth/verify-email?token=${verificationToken}`;
       
-      const emailSent = await emailService.sendVerificationEmail(user.email, {
+      // Send email in background to avoid blocking registration response
+      emailService.sendVerificationEmail(user.email, {
         firstName: user.firstName,
         verificationLink,
+      }).then((emailSent) => {
+        if (!emailSent) {
+          logger.warn('Verification email failed to send', { userId: user.id });
+        } else {
+          logger.info('Verification email sent successfully', { userId: user.id });
+        }
+      }).catch((error) => {
+        logger.error('Error sending verification email', { userId: user.id, error: error.message });
       });
-
-      if (!emailSent) {
-        logger.warn('Verification email failed to send', { userId: user.id });
-      }
 
       logger.info('User registered successfully', { 
         userId: user.id, 
-        email: user.email,
-        emailSent 
+        email: user.email
       });
 
       return {
