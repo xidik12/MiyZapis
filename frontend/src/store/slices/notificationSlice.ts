@@ -93,30 +93,7 @@ const notificationSlice = createSlice({
       }
     },
     updateNotificationMessages: (state, action: PayloadAction<{ t: (key: string) => string }>) => {
-      const { t } = action.payload;
-      // Update notification messages based on current language
-      state.notifications.forEach(notification => {
-        switch (notification.id) {
-          case '1':
-            notification.title = t('notifications.newBooking');
-            notification.message = t('notifications.message.newBooking')
-              .replace('{name}', 'Олена Петренко')
-              .replace('{time}', '14:00');
-            break;
-          case '2':
-            notification.title = t('notifications.newReview');
-            notification.message = t('notifications.message.newReview')
-              .replace('{name}', 'Максим Коваленко')
-              .replace('{rating}', '5');
-            break;
-          case '3':
-            notification.title = t('notifications.paymentReceived');
-            notification.message = t('notifications.message.paymentReceived')
-              .replace('{amount}', '800 ₴')
-              .replace('{service}', t('services.psychologyConsultation'));
-            break;
-        }
-      });
+      // No mock notifications to update - real notifications will come from backend
     },
   },
   extraReducers: (builder) => {

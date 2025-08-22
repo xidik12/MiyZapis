@@ -8,93 +8,9 @@ const SpecialistReviews: React.FC = () => {
   const { t, language } = useLanguage();
   
   const sampleReviewsData = {
-    uk: [
-      {
-        id: '1',
-        customerName: 'Олена Петренко',
-        rating: 5,
-        comment: 'Чудовий спеціаліст! Дуже професійний підхід і уважність до деталей. Рекомендую всім!',
-        date: '2025-08-10',
-        service: 'Консультація з психології',
-        verified: true,
-      },
-      {
-        id: '2',
-        customerName: 'Максим Коваленко',
-        rating: 5,
-        comment: 'Отримав якісну допомогу. Спеціаліст пояснив все зрозуміло і дав корисні поради.',
-        date: '2025-08-08',
-        service: 'Індивідуальна терапія',
-        verified: true,
-      },
-      {
-        id: '3',
-        customerName: 'Анна Шевченко',
-        rating: 4,
-        comment: 'Гарна робота, але трохи довго чекала на відповідь. В цілому задоволена результатом.',
-        date: '2025-08-05',
-        service: 'Сімейна консультація',
-        verified: false,
-      },
-    ],
-    ru: [
-      {
-        id: '1',
-        customerName: 'Елена Петренко',
-        rating: 5,
-        comment: 'Замечательный специалист! Очень профессиональный подход и внимание к деталям. Рекомендую всем!',
-        date: '2025-08-10',
-        service: 'Консультация по психологии',
-        verified: true,
-      },
-      {
-        id: '2',
-        customerName: 'Максим Коваленко',
-        rating: 5,
-        comment: 'Получил качественную помощь. Специалист объяснил все понятно и дал полезные советы.',
-        date: '2025-08-08',
-        service: 'Индивидуальная терапия',
-        verified: true,
-      },
-      {
-        id: '3',
-        customerName: 'Анна Шевченко',
-        rating: 4,
-        comment: 'Хорошая работа, но немного долго ждала ответа. В целом довольна результатом.',
-        date: '2025-08-05',
-        service: 'Семейная консультация',
-        verified: false,
-      },
-    ],
-    en: [
-      {
-        id: '1',
-        customerName: 'Elena Petrenko',
-        rating: 5,
-        comment: 'Excellent specialist! Very professional approach and attention to detail. I recommend to everyone!',
-        date: '2025-08-10',
-        service: 'Psychology consultation',
-        verified: true,
-      },
-      {
-        id: '2',
-        customerName: 'Maxim Kovalenko',
-        rating: 5,
-        comment: 'Received quality help. The specialist explained everything clearly and gave useful advice.',
-        date: '2025-08-08',
-        service: 'Individual therapy',
-        verified: true,
-      },
-      {
-        id: '3',
-        customerName: 'Anna Shevchenko',
-        rating: 4,
-        comment: 'Good work, but waited a bit long for a response. Overall satisfied with the result.',
-        date: '2025-08-05',
-        service: 'Family consultation',
-        verified: false,
-      },
-    ],
+    uk: [],
+    ru: [],
+    en: [],
   };
 
   const sampleReviews = sampleReviewsData[language] || sampleReviewsData.en;

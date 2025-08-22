@@ -28,64 +28,11 @@ const SpecialistNotifications: React.FC = () => {
   const { t, language } = useLanguage();
   
   // Helper function to create localized notification messages
-  const createNotifications = (): Notification[] => [
-    {
-      id: '1',
-      type: 'booking',
-      title: t('notifications.newBooking'),
-      message: t('notifications.message.newBooking')
-        .replace('{name}', 'Олена Петренко')
-        .replace('{time}', '14:00'),
-      timestamp: t('time.minutesAgo').replace('{count}', '5'),
-      isRead: false,
-      priority: 'high',
-      actionUrl: '/specialist/bookings',
-    },
-    {
-      id: '2',
-      type: 'payment',
-      title: t('notifications.paymentReceived'),
-      message: t('notifications.message.paymentReceived')
-        .replace('{amount}', '800 ₴')
-        .replace('{service}', t('services.psychologyConsultation') || 'Психологічна консультація'),
-      timestamp: t('time.hoursAgo').replace('{count}', '2'),
-      isRead: false,
-      priority: 'medium',
-      actionUrl: '/specialist/earnings',
-    },
-    {
-      id: '3',
-      type: 'review',
-      title: t('notifications.newReview'),
-      message: t('notifications.message.newReview')
-        .replace('{name}', 'Максим Коваленко')
-        .replace('{rating}', '5'),
-      timestamp: t('time.hoursAgo').replace('{count}', '4'),
-      isRead: true,
-      priority: 'medium',
-      actionUrl: '/specialist/reviews',
-    },
-    {
-      id: '4',
-      type: 'reminder',
-      title: t('notifications.upcomingAppointment'),
-      message: t('notifications.message.upcomingAppointment')
-        .replace('{name}', 'Анною Шевченко')
-        .replace('{time}', t('time.minutes').replace('{count}', '30')),
-      timestamp: t('time.hoursAgo').replace('{count}', '6'),
-      isRead: true,
-      priority: 'high',
-    },
-    {
-      id: '5',
-      type: 'system',
-      title: t('notifications.systemUpdate'),
-      message: t('notifications.message.systemUpdate'),
-      timestamp: t('time.daysAgo').replace('{count}', '1'),
-      isRead: true,
-      priority: 'low',
-    },
-  ];
+  const createNotifications = (): Notification[] => {
+    // Return empty array - no mock notifications for production
+    // Real notifications will come from the backend API
+    return [];
+  };
 
   const [notifications, setNotifications] = useState<Notification[]>(createNotifications());
   const [filter, setFilter] = useState<'all' | 'unread' | 'booking' | 'payment' | 'review' | 'system'>('all');
