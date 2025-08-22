@@ -47,12 +47,20 @@ const googleClient = new OAuth2Client(
 
 // Validation middleware
 const validateRegistration = [
+  (req, res, next) => {
+    logger.info('Starting validation middleware', { email: req.body?.email });
+    next();
+  },
   body('firstName').trim().isLength({ min: 1 }).withMessage('First name is required'),
   body('lastName').trim().isLength({ min: 1 }).withMessage('Last name is required'),
   body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
   body('userType').isIn(['CUSTOMER', 'SPECIALIST']).withMessage('Valid user type is required'),
   body('phoneNumber').optional().isMobilePhone('any').withMessage('Valid phone number required'),
+  (req, res, next) => {
+    logger.info('Validation middleware completed', { email: req.body?.email });
+    next();
+  },
 ];
 
 const validateLogin = [
@@ -75,9 +83,18 @@ const validateTelegramAuth = [
   body('hash').isLength({ min: 1 }).withMessage('Hash is required'),
 ];
 
-// Register with email verification
-router.post('/register', validateRegistration, async (req, res) => {
+// Debug middleware for registration
+router.post('/register', (req, res, next) => {
+  logger.info('Registration request received', {
+    body: req.body,
+    headers: req.headers,
+    method: req.method,
+    url: req.url
+  });
+  next();
+}, validateRegistration, async (req, res) => {
   try {
+    logger.info('Registration validation passed, processing...', { email: req.body?.email });
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json(
