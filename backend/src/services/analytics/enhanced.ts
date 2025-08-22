@@ -101,7 +101,24 @@ export class EnhancedAnalyticsService {
       });
 
       if (!specialist) {
-        throw new Error('SPECIALIST_NOT_FOUND');
+        // Return empty analytics instead of throwing error
+        return {
+          totalRevenue: 0,
+          totalBookings: 0,
+          completedBookings: 0,
+          cancelledBookings: 0,
+          pendingBookings: 0,
+          averageRating: 0,
+          totalReviews: 0,
+          revenueGrowth: 0,
+          bookingGrowth: 0,
+          topServices: [],
+          revenueByMonth: [],
+          bookingsByStatus: {},
+          bookingsByCategory: [],
+          recentBookings: [],
+          upcomingBookings: []
+        };
       }
 
       const { startDate, endDate } = filters;

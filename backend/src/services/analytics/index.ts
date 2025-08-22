@@ -571,8 +571,8 @@ export class AnalyticsService {
 
     return Object.entries(categoryGroups).map(([category, data]) => ({
       category,
-      revenue: data.revenue,
-      count: data.count
+      revenue: data?.revenue || 0,
+      count: data?.count || 0
     }));
   }
 

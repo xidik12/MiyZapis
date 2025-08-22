@@ -554,22 +554,31 @@ export class EnhancedAuthService {
 
         // Create specialist profile if user is a specialist
         if (validUserType === 'SPECIALIST') {
+          // Create empty specialist profile - no mock data
           await prisma.specialist.create({
             data: {
               userId: user.id,
-              businessName: `${googleData.given_name} ${googleData.family_name}`,
-              bio: '',
-              specialties: '[]',
+              businessName: '', // Empty - user must fill this in
+              bio: '', // Empty - user must fill this in  
+              specialties: '[]', // Empty array
+              city: '',
+              state: '',
+              country: '',
               workingHours: JSON.stringify({
-                monday: { isWorking: true, start: '09:00', end: '17:00' },
-                tuesday: { isWorking: true, start: '09:00', end: '17:00' },
-                wednesday: { isWorking: true, start: '09:00', end: '17:00' },
-                thursday: { isWorking: true, start: '09:00', end: '17:00' },
-                friday: { isWorking: true, start: '09:00', end: '17:00' },
+                monday: { isWorking: false, start: '09:00', end: '17:00' },
+                tuesday: { isWorking: false, start: '09:00', end: '17:00' },
+                wednesday: { isWorking: false, start: '09:00', end: '17:00' },
+                thursday: { isWorking: false, start: '09:00', end: '17:00' },
+                friday: { isWorking: false, start: '09:00', end: '17:00' },
                 saturday: { isWorking: false, start: '09:00', end: '17:00' },
                 sunday: { isWorking: false, start: '09:00', end: '17:00' }
-              }),
+              }), // All days disabled by default
             },
+          });
+          
+          logger.info('Created empty specialist profile for new user', { 
+            userId: user.id,
+            businessName: 'Empty - needs setup'
           });
         }
 
