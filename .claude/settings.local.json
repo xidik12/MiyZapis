@@ -72,6 +72,9 @@
       "Bash(railway redeploy:*)"
     ],
     "deny": [],
-    "defaultMode": "acceptEdits"
+    "defaultMode": "acceptEdits",
+    "additionalDirectories": [
+      "/Users/salakhitdinovkhidayotullo/Documents"
+    ]
   }
 }
