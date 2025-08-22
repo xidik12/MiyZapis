@@ -13,7 +13,7 @@ import {
 
 export class AuthService {
   // Register new user
-  async register(data: RegisterRequest): Promise<{ user: User; tokens: AuthTokens }> {
+  async register(data: RegisterRequest): Promise<{ user: User; tokens?: AuthTokens; requiresVerification?: boolean; message?: string }> {
     // Convert userType to backend format
     const requestData = {
       ...data,
@@ -21,7 +21,7 @@ export class AuthService {
     };
 
     try {
-      const response = await apiClient.post<{ user: User; tokens: AuthTokens }>(API_ENDPOINTS.AUTH.REGISTER, requestData);
+      const response = await apiClient.post<{ user: User; tokens?: AuthTokens; requiresVerification?: boolean; message?: string }>(API_ENDPOINTS.AUTH.REGISTER, requestData);
       if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Registration failed');
       }

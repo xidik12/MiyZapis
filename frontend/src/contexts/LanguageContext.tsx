@@ -37,6 +37,8 @@ const translations: Translations = {
   'nav.settings': { en: 'Settings', uk: 'Налаштування', ru: 'Настройки' },
   'nav.favorites': { en: 'Favorites', uk: 'Улюблені', ru: 'Избранное' },
   'nav.notifications': { en: 'Notifications', uk: 'Сповіщення', ru: 'Уведомления' },
+  'nav.dashboard': { en: 'Dashboard', uk: 'Панель керування', ru: 'Панель управления' },
+  'nav.myAccount': { en: 'My Account', uk: 'Мій акаунт', ru: 'Мой аккаунт' },
 
   // Settings
   'settings.title': { en: 'Settings', uk: 'Налаштування', ru: 'Настройки' },
@@ -395,6 +397,7 @@ const translations: Translations = {
   'dashboard.nav.history': { en: 'History', uk: 'Історія', ru: 'История' },
   'dashboard.nav.support': { en: 'Support', uk: 'Підтримка', ru: 'Поддержка' },
   'dashboard.nav.notifications': { en: 'Notifications', uk: 'Сповіщення', ru: 'Уведомления' },
+  'dashboard.nav.find services': { en: 'Find Services', uk: 'Знайти послуги', ru: 'Найти услуги' },
 
   // Dashboard - Specialist Stats
   'dashboard.specialist.totalBookings': { en: 'Total Bookings', uk: 'Всього бронювань', ru: 'Всего бронирований' },
@@ -917,6 +920,7 @@ const translations: Translations = {
   'common.other': { en: 'Other', uk: 'Інше', ru: 'Другое' },
   'common.inProgress': { en: 'In Progress', uk: 'Виконується', ru: 'В процессе' },
   'common.saveChanges': { en: 'Save Changes', uk: 'Зберегти зміни', ru: 'Сохранить изменения' },
+  'common.loading': { en: 'Loading...', uk: 'Завантаження...', ru: 'Загрузка...' },
 
   // Booking Status & Details
   'booking.details': { en: 'Booking Details', uk: 'Деталі бронювання', ru: 'Детали бронирования' },

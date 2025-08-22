@@ -26,14 +26,14 @@ export const environment: Environment = {
 export const API_ENDPOINTS = {
   // Authentication
   AUTH: {
-    LOGIN: '/auth/login',
-    REGISTER: '/auth/register',
-    REFRESH: '/auth/refresh',
-    LOGOUT: '/auth/logout',
-    FORGOT_PASSWORD: '/auth/forgot-password',
-    RESET_PASSWORD: '/auth/reset-password',
-    VERIFY_EMAIL: '/auth/verify-email',
-    TELEGRAM_AUTH: '/auth/telegram',
+    LOGIN: '/auth-enhanced/login',
+    REGISTER: '/auth-enhanced/register',
+    REFRESH: '/auth-enhanced/refresh',
+    LOGOUT: '/auth-enhanced/logout',
+    FORGOT_PASSWORD: '/auth-enhanced/forgot-password',
+    RESET_PASSWORD: '/auth-enhanced/reset-password',
+    VERIFY_EMAIL: '/auth-enhanced/verify-email',
+    TELEGRAM_AUTH: '/auth-enhanced/telegram',
   },
   
   // Users

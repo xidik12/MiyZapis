@@ -83,8 +83,22 @@ const RegisterPage: React.FC = () => {
         userType: data.userType,
       };
 
-      await dispatch(registerUser(registerData)).unwrap();
-      // Navigation will happen automatically due to the useEffect above
+      const result = await dispatch(registerUser(registerData)).unwrap();
+      
+      // Handle the response based on whether email verification is required
+      if (result.requiresVerification) {
+        // Show success message and redirect to verification page
+        navigate('/auth/verify-email', { 
+          replace: true,
+          state: { 
+            email: data.email,
+            message: result.message || 'Please check your email to verify your account.'
+          }
+        });
+      } else {
+        // Immediate authentication (navigation handled by useEffect)
+        // This happens if tokens are provided
+      }
     } catch (error) {
       // Error is handled by the Redux slice
       console.error('Registration failed:', error);

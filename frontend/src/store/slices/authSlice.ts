@@ -38,7 +38,11 @@ export const register = createAsyncThunk(
   async (userData: RegisterRequest, { rejectWithValue }) => {
     try {
       const response = await authService.register(userData);
-      setAuthTokens(response.tokens);
+      // Only set tokens if they exist (immediate login)
+      // If requiresVerification is true, user must verify email first
+      if (response.tokens) {
+        setAuthTokens(response.tokens);
+      }
       return response;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Registration failed');
@@ -275,8 +279,17 @@ const authSlice = createSlice({
       .addCase(register.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload.user;
-        state.tokens = action.payload.tokens;
-        state.isAuthenticated = true;
+        
+        // Only authenticate if tokens are provided (no email verification required)
+        if (action.payload.tokens) {
+          state.tokens = action.payload.tokens;
+          state.isAuthenticated = true;
+        } else {
+          // Email verification required - don't authenticate yet
+          state.tokens = null;
+          state.isAuthenticated = false;
+        }
+        
         state.error = null;
       })
       .addCase(register.rejected, (state, action) => {
