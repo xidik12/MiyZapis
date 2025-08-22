@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import { OAuth2Client } from 'google-auth-library';
 import { body, validationResult } from 'express-validator';
 import { EnhancedAuthService } from '@/services/auth/enhanced';
@@ -7,6 +8,35 @@ import { config } from '@/config';
 import { logger } from '@/utils/logger';
 
 const router = express.Router();
+
+// Enhanced CORS options for OAuth routes
+const oauthCorsOptions = {
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5173', 
+    'https://miyzapis.com',
+    'https://www.miyzapis.com',
+    'https://miyzapis-frontend-production.up.railway.app',
+    'https://accounts.google.com',
+    'https://oauth2.googleapis.com',
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'Authorization',
+    'X-Request-ID',
+    'X-Correlation-ID',
+  ],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
+
+// Apply enhanced CORS to all auth-enhanced routes
+router.use(cors(oauthCorsOptions));
 
 // Initialize Google OAuth client
 const googleClient = new OAuth2Client(

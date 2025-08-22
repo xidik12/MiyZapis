@@ -7,6 +7,7 @@ import { environment, STORAGE_KEYS } from '../config/environment';
 const api: AxiosInstance = axios.create({
   baseURL: environment.API_URL,
   timeout: 30000,
+  withCredentials: true, // Enable cookies and credentials for CORS requests
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -122,6 +123,10 @@ api.interceptors.response.use(
       }
     }
 
+    // Check if this is a login or logout request - don't show toast for these failures
+    const isLoginRequest = originalRequest.url?.includes('/auth/login');
+    const isLogoutRequest = originalRequest.url?.includes('/auth/logout') || originalRequest.url?.includes('/logout');
+
     // Handle different error types
     if (error.response) {
       const apiError: ApiError = error.response.data?.error || {
@@ -129,10 +134,6 @@ api.interceptors.response.use(
         message: 'An unexpected error occurred',
         timestamp: new Date().toISOString(),
       };
-
-      // Check if this is a login or logout request - don't show toast for these failures
-      const isLoginRequest = originalRequest.url?.includes('/auth/login');
-      const isLogoutRequest = originalRequest.url?.includes('/auth/logout') || originalRequest.url?.includes('/logout');
       
       // Show user-friendly error messages (except for login/logout errors)
       if (!isLogoutRequest) {

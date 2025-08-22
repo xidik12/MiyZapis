@@ -264,6 +264,9 @@ export const corsOptions = {
       'https://miyzapis.com',
       'https://www.miyzapis.com',
       'https://miyzapis-frontend-production.up.railway.app',
+      // Add Google OAuth domain for OAuth flows
+      'https://accounts.google.com',
+      'https://oauth2.googleapis.com',
       ...config.security.corsOrigin
     ];
     
@@ -289,6 +292,8 @@ export const corsOptions = {
   ],
   exposedHeaders: ['X-Request-ID'],
   maxAge: 86400, // 24 hours
+  preflightContinue: false,
+  optionsSuccessStatus: 204, // Set proper OPTIONS response status
 };
 
 // Input sanitization middleware
