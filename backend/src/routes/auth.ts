@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { AuthController } from '@/controllers/auth';
 import { authenticateToken } from '@/middleware/auth/jwt';
 import { authRateLimit } from '@/middleware/security';
+import { logger } from '@/utils/logger';
 import {
   validateRegister,
   validateLogin,
@@ -20,8 +21,35 @@ const router = Router();
 //   router.use(authRateLimit);
 // }
 
-// Public routes
-router.post('/register', validateRegister, AuthController.register);
+// Proxy old registration to enhanced route to avoid hanging middleware
+router.post('/register', async (req, res) => {
+  try {
+    // Import enhanced auth service to handle registration
+    const { EnhancedAuthService } = await import('@/services/auth/enhanced');
+    const { createSuccessResponse, createErrorResponse } = await import('@/utils/response');
+    const { body, validationResult } = await import('express-validator');
+    
+    // Simple validation for the proxy
+    if (!req.body.email || !req.body.password || !req.body.firstName || !req.body.lastName || !req.body.userType) {
+      return res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'Missing required fields', req.id));
+    }
+
+    const result = await EnhancedAuthService.register(req.body);
+    res.status(201).json(createSuccessResponse(result));
+  } catch (error: any) {
+    logger.error('Registration proxy error:', error);
+    
+    let errorCode = 'REGISTRATION_FAILED';
+    let errorMessage = 'Registration failed';
+
+    if (error.message === 'EMAIL_ALREADY_EXISTS') {
+      errorCode = 'EMAIL_ALREADY_EXISTS';
+      errorMessage = 'Email address is already registered';
+    }
+
+    res.status(400).json(createErrorResponse(errorCode, errorMessage, req.id));
+  }
+});
 router.post('/login', validateLogin, AuthController.login);
 router.post('/google', AuthController.googleAuth);
 router.post('/telegram', validateTelegramAuth, AuthController.telegramAuth);
