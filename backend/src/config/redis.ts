@@ -11,9 +11,9 @@ if (!isRedisDisabled && config.redis.url) {
   try {
     redis = new Redis(config.redis.url, {
       password: config.redis.password,
-      maxRetriesPerRequest: 3, // Allow more retries for better reliability
-      connectTimeout: 10000, // Increase timeout for Railway Redis
-      commandTimeout: 5000, // Increase command timeout
+      maxRetriesPerRequest: 2, // Reduce retries for faster failure detection
+      connectTimeout: 5000, // Reduce timeout to prevent deployment hanging
+      commandTimeout: 3000, // Reduce command timeout
       enableReadyCheck: true, // Enable ready check for better connection handling
       lazyConnect: true,
       connectionName: 'booking-platform-api',

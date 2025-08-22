@@ -39,6 +39,12 @@ process.on('beforeExit', async () => {
 // Test database connection
 export const testDatabaseConnection = async (): Promise<boolean> => {
   try {
+    // Validate DATABASE_URL first
+    const dbUrl = config.database.url;
+    if (!dbUrl || dbUrl === '') {
+      throw new Error('DATABASE_URL environment variable is not set');
+    }
+    
     await prisma.$connect();
     await prisma.$queryRaw`SELECT 1`;
     logger.info('✅ Database connection successful');
