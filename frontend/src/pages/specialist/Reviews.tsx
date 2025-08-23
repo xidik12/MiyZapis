@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StarIcon, ChatBubbleLeftIcon, UserIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -7,13 +7,29 @@ import { useLanguage } from '../../contexts/LanguageContext';
 const SpecialistReviews: React.FC = () => {
   const { t, language } = useLanguage();
   
-  const sampleReviewsData = {
-    uk: [],
-    ru: [],
-    en: [],
-  };
+  // Initialize with empty data for new accounts
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewStats, setReviewStats] = useState({
+    overallRating: 0,
+    totalReviews: 0
+  });
 
-  const sampleReviews = sampleReviewsData[language] || sampleReviewsData.en;
+  // Load reviews from API
+  useEffect(() => {
+    const loadReviewsData = async () => {
+      try {
+        // For now, keep empty data for new accounts
+        // TODO: Integrate with real reviews API when backend is ready
+        console.log('Reviews data would be loaded from API here');
+        
+        // Real data should come from: await reviewsService.getReviews();
+      } catch (err: any) {
+        console.error('Error loading reviews:', err);
+      }
+    };
+
+    loadReviewsData();
+  }, []);
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, index) => (
@@ -26,8 +42,7 @@ const SpecialistReviews: React.FC = () => {
     ));
   };
 
-  const overallRating = 4.8;
-  const totalReviews = 89;
+  const { overallRating, totalReviews } = reviewStats;
 
   return (
     
@@ -81,7 +96,7 @@ const SpecialistReviews: React.FC = () => {
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('reviews.recentReviews')}</h3>
         </div>
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {sampleReviews.map((review) => (
+          {reviews.map((review) => (
             <div key={review.id} className="p-6">
               <div className="flex items-start space-x-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center flex-shrink-0">

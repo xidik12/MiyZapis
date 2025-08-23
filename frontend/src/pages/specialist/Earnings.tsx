@@ -62,33 +62,40 @@ const SpecialistEarnings: React.FC = () => {
     return methodMapping[method] ? t(methodMapping[method]) : method;
   };
 
-  const sampleEarnings: EarningsData = {
-    totalEarnings: 1232, // USD (converted from screenshot)
-    thisMonth: 241, // USD
-    pending: 32.43, // USD
-    lastPayout: 208, // USD
-    completedBookings: 47,
-    activeClients: 23,
-    averageBookingValue: 85,
-    monthlyGrowth: 12.5
-  };
+  // Initialize with empty data for new accounts
+  const [earningsData, setEarningsData] = useState<EarningsData>({
+    totalEarnings: 0,
+    thisMonth: 0,
+    pending: 0,
+    lastPayout: 0,
+    completedBookings: 0,
+    activeClients: 0,
+    averageBookingValue: 0,
+    monthlyGrowth: 0
+  });
 
-  const monthlyEarnings: MonthlyEarning[] = [
-    { month: 'Jan', earnings: 180, bookings: 8 },
-    { month: 'Feb', earnings: 165, bookings: 7 },
-    { month: 'Mar', earnings: 195, bookings: 9 },
-    { month: 'Apr', earnings: 210, bookings: 11 },
-    { month: 'May', earnings: 175, bookings: 8 },
-    { month: 'Jun', earnings: 225, bookings: 12 },
-    { month: 'Jul', earnings: 241, bookings: 13 },
-  ];
+  const [monthlyEarnings, setMonthlyEarnings] = useState<MonthlyEarning[]>([]);
 
-  const payoutHistory: PayoutHistory[] = [
-    { id: '1', date: '2025-08-15', amount: 208, status: 'completed', method: 'Bank Transfer' },
-    { id: '2', date: '2025-07-15', amount: 195, status: 'completed', method: 'PayPal' },
-    { id: '3', date: '2025-06-15', amount: 185, status: 'completed', method: 'Bank Transfer' },
-    { id: '4', date: '2025-05-15', amount: 175, status: 'completed', method: 'Bank Transfer' },
-  ];
+  const [payoutHistory, setPayoutHistory] = useState<PayoutHistory[]>([]);
+
+  // Load earnings data from API
+  useEffect(() => {
+    const loadEarningsData = async () => {
+      try {
+        // For now, keep empty data for new accounts
+        // TODO: Integrate with real earnings/payments API when backend is ready
+        console.log('Earnings data would be loaded from API here');
+        
+        // Real data should come from API calls to:
+        // - await paymentsService.getEarnings();
+        // - await paymentsService.getPayoutHistory();
+      } catch (err: any) {
+        console.error('Error loading earnings:', err);
+      }
+    };
+
+    loadEarningsData();
+  }, []);
 
   const handleExportReport = async () => {
     setIsExporting(true);
@@ -155,7 +162,7 @@ const SpecialistEarnings: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.totalEarnings')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                ${sampleEarnings.totalEarnings}
+                ${earningsData.totalEarnings}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-600">
@@ -169,7 +176,7 @@ const SpecialistEarnings: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.thisMonth')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                ${sampleEarnings.thisMonth}
+                ${earningsData.thisMonth}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600">
@@ -183,7 +190,7 @@ const SpecialistEarnings: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.pending')}</p>
               <p className="text-2xl font-bold text-orange-600">
-                ${sampleEarnings.pending}
+                ${earningsData.pending}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600">
@@ -197,7 +204,7 @@ const SpecialistEarnings: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.lastPayout')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                ${sampleEarnings.lastPayout}
+                ${earningsData.lastPayout}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600">
@@ -214,7 +221,7 @@ const SpecialistEarnings: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.completedBookings')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {sampleEarnings.completedBookings}
+                {earningsData.completedBookings}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600">
@@ -228,7 +235,7 @@ const SpecialistEarnings: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.activeClients')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {sampleEarnings.activeClients}
+                {earningsData.activeClients}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600">
@@ -242,7 +249,7 @@ const SpecialistEarnings: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.averageBookingValue')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                ${sampleEarnings.averageBookingValue}
+                ${earningsData.averageBookingValue}
               </p>
             </div>
             <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600">
@@ -256,7 +263,7 @@ const SpecialistEarnings: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.monthlyGrowth')}</p>
               <p className="text-2xl font-bold text-green-600">
-                +{sampleEarnings.monthlyGrowth}%
+                +{earningsData.monthlyGrowth}%
               </p>
             </div>
             <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-600">
@@ -364,7 +371,7 @@ const SpecialistEarnings: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">{t('earnings.avgSessionValue')}</span>
-                <span className="font-medium text-gray-900 dark:text-white">${sampleEarnings.averageBookingValue}</span>
+                <span className="font-medium text-gray-900 dark:text-white">${earningsData.averageBookingValue}</span>
               </div>
             </div>
           </div>
@@ -394,7 +401,7 @@ const SpecialistEarnings: React.FC = () => {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">{t('earnings.monthlyGrowth')}</span>
-                <span className="font-medium text-green-600">+{sampleEarnings.monthlyGrowth}%</span>
+                <span className="font-medium text-green-600">+{earningsData.monthlyGrowth}%</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-400">{t('earnings.newCustomers')}</span>

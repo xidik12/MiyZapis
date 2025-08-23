@@ -15,68 +15,26 @@ const SpecialistMessages: React.FC = () => {
   const [selectedChat, setSelectedChat] = useState('1');
   const [newMessage, setNewMessage] = useState('');
 
-  const sampleConversations = [
-    {
-      id: '1',
-      customerName: 'Олена Петренко',
-      lastMessage: 'Дякую за консультацію! Коли можемо зустрітися наступного разу?',
-      timestamp: '14:30',
-      isUnread: true,
-      avatar: null,
-      isOnline: true,
-    },
-    {
-      id: '2',
-      customerName: 'Максим Коваленко',
-      lastMessage: 'Підтверджую запис на завтра о 15:00',
-      timestamp: '13:45',
-      isUnread: false,
-      avatar: null,
-      isOnline: false,
-    },
-    {
-      id: '3',
-      customerName: 'Анна Шевченко',
-      lastMessage: 'Чи можемо ми перенести зустріч?',
-      timestamp: 'Вчора',
-      isUnread: true,
-      avatar: null,
-      isOnline: true,
-    },
-  ];
+  // Initialize with empty data for new accounts
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
 
-  const sampleMessages = [
-    {
-      id: '1',
-      senderId: 'customer',
-      message: 'Добрий день! Хотіла б записатися на консультацію',
-      timestamp: '14:20',
-    },
-    {
-      id: '2',
-      senderId: 'specialist',
-      message: 'Добрий день! Звичайно, з радістю допоможу. Коли Вам буде зручно?',
-      timestamp: '14:22',
-    },
-    {
-      id: '3',
-      senderId: 'customer',
-      message: 'Можливо завтра після обіду?',
-      timestamp: '14:25',
-    },
-    {
-      id: '4',
-      senderId: 'specialist',
-      message: 'Завтра о 15:00 підходить? У мене є вільний час',
-      timestamp: '14:27',
-    },
-    {
-      id: '5',
-      senderId: 'customer',
-      message: 'Дякую за консультацію! Коли можемо зустрітися наступного разу?',
-      timestamp: '14:30',
-    },
-  ];
+  // Load conversations and messages from API
+  useEffect(() => {
+    const loadMessagesData = async () => {
+      try {
+        // For now, keep empty data for new accounts
+        // TODO: Integrate with real messaging API when backend is ready
+        console.log('Messages data would be loaded from API here');
+        
+        // Real data should come from: await messagesService.getConversations();
+      } catch (err: any) {
+        console.error('Error loading messages:', err);
+      }
+    };
+
+    loadMessagesData();
+  }, []);
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
@@ -85,7 +43,7 @@ const SpecialistMessages: React.FC = () => {
     }
   };
 
-  const selectedConversation = sampleConversations.find(c => c.id === selectedChat);
+  const selectedConversation = conversations.find(c => c.id === selectedChat);
 
   return (
     
@@ -114,7 +72,7 @@ const SpecialistMessages: React.FC = () => {
 
           {/* Conversations */}
           <div className="flex-1 overflow-y-auto">
-            {sampleConversations.map((conversation) => (
+            {conversations.map((conversation) => (
               <div
                 key={conversation.id}
                 onClick={() => setSelectedChat(conversation.id)}
@@ -200,7 +158,7 @@ const SpecialistMessages: React.FC = () => {
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {sampleMessages.map((message) => (
+                {messages.map((message) => (
                   <div
                     key={message.id}
                     className={`flex ${

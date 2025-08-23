@@ -188,49 +188,70 @@ const SpecialistAnalytics: React.FC = () => {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
   const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
+  // Initialize with empty data for new accounts
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
     stats: {
-      totalRevenue: 15420,
-      totalBookings: 89,
-      totalClients: 62,
-      avgRating: 4.8,
-      profileViews: 1247,
-      messagesReceived: 156,
-      responseRate: 95,
-      rating: 4.8,
-      reviewCount: 24,
-      responseTime: 15,
-      completionRate: 98,
-      conversionRate: 85
+      totalRevenue: 0,
+      totalBookings: 0,
+      totalClients: 0,
+      avgRating: 0,
+      profileViews: 0,
+      messagesReceived: 0,
+      responseRate: 0,
+      rating: 0,
+      reviewCount: 0,
+      responseTime: 0,
+      completionRate: 0,
+      conversionRate: 0
     },
-    services: [
-      { name: 'Психологічна консультація', bookings: 25, price: 800 },
-      { name: 'Індивідуальна терапія', bookings: 18, price: 1200 },
-      { name: 'Сімейна консультація', bookings: 12, price: 1500 },
-      { name: 'Групова терапія', bookings: 8, price: 600 }
-    ],
+    services: [],
     dailyStats: {
-      revenue: [1200, 1500, 980, 1800, 1350, 2100, 1750],
-      bookings: [3, 4, 2, 5, 3, 6, 4],
-      labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
+      revenue: [],
+      bookings: [],
+      labels: []
     },
     weeklyStats: {
-      revenue: [4200, 5800, 3900, 6200],
-      bookings: [12, 16, 10, 18],
-      labels: ['Тиж 1', 'Тиж 2', 'Тиж 3', 'Тиж 4']
+      revenue: [],
+      bookings: [],
+      labels: []
     },
     monthlyStats: {
-      revenue: [12500, 15200, 8900, 18600, 14200, 16800],
-      bookings: [45, 52, 38, 67, 48, 58],
-      labels: ['Лют', 'Бер', 'Кві', 'Тра', 'Чер', 'Лип']
+      revenue: [],
+      bookings: [],
+      labels: []
     },
     yearlyStats: {
-      revenue: [89000, 125000, 156000],
-      bookings: [320, 445, 567],
-      labels: ['2022', '2023', '2024']
+      revenue: [],
+      bookings: [],
+      labels: []
     }
   });
   const [selectedView, setSelectedView] = useState<'revenue' | 'bookings' | 'customers'>('revenue');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load analytics data from API
+  useEffect(() => {
+    const loadAnalyticsData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // For now, keep empty data for new accounts
+        // TODO: Integrate with real analytics API when backend is ready
+        console.log('Analytics data would be loaded from API here');
+        
+        // Real data should come from: await analyticsService.getAnalytics();
+      } catch (err: any) {
+        console.error('Error loading analytics:', err);
+        setError('Failed to load analytics data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAnalyticsData();
+  }, []);
   
   // Service name translation mapping
   const getTranslatedServiceName = (ukrainianName: string): string => {
