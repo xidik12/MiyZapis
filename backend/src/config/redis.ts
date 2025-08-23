@@ -18,17 +18,17 @@ logger.info('🔍 Redis Configuration Check:', {
 
 if (!isRedisDisabled && config.redis.url) {
   try {
-    redis = new Redis(config.redis.url, {
+    // TypeScript guard: config.redis.url is guaranteed to be defined here
+    const redisUrl = config.redis.url;
+    redis = new Redis(redisUrl, {
       // Connection settings optimized for Railway
       connectTimeout: 10000, // 10 seconds for Railway's network
       commandTimeout: 5000, // 5 seconds for commands
       lazyConnect: true, // Connect when first command is issued
       enableReadyCheck: true,
       
-      // Retry and reconnection settings
+      // Retry settings (using only standard ioredis options)
       maxRetriesPerRequest: 3, // Allow retries for reliability
-      retryDelayOnFailover: 1000, // 1 second delay
-      retryDelayOnClusterDown: 1000, // 1 second delay
       
       // Connection metadata
       connectionName: 'booking-platform-api',
@@ -60,7 +60,7 @@ if (!isRedisDisabled && config.redis.url) {
       ...(config.redis.password && { password: config.redis.password }),
     });
     
-    const maskedUrl = config.redis.url?.replace(/\/\/.*@/, '//***:***@') || 'undefined';
+    const maskedUrl = redisUrl.replace(/\/\/.*@/, '//***:***@');
     logger.info('✅ Redis client initialized successfully', {
       maskedUrl,
       connectTimeout: 10000, // Match actual config value
