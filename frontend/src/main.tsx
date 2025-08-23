@@ -121,7 +121,7 @@ const initializeApp = () => {
                   closeOnClick
                   rtl={false}
                   pauseOnFocusLoss
-                  draggable
+                  draggable={false}
                   pauseOnHover
                   theme="auto"
                   toastClassName="custom-toast"

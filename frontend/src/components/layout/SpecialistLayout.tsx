@@ -6,6 +6,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser, logout } from '../../store/slices/authSlice';
 import { fetchNotifications } from '../../store/slices/notificationSlice';
+import { isFeatureEnabled } from '../../config/features';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import {
   ChartBarIcon,
@@ -151,7 +152,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
 
   // Fetch notifications on mount with error handling
   useEffect(() => {
-    if (user) {
+    if (user && isFeatureEnabled('ENABLE_NOTIFICATIONS_API')) {
       dispatch(fetchNotifications({ limit: 50 })).catch((error) => {
         console.warn('Failed to fetch notifications:', error);
         // Don't show error to user, just log it - notifications are not critical
@@ -377,7 +378,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
               className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <BellIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-              {unreadCount > 0 && (
+              {isFeatureEnabled('ENABLE_NOTIFICATIONS_API') && unreadCount > 0 && (
                 <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
