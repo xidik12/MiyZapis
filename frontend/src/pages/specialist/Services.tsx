@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { specialistService } from '../../services/specialist.service';
+import { isFeatureEnabled } from '../../config/features';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
 import { FloatingElements, UkrainianOrnament } from '../../components/ui/UkrainianElements';
 
@@ -61,6 +62,13 @@ const SpecialistServices: React.FC = () => {
   // Load services from API
   useEffect(() => {
     const loadServices = async () => {
+      if (!isFeatureEnabled('ENABLE_SPECIALIST_SERVICES_API')) {
+        setLoading(false);
+        setError(null);
+        setServices([]); // Empty services until API is ready
+        return;
+      }
+
       try {
         setLoading(true);
         setError(null);
@@ -203,6 +211,12 @@ const SpecialistServices: React.FC = () => {
     e.preventDefault();
     
     if (!validateForm()) {
+      return;
+    }
+
+    if (!isFeatureEnabled('ENABLE_SPECIALIST_SERVICES_API')) {
+      console.warn('Services API is disabled. Enable ENABLE_SPECIALIST_SERVICES_API to use this feature.');
+      closeModal();
       return;
     }
     

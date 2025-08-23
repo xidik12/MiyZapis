@@ -5,6 +5,7 @@ import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { specialistService } from '../../services/specialist.service';
 import { userService } from '../../services/user.service';
+import { isFeatureEnabled } from '../../config/features';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
 import { FloatingElements, UkrainianOrnament } from '../../components/ui/UkrainianElements';
 
@@ -218,7 +219,7 @@ const SpecialistProfile: React.FC = () => {
         setProfile(initialProfile);
         
         // If user is a specialist, try to load specialist profile
-        if (user.userType === 'specialist') {
+        if (user.userType === 'specialist' && isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
           try {
             const specialistData = await specialistService.getProfile();
             // Map specialist data to profile format
@@ -965,7 +966,16 @@ const SpecialistProfile: React.FC = () => {
                       >
                         {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Cancel'}
                       </button>
-                      <button className="px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors duration-200">
+                      <button 
+                        onClick={() => {
+                          if (!isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
+                            console.warn('Profile API is disabled. Enable ENABLE_SPECIALIST_PROFILE_API to use this feature.');
+                            return;
+                          }
+                          // TODO: Implement save profile functionality when API is ready
+                        }}
+                        className="px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors duration-200"
+                      >
                         {language === 'uk' ? 'Зберегти зміни' : language === 'ru' ? 'Сохранить изменения' : 'Save Changes'}
                       </button>
                     </div>

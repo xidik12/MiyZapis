@@ -3,6 +3,11 @@ export const FEATURE_FLAGS = {
   // Notifications system - disable until backend API is ready
   ENABLE_NOTIFICATIONS_API: false,
   
+  // Specialist APIs - now enabled with proper backend implementation
+  ENABLE_SPECIALIST_SERVICES_API: true,
+  ENABLE_SPECIALIST_SCHEDULE_API: true,
+  ENABLE_SPECIALIST_PROFILE_API: true,
+  
   // Real-time features
   ENABLE_WEBSOCKETS: false,
   

@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
 import { SpecialistService } from '@/services/specialist';
+import { ServiceService } from '@/services/service';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { ErrorCodes, AuthenticatedRequest } from '@/types';
 import { validationResult } from 'express-validator';
+import { prisma } from '@/config/database';
 
 export class SpecialistController {
   // Create specialist profile
@@ -394,6 +396,565 @@ export class SpecialistController {
         createErrorResponse(
           ErrorCodes.INTERNAL_SERVER_ERROR,
           'Failed to toggle specialist verification',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Get specialist's services
+  static async getServices(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const services = await ServiceService.getSpecialistServices(req.user.id, true);
+
+      res.json(
+        createSuccessResponse({
+          services,
+        })
+      );
+    } catch (error: any) {
+      logger.error('Get specialist services error:', error);
+
+      if (error.message === 'SPECIALIST_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Specialist profile not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get services',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Create new service
+  static async createService(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid request data',
+            req.headers['x-request-id'] as string,
+            errors.array().map(error => ({
+              field: error.param,
+              message: error.msg,
+              code: 'INVALID_VALUE',
+            }))
+          )
+        );
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const service = await ServiceService.createService(req.user.id, req.body);
+
+      res.status(201).json(
+        createSuccessResponse({
+          service,
+        })
+      );
+    } catch (error: any) {
+      logger.error('Create service error:', error);
+
+      if (error.message === 'SPECIALIST_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Specialist profile not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to create service',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Update service
+  static async updateService(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid request data',
+            req.headers['x-request-id'] as string,
+            errors.array().map(error => ({
+              field: error.param,
+              message: error.msg,
+              code: 'INVALID_VALUE',
+            }))
+          )
+        );
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { serviceId } = req.params;
+
+      const service = await ServiceService.updateService(serviceId, req.user.id, req.body);
+
+      res.json(
+        createSuccessResponse({
+          service,
+        })
+      );
+    } catch (error: any) {
+      logger.error('Update service error:', error);
+
+      if (error.message === 'SERVICE_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Service not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'SPECIALIST_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Specialist profile not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'UNAUTHORIZED_ACCESS') {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.FORBIDDEN,
+            'You can only update your own services',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to update service',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Delete service
+  static async deleteService(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { serviceId } = req.params;
+
+      await ServiceService.deleteService(serviceId, req.user.id);
+
+      res.json(
+        createSuccessResponse({
+          message: 'Service deleted successfully',
+        })
+      );
+    } catch (error: any) {
+      logger.error('Delete service error:', error);
+
+      if (error.message === 'SERVICE_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Service not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'SPECIALIST_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Specialist profile not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'UNAUTHORIZED_ACCESS') {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.FORBIDDEN,
+            'You can only delete your own services',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to delete service',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Toggle service status
+  static async toggleServiceStatus(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { serviceId } = req.params;
+      const { isActive } = req.body;
+
+      if (typeof isActive !== 'boolean') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'isActive must be a boolean',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const service = await ServiceService.updateService(serviceId, req.user.id, { isActive });
+
+      res.json(
+        createSuccessResponse({
+          service,
+          message: `Service ${isActive ? 'activated' : 'deactivated'} successfully`,
+        })
+      );
+    } catch (error: any) {
+      logger.error('Toggle service status error:', error);
+
+      if (error.message === 'SERVICE_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Service not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'SPECIALIST_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Specialist profile not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'UNAUTHORIZED_ACCESS') {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.FORBIDDEN,
+            'You can only modify your own services',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to update service status',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Get blocked time slots
+  static async getBlockedSlots(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Get specialist by userId
+      const specialist = await SpecialistService.getProfileByUserId(req.user.id);
+
+      const { startDate, endDate } = req.query;
+
+      const where: any = {
+        specialistId: specialist.id,
+      };
+
+      if (startDate || endDate) {
+        where.startDateTime = {};
+        if (startDate) {
+          where.startDateTime.gte = new Date(startDate as string);
+        }
+        if (endDate) {
+          where.startDateTime.lte = new Date(endDate as string);
+        }
+      }
+
+      const blockedSlots = await prisma.availabilityBlock.findMany({
+        where,
+        orderBy: { startDateTime: 'asc' },
+      });
+
+      res.json(
+        createSuccessResponse({
+          blockedSlots,
+        })
+      );
+    } catch (error: any) {
+      logger.error('Get blocked slots error:', error);
+
+      if (error.message === 'SPECIALIST_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Specialist profile not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get blocked slots',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Block time slot
+  static async blockTimeSlot(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid request data',
+            req.headers['x-request-id'] as string,
+            errors.array().map(error => ({
+              field: error.param,
+              message: error.msg,
+              code: 'INVALID_VALUE',
+            }))
+          )
+        );
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Get specialist by userId
+      const specialist = await SpecialistService.getProfileByUserId(req.user.id);
+
+      const { startDateTime, endDateTime, reason, recurring } = req.body;
+
+      const blockedSlot = await prisma.availabilityBlock.create({
+        data: {
+          specialistId: specialist.id,
+          startDateTime: new Date(startDateTime),
+          endDateTime: new Date(endDateTime),
+          isAvailable: false,
+          reason: reason || 'Blocked time',
+          isRecurring: recurring || false,
+        },
+      });
+
+      res.status(201).json(
+        createSuccessResponse({
+          message: 'Time slot blocked successfully',
+          blockedSlot,
+        })
+      );
+    } catch (error: any) {
+      logger.error('Block time slot error:', error);
+
+      if (error.message === 'SPECIALIST_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Specialist profile not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to block time slot',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Unblock time slot
+  static async unblockTimeSlot(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { blockId } = req.params;
+
+      // Get specialist by userId
+      const specialist = await SpecialistService.getProfileByUserId(req.user.id);
+
+      // Check if block exists and belongs to this specialist
+      const existingBlock = await prisma.availabilityBlock.findFirst({
+        where: {
+          id: blockId,
+          specialistId: specialist.id,
+        },
+      });
+
+      if (!existingBlock) {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Blocked slot not found or you do not have access to it',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      await prisma.availabilityBlock.delete({
+        where: { id: blockId },
+      });
+
+      res.json(
+        createSuccessResponse({
+          message: 'Time slot unblocked successfully',
+        })
+      );
+    } catch (error: any) {
+      logger.error('Unblock time slot error:', error);
+
+      if (error.message === 'SPECIALIST_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Specialist profile not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to unblock time slot',
           req.headers['x-request-id'] as string
         )
       );

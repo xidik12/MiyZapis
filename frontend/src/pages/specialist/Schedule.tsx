@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { specialistService } from '../../services/specialist.service';
+import { isFeatureEnabled } from '../../config/features';
 
 interface TimeSlot {
   id: string;
@@ -243,6 +244,13 @@ const SpecialistSchedule: React.FC = () => {
   // Load blocked slots from API
   useEffect(() => {
     const loadBlockedSlots = async () => {
+      if (!isFeatureEnabled('ENABLE_SPECIALIST_SCHEDULE_API')) {
+        setLoading(false);
+        setError(null);
+        setTimeSlots([]); // Empty schedule until API is ready
+        return;
+      }
+
       try {
         setLoading(true);
         setError(null);
@@ -277,6 +285,11 @@ const SpecialistSchedule: React.FC = () => {
   }, []);
 
   const handleAddTimeSlot = async (newSlot: Omit<TimeSlot, 'id'>) => {
+    if (!isFeatureEnabled('ENABLE_SPECIALIST_SCHEDULE_API')) {
+      console.warn('Schedule API is disabled. Enable ENABLE_SPECIALIST_SCHEDULE_API to use this feature.');
+      return;
+    }
+
     try {
       const startDateTime = `${newSlot.date}T${newSlot.startTime}:00`;
       const endDateTime = `${newSlot.date}T${newSlot.endTime}:00`;
@@ -304,6 +317,11 @@ const SpecialistSchedule: React.FC = () => {
 
   const handleEditTimeSlot = async (updatedSlot: Omit<TimeSlot, 'id'>) => {
     if (!editingSlot) return;
+    
+    if (!isFeatureEnabled('ENABLE_SPECIALIST_SCHEDULE_API')) {
+      console.warn('Schedule API is disabled. Enable ENABLE_SPECIALIST_SCHEDULE_API to use this feature.');
+      return;
+    }
     
     try {
       // Delete the old slot and create a new one (since there's no direct edit API)
@@ -333,6 +351,11 @@ const SpecialistSchedule: React.FC = () => {
   };
 
   const handleDeleteTimeSlot = async (id: string) => {
+    if (!isFeatureEnabled('ENABLE_SPECIALIST_SCHEDULE_API')) {
+      console.warn('Schedule API is disabled. Enable ENABLE_SPECIALIST_SCHEDULE_API to use this feature.');
+      return;
+    }
+    
     try {
       await specialistService.unblockTimeSlot(id);
       setTimeSlots(prev => prev.filter(slot => slot.id !== id));
