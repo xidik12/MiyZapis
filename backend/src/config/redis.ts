@@ -36,23 +36,24 @@ if (!isRedisDisabled && config.redis.url) {
       keepAlive: 30000, // 30 seconds keepalive
       
       // Smart reconnection logic
-      reconnectOnError: (err) => {
+      reconnectOnError: (err: any) => {
         logger.warn('Redis error, checking if should reconnect:', {
           error: err.message,
-          code: err.code
+          code: err.code || 'UNKNOWN'
         });
         
         // Reconnect on network errors but not on auth errors
-        if (err.message.includes('READONLY') || 
-            err.message.includes('NOAUTH') || 
-            err.message.includes('WRONGPASS')) {
+        const errorMessage = err.message || '';
+        if (errorMessage.includes('READONLY') || 
+            errorMessage.includes('NOAUTH') || 
+            errorMessage.includes('WRONGPASS')) {
           return false; // Don't reconnect on auth issues
         }
         
         // Reconnect on connection issues
-        return err.message.includes('ETIMEDOUT') || 
-               err.message.includes('ECONNREFUSED') ||
-               err.message.includes('ENOTFOUND');
+        return errorMessage.includes('ETIMEDOUT') || 
+               errorMessage.includes('ECONNREFUSED') ||
+               errorMessage.includes('ENOTFOUND');
       },
       
       // Additional Railway-specific settings
@@ -62,9 +63,9 @@ if (!isRedisDisabled && config.redis.url) {
     const maskedUrl = config.redis.url?.replace(/\/\/.*@/, '//***:***@') || 'undefined';
     logger.info('✅ Redis client initialized successfully', {
       maskedUrl,
-      connectTimeout: 5000,
-      commandTimeout: 3000,
-      maxRetries: 2
+      connectTimeout: 10000, // Match actual config value
+      commandTimeout: 5000,  // Match actual config value
+      maxRetries: 3          // Match actual config value
     });
   } catch (error) {
     logger.error('Failed to initialize Redis client:', error);
@@ -133,7 +134,7 @@ export const testRedisConnection = async (): Promise<boolean> => {
     // Use a promise with reasonable timeout
     const testPromise = Promise.race([
       redis.ping(),
-      new Promise((_, reject) => 
+      new Promise<never>((_, reject) => 
         setTimeout(() => reject(new Error('Redis ping timeout after 8 seconds')), 8000)
       )
     ]);
@@ -147,12 +148,12 @@ export const testRedisConnection = async (): Promise<boolean> => {
       const testKey = 'test:connection:' + Date.now();
       const opsPromise = Promise.race([
         (async () => {
-          await redis.set(testKey, 'test-value', 'EX', 30);
-          const testValue = await redis.get(testKey);
-          await redis.del(testKey);
+          await redis!.set(testKey, 'test-value', 'EX', 30);
+          const testValue = await redis!.get(testKey);
+          await redis!.del(testKey);
           return testValue;
         })(),
-        new Promise((_, reject) => 
+        new Promise<never>((_, reject) => 
           setTimeout(() => reject(new Error('Redis operations timeout after 5 seconds')), 5000)
         )
       ]);
@@ -170,10 +171,10 @@ export const testRedisConnection = async (): Promise<boolean> => {
       }
     }
     return false;
-  } catch (error) {
+  } catch (error: any) {
     logger.error('❌ Redis connection test failed', {
-      error: error.message,
-      errorType: error.constructor.name,
+      error: error?.message || 'Unknown error',
+      errorType: error?.constructor?.name || 'Unknown',
       willContinueWithoutRedis: true
     });
     
