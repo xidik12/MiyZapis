@@ -38,12 +38,12 @@ if (!isRedisDisabled && config.redis.url) {
       // Smart reconnection logic
       reconnectOnError: (err: any) => {
         logger.warn('Redis error, checking if should reconnect:', {
-          error: err.message,
-          code: err.code || 'UNKNOWN'
+          error: err?.message || 'Unknown error',
+          code: err?.code || 'UNKNOWN'
         });
         
         // Reconnect on network errors but not on auth errors
-        const errorMessage = err.message || '';
+        const errorMessage = err?.message || '';
         if (errorMessage.includes('READONLY') || 
             errorMessage.includes('NOAUTH') || 
             errorMessage.includes('WRONGPASS')) {
@@ -97,10 +97,10 @@ if (redis) {
     });
   });
 
-  redis.on('error', (error) => {
+  redis.on('error', (error: any) => {
     logger.warn('⚠️ Redis connection error (continuing without cache)', {
-      error: error.message,
-      code: error.code || 'UNKNOWN',
+      error: error?.message || 'Unknown error',
+      code: error?.code || 'UNKNOWN',
       timestamp: new Date().toISOString()
     });
   });
@@ -191,8 +191,11 @@ export const closeRedisConnection = async (): Promise<void> => {
   try {
     await redis.quit();
     logger.info('Redis connection closed');
-  } catch (error) {
-    logger.warn('Error closing Redis connection (non-fatal):', error);
+  } catch (error: any) {
+    logger.warn('Error closing Redis connection (non-fatal):', {
+      error: error?.message || 'Unknown error',
+      errorType: error?.constructor?.name || 'Unknown'
+    });
   }
 };
 
