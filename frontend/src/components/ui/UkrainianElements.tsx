@@ -62,23 +62,23 @@ export const UkrainianOrnament: React.FC<{ className?: string }> = ({ className 
 export const FloatingElements: React.FC = () => {
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-      {/* Floating sunflowers */}
+      {/* Floating sunflowers - removed spinning animation to avoid confusion with loading */}
       <div className="absolute top-20 left-10 animate-float">
-        <SunflowerIcon className="text-secondary-400 opacity-20" animated />
+        <SunflowerIcon className="text-secondary-400 opacity-20" />
       </div>
       <div className="absolute top-40 right-20 animate-float" style={{ animationDelay: '2s' }}>
-        <SunflowerIcon className="text-secondary-300 opacity-15" animated />
+        <SunflowerIcon className="text-secondary-300 opacity-15" />
       </div>
       <div className="absolute bottom-32 left-1/4 animate-float" style={{ animationDelay: '4s' }}>
-        <SunflowerIcon className="text-secondary-500 opacity-10" animated />
+        <SunflowerIcon className="text-secondary-500 opacity-10" />
       </div>
       
-      {/* Floating geometric shapes */}
+      {/* Floating geometric shapes - removed pulse animation to avoid confusion with loading */}
       <div className="absolute top-60 right-1/3 w-12 h-12 ukraine-gradient rounded-full opacity-10 animate-float" 
            style={{ animationDelay: '1s' }}></div>
       <div className="absolute bottom-20 right-10 w-8 h-8 bg-primary-400 rounded-full opacity-15 animate-bounce" 
            style={{ animationDelay: '3s' }}></div>
-      <div className="absolute top-96 left-1/3 w-16 h-16 border-2 border-secondary-400 rounded-full opacity-20 animate-pulse"></div>
+      <div className="absolute top-96 left-1/3 w-16 h-16 border-2 border-secondary-400 rounded-full opacity-20"></div>
     </div>
   );
 };
