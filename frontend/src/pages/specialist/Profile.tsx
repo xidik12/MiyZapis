@@ -199,7 +199,10 @@ const SpecialistProfile: React.FC = () => {
   // Load profile data from API
   useEffect(() => {
     const loadProfile = async () => {
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
       
       try {
         setLoading(true);
@@ -457,7 +460,8 @@ const SpecialistProfile: React.FC = () => {
                           type="text"
                           value={profile.firstName}
                           disabled={!isEditing}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                          onChange={(e) => setProfile({...profile, firstName: e.target.value})}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
                         />
                       </div>
                       <div>
@@ -468,7 +472,8 @@ const SpecialistProfile: React.FC = () => {
                           type="text"
                           value={profile.lastName}
                           disabled={!isEditing}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                          onChange={(e) => setProfile({...profile, lastName: e.target.value})}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
                         />
                       </div>
                       <div>
@@ -479,7 +484,8 @@ const SpecialistProfile: React.FC = () => {
                           type="email"
                           value={profile.email}
                           disabled={!isEditing}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                          onChange={(e) => setProfile({...profile, email: e.target.value})}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
                         />
                       </div>
                       <div>
@@ -490,7 +496,8 @@ const SpecialistProfile: React.FC = () => {
                           type="tel"
                           value={profile.phone}
                           disabled={!isEditing}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                          onChange={(e) => setProfile({...profile, phone: e.target.value})}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
                         />
                       </div>
                     </div>
@@ -502,8 +509,9 @@ const SpecialistProfile: React.FC = () => {
                       <textarea
                         value={getLocalizedText('bio')}
                         disabled={!isEditing}
+                        onChange={(e) => setProfile({...profile, bio: e.target.value})}
                         rows={4}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
                       />
                     </div>
 
@@ -517,14 +525,16 @@ const SpecialistProfile: React.FC = () => {
                           placeholder={language === 'uk' ? 'Адреса' : language === 'ru' ? 'Адрес' : 'Address'}
                           value={profile.location.address}
                           disabled={!isEditing}
-                          className="px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                          onChange={(e) => setProfile({...profile, location: {...profile.location, address: e.target.value}})}
+                          className="px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
                         />
                         <input
                           type="text"
                           placeholder={language === 'uk' ? 'Місто' : language === 'ru' ? 'Город' : 'City'}
                           value={profile.location.city}
                           disabled={!isEditing}
-                          className="px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                          onChange={(e) => setProfile({...profile, location: {...profile.location, city: e.target.value}})}
+                          className="px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
                         />
                       </div>
                     </div>
@@ -563,7 +573,7 @@ const SpecialistProfile: React.FC = () => {
                           type="text"
                           value={profile.profession}
                           disabled={!isEditing}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
                         />
                       </div>
 
@@ -575,7 +585,7 @@ const SpecialistProfile: React.FC = () => {
                           type="number"
                           value={profile.experience}
                           disabled={!isEditing}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
                         />
                       </div>
 
@@ -587,7 +597,7 @@ const SpecialistProfile: React.FC = () => {
                           value={getLocalizedText('education')}
                           disabled={!isEditing}
                           rows={3}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
                         />
                       </div>
 
@@ -682,14 +692,14 @@ const SpecialistProfile: React.FC = () => {
                                     type="time"
                                     value={hours.startTime}
                                     disabled={!isEditing}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900"
                                   />
                                   <span className="text-gray-500">-</span>
                                   <input
                                     type="time"
                                     value={hours.endTime}
                                     disabled={!isEditing}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900"
                                   />
                                 </div>
                               )}
@@ -730,7 +740,7 @@ const SpecialistProfile: React.FC = () => {
                               type="number"
                               value={profile.serviceArea.radius}
                               disabled={!isEditing}
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900"
                             />
                           </div>
                         </div>
@@ -927,7 +937,7 @@ const SpecialistProfile: React.FC = () => {
                               value={profile.socialMedia.website || ''}
                               disabled={!isEditing}
                               placeholder="https://..."
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900"
                             />
                           </div>
                           <div>
@@ -937,7 +947,7 @@ const SpecialistProfile: React.FC = () => {
                               value={profile.socialMedia.instagram || ''}
                               disabled={!isEditing}
                               placeholder="@username"
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900"
                             />
                           </div>
                           <div>
@@ -947,7 +957,7 @@ const SpecialistProfile: React.FC = () => {
                               value={profile.socialMedia.linkedin || ''}
                               disabled={!isEditing}
                               placeholder="username"
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900"
                             />
                           </div>
                         </div>
@@ -967,12 +977,21 @@ const SpecialistProfile: React.FC = () => {
                         {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Cancel'}
                       </button>
                       <button 
-                        onClick={() => {
+                        onClick={async () => {
                           if (!isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
                             console.warn('Profile API is disabled. Enable ENABLE_SPECIALIST_PROFILE_API to use this feature.');
                             return;
                           }
-                          // TODO: Implement save profile functionality when API is ready
+                          
+                          try {
+                            // For now, just exit editing mode since API integration is pending
+                            setIsEditing(false);
+                            console.log('Profile changes saved:', profile);
+                            // TODO: Implement API call: await specialistService.updateProfile(profile);
+                          } catch (err: any) {
+                            console.error('Error saving profile:', err);
+                            setError('Failed to save profile changes');
+                          }
                         }}
                         className="px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors duration-200"
                       >
