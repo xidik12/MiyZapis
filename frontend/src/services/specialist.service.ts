@@ -50,11 +50,11 @@ export class SpecialistService {
 
   // Get specialist's services
   async getServices(): Promise<Service[]> {
-    const response = await apiClient.get<Service[]>('/specialists/services');
+    const response = await apiClient.get<{services: Service[]}>('/specialists/services');
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get specialist services');
     }
-    return response.data;
+    return response.data.services || [];
   }
 
   // Create new service

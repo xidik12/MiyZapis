@@ -73,7 +73,7 @@ const SpecialistServices: React.FC = () => {
         setLoading(true);
         setError(null);
         const servicesData = await specialistService.getServices();
-        setServices(servicesData);
+        setServices(Array.isArray(servicesData) ? servicesData : []);
       } catch (err: any) {
         setError(err.message || 'Failed to load services');
         console.error('Error loading services:', err);
@@ -315,7 +315,7 @@ const SpecialistServices: React.FC = () => {
     }
   };
 
-  const filteredServices = services.filter(service => {
+  const filteredServices = (Array.isArray(services) ? services : []).filter(service => {
     const matchesCategory = selectedCategory === 'all' || service.category === selectedCategory;
     const matchesSearch = getLocalizedText(service, 'name').toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
