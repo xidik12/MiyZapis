@@ -398,7 +398,7 @@ const CustomerProfile: React.FC = () => {
                           type="text"
                           value={profile.firstName}
                           disabled={!isEditing}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                         />
                       </div>
                       <div>
@@ -409,7 +409,7 @@ const CustomerProfile: React.FC = () => {
                           type="text"
                           value={profile.lastName}
                           disabled={!isEditing}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                         />
                       </div>
                       <div>
@@ -420,7 +420,7 @@ const CustomerProfile: React.FC = () => {
                           type="email"
                           value={profile.email}
                           disabled={!isEditing}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                         />
                       </div>
                       <div>
@@ -431,7 +431,7 @@ const CustomerProfile: React.FC = () => {
                           type="tel"
                           value={profile.phone}
                           disabled={!isEditing}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                         />
                       </div>
                       <div>
@@ -442,7 +442,7 @@ const CustomerProfile: React.FC = () => {
                           type="date"
                           value={profile.dateOfBirth}
                           disabled={!isEditing}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                         />
                       </div>
                       <div>
@@ -452,7 +452,7 @@ const CustomerProfile: React.FC = () => {
                         <select
                           value={profile.gender}
                           disabled={!isEditing}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-500"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                         >
                           <option value="male">{language === 'uk' ? 'Чоловіча' : language === 'ru' ? 'Мужской' : 'Male'}</option>
                           <option value="female">{language === 'uk' ? 'Жіноча' : language === 'ru' ? 'Женской' : 'Female'}</option>
@@ -476,7 +476,7 @@ const CustomerProfile: React.FC = () => {
                             type="text"
                             value={profile.emergencyContact.name}
                             disabled={!isEditing}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                           />
                         </div>
                         <div>
@@ -487,7 +487,7 @@ const CustomerProfile: React.FC = () => {
                             type="text"
                             value={profile.emergencyContact.relationship}
                             disabled={!isEditing}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                           />
                         </div>
                         <div>
@@ -498,7 +498,7 @@ const CustomerProfile: React.FC = () => {
                             type="tel"
                             value={profile.emergencyContact.phone}
                             disabled={!isEditing}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                           />
                         </div>
                         <div>
@@ -509,7 +509,7 @@ const CustomerProfile: React.FC = () => {
                             type="email"
                             value={profile.emergencyContact.email || ''}
                             disabled={!isEditing}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                           />
                         </div>
                       </div>
@@ -718,7 +718,7 @@ const CustomerProfile: React.FC = () => {
                             <select
                               value={profile.preferences.preferredSpecialistGender}
                               disabled={!isEditing}
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                             >
                               <option value="no_preference">{language === 'uk' ? 'Немає значення' : language === 'ru' ? 'Нет предпочтений' : 'No Preference'}</option>
                               <option value="male">{language === 'uk' ? 'Чоловік' : language === 'ru' ? 'Мужчина' : 'Male'}</option>
@@ -733,7 +733,7 @@ const CustomerProfile: React.FC = () => {
                               type="number"
                               value={profile.preferences.locationRadius}
                               disabled={!isEditing}
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                             />
                           </div>
                         </div>
@@ -753,7 +753,7 @@ const CustomerProfile: React.FC = () => {
                               type="number"
                               value={profile.preferences.priceRange.min}
                               disabled={!isEditing}
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                             />
                           </div>
                           <div>
@@ -764,7 +764,7 @@ const CustomerProfile: React.FC = () => {
                               type="number"
                               value={profile.preferences.priceRange.max}
                               disabled={!isEditing}
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                             />
                           </div>
                         </div>
