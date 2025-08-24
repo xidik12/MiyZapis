@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
 import { 

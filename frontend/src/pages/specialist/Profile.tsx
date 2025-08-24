@@ -205,30 +205,23 @@ const SpecialistProfile: React.FC = () => {
   // Load profile data from API
   useEffect(() => {
     const loadProfile = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-      
       try {
-        setLoading(true);
         setError(null);
         
-        // Initialize profile with user data
+        // Always initialize with user data if available, otherwise use empty profile
         const initialProfile: SpecialistProfile = {
           ...getEmptyProfile(),
-          id: user.id,
-          firstName: user.firstName || '',
-          lastName: user.lastName || '',
-          email: user.email || '',
-          phone: user.phoneNumber || '',
-          // Add other user fields as available
+          id: user?.id || '1',
+          firstName: user?.firstName || '',
+          lastName: user?.lastName || '',
+          email: user?.email || '',
+          phone: user?.phoneNumber || '',
         };
         
         setProfile(initialProfile);
         
         // If user is a specialist, try to load specialist profile
-        if (user.userType === 'specialist' && isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
+        if (user?.userType === 'specialist' && isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
           try {
             const specialistData = await specialistService.getProfile();
             // Map specialist data to profile format
@@ -243,8 +236,6 @@ const SpecialistProfile: React.FC = () => {
                 isVerified: specialistData.isVerified || false,
                 verifiedDate: specialistData.isVerified ? new Date().toISOString().split('T')[0] : '',
               },
-              // Portfolio stays empty since it's not part of the backend structure
-              // Users can add images through their services
             }));
           } catch (specialistError) {
             // Specialist profile might not exist yet, which is fine for new users
@@ -255,11 +246,13 @@ const SpecialistProfile: React.FC = () => {
         setError(err.message || 'Failed to load profile');
         console.error('Error loading profile:', err);
       } finally {
+        // Always set loading to false
         setLoading(false);
       }
     };
 
-    loadProfile();
+    // Add a small delay to ensure smooth loading transition
+    setTimeout(loadProfile, 100);
   }, [user]);
 
   const getLocalizedText = (field: string) => {
@@ -474,10 +467,10 @@ const SpecialistProfile: React.FC = () => {
           <div className="mb-8">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                   {language === 'uk' ? 'Бізнес-профіль' : language === 'ru' ? 'Бизнес-профиль' : 'Business Profile'}
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                   {language === 'uk' 
                     ? 'Керуйте своїм професійним профілем та налаштуваннями'
                     : language === 'ru'
@@ -541,7 +534,7 @@ const SpecialistProfile: React.FC = () => {
                 {/* Personal Information Tab */}
                 {activeTab === 'personal' && (
                   <div className="p-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                       {language === 'uk' ? 'Особиста інформація' : language === 'ru' ? 'Личная информация' : 'Personal Information'}
                     </h2>
                     
@@ -654,7 +647,7 @@ const SpecialistProfile: React.FC = () => {
                 {/* Professional Information Tab */}
                 {activeTab === 'professional' && (
                   <div className="p-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                       {language === 'uk' ? 'Професійна інформація' : language === 'ru' ? 'Профессиональная информация' : 'Professional Information'}
                     </h2>
                     
@@ -713,7 +706,7 @@ const SpecialistProfile: React.FC = () => {
 
                       <div>
                         <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-lg font-semibold text-gray-900">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                             {language === 'uk' ? 'Сертифікати' : language === 'ru' ? 'Сертификаты' : 'Certifications'}
                           </h3>
                           {isEditing && (
@@ -772,14 +765,14 @@ const SpecialistProfile: React.FC = () => {
                 {/* Business Settings Tab */}
                 {activeTab === 'business' && (
                   <div className="p-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                       {language === 'uk' ? 'Бізнес-налаштування' : language === 'ru' ? 'Бизнес-настройки' : 'Business Settings'}
                     </h2>
                     
                     <div className="space-y-8">
                       {/* Business Hours */}
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                           {language === 'uk' ? 'Робочі години' : language === 'ru' ? 'Рабочие часы' : 'Business Hours'}
                         </h3>
                         <div className="space-y-3">
@@ -823,7 +816,7 @@ const SpecialistProfile: React.FC = () => {
 
                       {/* Payment Methods */}
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                           {language === 'uk' ? 'Способи оплати' : language === 'ru' ? 'Способы оплаты' : 'Payment Methods'}
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -852,7 +845,7 @@ const SpecialistProfile: React.FC = () => {
 
                       {/* Service Area */}
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                           {language === 'uk' ? 'Зона обслуговування' : language === 'ru' ? 'Зона обслуживания' : 'Service Area'}
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -892,7 +885,7 @@ const SpecialistProfile: React.FC = () => {
                 {activeTab === 'portfolio' && (
                   <div className="p-6">
                     <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-2xl font-bold text-gray-900">
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                         {t('portfolio.title')}
                       </h2>
                       {isEditing && (
@@ -1022,7 +1015,7 @@ const SpecialistProfile: React.FC = () => {
                 {/* Security Tab */}
                 {activeTab === 'security' && (
                   <div className="p-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                       {language === 'uk' ? 'Безпека та приватність' : language === 'ru' ? 'Безопасность и конфиденциальность' : 'Security & Privacy'}
                     </h2>
                     
@@ -1063,7 +1056,7 @@ const SpecialistProfile: React.FC = () => {
 
                       {/* Privacy Settings */}
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                           {language === 'uk' ? 'Налаштування приватності' : language === 'ru' ? 'Настройки конфиденциальности' : 'Privacy Settings'}
                         </h3>
                         <div className="space-y-4">
@@ -1092,7 +1085,7 @@ const SpecialistProfile: React.FC = () => {
 
                       {/* Notification Settings */}
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                           {language === 'uk' ? 'Налаштування сповіщень' : language === 'ru' ? 'Настройки уведомлений' : 'Notification Settings'}
                         </h3>
                         <div className="space-y-4">
@@ -1123,7 +1116,7 @@ const SpecialistProfile: React.FC = () => {
 
                       {/* Social Media Links */}
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                           {language === 'uk' ? 'Соціальні мережі' : language === 'ru' ? 'Социальные сети' : 'Social Media'}
                         </h3>
                         <div className="space-y-4">
