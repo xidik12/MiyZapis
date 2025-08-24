@@ -165,7 +165,7 @@ const SearchPage: React.FC = () => {
             <MapPinIcon className="w-4 h-4 mr-1" />
             <span className="mr-4">{specialist.location}</span>
             <ClockIcon className="w-4 h-4 mr-1" />
-            <span>{t('specialist.responseTime')}: {specialist.responseTime}</span>
+            <span>{t('specialist.responseTime')}: {specialist.responseTime && specialist.responseTime !== '0' ? specialist.responseTime : (language === 'uk' ? 'Зазвичай протягом дня' : language === 'ru' ? 'Обычно в течение дня' : 'Usually within a day')}</span>
           </div>
 
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
@@ -179,7 +179,7 @@ const SearchPage: React.FC = () => {
             <div className="text-right">
               <p className="text-sm text-gray-500 dark:text-gray-400">{t('pricing.from')}</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatPrice(specialist.priceFrom, 'UAH')}
+                {specialist.priceFrom ? formatPrice(specialist.priceFrom, 'UAH') : (language === 'uk' ? 'За домовленістю' : language === 'ru' ? 'По договорённости' : 'By agreement')}
               </p>
             </div>
           </div>
