@@ -195,6 +195,12 @@ const SpecialistProfile: React.FC = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [uploadingPortfolio, setUploadingPortfolio] = useState(false);
+  const [portfolioError, setPortfolioError] = useState('');
+  const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>([]);
+  const [uploadingCertificate, setUploadingCertificate] = useState(false);
+  const [certificateError, setCertificateError] = useState('');
 
   // Load profile data from API
   useEffect(() => {
@@ -266,6 +272,64 @@ const SpecialistProfile: React.FC = () => {
     return (profile as any)[field];
   };
 
+  // Handle portfolio image upload
+  const handlePortfolioUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('File size must be less than 5MB');
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file');
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      setError(null);
+
+      // For now, create a local URL for preview
+      // TODO: Implement actual upload to backend
+      const imageUrl = URL.createObjectURL(file);
+      
+      const newPortfolioItem: PortfolioItem = {
+        id: Date.now().toString(),
+        title: file.name.split('.')[0],
+        titleUk: file.name.split('.')[0],
+        titleRu: file.name.split('.')[0],
+        description: 'Uploaded portfolio image',
+        descriptionUk: 'Завантажене зображення портфоліо',
+        descriptionRu: 'Загруженное изображение портфолио',
+        category: 'work',
+        categoryUk: 'робота',
+        categoryRu: 'работа',
+        imageUrl: imageUrl,
+        uploadDate: new Date().toISOString()
+      };
+
+      setProfile(prev => ({
+        ...prev,
+        portfolio: [...prev.portfolio, newPortfolioItem]
+      }));
+
+      console.log('Portfolio item added:', newPortfolioItem);
+      // TODO: Replace with actual API call: await specialistService.uploadPortfolioImage(file);
+      
+    } catch (err: any) {
+      console.error('Error uploading portfolio image:', err);
+      setError('Failed to upload image. Please try again.');
+    } finally {
+      setUploadingImage(false);
+      // Reset file input
+      event.target.value = '';
+    }
+  };
+
   const getDayName = (day: string) => {
     const dayNames = {
       en: {
@@ -292,6 +356,93 @@ const SpecialistProfile: React.FC = () => {
       apple_pay: 'Apple Pay',
     };
     return methods[method as keyof typeof methods] || method;
+  };
+
+  const handlePortfolioUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setPortfolioError('Please upload only image files');
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setPortfolioError('File size must be less than 5MB');
+      return;
+    }
+
+    setPortfolioError('');
+    setUploadingPortfolio(true);
+
+    try {
+      // Generate preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          setPortfolioImages(prev => [...prev, e.target!.result as string]);
+        }
+      };
+      reader.readAsDataURL(file);
+
+      // Here you would upload to your API
+      // const response = await specialistService.uploadPortfolioImage(file);
+      // Handle success
+      
+    } catch (error) {
+      setPortfolioError('Failed to upload image. Please try again.');
+      console.error('Portfolio upload error:', error);
+    } finally {
+      setUploadingPortfolio(false);
+    }
+  };
+
+  const handleCertificateUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    
+    // Validate file type (images and PDFs allowed)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      setCertificateError('Please upload only images (JPG, PNG) or PDF files');
+      return;
+    }
+
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      setCertificateError('File size must be less than 10MB');
+      return;
+    }
+
+    setCertificateError('');
+    setUploadingCertificate(true);
+
+    try {
+      // Here you would upload to your API
+      // const response = await specialistService.uploadCertificate(file);
+      
+      // For now, just show success
+      console.log('Certificate uploaded:', file.name);
+      
+      // Reset input
+      event.target.value = '';
+      
+    } catch (error) {
+      setCertificateError('Failed to upload certificate. Please try again.');
+      console.error('Certificate upload error:', error);
+    } finally {
+      setUploadingCertificate(false);
+    }
+  };
+
+  const handlePortfolioDelete = (index: number) => {
+    setPortfolioImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const tabs = [
@@ -623,9 +774,28 @@ const SpecialistProfile: React.FC = () => {
                             {language === 'uk' ? 'Сертифікати' : language === 'ru' ? 'Сертификаты' : 'Certifications'}
                           </h3>
                           {isEditing && (
-                            <button className="px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200">
-                              {language === 'uk' ? 'Додати' : language === 'ru' ? 'Добавить' : 'Add'}
-                            </button>
+                            <div className="flex flex-col gap-2">
+                              <label className="px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 cursor-pointer text-center">
+                                {uploadingCertificate ? (
+                                  <div className="flex items-center justify-center gap-2">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    <span>{language === 'uk' ? 'Завантаження...' : language === 'ru' ? 'Загрузка...' : 'Uploading...'}</span>
+                                  </div>
+                                ) : (
+                                  language === 'uk' ? 'Додати сертифікат' : language === 'ru' ? 'Добавить сертификат' : 'Add Certificate'
+                                )}
+                                <input
+                                  type="file"
+                                  onChange={handleCertificateUpload}
+                                  accept=".jpg,.jpeg,.png,.pdf"
+                                  className="hidden"
+                                  disabled={uploadingCertificate}
+                                />
+                              </label>
+                              {certificateError && (
+                                <p className="text-red-500 text-sm">{certificateError}</p>
+                              )}
+                            </div>
                           )}
                         </div>
                         <div className="space-y-4">
@@ -715,11 +885,22 @@ const SpecialistProfile: React.FC = () => {
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                           {['card', 'cash', 'bank_transfer', 'apple_pay'].map((method) => (
-                            <div key={method} className={`p-4 border-2 rounded-xl text-center cursor-pointer transition-all duration-200 ${
-                              profile.paymentMethods.includes(method)
-                                ? 'border-primary-500 bg-primary-50 text-primary-700'
-                                : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                            }`}>
+                            <div 
+                              key={method} 
+                              onClick={() => {
+                                if (!isEditing) return;
+                                const currentMethods = profile.paymentMethods;
+                                const isSelected = currentMethods.includes(method);
+                                const newMethods = isSelected 
+                                  ? currentMethods.filter(m => m !== method)
+                                  : [...currentMethods, method];
+                                setProfile({...profile, paymentMethods: newMethods});
+                              }}
+                              className={`p-4 border-2 rounded-xl text-center cursor-pointer transition-all duration-200 ${
+                                profile.paymentMethods.includes(method)
+                                  ? 'border-primary-500 bg-primary-50 text-primary-700'
+                                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                              } ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}>
                               <div className="text-sm font-medium">{getPaymentMethodName(method)}</div>
                             </div>
                           ))}
@@ -772,19 +953,83 @@ const SpecialistProfile: React.FC = () => {
                         {t('portfolio.title')}
                       </h2>
                       {isEditing && (
-                        <button className="px-4 py-2 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors duration-200">
-                          {t('portfolio.addPhoto')}
-                        </button>
+                        <>
+                          <input
+                            type="file"
+                            id="portfolio-upload"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handlePortfolioUpload}
+                          />
+                          <div className="flex flex-col gap-2">
+                            <button 
+                              onClick={() => document.getElementById('portfolio-upload')?.click()}
+                              disabled={uploadingPortfolio}
+                              className="px-4 py-2 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
+                              {uploadingPortfolio && (
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              )}
+                              {uploadingPortfolio ? 
+                                (language === 'uk' ? 'Завантаження...' : language === 'ru' ? 'Загрузка...' : 'Uploading...') : 
+                                (language === 'uk' ? 'Додати фото' : language === 'ru' ? 'Добавить фото' : 'Add Photo')
+                              }
+                            </button>
+                            {portfolioError && (
+                              <p className="text-red-500 text-sm">{portfolioError}</p>
+                            )}
+                          </div>
+                        </>
                       )}
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {/* Uploaded Images */}
+                      {portfolioImages.map((imageUrl, index) => (
+                        <div key={`uploaded-${index}`} className="bg-gray-100 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200">
+                          <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center relative">
+                            <img 
+                              src={imageUrl} 
+                              alt={`Uploaded portfolio ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            {isEditing && (
+                              <button
+                                onClick={() => handlePortfolioDelete(index)}
+                                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+                          <div className="p-4">
+                            <h3 className="font-semibold text-gray-900 mb-1">
+                              {language === 'uk' ? 'Нове фото' : language === 'ru' ? 'Новое фото' : 'New Photo'}
+                            </h3>
+                            <p className="text-gray-600 text-sm mb-2">
+                              {language === 'uk' ? 'Завантажено щойно' : language === 'ru' ? 'Только что загружено' : 'Recently uploaded'}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Existing Portfolio Items */}
                       {profile.portfolio.map((item) => (
                         <div key={item.id} className="bg-gray-100 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200">
                           <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                            <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
+                            {item.imageUrl ? (
+                              <img 
+                                src={item.imageUrl} 
+                                alt={getPortfolioItemText(item, 'title')}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                            )}
                           </div>
                           <div className="p-4">
                             <h3 className="font-semibold text-gray-900 mb-1">{getPortfolioItemText(item, 'title')}</h3>
@@ -794,7 +1039,15 @@ const SpecialistProfile: React.FC = () => {
                                 {getPortfolioItemText(item, 'category')}
                               </span>
                               {isEditing && (
-                                <button className="p-1 text-error-600 hover:bg-error-50 rounded transition-colors duration-200">
+                                <button 
+                                  onClick={() => {
+                                    setProfile(prev => ({
+                                      ...prev,
+                                      portfolio: prev.portfolio.filter(p => p.id !== item.id)
+                                    }));
+                                  }}
+                                  className="p-1 text-error-600 hover:bg-error-50 rounded transition-colors duration-200"
+                                >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                   </svg>
@@ -807,7 +1060,10 @@ const SpecialistProfile: React.FC = () => {
                       
                       {/* Add Photo Placeholder */}
                       {isEditing && (
-                        <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center text-gray-500 hover:border-primary-400 hover:text-primary-600 transition-colors duration-200 cursor-pointer">
+                        <div 
+                          onClick={() => document.getElementById('portfolio-upload')?.click()}
+                          className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center text-gray-500 hover:border-primary-400 hover:text-primary-600 transition-colors duration-200 cursor-pointer"
+                        >
                           <svg className="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                           </svg>

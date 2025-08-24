@@ -112,7 +112,7 @@ if (redis) {
     });
   });
 
-  redis.on('reconnecting', (retryDelayTime) => {
+  redis.on('reconnecting', (retryDelayTime: number) => {
     logger.info('Redis reconnecting...', {
       status: 'reconnecting',
       retryDelay: retryDelayTime,
