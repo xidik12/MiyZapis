@@ -154,7 +154,7 @@ const SpecialistDashboard: React.FC = () => {
         <StatCard
           title={t('dashboard.specialist.totalBookings')}
           value={dashboardData.stats.totalBookings}
-          change={`+12% ${t('dashboard.specialist.thisMonthImprovement')}`}
+          change={dashboardData.stats.totalBookings > 0 ? `+12% ${t('dashboard.specialist.thisMonthImprovement')}` : ''}
           changeType="positive"
           icon={CalendarIconSolid}
           iconBg="bg-gradient-to-br from-primary-500 to-primary-600"
@@ -163,7 +163,7 @@ const SpecialistDashboard: React.FC = () => {
         <StatCard
           title={t('dashboard.specialist.monthlyRevenue')}
           value={formatPrice(dashboardData.stats.monthlyRevenue, 'UAH')}
-          change={`+8% ${t('dashboard.specialist.improvement')}`}
+          change={dashboardData.stats.monthlyRevenue > 0 ? `+8% ${t('dashboard.specialist.improvement')}` : ''}
           changeType="positive"
           icon={CurrencyDollarIcon}
           iconBg="bg-gradient-to-br from-success-500 to-success-600"
@@ -172,7 +172,7 @@ const SpecialistDashboard: React.FC = () => {
         <StatCard
           title={t('dashboard.specialist.averageRating')}
           value={`${dashboardData.stats.rating}/5.0`}
-          change={`+0.2 ${t('dashboard.specialist.thisMonthImprovement')}`}
+          change={dashboardData.stats.reviewCount > 0 ? `+0.2 ${t('dashboard.specialist.thisMonthImprovement')}` : ''}
           changeType="positive"
           icon={StarIconSolid}
           iconBg="bg-gradient-to-br from-warning-500 to-warning-600"
@@ -181,7 +181,7 @@ const SpecialistDashboard: React.FC = () => {
         <StatCard
           title={t('dashboard.specialist.responseTime')}
           value={`${dashboardData.stats.responseTime} ${t('time.minutes')}`}
-          change={`-3 ${t('time.minutes')} ${t('dashboard.specialist.improvement')}`}
+          change={dashboardData.stats.responseTime > 0 ? `-3 ${t('time.minutes')} ${t('dashboard.specialist.improvement')}` : ''}
           changeType="positive"
           icon={ClockIcon}
           iconBg="bg-gradient-to-br from-info-500 to-info-600"

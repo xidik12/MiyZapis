@@ -53,6 +53,8 @@ const translations: Translations = {
   'hero.searchPlaceholder': { en: 'What service are you looking for? (e.g., haircut, personal training, tutoring)', uk: 'Яку послугу ви шукаєте? (наприклад, стрижка, персональні тренування, репетиторство)', ru: 'Какую услугу вы ищете? (например, стрижка, персональные тренировки, репетиторство)' },
 
   // Categories
+  'category.all': { en: 'All Categories', uk: 'Всі категорії', ru: 'Все категории' },
+  'category.automotive': { en: 'Automotive', uk: 'Автомобільні послуги', ru: 'Автомобильные услуги' },
   'category.homeServices': { en: 'Home Services', uk: 'Домашні послуги', ru: 'Домашние услуги' },
   'category.professional': { en: 'Professional Services', uk: 'Професійні послуги', ru: 'Профессиональные услуги' },
   'category.education': { en: 'Education & Tutoring', uk: 'Освіта та репетиторство', ru: 'Образование и репетиторство' },

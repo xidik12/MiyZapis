@@ -317,8 +317,8 @@ const SpecialistAnalytics: React.FC = () => {
   const getCurrentPeriodStats = () => {
     const currentRevenue = currentPeriodData.revenue.reduce((sum, val) => sum + val, 0);
     const currentBookings = currentPeriodData.bookings.reduce((sum, val) => sum + val, 0);
-    const avgRevenue = currentRevenue / currentPeriodData.revenue.length;
-    const avgBookings = currentBookings / currentPeriodData.bookings.length;
+    const avgRevenue = currentPeriodData.revenue.length > 0 ? currentRevenue / currentPeriodData.revenue.length : 0;
+    const avgBookings = currentPeriodData.bookings.length > 0 ? currentBookings / currentPeriodData.bookings.length : 0;
     
     // Calculate growth (simplified - comparing last value to average)
     const lastRevenue = currentPeriodData.revenue[currentPeriodData.revenue.length - 1];

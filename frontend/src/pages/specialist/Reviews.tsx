@@ -72,17 +72,21 @@ const SpecialistReviews: React.FC = () => {
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
           <div className="text-center">
-            <div className="text-4xl font-bold text-success-600 mb-2">96%</div>
+            <div className="text-4xl font-bold text-success-600 mb-2">
+              {totalReviews > 0 ? '96%' : (language === 'uk' ? 'Немає даних' : language === 'ru' ? 'Нет данных' : 'No data')}
+            </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{t('reviews.positiveReviews')}</p>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div className="bg-success-600 h-2 rounded-full" style={{ width: '96%' }}></div>
+              <div className="bg-success-600 h-2 rounded-full" style={{ width: totalReviews > 0 ? '96%' : '0%' }}></div>
             </div>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
           <div className="text-center">
-            <div className="text-4xl font-bold text-primary-600 mb-2">15</div>
+            <div className="text-4xl font-bold text-primary-600 mb-2">
+              {totalReviews > 0 ? '15' : (language === 'uk' ? 'Немає даних' : language === 'ru' ? 'Нет данных' : 'No data')}
+            </div>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               {t('reviews.averageResponseTime')}
             </p>
