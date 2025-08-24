@@ -548,7 +548,7 @@ const SpecialistProfile: React.FC = () => {
                           value={profile.firstName}
                           disabled={!isEditing}
                           onChange={(e) => setProfile({...profile, firstName: e.target.value})}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                         />
                       </div>
                       <div>
@@ -560,7 +560,7 @@ const SpecialistProfile: React.FC = () => {
                           value={profile.lastName}
                           disabled={!isEditing}
                           onChange={(e) => setProfile({...profile, lastName: e.target.value})}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                         />
                       </div>
                       <div>
@@ -572,7 +572,7 @@ const SpecialistProfile: React.FC = () => {
                           value={profile.email}
                           disabled={!isEditing}
                           onChange={(e) => setProfile({...profile, email: e.target.value})}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                         />
                       </div>
                       <div>
@@ -584,7 +584,7 @@ const SpecialistProfile: React.FC = () => {
                           value={profile.phone}
                           disabled={!isEditing}
                           onChange={(e) => setProfile({...profile, phone: e.target.value})}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                         />
                       </div>
                     </div>
@@ -598,7 +598,7 @@ const SpecialistProfile: React.FC = () => {
                         disabled={!isEditing}
                         onChange={(e) => setProfile({...profile, bio: e.target.value})}
                         rows={4}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                       />
                     </div>
 
@@ -660,7 +660,7 @@ const SpecialistProfile: React.FC = () => {
                           type="text"
                           value={profile.profession}
                           disabled={!isEditing}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                         />
                       </div>
 
@@ -672,7 +672,7 @@ const SpecialistProfile: React.FC = () => {
                           type="number"
                           value={profile.experience}
                           disabled={!isEditing}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                         />
                       </div>
 
@@ -684,7 +684,7 @@ const SpecialistProfile: React.FC = () => {
                           value={getLocalizedText('education')}
                           disabled={!isEditing}
                           rows={3}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                         />
                       </div>
 

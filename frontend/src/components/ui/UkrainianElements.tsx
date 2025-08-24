@@ -62,13 +62,11 @@ export const UkrainianOrnament: React.FC<{ className?: string }> = ({ className 
 export const FloatingElements: React.FC = () => {
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-      {/* Subtle geometric shapes only - removed sunflowers that might appear as exclamation marks */}
-      <div className="absolute top-60 right-1/3 w-12 h-12 ukraine-gradient rounded-full opacity-5 animate-float" 
-           style={{ animationDelay: '1s' }}></div>
-      <div className="absolute bottom-20 right-10 w-8 h-8 bg-primary-400 rounded-full opacity-8 animate-bounce" 
+      {/* Minimal subtle shapes - removed problematic yellow ukraine-gradient circle */}
+      <div className="absolute bottom-20 right-10 w-4 h-4 bg-primary-400 rounded-full opacity-3 animate-bounce" 
            style={{ animationDelay: '3s' }}></div>
-      <div className="absolute top-96 left-1/3 w-16 h-16 border-2 border-secondary-400 rounded-full opacity-10"></div>
-      <div className="absolute bottom-40 left-20 w-6 h-6 bg-secondary-300 rounded-full opacity-6"></div>
+      <div className="absolute top-96 left-1/3 w-8 h-8 border border-secondary-400 rounded-full opacity-5"></div>
+      <div className="absolute bottom-40 left-20 w-3 h-3 bg-secondary-300 rounded-full opacity-4"></div>
     </div>
   );
 };
