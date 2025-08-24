@@ -309,6 +309,43 @@ const CustomerSettings: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Language Preference in Personal Information */}
+                  <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-600">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+                      {language === 'uk' ? 'Налаштування мови' : language === 'ru' ? 'Настройки языка' : 'Language Settings'}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {language === 'uk' ? 'Мова інтерфейсу' : language === 'ru' ? 'Язык интерфейса' : 'Interface Language'}
+                        </label>
+                        <select
+                          value={language}
+                          onChange={(e) => setLanguage(e.target.value as any)}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        >
+                          <option value="uk">🇺🇦 Українська</option>
+                          <option value="ru">🇷🇺 Русский</option>
+                          <option value="en">🇺🇸 English</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {language === 'uk' ? 'Валюта' : language === 'ru' ? 'Валюта' : 'Currency'}
+                        </label>
+                        <select
+                          value={currency}
+                          onChange={(e) => setCurrency(e.target.value as any)}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        >
+                          <option value="UAH">₴ {t('currency.uah')}</option>
+                          <option value="USD">$ {t('currency.usd')}</option>
+                          <option value="EUR">€ {t('currency.eur')}</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Change Password */}
                   <div className="border-t pt-6">
                     <button
@@ -653,20 +690,20 @@ const CustomerSettings: React.FC = () => {
                       </div>
                     ) : (
                       addresses.map((address) => (
-                      <div key={address.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex items-start justify-between">
+                      <div key={address.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex items-start justify-between hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                         <div className="flex items-start">
-                          <MapPinIcon className="h-8 w-8 text-gray-400 dark:text-gray-500 mr-3 mt-1" />
+                          <MapPinIcon className="h-8 w-8 text-gray-500 dark:text-gray-400 mr-3 mt-1" />
                           <div>
                             <div className="flex items-center mb-1">
                               <p className="font-medium text-gray-900 dark:text-gray-100 mr-2">{address.label}</p>
                               {address.isDefault && (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
                                   Default
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">{address.street}</p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                            <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">{address.street}</p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                               {address.city}, {address.postalCode}
                             </p>
                             <p className="text-sm text-gray-600 dark:text-gray-400">{address.country}</p>
@@ -696,10 +733,11 @@ const CustomerSettings: React.FC = () => {
 
       {/* Add Payment Method Modal */}
       {showAddPaymentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
-              Add Payment Method
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+              <CreditCardIcon className="h-6 w-6 mr-2 text-primary-600 dark:text-primary-400" />
+              {language === 'uk' ? 'Додати спосіб оплати' : language === 'ru' ? 'Добавить способ оплаты' : 'Add Payment Method'}
             </h3>
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -710,16 +748,16 @@ const CustomerSettings: React.FC = () => {
                 last4: formData.get('cardNumber')?.toString().slice(-4) || ''
               });
             }}>
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Payment Type
+                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                    {language === 'uk' ? 'Тип оплати' : language === 'ru' ? 'Тип оплаты' : 'Payment Type'}
                   </label>
                   <select 
                     name="paymentType"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   >
-                    <option value="card">Bank Card</option>
+                    <option value="card">{language === 'uk' ? 'Банківська картка' : language === 'ru' ? 'Банковская карта' : 'Bank Card'}</option>
                     <option value="privat">PrivatBank</option>
                     <option value="mono">Monobank</option>
                     <option value="ukrsib">UkrSibbank</option>
@@ -728,27 +766,27 @@ const CustomerSettings: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Card Name
+                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                    {language === 'uk' ? 'Назва картки' : language === 'ru' ? 'Название карты' : 'Card Name'}
                   </label>
                   <input
                     type="text"
                     name="cardName"
-                    placeholder="Visa •••• 4242"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                    placeholder={language === 'uk' ? 'Моя картка Visa' : language === 'ru' ? 'Моя карта Visa' : 'My Visa Card'}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Card Number
+                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                    {language === 'uk' ? 'Номер картки' : language === 'ru' ? 'Номер карты' : 'Card Number'}
                   </label>
                   <input
                     type="text"
                     name="cardNumber"
                     placeholder="1234 5678 9012 3456"
                     maxLength={19}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                     onChange={(e) => {
                       // Format card number with spaces
                       let value = e.target.value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
@@ -758,19 +796,19 @@ const CustomerSettings: React.FC = () => {
                   />
                 </div>
               </div>
-              <div className="flex justify-end space-x-3 mt-6">
+              <div className="flex justify-end space-x-3 mt-8 pt-4 border-t border-gray-200 dark:border-gray-600">
                 <button
                   type="button"
                   onClick={() => setShowAddPaymentModal(false)}
-                  className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium rounded-lg transition-colors"
                 >
-                  Cancel
+                  {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отмена' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+                  className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-sm"
                 >
-                  Add Payment Method
+                  {language === 'uk' ? 'Додати спосіб оплати' : language === 'ru' ? 'Добавить способ оплаты' : 'Add Payment Method'}
                 </button>
               </div>
             </form>
@@ -780,10 +818,11 @@ const CustomerSettings: React.FC = () => {
 
       {/* Add Address Modal */}
       {showAddAddressModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
-              Add Address
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+              <MapPinIcon className="h-6 w-6 mr-2 text-primary-600 dark:text-primary-400" />
+              {language === 'uk' ? 'Додати адресу' : language === 'ru' ? 'Добавить адрес' : 'Add Address'}
             </h3>
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -797,99 +836,99 @@ const CustomerSettings: React.FC = () => {
                 country: formData.get('country') || 'Ukraine'
               });
             }}>
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Address Type
+                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                    {language === 'uk' ? 'Тип адреси' : language === 'ru' ? 'Тип адреса' : 'Address Type'}
                   </label>
                   <select 
                     name="addressType"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   >
-                    <option value="home">Home</option>
-                    <option value="work">Work</option>
-                    <option value="other">Other</option>
+                    <option value="home">{language === 'uk' ? 'Дім' : language === 'ru' ? 'Дом' : 'Home'}</option>
+                    <option value="work">{language === 'uk' ? 'Робота' : language === 'ru' ? 'Работа' : 'Work'}</option>
+                    <option value="other">{language === 'uk' ? 'Інше' : language === 'ru' ? 'Другое' : 'Other'}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Label
+                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                    {language === 'uk' ? 'Назва' : language === 'ru' ? 'Название' : 'Label'}
                   </label>
                   <input
                     type="text"
                     name="label"
-                    placeholder="Home"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                    placeholder={language === 'uk' ? 'Моя адреса' : language === 'ru' ? 'Мой адрес' : 'My Address'}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Street Address
+                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                    {language === 'uk' ? 'Вулиця' : language === 'ru' ? 'Улица' : 'Street Address'}
                   </label>
                   <input
                     type="text"
                     name="street"
-                    placeholder="вул. Хрещатик, 1"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                    placeholder={language === 'uk' ? 'вул. Хрещатик, 1' : language === 'ru' ? 'ул. Крещатик, 1' : '123 Main Street'}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                     required
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      City
+                    <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                      {language === 'uk' ? 'Місто' : language === 'ru' ? 'Город' : 'City'}
                     </label>
                     <input
                       type="text"
                       name="city"
-                      placeholder="Київ"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                      placeholder={language === 'uk' ? 'Київ' : language === 'ru' ? 'Киев' : 'Kyiv'}
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Postal Code
+                    <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                      {language === 'uk' ? 'Поштовий код' : language === 'ru' ? 'Почтовый код' : 'Postal Code'}
                     </label>
                     <input
                       type="text"
                       name="postalCode"
                       placeholder="01001"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                       required
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Country
+                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                    {language === 'uk' ? 'Країна' : language === 'ru' ? 'Страна' : 'Country'}
                   </label>
                   <select 
                     name="country"
                     defaultValue="Ukraine"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   >
-                    <option value="Ukraine">Ukraine</option>
-                    <option value="Poland">Poland</option>
-                    <option value="Germany">Germany</option>
-                    <option value="Other">Other</option>
+                    <option value="Ukraine">{language === 'uk' ? 'Україна' : language === 'ru' ? 'Украина' : 'Ukraine'}</option>
+                    <option value="Poland">{language === 'uk' ? 'Польща' : language === 'ru' ? 'Польша' : 'Poland'}</option>
+                    <option value="Germany">{language === 'uk' ? 'Німеччина' : language === 'ru' ? 'Германия' : 'Germany'}</option>
+                    <option value="Other">{language === 'uk' ? 'Інше' : language === 'ru' ? 'Другое' : 'Other'}</option>
                   </select>
                 </div>
               </div>
-              <div className="flex justify-end space-x-3 mt-6">
+              <div className="flex justify-end space-x-3 mt-8 pt-4 border-t border-gray-200 dark:border-gray-600">
                 <button
                   type="button"
                   onClick={() => setShowAddAddressModal(false)}
-                  className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium rounded-lg transition-colors"
                 >
-                  Cancel
+                  {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отмена' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+                  className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-sm"
                 >
-                  Add Address
+                  {language === 'uk' ? 'Додати адресу' : language === 'ru' ? 'Добавить адрес' : 'Add Address'}
                 </button>
               </div>
             </form>

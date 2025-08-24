@@ -18,6 +18,7 @@ import {
   StarIcon as StarIconSolid,
   HeartIcon as HeartIconSolid,
 } from '@heroicons/react/24/solid';
+import { Avatar } from '../components/ui/Avatar';
 
 const SpecialistProfilePage: React.FC = () => {
   const { specialistId } = useParams();
@@ -37,7 +38,7 @@ const SpecialistProfilePage: React.FC = () => {
         setLoading(true);
         
         // Fetch specialist profile
-        const specialistData = await specialistService.getSpecialist(specialistId);
+        const specialistData = await specialistService.getPublicProfile(specialistId);
         setSpecialist(specialistData);
 
         // Fetch specialist reviews
@@ -103,10 +104,12 @@ const SpecialistProfilePage: React.FC = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div className="flex items-center space-x-6">
               <div className="relative">
-                <img
-                  src={specialist.user?.avatar || '/images/default-avatar.jpg'}
-                  alt={specialist.user?.firstName}
-                  className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                <Avatar
+                  src={specialist.user?.avatar}
+                  alt={specialist.user?.firstName || 'Specialist'}
+                  size="xl"
+                  className="border-4 border-white shadow-lg"
+                  fallbackIcon={false}
                 />
                 {specialist.user?.isVerified && (
                   <CheckBadgeIcon className="absolute -bottom-1 -right-1 w-8 h-8 text-primary-600 bg-white rounded-full" />
@@ -260,10 +263,11 @@ const SpecialistProfilePage: React.FC = () => {
                   {reviews.slice(0, 5).map((review: any) => (
                     <div key={review.id} className="border-b border-gray-200 dark:border-gray-700 pb-6 last:border-b-0">
                       <div className="flex items-start space-x-4">
-                        <img
-                          src={review.customer?.avatar || '/images/default-avatar.jpg'}
-                          alt={review.customer?.name}
-                          className="w-10 h-10 rounded-full object-cover"
+                        <Avatar
+                          src={review.customer?.avatar}
+                          alt={review.customer?.name || 'Customer'}
+                          size="md"
+                          lazy={true}
                         />
                         <div className="flex-1">
                           <div className="flex items-center justify-between">

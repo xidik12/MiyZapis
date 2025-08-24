@@ -14,6 +14,7 @@ import {
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import { Avatar } from '../../components/ui/Avatar';
 
 interface Booking {
   id: string;
@@ -225,10 +226,11 @@ const CustomerBookings: React.FC = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-4 flex-1">
                       {/* Specialist Avatar */}
-                      <img
+                      <Avatar
                         src={booking.specialistAvatar}
                         alt={booking.specialistName}
-                        className="w-16 h-16 rounded-full object-cover"
+                        size="lg"
+                        lazy={true}
                       />
                       
                       {/* Booking Details */}

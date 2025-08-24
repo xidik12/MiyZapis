@@ -260,8 +260,8 @@ const CustomerProfile: React.FC = () => {
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{address.street}</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">{address.street}</p>
+                          <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                             {address.city}, {address.postalCode}, {address.country}
                           </p>
                         </div>

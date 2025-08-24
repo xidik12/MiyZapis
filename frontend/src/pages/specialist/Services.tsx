@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { specialistService } from '../../services/specialist.service';
+import { serviceService } from '../../services/service.service';
 import { isFeatureEnabled } from '../../config/features';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
 import { FloatingElements, UkrainianOrnament } from '../../components/ui/UkrainianElements';
+import { ServiceCategory } from '../../types';
 
 interface Service {
   id: string;
@@ -39,25 +41,19 @@ const sampleServices: Service[] = [
   // No mock services - will load from backend API
 ];
 
-const categories = [
-  { en: 'Psychology', uk: 'Психологія', ru: 'Психология' },
-  { en: 'Fitness', uk: 'Фітнес', ru: 'Фитнес' },
-  { en: 'Beauty', uk: 'Краса', ru: 'Красота' },
-  { en: 'Education', uk: 'Освіта', ru: 'Образование' },
-  { en: 'Health', uk: 'Здоров\'я', ru: 'Здоровье' },
-  { en: 'Technology', uk: 'Технології', ru: 'Технологии' },
-];
-
 const SpecialistServices: React.FC = () => {
   const { t, language } = useLanguage();
   const { formatPrice, currency } = useCurrency();
   const [services, setServices] = useState<Service[]>([]);
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [categoriesError, setCategoriesError] = useState<string | null>(null);
 
   // Load services from API
   useEffect(() => {
@@ -84,6 +80,27 @@ const SpecialistServices: React.FC = () => {
 
     loadServices();
   }, []);
+
+  // Load categories from API
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        setCategoriesError(null);
+        const categoriesData = await serviceService.getCategories();
+        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+      } catch (err: any) {
+        setCategoriesError(err.message || 'Failed to load categories');
+        console.error('Error loading categories:', err);
+        // Fallback to empty array if API fails
+        setCategories([]);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    loadCategories();
+  }, []);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -108,6 +125,8 @@ const SpecialistServices: React.FC = () => {
     },
     timeSlots: ['']
   });
+  const [customCategory, setCustomCategory] = useState('');
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
   
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
 
@@ -135,6 +154,8 @@ const SpecialistServices: React.FC = () => {
       },
       timeSlots: ['']
     });
+    setCustomCategory('');
+    setShowCustomCategory(false);
     setFormErrors({});
   };
 
@@ -144,6 +165,9 @@ const SpecialistServices: React.FC = () => {
   };
 
   const openEditModal = (service: Service) => {
+    // Check if the service category exists in our loaded categories
+    const existingCategory = categories.find(cat => cat.id === service.category || cat.name === service.category);
+    
     setFormData({
       name: service.name,
       nameUk: service.nameUk,
@@ -151,13 +175,23 @@ const SpecialistServices: React.FC = () => {
       description: service.description,
       descriptionUk: service.descriptionUk,
       descriptionRu: service.descriptionRu,
-      category: service.category,
+      category: existingCategory ? existingCategory.id : '',
       price: service.price.toString(),
       duration: service.duration.toString(),
       isActive: service.isActive,
       availability: { ...service.availability },
       timeSlots: [...service.timeSlots]
     });
+    
+    // If category doesn't exist in our list, show it as custom
+    if (!existingCategory) {
+      setShowCustomCategory(true);
+      setCustomCategory(service.category);
+    } else {
+      setShowCustomCategory(false);
+      setCustomCategory('');
+    }
+    
     setEditingService(service);
     setShowAddModal(true);
   };
@@ -179,7 +213,7 @@ const SpecialistServices: React.FC = () => {
       errors.description = t('serviceForm.required');
     }
     
-    if (!formData.category) {
+    if (!formData.category || (showCustomCategory && !categoriesError && !customCategory.trim())) {
       errors.category = t('serviceForm.required');
     }
     
@@ -220,6 +254,11 @@ const SpecialistServices: React.FC = () => {
       return;
     }
     
+    // For category, use the custom category if it's set (and not in error mode), otherwise use the selected category
+    const finalCategory = (showCustomCategory && !categoriesError && customCategory.trim()) 
+      ? customCategory.trim()
+      : formData.category;
+
     const serviceData = {
       name: formData.name,
       nameUk: formData.nameUk || formData.name,
@@ -227,7 +266,7 @@ const SpecialistServices: React.FC = () => {
       description: formData.description,
       descriptionUk: formData.descriptionUk || formData.description,
       descriptionRu: formData.descriptionRu || formData.description,
-      category: formData.category,
+      category: finalCategory,
       price: parseFloat(formData.price),
       currency: currency,
       duration: parseInt(formData.duration),
@@ -316,7 +355,10 @@ const SpecialistServices: React.FC = () => {
   };
 
   const filteredServices = (Array.isArray(services) ? services : []).filter(service => {
-    const matchesCategory = selectedCategory === 'all' || service.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || 
+      service.category === selectedCategory ||
+      // Also check by category name for backwards compatibility
+      categories.find(cat => cat.name === service.category && cat.id === selectedCategory);
     const matchesSearch = getLocalizedText(service, 'name').toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
@@ -370,19 +412,19 @@ const SpecialistServices: React.FC = () => {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              {service.bookings} {t('services.bookings')}
+              {service.bookings || 0} {t('services.bookings')}
             </span>
             <span className="flex items-center gap-1">
               <svg className="w-4 h-4 text-secondary-500" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
               </svg>
-              {service.rating}
+              {service.rating && !isNaN(service.rating) ? service.rating.toFixed(1) : 'N/A'}
             </span>
           </div>
         </div>
         <div className="text-right ml-4">
           <div className="text-2xl font-bold text-primary-600 mb-2">
-            {formatPrice(service.price, service.currency as any)}
+            {service.price && !isNaN(service.price) ? formatPrice(service.price, service.currency as any) : 'N/A'}
           </div>
           <div className="text-sm text-gray-500 mb-3">
             {getLocalizedText(service, 'category')}
@@ -543,7 +585,7 @@ const SpecialistServices: React.FC = () => {
                   <p className="text-sm text-gray-600 mb-1">
                     {t('services.totalBookings')}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900">{services.reduce((sum, s) => sum + s.bookings, 0)}</p>
+                  <p className="text-2xl font-bold text-gray-900">{services.reduce((sum, s) => sum + (s.bookings || 0), 0)}</p>
                 </div>
               </div>
             </div>
@@ -559,7 +601,15 @@ const SpecialistServices: React.FC = () => {
                     {t('services.avgRating')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {(services.reduce((sum, s) => sum + s.rating, 0) / services.length).toFixed(1)}
+                    {services.length === 0 
+                      ? t('services.noDataYet') || 'No data yet'
+                      : (() => {
+                          const validRatings = services.filter(s => s.rating && !isNaN(s.rating));
+                          return validRatings.length === 0 
+                            ? t('services.noDataYet') || 'No data yet'
+                            : (validRatings.reduce((sum, s) => sum + s.rating, 0) / validRatings.length).toFixed(1);
+                        })()
+                    }
                   </p>
                 </div>
               </div>
@@ -576,7 +626,15 @@ const SpecialistServices: React.FC = () => {
                     {t('services.avgPrice')}
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {formatPrice(services.reduce((sum, s) => sum + s.price, 0) / services.length)}
+                    {services.length === 0 
+                      ? t('services.noDataYet') || 'No data yet'
+                      : (() => {
+                          const validPrices = services.filter(s => s.price && !isNaN(s.price));
+                          return validPrices.length === 0 
+                            ? t('services.noDataYet') || 'No data yet'
+                            : formatPrice(validPrices.reduce((sum, s) => sum + s.price, 0) / validPrices.length);
+                        })()
+                    }
                   </p>
                 </div>
               </div>
@@ -607,16 +665,22 @@ const SpecialistServices: React.FC = () => {
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                  disabled={categoriesLoading}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <option value="all">
-                    {t('services.allCategories')}
+                    {categoriesLoading ? t('services.loadingCategories') || 'Loading categories...' : t('services.allCategories')}
                   </option>
-                  {categories.map((category) => (
-                    <option key={category.en} value={category.en}>
-                      {getLocalizedText(category, '')}
+                  {!categoriesLoading && categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
                     </option>
                   ))}
+                  {categoriesError && (
+                    <option disabled>
+                      {t('services.categoriesError') || 'Failed to load categories'}
+                    </option>
+                  )}
                 </select>
               </div>
             </div>
@@ -708,19 +772,82 @@ const SpecialistServices: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {t('serviceForm.category')} *
                   </label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                    className={`w-full px-4 py-3 rounded-xl border ${formErrors.category ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
-                  >
-                    <option value="">{t('serviceForm.selectCategory')}</option>
-                    {categories.map((category) => (
-                      <option key={category.en} value={category.en}>
-                        {getLocalizedText(category, '')}
-                      </option>
-                    ))}
-                  </select>
+                  {/* Show text input if categories failed to load and we're not loading */}
+                  {categoriesError && !categoriesLoading ? (
+                    <input
+                      type="text"
+                      value={formData.category}
+                      onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                      placeholder={t('serviceForm.enterCategoryName') || 'Enter category name'}
+                      className={`w-full px-4 py-3 rounded-xl border ${formErrors.category ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
+                    />
+                  ) : (
+                    <div className="relative">
+                      <select
+                        value={formData.category}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === 'custom') {
+                            setShowCustomCategory(true);
+                            setFormData(prev => ({ ...prev, category: '' }));
+                          } else {
+                            setShowCustomCategory(false);
+                            setCustomCategory('');
+                            setFormData(prev => ({ ...prev, category: value }));
+                          }
+                        }}
+                        disabled={categoriesLoading}
+                        className={`w-full px-4 py-3 rounded-xl border ${formErrors.category ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed`}
+                      >
+                        <option value="">
+                          {categoriesLoading 
+                            ? t('serviceForm.loadingCategories') || 'Loading categories...'
+                            : t('serviceForm.selectCategory')
+                          }
+                        </option>
+                        {!categoriesLoading && categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                        {!categoriesLoading && !categoriesError && (
+                          <option value="custom">
+                            {t('serviceForm.addCustomCategory') || '+ Add Custom Category'}
+                          </option>
+                        )}
+                      </select>
+                      {categoriesLoading && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {categoriesError && (
+                    <p className="mt-1 text-sm text-orange-600">
+                      {t('serviceForm.categoriesWarning') || 'Categories failed to load. You can enter a category name directly.'}
+                    </p>
+                  )}
                   {formErrors.category && <p className="mt-1 text-sm text-red-500">{formErrors.category}</p>}
+                  
+                  {/* Custom Category Input - only show when not in error fallback mode */}
+                  {showCustomCategory && !categoriesError && (
+                    <div className="mt-3">
+                      <input
+                        type="text"
+                        value={customCategory}
+                        onChange={(e) => {
+                          setCustomCategory(e.target.value);
+                          setFormData(prev => ({ ...prev, category: e.target.value }));
+                        }}
+                        placeholder={t('serviceForm.enterCustomCategory') || 'Enter custom category name'}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                      />
+                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        {t('serviceForm.customCategoryHint') || 'This will create a new category for your service'}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Active Status */}

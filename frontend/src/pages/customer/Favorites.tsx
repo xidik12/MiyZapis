@@ -12,6 +12,8 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid, StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import { Avatar } from '../../components/ui/Avatar';
+import { ServiceImage } from '../../components/ui/ServiceImage';
 
 interface FavoriteSpecialist {
   id: string;
@@ -195,10 +197,11 @@ const CustomerFavorites: React.FC = () => {
                       {/* Header with favorite button */}
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-start space-x-3">
-                          <img
+                          <Avatar
                             src={specialist.avatar}
                             alt={specialist.name}
-                            className="w-12 h-12 rounded-full object-cover"
+                            size="lg"
+                            lazy={true}
                           />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2">
@@ -306,10 +309,11 @@ const CustomerFavorites: React.FC = () => {
                   <div key={service.id} className="bg-white rounded-lg shadow hover:shadow-md transition-shadow overflow-hidden">
                     {/* Service Image */}
                     <div className="relative">
-                      <img
-                        src={service.images[0]}
+                      <ServiceImage
+                        src={service.images?.[0]}
                         alt={service.name}
-                        className="w-full h-48 object-cover"
+                        className="w-full h-48"
+                        lazy={true}
                       />
                       <button
                         onClick={() => handleRemoveService(service.id)}
@@ -331,10 +335,11 @@ const CustomerFavorites: React.FC = () => {
 
                       {/* Specialist Info */}
                       <div className="flex items-center space-x-2 mb-4">
-                        <img
+                        <Avatar
                           src={service.specialist.avatar}
                           alt={service.specialist.name}
-                          className="w-8 h-8 rounded-full object-cover"
+                          size="sm"
+                          lazy={true}
                         />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">

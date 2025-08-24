@@ -822,6 +822,7 @@ const translations: Translations = {
   'services.deactivate': { en: 'Deactivate', uk: 'Деактивувати', ru: 'Деактивировать' },
   'services.min': { en: 'min', uk: 'хв', ru: 'мин' },
   'services.bookings': { en: 'bookings', uk: 'бронювань', ru: 'бронирований' },
+  'services.noDataYet': { en: 'No data yet', uk: 'Поки немає даних', ru: 'Пока нет данных' },
   
   // Service Form
   'serviceForm.addService': { en: 'Add New Service', uk: 'Додати нову послугу', ru: 'Добавить новую услугу' },
@@ -1349,6 +1350,13 @@ const translations: Translations = {
   'actions.viewProfile': { en: 'View Profile', uk: 'Переглянути профіль', ru: 'Посмотреть профиль' },
   'actions.book': { en: 'Book', uk: 'Забронювати', ru: 'Забронировать' },
   'actions.bookNow': { en: 'Book Now', uk: 'Забронювати зараз', ru: 'Забронировать сейчас' },
+  'actions.favorite': { en: 'Favorite', uk: 'Обране', ru: 'Избранное' },
+  
+  // Errors
+  'errors.specialistNotFound': { en: 'Specialist not found', uk: 'Спеціаліста не знайдено', ru: 'Специалист не найден' },
+  
+  // Navigation
+  'navigation.backToSearch': { en: 'Back to Search', uk: 'Назад до пошуку', ru: 'Назад к поиску' },
 };
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

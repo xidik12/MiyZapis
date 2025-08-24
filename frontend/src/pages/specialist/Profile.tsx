@@ -196,11 +196,55 @@ const SpecialistProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uploadingPortfolio, setUploadingPortfolio] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [portfolioError, setPortfolioError] = useState('');
+  const [portfolioFormData, setPortfolioFormData] = useState({ title: '', description: '', category: '' });
+  const [showPortfolioForm, setShowPortfolioForm] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [originalProfile, setOriginalProfile] = useState<SpecialistProfile>(getEmptyProfile());
+
+  // Calculate profile completion percentage
+  const getProfileCompletion = () => {
+    let completedFields = 0;
+    let totalFields = 0;
+
+    // Basic info fields (5 fields)
+    const basicFields = ['firstName', 'lastName', 'email', 'phone', 'bio'];
+    basicFields.forEach(field => {
+      totalFields++;
+      if (field === 'bio' ? profile.bio.trim() : (profile as any)[field]?.trim()) {
+        completedFields++;
+      }
+    });
+
+    // Professional fields (4 fields)
+    totalFields += 4;
+    if (profile.profession.trim()) completedFields++;
+    if (profile.experience > 0) completedFields++;
+    if (profile.education.trim()) completedFields++;
+    if (profile.specialties.length > 0) completedFields++;
+
+    // Business fields (3 fields)
+    totalFields += 3;
+    if (profile.paymentMethods.length > 0) completedFields++;
+    if (Object.values(profile.businessHours).some(h => h.isOpen)) completedFields++;
+    if (profile.location.city.trim()) completedFields++;
+
+    // Portfolio (1 field)
+    totalFields += 1;
+    if (profile.portfolio.length > 0) completedFields++;
+
+    return Math.round((completedFields / totalFields) * 100);
+  };
+
+  const completionPercentage = getProfileCompletion();
   const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>([]);
   const [uploadingCertificate, setUploadingCertificate] = useState(false);
   const [certificateError, setCertificateError] = useState('');
+  const [newSpecialty, setNewSpecialty] = useState('');
+  const [uploadedCertificates, setUploadedCertificates] = useState<{id: string, name: string, file: File, preview?: string}[]>([]);
 
   // Load profile data from API
   useEffect(() => {
@@ -219,24 +263,27 @@ const SpecialistProfile: React.FC = () => {
         };
         
         setProfile(initialProfile);
+        setOriginalProfile(initialProfile);
         
         // If user is a specialist, try to load specialist profile
         if (user?.userType === 'specialist' && isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
           try {
             const specialistData = await specialistService.getProfile();
             // Map specialist data to profile format
-            setProfile(prev => ({
-              ...prev,
+            const updatedProfile = {
+              ...initialProfile,
               bio: specialistData.description || '',
               profession: specialistData.businessName || '',
               experience: specialistData.experience || 0,
               specialties: specialistData.specialties || [],
               verification: {
-                ...prev.verification,
+                ...initialProfile.verification,
                 isVerified: specialistData.isVerified || false,
                 verifiedDate: specialistData.isVerified ? new Date().toISOString().split('T')[0] : '',
               },
-            }));
+            };
+            setProfile(updatedProfile);
+            setOriginalProfile(updatedProfile);
           } catch (specialistError) {
             // Specialist profile might not exist yet, which is fine for new users
             console.log('No specialist profile yet:', specialistError);
@@ -254,6 +301,22 @@ const SpecialistProfile: React.FC = () => {
     // Add a small delay to ensure smooth loading transition
     setTimeout(loadProfile, 100);
   }, [user]);
+
+  // Cleanup blob URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      uploadedCertificates.forEach(cert => {
+        if (cert.preview) {
+          URL.revokeObjectURL(cert.preview);
+        }
+      });
+      portfolioImages.forEach(imageUrl => {
+        if (imageUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(imageUrl);
+        }
+      });
+    };
+  }, []);
 
   const getLocalizedText = (field: string) => {
     if (language === 'uk' && (profile as any)[`${field}Uk`]) {
@@ -302,13 +365,13 @@ const SpecialistProfile: React.FC = () => {
     
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      setPortfolioError('Please upload only image files');
+      setPortfolioError(language === 'uk' ? 'Завантажуйте лише зображення' : language === 'ru' ? 'Загружайте только изображения' : 'Please upload only image files');
       return;
     }
 
     // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
-      setPortfolioError('File size must be less than 5MB');
+      setPortfolioError(language === 'uk' ? 'Розмір файлу повинен бути менше 5МБ' : language === 'ru' ? 'Размер файла должен быть меньше 5МБ' : 'File size must be less than 5MB');
       return;
     }
 
@@ -321,16 +384,17 @@ const SpecialistProfile: React.FC = () => {
       reader.onload = (e) => {
         if (e.target?.result) {
           setPortfolioImages(prev => [...prev, e.target!.result as string]);
+          setShowPortfolioForm(true);
+          setPortfolioError('');
         }
       };
       reader.readAsDataURL(file);
 
-      // Here you would upload to your API
-      // const response = await specialistService.uploadPortfolioImage(file);
-      // Handle success
+      // Reset form
+      event.target.value = '';
       
     } catch (error) {
-      setPortfolioError('Failed to upload image. Please try again.');
+      setPortfolioError(language === 'uk' ? 'Не вдалося завантажити зображення' : language === 'ru' ? 'Не удалось загрузить изображение' : 'Failed to upload image. Please try again.');
       console.error('Portfolio upload error:', error);
     } finally {
       setUploadingPortfolio(false);
@@ -346,13 +410,13 @@ const SpecialistProfile: React.FC = () => {
     // Validate file type (images and PDFs allowed)
     const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
     if (!allowedTypes.includes(file.type)) {
-      setCertificateError('Please upload only images (JPG, PNG) or PDF files');
+      setCertificateError(language === 'uk' ? 'Завантажуйте лише зображення (JPG, PNG) або PDF файли' : language === 'ru' ? 'Загружайте только изображения (JPG, PNG) или PDF файлы' : 'Please upload only images (JPG, PNG) or PDF files');
       return;
     }
 
     // Validate file size (10MB max)
     if (file.size > 10 * 1024 * 1024) {
-      setCertificateError('File size must be less than 10MB');
+      setCertificateError(language === 'uk' ? 'Розмір файлу повинен бути менше 10МБ' : language === 'ru' ? 'Размер файла должен быть меньше 10МБ' : 'File size must be less than 10MB');
       return;
     }
 
@@ -360,25 +424,115 @@ const SpecialistProfile: React.FC = () => {
     setUploadingCertificate(true);
 
     try {
-      // Here you would upload to your API
-      // const response = await specialistService.uploadCertificate(file);
+      // Generate unique ID for the certificate
+      const certificateId = `cert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
-      // For now, just show success
-      console.log('Certificate uploaded:', file.name);
+      // Create preview for images
+      let preview = undefined;
+      if (file.type.startsWith('image/')) {
+        preview = URL.createObjectURL(file);
+      }
+      
+      // Add to uploaded certificates
+      const newCertificate = {
+        id: certificateId,
+        name: file.name,
+        file: file,
+        preview: preview
+      };
+      
+      setUploadedCertificates(prev => [...prev, newCertificate]);
+      
+      // Also add to profile certifications for display
+      const newCertificationForProfile = {
+        id: certificateId,
+        name: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension for display
+        issuer: language === 'uk' ? 'Завантажено користувачем' : language === 'ru' ? 'Загружено пользователем' : 'User uploaded',
+        dateIssued: new Date().toISOString().split('T')[0],
+        documentUrl: preview || 'document'
+      };
+      
+      setProfile(prev => ({
+        ...prev,
+        certifications: [...prev.certifications, newCertificationForProfile]
+      }));
       
       // Reset input
       event.target.value = '';
       
+      console.log('Certificate uploaded:', file.name);
+      
     } catch (error) {
-      setCertificateError('Failed to upload certificate. Please try again.');
+      setCertificateError(language === 'uk' ? 'Не вдалося завантажити сертифікат. Спробуйте ще раз.' : language === 'ru' ? 'Не удалось загрузить сертификат. Попробуйте еще раз.' : 'Failed to upload certificate. Please try again.');
       console.error('Certificate upload error:', error);
     } finally {
       setUploadingCertificate(false);
     }
   };
 
+  const handleRemoveCertificate = (certificateId: string) => {
+    // Remove from uploaded certificates
+    const certificateToRemove = uploadedCertificates.find(cert => cert.id === certificateId);
+    if (certificateToRemove?.preview) {
+      URL.revokeObjectURL(certificateToRemove.preview);
+    }
+    
+    setUploadedCertificates(prev => prev.filter(cert => cert.id !== certificateId));
+    
+    // Remove from profile certifications
+    setProfile(prev => ({
+      ...prev,
+      certifications: prev.certifications.filter(cert => cert.id !== certificateId)
+    }));
+  };
+
   const handlePortfolioDelete = (index: number) => {
+    const imageToDelete = portfolioImages[index];
+    if (imageToDelete && imageToDelete.startsWith('blob:')) {
+      URL.revokeObjectURL(imageToDelete);
+    }
     setPortfolioImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSavePortfolioItem = () => {
+    if (!portfolioFormData.title.trim()) {
+      setPortfolioError(language === 'uk' ? 'Заголовок обов’язковий' : language === 'ru' ? 'Заголовок обязательный' : 'Title is required');
+      return;
+    }
+    if (!portfolioFormData.description.trim()) {
+      setPortfolioError(language === 'uk' ? 'Опис обов’язковий' : language === 'ru' ? 'Описание обязательно' : 'Description is required');
+      return;
+    }
+    if (!portfolioFormData.category.trim()) {
+      setPortfolioError(language === 'uk' ? 'Категорія обов’язкова' : language === 'ru' ? 'Категория обязательна' : 'Category is required');
+      return;
+    }
+
+    // Create new portfolio item
+    const lastImageIndex = portfolioImages.length - 1;
+    if (lastImageIndex >= 0) {
+      const newPortfolioItem: PortfolioItem = {
+        id: `portfolio_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        title: portfolioFormData.title,
+        description: portfolioFormData.description,
+        imageUrl: portfolioImages[lastImageIndex],
+        category: portfolioFormData.category,
+        dateAdded: new Date().toISOString().split('T')[0]
+      };
+
+      setProfile(prev => ({
+        ...prev,
+        portfolio: [...prev.portfolio, newPortfolioItem]
+      }));
+
+      // Remove the temporary image from portfolioImages since it's now in portfolio
+      setPortfolioImages(prev => prev.slice(0, -1));
+
+      // Reset form
+      setPortfolioFormData({ title: '', description: '', category: '' });
+      setShowPortfolioForm(false);
+      setPortfolioError('');
+    }
   };
 
   const tabs = [
@@ -480,6 +634,24 @@ const SpecialistProfile: React.FC = () => {
                 </p>
               </div>
               <div className="flex items-center gap-3 mt-4 lg:mt-0">
+                {/* Profile Completion Indicator */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full transition-all duration-500 ${
+                          completionPercentage < 30 ? 'bg-red-500' :
+                          completionPercentage < 70 ? 'bg-yellow-500' : 'bg-green-500'
+                        }`}
+                        style={{ width: `${completionPercentage}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-medium text-gray-600">
+                      {completionPercentage}% {language === 'uk' ? 'завершено' : language === 'ru' ? 'завершено' : 'complete'}
+                    </span>
+                  </div>
+                </div>
+                
                 {profile.verification.isVerified && (
                   <span className="flex items-center gap-2 px-4 py-2 bg-success-100 text-success-700 rounded-xl font-medium">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -488,8 +660,32 @@ const SpecialistProfile: React.FC = () => {
                     {language === 'uk' ? 'Підтверджено' : language === 'ru' ? 'Подтверждено' : 'Verified'}
                   </span>
                 )}
+                
+                {hasUnsavedChanges && (
+                  <span className="flex items-center gap-2 px-3 py-1 bg-orange-100 text-orange-700 rounded-lg text-sm font-medium">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.864-.833-2.634 0L3.18 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    {language === 'uk' ? 'Незбережені зміни' : language === 'ru' ? 'Несохраненные изменения' : 'Unsaved changes'}
+                  </span>
+                )}
                 <button
-                  onClick={() => setIsEditing(!isEditing)}
+                  onClick={() => {
+                    if (isEditing && hasUnsavedChanges) {
+                      if (window.confirm(language === 'uk' ? 'У вас є незбережені зміни. Скасувати редагування?' : language === 'ru' ? 'У вас есть несохраненные изменения. Отменить редактирование?' : 'You have unsaved changes. Cancel editing?')) {
+                        setProfile(originalProfile);
+                        setHasUnsavedChanges(false);
+                        setIsEditing(false);
+                        setFieldErrors({});
+                        setError(null);
+                      }
+                    } else {
+                      setIsEditing(!isEditing);
+                      if (!isEditing) {
+                        setOriginalProfile(profile);
+                      }
+                    }
+                  }}
                   className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
                     isEditing
                       ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
@@ -530,6 +726,26 @@ const SpecialistProfile: React.FC = () => {
 
             {/* Main Content */}
             <div className="lg:col-span-3">
+              {/* Error Display */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-red-700">{error}</p>
+                    <button 
+                      onClick={() => setError(null)}
+                      className="ml-auto text-red-500 hover:text-red-700"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
+              
               <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-white/20">
                 {/* Personal Information Tab */}
                 {activeTab === 'personal' && (
@@ -547,9 +763,19 @@ const SpecialistProfile: React.FC = () => {
                           type="text"
                           value={profile.firstName}
                           disabled={!isEditing}
-                          onChange={(e) => setProfile({...profile, firstName: e.target.value})}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                          onChange={(e) => {
+                            const newProfile = {...profile, firstName: e.target.value};
+                            setProfile(newProfile);
+                            setHasUnsavedChanges(JSON.stringify(newProfile) !== JSON.stringify(originalProfile));
+                            if (fieldErrors.firstName) {
+                              setFieldErrors(prev => {const {firstName, ...rest} = prev; return rest;});
+                            }
+                          }}
+                          className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.firstName ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary-500'} focus:ring-2 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white`}
                         />
+                        {fieldErrors.firstName && (
+                          <p className="mt-1 text-sm text-red-600">{fieldErrors.firstName}</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -559,9 +785,17 @@ const SpecialistProfile: React.FC = () => {
                           type="text"
                           value={profile.lastName}
                           disabled={!isEditing}
-                          onChange={(e) => setProfile({...profile, lastName: e.target.value})}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                          onChange={(e) => {
+                            setProfile({...profile, lastName: e.target.value});
+                            if (fieldErrors.lastName) {
+                              setFieldErrors(prev => {const {lastName, ...rest} = prev; return rest;});
+                            }
+                          }}
+                          className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.lastName ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary-500'} focus:ring-2 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white`}
                         />
+                        {fieldErrors.lastName && (
+                          <p className="mt-1 text-sm text-red-600">{fieldErrors.lastName}</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -571,9 +805,17 @@ const SpecialistProfile: React.FC = () => {
                           type="email"
                           value={profile.email}
                           disabled={!isEditing}
-                          onChange={(e) => setProfile({...profile, email: e.target.value})}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                          onChange={(e) => {
+                            setProfile({...profile, email: e.target.value});
+                            if (fieldErrors.email) {
+                              setFieldErrors(prev => {const {email, ...rest} = prev; return rest;});
+                            }
+                          }}
+                          className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.email ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary-500'} focus:ring-2 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white`}
                         />
+                        {fieldErrors.email && (
+                          <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -583,9 +825,17 @@ const SpecialistProfile: React.FC = () => {
                           type="tel"
                           value={profile.phone}
                           disabled={!isEditing}
-                          onChange={(e) => setProfile({...profile, phone: e.target.value})}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                          onChange={(e) => {
+                            setProfile({...profile, phone: e.target.value});
+                            if (fieldErrors.phone) {
+                              setFieldErrors(prev => {const {phone, ...rest} = prev; return rest;});
+                            }
+                          }}
+                          className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.phone ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary-500'} focus:ring-2 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white`}
                         />
+                        {fieldErrors.phone && (
+                          <p className="mt-1 text-sm text-red-600">{fieldErrors.phone}</p>
+                        )}
                       </div>
                     </div>
 
@@ -596,7 +846,11 @@ const SpecialistProfile: React.FC = () => {
                       <textarea
                         value={getLocalizedText('bio')}
                         disabled={!isEditing}
-                        onChange={(e) => setProfile({...profile, bio: e.target.value})}
+                        onChange={(e) => {
+                          const newProfile = {...profile, bio: e.target.value};
+                          setProfile(newProfile);
+                          setHasUnsavedChanges(JSON.stringify(newProfile) !== JSON.stringify(originalProfile));
+                        }}
                         rows={4}
                         className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                       />
@@ -613,7 +867,7 @@ const SpecialistProfile: React.FC = () => {
                           value={profile.location.address}
                           disabled={!isEditing}
                           onChange={(e) => setProfile({...profile, location: {...profile.location, address: e.target.value}})}
-                          className="px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                         />
                         <input
                           type="text"
@@ -621,24 +875,68 @@ const SpecialistProfile: React.FC = () => {
                           value={profile.location.city}
                           disabled={!isEditing}
                           onChange={(e) => setProfile({...profile, location: {...profile.location, city: e.target.value}})}
-                          className="px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                         />
                       </div>
                     </div>
 
                     <div className="mt-6">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {language === 'uk' ? 'Мови' : language === 'ru' ? 'Языки' : 'Languages'}
-                      </label>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                          {language === 'uk' ? 'Мови' : language === 'ru' ? 'Языки' : 'Languages'}
+                        </label>
+                        {isEditing && (
+                          <div className="flex gap-2">
+                            <select
+                              onChange={(e) => {
+                                const lang = e.target.value;
+                                if (lang && !profile.languages.includes(lang)) {
+                                  setProfile({...profile, languages: [...profile.languages, lang]});
+                                  e.target.value = '';
+                                }
+                              }}
+                              className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                            >
+                              <option value="">{language === 'uk' ? 'Додати мову' : language === 'ru' ? 'Добавить язык' : 'Add Language'}</option>
+                              <option value="uk">Українська</option>
+                              <option value="en">English</option>
+                              <option value="ru">Русский</option>
+                              <option value="de">Deutsch</option>
+                              <option value="fr">Français</option>
+                              <option value="es">Español</option>
+                            </select>
+                          </div>
+                        )}
+                      </div>
                       <div className="flex gap-2 flex-wrap">
                         {profile.languages.map((lang, index) => (
                           <span
                             key={index}
-                            className="px-3 py-1 bg-primary-100 text-primary-700 rounded-lg text-sm font-medium dark:bg-primary-900/30 dark:text-primary-300"
+                            className="px-3 py-2 bg-primary-100 text-primary-700 rounded-lg text-sm font-medium dark:bg-primary-900/30 dark:text-primary-300 flex items-center gap-2"
                           >
-                            {lang === 'uk' ? 'Українська' : lang === 'en' ? 'English' : lang === 'ru' ? 'Русский' : lang}
+                            {lang === 'uk' ? 'Українська' : lang === 'en' ? 'English' : lang === 'ru' ? 'Русский' : lang === 'de' ? 'Deutsch' : lang === 'fr' ? 'Français' : lang === 'es' ? 'Español' : lang}
+                            {isEditing && (
+                              <button
+                                onClick={() => {
+                                  setProfile({
+                                    ...profile,
+                                    languages: profile.languages.filter((_, i) => i !== index)
+                                  });
+                                }}
+                                className="text-primary-500 hover:text-primary-700 ml-1"
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            )}
                           </span>
                         ))}
+                        {profile.languages.length === 0 && (
+                          <p className="text-gray-500 text-sm italic">
+                            {language === 'uk' ? 'Додайте мови, якими ви володієте' : language === 'ru' ? 'Добавьте языки, которыми владеете' : 'Add languages you speak'}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -660,8 +958,18 @@ const SpecialistProfile: React.FC = () => {
                           type="text"
                           value={profile.profession}
                           disabled={!isEditing}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                          onChange={(e) => {
+                            setProfile({...profile, profession: e.target.value});
+                            if (fieldErrors.profession) {
+                              setFieldErrors(prev => {const {profession, ...rest} = prev; return rest;});
+                            }
+                          }}
+                          placeholder={language === 'uk' ? 'Введіть професію' : language === 'ru' ? 'Введите профессию' : 'Enter profession'}
+                          className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.profession ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary-500'} focus:ring-2 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white`}
                         />
+                        {fieldErrors.profession && (
+                          <p className="mt-1 text-sm text-red-600">{fieldErrors.profession}</p>
+                        )}
                       </div>
 
                       <div>
@@ -672,6 +980,10 @@ const SpecialistProfile: React.FC = () => {
                           type="number"
                           value={profile.experience}
                           disabled={!isEditing}
+                          onChange={(e) => setProfile({...profile, experience: parseInt(e.target.value) || 0})}
+                          placeholder="0"
+                          min="0"
+                          max="50"
                           className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                         />
                       </div>
@@ -683,24 +995,79 @@ const SpecialistProfile: React.FC = () => {
                         <textarea
                           value={getLocalizedText('education')}
                           disabled={!isEditing}
+                          onChange={(e) => setProfile({...profile, education: e.target.value})}
+                          placeholder={language === 'uk' ? 'Опишіть вашу освіту' : language === 'ru' ? 'Опишите ваше образование' : 'Describe your education'}
                           rows={3}
                           className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          {language === 'uk' ? 'Спеціалізації' : language === 'ru' ? 'Специализации' : 'Specialties'}
-                        </label>
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="block text-sm font-medium text-gray-700">
+                            {language === 'uk' ? 'Спеціалізації' : language === 'ru' ? 'Специализации' : 'Specialties'}
+                          </label>
+                          {isEditing && (
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={newSpecialty}
+                                onChange={(e) => setNewSpecialty(e.target.value)}
+                                placeholder={language === 'uk' ? 'Нова спеціалізація' : language === 'ru' ? 'Новая специализация' : 'New specialty'}
+                                className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter' && newSpecialty.trim()) {
+                                    e.preventDefault();
+                                    if (!profile.specialties.includes(newSpecialty.trim())) {
+                                      setProfile({...profile, specialties: [...profile.specialties, newSpecialty.trim()]});
+                                      setNewSpecialty('');
+                                    }
+                                  }
+                                }}
+                              />
+                              <button
+                                onClick={() => {
+                                  if (newSpecialty.trim() && !profile.specialties.includes(newSpecialty.trim())) {
+                                    setProfile({...profile, specialties: [...profile.specialties, newSpecialty.trim()]});
+                                    setNewSpecialty('');
+                                  }
+                                }}
+                                className="px-3 py-2 bg-primary-600 text-white rounded-lg text-sm hover:bg-primary-700 transition-colors"
+                              >
+                                {language === 'uk' ? 'Додати' : language === 'ru' ? 'Добавить' : 'Add'}
+                              </button>
+                            </div>
+                          )}
+                        </div>
                         <div className="flex gap-2 flex-wrap">
                           {profile.specialties.map((specialty, index) => (
                             <span
                               key={index}
-                              className="px-3 py-2 bg-secondary-100 text-secondary-700 rounded-lg text-sm font-medium dark:bg-secondary-900/30 dark:text-secondary-300"
+                              className="px-3 py-2 bg-secondary-100 text-secondary-700 rounded-lg text-sm font-medium dark:bg-secondary-900/30 dark:text-secondary-300 flex items-center gap-2"
                             >
                               {specialty}
+                              {isEditing && (
+                                <button
+                                  onClick={() => {
+                                    setProfile({
+                                      ...profile,
+                                      specialties: profile.specialties.filter((_, i) => i !== index)
+                                    });
+                                  }}
+                                  className="text-secondary-500 hover:text-secondary-700 ml-1"
+                                >
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              )}
                             </span>
                           ))}
+                          {profile.specialties.length === 0 && (
+                            <p className="text-gray-500 text-sm italic">
+                              {language === 'uk' ? 'Додайте свої спеціалізації' : language === 'ru' ? 'Добавьте свои специализации' : 'Add your specialties'}
+                            </p>
+                          )}
                         </div>
                       </div>
 
@@ -735,27 +1102,111 @@ const SpecialistProfile: React.FC = () => {
                           )}
                         </div>
                         <div className="space-y-4">
-                          {profile.certifications.map((cert) => (
-                            <div key={cert.id} className="border border-gray-200 rounded-xl p-4">
-                              <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                  <h4 className="font-semibold text-gray-900">{cert.name}</h4>
-                                  <p className="text-gray-600 text-sm">{cert.issuer}</p>
-                                  <p className="text-gray-500 text-sm mt-1">
-                                    {new Date(cert.dateIssued).toLocaleDateString()} 
-                                    {cert.expiryDate && ` - ${new Date(cert.expiryDate).toLocaleDateString()}`}
-                                  </p>
+                          {profile.certifications.map((cert) => {
+                            const uploadedCert = uploadedCertificates.find(uc => uc.id === cert.id);
+                            return (
+                              <div key={cert.id} className="border border-gray-200 rounded-xl p-4">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-3">
+                                      {/* File Preview */}
+                                      {uploadedCert?.preview ? (
+                                        <div className="w-12 h-12 rounded-lg overflow-hidden border border-gray-300">
+                                          <img 
+                                            src={uploadedCert.preview} 
+                                            alt={cert.name}
+                                            className="w-full h-full object-cover"
+                                          />
+                                        </div>
+                                      ) : cert.documentUrl && cert.documentUrl !== 'document' ? (
+                                        <div className="w-12 h-12 rounded-lg overflow-hidden border border-gray-300">
+                                          <img 
+                                            src={cert.documentUrl} 
+                                            alt={cert.name}
+                                            className="w-full h-full object-cover"
+                                          />
+                                        </div>
+                                      ) : (
+                                        <div className="w-12 h-12 rounded-lg border border-gray-300 flex items-center justify-center bg-gray-50">
+                                          <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                          </svg>
+                                        </div>
+                                      )}
+                                      
+                                      <div className="flex-1">
+                                        <h4 className="font-semibold text-gray-900">{cert.name}</h4>
+                                        <p className="text-gray-600 text-sm">{cert.issuer}</p>
+                                        <p className="text-gray-500 text-sm mt-1">
+                                          {new Date(cert.dateIssued).toLocaleDateString()} 
+                                          {cert.expiryDate && ` - ${new Date(cert.expiryDate).toLocaleDateString()}`}
+                                        </p>
+                                        {uploadedCert && (
+                                          <p className="text-primary-600 text-xs mt-1">
+                                            {Math.round(uploadedCert.file.size / 1024)} KB • {uploadedCert.file.type.split('/')[1].toUpperCase()}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  {isEditing && (
+                                    <div className="flex gap-2">
+                                      {/* View/Download button */}
+                                      {uploadedCert && (
+                                        <button
+                                          onClick={() => {
+                                            if (uploadedCert.preview) {
+                                              window.open(uploadedCert.preview, '_blank');
+                                            } else {
+                                              // For PDFs and other files, create a download link
+                                              const url = URL.createObjectURL(uploadedCert.file);
+                                              const a = document.createElement('a');
+                                              a.href = url;
+                                              a.download = uploadedCert.file.name;
+                                              document.body.appendChild(a);
+                                              a.click();
+                                              document.body.removeChild(a);
+                                              URL.revokeObjectURL(url);
+                                            }
+                                          }}
+                                          className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors duration-200"
+                                          title={language === 'uk' ? 'Переглянути/Завантажити' : language === 'ru' ? 'Просмотреть/Скачать' : 'View/Download'}
+                                        >
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                          </svg>
+                                        </button>
+                                      )}
+                                      {/* Remove button */}
+                                      <button 
+                                        onClick={() => handleRemoveCertificate(cert.id)}
+                                        className="p-2 text-error-600 hover:bg-error-50 rounded-lg transition-colors duration-200"
+                                        title={language === 'uk' ? 'Видалити сертифікат' : language === 'ru' ? 'Удалить сертификат' : 'Remove certificate'}
+                                      >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  )}
                                 </div>
-                                {isEditing && (
-                                  <button className="p-2 text-error-600 hover:bg-error-50 rounded-lg transition-colors duration-200">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                  </button>
-                                )}
                               </div>
+                            );
+                          })}
+                          {profile.certifications.length === 0 && (
+                            <div className="text-center py-8">
+                              <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              <p className="text-gray-500">
+                                {language === 'uk' ? 'Сертифікати не додано' : language === 'ru' ? 'Сертификаты не добавлены' : 'No certificates added'}
+                              </p>
+                              <p className="text-gray-400 text-sm mt-1">
+                                {language === 'uk' ? 'Додайте свої професійні сертифікати' : language === 'ru' ? 'Добавьте свои профессиональные сертификаты' : 'Add your professional certificates'}
+                              </p>
                             </div>
-                          ))}
+                          )}
                         </div>
                       </div>
                     </div>
@@ -786,6 +1237,22 @@ const SpecialistProfile: React.FC = () => {
                                   type="checkbox"
                                   checked={hours.isOpen}
                                   disabled={!isEditing}
+                                  onChange={(e) => {
+                                    if (isEditing) {
+                                      setProfile({
+                                        ...profile,
+                                        businessHours: {
+                                          ...profile.businessHours,
+                                          [day]: {
+                                            ...hours,
+                                            isOpen: e.target.checked,
+                                            startTime: e.target.checked ? hours.startTime || '09:00' : '',
+                                            endTime: e.target.checked ? hours.endTime || '17:00' : ''
+                                          }
+                                        }
+                                      });
+                                    }
+                                  }}
                                   className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                                 />
                                 <span className="text-sm text-gray-600">
@@ -798,14 +1265,42 @@ const SpecialistProfile: React.FC = () => {
                                     type="time"
                                     value={hours.startTime}
                                     disabled={!isEditing}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900"
+                                    onChange={(e) => {
+                                      if (isEditing) {
+                                        setProfile({
+                                          ...profile,
+                                          businessHours: {
+                                            ...profile.businessHours,
+                                            [day]: {
+                                              ...hours,
+                                              startTime: e.target.value
+                                            }
+                                          }
+                                        });
+                                      }
+                                    }}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                                   />
                                   <span className="text-gray-500">-</span>
                                   <input
                                     type="time"
                                     value={hours.endTime}
                                     disabled={!isEditing}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900"
+                                    onChange={(e) => {
+                                      if (isEditing) {
+                                        setProfile({
+                                          ...profile,
+                                          businessHours: {
+                                            ...profile.businessHours,
+                                            [day]: {
+                                              ...hours,
+                                              endTime: e.target.value
+                                            }
+                                          }
+                                        });
+                                      }
+                                    }}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                                   />
                                 </div>
                               )}
@@ -857,23 +1352,106 @@ const SpecialistProfile: React.FC = () => {
                               type="number"
                               value={profile.serviceArea.radius}
                               disabled={!isEditing}
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900"
+                              onChange={(e) => {
+                                if (isEditing) {
+                                  setProfile({
+                                    ...profile,
+                                    serviceArea: {
+                                      ...profile.serviceArea,
+                                      radius: parseInt(e.target.value) || 0
+                                    }
+                                  });
+                                }
+                              }}
+                              min="0"
+                              max="500"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                             />
                           </div>
                         </div>
                         <div className="mt-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            {language === 'uk' ? 'Міста обслуговування' : language === 'ru' ? 'Города обслуживания' : 'Service Cities'}
-                          </label>
+                          <div className="flex justify-between items-center mb-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                              {language === 'uk' ? 'Міста обслуговування' : language === 'ru' ? 'Города обслуживания' : 'Service Cities'}
+                            </label>
+                            {isEditing && (
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  placeholder={language === 'uk' ? 'Нове місто' : language === 'ru' ? 'Новый город' : 'New city'}
+                                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                  onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      const input = e.target as HTMLInputElement;
+                                      const city = input.value.trim();
+                                      if (city && !profile.serviceArea.cities.includes(city)) {
+                                        setProfile({
+                                          ...profile,
+                                          serviceArea: {
+                                            ...profile.serviceArea,
+                                            cities: [...profile.serviceArea.cities, city]
+                                          }
+                                        });
+                                        input.value = '';
+                                      }
+                                    }
+                                  }}
+                                />
+                                <button
+                                  onClick={(e) => {
+                                    const input = (e.currentTarget.previousElementSibling as HTMLInputElement);
+                                    const city = input.value.trim();
+                                    if (city && !profile.serviceArea.cities.includes(city)) {
+                                      setProfile({
+                                        ...profile,
+                                        serviceArea: {
+                                          ...profile.serviceArea,
+                                          cities: [...profile.serviceArea.cities, city]
+                                        }
+                                      });
+                                      input.value = '';
+                                    }
+                                  }}
+                                  className="px-3 py-2 bg-primary-600 text-white rounded-lg text-sm hover:bg-primary-700 transition-colors"
+                                >
+                                  {language === 'uk' ? 'Додати' : language === 'ru' ? 'Добавить' : 'Add'}
+                                </button>
+                              </div>
+                            )}
+                          </div>
                           <div className="flex gap-2 flex-wrap">
                             {profile.serviceArea.cities.map((city, index) => (
                               <span
                                 key={index}
-                                className="px-3 py-2 bg-success-100 text-success-700 rounded-lg text-sm font-medium dark:bg-success-900/30 dark:text-success-300"
+                                className="px-3 py-2 bg-success-100 text-success-700 rounded-lg text-sm font-medium dark:bg-success-900/30 dark:text-success-300 flex items-center gap-2"
                               >
                                 {city}
+                                {isEditing && (
+                                  <button
+                                    onClick={() => {
+                                      setProfile({
+                                        ...profile,
+                                        serviceArea: {
+                                          ...profile.serviceArea,
+                                          cities: profile.serviceArea.cities.filter((_, i) => i !== index)
+                                        }
+                                      });
+                                    }}
+                                    className="text-success-500 hover:text-success-700 ml-1"
+                                  >
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                )}
                               </span>
                             ))}
+                            {profile.serviceArea.cities.length === 0 && (
+                              <p className="text-gray-500 text-sm italic">
+                                {language === 'uk' ? 'Додайте міста обслуговування' : language === 'ru' ? 'Добавьте города обслуживания' : 'Add cities you serve'}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -920,9 +1498,9 @@ const SpecialistProfile: React.FC = () => {
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {/* Uploaded Images */}
+                      {/* Uploaded Images with Form */}
                       {portfolioImages.map((imageUrl, index) => (
-                        <div key={`uploaded-${index}`} className="bg-gray-100 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200">
+                        <div key={`uploaded-${index}`} className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200">
                           <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center relative">
                             <img 
                               src={imageUrl} 
@@ -944,9 +1522,52 @@ const SpecialistProfile: React.FC = () => {
                             <h3 className="font-semibold text-gray-900 mb-1">
                               {language === 'uk' ? 'Нове фото' : language === 'ru' ? 'Новое фото' : 'New Photo'}
                             </h3>
-                            <p className="text-gray-600 text-sm mb-2">
-                              {language === 'uk' ? 'Завантажено щойно' : language === 'ru' ? 'Только что загружено' : 'Recently uploaded'}
+                            <p className="text-gray-600 text-sm mb-3">
+                              {language === 'uk' ? 'Додайте інформацію про роботу' : language === 'ru' ? 'Добавьте информацию о работе' : 'Add work information'}
                             </p>
+                            {showPortfolioForm && index === portfolioImages.length - 1 && (
+                              <div className="space-y-3">
+                                <input
+                                  type="text"
+                                  placeholder={language === 'uk' ? 'Назва роботи' : language === 'ru' ? 'Название работы' : 'Work Title'}
+                                  value={portfolioFormData.title}
+                                  onChange={(e) => setPortfolioFormData(prev => ({ ...prev, title: e.target.value }))}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                />
+                                <textarea
+                                  placeholder={language === 'uk' ? 'Опис роботи' : language === 'ru' ? 'Описание работы' : 'Work Description'}
+                                  value={portfolioFormData.description}
+                                  onChange={(e) => setPortfolioFormData(prev => ({ ...prev, description: e.target.value }))}
+                                  rows={3}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                />
+                                <input
+                                  type="text"
+                                  placeholder={language === 'uk' ? 'Категорія' : language === 'ru' ? 'Категория' : 'Category'}
+                                  value={portfolioFormData.category}
+                                  onChange={(e) => setPortfolioFormData(prev => ({ ...prev, category: e.target.value }))}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                />
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={handleSavePortfolioItem}
+                                    className="flex-1 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
+                                  >
+                                    {language === 'uk' ? 'Зберегти' : language === 'ru' ? 'Сохранить' : 'Save'}
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setShowPortfolioForm(false);
+                                      setPortfolioFormData({ title: '', description: '', category: '' });
+                                      setPortfolioError('');
+                                    }}
+                                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                                  >
+                                    {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Cancel'}
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -1074,6 +1695,17 @@ const SpecialistProfile: React.FC = () => {
                                   type="checkbox"
                                   checked={(profile.privacy as any)[setting.key]}
                                   disabled={!isEditing}
+                                  onChange={(e) => {
+                                    if (isEditing) {
+                                      setProfile({
+                                        ...profile,
+                                        privacy: {
+                                          ...profile.privacy,
+                                          [setting.key]: e.target.checked
+                                        }
+                                      });
+                                    }
+                                  }}
                                   className="sr-only peer"
                                 />
                                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
@@ -1105,6 +1737,17 @@ const SpecialistProfile: React.FC = () => {
                                   type="checkbox"
                                   checked={(profile.notifications as any)[setting.key]}
                                   disabled={!isEditing}
+                                  onChange={(e) => {
+                                    if (isEditing) {
+                                      setProfile({
+                                        ...profile,
+                                        notifications: {
+                                          ...profile.notifications,
+                                          [setting.key]: e.target.checked
+                                        }
+                                      });
+                                    }
+                                  }}
                                   className="sr-only peer"
                                 />
                                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
@@ -1128,8 +1771,19 @@ const SpecialistProfile: React.FC = () => {
                               type="url"
                               value={profile.socialMedia.website || ''}
                               disabled={!isEditing}
+                              onChange={(e) => {
+                                if (isEditing) {
+                                  setProfile({
+                                    ...profile,
+                                    socialMedia: {
+                                      ...profile.socialMedia,
+                                      website: e.target.value
+                                    }
+                                  });
+                                }
+                              }}
                               placeholder="https://..."
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                             />
                           </div>
                           <div>
@@ -1138,8 +1792,19 @@ const SpecialistProfile: React.FC = () => {
                               type="text"
                               value={profile.socialMedia.instagram || ''}
                               disabled={!isEditing}
+                              onChange={(e) => {
+                                if (isEditing) {
+                                  setProfile({
+                                    ...profile,
+                                    socialMedia: {
+                                      ...profile.socialMedia,
+                                      instagram: e.target.value
+                                    }
+                                  });
+                                }
+                              }}
                               placeholder="@username"
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                             />
                           </div>
                           <div>
@@ -1148,8 +1813,40 @@ const SpecialistProfile: React.FC = () => {
                               type="text"
                               value={profile.socialMedia.linkedin || ''}
                               disabled={!isEditing}
+                              onChange={(e) => {
+                                if (isEditing) {
+                                  setProfile({
+                                    ...profile,
+                                    socialMedia: {
+                                      ...profile.socialMedia,
+                                      linkedin: e.target.value
+                                    }
+                                  });
+                                }
+                              }}
                               placeholder="username"
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Facebook</label>
+                            <input
+                              type="text"
+                              value={profile.socialMedia.facebook || ''}
+                              disabled={!isEditing}
+                              onChange={(e) => {
+                                if (isEditing) {
+                                  setProfile({
+                                    ...profile,
+                                    socialMedia: {
+                                      ...profile.socialMedia,
+                                      facebook: e.target.value
+                                    }
+                                  });
+                                }
+                              }}
+                              placeholder="username"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
                             />
                           </div>
                         </div>
@@ -1163,31 +1860,122 @@ const SpecialistProfile: React.FC = () => {
                   <div className="px-6 py-4 border-t border-gray-200">
                     <div className="flex gap-3 justify-end">
                       <button
-                        onClick={() => setIsEditing(false)}
+                        onClick={() => {
+                          if (hasUnsavedChanges) {
+                            if (window.confirm(language === 'uk' ? 'У вас є незбережені зміни. Скасувати зміни?' : language === 'ru' ? 'У вас есть несохраненные изменения. Отменить изменения?' : 'You have unsaved changes. Cancel changes?')) {
+                              setProfile(originalProfile);
+                              setHasUnsavedChanges(false);
+                              setIsEditing(false);
+                              setFieldErrors({});
+                              setError(null);
+                            }
+                          } else {
+                            setIsEditing(false);
+                          }
+                        }}
                         className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors duration-200"
                       >
                         {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Cancel'}
                       </button>
                       <button 
                         onClick={async () => {
-                          if (!isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
-                            console.warn('Profile API is disabled. Enable ENABLE_SPECIALIST_PROFILE_API to use this feature.');
-                            return;
-                          }
-                          
                           try {
-                            // For now, just exit editing mode since API integration is pending
+                            // Set loading state
+                            setSavingProfile(true);
+                            setError(null);
+                            setFieldErrors({});
+                            
+                            // Validate required fields
+                            const newFieldErrors: Record<string, string> = {};
+                            
+                            if (!profile.firstName.trim()) {
+                              newFieldErrors.firstName = language === 'uk' ? 'Ім\'я обов\'язкове' : language === 'ru' ? 'Имя обязательно' : 'First name is required';
+                            }
+                            if (!profile.lastName.trim()) {
+                              newFieldErrors.lastName = language === 'uk' ? 'Прізвище обов\'язкове' : language === 'ru' ? 'Фамилия обязательна' : 'Last name is required';
+                            }
+                            if (!profile.email.trim()) {
+                              newFieldErrors.email = language === 'uk' ? 'Email обов\'язковий' : language === 'ru' ? 'Email обязателен' : 'Email is required';
+                            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email)) {
+                              newFieldErrors.email = language === 'uk' ? 'Невірний формат email' : language === 'ru' ? 'Неверный формат email' : 'Invalid email format';
+                            }
+                            if (!profile.profession.trim()) {
+                              newFieldErrors.profession = language === 'uk' ? 'Професія обов\'язкова' : language === 'ru' ? 'Профессия обязательна' : 'Profession is required';
+                            }
+                            if (!profile.phone.trim()) {
+                              newFieldErrors.phone = language === 'uk' ? 'Телефон обов\'язковий' : language === 'ru' ? 'Телефон обязателен' : 'Phone is required';
+                            }
+                            
+                            // Validation for business hours
+                            const openDays = Object.entries(profile.businessHours).filter(([_, hours]) => hours.isOpen);
+                            if (openDays.length > 0) {
+                              for (const [day, hours] of openDays) {
+                                if (!hours.startTime || !hours.endTime) {
+                                  newFieldErrors[`businessHours_${day}`] = language === 'uk' ? `Вкажіть час роботи для ${getDayName(day)}` : language === 'ru' ? `Укажите время работы для ${getDayName(day)}` : `Specify working hours for ${getDayName(day)}`;
+                                } else if (hours.startTime >= hours.endTime) {
+                                  newFieldErrors[`businessHours_${day}`] = language === 'uk' ? 'Час початку повинен бути раніше часу закінчення' : language === 'ru' ? 'Время начала должно быть раньше времени окончания' : 'Start time must be before end time';
+                                }
+                              }
+                            }
+                            
+                            if (Object.keys(newFieldErrors).length > 0) {
+                              setFieldErrors(newFieldErrors);
+                              setError(language === 'uk' ? 'Будь ласка, виправте помилки у формі' : language === 'ru' ? 'Пожалуйста, исправьте ошибки в форме' : 'Please fix the errors in the form');
+                              setSavingProfile(false);
+                              return;
+                            }
+                            
+                            // Simulate API delay
+                            await new Promise(resolve => setTimeout(resolve, 1500));
+                            
+                            // Save profile data
+                            if (isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
+                              // TODO: Implement API call when backend is ready
+                              // await specialistService.updateProfile(profile);
+                              
+                              // For now, also upload certificates if any
+                              if (uploadedCertificates.length > 0) {
+                                console.log('Certificates to upload:', uploadedCertificates.length);
+                                // TODO: Upload certificates to backend
+                                // for (const cert of uploadedCertificates) {
+                                //   await specialistService.uploadCertificate(cert.file);
+                                // }
+                              }
+                            }
+                            
+                            // Success
                             setIsEditing(false);
-                            console.log('Profile changes saved:', profile);
-                            // TODO: Implement API call: await specialistService.updateProfile(profile);
+                            setHasUnsavedChanges(false);
+                            setOriginalProfile(profile);
+                            console.log('Profile changes saved:', {
+                              profile,
+                              uploadedCertificates: uploadedCertificates.length,
+                              specialties: profile.specialties.length,
+                              portfolioItems: profile.portfolio.length,
+                              completionPercentage: getProfileCompletion()
+                            });
+                            
+                            // Clear any temporary data
+                            setPortfolioError('');
+                            setCertificateError('');
+                            
                           } catch (err: any) {
                             console.error('Error saving profile:', err);
-                            setError('Failed to save profile changes');
+                            setError(language === 'uk' ? 'Не вдалося зберегти зміни профілю. Спробуйте ще раз.' : language === 'ru' ? 'Не удалось сохранить изменения профиля. Попробуйте еще раз.' : 'Failed to save profile changes. Please try again.');
+                          } finally {
+                            setSavingProfile(false);
                           }
                         }}
-                        className="px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors duration-200"
+                        disabled={savingProfile}
+                        className="px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                       >
-                        {language === 'uk' ? 'Зберегти зміни' : language === 'ru' ? 'Сохранить изменения' : 'Save Changes'}
+                        {savingProfile && (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        )}
+                        {savingProfile 
+                          ? (language === 'uk' ? 'Збереження...' : language === 'ru' ? 'Сохранение...' : 'Saving...')
+                          : (language === 'uk' ? 'Зберегти зміни' : language === 'ru' ? 'Сохранить изменения' : 'Save Changes')
+                        }
                       </button>
                     </div>
                   </div>

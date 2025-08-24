@@ -17,6 +17,7 @@ import {
 import {
   StarIcon as StarIconSolid,
 } from '@heroicons/react/24/solid';
+import { Avatar } from '../components/ui/Avatar';
 
 interface Specialist {
   id: string;
@@ -131,10 +132,12 @@ const SearchPage: React.FC = () => {
     >
       <div className="flex items-start space-x-4">
         <div className="relative">
-          <img
-            src={specialist.user.avatar || '/images/default-avatar.jpg'}
+          <Avatar
+            src={specialist.user.avatar}
             alt={`${specialist.user.firstName} ${specialist.user.lastName}`}
-            className="w-16 h-16 rounded-full object-cover"
+            size="lg"
+            fallbackIcon={false}
+            lazy={true}
           />
           {specialist.user.isVerified && (
             <CheckBadgeIcon className="absolute -bottom-1 -right-1 w-6 h-6 text-primary-600 bg-white rounded-full" />

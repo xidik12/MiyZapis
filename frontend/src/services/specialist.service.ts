@@ -48,9 +48,18 @@ export class SpecialistService {
     return response.data;
   }
 
-  // Get specialist's services
+  // Get specialist's services (for own profile)
   async getServices(): Promise<Service[]> {
     const response = await apiClient.get<{services: Service[]}>('/specialists/services');
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get specialist services');
+    }
+    return response.data.services || [];
+  }
+
+  // Get services by specialist ID (for public viewing)
+  async getSpecialistServices(specialistId: string): Promise<Service[]> {
+    const response = await apiClient.get<{services: Service[]}>(`/specialists/${specialistId}/services`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get specialist services');
     }
