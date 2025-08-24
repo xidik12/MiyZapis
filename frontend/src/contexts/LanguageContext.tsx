@@ -1315,9 +1315,7 @@ const translations: Translations = {
   'booking.confirmBooking': { en: 'Confirm Booking', uk: 'Підтвердити бронювання', ru: 'Подтвердить бронирование' },
   'booking.next': { en: 'Next', uk: 'Далі', ru: 'Далее' },
 
-  // Search Page
-  'search.title': { en: 'Find Services', uk: 'Пошук послуг', ru: 'Поиск услуг' },
-  'search.subtitle': { en: 'Find the perfect specialist for your needs', uk: 'Знайдіть ідеального спеціаліста для ваших потреб', ru: 'Найдите идеального специалиста для ваших нужд' },
+  // Search Page (duplicates removed - definitions exist earlier in the file)
   'search.placeholder': { en: 'Search for services...', uk: 'Пошук послуг...', ru: 'Поиск услуг...' },
   'search.filters': { en: 'Filters', uk: 'Фільтри', ru: 'Фильтры' },
   'search.showing': { en: 'Showing', uk: 'Показано', ru: 'Показано' },
@@ -1330,10 +1328,7 @@ const translations: Translations = {
   'search.sortBy.experience': { en: 'Sort by Experience', uk: 'Сортувати за досвідом', ru: 'Сортировать по опыту' },
   'search.sortBy.reviews': { en: 'Sort by Reviews', uk: 'Сортувати за відгуками', ru: 'Сортировать по отзывам' },
 
-  // Categories
-  'category.all': { en: 'All Categories', uk: 'Всі категорії', ru: 'Все категории' },
-  'category.automotive': { en: 'Automotive', uk: 'Автомобільні послуги', ru: 'Автомобильные услуги' },
-  'category.technology': { en: 'Technology', uk: 'Технології', ru: 'Технологии' },
+  // Categories (duplicates removed - definitions exist earlier in the file)
 
   // User Type Selection
   'auth.userType.title': { en: 'Choose Account Type', uk: 'Оберіть тип акаунта', ru: 'Выберите тип аккаунта' },

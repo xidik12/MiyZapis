@@ -272,63 +272,6 @@ const SpecialistProfile: React.FC = () => {
     return (profile as any)[field];
   };
 
-  // Handle portfolio image upload
-  const handlePortfolioUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('File size must be less than 5MB');
-      return;
-    }
-
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      setError('Please select an image file');
-      return;
-    }
-
-    try {
-      setUploadingImage(true);
-      setError(null);
-
-      // For now, create a local URL for preview
-      // TODO: Implement actual upload to backend
-      const imageUrl = URL.createObjectURL(file);
-      
-      const newPortfolioItem: PortfolioItem = {
-        id: Date.now().toString(),
-        title: file.name.split('.')[0],
-        titleUk: file.name.split('.')[0],
-        titleRu: file.name.split('.')[0],
-        description: 'Uploaded portfolio image',
-        descriptionUk: 'Завантажене зображення портфоліо',
-        descriptionRu: 'Загруженное изображение портфолио',
-        category: 'work',
-        categoryUk: 'робота',
-        categoryRu: 'работа',
-        imageUrl: imageUrl,
-        uploadDate: new Date().toISOString()
-      };
-
-      setProfile(prev => ({
-        ...prev,
-        portfolio: [...prev.portfolio, newPortfolioItem]
-      }));
-
-      console.log('Portfolio item added:', newPortfolioItem);
-      // TODO: Replace with actual API call: await specialistService.uploadPortfolioImage(file);
-      
-    } catch (err: any) {
-      console.error('Error uploading portfolio image:', err);
-      setError('Failed to upload image. Please try again.');
-    } finally {
-      setUploadingImage(false);
-      // Reset file input
-      event.target.value = '';
-    }
-  };
 
   const getDayName = (day: string) => {
     const dayNames = {
