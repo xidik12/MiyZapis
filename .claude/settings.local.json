@@ -71,7 +71,9 @@
       "Bash(brew install:*)",
       "Bash(railway redeploy:*)",
       "Bash(railway domains:*)",
-      "Bash(railway domain:*)"
+      "Bash(railway domain:*)",
+      "Bash(npx vite build:*)",
+      "Bash(./update-cors-railway.sh:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

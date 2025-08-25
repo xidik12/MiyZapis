@@ -74,7 +74,7 @@ export class FileUploadService {
 
   private async uploadToLocal(buffer: Buffer, filename: string): Promise<string> {
     try {
-      const uploadsDir = path.join(process.cwd(), 'uploads');
+      const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
       
       // Ensure uploads directory exists
       try {
@@ -149,7 +149,8 @@ export class FileUploadService {
     try {
       // Convert URL to local file path
       const filename = fileUrl.replace('/uploads/', '');
-      const filePath = path.join(process.cwd(), 'uploads', filename);
+      const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+      const filePath = path.join(uploadsDir, filename);
 
       try {
         await fs.access(filePath);

@@ -28,7 +28,7 @@ railway variables set SESSION_SECRET="$SESSION_SECRET"
 
 # CORS Configuration
 echo "Setting CORS configuration..."
-railway variables set CORS_ORIGIN="https://miyzapis-frontend.up.railway.app,http://localhost:3000"
+railway variables set CORS_ORIGIN="http://localhost:3000,http://localhost:5173,https://miyzapis.com,https://www.miyzapis.com,https://miyzapis-frontend-production.up.railway.app"
 
 # Email Configuration (Gmail SMTP)
 echo "Setting email configuration..."
