@@ -243,7 +243,7 @@ const SpecialistSchedule: React.FC = () => {
 
   // Load blocked slots from API
   useEffect(() => {
-    const loadBlockedSlots = async () => {
+    const loadAvailabilityBlocks = async () => {
       if (!isFeatureEnabled('ENABLE_SPECIALIST_SCHEDULE_API')) {
         setLoading(false);
         setError(null);
@@ -255,33 +255,33 @@ const SpecialistSchedule: React.FC = () => {
         setLoading(true);
         setError(null);
         
-        // Get blocked slots for the next 30 days
+        // Get all availability blocks for the next 30 days
         const startDate = new Date().toISOString().split('T')[0];
         const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
         
-        const blockedSlots = await specialistService.getBlockedSlots(startDate, endDate);
+        const availabilityBlocks = await specialistService.getAvailabilityBlocks(startDate, endDate);
         
-        // Convert blocked slots to time slots format
-        const formattedSlots: TimeSlot[] = blockedSlots.map(slot => ({
-          id: slot.id,
-          date: slot.startDateTime.split('T')[0],
-          startTime: slot.startDateTime.split('T')[1].substring(0, 5),
-          endTime: slot.endDateTime.split('T')[1].substring(0, 5),
-          isAvailable: false,
-          reason: slot.reason,
-          isRecurring: slot.recurring || false,
+        // Convert availability blocks to time slots format
+        const formattedSlots: TimeSlot[] = availabilityBlocks.map(block => ({
+          id: block.id,
+          date: block.startDateTime.split('T')[0],
+          startTime: block.startDateTime.split('T')[1].substring(0, 5),
+          endTime: block.endDateTime.split('T')[1].substring(0, 5),
+          isAvailable: block.isAvailable,
+          reason: block.reason,
+          isRecurring: block.recurring || false,
         }));
         
         setTimeSlots(formattedSlots);
       } catch (err: any) {
         setError(err.message || 'Failed to load schedule');
-        console.error('Error loading blocked slots:', err);
+        console.error('Error loading availability blocks:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    loadBlockedSlots();
+    loadAvailabilityBlocks();
   }, []);
 
   const handleAddTimeSlot = async (newSlot: Omit<TimeSlot, 'id'>) => {
@@ -294,15 +294,18 @@ const SpecialistSchedule: React.FC = () => {
       const startDateTime = `${newSlot.date}T${newSlot.startTime}:00`;
       const endDateTime = `${newSlot.date}T${newSlot.endTime}:00`;
       
-      const result = await specialistService.blockTimeSlot({
+      // Use the correct API based on whether this is an available or blocked slot
+      const result = await specialistService.createAvailabilityBlock({
         startDateTime,
         endDateTime,
-        reason: newSlot.reason || 'Blocked time',
+        isAvailable: newSlot.isAvailable,
+        reason: newSlot.reason || (newSlot.isAvailable ? 'Available time' : 'Blocked time'),
         recurring: newSlot.isRecurring,
+        recurringDays: newSlot.recurringDays || [],
       });
       
       const slot: TimeSlot = {
-        id: result.blockedSlot.id,
+        id: result.block.id,
         ...newSlot,
       };
       
@@ -324,23 +327,25 @@ const SpecialistSchedule: React.FC = () => {
     }
     
     try {
-      // Delete the old slot and create a new one (since there's no direct edit API)
-      await specialistService.unblockTimeSlot(editingSlot.id);
-      
       const startDateTime = `${updatedSlot.date}T${updatedSlot.startTime}:00`;
       const endDateTime = `${updatedSlot.date}T${updatedSlot.endTime}:00`;
       
-      const result = await specialistService.blockTimeSlot({
+      // Use the update API to modify the existing availability block
+      const result = await specialistService.updateAvailabilityBlock(editingSlot.id, {
         startDateTime,
         endDateTime,
-        reason: updatedSlot.reason || 'Blocked time',
+        isAvailable: updatedSlot.isAvailable,
+        reason: updatedSlot.reason || (updatedSlot.isAvailable ? 'Available time' : 'Blocked time'),
         recurring: updatedSlot.isRecurring,
+        recurringDays: updatedSlot.recurringDays || [],
       });
       
       setTimeSlots(prev => prev.map(slot => 
         slot.id === editingSlot.id 
-          ? { ...updatedSlot, id: result.blockedSlot.id }
+          ? { ...updatedSlot, id: result.block.id }
           : slot
+      ).sort((a, b) => 
+        new Date(a.date + ' ' + a.startTime).getTime() - new Date(b.date + ' ' + b.startTime).getTime()
       ));
       
       setEditingSlot(null);
@@ -357,7 +362,7 @@ const SpecialistSchedule: React.FC = () => {
     }
     
     try {
-      await specialistService.unblockTimeSlot(id);
+      await specialistService.deleteAvailabilityBlock(id);
       setTimeSlots(prev => prev.filter(slot => slot.id !== id));
     } catch (err: any) {
       console.error('Error deleting time slot:', err);
