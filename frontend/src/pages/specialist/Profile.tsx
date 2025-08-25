@@ -756,7 +756,7 @@ const SpecialistProfile: React.FC = () => {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {language === 'uk' ? 'Ім\'я' : language === 'ru' ? 'Имя' : 'First Name'}
                         </label>
                         <input
@@ -771,14 +771,14 @@ const SpecialistProfile: React.FC = () => {
                               setFieldErrors(prev => {const {firstName, ...rest} = prev; return rest;});
                             }
                           }}
-                          className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.firstName ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary-500'} focus:ring-2 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white`}
+                          className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.firstName ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary-500'} focus:ring-2 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-300`}
                         />
                         {fieldErrors.firstName && (
                           <p className="mt-1 text-sm text-red-600">{fieldErrors.firstName}</p>
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {language === 'uk' ? 'Прізвище' : language === 'ru' ? 'Фамилия' : 'Last Name'}
                         </label>
                         <input
@@ -791,14 +791,14 @@ const SpecialistProfile: React.FC = () => {
                               setFieldErrors(prev => {const {lastName, ...rest} = prev; return rest;});
                             }
                           }}
-                          className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.lastName ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary-500'} focus:ring-2 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white`}
+                          className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.lastName ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary-500'} focus:ring-2 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-300`}
                         />
                         {fieldErrors.lastName && (
                           <p className="mt-1 text-sm text-red-600">{fieldErrors.lastName}</p>
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {language === 'uk' ? 'Електронна пошта' : language === 'ru' ? 'Электронная почта' : 'Email'}
                         </label>
                         <input
@@ -811,14 +811,14 @@ const SpecialistProfile: React.FC = () => {
                               setFieldErrors(prev => {const {email, ...rest} = prev; return rest;});
                             }
                           }}
-                          className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.email ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary-500'} focus:ring-2 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white`}
+                          className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.email ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary-500'} focus:ring-2 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-300`}
                         />
                         {fieldErrors.email && (
                           <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {language === 'uk' ? 'Телефон' : language === 'ru' ? 'Телефон' : 'Phone'}
                         </label>
                         <input
@@ -831,7 +831,7 @@ const SpecialistProfile: React.FC = () => {
                               setFieldErrors(prev => {const {phone, ...rest} = prev; return rest;});
                             }
                           }}
-                          className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.phone ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary-500'} focus:ring-2 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white`}
+                          className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.phone ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary-500'} focus:ring-2 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-300`}
                         />
                         {fieldErrors.phone && (
                           <p className="mt-1 text-sm text-red-600">{fieldErrors.phone}</p>
@@ -840,7 +840,7 @@ const SpecialistProfile: React.FC = () => {
                     </div>
 
                     <div className="mt-6">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {language === 'uk' ? 'Про себе' : language === 'ru' ? 'О себе' : 'Bio'}
                       </label>
                       <textarea
@@ -852,12 +852,12 @@ const SpecialistProfile: React.FC = () => {
                           setHasUnsavedChanges(JSON.stringify(newProfile) !== JSON.stringify(originalProfile));
                         }}
                         rows={4}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-300"
                       />
                     </div>
 
                     <div className="mt-6">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {language === 'uk' ? 'Місцезнаходження' : language === 'ru' ? 'Местоположение' : 'Location'}
                       </label>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -867,7 +867,7 @@ const SpecialistProfile: React.FC = () => {
                           value={profile.location.address}
                           disabled={!isEditing}
                           onChange={(e) => setProfile({...profile, location: {...profile.location, address: e.target.value}})}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-300"
                         />
                         <input
                           type="text"
@@ -875,14 +875,14 @@ const SpecialistProfile: React.FC = () => {
                           value={profile.location.city}
                           disabled={!isEditing}
                           onChange={(e) => setProfile({...profile, location: {...profile.location, city: e.target.value}})}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-300"
                         />
                       </div>
                     </div>
 
                     <div className="mt-6">
                       <div className="flex justify-between items-center mb-2">
-                        <label className="block text-sm font-medium text-gray-700">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                           {language === 'uk' ? 'Мови' : language === 'ru' ? 'Языки' : 'Languages'}
                         </label>
                         {isEditing && (
@@ -895,15 +895,15 @@ const SpecialistProfile: React.FC = () => {
                                   e.target.value = '';
                                 }
                               }}
-                              className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                              className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:border-gray-600"
                             >
-                              <option value="">{language === 'uk' ? 'Додати мову' : language === 'ru' ? 'Добавить язык' : 'Add Language'}</option>
-                              <option value="uk">Українська</option>
-                              <option value="en">English</option>
-                              <option value="ru">Русский</option>
-                              <option value="de">Deutsch</option>
-                              <option value="fr">Français</option>
-                              <option value="es">Español</option>
+                              <option value="" className="text-gray-900 dark:text-gray-100">{language === 'uk' ? 'Додати мову' : language === 'ru' ? 'Добавить язык' : 'Add Language'}</option>
+                              <option value="uk" className="text-gray-900 dark:text-gray-100">Українська</option>
+                              <option value="en" className="text-gray-900 dark:text-gray-100">English</option>
+                              <option value="ru" className="text-gray-900 dark:text-gray-100">Русский</option>
+                              <option value="de" className="text-gray-900 dark:text-gray-100">Deutsch</option>
+                              <option value="fr" className="text-gray-900 dark:text-gray-100">Français</option>
+                              <option value="es" className="text-gray-900 dark:text-gray-100">Español</option>
                             </select>
                           </div>
                         )}
@@ -933,7 +933,7 @@ const SpecialistProfile: React.FC = () => {
                           </span>
                         ))}
                         {profile.languages.length === 0 && (
-                          <p className="text-gray-500 text-sm italic">
+                          <p className="text-gray-500 dark:text-gray-400 text-sm italic">
                             {language === 'uk' ? 'Додайте мови, якими ви володієте' : language === 'ru' ? 'Добавьте языки, которыми владеете' : 'Add languages you speak'}
                           </p>
                         )}
@@ -951,7 +951,7 @@ const SpecialistProfile: React.FC = () => {
                     
                     <div className="space-y-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {language === 'uk' ? 'Професія' : language === 'ru' ? 'Профессия' : 'Profession'}
                         </label>
                         <input
@@ -965,7 +965,7 @@ const SpecialistProfile: React.FC = () => {
                             }
                           }}
                           placeholder={language === 'uk' ? 'Введіть професію' : language === 'ru' ? 'Введите профессию' : 'Enter profession'}
-                          className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.profession ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary-500'} focus:ring-2 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white`}
+                          className={`w-full px-4 py-3 rounded-xl border ${fieldErrors.profession ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-primary-500'} focus:ring-2 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-300`}
                         />
                         {fieldErrors.profession && (
                           <p className="mt-1 text-sm text-red-600">{fieldErrors.profession}</p>
@@ -973,7 +973,7 @@ const SpecialistProfile: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {language === 'uk' ? 'Досвід (років)' : language === 'ru' ? 'Опыт (лет)' : 'Experience (years)'}
                         </label>
                         <input
@@ -984,12 +984,12 @@ const SpecialistProfile: React.FC = () => {
                           placeholder="0"
                           min="0"
                           max="50"
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-300"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {language === 'uk' ? 'Освіта' : language === 'ru' ? 'Образование' : 'Education'}
                         </label>
                         <textarea
@@ -998,13 +998,13 @@ const SpecialistProfile: React.FC = () => {
                           onChange={(e) => setProfile({...profile, education: e.target.value})}
                           placeholder={language === 'uk' ? 'Опишіть вашу освіту' : language === 'ru' ? 'Опишите ваше образование' : 'Describe your education'}
                           rows={3}
-                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-300"
                         />
                       </div>
 
                       <div>
                         <div className="flex justify-between items-center mb-2">
-                          <label className="block text-sm font-medium text-gray-700">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             {language === 'uk' ? 'Спеціалізації' : language === 'ru' ? 'Специализации' : 'Specialties'}
                           </label>
                           {isEditing && (
@@ -1014,7 +1014,7 @@ const SpecialistProfile: React.FC = () => {
                                 value={newSpecialty}
                                 onChange={(e) => setNewSpecialty(e.target.value)}
                                 placeholder={language === 'uk' ? 'Нова спеціалізація' : language === 'ru' ? 'Новая специализация' : 'New specialty'}
-                                className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:border-gray-600"
                                 onKeyPress={(e) => {
                                   if (e.key === 'Enter' && newSpecialty.trim()) {
                                     e.preventDefault();
@@ -1064,7 +1064,7 @@ const SpecialistProfile: React.FC = () => {
                             </span>
                           ))}
                           {profile.specialties.length === 0 && (
-                            <p className="text-gray-500 text-sm italic">
+                            <p className="text-gray-500 dark:text-gray-400 text-sm italic">
                               {language === 'uk' ? 'Додайте свої спеціалізації' : language === 'ru' ? 'Добавьте свои специализации' : 'Add your specialties'}
                             </p>
                           )}
@@ -1253,9 +1253,9 @@ const SpecialistProfile: React.FC = () => {
                                       });
                                     }
                                   }}
-                                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-primary-500"
                                 />
-                                <span className="text-sm text-gray-600">
+                                <span className="text-sm text-gray-600 dark:text-gray-300">
                                   {language === 'uk' ? 'Відкрито' : language === 'ru' ? 'Открыто' : 'Open'}
                                 </span>
                               </div>
@@ -1279,9 +1279,9 @@ const SpecialistProfile: React.FC = () => {
                                         });
                                       }
                                     }}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-300"
                                   />
-                                  <span className="text-gray-500">-</span>
+                                  <span className="text-gray-500 dark:text-gray-400">-</span>
                                   <input
                                     type="time"
                                     value={hours.endTime}
@@ -1300,7 +1300,7 @@ const SpecialistProfile: React.FC = () => {
                                         });
                                       }
                                     }}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-300"
                                   />
                                 </div>
                               )}
@@ -1329,8 +1329,8 @@ const SpecialistProfile: React.FC = () => {
                               }}
                               className={`p-4 border-2 rounded-xl text-center cursor-pointer transition-all duration-200 ${
                                 profile.paymentMethods.includes(method)
-                                  ? 'border-primary-500 bg-primary-50 text-primary-700'
-                                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                                  ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300'
+                                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600'
                               } ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}>
                               <div className="text-sm font-medium">{getPaymentMethodName(method)}</div>
                             </div>
@@ -1345,7 +1345,7 @@ const SpecialistProfile: React.FC = () => {
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                               {language === 'uk' ? 'Радіус (км)' : language === 'ru' ? 'Радиус (км)' : 'Radius (km)'}
                             </label>
                             <input
@@ -1365,13 +1365,13 @@ const SpecialistProfile: React.FC = () => {
                               }}
                               min="0"
                               max="500"
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-300"
                             />
                           </div>
                         </div>
                         <div className="mt-4">
                           <div className="flex justify-between items-center mb-2">
-                            <label className="block text-sm font-medium text-gray-700">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                               {language === 'uk' ? 'Міста обслуговування' : language === 'ru' ? 'Города обслуживания' : 'Service Cities'}
                             </label>
                             {isEditing && (
@@ -1379,7 +1379,7 @@ const SpecialistProfile: React.FC = () => {
                                 <input
                                   type="text"
                                   placeholder={language === 'uk' ? 'Нове місто' : language === 'ru' ? 'Новый город' : 'New city'}
-                                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:border-gray-600"
                                   onKeyPress={(e) => {
                                     if (e.key === 'Enter') {
                                       e.preventDefault();
@@ -1448,7 +1448,7 @@ const SpecialistProfile: React.FC = () => {
                               </span>
                             ))}
                             {profile.serviceArea.cities.length === 0 && (
-                              <p className="text-gray-500 text-sm italic">
+                              <p className="text-gray-500 dark:text-gray-400 text-sm italic">
                                 {language === 'uk' ? 'Додайте міста обслуговування' : language === 'ru' ? 'Добавьте города обслуживания' : 'Add cities you serve'}
                               </p>
                             )}
@@ -1519,10 +1519,10 @@ const SpecialistProfile: React.FC = () => {
                             )}
                           </div>
                           <div className="p-4">
-                            <h3 className="font-semibold text-gray-900 mb-1">
+                            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
                               {language === 'uk' ? 'Нове фото' : language === 'ru' ? 'Новое фото' : 'New Photo'}
                             </h3>
-                            <p className="text-gray-600 text-sm mb-3">
+                            <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
                               {language === 'uk' ? 'Додайте інформацію про роботу' : language === 'ru' ? 'Добавьте информацию о работе' : 'Add work information'}
                             </p>
                             {showPortfolioForm && index === portfolioImages.length - 1 && (
@@ -1532,21 +1532,21 @@ const SpecialistProfile: React.FC = () => {
                                   placeholder={language === 'uk' ? 'Назва роботи' : language === 'ru' ? 'Название работы' : 'Work Title'}
                                   value={portfolioFormData.title}
                                   onChange={(e) => setPortfolioFormData(prev => ({ ...prev, title: e.target.value }))}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:border-gray-600"
                                 />
                                 <textarea
                                   placeholder={language === 'uk' ? 'Опис роботи' : language === 'ru' ? 'Описание работы' : 'Work Description'}
                                   value={portfolioFormData.description}
                                   onChange={(e) => setPortfolioFormData(prev => ({ ...prev, description: e.target.value }))}
                                   rows={3}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:border-gray-600"
                                 />
                                 <input
                                   type="text"
                                   placeholder={language === 'uk' ? 'Категорія' : language === 'ru' ? 'Категория' : 'Category'}
                                   value={portfolioFormData.category}
                                   onChange={(e) => setPortfolioFormData(prev => ({ ...prev, category: e.target.value }))}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:border-gray-600"
                                 />
                                 <div className="flex gap-2">
                                   <button
@@ -1561,7 +1561,7 @@ const SpecialistProfile: React.FC = () => {
                                       setPortfolioFormData({ title: '', description: '', category: '' });
                                       setPortfolioError('');
                                     }}
-                                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                                   >
                                     {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Cancel'}
                                   </button>
@@ -1589,8 +1589,8 @@ const SpecialistProfile: React.FC = () => {
                             )}
                           </div>
                           <div className="p-4">
-                            <h3 className="font-semibold text-gray-900 mb-1">{getPortfolioItemText(item, 'title')}</h3>
-                            <p className="text-gray-600 text-sm mb-2">{getPortfolioItemText(item, 'description')}</p>
+                            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{getPortfolioItemText(item, 'title')}</h3>
+                            <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">{getPortfolioItemText(item, 'description')}</p>
                             <div className="flex justify-between items-center">
                               <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded-lg text-xs font-medium">
                                 {getPortfolioItemText(item, 'category')}
@@ -1688,8 +1688,8 @@ const SpecialistProfile: React.FC = () => {
                             { key: 'allowDirectBooking', label: language === 'uk' ? 'Дозволити пряме бронювання' : language === 'ru' ? 'Разрешить прямое бронирование' : 'Allow Direct Booking' },
                             { key: 'requireApproval', label: language === 'uk' ? 'Вимагати підтвердження' : language === 'ru' ? 'Требовать подтверждение' : 'Require Approval' },
                           ].map((setting) => (
-                            <div key={setting.key} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl">
-                              <span className="font-medium text-gray-900">{setting.label}</span>
+                            <div key={setting.key} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-gray-800">
+                              <span className="font-medium text-gray-900 dark:text-white">{setting.label}</span>
                               <label className="relative inline-flex items-center cursor-pointer">
                                 <input
                                   type="checkbox"
@@ -1730,8 +1730,8 @@ const SpecialistProfile: React.FC = () => {
                             { key: 'pushMessages', label: language === 'uk' ? 'Push повідомлення' : language === 'ru' ? 'Push сообщения' : 'Push Messages' },
                             { key: 'smsBookings', label: language === 'uk' ? 'SMS про бронювання' : language === 'ru' ? 'SMS о бронированиях' : 'SMS Bookings' },
                           ].map((setting) => (
-                            <div key={setting.key} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl">
-                              <span className="font-medium text-gray-900">{setting.label}</span>
+                            <div key={setting.key} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-gray-800">
+                              <span className="font-medium text-gray-900 dark:text-white">{setting.label}</span>
                               <label className="relative inline-flex items-center cursor-pointer">
                                 <input
                                   type="checkbox"
@@ -1764,7 +1764,7 @@ const SpecialistProfile: React.FC = () => {
                         </h3>
                         <div className="space-y-4">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                               {language === 'uk' ? 'Веб-сайт' : language === 'ru' ? 'Веб-сайт' : 'Website'}
                             </label>
                             <input
@@ -1783,11 +1783,11 @@ const SpecialistProfile: React.FC = () => {
                                 }
                               }}
                               placeholder="https://..."
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-300"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Instagram</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Instagram</label>
                             <input
                               type="text"
                               value={profile.socialMedia.instagram || ''}
@@ -1804,11 +1804,11 @@ const SpecialistProfile: React.FC = () => {
                                 }
                               }}
                               placeholder="@username"
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-300"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">LinkedIn</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">LinkedIn</label>
                             <input
                               type="text"
                               value={profile.socialMedia.linkedin || ''}
@@ -1825,11 +1825,11 @@ const SpecialistProfile: React.FC = () => {
                                 }
                               }}
                               placeholder="username"
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-300"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Facebook</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Facebook</label>
                             <input
                               type="text"
                               value={profile.socialMedia.facebook || ''}
@@ -1846,7 +1846,7 @@ const SpecialistProfile: React.FC = () => {
                                 }
                               }}
                               placeholder="username"
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-900 text-gray-900 bg-white dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-300"
                             />
                           </div>
                         </div>
@@ -1873,7 +1873,7 @@ const SpecialistProfile: React.FC = () => {
                             setIsEditing(false);
                           }
                         }}
-                        className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors duration-200"
+                        className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors duration-200 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                       >
                         {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Cancel'}
                       </button>
