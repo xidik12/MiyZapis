@@ -857,6 +857,20 @@ const translations: Translations = {
   'serviceForm.enterCustomCategory': { en: 'Enter custom category', uk: 'Введіть власну категорію', ru: 'Введите пользовательскую категорию' },
   'serviceForm.customCategoryHint': { en: 'You can add a custom category if none of the existing ones fit your service', uk: 'Ви можете додати власну категорію, якщо жодна з наявних не підходить для вашої послуги', ru: 'Вы можете добавить пользовательскую категорию, если ни одна из существующих не подходит для вашей услуги' },
   
+  // Specialist Profile Page
+  'specialist.about': { en: 'About', uk: 'Про спеціаліста', ru: 'О специалисте' },
+  'specialist.noDescription': { en: 'No description available', uk: 'Опис відсутній', ru: 'Описание отсутствует' },
+  'specialist.services': { en: 'Services', uk: 'Послуги', ru: 'Услуги' },
+  'specialist.noServices': { en: 'No services available', uk: 'Послуги відсутні', ru: 'Услуги отсутствуют' },
+  'specialist.contactInfo': { en: 'Contact Information', uk: 'Контактна інформація', ru: 'Контактная информация' },
+  'specialist.quickStats': { en: 'Quick Stats', uk: 'Швидка статистика', ru: 'Краткая статистика' },
+  'specialist.experience': { en: 'Experience', uk: 'Досвід', ru: 'Опыт' },
+  'specialist.notSpecified': { en: 'Not specified', uk: 'Не вказано', ru: 'Не указано' },
+  'reviews.reviews': { en: 'Reviews', uk: 'Відгуки', ru: 'Отзывы' },
+  'reviews.noReviews': { en: 'No reviews yet', uk: 'Відгуків поки немає', ru: 'Пока нет отзывов' },
+  'location.notSpecified': { en: 'Location not specified', uk: 'Місцезнаходження не вказано', ru: 'Местоположение не указано' },
+  'common.no': { en: 'No', uk: 'Немає', ru: 'Нет' },
+  
   // User Roles
   'user.specialist': { en: 'Specialist', uk: 'Спеціаліст', ru: 'Специалист' },
   'user.customer': { en: 'Customer', uk: 'Клієнт', ru: 'Клиент' },
@@ -1359,6 +1373,7 @@ const translations: Translations = {
   'actions.viewProfile': { en: 'View Profile', uk: 'Переглянути профіль', ru: 'Посмотреть профиль' },
   'actions.book': { en: 'Book', uk: 'Забронювати', ru: 'Забронировать' },
   'actions.bookNow': { en: 'Book Now', uk: 'Забронювати зараз', ru: 'Забронировать сейчас' },
+  'actions.noServicesAvailable': { en: 'No services available', uk: 'Послуги недоступні', ru: 'Услуги недоступны' },
   'actions.favorite': { en: 'Favorite', uk: 'Обране', ru: 'Избранное' },
   
   // Errors

@@ -41,9 +41,18 @@ const SpecialistProfilePage: React.FC = () => {
         const specialistData = await specialistService.getPublicProfile(specialistId);
         setSpecialist(specialistData);
 
-        // Fetch specialist reviews
-        const reviewsData = await reviewService.getSpecialistReviews(specialistId);
-        setReviews(reviewsData.reviews || []);
+        // Fetch specialist reviews with basic parameters
+        try {
+          const reviewsData = await reviewService.getSpecialistReviews(specialistId, {
+            page: 1,
+            limit: 10,
+            sortBy: 'createdAt'
+          });
+          setReviews(reviewsData.reviews || []);
+        } catch (reviewError) {
+          console.warn('Failed to load reviews, continuing without them:', reviewError);
+          setReviews([]);
+        }
 
         // Fetch specialist services
         const servicesData = await specialistService.getSpecialistServices(specialistId);
@@ -159,13 +168,20 @@ const SpecialistProfilePage: React.FC = () => {
                 {t('actions.favorite')}
               </button>
               
-              <Link
-                to={`/booking/${specialistId}`}
-                className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors flex items-center"
-              >
-                <CalendarIcon className="w-5 h-5 mr-2" />
-                {t('actions.bookNow')}
-              </Link>
+              {services.length > 0 ? (
+                <Link
+                  to={`/book/${services[0]?.id}`}
+                  className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors flex items-center"
+                >
+                  <CalendarIcon className="w-5 h-5 mr-2" />
+                  {t('actions.bookNow')}
+                </Link>
+              ) : (
+                <div className="bg-gray-400 text-white px-6 py-2 rounded-lg cursor-not-allowed flex items-center">
+                  <CalendarIcon className="w-5 h-5 mr-2" />
+                  {t('actions.noServicesAvailable') || 'No services available'}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -235,7 +251,7 @@ const SpecialistProfilePage: React.FC = () => {
                             {formatPrice(service.price, service.currency)}
                           </p>
                           <Link
-                            to={`/booking/${specialistId}?service=${service.id}`}
+                            to={`/book/${service.id}`}
                             className="inline-block mt-2 text-primary-600 hover:text-primary-700 text-sm font-medium"
                           >
                             {t('actions.book')}
