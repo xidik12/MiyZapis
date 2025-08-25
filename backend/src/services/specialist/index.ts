@@ -137,17 +137,19 @@ export class SpecialistService {
     data: UpdateSpecialistData
   ): Promise<SpecialistWithUser> {
     try {
-      // Find specialist by userId
-      const specialist = await prisma.specialist.findUnique({
-        where: { userId },
-      });
+      // Use transaction to ensure atomicity
+      const result = await prisma.$transaction(async (tx) => {
+        // Find specialist by userId
+        const specialist = await tx.specialist.findUnique({
+          where: { userId },
+        });
 
-      if (!specialist) {
-        throw new Error('SPECIALIST_NOT_FOUND');
-      }
+        if (!specialist) {
+          throw new Error('SPECIALIST_NOT_FOUND');
+        }
 
-      // Update specialist profile
-      const updatedSpecialist = await prisma.specialist.update({
+        // Update specialist profile
+        const updatedSpecialist = await tx.specialist.update({
         where: { userId },
         data: {
           ...(data.businessName && { businessName: data.businessName }),
@@ -193,14 +195,17 @@ export class SpecialistService {
             },
           },
         },
+        });
+
+        return updatedSpecialist as SpecialistWithUser;
       });
 
       logger.info('Specialist profile updated successfully', { 
         userId, 
-        specialistId: specialist.id 
+        specialistId: result.id 
       });
 
-      return updatedSpecialist as SpecialistWithUser;
+      return result;
     } catch (error) {
       logger.error('Error updating specialist profile:', error);
       throw error;

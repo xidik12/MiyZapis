@@ -127,6 +127,16 @@ router.get('/profile', authenticateToken, async (req: AuthenticatedRequest, res:
 // Update user profile
 router.put('/profile', authenticateToken, validateUpdateProfile, async (req: AuthenticatedRequest, res: Response) => {
   try {
+    // Enhanced logging for frontend debugging
+    logger.info('User profile update request received', {
+      userId: req.userId,
+      requestBody: req.body,
+      contentType: req.headers['content-type'],
+      userAgent: req.headers['user-agent'],
+      requestId: req.headers['x-request-id'],
+      timestamp: new Date().toISOString()
+    });
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json(
@@ -173,6 +183,14 @@ router.put('/profile', authenticateToken, validateUpdateProfile, async (req: Aut
         loyaltyPoints: true,
         updatedAt: true
       }
+    });
+
+    // Enhanced logging for successful updates
+    logger.info('User profile updated successfully', {
+      userId: req.userId,
+      updatedFields: Object.keys(req.body),
+      updatedAt: user.updatedAt,
+      requestId: req.headers['x-request-id']
     });
 
     return res.json(createSuccessResponse(user));

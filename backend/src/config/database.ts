@@ -58,7 +58,7 @@ export const testDatabaseConnection = async (): Promise<boolean> => {
     }
 
     logger.info('🔗 Attempting database connection...', {
-      databaseProvider: 'postgresql',
+      databaseProvider: dbUrl.startsWith('file:') ? 'sqlite' : 'postgresql',
       connectionAttempt: 1,
       timestamp: new Date().toISOString()
     });

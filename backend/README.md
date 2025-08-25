@@ -59,12 +59,29 @@ A production-ready Node.js/TypeScript backend API for a comprehensive booking pl
    ```
 
 4. **Database setup**
+   
+   ⚠️ **IMPORTANT**: This project uses PostgreSQL for ALL environments (development and production). SQLite is never used.
+   
+   **Quick Setup (macOS with Homebrew):**
    ```bash
+   # Run the automated PostgreSQL setup script
+   ../setup-local-postgres.sh
+   ```
+   
+   **Manual Setup:**
+   ```bash
+   # Install PostgreSQL (if not already installed)
+   brew install postgresql@15
+   brew services start postgresql@15
+   
+   # Create development database
+   createdb bookingbot_dev
+   
    # Generate Prisma client
    npm run db:generate
    
-   # Run migrations
-   npm run migrate
+   # Push schema to database
+   npx prisma db push
    
    # Seed database (optional)
    npm run db:seed

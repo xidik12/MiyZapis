@@ -96,6 +96,16 @@ export class SpecialistController {
   // Update specialist profile
   static async updateProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
+      // Enhanced logging for frontend debugging
+      logger.info('Specialist profile update request received', {
+        userId: req.user?.id,
+        requestBody: req.body,
+        contentType: req.headers['content-type'],
+        userAgent: req.headers['user-agent'],
+        requestId: req.headers['x-request-id'],
+        timestamp: new Date().toISOString()
+      });
+
       // Check validation errors
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -126,6 +136,15 @@ export class SpecialistController {
       }
 
       const specialist = await SpecialistService.updateProfile(req.user.id, req.body);
+
+      // Enhanced logging for successful updates
+      logger.info('Specialist profile updated successfully', {
+        userId: req.user.id,
+        specialistId: specialist.id,
+        updatedFields: Object.keys(req.body),
+        beforeUpdatedAt: specialist.updatedAt,
+        requestId: req.headers['x-request-id']
+      });
 
       res.json(
         createSuccessResponse({
