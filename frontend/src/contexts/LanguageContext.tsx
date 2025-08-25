@@ -1363,6 +1363,10 @@ const translations: Translations = {
   
   // Navigation
   'navigation.backToSearch': { en: 'Back to Search', uk: 'Назад до пошуку', ru: 'Назад к поиску' },
+  
+  // Common
+  'common.error': { en: 'Error', uk: 'Помилка', ru: 'Ошибка' },
+  'common.retry': { en: 'Retry', uk: 'Повторити', ru: 'Повторить' },
 };
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
