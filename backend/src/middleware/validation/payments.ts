@@ -10,6 +10,7 @@ const PAYMENT_STATUSES = [
   'REFUNDED',
   // User-friendly aliases for frontend compatibility
   'completed',
+  'succeeded', // Handle both 'succeeded' and 'completed' for frontend compatibility
   'pending',
   'processing',
   'failed',

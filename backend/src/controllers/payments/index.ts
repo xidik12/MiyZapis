@@ -299,6 +299,7 @@ export class PaymentController {
         if (!inputStatus) return undefined;
         const statusMap: { [key: string]: string } = {
           'completed': 'SUCCEEDED',
+          'succeeded': 'SUCCEEDED', // Handle both 'succeeded' and 'completed' for frontend compatibility
           'pending': 'PENDING',
           'processing': 'PROCESSING',
           'failed': 'FAILED',

@@ -230,7 +230,7 @@ const SpecialistEarnings: React.FC = () => {
         // Use the correct API endpoint for payment history
         const paymentHistoryData = await paymentService.getPaymentHistory({
           limit: 10,
-          status: 'succeeded' // Use 'succeeded' instead of 'completed' to match backend
+          status: 'completed' // Use consistent 'completed' status that maps to backend 'SUCCEEDED'
         });
         
         // Transform payment data to match our interface
@@ -238,7 +238,7 @@ const SpecialistEarnings: React.FC = () => {
           id: payment.id,
           date: payment.createdAt || payment.updatedAt,
           amount: payment.amount,
-          status: payment.status === 'succeeded' ? 'completed' : payment.status === 'pending' ? 'pending' : 'processing',
+          status: payment.status === 'SUCCEEDED' ? 'completed' : payment.status === 'PENDING' ? 'pending' : 'processing',
           method: payment.paymentMethod?.type || payment.paymentMethodType || 'card'
         }));
         
