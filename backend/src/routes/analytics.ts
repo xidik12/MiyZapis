@@ -109,4 +109,38 @@ router.get(
   analyticsController.exportData
 );
 
+// Missing endpoints that frontend is expecting
+// Get overview analytics (general summary)
+router.get(
+  '/overview',
+  [
+    query('startDate').optional().isISO8601(),
+    query('endDate').optional().isISO8601()
+  ],
+  validateRequest,
+  analyticsController.getOverview
+);
+
+// Get services analytics (service-specific performance)
+router.get(
+  '/services',
+  [
+    query('startDate').optional().isISO8601(),
+    query('endDate').optional().isISO8601()
+  ],
+  validateRequest,
+  analyticsController.getServicesAnalytics
+);
+
+// Get performance analytics (response times, conversion rates)
+router.get(
+  '/performance',
+  [
+    query('startDate').optional().isISO8601(),
+    query('endDate').optional().isISO8601()
+  ],
+  validateRequest,
+  analyticsController.getPerformanceAnalytics
+);
+
 export default router;

@@ -1,6 +1,11 @@
 import { Router } from 'express';
 import { PaymentController } from '@/controllers/payments';
 import { authenticateToken, requireSpecialist, requireAdmin } from '@/middleware/auth/jwt';
+import { 
+  validateGetPaymentHistory, 
+  validateEarningsTrends, 
+  validateEarningsDateRange 
+} from '@/middleware/validation/payments';
 
 const router = Router();
 
@@ -8,6 +13,7 @@ const router = Router();
 router.post('/intent', authenticateToken, PaymentController.createPaymentIntent);
 router.post('/confirm', authenticateToken, PaymentController.confirmPayment);
 router.get('/my', authenticateToken, PaymentController.getUserPayments);
+router.get('/history', authenticateToken, validateGetPaymentHistory, PaymentController.getPaymentHistory);
 router.get('/:paymentId', authenticateToken, PaymentController.getPaymentDetails);
 
 // Payment methods routes
@@ -18,7 +24,10 @@ router.delete('/methods/:methodId', authenticateToken, PaymentController.deleteP
 router.put('/methods/:methodId/default', authenticateToken, PaymentController.setDefaultPaymentMethod);
 
 // Specialist routes
-router.get('/earnings/my', authenticateToken, requireSpecialist, PaymentController.getSpecialistEarnings);
+router.get('/earnings/my', authenticateToken, requireSpecialist, validateEarningsDateRange, PaymentController.getSpecialistEarnings);
+router.get('/earnings/overview', authenticateToken, requireSpecialist, PaymentController.getEarningsOverview);
+router.get('/earnings/trends', authenticateToken, requireSpecialist, validateEarningsTrends, PaymentController.getEarningsTrends);
+router.get('/earnings/analytics', authenticateToken, requireSpecialist, PaymentController.getEarningsAnalytics);
 
 // Admin routes
 router.post('/refund', authenticateToken, requireAdmin, PaymentController.processRefund);

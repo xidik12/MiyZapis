@@ -235,6 +235,103 @@ export class PaymentController {
     }
   }
 
+  // Get payment history with advanced filtering
+  static async getPaymentHistory(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid request data',
+            req.headers['x-request-id'] as string,
+            errors.array().map(error => ({
+              field: error.param,
+              message: error.msg,
+              code: 'INVALID_VALUE',
+            }))
+          )
+        );
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const {
+        status,
+        type,
+        startDate,
+        endDate,
+        page = 1,
+        limit = 20,
+        minAmount,
+        maxAmount,
+        bookingId,
+        sortBy = 'createdAt',
+        sortOrder = 'desc',
+      } = req.query;
+
+      const filters = {
+        status: status as string,
+        type: type as string,
+        startDate: startDate ? new Date(startDate as string) : undefined,
+        endDate: endDate ? new Date(endDate as string) : undefined,
+        page: parseInt(page as string, 10),
+        limit: parseInt(limit as string, 10),
+        minAmount: minAmount ? parseFloat(minAmount as string) : undefined,
+        maxAmount: maxAmount ? parseFloat(maxAmount as string) : undefined,
+        bookingId: bookingId as string,
+        sortBy: sortBy as string,
+        sortOrder: sortOrder as 'asc' | 'desc',
+      };
+
+      const result = await PaymentService.getPaymentHistory(req.user.id, filters);
+
+      res.json(
+        createSuccessResponse(result, {
+          pagination: {
+            currentPage: result.page,
+            totalPages: result.totalPages,
+            totalItems: result.total,
+            itemsPerPage: parseInt(limit as string, 10),
+            hasNext: result.page < result.totalPages,
+            hasPrev: result.page > 1,
+          },
+          filters: {
+            status: filters.status,
+            type: filters.type,
+            startDate: filters.startDate,
+            endDate: filters.endDate,
+            minAmount: filters.minAmount,
+            maxAmount: filters.maxAmount,
+            bookingId: filters.bookingId,
+            sortBy: filters.sortBy,
+            sortOrder: filters.sortOrder,
+          }
+        })
+      );
+    } catch (error: any) {
+      logger.error('Get payment history error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get payment history',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
   // Get user payments
   static async getUserPayments(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
@@ -294,9 +391,181 @@ export class PaymentController {
     }
   }
 
+  // Get earnings overview
+  static async getEarningsOverview(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (req.user.userType !== 'SPECIALIST') {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.ACCESS_DENIED,
+            'Only specialists can access earnings overview',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const overview = await PaymentService.getEarningsOverview(req.user.id);
+
+      res.json(
+        createSuccessResponse({
+          overview,
+        })
+      );
+    } catch (error: any) {
+      logger.error('Get earnings overview error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get earnings overview',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Get earnings trends
+  static async getEarningsTrends(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid request data',
+            req.headers['x-request-id'] as string,
+            errors.array().map(error => ({
+              field: error.param,
+              message: error.msg,
+              code: 'INVALID_VALUE',
+            }))
+          )
+        );
+        return;
+      }
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (req.user.userType !== 'SPECIALIST') {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.ACCESS_DENIED,
+            'Only specialists can access earnings trends',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { period = 'month', groupBy = 'day' } = req.query;
+
+      const trends = await PaymentService.getEarningsTrends(req.user.id, {
+        period: period as string,
+        groupBy: groupBy as string,
+      });
+
+      res.json(
+        createSuccessResponse({
+          trends,
+        })
+      );
+    } catch (error: any) {
+      logger.error('Get earnings trends error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get earnings trends',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Get earnings analytics
+  static async getEarningsAnalytics(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (req.user.userType !== 'SPECIALIST') {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.ACCESS_DENIED,
+            'Only specialists can access earnings analytics',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const analytics = await PaymentService.getEarningsAnalytics(req.user.id);
+
+      res.json(
+        createSuccessResponse({
+          analytics,
+        })
+      );
+    } catch (error: any) {
+      logger.error('Get earnings analytics error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get earnings analytics',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
   // Get specialist earnings
   static async getSpecialistEarnings(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid request data',
+            req.headers['x-request-id'] as string,
+            errors.array().map(error => ({
+              field: error.param,
+              message: error.msg,
+              code: 'INVALID_VALUE',
+            }))
+          )
+        );
+        return;
+      }
       if (!req.user) {
         res.status(401).json(
           createErrorResponse(

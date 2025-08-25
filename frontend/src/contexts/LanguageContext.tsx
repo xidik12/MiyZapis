@@ -800,6 +800,10 @@ const translations: Translations = {
   'earnings.bankTransfer': { en: 'Bank Transfer', uk: 'Банківський переказ', ru: 'Банковский перевод' },
   'earnings.paypal': { en: 'PayPal', uk: 'PayPal', ru: 'PayPal' },
   'earnings.exporting': { en: 'Exporting...', uk: 'Експорт...', ru: 'Экспорт...' },
+  'earnings.errorTitle': { en: 'Failed to Load Earnings', uk: 'Не вдалося завантажити заробітки', ru: 'Не удалось загрузить заработки' },
+  'earnings.noDataAvailable': { en: 'No earnings data available', uk: 'Немає даних про заробітки', ru: 'Нет данных о заработках' },
+  'earnings.noPayoutHistory': { en: 'No payout history available', uk: 'Немає історії виплат', ru: 'Нет истории выплат' },
+  'earnings.noData': { en: 'No data', uk: 'Немає даних', ru: 'Нет данных' },
   
   // Services Page
   'services.title': { en: 'My Services', uk: 'Мої послуги', ru: 'Мои услуги' },

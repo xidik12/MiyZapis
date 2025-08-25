@@ -284,3 +284,39 @@ export const validateSplitPayment = [
     .isFloat({ min: 0.01, max: 100 })
     .withMessage('Split percentage must be between 0.01 and 100'),
 ];
+
+// Earnings trends validation
+export const validateEarningsTrends = [
+  query('period')
+    .optional()
+    .isIn(['week', 'month', 'year'])
+    .withMessage('Period must be one of: week, month, year'),
+  
+  query('groupBy')
+    .optional()
+    .isIn(['day', 'week', 'month'])
+    .withMessage('Group by must be one of: day, week, month'),
+];
+
+// Date range validation for earnings
+export const validateEarningsDateRange = [
+  query('fromDate')
+    .optional()
+    .isISO8601()
+    .withMessage('From date must be a valid ISO 8601 date'),
+  
+  query('toDate')
+    .optional()
+    .isISO8601()
+    .withMessage('To date must be a valid ISO 8601 date')
+    .custom((value, { req }) => {
+      if (req.query.fromDate) {
+        const fromDate = new Date(req.query.fromDate);
+        const toDate = new Date(value);
+        if (toDate <= fromDate) {
+          throw new Error('To date must be after from date');
+        }
+      }
+      return true;
+    }),
+];

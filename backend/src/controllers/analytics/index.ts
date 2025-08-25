@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { AnalyticsService } from '@/services/analytics/index';
 import { successResponse, errorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
+import { AuthenticatedRequest } from '@/types';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 
 const prisma = new PrismaClient();
@@ -258,6 +259,101 @@ export class AnalyticsController {
     } catch (error) {
       logger.error('Error exporting data:', error);
       return errorResponse(res, 'Failed to export data', 500);
+    }
+  };
+
+  // New methods for frontend endpoints
+
+  getOverview = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      if (!req.user) {
+        return errorResponse(res, 'Authentication required', 401);
+      }
+
+      const userId = req.user.id;
+      const { startDate, endDate } = req.query;
+
+      // Verify user is a specialist
+      const specialist = await prisma.specialist.findUnique({
+        where: { userId }
+      });
+
+      if (!specialist) {
+        return errorResponse(res, 'Access denied. Specialist account required.', 403);
+      }
+
+      const overview = await this.analyticsService.getOverviewAnalytics(
+        specialist.id,
+        startDate as string,
+        endDate as string
+      );
+
+      return successResponse(res, overview, 'Overview analytics retrieved successfully');
+    } catch (error) {
+      logger.error('Error getting overview analytics:', error);
+      return errorResponse(res, 'Failed to retrieve overview analytics', 500);
+    }
+  };
+
+  getServicesAnalytics = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      if (!req.user) {
+        return errorResponse(res, 'Authentication required', 401);
+      }
+
+      const userId = req.user.id;
+      const { startDate, endDate } = req.query;
+
+      // Verify user is a specialist
+      const specialist = await prisma.specialist.findUnique({
+        where: { userId }
+      });
+
+      if (!specialist) {
+        return errorResponse(res, 'Access denied. Specialist account required.', 403);
+      }
+
+      const servicesAnalytics = await this.analyticsService.getServicesAnalytics(
+        specialist.id,
+        startDate as string,
+        endDate as string
+      );
+
+      return successResponse(res, servicesAnalytics, 'Services analytics retrieved successfully');
+    } catch (error) {
+      logger.error('Error getting services analytics:', error);
+      return errorResponse(res, 'Failed to retrieve services analytics', 500);
+    }
+  };
+
+  getPerformanceAnalytics = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      if (!req.user) {
+        return errorResponse(res, 'Authentication required', 401);
+      }
+
+      const userId = req.user.id;
+      const { startDate, endDate } = req.query;
+
+      // Verify user is a specialist
+      const specialist = await prisma.specialist.findUnique({
+        where: { userId }
+      });
+
+      if (!specialist) {
+        return errorResponse(res, 'Access denied. Specialist account required.', 403);
+      }
+
+      const performanceAnalytics = await this.analyticsService.getPerformanceAnalytics(
+        specialist.id,
+        startDate as string,
+        endDate as string
+      );
+
+      return successResponse(res, performanceAnalytics, 'Performance analytics retrieved successfully');
+    } catch (error) {
+      logger.error('Error getting performance analytics:', error);
+      return errorResponse(res, 'Failed to retrieve performance analytics', 500);
     }
   };
 }

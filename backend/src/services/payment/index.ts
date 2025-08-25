@@ -248,6 +248,147 @@ export class PaymentService {
     }
   }
 
+  // Get payment history with advanced filtering
+  static async getPaymentHistory(
+    userId: string,
+    filters: {
+      status?: string;
+      type?: string;
+      startDate?: Date;
+      endDate?: Date;
+      page?: number;
+      limit?: number;
+      minAmount?: number;
+      maxAmount?: number;
+      bookingId?: string;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+    } = {}
+  ): Promise<{
+    payments: Payment[];
+    total: number;
+    page: number;
+    totalPages: number;
+    statistics: {
+      totalAmount: number;
+      completedAmount: number;
+      pendingAmount: number;
+      refundedAmount: number;
+      averageAmount: number;
+    };
+  }> {
+    try {
+      const { 
+        status, 
+        type, 
+        startDate, 
+        endDate, 
+        page = 1, 
+        limit = 20,
+        minAmount,
+        maxAmount,
+        bookingId,
+        sortBy = 'createdAt',
+        sortOrder = 'desc'
+      } = filters;
+
+      const skip = (page - 1) * limit;
+
+      const where: any = { userId };
+      if (status) where.status = status;
+      if (type) where.type = type;
+      if (bookingId) where.bookingId = bookingId;
+      
+      if (startDate || endDate) {
+        where.createdAt = {};
+        if (startDate) where.createdAt.gte = startDate;
+        if (endDate) where.createdAt.lte = endDate;
+      }
+
+      if (minAmount !== undefined || maxAmount !== undefined) {
+        where.amount = {};
+        if (minAmount !== undefined) where.amount.gte = minAmount;
+        if (maxAmount !== undefined) where.amount.lte = maxAmount;
+      }
+
+      const orderBy: any = {};
+      orderBy[sortBy] = sortOrder;
+
+      const [payments, total, stats] = await Promise.all([
+        prisma.payment.findMany({
+          where,
+          include: {
+            booking: {
+              include: {
+                service: {
+                  select: {
+                    name: true,
+                    category: true,
+                  },
+                },
+                specialist: {
+                  select: {
+                    businessName: true,
+                    user: {
+                      select: {
+                        firstName: true,
+                        lastName: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          orderBy,
+          skip,
+          take: limit,
+        }),
+        prisma.payment.count({ where }),
+        prisma.payment.aggregate({
+          where,
+          _sum: { amount: true },
+          _avg: { amount: true },
+        }),
+      ]);
+
+      // Get status-specific statistics
+      const [completedStats, pendingStats, refundedStats] = await Promise.all([
+        prisma.payment.aggregate({
+          where: { ...where, status: 'SUCCEEDED' },
+          _sum: { amount: true },
+        }),
+        prisma.payment.aggregate({
+          where: { ...where, status: { in: ['PENDING', 'PROCESSING'] } },
+          _sum: { amount: true },
+        }),
+        prisma.payment.aggregate({
+          where: { ...where, type: 'REFUND' },
+          _sum: { amount: true },
+        }),
+      ]);
+
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        payments,
+        total,
+        page,
+        totalPages,
+        statistics: {
+          totalAmount: stats._sum.amount || 0,
+          completedAmount: completedStats._sum.amount || 0,
+          pendingAmount: pendingStats._sum.amount || 0,
+          refundedAmount: Math.abs(refundedStats._sum.amount || 0),
+          averageAmount: stats._avg.amount || 0,
+        },
+      };
+    } catch (error) {
+      logger.error('Error getting payment history:', error);
+      throw error;
+    }
+  }
+
   // Get user payments with pagination
   static async getUserPayments(
     userId: string,
@@ -310,6 +451,495 @@ export class PaymentService {
       };
     } catch (error) {
       logger.error('Error getting user payments:', error);
+      throw error;
+    }
+  }
+
+  // Get earnings overview
+  static async getEarningsOverview(specialistId: string): Promise<{
+    totalEarnings: number;
+    thisMonth: number;
+    lastMonth: number;
+    growthRate: number;
+    totalBookings: number;
+    completedBookings: number;
+    averageBookingValue: number;
+    topServices: Array<{
+      serviceName: string;
+      earnings: number;
+      bookingCount: number;
+    }>;
+    recentPayments: Payment[];
+  }> {
+    try {
+      const now = new Date();
+      const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+      const where = {
+        booking: { specialistId },
+        status: 'SUCCEEDED',
+        type: { in: ['FULL_PAYMENT', 'DEPOSIT'] },
+      };
+
+      const [
+        totalEarningsResult,
+        thisMonthResult,
+        lastMonthResult,
+        totalBookings,
+        completedBookings,
+        topServicesResult,
+        recentPayments,
+      ] = await Promise.all([
+        // Total earnings
+        prisma.payment.aggregate({
+          where,
+          _sum: { amount: true },
+        }),
+        // This month earnings
+        prisma.payment.aggregate({
+          where: {
+            ...where,
+            createdAt: { gte: startOfThisMonth },
+          },
+          _sum: { amount: true },
+        }),
+        // Last month earnings
+        prisma.payment.aggregate({
+          where: {
+            ...where,
+            createdAt: {
+              gte: startOfLastMonth,
+              lte: endOfLastMonth,
+            },
+          },
+          _sum: { amount: true },
+        }),
+        // Total bookings
+        prisma.booking.count({
+          where: { specialistId },
+        }),
+        // Completed bookings
+        prisma.booking.count({
+          where: { specialistId, status: 'COMPLETED' },
+        }),
+        // Top earning services
+        prisma.payment.groupBy({
+          by: ['bookingId'],
+          where,
+          _sum: { amount: true },
+          orderBy: { _sum: { amount: 'desc' } },
+          take: 5,
+        }),
+        // Recent payments
+        prisma.payment.findMany({
+          where,
+          include: {
+            booking: {
+              include: {
+                service: { select: { name: true } },
+                customer: { select: { firstName: true, lastName: true } },
+              },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        }),
+      ]);
+
+      // Get service details for top services
+      const bookingIds = topServicesResult.map(item => item.bookingId).filter(Boolean);
+      const serviceDetails = await prisma.booking.findMany({
+        where: { id: { in: bookingIds } },
+        include: { service: true },
+      });
+
+      const serviceMap = new Map();
+      serviceDetails.forEach(booking => {
+        const serviceName = booking.service.name;
+        if (!serviceMap.has(serviceName)) {
+          serviceMap.set(serviceName, { earnings: 0, bookingCount: 0 });
+        }
+        const topService = topServicesResult.find(ts => ts.bookingId === booking.id);
+        if (topService) {
+          const currentService = serviceMap.get(serviceName)!;
+          serviceMap.set(serviceName, {
+            earnings: currentService.earnings + (topService._sum.amount || 0),
+            bookingCount: currentService.bookingCount + 1
+          });
+        }
+      });
+
+      const topServices = Array.from(serviceMap.entries()).map(([serviceName, data]) => ({
+        serviceName,
+        earnings: data.earnings,
+        bookingCount: data.bookingCount,
+      }));
+
+      const totalEarnings = totalEarningsResult._sum.amount || 0;
+      const thisMonth = thisMonthResult._sum.amount || 0;
+      const lastMonth = lastMonthResult._sum.amount || 0;
+      const growthRate = lastMonth > 0 ? ((thisMonth - lastMonth) / lastMonth) * 100 : 0;
+      const averageBookingValue = completedBookings > 0 ? totalEarnings / completedBookings : 0;
+
+      return {
+        totalEarnings,
+        thisMonth,
+        lastMonth,
+        growthRate,
+        totalBookings,
+        completedBookings,
+        averageBookingValue,
+        topServices,
+        recentPayments,
+      };
+    } catch (error) {
+      logger.error('Error getting earnings overview:', error);
+      throw error;
+    }
+  }
+
+  // Get earnings trends
+  static async getEarningsTrends(
+    specialistId: string,
+    options: {
+      period?: string;
+      groupBy?: string;
+    } = {}
+  ): Promise<{
+    trends: Array<{
+      date: string;
+      earnings: number;
+      bookingCount: number;
+    }>;
+    totalEarnings: number;
+    averageDaily: number;
+    peakDay: { date: string; earnings: number };
+  }> {
+    try {
+      const { period = 'month', groupBy = 'day' } = options;
+
+      const now = new Date();
+      let startDate: Date;
+      
+      switch (period) {
+        case 'week':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case 'month':
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          break;
+        case 'year':
+          startDate = new Date(now.getFullYear(), 0, 1);
+          break;
+        default:
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      }
+
+      const payments = await prisma.payment.findMany({
+        where: {
+          booking: { specialistId },
+          status: 'SUCCEEDED',
+          type: { in: ['FULL_PAYMENT', 'DEPOSIT'] },
+          createdAt: { gte: startDate },
+        },
+        include: {
+          booking: true,
+        },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      // Group payments by date
+      const trendsMap = new Map();
+      
+      payments.forEach(payment => {
+        let dateKey: string;
+        
+        if (groupBy === 'day') {
+          dateKey = payment.createdAt.toISOString().split('T')[0];
+        } else if (groupBy === 'week') {
+          const weekStart = new Date(payment.createdAt);
+          weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+          dateKey = weekStart.toISOString().split('T')[0];
+        } else if (groupBy === 'month') {
+          dateKey = `${payment.createdAt.getFullYear()}-${String(payment.createdAt.getMonth() + 1).padStart(2, '0')}`;
+        } else {
+          dateKey = payment.createdAt.toISOString().split('T')[0];
+        }
+
+        if (!trendsMap.has(dateKey)) {
+          trendsMap.set(dateKey, { earnings: 0, bookingCount: 0 });
+        }
+        
+        const currentTrend = trendsMap.get(dateKey)!;
+        trendsMap.set(dateKey, {
+          earnings: currentTrend.earnings + payment.amount,
+          bookingCount: currentTrend.bookingCount + 1
+        });
+      });
+
+      const trends = Array.from(trendsMap.entries())
+        .map(([date, data]) => ({
+          date,
+          earnings: data.earnings,
+          bookingCount: data.bookingCount,
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      const totalEarnings = trends.reduce((sum, trend) => sum + trend.earnings, 0);
+      const averageDaily = trends.length > 0 ? totalEarnings / trends.length : 0;
+      const peakDay = trends.reduce(
+        (peak, current) => (current.earnings > peak.earnings ? current : peak),
+        { date: '', earnings: 0 }
+      );
+
+      return {
+        trends,
+        totalEarnings,
+        averageDaily,
+        peakDay,
+      };
+    } catch (error) {
+      logger.error('Error getting earnings trends:', error);
+      throw error;
+    }
+  }
+
+  // Get earnings analytics
+  static async getEarningsAnalytics(specialistId: string): Promise<{
+    customerAnalytics: {
+      totalCustomers: number;
+      newCustomers: number;
+      returningCustomers: number;
+      topCustomers: Array<{
+        name: string;
+        totalSpent: number;
+        bookingCount: number;
+      }>;
+    };
+    serviceAnalytics: {
+      topServices: Array<{
+        serviceName: string;
+        revenue: number;
+        bookingCount: number;
+        averagePrice: number;
+      }>;
+      categoryBreakdown: Array<{
+        category: string;
+        revenue: number;
+        percentage: number;
+      }>;
+    };
+    timeAnalytics: {
+      busyHours: Array<{
+        hour: number;
+        bookingCount: number;
+        revenue: number;
+      }>;
+      busyDays: Array<{
+        day: string;
+        bookingCount: number;
+        revenue: number;
+      }>;
+    };
+  }> {
+    try {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const [
+        totalCustomersResult,
+        newCustomersResult,
+        returningCustomersResult,
+        topCustomersResult,
+        serviceAnalyticsResult,
+        bookingsWithTime,
+      ] = await Promise.all([
+        // Total customers
+        prisma.booking.findMany({
+          where: { specialistId },
+          select: { customerId: true },
+          distinct: ['customerId'],
+        }),
+        // New customers (first booking in last 30 days)
+        prisma.booking.findMany({
+          where: {
+            specialistId,
+            createdAt: { gte: thirtyDaysAgo },
+          },
+          select: { customerId: true, createdAt: true },
+          orderBy: { createdAt: 'asc' },
+        }),
+        // Returning customers
+        prisma.$queryRaw`
+          SELECT "customerId", COUNT(*) as booking_count
+          FROM bookings 
+          WHERE "specialistId" = ${specialistId}
+          GROUP BY "customerId"
+          HAVING COUNT(*) > 1
+        `,
+        // Top customers by spending
+        prisma.payment.groupBy({
+          by: ['userId'],
+          where: {
+            booking: { specialistId },
+            status: 'SUCCEEDED',
+          },
+          _sum: { amount: true },
+          _count: true,
+          orderBy: { _sum: { amount: 'desc' } },
+          take: 10,
+        }),
+        // Service analytics
+        prisma.payment.findMany({
+          where: {
+            booking: { specialistId },
+            status: 'SUCCEEDED',
+          },
+          include: {
+            booking: {
+              include: {
+                service: true,
+              },
+            },
+          },
+        }),
+        // Bookings with time data
+        prisma.booking.findMany({
+          where: { specialistId },
+          select: {
+            scheduledAt: true,
+            totalAmount: true,
+          },
+        }),
+      ]);
+
+      // Process customer analytics
+      const customerIds = new Set(newCustomersResult.map(b => b.customerId));
+      const firstBookings = new Map();
+      newCustomersResult.forEach(booking => {
+        if (!firstBookings.has(booking.customerId)) {
+          firstBookings.set(booking.customerId, booking.createdAt);
+        }
+      });
+
+      const newCustomers = Array.from(firstBookings.values()).filter(
+        date => date >= thirtyDaysAgo
+      ).length;
+
+      // Get top customer details
+      const topCustomerIds = topCustomersResult.map(c => c.userId);
+      const customerDetails = await prisma.user.findMany({
+        where: { id: { in: topCustomerIds } },
+        select: { id: true, firstName: true, lastName: true },
+      });
+
+      const topCustomers = topCustomersResult.map(customer => {
+        const details = customerDetails.find(d => d.id === customer.userId);
+        return {
+          name: details ? `${details.firstName} ${details.lastName}` : 'Unknown',
+          totalSpent: customer._sum.amount || 0,
+          bookingCount: customer._count,
+        };
+      });
+
+      // Process service analytics
+      const serviceMap = new Map();
+      const categoryMap = new Map();
+
+      serviceAnalyticsResult.forEach(payment => {
+        const service = payment.booking.service;
+        const serviceName = service.name;
+        const category = service.category;
+
+        if (!serviceMap.has(serviceName)) {
+          serviceMap.set(serviceName, { revenue: 0, bookingCount: 0 });
+        }
+        const currentService = serviceMap.get(serviceName)!;
+        serviceMap.set(serviceName, {
+          revenue: currentService.revenue + payment.amount,
+          bookingCount: currentService.bookingCount + 1
+        });
+
+        if (!categoryMap.has(category)) {
+          categoryMap.set(category, 0);
+        }
+        categoryMap.set(category, (categoryMap.get(category) || 0) + payment.amount);
+      });
+
+      const topServices = Array.from(serviceMap.entries()).map(([serviceName, data]) => ({
+        serviceName,
+        revenue: data.revenue,
+        bookingCount: data.bookingCount,
+        averagePrice: data.bookingCount > 0 ? data.revenue / data.bookingCount : 0,
+      })).sort((a, b) => b.revenue - a.revenue).slice(0, 10);
+
+      const totalRevenue = Array.from(categoryMap.values()).reduce((sum, val) => sum + val, 0);
+      const categoryBreakdown = Array.from(categoryMap.entries()).map(([category, revenue]) => ({
+        category,
+        revenue,
+        percentage: totalRevenue > 0 ? (revenue / totalRevenue) * 100 : 0,
+      }));
+
+      // Process time analytics
+      const hourlyData = new Map();
+      const dailyData = new Map();
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+      bookingsWithTime.forEach(booking => {
+        const hour = booking.scheduledAt.getHours();
+        const day = dayNames[booking.scheduledAt.getDay()];
+
+        if (!hourlyData.has(hour)) {
+          hourlyData.set(hour, { bookingCount: 0, revenue: 0 });
+        }
+        const currentHour = hourlyData.get(hour)!;
+        hourlyData.set(hour, {
+          bookingCount: currentHour.bookingCount + 1,
+          revenue: currentHour.revenue + booking.totalAmount
+        });
+
+        if (!dailyData.has(day)) {
+          dailyData.set(day, { bookingCount: 0, revenue: 0 });
+        }
+        const currentDay = dailyData.get(day)!;
+        dailyData.set(day, {
+          bookingCount: currentDay.bookingCount + 1,
+          revenue: currentDay.revenue + booking.totalAmount
+        });
+      });
+
+      const busyHours = Array.from(hourlyData.entries()).map(([hour, data]) => ({
+        hour,
+        bookingCount: data.bookingCount,
+        revenue: data.revenue,
+      })).sort((a, b) => b.bookingCount - a.bookingCount);
+
+      const busyDays = Array.from(dailyData.entries()).map(([day, data]) => ({
+        day,
+        bookingCount: data.bookingCount,
+        revenue: data.revenue,
+      })).sort((a, b) => b.bookingCount - a.bookingCount);
+
+      return {
+        customerAnalytics: {
+          totalCustomers: totalCustomersResult.length,
+          newCustomers,
+          returningCustomers: (returningCustomersResult as any[]).length,
+          topCustomers,
+        },
+        serviceAnalytics: {
+          topServices,
+          categoryBreakdown,
+        },
+        timeAnalytics: {
+          busyHours,
+          busyDays,
+        },
+      };
+    } catch (error) {
+      logger.error('Error getting earnings analytics:', error);
       throw error;
     }
   }

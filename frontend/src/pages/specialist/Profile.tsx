@@ -251,6 +251,7 @@ const SpecialistProfile: React.FC = () => {
     const loadProfile = async () => {
       try {
         setError(null);
+        setFieldErrors({}); // Clear any previous field errors
         
         // Always initialize with user data if available, otherwise use empty profile
         const initialProfile: SpecialistProfile = {
@@ -259,7 +260,7 @@ const SpecialistProfile: React.FC = () => {
           firstName: user?.firstName || '',
           lastName: user?.lastName || '',
           email: user?.email || '',
-          phone: user?.phoneNumber || '',
+          phone: user?.phoneNumber || user?.phone || '',
         };
         
         setProfile(initialProfile);
@@ -290,7 +291,9 @@ const SpecialistProfile: React.FC = () => {
           }
         }
       } catch (err: any) {
-        setError(err.message || 'Failed to load profile');
+        // Only set loading error, not validation error
+        const errorMessage = err.message || 'Failed to load profile data';
+        setError(errorMessage);
         console.error('Error loading profile:', err);
       } finally {
         // Always set loading to false
@@ -298,8 +301,11 @@ const SpecialistProfile: React.FC = () => {
       }
     };
 
-    // Add a small delay to ensure smooth loading transition
-    setTimeout(loadProfile, 100);
+    // Only load profile when user data is available or when needed
+    if (user || profile.id === '1') {
+      // Add a small delay to ensure smooth loading transition
+      setTimeout(loadProfile, 100);
+    }
   }, [user]);
 
   // Cleanup blob URLs when component unmounts
@@ -363,6 +369,9 @@ const SpecialistProfile: React.FC = () => {
 
     const file = files[0];
     
+    // Clear any previous errors
+    setPortfolioError('');
+    
     // Validate file type
     if (!file.type.startsWith('image/')) {
       setPortfolioError(language === 'uk' ? 'Завантажуйте лише зображення' : language === 'ru' ? 'Загружайте только изображения' : 'Please upload only image files');
@@ -406,6 +415,9 @@ const SpecialistProfile: React.FC = () => {
     if (!files || files.length === 0) return;
 
     const file = files[0];
+    
+    // Clear any previous errors
+    setCertificateError('');
     
     // Validate file type (images and PDFs allowed)
     const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
@@ -588,23 +600,31 @@ const SpecialistProfile: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading profile...</p>
+          <p className="text-gray-600 dark:text-gray-400">
+            {language === 'uk' ? 'Завантажуємо профіль...' : language === 'ru' ? 'Загружаем профиль...' : 'Loading profile...'}
+          </p>
         </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error && !isEditing) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-500 text-xl mb-4">Error loading profile</div>
+          <div className="text-red-500 text-xl mb-4">
+            {language === 'uk' ? 'Помилка завантаження профілю' : language === 'ru' ? 'Ошибка загрузки профиля' : 'Error loading profile'}
+          </div>
           <p className="text-gray-600 dark:text-gray-400">{error}</p>
           <button 
-            onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+            onClick={() => {
+              setError(null);
+              setLoading(true);
+              window.location.reload();
+            }}
+            className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
-            Retry
+            {language === 'uk' ? 'Повторити' : language === 'ru' ? 'Повторить' : 'Retry'}
           </button>
         </div>
       </div>
@@ -726,17 +746,24 @@ const SpecialistProfile: React.FC = () => {
 
             {/* Main Content */}
             <div className="lg:col-span-3">
-              {/* Error Display */}
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+              {/* Error Display - Only show during editing mode for form errors */}
+              {error && isEditing && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 dark:bg-red-900/20 dark:border-red-800">
                   <div className="flex items-center gap-3">
                     <svg className="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <p className="text-red-700">{error}</p>
+                    <div className="flex-1">
+                      <p className="text-red-700 dark:text-red-400 font-medium">
+                        {language === 'uk' ? 'Виявлені помилки у формі' : language === 'ru' ? 'Обнаружены ошибки в форме' : 'Form validation errors detected'}
+                      </p>
+                      <p className="text-red-600 dark:text-red-300 text-sm mt-1">
+                        {language === 'uk' ? 'Будь ласка, виправте помічені червоним поля та спробуйте ще раз' : language === 'ru' ? 'Пожалуйста, исправьте отмеченные красным поля и попробуйте еще раз' : 'Please correct the fields marked in red and try again'}
+                      </p>
+                    </div>
                     <button 
                       onClick={() => setError(null)}
-                      className="ml-auto text-red-500 hover:text-red-700"
+                      className="ml-auto text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1885,6 +1912,14 @@ const SpecialistProfile: React.FC = () => {
                             setError(null);
                             setFieldErrors({});
                             
+                            // Only validate if we're in editing mode and profile is loaded
+                            if (!profile || loading || !user) {
+                              console.warn('Profile or user not loaded yet, cannot save');
+                              setError(language === 'uk' ? 'Профіль ще завантажується, спробуйте пізніше' : language === 'ru' ? 'Профиль еще загружается, попробуйте позже' : 'Profile is still loading, please try again');
+                              setSavingProfile(false);
+                              return;
+                            }
+                            
                             // Validate required fields
                             const newFieldErrors: Record<string, string> = {};
                             
@@ -1920,7 +1955,7 @@ const SpecialistProfile: React.FC = () => {
                             
                             if (Object.keys(newFieldErrors).length > 0) {
                               setFieldErrors(newFieldErrors);
-                              setError(language === 'uk' ? 'Будь ласка, виправте помилки у формі' : language === 'ru' ? 'Пожалуйста, исправьте ошибки в форме' : 'Please fix the errors in the form');
+                              // Don't set the main error, just show field errors
                               setSavingProfile(false);
                               return;
                             }
