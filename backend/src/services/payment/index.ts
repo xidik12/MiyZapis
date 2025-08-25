@@ -328,11 +328,11 @@ export class PaymentService {
                 },
                 specialist: {
                   select: {
-                    businessName: true,
-                    user: {
+                    firstName: true,
+                    lastName: true,
+                    specialist: {
                       select: {
-                        firstName: true,
-                        lastName: true,
+                        businessName: true,
                       },
                     },
                   },

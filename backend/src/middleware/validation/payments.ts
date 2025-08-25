@@ -1,13 +1,20 @@
 import { body, param, query } from 'express-validator';
 
-// Payment statuses
+// Payment statuses - includes both database values and user-friendly aliases
 const PAYMENT_STATUSES = [
   'PENDING',
   'PROCESSING', 
   'SUCCEEDED',
   'FAILED',
   'CANCELLED',
-  'REFUNDED'
+  'REFUNDED',
+  // User-friendly aliases for frontend compatibility
+  'completed',
+  'pending',
+  'processing',
+  'failed',
+  'cancelled',
+  'refunded'
 ] as const;
 
 // Payment types
@@ -319,4 +326,12 @@ export const validateEarningsDateRange = [
       }
       return true;
     }),
+];
+
+// Revenue data validation
+export const validateRevenueRequest = [
+  query('period')
+    .optional()
+    .isIn(['day', 'week', 'month', 'year'])
+    .withMessage('Period must be one of: day, week, month, year'),
 ];

@@ -525,6 +525,8 @@ const translations: Translations = {
   'analytics.exportPdfReport': { en: 'Export PDF Report', uk: 'Експортувати PDF звіт', ru: 'Экспортировать PDF отчет' },
   'analytics.exportCsvData': { en: 'Export CSV Data', uk: 'Експортувати CSV дані', ru: 'Экспортировать CSV данные' },
   'analytics.shareAnalytics': { en: 'Share Analytics', uk: 'Поділитися аналітикою', ru: 'Поделиться аналитикой' },
+  'analytics.noTrendData': { en: 'No trend data available', uk: 'Немає даних про тенденції', ru: 'Нет данных о трендах' },
+  'analytics.noServiceData': { en: 'No service data available', uk: 'Немає даних про послуги', ru: 'Нет данных об услугах' },
 
   // Bookings Page
   'bookings.subtitle': { en: 'Manage all your bookings and appointments in one place', uk: 'Керуйте всіма своїми бронюваннями та зустрічами в одному місці', ru: 'Управляйте всеми своими бронированиями и встречами в одном месте' },

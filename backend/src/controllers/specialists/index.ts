@@ -960,4 +960,117 @@ export class SpecialistController {
       );
     }
   }
+
+  // Get revenue breakdown
+  static async getRevenueBreakdown(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (req.user.userType !== 'SPECIALIST') {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.ACCESS_DENIED,
+            'Only specialists can access revenue data',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { period = 'month' } = req.query;
+
+      // Validate period parameter
+      if (!['day', 'week', 'month', 'year'].includes(period as string)) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid period parameter. Must be one of: day, week, month, year',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Import PaymentService
+      const { PaymentService } = await import('@/services/payment');
+
+      // Calculate date range based on period
+      const now = new Date();
+      let startDate: Date;
+      let endDate: Date = new Date();
+
+      switch (period) {
+        case 'day':
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+          break;
+        case 'week':
+          const weekStart = new Date(now);
+          weekStart.setDate(now.getDate() - now.getDay());
+          startDate = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate());
+          endDate = new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+          break;
+        case 'month':
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+          break;
+        case 'year':
+          startDate = new Date(now.getFullYear(), 0, 1);
+          endDate = new Date(now.getFullYear() + 1, 0, 1);
+          break;
+        default:
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      }
+
+      // Get earnings data using the payment service
+      const earningsData = await PaymentService.getSpecialistEarnings(req.user.id, {
+        fromDate: startDate,
+        toDate: endDate,
+      });
+
+      // Get earnings trends for breakdown
+      const trendsData = await PaymentService.getEarningsTrends(req.user.id, {
+        period: period as string,
+        groupBy: period === 'year' ? 'month' : 'day',
+      });
+
+      // Format response data to match frontend expectations
+      const responseData = {
+        totalRevenue: earningsData.totalEarnings || 0,
+        pendingRevenue: earningsData.pendingEarnings || 0,
+        paidRevenue: earningsData.totalEarnings - (earningsData.pendingEarnings || 0),
+        platformFee: (earningsData.totalEarnings || 0) * 0.1, // 10% platform fee
+        netRevenue: (earningsData.totalEarnings || 0) * 0.9,
+        breakdown: trendsData.trends.map(trend => ({
+          date: trend.date,
+          revenue: trend.earnings,
+          bookings: trend.bookingCount,
+        })),
+      };
+
+      res.json(
+        createSuccessResponse(responseData)
+      );
+    } catch (error: any) {
+      logger.error('Get revenue breakdown error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get revenue breakdown',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
 }

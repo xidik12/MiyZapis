@@ -120,51 +120,105 @@ const SpecialistEarnings: React.FC = () => {
   // Load earnings data from API
   useEffect(() => {
     const loadEarningsData = async () => {
-      // Load revenue data from specialist service
       try {
-        setLoading(prev => ({ ...prev, earnings: true }));
-        setErrors(prev => ({ ...prev, earnings: null }));
+        setLoading(prev => ({ ...prev, earnings: true, analytics: true }));
+        setErrors(prev => ({ ...prev, earnings: null, analytics: null }));
         
-        const revenueData = await specialistService.getRevenueBreakdown(selectedPeriod);
-        const customerInsights = await specialistService.getCustomerInsights();
-        const analytics = await specialistService.getAnalytics(selectedPeriod);
+        // Load data from the new working backend endpoints
+        const [revenueData, analyticsOverview, servicesData, performanceData] = await Promise.allSettled([
+          paymentService.getPaymentHistory({ limit: 100, status: 'completed' }),
+          analyticsService.getOverview(),
+          analyticsService.getServiceAnalytics(),
+          analyticsService.getPerformanceAnalytics()
+        ]);
         
-        // Transform revenue data to match our interface
+        // Process revenue data
+        let totalEarnings = 0;
+        let thisMonthEarnings = 0;
+        let pendingEarnings = 0;
+        let monthlyBreakdown: MonthlyEarning[] = [];
+        
+        if (revenueData.status === 'fulfilled') {
+          const payments = revenueData.value.payments || [];
+          totalEarnings = payments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
+          
+          // Calculate this month's earnings
+          const currentMonth = new Date().getMonth();
+          const currentYear = new Date().getFullYear();
+          thisMonthEarnings = payments
+            .filter(payment => {
+              const paymentDate = new Date(payment.createdAt || payment.updatedAt);
+              return paymentDate.getMonth() === currentMonth && paymentDate.getFullYear() === currentYear;
+            })
+            .reduce((sum, payment) => sum + (payment.amount || 0), 0);
+          
+          // Create monthly breakdown
+          const monthlyData = new Map<string, { earnings: number; bookings: number }>();
+          payments.forEach(payment => {
+            const date = new Date(payment.createdAt || payment.updatedAt);
+            const monthKey = date.toLocaleDateString('en', { month: 'short' });
+            const existing = monthlyData.get(monthKey) || { earnings: 0, bookings: 0 };
+            monthlyData.set(monthKey, {
+              earnings: existing.earnings + (payment.amount || 0),
+              bookings: existing.bookings + 1
+            });
+          });
+          
+          monthlyBreakdown = Array.from(monthlyData.entries()).map(([month, data]) => ({
+            month,
+            earnings: data.earnings,
+            bookings: data.bookings
+          }));
+        }
+        
+        // Process analytics data
+        let analyticsData = {
+          totalBookings: 0,
+          averageRating: 0,
+          completionRate: 0,
+          newCustomers: 0,
+          repeatCustomers: 0
+        };
+        
+        if (analyticsOverview.status === 'fulfilled') {
+          const overview = analyticsOverview.value;
+          analyticsData = {
+            totalBookings: overview.totalBookings || 0,
+            averageRating: overview.averageRating || 0,
+            completionRate: overview.completionRate || 0,
+            newCustomers: overview.newCustomers || 0,
+            repeatCustomers: overview.repeatCustomers || 0
+          };
+        }
+        
+        // Transform data to match our interface
         const transformedEarnings: EarningsData = {
-          totalEarnings: revenueData.totalRevenue,
-          thisMonth: revenueData.totalRevenue, // Current period revenue
-          pending: revenueData.pendingRevenue,
-          lastPayout: revenueData.paidRevenue,
-          completedBookings: analytics.totalBookings,
-          activeClients: customerInsights.totalCustomers,
-          averageBookingValue: revenueData.breakdown.length > 0 
-            ? revenueData.breakdown.reduce((sum, item) => sum + (item.revenue / item.bookings || 0), 0) / revenueData.breakdown.length
-            : 0,
-          monthlyGrowth: calculateGrowthRate(revenueData.breakdown),
-          conversionRate: analytics.conversionRate || 0,
-          repeatCustomers: customerInsights.repeatCustomers || 0,
-          peakHours: determinePeakHours(revenueData.breakdown),
-          bestDay: determineBestDay(revenueData.breakdown),
-          avgSessionValue: revenueData.breakdown.length > 0 
-            ? revenueData.breakdown.reduce((sum, item) => sum + (item.revenue / item.bookings || 0), 0) / revenueData.breakdown.length
-            : 0
+          totalEarnings,
+          thisMonth: thisMonthEarnings,
+          pending: pendingEarnings,
+          lastPayout: totalEarnings - pendingEarnings,
+          completedBookings: analyticsData.totalBookings,
+          activeClients: analyticsData.newCustomers + analyticsData.repeatCustomers,
+          averageBookingValue: analyticsData.totalBookings > 0 ? totalEarnings / analyticsData.totalBookings : 0,
+          monthlyGrowth: calculateGrowthRate(monthlyBreakdown.map(item => ({ date: item.month, revenue: item.earnings }))),
+          conversionRate: analyticsData.completionRate,
+          repeatCustomers: analyticsData.repeatCustomers,
+          peakHours: determinePeakHours(monthlyBreakdown.map(item => ({ date: item.month, revenue: item.earnings }))),
+          bestDay: determineBestDay(monthlyBreakdown.map(item => ({ date: item.month, revenue: item.earnings }))),
+          avgSessionValue: analyticsData.totalBookings > 0 ? totalEarnings / analyticsData.totalBookings : 0
         };
         
         setEarningsData(transformedEarnings);
-        
-        // Transform monthly breakdown
-        const transformedMonthly = revenueData.breakdown.map(item => ({
-          month: formatDateToMonth(item.date),
-          earnings: item.revenue,
-          bookings: item.bookings
-        }));
-        
-        setMonthlyEarnings(transformedMonthly);
-        setLoading(prev => ({ ...prev, earnings: false }));
+        setMonthlyEarnings(monthlyBreakdown);
+        setLoading(prev => ({ ...prev, earnings: false, analytics: false }));
       } catch (err: any) {
         console.error('Error loading earnings:', err);
-        setErrors(prev => ({ ...prev, earnings: err.message || 'Failed to load earnings data' }));
-        setLoading(prev => ({ ...prev, earnings: false }));
+        setErrors(prev => ({ 
+          ...prev, 
+          earnings: err.message || 'Failed to load earnings data',
+          analytics: err.message || 'Failed to load analytics data'
+        }));
+        setLoading(prev => ({ ...prev, earnings: false, analytics: false }));
       }
     };
 
@@ -173,18 +227,19 @@ const SpecialistEarnings: React.FC = () => {
         setLoading(prev => ({ ...prev, payments: true }));
         setErrors(prev => ({ ...prev, payments: null }));
         
+        // Use the correct API endpoint for payment history
         const paymentHistoryData = await paymentService.getPaymentHistory({
           limit: 10,
-          status: 'completed'
+          status: 'succeeded' // Use 'succeeded' instead of 'completed' to match backend
         });
         
         // Transform payment data to match our interface
-        const transformedHistory: PayoutHistory[] = paymentHistoryData.payments.map(payment => ({
+        const transformedHistory: PayoutHistory[] = (paymentHistoryData.payments || []).map(payment => ({
           id: payment.id,
           date: payment.createdAt || payment.updatedAt,
           amount: payment.amount,
           status: payment.status === 'succeeded' ? 'completed' : payment.status === 'pending' ? 'pending' : 'processing',
-          method: payment.paymentMethod?.type || 'card'
+          method: payment.paymentMethod?.type || payment.paymentMethodType || 'card'
         }));
         
         setPayoutHistory(transformedHistory);
@@ -202,54 +257,102 @@ const SpecialistEarnings: React.FC = () => {
 
   // Helper functions
   const calculateGrowthRate = (breakdown: Array<{ date: string; revenue: number }>) => {
-    if (breakdown.length < 2) return 0;
-    const recent = breakdown.slice(-2);
-    const oldValue = recent[0].revenue;
-    const newValue = recent[1].revenue;
-    if (oldValue === 0) return newValue > 0 ? 100 : 0;
-    return Math.round(((newValue - oldValue) / oldValue) * 100);
+    if (!breakdown || breakdown.length < 2) return 0;
+    
+    try {
+      const validData = breakdown.filter(item => item && typeof item.revenue === 'number' && !isNaN(item.revenue));
+      if (validData.length < 2) return 0;
+      
+      const recent = validData.slice(-2);
+      const oldValue = recent[0].revenue;
+      const newValue = recent[1].revenue;
+      
+      if (oldValue === 0) return newValue > 0 ? 100 : 0;
+      return Math.round(((newValue - oldValue) / oldValue) * 100);
+    } catch (error) {
+      console.error('Error calculating growth rate:', error);
+      return 0;
+    }
   };
 
   const determinePeakHours = (breakdown: Array<{ date: string; revenue: number }>) => {
-    // This is a simplified implementation. In a real scenario, you'd analyze hourly data
-    const hasData = breakdown.some(item => item.revenue > 0);
-    return hasData ? t('earnings.timeFormat.afternoon') : t('earnings.noData');
+    try {
+      // This is a simplified implementation. In a real scenario, you'd analyze hourly data
+      const hasData = breakdown && breakdown.some(item => item && item.revenue > 0);
+      return hasData ? t('earnings.timeFormat.afternoon') : t('earnings.noData');
+    } catch (error) {
+      console.error('Error determining peak hours:', error);
+      return t('earnings.noData');
+    }
   };
 
   const determineBestDay = (breakdown: Array<{ date: string; revenue: number }>) => {
-    if (breakdown.length === 0) return t('earnings.noData');
-    const bestDay = breakdown.reduce((best, current) => 
-      current.revenue > best.revenue ? current : best
-    );
-    const dayName = new Date(bestDay.date).toLocaleDateString('en', { weekday: 'long' });
-    return t(`earnings.weekday.${dayName.toLowerCase()}`) || dayName;
+    try {
+      if (!breakdown || breakdown.length === 0) return t('earnings.noData');
+      
+      const validData = breakdown.filter(item => item && typeof item.revenue === 'number' && !isNaN(item.revenue));
+      if (validData.length === 0) return t('earnings.noData');
+      
+      const bestDay = validData.reduce((best, current) => 
+        current.revenue > best.revenue ? current : best
+      );
+      
+      // For monthly data, just return the best month
+      return bestDay.date || t('earnings.noData');
+    } catch (error) {
+      console.error('Error determining best day:', error);
+      return t('earnings.noData');
+    }
   };
 
   const formatDateToMonth = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en', { month: 'short' });
+    try {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en', { month: 'short' });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'N/A';
+    }
   };
 
   const handleExportReport = async () => {
     setIsExporting(true);
     
     try {
-      // Use analytics service to export data
-      const blob = await analyticsService.exportAnalytics('revenue', {
-        startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
-        endDate: new Date().toISOString()
-      }, 'csv');
-      
-      // Create and download file
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `earnings-report-${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      // Try to use analytics service to export data, fallback to CSV generation
+      try {
+        const blob = await analyticsService.exportAnalytics('revenue', {
+          startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
+          endDate: new Date().toISOString()
+        }, 'csv');
+        
+        // Create and download file
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `earnings-report-${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } catch (exportError) {
+        console.warn('Analytics export failed, using fallback CSV generation:', exportError);
+        
+        // Fallback to local CSV generation
+        const csvContent = generateCSVReport();
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `earnings-report-${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
     } catch (error) {
       console.error('Export failed:', error);
       setErrors(prev => ({ ...prev, analytics: 'Failed to export report' }));
@@ -321,7 +424,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  ${earningsData.totalEarnings.toFixed(2)}
+                  ${(earningsData.totalEarnings || 0).toFixed(2)}
                 </p>
               )}
             </div>
@@ -339,7 +442,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  ${earningsData.thisMonth.toFixed(2)}
+                  ${(earningsData.thisMonth || 0).toFixed(2)}
                 </p>
               )}
             </div>
@@ -357,7 +460,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-orange-600">
-                  ${earningsData.pending.toFixed(2)}
+                  ${(earningsData.pending || 0).toFixed(2)}
                 </p>
               )}
             </div>
@@ -375,7 +478,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  ${earningsData.lastPayout.toFixed(2)}
+                  ${(earningsData.lastPayout || 0).toFixed(2)}
                 </p>
               )}
             </div>
@@ -396,7 +499,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {earningsData.completedBookings}
+                  {earningsData.completedBookings || 0}
                 </p>
               )}
             </div>
@@ -414,7 +517,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {earningsData.activeClients}
+                  {earningsData.activeClients || 0}
                 </p>
               )}
             </div>
@@ -432,7 +535,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  ${earningsData.averageBookingValue.toFixed(2)}
+                  ${(earningsData.averageBookingValue || 0).toFixed(2)}
                 </p>
               )}
             </div>
@@ -449,8 +552,8 @@ const SpecialistEarnings: React.FC = () => {
               {loading.earnings ? (
                 <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
-                <p className={`text-2xl font-bold ${earningsData.monthlyGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {earningsData.monthlyGrowth >= 0 ? '+' : ''}{earningsData.monthlyGrowth}%
+                <p className={`text-2xl font-bold ${(earningsData.monthlyGrowth || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {(earningsData.monthlyGrowth || 0) >= 0 ? '+' : ''}{earningsData.monthlyGrowth || 0}%
                 </p>
               )}
             </div>
@@ -500,29 +603,34 @@ const SpecialistEarnings: React.FC = () => {
                   </div>
                 </div>
               ))
-            ) : monthlyEarnings.length > 0 ? (
-              monthlyEarnings.map((item, index) => (
-                <div key={item.month} className="flex items-center space-x-3">
-                  <div className="w-16 text-sm text-gray-600 dark:text-gray-400 font-medium">
-                    {getTranslatedMonth(item.month)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="bg-gray-100 dark:bg-gray-700 rounded-lg h-10 relative overflow-hidden">
-                      <div 
-                        className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-full rounded-lg flex items-center justify-end pr-3 transition-all duration-500 ease-out"
-                        style={{ width: `${(item.earnings / Math.max(...monthlyEarnings.map(m => m.earnings))) * 100}%` }}
-                      >
-                        <span className="text-white text-sm font-semibold shadow-sm">${item.earnings.toFixed(2)}</span>
+            ) : monthlyEarnings && monthlyEarnings.length > 0 ? (
+              monthlyEarnings.map((item, index) => {
+                const maxEarnings = Math.max(...monthlyEarnings.map(m => m.earnings || 0));
+                const widthPercentage = maxEarnings > 0 ? ((item.earnings || 0) / maxEarnings) * 100 : 0;
+                
+                return (
+                  <div key={item.month || index} className="flex items-center space-x-3">
+                    <div className="w-16 text-sm text-gray-600 dark:text-gray-400 font-medium">
+                      {getTranslatedMonth(item.month || 'N/A')}
+                    </div>
+                    <div className="flex-1">
+                      <div className="bg-gray-100 dark:bg-gray-700 rounded-lg h-10 relative overflow-hidden">
+                        <div 
+                          className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-full rounded-lg flex items-center justify-end pr-3 transition-all duration-500 ease-out"
+                          style={{ width: `${Math.max(5, widthPercentage)}%` }}
+                        >
+                          <span className="text-white text-sm font-semibold shadow-sm">${(item.earnings || 0).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="w-20 text-right">
+                      <div className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-md text-xs font-medium">
+                        {item.bookings || 0} {t('earnings.bookings')}
                       </div>
                     </div>
                   </div>
-                  <div className="w-20 text-right">
-                    <div className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-md text-xs font-medium">
-                      {item.bookings} {t('earnings.bookings')}
-                    </div>
-                  </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <ChartBarIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
@@ -546,15 +654,15 @@ const SpecialistEarnings: React.FC = () => {
                   <div className="h-6 w-20 bg-gray-200 dark:bg-gray-600 rounded-full animate-pulse"></div>
                 </div>
               ))
-            ) : payoutHistory.length > 0 ? (
+            ) : payoutHistory && payoutHistory.length > 0 ? (
               payoutHistory.map((payout) => (
-                <div key={payout.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div key={payout.id || Math.random()} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div>
                     <div className="font-medium text-gray-900 dark:text-white">
-                      ${payout.amount.toFixed(2)}
+                      ${(payout.amount || 0).toFixed(2)}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                      {new Date(payout.date).toLocaleDateString()} • {getTranslatedPaymentMethod(payout.method)}
+                      {payout.date ? new Date(payout.date).toLocaleDateString() : 'N/A'} • {getTranslatedPaymentMethod(payout.method || 'card')}
                     </div>
                   </div>
                   <div className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -564,7 +672,7 @@ const SpecialistEarnings: React.FC = () => {
                       ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
                       : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
                   }`}>
-                    {t(`earnings.${payout.status}`)}
+                    {t(`earnings.${payout.status || 'processing'}`)}
                   </div>
                 </div>
               ))
@@ -592,7 +700,7 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white">{earningsData.conversionRate.toFixed(1)}%</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{(earningsData.conversionRate || 0).toFixed(1)}%</span>
                 )}
               </div>
               <div className="flex justify-between">
@@ -600,7 +708,7 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white">{earningsData.repeatCustomers}%</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{earningsData.repeatCustomers || 0}%</span>
                 )}
               </div>
               <div className="flex justify-between">
@@ -608,7 +716,7 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white">${earningsData.avgSessionValue.toFixed(2)}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">${(earningsData.avgSessionValue || 0).toFixed(2)}</span>
                 )}
               </div>
             </div>
@@ -654,8 +762,8 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className={`font-medium ${earningsData.monthlyGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {earningsData.monthlyGrowth >= 0 ? '+' : ''}{earningsData.monthlyGrowth}%
+                  <span className={`font-medium ${(earningsData.monthlyGrowth || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {(earningsData.monthlyGrowth || 0) >= 0 ? '+' : ''}{earningsData.monthlyGrowth || 0}%
                   </span>
                 )}
               </div>
@@ -664,7 +772,7 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white">+{Math.max(0, earningsData.activeClients - earningsData.repeatCustomers)} {t('earnings.thisMonthShort')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">+{Math.max(0, (earningsData.activeClients || 0) - (earningsData.repeatCustomers || 0))} {t('earnings.thisMonthShort')}</span>
                 )}
               </div>
               <div className="flex justify-between">
@@ -672,8 +780,8 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className={`font-medium ${earningsData.monthlyGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {earningsData.monthlyGrowth >= 0 ? t('earnings.increasing') : t('earnings.decreasing')}
+                  <span className={`font-medium ${(earningsData.monthlyGrowth || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {(earningsData.monthlyGrowth || 0) >= 0 ? t('earnings.increasing') : t('earnings.decreasing')}
                   </span>
                 )}
               </div>

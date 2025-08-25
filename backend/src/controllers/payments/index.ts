@@ -238,8 +238,22 @@ export class PaymentController {
   // Get payment history with advanced filtering
   static async getPaymentHistory(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
+      // Log incoming request for debugging
+      logger.info('Payment history request:', {
+        userId: req.user?.id,
+        query: req.query,
+        userAgent: req.get('User-Agent'),
+        requestId: req.headers['x-request-id']
+      });
+
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        logger.warn('Payment history validation errors:', {
+          userId: req.user?.id,
+          errors: errors.array(),
+          query: req.query
+        });
+        
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.VALIDATION_ERROR,
@@ -280,8 +294,29 @@ export class PaymentController {
         sortOrder = 'desc',
       } = req.query;
 
+      // Convert frontend-friendly status values to database values
+      const convertStatusToDbValue = (inputStatus: string): string | undefined => {
+        if (!inputStatus) return undefined;
+        const statusMap: { [key: string]: string } = {
+          'completed': 'SUCCEEDED',
+          'pending': 'PENDING',
+          'processing': 'PROCESSING',
+          'failed': 'FAILED',
+          'cancelled': 'CANCELLED',
+          'refunded': 'REFUNDED',
+          // Also handle uppercase database values directly
+          'PENDING': 'PENDING',
+          'PROCESSING': 'PROCESSING',
+          'SUCCEEDED': 'SUCCEEDED',
+          'FAILED': 'FAILED',
+          'CANCELLED': 'CANCELLED',
+          'REFUNDED': 'REFUNDED'
+        };
+        return statusMap[inputStatus] || inputStatus;
+      };
+
       const filters = {
-        status: status as string,
+        status: convertStatusToDbValue(status as string),
         type: type as string,
         startDate: startDate ? new Date(startDate as string) : undefined,
         endDate: endDate ? new Date(endDate as string) : undefined,
@@ -293,6 +328,13 @@ export class PaymentController {
         sortBy: sortBy as string,
         sortOrder: sortOrder as 'asc' | 'desc',
       };
+
+      logger.info('Payment history filters:', {
+        userId: req.user.id,
+        originalStatus: status,
+        convertedStatus: filters.status,
+        filters
+      });
 
       const result = await PaymentService.getPaymentHistory(req.user.id, filters);
 
@@ -320,7 +362,36 @@ export class PaymentController {
         })
       );
     } catch (error: any) {
-      logger.error('Get payment history error:', error);
+      logger.error('Get payment history error:', {
+        userId: req.user?.id,
+        query: req.query,
+        error: error.message,
+        stack: error.stack,
+        requestId: req.headers['x-request-id']
+      });
+
+      // Handle specific service errors
+      if (error.message === 'USER_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'User not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'INVALID_FILTER_PARAMETERS') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid filter parameters',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
 
       res.status(500).json(
         createErrorResponse(
@@ -756,6 +827,167 @@ export class PaymentController {
         createErrorResponse(
           ErrorCodes.INTERNAL_SERVER_ERROR,
           'Failed to process mock payment',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Get revenue data with period filtering
+  static async getRevenueData(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (req.user.userType !== 'SPECIALIST') {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.ACCESS_DENIED,
+            'Only specialists can access revenue data',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { period = 'month' } = req.query;
+
+      // Validate period parameter
+      if (!['day', 'week', 'month', 'year'].includes(period as string)) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid period parameter. Must be one of: day, week, month, year',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Calculate date range based on period
+      const now = new Date();
+      let startDate: Date;
+      let endDate: Date = new Date();
+
+      switch (period) {
+        case 'day':
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+          break;
+        case 'week':
+          const weekStart = new Date(now);
+          weekStart.setDate(now.getDate() - now.getDay());
+          startDate = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate());
+          endDate = new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+          break;
+        case 'month':
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+          break;
+        case 'year':
+          startDate = new Date(now.getFullYear(), 0, 1);
+          endDate = new Date(now.getFullYear() + 1, 0, 1);
+          break;
+        default:
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      }
+
+      // Get earnings data using the existing service method
+      const earningsData = await PaymentService.getSpecialistEarnings(req.user.id, {
+        fromDate: startDate,
+        toDate: endDate,
+      });
+
+      // Get earnings trends for comparison
+      const trendsData = await PaymentService.getEarningsTrends(req.user.id, {
+        period: period as string,
+        groupBy: period === 'year' ? 'month' : 'day',
+      });
+
+      // Calculate previous period for trend comparison
+      let previousStartDate: Date;
+      let previousEndDate: Date;
+
+      switch (period) {
+        case 'day':
+          previousStartDate = new Date(startDate.getTime() - 24 * 60 * 60 * 1000);
+          previousEndDate = new Date(startDate);
+          break;
+        case 'week':
+          previousStartDate = new Date(startDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+          previousEndDate = new Date(startDate);
+          break;
+        case 'month':
+          const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          previousStartDate = prevMonth;
+          previousEndDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          break;
+        case 'year':
+          previousStartDate = new Date(now.getFullYear() - 1, 0, 1);
+          previousEndDate = new Date(now.getFullYear(), 0, 1);
+          break;
+        default:
+          const prevMonthDefault = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          previousStartDate = prevMonthDefault;
+          previousEndDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      }
+
+      // Get previous period data for comparison
+      const previousEarningsData = await PaymentService.getSpecialistEarnings(req.user.id, {
+        fromDate: previousStartDate,
+        toDate: previousEndDate,
+      });
+
+      // Calculate growth rate
+      const currentRevenue = earningsData.totalEarnings || 0;
+      const previousRevenue = previousEarningsData.totalEarnings || 0;
+      const growthRate = previousRevenue === 0 
+        ? (currentRevenue > 0 ? 100 : 0)
+        : Math.round(((currentRevenue - previousRevenue) / previousRevenue) * 100);
+
+      // Format response data to match frontend expectations
+      const responseData = {
+        totalRevenue: currentRevenue,
+        pendingRevenue: earningsData.pendingEarnings || 0,
+        paidRevenue: earningsData.totalEarnings - (earningsData.pendingEarnings || 0),
+        platformFee: currentRevenue * 0.1, // 10% platform fee
+        netRevenue: currentRevenue * 0.9,
+        growthRate,
+        period: period,
+        breakdown: trendsData.trends.map(trend => ({
+          date: trend.date,
+          revenue: trend.earnings,
+          bookings: trend.bookingCount,
+        })),
+        comparison: {
+          current: currentRevenue,
+          previous: previousRevenue,
+          growth: growthRate,
+        },
+        peakDay: trendsData.peakDay,
+      };
+
+      res.json(
+        createSuccessResponse({
+          revenue: responseData,
+        })
+      );
+    } catch (error: any) {
+      logger.error('Get revenue data error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get revenue data',
           req.headers['x-request-id'] as string
         )
       );

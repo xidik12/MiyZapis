@@ -11,6 +11,7 @@ router.get('/my/analytics', authenticateToken, requireSpecialist, SpecialistCont
 // Frontend expects these routes (must come before parameterized routes)
 router.get('/profile', authenticateToken, requireSpecialist, SpecialistController.getMyProfile);
 router.get('/analytics', authenticateToken, requireSpecialist, SpecialistController.getAnalytics);
+router.get('/revenue', authenticateToken, requireSpecialist, SpecialistController.getRevenueBreakdown);
 
 // Specialist services routes (frontend expects these - must come before parameterized routes)
 router.get('/services', authenticateToken, requireSpecialist, SpecialistController.getServices);

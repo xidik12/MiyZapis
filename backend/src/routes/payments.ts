@@ -4,7 +4,8 @@ import { authenticateToken, requireSpecialist, requireAdmin } from '@/middleware
 import { 
   validateGetPaymentHistory, 
   validateEarningsTrends, 
-  validateEarningsDateRange 
+  validateEarningsDateRange,
+  validateRevenueRequest 
 } from '@/middleware/validation/payments';
 
 const router = Router();
@@ -28,6 +29,7 @@ router.get('/earnings/my', authenticateToken, requireSpecialist, validateEarning
 router.get('/earnings/overview', authenticateToken, requireSpecialist, PaymentController.getEarningsOverview);
 router.get('/earnings/trends', authenticateToken, requireSpecialist, validateEarningsTrends, PaymentController.getEarningsTrends);
 router.get('/earnings/analytics', authenticateToken, requireSpecialist, PaymentController.getEarningsAnalytics);
+router.get('/earnings/revenue', authenticateToken, requireSpecialist, validateRevenueRequest, PaymentController.getRevenueData);
 
 // Admin routes
 router.post('/refund', authenticateToken, requireAdmin, PaymentController.processRefund);
