@@ -166,7 +166,9 @@ export const validateGetServiceReviews = [
 // Get specialist reviews validation
 export const validateGetSpecialistReviews = [
   param('id')
-    .isUUID()
+    .notEmpty()
+    .withMessage('Specialist ID is required')
+    .isLength({ min: 1 })
     .withMessage('Valid specialist ID is required'),
   
   query('page')

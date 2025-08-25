@@ -551,18 +551,81 @@ export class ServiceService {
         },
       });
 
-      // Static category definitions with icons
+      // Comprehensive static category definitions with icons
       const categoryDefinitions = [
-        { id: 'haircut', name: 'Hair & Beauty', icon: '✂️' },
+        // Beauty & Personal Care
+        { id: 'haircut', name: 'Hair & Barber Services', icon: '✂️' },
+        { id: 'beauty', name: 'Beauty & Makeup', icon: '💅' },
+        { id: 'skincare', name: 'Skincare & Facials', icon: '🧴' },
+        { id: 'nails', name: 'Nail Services', icon: '💅' },
+        { id: 'eyebrows', name: 'Eyebrow & Lash Services', icon: '👁️' },
+        { id: 'styling', name: 'Hair Styling & Coloring', icon: '🎨' },
+        
+        // Health & Wellness
         { id: 'massage', name: 'Massage & Spa', icon: '💆‍♀️' },
-        { id: 'fitness', name: 'Fitness & Training', icon: '🏋️‍♂️' },
-        { id: 'beauty', name: 'Beauty & Nails', icon: '💅' },
-        { id: 'tattoo', name: 'Tattoo & Piercing', icon: '🎨' },
-        { id: 'therapy', name: 'Therapy & Wellness', icon: '🧘‍♀️' },
-        { id: 'automotive', name: 'Automotive', icon: '🚗' },
-        { id: 'home', name: 'Home Services', icon: '🏠' },
+        { id: 'therapy', name: 'Therapy & Counseling', icon: '🧘‍♀️' },
+        { id: 'physiotherapy', name: 'Physiotherapy', icon: '🏥' },
+        { id: 'nutrition', name: 'Nutrition & Diet', icon: '🥗' },
+        { id: 'wellness', name: 'Wellness & Alternative Medicine', icon: '🌿' },
+        
+        // Fitness & Sports
+        { id: 'fitness', name: 'Personal Training', icon: '🏋️‍♂️' },
+        { id: 'yoga', name: 'Yoga & Pilates', icon: '🧘‍♀️' },
+        { id: 'sports', name: 'Sports Coaching', icon: '⚽' },
+        { id: 'dance', name: 'Dance Lessons', icon: '💃' },
+        { id: 'martial-arts', name: 'Martial Arts', icon: '🥋' },
+        
+        // Creative & Arts
         { id: 'photography', name: 'Photography', icon: '📸' },
-        { id: 'education', name: 'Education & Training', icon: '📚' },
+        { id: 'videography', name: 'Videography', icon: '🎥' },
+        { id: 'tattoo', name: 'Tattoo & Piercing', icon: '🎨' },
+        { id: 'art', name: 'Art & Design', icon: '🎨' },
+        { id: 'music', name: 'Music Lessons', icon: '🎵' },
+        { id: 'writing', name: 'Writing & Translation', icon: '✍️' },
+        
+        // Education & Tutoring
+        { id: 'education', name: 'Academic Tutoring', icon: '📚' },
+        { id: 'language', name: 'Language Lessons', icon: '🗣️' },
+        { id: 'computer', name: 'Computer Skills', icon: '💻' },
+        { id: 'test-prep', name: 'Test Preparation', icon: '📝' },
+        
+        // Technology & IT
+        { id: 'it-support', name: 'IT Support & Repair', icon: '💻' },
+        { id: 'web-development', name: 'Web Development', icon: '🌐' },
+        { id: 'app-development', name: 'App Development', icon: '📱' },
+        { id: 'graphic-design', name: 'Graphic Design', icon: '🎨' },
+        { id: 'digital-marketing', name: 'Digital Marketing', icon: '📈' },
+        
+        // Home & Lifestyle
+        { id: 'cleaning', name: 'Cleaning Services', icon: '🧽' },
+        { id: 'home-repair', name: 'Home Repair & Maintenance', icon: '🔧' },
+        { id: 'gardening', name: 'Gardening & Landscaping', icon: '🌱' },
+        { id: 'pet-care', name: 'Pet Care & Training', icon: '🐕' },
+        { id: 'childcare', name: 'Childcare & Babysitting', icon: '👶' },
+        { id: 'elderly-care', name: 'Elderly Care', icon: '👵' },
+        
+        // Transportation & Automotive
+        { id: 'automotive', name: 'Auto Repair & Maintenance', icon: '🚗' },
+        { id: 'driving', name: 'Driving Lessons', icon: '🚗' },
+        { id: 'transport', name: 'Transportation Services', icon: '🚐' },
+        
+        // Events & Entertainment
+        { id: 'event-planning', name: 'Event Planning', icon: '🎉' },
+        { id: 'catering', name: 'Catering Services', icon: '🍽️' },
+        { id: 'entertainment', name: 'Entertainment & Performance', icon: '🎭' },
+        { id: 'dj', name: 'DJ & Music Services', icon: '🎧' },
+        
+        // Legal & Professional
+        { id: 'legal', name: 'Legal Services', icon: '⚖️' },
+        { id: 'accounting', name: 'Accounting & Tax', icon: '📊' },
+        { id: 'consulting', name: 'Business Consulting', icon: '💼' },
+        { id: 'real-estate', name: 'Real Estate', icon: '🏘️' },
+        
+        // Other Services
+        { id: 'craft', name: 'Crafts & Handmade', icon: '✋' },
+        { id: 'repair', name: 'General Repair Services', icon: '🔧' },
+        { id: 'security', name: 'Security Services', icon: '🛡️' },
+        { id: 'other', name: 'Other Services', icon: '📋' },
       ];
 
       // Merge with actual counts
@@ -586,7 +649,13 @@ export class ServiceService {
         }
       });
 
-      return categories.filter(cat => cat.count > 0).sort((a, b) => b.count - a.count);
+      // Return all categories, sorted by count (desc) then alphabetically
+      return categories.sort((a, b) => {
+        if (a.count !== b.count) {
+          return b.count - a.count; // Higher count first
+        }
+        return a.name.localeCompare(b.name); // Alphabetical for same count
+      });
     } catch (error) {
       logger.error('Error getting categories:', error);
       throw error;
