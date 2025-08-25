@@ -99,6 +99,7 @@ router.get(
 // Export analytics data
 router.get(
   '/export',
+  authMiddleware,
   [
     query('type').isIn(['bookings', 'revenue', 'reviews', 'customers']),
     query('format').optional().isIn(['csv', 'xlsx']),

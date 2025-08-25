@@ -1,8 +1,31 @@
 import { Router } from 'express';
+import { body } from 'express-validator';
 import { SpecialistController } from '@/controllers/specialists';
 import { authenticateToken, requireSpecialist, requireAdmin } from '@/middleware/auth/jwt';
 
 const router = Router();
+
+// Validation middleware for blocking time slots
+const validateBlockTimeSlot = [
+  body('startDateTime')
+    .notEmpty()
+    .withMessage('Start date time is required')
+    .isISO8601()
+    .withMessage('Start date time must be a valid ISO 8601 date'),
+  body('endDateTime')
+    .notEmpty()
+    .withMessage('End date time is required')
+    .isISO8601()
+    .withMessage('End date time must be a valid ISO 8601 date'),
+  body('reason')
+    .optional()
+    .isLength({ max: 200 })
+    .withMessage('Reason must not exceed 200 characters'),
+  body('recurring')
+    .optional()
+    .isBoolean()
+    .withMessage('Recurring must be a boolean'),
+];
 
 // Protected routes - require authentication (must come before parameterized routes)
 router.get('/my/profile', authenticateToken, requireSpecialist, SpecialistController.getMyProfile);
@@ -22,7 +45,7 @@ router.patch('/services/:serviceId/status', authenticateToken, requireSpecialist
 
 // Specialist availability/schedule routes (frontend expects these - must come before parameterized routes)
 router.get('/availability/blocked', authenticateToken, requireSpecialist, SpecialistController.getBlockedSlots);
-router.post('/availability/block', authenticateToken, requireSpecialist, SpecialistController.blockTimeSlot);
+router.post('/availability/block', authenticateToken, requireSpecialist, validateBlockTimeSlot, SpecialistController.blockTimeSlot);
 router.delete('/availability/block/:blockId', authenticateToken, requireSpecialist, SpecialistController.unblockTimeSlot);
 
 // Protected routes - require specialist access
@@ -35,5 +58,7 @@ router.put('/:specialistId/verification', authenticateToken, requireAdmin, Speci
 // Public routes (parameterized routes must come last)
 router.get('/', SpecialistController.searchSpecialists);
 router.get('/:specialistId', SpecialistController.getProfile);
+router.get('/:specialistId/public', SpecialistController.getPublicProfile);
+router.get('/:specialistId/services', SpecialistController.getSpecialistServices);
 
 export default router;

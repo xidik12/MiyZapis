@@ -419,18 +419,81 @@ const SpecialistProfile: React.FC = () => {
     try {
       setSaving(true);
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
       if (isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
-        // TODO: Implement API call when backend is ready
-        // await specialistService.updateProfile(profile);
+        try {
+          // Prepare the specialist profile data for API
+          const specialistData = {
+            bio: profile.bio,
+            bioUk: profile.bioUk,
+            bioRu: profile.bioRu,
+            profession: profile.profession,
+            specialties: JSON.stringify(profile.specialties),
+            experience: profile.experience,
+            hourlyRate: profile.hourlyRate,
+            currency: profile.currency,
+            availability: JSON.stringify(profile.availability),
+            location: JSON.stringify(profile.location),
+            contactInfo: JSON.stringify(profile.contactInfo),
+            businessHours: JSON.stringify(profile.businessHours),
+            languages: JSON.stringify(profile.languages),
+            education: JSON.stringify(profile.education),
+            certifications: JSON.stringify(profile.certifications),
+            socialMedia: JSON.stringify(profile.socialMedia),
+            avatar: profile.avatar,
+            portfolio: JSON.stringify(profile.portfolio),
+            workingHours: JSON.stringify(profile.workingHours),
+            isAvailableForBooking: profile.isAvailableForBooking
+          };
+
+          // Call the API to update the specialist profile
+          await specialistService.updateProfile(specialistData);
+          
+          // Also update user basic info if it changed
+          if (user && (
+            user.firstName !== profile.firstName ||
+            user.lastName !== profile.lastName ||
+            user.phoneNumber !== profile.phone
+          )) {
+            // Update user info via user service
+            const userUpdateData = {
+              firstName: profile.firstName,
+              lastName: profile.lastName,
+              phoneNumber: profile.phone
+            };
+            
+            try {
+              // Import userService dynamically to avoid circular dependencies
+              const { userService } = await import('../../services/user.service');
+              await userService.updateProfile(userUpdateData);
+            } catch (userError) {
+              console.warn('Failed to update user info:', userError);
+            }
+          }
+          
+        } catch (apiError: any) {
+          console.error('API call failed:', apiError);
+          throw new Error(apiError.message || 'Failed to save profile');
+        }
       }
       
-      // Success
+      // Success - reload profile data to get the latest from server
+      if (isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
+        try {
+          // Reload the profile from the API to ensure we have the latest data
+          const updatedProfile = await specialistService.getProfile();
+          setProfile(updatedProfile);
+          setOriginalProfile(updatedProfile);
+        } catch (reloadError) {
+          console.warn('Failed to reload profile after save:', reloadError);
+          // Still continue with success, just use local data
+          setOriginalProfile(profile);
+        }
+      } else {
+        setOriginalProfile(profile);
+      }
+      
       setIsEditing(false);
       setHasUnsavedChanges(false);
-      setOriginalProfile(profile);
       setValidationErrors({});
       
       showSuccessNotification(
@@ -615,7 +678,16 @@ const SpecialistProfile: React.FC = () => {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               {!isEditing && (
-                <button className="px-6 py-3 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2">
+                <button 
+                  onClick={() => {
+                    if (profile?.specialist?.id) {
+                      // Open specialist's public profile in a new tab
+                      const publicProfileUrl = `/specialist/${profile.specialist.id}`;
+                      window.open(publicProfileUrl, '_blank');
+                    }
+                  }}
+                  className="px-6 py-3 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2"
+                >
                   <EyeIcon className="h-4 w-4" />
                   {language === 'uk' ? 'Перегляд' : language === 'ru' ? 'Просмотр' : 'Preview'}
                 </button>

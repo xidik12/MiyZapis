@@ -267,6 +267,53 @@ export class SpecialistController {
     }
   }
 
+  // Get public specialist profile by ID (alias for getProfile)
+  static async getPublicProfile(req: Request, res: Response): Promise<void> {
+    try {
+      const { specialistId } = req.params;
+
+      if (!specialistId) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Specialist ID is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const specialist = await SpecialistService.getProfile(specialistId);
+
+      res.json(
+        createSuccessResponse({
+          specialist,
+        })
+      );
+    } catch (error: any) {
+      logger.error('Get public specialist profile error:', error);
+
+      if (error.message === 'SPECIALIST_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Specialist not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get specialist profile',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
   // Search specialists
   static async searchSpecialists(req: Request, res: Response): Promise<void> {
     try {
@@ -974,6 +1021,57 @@ export class SpecialistController {
         createErrorResponse(
           ErrorCodes.INTERNAL_SERVER_ERROR,
           'Failed to unblock time slot',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Get services for a specific specialist (public route)
+  static async getSpecialistServices(req: Request, res: Response): Promise<void> {
+    try {
+      const { specialistId } = req.params;
+
+      if (!specialistId) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Specialist ID is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Get specialist first to verify they exist
+      const specialist = await SpecialistService.getProfile(specialistId);
+      
+      // Get only active services for public view
+      const services = await ServiceService.getServicesBySpecialistId(specialistId);
+
+      res.json(
+        createSuccessResponse({
+          services,
+        })
+      );
+    } catch (error: any) {
+      logger.error('Get specialist services error:', error);
+
+      if (error.message === 'SPECIALIST_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Specialist not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get specialist services',
           req.headers['x-request-id'] as string
         )
       );

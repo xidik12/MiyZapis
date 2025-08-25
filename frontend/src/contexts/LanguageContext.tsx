@@ -853,6 +853,9 @@ const translations: Translations = {
   'serviceForm.durationMin': { en: 'Duration must be at least 15 minutes', uk: 'Тривалість повинна бути не менше 15 хвилин', ru: 'Продолжительность должна быть не менее 15 минут' },
   'serviceForm.selectAtLeastOneDay': { en: 'Select at least one day', uk: 'Оберіть принаймні один день', ru: 'Выберите хотя бы один день' },
   'serviceForm.addAtLeastOneTimeSlot': { en: 'Add at least one time slot', uk: 'Додайте принаймні один часовий слот', ru: 'Добавьте хотя бы один временной слот' },
+  'serviceForm.addCustomCategory': { en: 'Add Custom Category', uk: 'Додати власну категорію', ru: 'Добавить пользовательскую категорию' },
+  'serviceForm.enterCustomCategory': { en: 'Enter custom category', uk: 'Введіть власну категорію', ru: 'Введите пользовательскую категорию' },
+  'serviceForm.customCategoryHint': { en: 'You can add a custom category if none of the existing ones fit your service', uk: 'Ви можете додати власну категорію, якщо жодна з наявних не підходить для вашої послуги', ru: 'Вы можете добавить пользовательскую категорию, если ни одна из существующих не подходит для вашей услуги' },
   
   // User Roles
   'user.specialist': { en: 'Specialist', uk: 'Спеціаліст', ru: 'Специалист' },

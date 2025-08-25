@@ -296,7 +296,7 @@ export class ServiceService {
     }
   }
 
-  // Get specialist's services
+  // Get specialist's services by user ID
   static async getSpecialistServices(
     specialistUserId: string,
     includeInactive: boolean = false
@@ -352,6 +352,67 @@ export class ServiceService {
       return services as ServiceWithDetails[];
     } catch (error) {
       logger.error('Error getting specialist services:', error);
+      throw error;
+    }
+  }
+
+  // Get services by specialist ID (for public access)
+  static async getServicesBySpecialistId(
+    specialistId: string,
+    includeInactive: boolean = false
+  ): Promise<ServiceWithDetails[]> {
+    try {
+      // Verify specialist exists
+      const specialist = await prisma.specialist.findUnique({
+        where: { id: specialistId },
+      });
+
+      if (!specialist) {
+        throw new Error('SPECIALIST_NOT_FOUND');
+      }
+
+      const where: any = {
+        specialistId: specialistId,
+      };
+
+      if (!includeInactive) {
+        where.isActive = true;
+      }
+
+      const services = await prisma.service.findMany({
+        where,
+        include: {
+          specialist: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  firstName: true,
+                  lastName: true,
+                  avatar: true,
+                  userType: true,
+                  phoneNumber: true,
+                  isEmailVerified: true,
+                  isPhoneVerified: true,
+                  isActive: true,
+                  loyaltyPoints: true,
+                  language: true,
+                  currency: true,
+                  timezone: true,
+                  createdAt: true,
+                  updatedAt: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return services as ServiceWithDetails[];
+    } catch (error) {
+      logger.error('Error getting services by specialist ID:', error);
       throw error;
     }
   }

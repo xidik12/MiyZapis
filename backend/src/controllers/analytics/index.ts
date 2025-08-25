@@ -229,8 +229,12 @@ export class AnalyticsController {
     }
   };
 
-  exportData = async (req: Request, res: Response) => {
+  exportData = async (req: AuthenticatedRequest, res: Response) => {
     try {
+      if (!req.user) {
+        return errorResponse(res, 'Authentication required', 401);
+      }
+      
       const userId = req.user.id;
       const { type, format = 'csv', fromDate, toDate } = req.query;
 
