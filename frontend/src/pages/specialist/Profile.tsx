@@ -239,7 +239,7 @@ const SpecialistProfile: React.FC = () => {
     }, 4000);
   };
 
-  // Fix verification date formatting
+  // Fix verification date formatting - v2.0
   const formatVerificationDate = (date: string) => {
     if (!date || date === '' || date === 'Invalid Date') return null;
     try {
