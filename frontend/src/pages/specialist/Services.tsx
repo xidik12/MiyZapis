@@ -12,14 +12,8 @@ import { ServiceCategory } from '../../types';
 interface Service {
   id: string;
   name: string;
-  nameUk?: string;
-  nameRu?: string;
   description: string;
-  descriptionUk?: string;
-  descriptionRu?: string;
   category: string;
-  categoryUk?: string;
-  categoryRu?: string;
   basePrice: number;
   price?: number; // For backwards compatibility
   currency: string;
@@ -33,16 +27,6 @@ interface Service {
   requiresApproval?: boolean;
   maxAdvanceBooking?: number;
   minAdvanceBooking?: number;
-  availability?: {
-    monday: boolean;
-    tuesday: boolean;
-    wednesday: boolean;
-    thursday: boolean;
-    friday: boolean;
-    saturday: boolean;
-    sunday: boolean;
-  };
-  timeSlots?: string[];
 }
 
 const sampleServices: Service[] = [
@@ -178,17 +162,11 @@ const SpecialistServices: React.FC = () => {
     
     setFormData({
       name: service.name,
-      nameUk: service.nameUk,
-      nameRu: service.nameRu,
       description: service.description,
-      descriptionUk: service.descriptionUk,
-      descriptionRu: service.descriptionRu,
       category: existingCategory ? existingCategory.id : '',
       price: service.basePrice?.toString() || service.price?.toString() || '',
       duration: service.duration.toString(),
-      isActive: service.isActive,
-      availability: { ...service.availability },
-      timeSlots: [...service.timeSlots]
+      isActive: service.isActive
     });
     
     // If category doesn't exist in our list, show it as custom
@@ -235,15 +213,7 @@ const SpecialistServices: React.FC = () => {
       errors.duration = t('serviceForm.durationMin');
     }
     
-    const hasAvailableDay = Object.values(formData.availability).some(day => day);
-    if (!hasAvailableDay) {
-      errors.availability = t('serviceForm.selectAtLeastOneDay');
-    }
-    
-    const validTimeSlots = formData.timeSlots.filter(slot => slot.trim());
-    if (validTimeSlots.length === 0) {
-      errors.timeSlots = t('serviceForm.addAtLeastOneTimeSlot');
-    }
+    // Removed availability and timeSlots validation as they're not part of backend schema
     
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -301,40 +271,9 @@ const SpecialistServices: React.FC = () => {
     }
   };
 
-  const addTimeSlot = () => {
-    setFormData(prev => ({
-      ...prev,
-      timeSlots: [...prev.timeSlots, '']
-    }));
-  };
-
-  const removeTimeSlot = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      timeSlots: prev.timeSlots.filter((_, i) => i !== index)
-    }));
-  };
-
-  const updateTimeSlot = (index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      timeSlots: prev.timeSlots.map((slot, i) => i === index ? value : slot)
-    }));
-  };
-
-  const toggleAvailability = (day: keyof typeof formData.availability) => {
-    setFormData(prev => ({
-      ...prev,
-      availability: {
-        ...prev.availability,
-        [day]: !prev.availability[day]
-      }
-    }));
-  };
+  // Removed availability and timeSlots functions as they're not part of backend schema
 
   const getLocalizedText = (item: any, field: string) => {
-    if (language === 'uk') return item[`${field}Uk`] || item[field];
-    if (language === 'ru') return item[`${field}Ru`] || item[field];
     return item[field];
   };
 
@@ -372,23 +311,7 @@ const SpecialistServices: React.FC = () => {
   });
 
 
-  const getDayName = (day: string) => {
-    const dayNames = {
-      en: {
-        monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', thursday: 'Thu',
-        friday: 'Fri', saturday: 'Sat', sunday: 'Sun'
-      },
-      uk: {
-        monday: 'Пн', tuesday: 'Вт', wednesday: 'Ср', thursday: 'Чт',
-        friday: 'Пт', saturday: 'Сб', sunday: 'Нд'
-      },
-      ru: {
-        monday: 'Пн', tuesday: 'Вт', wednesday: 'Ср', thursday: 'Чт',
-        friday: 'Пт', saturday: 'Сб', sunday: 'Вс'
-      }
-    };
-    return dayNames[language as keyof typeof dayNames][day as keyof typeof dayNames.en];
-  };
+  // Removed getDayName function as availability is no longer supported
 
   const ServiceCard: React.FC<{ service: Service }> = ({ service }) => (
     <div className={`bg-white/80 backdrop-blur-md rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20 ${!service.isActive ? 'opacity-60' : ''}`}>
@@ -440,43 +363,7 @@ const SpecialistServices: React.FC = () => {
         </div>
       </div>
 
-      {/* Availability Schedule */}
-      <div className="mb-4">
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">
-          {t('services.availability')}:
-        </h4>
-        <div className="flex gap-1 flex-wrap">
-          {Object.entries(service.availability).map(([day, available]) => (
-            <span
-              key={day}
-              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                available
-                  ? 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-300'
-                  : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
-              }`}
-            >
-              {getDayName(day)}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Time Slots */}
-      <div className="mb-6">
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">
-          {t('services.timeSlots')}:
-        </h4>
-        <div className="flex gap-2 flex-wrap">
-          {service.timeSlots.map((slot, index) => (
-            <span
-              key={index}
-              className="px-3 py-1 bg-primary-50 text-primary-700 rounded-lg text-sm font-medium dark:bg-primary-900/20 dark:text-primary-300"
-            >
-              {slot}
-            </span>
-          ))}
-        </div>
-      </div>
+      {/* Removed availability and timeSlots display as they're not part of backend schema */}
 
       {/* Action Buttons */}
       <div className="flex gap-2 pt-4 border-t border-gray-200">
@@ -849,70 +736,7 @@ const SpecialistServices: React.FC = () => {
                 </div>
               </div>
 
-              {/* Availability */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('serviceForm.availability')}</h3>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    {t('serviceForm.availableDays')} *
-                  </label>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                    {Object.keys(formData.availability).map((day) => (
-                      <label key={day} className="flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.availability[day as keyof typeof formData.availability]}
-                          onChange={() => toggleAvailability(day as keyof typeof formData.availability)}
-                          className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                        />
-                        <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                          {t(`schedule.${day}`)}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                  {formErrors.availability && <p className="mt-1 text-sm text-red-500">{formErrors.availability}</p>}
-                </div>
-
-                {/* Time Slots */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    {t('serviceForm.timeSlots')} *
-                  </label>
-                  <div className="space-y-3">
-                    {formData.timeSlots.map((timeSlot, index) => (
-                      <div key={index} className="flex items-center gap-3">
-                        <input
-                          type="time"
-                          value={timeSlot}
-                          onChange={(e) => updateTimeSlot(index, e.target.value)}
-                          className="flex-1 px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
-                        />
-                        {formData.timeSlots.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeTimeSlot(index)}
-                            className="px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200"
-                          >
-                            {t('serviceForm.removeTimeSlot')}
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={addTimeSlot}
-                      className="flex items-center gap-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 px-3 py-2 rounded-lg transition-colors duration-200"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                      {t('serviceForm.addTimeSlot')}
-                    </button>
-                  </div>
-                  {formErrors.timeSlots && <p className="mt-1 text-sm text-red-500">{formErrors.timeSlots}</p>}
-                </div>
-              </div>
+              {/* Removed availability and timeSlots form sections as they're not part of backend schema */}
 
               {/* Form Actions */}
               <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
