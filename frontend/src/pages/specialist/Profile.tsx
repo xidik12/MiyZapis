@@ -275,20 +275,20 @@ const SpecialistProfile: React.FC = () => {
 
     // Business hours (at least one day)
     totalFields++;
-    const hasWorkingDays = Object.values(profile.businessHours).some(day => day.isOpen);
+    const hasWorkingDays = profile.businessHours ? Object.values(profile.businessHours).some(day => day.isOpen) : false;
     if (hasWorkingDays) completedFields++;
 
     // Experience
     totalFields++;
-    if (profile.experience > 0) completedFields++;
+    if (profile.experience && profile.experience > 0) completedFields++;
 
     // Languages
     totalFields++;
-    if (profile.languages.length > 0) completedFields++;
+    if (profile.languages?.length > 0) completedFields++;
 
     // Specialties
     totalFields++;
-    if (profile.specialties.length > 0) completedFields++;
+    if (profile.specialties?.length > 0) completedFields++;
 
     return Math.round((completedFields / totalFields) * 100);
   };
