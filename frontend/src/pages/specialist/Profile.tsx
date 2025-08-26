@@ -1168,8 +1168,8 @@ const SpecialistProfile: React.FC = () => {
                         <div className="flex gap-2">
                           <select
                             onChange={(e) => {
-                              if (e.target.value && !profile.languages.includes(e.target.value)) {
-                                handleProfileChange('languages', [...profile.languages, e.target.value]);
+                              if (e.target.value && !(profile.languages || []).includes(e.target.value)) {
+                                handleProfileChange('languages', [...(profile.languages || []), e.target.value]);
                               }
                               e.target.value = '';
                             }}
@@ -1377,7 +1377,7 @@ const SpecialistProfile: React.FC = () => {
                             key={method}
                             onClick={() => {
                               if (!isEditing) return;
-                              const currentMethods = profile.paymentMethods;
+                              const currentMethods = profile.paymentMethods || [];
                               const isSelected = currentMethods.includes(method);
                               const newMethods = isSelected 
                                 ? currentMethods.filter(m => m !== method)
@@ -1385,7 +1385,7 @@ const SpecialistProfile: React.FC = () => {
                               handleProfileChange('paymentMethods', newMethods);
                             }}
                             className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                              profile.paymentMethods.includes(method)
+                              (profile.paymentMethods || []).includes(method)
                                 ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300'
                                 : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600'
                             } ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}
