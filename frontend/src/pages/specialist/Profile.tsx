@@ -1143,7 +1143,7 @@ const SpecialistProfile: React.FC = () => {
                         {language === 'uk' ? 'Мови' : language === 'ru' ? 'Языки' : 'Languages'}
                       </label>
                       <div className="flex flex-wrap gap-2 mb-3">
-                        {profile.languages.map((lang, index) => (
+                        {profile.languages?.map((lang, index) => (
                           <span
                             key={index}
                             className="inline-flex items-center gap-2 px-3 py-2 bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300 rounded-lg text-sm font-medium"
@@ -1153,7 +1153,7 @@ const SpecialistProfile: React.FC = () => {
                             {isEditing && (
                               <button
                                 onClick={() => {
-                                  const newLanguages = profile.languages.filter((_, i) => i !== index);
+                                  const newLanguages = profile.languages?.filter((_, i) => i !== index) || [];
                                   handleProfileChange('languages', newLanguages);
                                 }}
                                 className="text-primary-500 hover:text-primary-700"
@@ -1193,7 +1193,7 @@ const SpecialistProfile: React.FC = () => {
                         {language === 'uk' ? 'Спеціалізації' : language === 'ru' ? 'Специализации' : 'Specialties'}
                       </label>
                       <div className="flex flex-wrap gap-2 mb-3">
-                        {profile.specialties.map((specialty, index) => (
+                        {profile.specialties?.map((specialty, index) => (
                           <span
                             key={index}
                             className="inline-flex items-center gap-2 px-3 py-2 bg-secondary-100 text-secondary-700 dark:bg-secondary-900/20 dark:text-secondary-300 rounded-lg text-sm font-medium"
@@ -1203,7 +1203,7 @@ const SpecialistProfile: React.FC = () => {
                             {isEditing && (
                               <button
                                 onClick={() => {
-                                  const newSpecialties = profile.specialties.filter((_, i) => i !== index);
+                                  const newSpecialties = profile.specialties?.filter((_, i) => i !== index) || [];
                                   handleProfileChange('specialties', newSpecialties);
                                 }}
                                 className="text-secondary-500 hover:text-secondary-700"
@@ -1223,8 +1223,8 @@ const SpecialistProfile: React.FC = () => {
                             onKeyPress={(e) => {
                               if (e.key === 'Enter') {
                                 const value = (e.target as HTMLInputElement).value.trim();
-                                if (value && !profile.specialties.includes(value)) {
-                                  handleProfileChange('specialties', [...profile.specialties, value]);
+                                if (value && !(profile.specialties || []).includes(value)) {
+                                  handleProfileChange('specialties', [...(profile.specialties || []), value]);
                                   (e.target as HTMLInputElement).value = '';
                                 }
                               }
@@ -1234,8 +1234,8 @@ const SpecialistProfile: React.FC = () => {
                             onClick={() => {
                               const input = document.querySelector('input[placeholder*="специализацию"], input[placeholder*="спеціалізацію"], input[placeholder*="Specialty"]') as HTMLInputElement;
                               const value = input?.value.trim();
-                              if (value && !profile.specialties.includes(value)) {
-                                handleProfileChange('specialties', [...profile.specialties, value]);
+                              if (value && !(profile.specialties || []).includes(value)) {
+                                handleProfileChange('specialties', [...(profile.specialties || []), value]);
                                 input.value = '';
                               }
                             }}
