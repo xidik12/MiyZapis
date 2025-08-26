@@ -227,8 +227,8 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
     paymentMethods: Array.isArray(apiData?.paymentMethods) ? apiData.paymentMethods : parseJsonField(apiData?.paymentMethods, []),
     certifications: Array.isArray(apiData?.certifications) ? apiData.certifications : parseJsonField(apiData?.certifications, []),
     portfolio: Array.isArray(apiData?.portfolio) ? apiData.portfolio : parseJsonField(apiData?.portfolioImages, []),
-    // Parse business hours from JSON string if needed
-    businessHours: apiData?.businessHours ? (typeof apiData.businessHours === 'string' ? parseJsonField(apiData.businessHours, defaultProfile.businessHours) : { ...defaultProfile.businessHours, ...apiData.businessHours }) : (apiData?.workingHours ? parseJsonField(apiData.workingHours, defaultProfile.businessHours) : defaultProfile.businessHours),
+    // Parse business hours from JSON string if needed - prioritize workingHours from backend
+    businessHours: apiData?.workingHours ? parseJsonField(apiData.workingHours, defaultProfile.businessHours) : (apiData?.businessHours ? (typeof apiData.businessHours === 'string' ? parseJsonField(apiData.businessHours, defaultProfile.businessHours) : { ...defaultProfile.businessHours, ...apiData.businessHours }) : defaultProfile.businessHours),
     // Ensure objects are always objects
     verification: apiData?.verification ? { ...defaultProfile.verification, ...apiData.verification } : defaultProfile.verification,
     location: apiData?.location ? { ...defaultProfile.location, ...apiData.location } : defaultProfile.location,
@@ -350,24 +350,31 @@ const SpecialistProfile: React.FC = () => {
             const specialistData = await specialistService.getProfile();
             console.log('📡 Raw data from backend getProfile:', specialistData);
             
+            // Extract specialist data from nested response
+            const specialist = specialistData.specialist || specialistData;
+            console.log('📦 Extracted specialist data:', specialist);
+            
             const profileInput = {
-              ...specialistData,
+              // Use nested specialist data
+              ...specialist,
               firstName: user.firstName || '',
               lastName: user.lastName || '',
               email: user.email || '',
               phone: user.phoneNumber || '',
-              profession: specialistData.businessName || '',
+              profession: specialist.businessName || '',
+              bio: specialist.bio || '',
+              experience: specialist.experience || 0,
               location: {
-                address: specialistData.address || '',
-                city: specialistData.city || '',
-                region: specialistData.state || '',
-                country: specialistData.country || '',
+                address: specialist.address || '',
+                city: specialist.city || '',
+                region: specialist.state || '',
+                country: specialist.country || '',
               },
               verification: {
-                isVerified: specialistData.isVerified || false,
-                verifiedDate: specialistData.isVerified && specialistData.verifiedDate 
-                  ? specialistData.verifiedDate 
-                  : specialistData.isVerified 
+                isVerified: specialist.isVerified || false,
+                verifiedDate: specialist.isVerified && specialist.verifiedDate 
+                  ? specialist.verifiedDate 
+                  : specialist.isVerified 
                   ? new Date().toISOString().split('T')[0] 
                   : '',
                 documentsSubmitted: [],
@@ -598,12 +605,20 @@ const SpecialistProfile: React.FC = () => {
           // Reload the profile from the API to ensure we have the latest data
           const apiData = await specialistService.getProfile();
           console.log('Profile data after save reload:', apiData);
+          
+          // Extract specialist data from nested response
+          const specialist = apiData.specialist || apiData;
+          console.log('📦 Extracted specialist after save:', specialist);
+          
           const updatedProfile = mergeProfileData({
-            ...apiData,
+            ...specialist,
             firstName: user?.firstName || '',
             lastName: user?.lastName || '',
             email: user?.email || '',
             phone: user?.phoneNumber || '',
+            profession: specialist.businessName || '',
+            bio: specialist.bio || '',
+            experience: specialist.experience || 0,
           });
           console.log('Merged profile after save:', updatedProfile);
           setProfile(updatedProfile);
