@@ -500,8 +500,28 @@ const SpecialistProfile: React.FC = () => {
             certifications: Array.isArray(profile.certifications) ? profile.certifications : []
           };
 
+          console.log('Sending specialist data to backend:', specialistData);
+
           // Call the API to update the specialist profile
-          await specialistService.updateProfile(specialistData);
+          try {
+            const updateResult = await specialistService.updateProfile(specialistData);
+            console.log('Backend response for specialist update:', updateResult);
+          } catch (updateError: any) {
+            console.log('Update failed, error:', updateError);
+            // If specialist profile doesn't exist, try to create it first
+            if (updateError.message?.includes('SPECIALIST_NOT_FOUND') || updateError.message?.includes('not found')) {
+              console.log('Specialist profile not found, attempting to create...');
+              try {
+                await specialistService.createProfile(specialistData);
+                console.log('Specialist profile created successfully');
+              } catch (createError: any) {
+                console.error('Failed to create specialist profile:', createError);
+                throw createError;
+              }
+            } else {
+              throw updateError;
+            }
+          }
           
           // Also update user basic info if it changed
           if (user && (

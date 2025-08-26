@@ -30,6 +30,15 @@ export class SpecialistService {
     return response.data;
   }
 
+  // Create specialist profile
+  async createProfile(data: any): Promise<Specialist> {
+    const response = await apiClient.post<Specialist>('/specialists/profile', data);
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to create specialist profile');
+    }
+    return response.data;
+  }
+
   // Update specialist profile
   async updateProfile(data: Partial<Specialist>): Promise<Specialist> {
     const response = await apiClient.put<Specialist>('/specialists/profile', data);
