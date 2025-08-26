@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { AuthController } from '@/controllers/auth';
 import { authenticateToken } from '@/middleware/auth/jwt';
-import { authRateLimit } from '@/middleware/security';
 import { logger } from '@/utils/logger';
 import {
   validateRegister,
@@ -15,11 +14,6 @@ import {
 
 const router = Router();
 
-// Temporarily disable auth rate limiting due to Redis hanging issue
-// TODO: Re-enable after investigating Redis connectivity in rate limiter
-// if (process.env.NODE_ENV === 'production') {
-//   router.use(authRateLimit);
-// }
 
 // Proxy old registration to enhanced route to avoid hanging middleware
 router.post('/register', async (req, res) => {

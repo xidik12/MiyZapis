@@ -8,7 +8,6 @@ import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 
 import App from './App';
-import TestApp from './TestApp';
 import { store, persistor } from './store';
 import { environment } from './config/environment';
 import './styles/globals.css';

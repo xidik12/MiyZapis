@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { helpService, FAQ, ContactMethod } from '../../services/help.service';
 import { 
   QuestionMarkCircleIcon,
   ChatBubbleLeftRightIcon,
@@ -13,30 +14,16 @@ import {
   ClockIcon
 } from '@heroicons/react/24/outline';
 
-interface FAQ {
-  id: string;
-  question: string;
-  answer: string;
-  category: string;
-}
-
-interface ContactMethod {
-  id: string;
-  type: 'email' | 'phone' | 'chat';
-  title: string;
-  description: string;
-  value: string;
-  availability: string;
-  icon: React.ComponentType<any>;
-}
+// Interfaces are now imported from the service
 
 const CustomerHelpSupport: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [activeCategory, setActiveCategory] = useState('all');
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [contactMethods, setContactMethods] = useState<ContactMethod[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [feedbackForm, setFeedbackForm] = useState({
     subject: '',
     message: '',
@@ -48,23 +35,19 @@ const CustomerHelpSupport: React.FC = () => {
     const fetchHelpData = async () => {
       try {
         setIsLoading(true);
+        setError(null);
         
-        // TODO: Implement actual API calls when backend is ready
-        // const [faqsResponse, contactResponse] = await Promise.all([
-        //   helpApi.getFAQs(),
-        //   helpApi.getContactMethods()
-        // ]);
-        // setFaqs(faqsResponse.data);
-        // setContactMethods(contactResponse.data);
+        const [faqsResponse, contactResponse] = await Promise.all([
+          helpService.getFAQs(activeCategory === 'all' ? undefined : activeCategory, language),
+          helpService.getContactMethods(language)
+        ]);
         
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // Initialize with empty arrays for new installations
-        setFaqs([]);
-        setContactMethods([]);
-      } catch (error) {
+        setFaqs(faqsResponse.faqs);
+        setContactMethods(contactResponse.contactMethods);
+      } catch (error: any) {
         console.error('Failed to fetch help data:', error);
+        setError(error.message || 'Failed to load help data');
+        // Set empty arrays on error to show empty states
         setFaqs([]);
         setContactMethods([]);
       } finally {
@@ -73,7 +56,7 @@ const CustomerHelpSupport: React.FC = () => {
     };
 
     fetchHelpData();
-  }, []);
+  }, [activeCategory, language]);
 
   const categories = [
     { id: 'all', label: t('help.allTopics') },
@@ -96,8 +79,7 @@ const CustomerHelpSupport: React.FC = () => {
     e.preventDefault();
     
     try {
-      // TODO: Implement actual API call to submit feedback
-      // await helpApi.submitFeedback(feedbackForm);
+      await helpService.submitFeedback(feedbackForm);
       
       alert(t('feedback.thankYou'));
       setFeedbackForm({
@@ -106,10 +88,9 @@ const CustomerHelpSupport: React.FC = () => {
         category: 'general',
         email: '',
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to submit feedback:', error);
-      // TODO: Show error message to user
-      alert('Failed to submit feedback. Please try again.');
+      alert(error.message || 'Failed to submit feedback. Please try again.');
     }
   };
 
@@ -125,6 +106,19 @@ const CustomerHelpSupport: React.FC = () => {
         // In a real app, this would open a chat widget
         alert(t('action.liveChatAlert'));
         break;
+    }
+  };
+
+  const getContactMethodIcon = (type: string) => {
+    switch (type) {
+      case 'email':
+        return EnvelopeIcon;
+      case 'phone':
+        return PhoneIcon;
+      case 'chat':
+        return ChatBubbleLeftRightIcon;
+      default:
+        return ChatBubbleLeftRightIcon;
     }
   };
 
@@ -148,6 +142,19 @@ const CustomerHelpSupport: React.FC = () => {
             {t('customer.help.subtitle')}
           </p>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+            <div className="text-red-800">{error}</div>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+            >
+              Try again
+            </button>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* FAQ Section */}
@@ -289,7 +296,7 @@ const CustomerHelpSupport: React.FC = () => {
                 ) : (
                   <div className="space-y-4">
                     {contactMethods.map((method) => {
-                      const Icon = method.icon;
+                      const Icon = getContactMethodIcon(method.type);
                       return (
                         <button
                           key={method.id}

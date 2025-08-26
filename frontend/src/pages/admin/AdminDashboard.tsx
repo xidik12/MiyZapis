@@ -113,7 +113,6 @@ const AdminDashboard: React.FC = () => {
   );
 
   const handleUserAction = (userId: string, action: 'verify' | 'suspend' | 'activate' | 'delete') => {
-    console.log(`Action ${action} for user ${userId}`);
     // TODO: Implement user management actions here when backend is ready
   };
 

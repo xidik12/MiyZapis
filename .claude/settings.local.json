@@ -73,7 +73,9 @@
       "Bash(railway domains:*)",
       "Bash(railway domain:*)",
       "Bash(npx vite build:*)",
-      "Bash(./update-cors-railway.sh:*)"
+      "Bash(./update-cors-railway.sh:*)",
+      "Bash(NODE_ENV=test npm start)",
+      "Bash(NODE_ENV=development npm start)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

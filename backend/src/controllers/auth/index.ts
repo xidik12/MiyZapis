@@ -1,12 +1,18 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import { PrismaClient } from '@prisma/client';
 import { EnhancedAuthService as AuthService } from '@/services/auth/enhanced';
+import { EmailService } from '@/services/email';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { ErrorCodes, LoginRequest, RegisterRequest, TelegramAuthRequest, JwtPayload } from '@/types';
 import { validationResult } from 'express-validator';
 import { config } from '@/config';
 import { redis } from '@/config/redis';
+
+const prisma = new PrismaClient();
 
 export class AuthController {
   // Register new user
@@ -555,10 +561,94 @@ export class AuthController {
   // Request password reset
   static async requestPasswordReset(req: Request, res: Response): Promise<void> {
     try {
-      // TODO: Implement password reset logic
+      // Check validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid request data',
+            req.headers['x-request-id'] as string,
+            errors.array().map(error => ({
+              field: (error as any).param || (error as any).path || 'unknown',
+              message: (error as any).msg || error.toString(),
+              code: 'INVALID_VALUE',
+            }))
+          )
+        );
+        return;
+      }
+
+      const { email } = req.body;
+
+      // Check if user exists
+      const user = await prisma.user.findUnique({
+        where: { email }
+      });
+
+      if (!user) {
+        // Don't reveal whether the email exists for security
+        res.json(
+          createSuccessResponse({
+            message: 'If your email is registered, you will receive a password reset link shortly.',
+          })
+        );
+        return;
+      }
+
+      // Check if user has a password (Google/Telegram users might not have passwords)
+      if (!user.password) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.INVALID_OPERATION,
+            'This account was created with Google/Telegram. Please use the same method to sign in.',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Generate reset token
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+      // Remove existing password reset tokens for this user
+      await prisma.emailVerificationToken.deleteMany({
+        where: {
+          userId: user.id,
+          type: 'PASSWORD_RESET'
+        }
+      });
+
+      // Create new reset token
+      await prisma.emailVerificationToken.create({
+        data: {
+          userId: user.id,
+          token,
+          type: 'PASSWORD_RESET',
+          expiresAt
+        }
+      });
+
+      // Send password reset email
+      const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+      
+      try {
+        const emailService = new EmailService();
+        await emailService.sendPasswordResetEmail(user.email, {
+          firstName: user.firstName,
+          resetUrl
+        });
+      } catch (emailError) {
+        logger.error('Failed to send password reset email:', emailError);
+        // Don't fail the request if email sending fails
+      }
+
+      logger.info('Password reset requested', { userId: user.id, email: user.email });
+
       res.json(
         createSuccessResponse({
-          message: 'Password reset not yet implemented',
+          message: 'If your email is registered, you will receive a password reset link shortly.',
         })
       );
     } catch (error: any) {
@@ -577,10 +667,88 @@ export class AuthController {
   // Reset password
   static async resetPassword(req: Request, res: Response): Promise<void> {
     try {
-      // TODO: Implement password reset logic
+      // Check validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid request data',
+            req.headers['x-request-id'] as string,
+            errors.array().map(error => ({
+              field: (error as any).param || (error as any).path || 'unknown',
+              message: (error as any).msg || error.toString(),
+              code: 'INVALID_VALUE',
+            }))
+          )
+        );
+        return;
+      }
+
+      const { token, password } = req.body;
+
+      // Find the reset token
+      const resetToken = await prisma.emailVerificationToken.findFirst({
+        where: {
+          token,
+          type: 'PASSWORD_RESET',
+          isUsed: false,
+          expiresAt: {
+            gt: new Date()
+          }
+        },
+        include: {
+          user: true
+        }
+      });
+
+      if (!resetToken) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.INVALID_CREDENTIALS,
+            'Invalid or expired reset token',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Hash the new password
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+      // Update user password and mark token as used
+      await prisma.$transaction([
+        prisma.user.update({
+          where: { id: resetToken.userId },
+          data: { password: hashedPassword }
+        }),
+        prisma.emailVerificationToken.update({
+          where: { id: resetToken.id },
+          data: {
+            isUsed: true,
+            usedAt: new Date()
+          }
+        })
+      ]);
+
+      // Invalidate all existing refresh tokens for this user (force re-login)
+      await prisma.refreshToken.updateMany({
+        where: { userId: resetToken.userId },
+        data: { 
+          isRevoked: true,
+          revokedAt: new Date()
+        }
+      });
+
+      logger.info('Password reset completed', { 
+        userId: resetToken.userId, 
+        email: resetToken.user.email 
+      });
+
       res.json(
         createSuccessResponse({
-          message: 'Password reset not yet implemented',
+          message: 'Password has been reset successfully. Please sign in with your new password.',
         })
       );
     } catch (error: any) {

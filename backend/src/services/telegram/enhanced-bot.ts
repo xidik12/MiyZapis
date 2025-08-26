@@ -1223,10 +1223,9 @@ export class EnhancedTelegramBot {
   }
 
   private async showProfile(ctx: BotContext) {
-    // Implementation for showing profile
     const lang = this.getUserLanguage(ctx);
     await ctx.reply(this.messages[lang].loading);
-    // TODO: Implement profile display
+    await ctx.reply('Profile feature is under development.');
   }
 
   private async showHelp(ctx: BotContext) {
@@ -1588,28 +1587,28 @@ export class EnhancedTelegramBot {
   // Admin-specific methods (placeholders)
 
   private async showUserManagement(ctx: BotContext) {
-    // TODO: Implement user management
+    await ctx.reply('User management feature is under development.');
   }
 
   private async showServiceModeration(ctx: BotContext) {
-    // TODO: Implement service moderation
+    await ctx.reply('Service moderation feature is under development.');
   }
 
   private async showSystemStats(ctx: BotContext) {
-    // TODO: Implement system statistics
+    await ctx.reply('System statistics feature is under development.');
   }
 
   private async showPaymentManagement(ctx: BotContext) {
-    // TODO: Implement payment management
+    await ctx.reply('Payment management feature is under development.');
   }
 
   // Customer-specific methods (placeholders)
   private async showBookingHistory(ctx: BotContext) {
-    // TODO: Implement booking history
+    await ctx.reply('Booking history feature is under development.');
   }
 
   private async showFavorites(ctx: BotContext) {
-    // TODO: Implement favorites management
+    await ctx.reply('Favorites feature is under development.');
   }
 
 

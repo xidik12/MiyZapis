@@ -32,9 +32,20 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // If user type is required and doesn't match, redirect appropriately
   if (requiredUserType && user?.userType !== requiredUserType) {
     // Redirect to appropriate dashboard based on user type
-    const defaultRedirect = user?.userType === 'specialist' 
-      ? '/specialist/dashboard' 
-      : '/dashboard';
+    let defaultRedirect = '/dashboard';
+    
+    switch (user?.userType) {
+      case 'specialist':
+        defaultRedirect = '/specialist/dashboard';
+        break;
+      case 'admin':
+        defaultRedirect = '/admin/dashboard';
+        break;
+      case 'customer':
+      default:
+        defaultRedirect = '/dashboard';
+        break;
+    }
     
     return <Navigate to={defaultRedirect} replace />;
   }

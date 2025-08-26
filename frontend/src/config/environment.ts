@@ -1,10 +1,5 @@
 import { Environment } from '../types';
 
-// Environment configuration
-console.log('Loading environment:', { 
-  VITE_API_URL: import.meta.env.VITE_API_URL
-});
-
 export const environment: Environment = {
   API_URL: import.meta.env.VITE_API_URL || 'https://miyzapis-backend-production.up.railway.app/api/v1', // Backend API URL
   WS_URL: import.meta.env.VITE_WS_URL || 'wss://miyzapis-backend-production.up.railway.app',
@@ -30,8 +25,8 @@ export const API_ENDPOINTS = {
     REGISTER: '/auth-enhanced/register',
     REFRESH: '/auth-enhanced/refresh',
     LOGOUT: '/auth-enhanced/logout',
-    FORGOT_PASSWORD: '/auth-enhanced/forgot-password',
-    RESET_PASSWORD: '/auth-enhanced/reset-password',
+    FORGOT_PASSWORD: '/auth/request-password-reset',
+    RESET_PASSWORD: '/auth/reset-password',
     VERIFY_EMAIL: '/auth-enhanced/verify-email',
     TELEGRAM_AUTH: '/auth-enhanced/telegram',
   },

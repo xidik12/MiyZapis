@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { favoritesService, FavoriteSpecialist, FavoriteService } from '../../services/favorites.service';
 import { 
   HeartIcon,
   StarIcon,
@@ -14,36 +15,7 @@ import {
 import { HeartIcon as HeartIconSolid, StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { Avatar } from '../../components/ui/Avatar';
 import { ServiceImage } from '../../components/ui/ServiceImage';
-
-interface FavoriteSpecialist {
-  id: string;
-  name: string;
-  profession: string;
-  avatar: string;
-  rating: number;
-  reviewCount: number;
-  location: string;
-  responseTime: string;
-  priceFrom: number;
-  isOnline: boolean;
-  isVerified: boolean;
-}
-
-interface FavoriteService {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  duration: number;
-  category: string;
-  images: string[];
-  specialist: {
-    id: string;
-    name: string;
-    avatar: string;
-    rating: number;
-  };
-}
+import { Pagination } from '@/types';
 
 const CustomerFavorites: React.FC = () => {
   const { t } = useLanguage();
@@ -51,62 +23,71 @@ const CustomerFavorites: React.FC = () => {
   const navigate = useNavigate();
   const [favoriteSpecialists, setFavoriteSpecialists] = useState<FavoriteSpecialist[]>([]);
   const [favoriteServices, setFavoriteServices] = useState<FavoriteService[]>([]);
+  const [specialistsPagination, setSpecialistsPagination] = useState<Pagination | null>(null);
+  const [servicesPagination, setServicesPagination] = useState<Pagination | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'specialists' | 'services'>('specialists');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const fetchFavorites = async (page: number = 1) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      if (activeTab === 'specialists') {
+        const response = await favoritesService.getFavoriteSpecialists(page, 12);
+        setFavoriteSpecialists(response.specialists);
+        setSpecialistsPagination(response.pagination);
+      } else {
+        const response = await favoritesService.getFavoriteServices(page, 12);
+        setFavoriteServices(response.services);
+        setServicesPagination(response.pagination);
+      }
+    } catch (error: any) {
+      console.error('Failed to fetch favorites:', error);
+      setError(error.message || 'Failed to fetch favorites');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchFavorites = async () => {
-      try {
-        setIsLoading(true);
-        
-        // TODO: Implement actual API calls when backend is ready
-        // const [specialistsResponse, servicesResponse] = await Promise.all([
-        //   favoritesApi.getFavoriteSpecialists(),
-        //   favoritesApi.getFavoriteServices()
-        // ]);
-        // setFavoriteSpecialists(specialistsResponse.data);
-        // setFavoriteServices(servicesResponse.data);
-        
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // Initialize with empty arrays for new users
-        setFavoriteSpecialists([]);
-        setFavoriteServices([]);
-      } catch (error) {
-        console.error('Failed to fetch favorites:', error);
-        // Set empty arrays on error
-        setFavoriteSpecialists([]);
-        setFavoriteServices([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchFavorites();
-  }, []);
+    setCurrentPage(1);
+    fetchFavorites(1);
+  }, [activeTab]);
 
   const handleRemoveSpecialist = async (specialistId: string) => {
     try {
-      // TODO: Implement API call to remove specialist from favorites
-      // await favoritesApi.removeSpecialistFromFavorites(specialistId);
+      await favoritesService.removeSpecialistFromFavorites(specialistId);
+      setFavoriteSpecialists(prev => prev.filter(s => s.specialist.id !== specialistId));
       
-      setFavoriteSpecialists(prev => prev.filter(s => s.id !== specialistId));
-    } catch (error) {
+      // Update pagination if needed
+      if (specialistsPagination && favoriteSpecialists.length === 1 && specialistsPagination.page > 1) {
+        const newPage = specialistsPagination.page - 1;
+        setCurrentPage(newPage);
+        fetchFavorites(newPage);
+      }
+    } catch (error: any) {
       console.error('Failed to remove specialist from favorites:', error);
-      // TODO: Show error message to user
+      setError(error.message || 'Failed to remove specialist from favorites');
     }
   };
 
   const handleRemoveService = async (serviceId: string) => {
     try {
-      // TODO: Implement API call to remove service from favorites
-      // await favoritesApi.removeServiceFromFavorites(serviceId);
+      await favoritesService.removeServiceFromFavorites(serviceId);
+      setFavoriteServices(prev => prev.filter(s => s.service.id !== serviceId));
       
-      setFavoriteServices(prev => prev.filter(s => s.id !== serviceId));
-    } catch (error) {
+      // Update pagination if needed
+      if (servicesPagination && favoriteServices.length === 1 && servicesPagination.page > 1) {
+        const newPage = servicesPagination.page - 1;
+        setCurrentPage(newPage);
+        fetchFavorites(newPage);
+      }
+    } catch (error: any) {
       console.error('Failed to remove service from favorites:', error);
-      // TODO: Show error message to user
+      setError(error.message || 'Failed to remove service from favorites');
     }
   };
 
@@ -122,7 +103,53 @@ const CustomerFavorites: React.FC = () => {
     navigate(`/book/${serviceId}`);
   };
 
-  if (isLoading) {
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    fetchFavorites(page);
+  };
+
+  const renderPagination = (pagination: Pagination) => {
+    if (pagination.totalPages <= 1) return null;
+
+    return (
+      <div className="flex items-center justify-between mt-8">
+        <div className="text-sm text-gray-700">
+          Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
+        </div>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => handlePageChange(pagination.page - 1)}
+            disabled={!pagination.hasPreviousPage}
+            className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => handlePageChange(page)}
+              className={`px-3 py-2 text-sm font-medium border rounded-md ${
+                pagination.page === page
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'text-gray-500 bg-white border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+          <button
+            onClick={() => handlePageChange(pagination.page + 1)}
+            disabled={!pagination.hasNextPage}
+            className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  if (isLoading && currentPage === 1) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <LoadingSpinner />
@@ -143,6 +170,19 @@ const CustomerFavorites: React.FC = () => {
           </p>
         </div>
 
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+            <div className="text-red-800">{error}</div>
+            <button
+              onClick={() => fetchFavorites(currentPage)}
+              className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="mb-6">
           <div className="border-b border-gray-200">
@@ -162,7 +202,10 @@ const CustomerFavorites: React.FC = () => {
                 >
                   {tab.label}
                   <span className="ml-2 bg-gray-100 text-gray-600 py-0.5 px-2.5 rounded-full text-xs">
-                    {tab.key === 'specialists' ? favoriteSpecialists.length : favoriteServices.length}
+                    {tab.key === 'specialists' ? 
+                      (specialistsPagination?.total || 0) : 
+                      (servicesPagination?.total || 0)
+                    }
                   </span>
                 </button>
               ))}
@@ -173,7 +216,7 @@ const CustomerFavorites: React.FC = () => {
         {/* Specialists Tab */}
         {activeTab === 'specialists' && (
           <>
-            {favoriteSpecialists.length === 0 ? (
+            {favoriteSpecialists.length === 0 && !isLoading ? (
               <div className="bg-white rounded-lg shadow p-8 text-center">
                 <HeartIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -182,104 +225,113 @@ const CustomerFavorites: React.FC = () => {
                 <p className="text-gray-500 mb-4">
                   {t('empty.startBrowsingSpecialists')}
                 </p>
-                                  <button
-                    onClick={() => navigate('/search')}
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700"
-                  >
-                    {t('empty.browseSpecialists')}
-                  </button>
+                <button
+                  onClick={() => navigate('/search')}
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700"
+                >
+                  {t('empty.browseSpecialists')}
+                </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {favoriteSpecialists.map((specialist) => (
-                  <div key={specialist.id} className="bg-white rounded-lg shadow hover:shadow-md transition-shadow">
-                    <div className="p-6">
-                      {/* Header with favorite button */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-start space-x-3">
-                          <Avatar
-                            src={specialist.avatar}
-                            alt={specialist.name}
-                            size="lg"
-                            lazy={true}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2">
-                              <h3 className="font-semibold text-gray-900 truncate">
-                                {specialist.name}
-                              </h3>
-                              {specialist.isVerified && (
-                                <span className="text-blue-600 text-xs">✓</span>
-                              )}
-                              {specialist.isOnline && (
-                                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                              )}
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {favoriteSpecialists.map((favorite) => {
+                    const specialist = favorite.specialist;
+                    return (
+                      <div key={favorite.id} className="bg-white rounded-lg shadow hover:shadow-md transition-shadow">
+                        <div className="p-6">
+                          {/* Header with favorite button */}
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-start space-x-3">
+                              <Avatar
+                                src={specialist.user.avatar}
+                                alt={`${specialist.user.firstName} ${specialist.user.lastName}`}
+                                size="lg"
+                                lazy={true}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center space-x-2">
+                                  <h3 className="font-semibold text-gray-900 truncate">
+                                    {specialist.businessName || `${specialist.user.firstName} ${specialist.user.lastName}`}
+                                  </h3>
+                                  {specialist.isVerified && (
+                                    <span className="text-blue-600 text-xs">✓</span>
+                                  )}
+                                </div>
+                                <p className="text-sm text-gray-600 truncate">
+                                  {specialist.specialties.join(', ')}
+                                </p>
+                              </div>
                             </div>
-                            <p className="text-sm text-gray-600 truncate">
-                              {specialist.profession}
+                            <button
+                              onClick={() => handleRemoveSpecialist(specialist.id)}
+                              className="text-red-500 hover:text-red-700"
+                              title={t('customer.favorites.removeFromFavorites')}
+                            >
+                              <HeartIconSolid className="h-5 w-5" />
+                            </button>
+                          </div>
+
+                          {/* Rating and Reviews */}
+                          {specialist.rating && (
+                            <div className="flex items-center space-x-2 mb-3">
+                              <div className="flex items-center space-x-1">
+                                <StarIconSolid className="h-4 w-4 text-yellow-400" />
+                                <span className="text-sm font-medium text-gray-900">
+                                  {specialist.rating.toFixed(1)}
+                                </span>
+                              </div>
+                              <span className="text-sm text-gray-600">
+                                ({specialist.reviewCount} {t('specialist.reviews')})
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Location */}
+                          {specialist.location && (
+                            <div className="flex items-center text-sm text-gray-600 mb-2">
+                              <MapPinIcon className="h-4 w-4 mr-1" />
+                              <span>{typeof specialist.location === 'string' ? specialist.location : specialist.location.city}</span>
+                            </div>
+                          )}
+
+                          {/* Experience */}
+                          {specialist.experience && (
+                            <div className="flex items-center text-sm text-gray-600 mb-4">
+                              <UserIcon className="h-4 w-4 mr-1" />
+                              <span>{specialist.experience} years experience</span>
+                            </div>
+                          )}
+
+                          {/* Description */}
+                          {specialist.description && (
+                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                              {specialist.description}
                             </p>
+                          )}
+
+                          {/* Actions */}
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleViewSpecialist(specialist.id)}
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                            >
+                              {t('action.viewProfile')}
+                            </button>
+                            <button
+                              onClick={() => navigate(`/search?specialist=${specialist.id}`)}
+                              className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700"
+                            >
+                              {t('action.bookNow')}
+                            </button>
                           </div>
                         </div>
-                        <button
-                          onClick={() => handleRemoveSpecialist(specialist.id)}
-                          className="text-red-500 hover:text-red-700"
-                          title={t('customer.favorites.removeFromFavorites')}
-                        >
-                          <HeartIconSolid className="h-5 w-5" />
-                        </button>
                       </div>
-
-                      {/* Rating and Reviews */}
-                      <div className="flex items-center space-x-2 mb-3">
-                        <div className="flex items-center space-x-1">
-                          <StarIconSolid className="h-4 w-4 text-yellow-400" />
-                          <span className="text-sm font-medium text-gray-900">
-                            {specialist.rating}
-                          </span>
-                        </div>
-                        <span className="text-sm text-gray-600">
-                          ({specialist.reviewCount} {t('specialist.reviews')})
-                        </span>
-                      </div>
-
-                      {/* Location */}
-                      <div className="flex items-center text-sm text-gray-600 mb-2">
-                        <MapPinIcon className="h-4 w-4 mr-1" />
-                        <span>{specialist.location}</span>
-                      </div>
-
-                      {/* Response Time */}
-                      <div className="flex items-center text-sm text-gray-600 mb-4">
-                        <ClockIcon className="h-4 w-4 mr-1" />
-                        <span>{t('specialist.responseTime')}: {specialist.responseTime}</span>
-                      </div>
-
-                      {/* Price */}
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="text-lg font-semibold text-gray-900">
-                          {t('currency.from')} {formatPrice(specialist.priceFrom)}
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleViewSpecialist(specialist.id)}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                        >
-                          {t('action.viewProfile')}
-                        </button>
-                        <button
-                          onClick={() => navigate(`/search?specialist=${specialist.id}`)}
-                          className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700"
-                        >
-                          {t('action.bookNow')}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    );
+                  })}
+                </div>
+                {specialistsPagination && renderPagination(specialistsPagination)}
+              </>
             )}
           </>
         )}
@@ -287,7 +339,7 @@ const CustomerFavorites: React.FC = () => {
         {/* Services Tab */}
         {activeTab === 'services' && (
           <>
-            {favoriteServices.length === 0 ? (
+            {favoriteServices.length === 0 && !isLoading ? (
               <div className="bg-white rounded-lg shadow p-8 text-center">
                 <HeartIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -304,84 +356,91 @@ const CustomerFavorites: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {favoriteServices.map((service) => (
-                  <div key={service.id} className="bg-white rounded-lg shadow hover:shadow-md transition-shadow overflow-hidden">
-                    {/* Service Image */}
-                    <div className="relative">
-                      <ServiceImage
-                        src={service.images?.[0]}
-                        alt={service.name}
-                        className="w-full h-48"
-                        lazy={true}
-                      />
-                      <button
-                        onClick={() => handleRemoveService(service.id)}
-                        className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md text-red-500 hover:text-red-700"
-                        title={t('customer.favorites.removeFromFavorites')}
-                      >
-                        <HeartIconSolid className="h-4 w-4" />
-                      </button>
-                    </div>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {favoriteServices.map((favorite) => {
+                    const service = favorite.service;
+                    return (
+                      <div key={favorite.id} className="bg-white rounded-lg shadow hover:shadow-md transition-shadow overflow-hidden">
+                        {/* Service Image */}
+                        <div className="relative">
+                          <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                            <span className="text-gray-400 text-sm">No image</span>
+                          </div>
+                          <button
+                            onClick={() => handleRemoveService(service.id)}
+                            className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md text-red-500 hover:text-red-700"
+                            title={t('customer.favorites.removeFromFavorites')}
+                          >
+                            <HeartIconSolid className="h-4 w-4" />
+                          </button>
+                        </div>
 
-                    <div className="p-6">
-                      {/* Service Info */}
-                      <h3 className="font-semibold text-gray-900 mb-2 truncate">
-                        {service.name}
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                        {service.description}
-                      </p>
+                        <div className="p-6">
+                          {/* Service Info */}
+                          <h3 className="font-semibold text-gray-900 mb-2 truncate">
+                            {service.name}
+                          </h3>
+                          {service.description && (
+                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                              {service.description}
+                            </p>
+                          )}
 
-                      {/* Specialist Info */}
-                      <div className="flex items-center space-x-2 mb-4">
-                        <Avatar
-                          src={service.specialist.avatar}
-                          alt={service.specialist.name}
-                          size="sm"
-                          lazy={true}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {service.specialist.name}
-                          </p>
-                          <div className="flex items-center">
-                            <StarIconSolid className="h-3 w-3 text-yellow-400 mr-1" />
-                            <span className="text-xs text-gray-600">{service.specialist.rating}</span>
+                          {/* Category */}
+                          <div className="inline-block px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full mb-4">
+                            {service.category}
+                          </div>
+
+                          {/* Specialist Info */}
+                          <div className="flex items-center space-x-2 mb-4">
+                            <Avatar
+                              src={null}
+                              alt={`${service.specialist.user.firstName} ${service.specialist.user.lastName}`}
+                              size="sm"
+                              lazy={true}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                {service.specialist.businessName || 
+                                 `${service.specialist.user.firstName} ${service.specialist.user.lastName}`}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Duration and Price */}
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center text-sm text-gray-600">
+                              <ClockIcon className="h-4 w-4 mr-1" />
+                              <span>{service.duration} min</span>
+                            </div>
+                            <div className="text-lg font-semibold text-gray-900">
+                              {formatPrice(service.price)}
+                            </div>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleViewService(service.id)}
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                            >
+                              {t('action.viewDetails')}
+                            </button>
+                            <button
+                              onClick={() => handleBookService(service.id)}
+                              className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700"
+                            >
+                              {t('action.bookNow')}
+                            </button>
                           </div>
                         </div>
                       </div>
-
-                      {/* Duration and Price */}
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center text-sm text-gray-600">
-                          <ClockIcon className="h-4 w-4 mr-1" />
-                          <span>{service.duration} min</span>
-                        </div>
-                        <div className="text-lg font-semibold text-gray-900">
-                          {formatPrice(service.price)}
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleViewService(service.id)}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                        >
-                          {t('action.viewDetails')}
-                        </button>
-                        <button
-                          onClick={() => handleBookService(service.id)}
-                          className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700"
-                        >
-                          {t('action.bookNow')}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    );
+                  })}
+                </div>
+                {servicesPagination && renderPagination(servicesPagination)}
+              </>
             )}
           </>
         )}

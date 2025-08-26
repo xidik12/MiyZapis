@@ -309,7 +309,9 @@ export class AnalyticsService {
       
       params.append('format', format);
 
-      const response = await apiClient.get(`/analytics/export/${type}?${params}`, {
+      params.append('type', type);
+      
+      const response = await apiClient.get(`/analytics/export?${params}`, {
         responseType: 'blob',
       });
 

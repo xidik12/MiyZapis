@@ -64,7 +64,7 @@ export class AdminController {
         prisma.user.count({
           where: {
             isActive: true,
-            lastActiveAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+            lastLoginAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
           }
         }),
 
@@ -319,7 +319,7 @@ export class AdminController {
       const engagementStats = await prisma.user.groupBy({
         by: ['userType'],
         where: {
-          lastActiveAt: { gte: startDate }
+          lastLoginAt: { gte: startDate }
         },
         _count: {
           id: true
@@ -334,14 +334,8 @@ export class AdminController {
         take: 10
       });
 
-      // Get user platform distribution
-      const platformStats = await prisma.authToken.groupBy({
-        by: ['platform'],
-        where: {
-          createdAt: { gte: startDate }
-        },
-        _count: { id: true }
-      });
+      // Get user platform distribution - simplified without authToken table
+      const platformStats: any[] = [];
 
       res.json(createSuccessResponse({
         userTrends,
@@ -635,12 +629,33 @@ export class AdminController {
           updateData = { isActive: false };
           break;
         case 'delete':
-          updateData = { 
-            isActive: false, 
-            email: prisma.$raw`CONCAT(email, '_deleted_', id)`,
-            deletedAt: new Date() 
-          };
-          break;
+          // Handle delete differently to avoid email uniqueness conflicts
+          const usersToDelete = await prisma.user.findMany({
+            where: { id: { in: userIds } },
+            select: { id: true, email: true }
+          });
+          
+          for (const user of usersToDelete) {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: {
+                isActive: false,
+                email: `${user.email}_deleted_${user.id}`
+              }
+            });
+          }
+          
+          logger.info(`Admin deleted users`, {
+            adminId: req.user?.id,
+            userIds,
+            count: usersToDelete.length
+          });
+
+          res.json(createSuccessResponse({
+            message: `Successfully deleted ${usersToDelete.length} users`,
+            affectedCount: usersToDelete.length
+          }));
+          return;
       }
 
       const result = await prisma.user.updateMany({
@@ -727,7 +742,7 @@ export class AdminController {
         totalUsers: await prisma.user.count(),
         activeUsers: await prisma.user.count({
           where: {
-            lastActiveAt: {
+            lastLoginAt: {
               gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
             }
           }
@@ -762,65 +777,20 @@ export class AdminController {
     }
   }
 
-  // Get audit logs
+  // Get audit logs - simplified without AuditLog table for now
   static async getAuditLogs(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const { 
-        page = 1, 
-        limit = 50, 
-        action, 
-        userId, 
-        entityType,
-        startDate,
-        endDate 
-      } = req.query;
-
-      const skip = (parseInt(page as string, 10) - 1) * parseInt(limit as string, 10);
-      const take = parseInt(limit as string, 10);
-
-      const where: any = {};
-
-      if (action) where.action = action;
-      if (userId) where.userId = userId;
-      if (entityType) where.entityType = entityType;
-
-      if (startDate || endDate) {
-        where.createdAt = {};
-        if (startDate) where.createdAt.gte = new Date(startDate as string);
-        if (endDate) where.createdAt.lte = new Date(endDate as string);
-      }
-
-      const [auditLogs, total] = await Promise.all([
-        prisma.auditLog.findMany({
-          where,
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
-                userType: true
-              }
-            }
-          },
-          orderBy: { createdAt: 'desc' },
-          skip,
-          take
-        }),
-        prisma.auditLog.count({ where })
-      ]);
-
-      const totalPages = Math.ceil(total / take);
-
+      // Return empty audit logs since we don't have AuditLog table yet
+      // This can be implemented later when the table is added to the schema
       res.json(createSuccessResponse({
-        auditLogs,
+        auditLogs: [],
         pagination: {
-          currentPage: parseInt(page as string, 10),
-          totalPages,
-          totalItems: total,
-          itemsPerPage: take,
-          hasNext: parseInt(page as string, 10) < totalPages,
-          hasPrev: parseInt(page as string, 10) > 1
+          currentPage: 1,
+          totalPages: 0,
+          totalItems: 0,
+          itemsPerPage: 50,
+          hasNext: false,
+          hasPrev: false
         }
       }));
 

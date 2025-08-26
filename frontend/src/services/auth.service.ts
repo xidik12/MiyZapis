@@ -181,10 +181,10 @@ export class AuthService {
   }
 
   // Reset password
-  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+  async resetPassword(token: string, password: string): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>(API_ENDPOINTS.AUTH.RESET_PASSWORD, {
       token,
-      newPassword
+      password
     });
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Password reset failed');

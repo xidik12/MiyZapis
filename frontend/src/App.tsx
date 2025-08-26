@@ -3,17 +3,16 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from './hooks/redux';
 import { getCurrentUser, selectIsAuthenticated, selectUser } from './store/slices/authSlice';
 import { getAuthToken } from './services/api';
-// import { SocketProvider } from './providers/SocketProvider';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
+import { AdminRoute } from './components/admin/AdminRoute';
 import { MainLayout } from './components/layout/MainLayout';
 import { AuthLayout } from './components/layout/AuthLayout';
 import { ConditionalLayout } from './components/layout/ConditionalLayout';
 import { UserTypeRedirect } from './components/routing/UserTypeRedirect';
-// import { FloatingElements } from './components/ui/UkrainianElements';
 
 // Lazy load pages for better performance
 const HomePage = React.lazy(() => import('./pages/HomePage'));
@@ -488,11 +487,13 @@ function App() {
             </MainLayout>
           } />
           <Route path="/admin/dashboard" element={
-            <MainLayout>
-              <Suspense fallback={<SuspenseLoader />}>
-                <AdminDashboard />
-              </Suspense>
-            </MainLayout>
+            <AdminRoute>
+              <MainLayout>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <AdminDashboard />
+                </Suspense>
+              </MainLayout>
+            </AdminRoute>
           } />
 
           {/* Auth redirects */}

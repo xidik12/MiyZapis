@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ArrowLeftIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { authService } from '@/services/auth.service';
 
 interface ForgotPasswordFormData {
   email: string;
@@ -12,6 +13,7 @@ interface ForgotPasswordFormData {
 const ForgotPasswordPage: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isSubmitted, setIsSubmitted] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
   const { t } = useLanguage();
 
   const {
@@ -25,13 +27,14 @@ const ForgotPasswordPage: React.FC = () => {
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsLoading(true);
+    setError(null);
     
     try {
-      // TODO: Implement forgot password API call
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+      await authService.forgotPassword(data.email);
       setIsSubmitted(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Forgot password failed:', error);
+      setError(error.message || 'Failed to send reset email. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -91,6 +94,12 @@ const ForgotPasswordPage: React.FC = () => {
       </div>
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-4">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
+        
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">
             {t('auth.forgotPassword.emailLabel')}

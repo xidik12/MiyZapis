@@ -23,6 +23,7 @@
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
+    "create-admin": "tsx src/scripts/create-admin.ts",
     "docker:build": "docker build -t booking-platform-api .",
     "docker:run": "docker-compose up -d",
     "docker:stop": "docker-compose down",

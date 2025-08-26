@@ -13,6 +13,9 @@ import notificationRoutes from './notifications';
 import analyticsRoutes from './analytics';
 import fileRoutes from './files';
 import healthRoutes from './health';
+import favoritesRoutes from './favorites';
+import helpRoutes from './help';
+import adminRoutes from './admin';
 // New API routes
 import loyaltyRoutes from './loyalty';
 import availabilityRoutes from './availability';
@@ -39,6 +42,9 @@ router.use('/messages', messageRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/files', fileRoutes);
+router.use('/favorites', favoritesRoutes);
+router.use('/help', helpRoutes);
+router.use('/admin', adminRoutes);
 
 // New enhanced API routes
 router.use('/loyalty', loyaltyRoutes);

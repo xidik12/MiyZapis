@@ -72,6 +72,15 @@ const CustomerProfile: React.FC = () => {
     },
   ]);
   
+  const [loyalty] = useState<LoyaltyInfo>({
+    points: 1240,
+    tier: 'silver',
+    nextTierPoints: 760,
+    memberSince: '2024-03-15',
+    totalSpent: 15600,
+    discountsUsed: 8,
+  });
+  
   // Success/Error message handlers
   const showSuccessNotification = (message: string) => {
     setSuccessMessage(message);
@@ -106,15 +115,6 @@ const CustomerProfile: React.FC = () => {
       return loyalty.memberSince;
     }
   };
-
-  const [loyalty] = useState<LoyaltyInfo>({
-    points: 1240,
-    tier: 'silver',
-    nextTierPoints: 760,
-    memberSince: '2024-03-15',
-    totalSpent: 15600,
-    discountsUsed: 8,
-  });
 
   const getTierName = (tier: string) => {
     switch (tier) {

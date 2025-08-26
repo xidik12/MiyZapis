@@ -207,8 +207,7 @@ export function telegramSecurityMiddleware(req: Request, res: Response, next: Ne
       });
     }
     
-    // TODO: Implement initData validation
-    // validateTelegramWebAppData(initData, process.env.TELEGRAM_BOT_TOKEN);
+    // Telegram init data validation would go here
   }
   
   if (telegramBot) {

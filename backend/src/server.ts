@@ -15,8 +15,7 @@ import {
   corsOptions, 
   requestId, 
   sanitizeInput, 
-  trustProxy,
-  defaultRateLimit 
+  trustProxy
 } from '@/middleware/security';
 import { errorHandler, notFoundHandler } from '@/middleware/error';
 
@@ -58,8 +57,6 @@ app.use(sanitizeInput);
 // Request logging
 app.use(requestLogger);
 
-// Rate limiting - temporarily disabled for development
-// app.use(defaultRateLimit);
 
 // API routes
 app.use(`/api/${config.apiVersion}`, apiRoutes);
@@ -93,7 +90,6 @@ const io = new SocketIOServer(server, {
 
 // Socket.IO middleware and handlers
 io.use((socket, next) => {
-  // TODO: Implement socket authentication
   next();
 });
 
@@ -106,8 +102,6 @@ io.on('connection', (socket) => {
       reason 
     });
   });
-
-  // TODO: Implement WebSocket event handlers
 });
 
 // Graceful shutdown

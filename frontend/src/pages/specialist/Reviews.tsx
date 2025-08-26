@@ -1,157 +1,500 @@
 import React, { useState, useEffect } from 'react';
-import { StarIcon, ChatBubbleLeftIcon, UserIcon } from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import { StarIcon, ChatBubbleLeftIcon, UserIcon, HeartIcon, FlagIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { StarIcon as StarIconSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { useLanguage } from '../../contexts/LanguageContext';
-// Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
+import { reviewsService, Review, ReviewStats } from '../../services/reviews.service';
 
 const SpecialistReviews: React.FC = () => {
   const { t, language } = useLanguage();
-  
-  // Initialize with empty data for new accounts
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [reviewStats, setReviewStats] = useState({
-    overallRating: 0,
-    totalReviews: 0
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [filters, setFilters] = useState({
+    rating: undefined as number | undefined,
+    sortBy: 'createdAt' as 'createdAt' | 'rating' | 'helpful',
+    sortOrder: 'desc' as 'asc' | 'desc',
+    withComment: undefined as boolean | undefined,
+    verified: undefined as boolean | undefined
   });
+  const [respondingTo, setRespondingTo] = useState<string | null>(null);
+  const [responseText, setResponseText] = useState('');
+  const [submittingResponse, setSubmittingResponse] = useState(false);
 
-  // Load reviews from API
+  // Load reviews
   useEffect(() => {
-    const loadReviewsData = async () => {
+    const loadReviews = async () => {
       try {
-        // For now, keep empty data for new accounts
-        // TODO: Integrate with real reviews API when backend is ready
-        console.log('Reviews data would be loaded from API here');
+        setLoading(true);
+        setError(null);
         
-        // Real data should come from: await reviewsService.getReviews();
+        const response = await reviewsService.getReceivedReviews(page, 20);
+        
+        if (page === 1) {
+          setReviews(response.reviews);
+        } else {
+          setReviews(prev => [...prev, ...response.reviews]);
+        }
+        
+        setReviewStats(response.stats);
+        setHasMore(response.pagination.hasNextPage);
+        
       } catch (err: any) {
         console.error('Error loading reviews:', err);
+        setError(err.message || 'Failed to load reviews');
+      } finally {
+        setLoading(false);
       }
     };
 
-    loadReviewsData();
-  }, []);
+    loadReviews();
+  }, [page, filters]);
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, index) => (
-      <StarIconSolid
-        key={index}
-        className={`w-4 h-4 ${
-          index < rating ? 'text-warning-500' : 'text-gray-300 dark:text-gray-600'
-        }`}
-      />
-    ));
+  const handleLoadMore = () => {
+    if (hasMore && !loading) {
+      setPage(prev => prev + 1);
+    }
   };
 
-  const { overallRating, totalReviews } = reviewStats;
+  const handleFilterChange = (newFilters: typeof filters) => {
+    setFilters(newFilters);
+    setPage(1);
+  };
+
+  const handleMarkHelpful = async (reviewId: string, helpful: boolean) => {
+    try {
+      await reviewsService.markReviewHelpful(reviewId, helpful);
+      
+      // Update local state
+      setReviews(prev => prev.map(review => 
+        review.id === reviewId 
+          ? { 
+              ...review, 
+              isHelpful: helpful,
+              helpfulCount: helpful 
+                ? review.helpfulCount + 1 
+                : Math.max(0, review.helpfulCount - 1)
+            }
+          : review
+      ));
+    } catch (err: any) {
+      console.error('Error marking review as helpful:', err);
+    }
+  };
+
+  const handleSubmitResponse = async (reviewId: string) => {
+    if (!responseText.trim() || submittingResponse) return;
+
+    try {
+      setSubmittingResponse(true);
+      const response = await reviewsService.respondToReview(reviewId, responseText.trim());
+      
+      // Update local state
+      setReviews(prev => prev.map(review => 
+        review.id === reviewId 
+          ? { ...review, response: response.response }
+          : review
+      ));
+      
+      setRespondingTo(null);
+      setResponseText('');
+    } catch (err: any) {
+      console.error('Error responding to review:', err);
+      setError(err.message || 'Failed to respond to review');
+    } finally {
+      setSubmittingResponse(false);
+    }
+  };
+
+  const renderStars = (rating: number, size: 'sm' | 'md' | 'lg' = 'md') => {
+    const sizeClasses = {
+      sm: 'w-4 h-4',
+      md: 'w-5 h-5',
+      lg: 'w-6 h-6'
+    };
+
+    return (
+      <div className="flex items-center space-x-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <div key={star}>
+            {star <= rating ? (
+              <StarIconSolid className={`${sizeClasses[size]} text-yellow-400`} />
+            ) : (
+              <StarIcon className={`${sizeClasses[size]} text-gray-300`} />
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const getRatingText = (rating: number) => {
+    switch (rating) {
+      case 5: return { en: 'Excellent', uk: 'Відмінно', ru: 'Отлично' }[language];
+      case 4: return { en: 'Good', uk: 'Добре', ru: 'Хорошо' }[language];
+      case 3: return { en: 'Average', uk: 'Середньо', ru: 'Средне' }[language];
+      case 2: return { en: 'Poor', uk: 'Погано', ru: 'Плохо' }[language];
+      case 1: return { en: 'Terrible', uk: 'Жахливо', ru: 'Ужасно' }[language];
+      default: return '';
+    }
+  };
+
+  const getRatingColor = (rating: number) => {
+    if (rating >= 4) return 'text-green-600';
+    if (rating === 3) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  if (loading && page === 1) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    
-      <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('reviews.title')}</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard.nav.reviews')}</h1>
           <p className="text-gray-600 dark:text-gray-400">{t('reviews.subtitle')}</p>
         </div>
       </div>
 
-      {/* Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-          <div className="text-center">
-            <div className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-              {overallRating}
+      {error && (
+        <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg flex items-center">
+          <ExclamationTriangleIcon className="w-5 h-5 mr-2" />
+          {error}
+        </div>
+      )}
+
+      {/* Statistics Overview */}
+      {reviewStats && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('reviews.totalReviews')}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{reviewStats.totalReviews}</p>
+              </div>
+              <div className="bg-blue-100 dark:bg-blue-900/20 p-3 rounded-full">
+                <ChatBubbleLeftIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
             </div>
-            <div className="flex items-center justify-center space-x-1 mb-2">
-              {renderStars(Math.round(overallRating))}
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('reviews.averageRating')}</p>
+                <div className="flex items-center space-x-2">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {reviewStats.averageRating.toFixed(1)}
+                  </p>
+                  <div className="flex items-center">
+                    <StarIconSolid className="w-5 h-5 text-yellow-400" />
+                  </div>
+                </div>
+              </div>
+              <div className="bg-yellow-100 dark:bg-yellow-900/20 p-3 rounded-full">
+                <StarIconSolid className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+              </div>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t('reviews.overallRating').replace('{count}', totalReviews.toString())}
-            </p>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('reviews.verifiedReviews')}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{reviewStats.verifiedReviewsCount}</p>
+              </div>
+              <div className="bg-green-100 dark:bg-green-900/20 p-3 rounded-full">
+                <UserIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('reviews.recommendationRate')}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {(reviewStats.recommendationRate * 100).toFixed(0)}%
+                </p>
+              </div>
+              <div className="bg-purple-100 dark:bg-purple-900/20 p-3 rounded-full">
+                <HeartIconSolid className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+            </div>
           </div>
         </div>
+      )}
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-          <div className="text-center">
-            <div className="text-4xl font-bold text-success-600 mb-2">
-              {totalReviews > 0 ? '96%' : (language === 'uk' ? 'Немає даних' : language === 'ru' ? 'Нет данных' : 'No data')}
-            </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{t('reviews.positiveReviews')}</p>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div className="bg-success-600 h-2 rounded-full" style={{ width: totalReviews > 0 ? '96%' : '0%' }}></div>
-            </div>
+      {/* Rating Distribution */}
+      {reviewStats && (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('reviews.ratingDistribution')}</h3>
+          <div className="space-y-2">
+            {[5, 4, 3, 2, 1].map((rating) => {
+              const count = reviewStats.ratingDistribution[rating as keyof typeof reviewStats.ratingDistribution];
+              const percentage = reviewStats.totalReviews > 0 ? (count / reviewStats.totalReviews) * 100 : 0;
+              
+              return (
+                <div key={rating} className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-1 w-16">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{rating}</span>
+                    <StarIconSolid className="w-4 h-4 text-yellow-400" />
+                  </div>
+                  <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${percentage}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400 w-16 text-right">
+                    {count} ({percentage.toFixed(0)}%)
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
+      )}
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-          <div className="text-center">
-            <div className="text-4xl font-bold text-primary-600 mb-2">
-              {totalReviews > 0 ? '15' : (language === 'uk' ? 'Немає даних' : language === 'ru' ? 'Нет данных' : 'No data')}
-            </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t('reviews.averageResponseTime')}
-            </p>
-          </div>
+      {/* Filters */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('reviews.filters')}</h3>
+        <div className="flex flex-wrap gap-4">
+          <select
+            value={filters.rating || ''}
+            onChange={(e) => handleFilterChange({...filters, rating: e.target.value ? Number(e.target.value) : undefined})}
+            className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="">{t('reviews.allRatings')}</option>
+            <option value="5">5 {t('reviews.stars')}</option>
+            <option value="4">4 {t('reviews.stars')}</option>
+            <option value="3">3 {t('reviews.stars')}</option>
+            <option value="2">2 {t('reviews.stars')}</option>
+            <option value="1">1 {t('reviews.star')}</option>
+          </select>
+
+          <select
+            value={filters.sortBy}
+            onChange={(e) => handleFilterChange({...filters, sortBy: e.target.value as any})}
+            className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="createdAt">{t('reviews.sortBy.newest')}</option>
+            <option value="rating">{t('reviews.sortBy.rating')}</option>
+            <option value="helpful">{t('reviews.sortBy.helpful')}</option>
+          </select>
+
+          <button
+            onClick={() => handleFilterChange({...filters, verified: filters.verified ? undefined : true})}
+            className={`px-4 py-2 rounded-lg border transition-colors ${
+              filters.verified
+                ? 'bg-primary-600 text-white border-primary-600'
+                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+            }`}
+          >
+            {t('reviews.verifiedOnly')}
+          </button>
+
+          <button
+            onClick={() => handleFilterChange({...filters, withComment: filters.withComment ? undefined : true})}
+            className={`px-4 py-2 rounded-lg border transition-colors ${
+              filters.withComment
+                ? 'bg-primary-600 text-white border-primary-600'
+                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+            }`}
+          >
+            {t('reviews.withComments')}
+          </button>
         </div>
       </div>
 
       {/* Reviews List */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('reviews.recentReviews')}</h3>
-        </div>
-        <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {reviews.map((review) => (
-            <div key={review.id} className="p-6">
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-semibold">
-                    {review.customerName.split(' ').map(n => n[0]).join('')}
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
+      <div className="space-y-6">
+        {reviews.length === 0 ? (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-12 text-center">
+            <ChatBubbleLeftIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              {t('reviews.noReviews')}
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              {t('reviews.noReviewsDescription')}
+            </p>
+          </div>
+        ) : (
+          reviews.map((review) => (
+            <div key={review.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center space-x-4">
+                  {review.customer.avatar ? (
+                    <img 
+                      src={review.customer.avatar} 
+                      alt={`${review.customer.firstName} ${review.customer.lastName}`}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+                      <span className="text-white font-semibold text-lg">
+                        {review.customer.firstName[0]}{review.customer.lastName[0]}
+                      </span>
+                    </div>
+                  )}
+                  <div>
                     <div className="flex items-center space-x-2">
                       <h4 className="font-semibold text-gray-900 dark:text-white">
-                        {review.customerName}
+                        {review.customer.firstName} {review.customer.lastName}
                       </h4>
-                      {review.verified && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success-100 text-success-700">
-                          ✓ {t('reviews.verified')}
+                      {review.isVerified && (
+                        <span className="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 text-xs px-2 py-1 rounded-full">
+                          {t('reviews.verified')}
                         </span>
                       )}
                     </div>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(review.date).toLocaleDateString(language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US')}
-                    </span>
+                    <div className="flex items-center space-x-2 mt-1">
+                      {renderStars(review.rating, 'sm')}
+                      <span className={`text-sm font-medium ${getRatingColor(review.rating)}`}>
+                        {getRatingText(review.rating)}
+                      </span>
+                      <span className="text-gray-500 dark:text-gray-400 text-sm">•</span>
+                      <span className="text-gray-500 dark:text-gray-400 text-sm">
+                        {formatDate(review.createdAt)}
+                      </span>
+                    </div>
                   </div>
-                  
-                  <div className="flex items-center space-x-1 mb-2">
-                    {renderStars(review.rating)}
-                    <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                      {t('reviews.forService').replace('{service}', review.service)}
-                    </span>
-                  </div>
-                  
-                  <p className="text-gray-700 dark:text-gray-300 mb-4">{review.comment}</p>
-                  
-                  <button className="flex items-center space-x-2 text-primary-600 hover:text-primary-700 text-sm font-medium">
-                    <ChatBubbleLeftIcon className="w-4 h-4" />
-                    <span>{t('reviews.reply')}</span>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handleMarkHelpful(review.id, !review.isHelpful)}
+                    className="flex items-center space-x-1 text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    {review.isHelpful ? (
+                      <HeartIconSolid className="w-4 h-4 text-red-500" />
+                    ) : (
+                      <HeartIcon className="w-4 h-4" />
+                    )}
+                    <span className="text-sm">{review.helpfulCount}</span>
                   </button>
                 </div>
               </div>
+
+              {review.service && (
+                <div className="mb-3">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('reviews.forService')}: 
+                    <span className="font-medium text-gray-900 dark:text-white ml-1">
+                      {review.service.name}
+                    </span>
+                  </span>
+                </div>
+              )}
+
+              {review.comment && (
+                <div className="mb-4">
+                  <p className="text-gray-700 dark:text-gray-300">{review.comment}</p>
+                </div>
+              )}
+
+              {review.tags && review.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {review.tags.map((tag, index) => (
+                    <span key={index} className="bg-primary-100 dark:bg-primary-900/20 text-primary-800 dark:text-primary-300 text-xs px-2 py-1 rounded-full">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Specialist Response */}
+              {review.response ? (
+                <div className="mt-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      {t('reviews.yourResponse')}
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {formatDate(review.response.createdAt)}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    {review.response.message}
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-4">
+                  {respondingTo === review.id ? (
+                    <div className="space-y-3">
+                      <textarea
+                        value={responseText}
+                        onChange={(e) => setResponseText(e.target.value)}
+                        placeholder={t('reviews.writeResponse')}
+                        className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 resize-none"
+                        rows={3}
+                      />
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleSubmitResponse(review.id)}
+                          disabled={!responseText.trim() || submittingResponse}
+                          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {submittingResponse ? t('reviews.submitting') : t('reviews.submitResponse')}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setRespondingTo(null);
+                            setResponseText('');
+                          }}
+                          className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+                        >
+                          {t('common.cancel')}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setRespondingTo(review.id)}
+                      className="text-primary-600 dark:text-primary-400 text-sm hover:underline"
+                    >
+                      {t('reviews.respond')}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
-          ))}
-        </div>
-        
-        <div className="p-6 text-center border-t border-gray-200 dark:border-gray-700">
-          <button className="text-primary-600 hover:text-primary-700 font-medium">
-            {t('reviews.showMore')}
+          ))
+        )}
+      </div>
+
+      {/* Load More Button */}
+      {hasMore && (
+        <div className="flex justify-center mt-8">
+          <button
+            onClick={handleLoadMore}
+            disabled={loading}
+            className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors"
+          >
+            {loading ? t('common.loading') : t('reviews.loadMore')}
           </button>
         </div>
-      </div>
-      </div>
-    
+      )}
+    </div>
   );
 };
 

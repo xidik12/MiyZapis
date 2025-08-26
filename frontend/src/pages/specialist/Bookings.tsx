@@ -60,7 +60,6 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   
   const handleSendMessage = () => {
     // In real app, this would send a message to the customer
-    console.log('Sending message:', message);
     setMessage('');
     // Show success notification
   };
@@ -327,7 +326,6 @@ const SpecialistBookings: React.FC = () => {
     try {
       // In a real app, this would call the booking service to update status
       // For now, we'll just update local state until backend is fully integrated
-      console.log(`Updating booking ${bookingId} status to ${newStatus}`);
       // TODO: Implement actual API call when backend booking status update is ready
       // await dispatch(updateBookingStatus({ bookingId, status: newStatus }));
     } catch (error) {
@@ -338,7 +336,6 @@ const SpecialistBookings: React.FC = () => {
   const handleBulkStatusChange = async (newStatus: keyof typeof statusColors) => {
     try {
       // In a real app, this would call the booking service to update multiple statuses
-      console.log(`Bulk updating bookings ${selectedBookings.join(', ')} status to ${newStatus}`);
       // TODO: Implement actual API call when backend bulk update is ready
       // await dispatch(updateMultipleBookingStatuses({ bookingIds: selectedBookings, status: newStatus }));
       setSelectedBookings([]);

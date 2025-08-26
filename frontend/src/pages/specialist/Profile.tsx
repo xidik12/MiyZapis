@@ -406,13 +406,45 @@ const SpecialistProfile: React.FC = () => {
   // Save profile
   const handleSave = async () => {
     if (!validateProfile()) {
-      showErrorNotification(
-        language === 'uk'
+      // Show specific validation errors
+      const errorFields = Object.keys(validationErrors);
+      const errorMessage = errorFields.length > 0 
+        ? (language === 'uk' 
+          ? `Будь ласка, заповніть обов'язкові поля: ${errorFields.map(field => {
+              switch(field) {
+                case 'firstName': return "Ім'я";
+                case 'lastName': return 'Прізвище';
+                case 'email': return 'Email';
+                case 'profession': return 'Професія';
+                default: return field;
+              }
+            }).join(', ')}`
+          : language === 'ru'
+          ? `Пожалуйста, заполните обязательные поля: ${errorFields.map(field => {
+              switch(field) {
+                case 'firstName': return 'Имя';
+                case 'lastName': return 'Фамилия';
+                case 'email': return 'Email';
+                case 'profession': return 'Профессия';
+                default: return field;
+              }
+            }).join(', ')}`
+          : `Please fill in the required fields: ${errorFields.map(field => {
+              switch(field) {
+                case 'firstName': return 'First Name';
+                case 'lastName': return 'Last Name';
+                case 'email': return 'Email';
+                case 'profession': return 'Profession';
+                default: return field;
+              }
+            }).join(', ')}`)
+        : (language === 'uk'
           ? 'Будь ласка, виправте помилки у формі'
           : language === 'ru'
           ? 'Пожалуйста, исправьте ошибки в форме'
-          : 'Please fix the errors in the form'
-      );
+          : 'Please fix the errors in the form');
+          
+      showErrorNotification(errorMessage);
       return;
     }
 
@@ -680,10 +712,17 @@ const SpecialistProfile: React.FC = () => {
               {!isEditing && (
                 <button 
                   onClick={() => {
-                    if (profile?.specialist?.id) {
-                      // Open specialist's public profile in a new tab
-                      const publicProfileUrl = `/specialist/${profile.specialist.id}`;
+                    if (user?.userType === 'SPECIALIST') {
+                      // Open specialist's public profile in a new tab - use current user ID
+                      const publicProfileUrl = `/specialist/${user.id}`;
                       window.open(publicProfileUrl, '_blank');
+                    } else {
+                      console.warn('User is not a specialist');
+                      showErrorNotification(
+                        language === 'uk' ? 'Профіль недоступний для перегляду' : 
+                        language === 'ru' ? 'Профиль недоступен для просмотра' : 
+                        'Profile not available for preview'
+                      );
                     }
                   }}
                   className="px-6 py-3 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2"
