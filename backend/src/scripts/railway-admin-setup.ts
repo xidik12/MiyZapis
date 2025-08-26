@@ -44,9 +44,6 @@ async function createRailwayAdmin(options: CreateAdminOptions) {
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(options.password, saltRounds);
 
-    // Generate verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-
     // Create admin user
     console.log('👤 Creating admin user in database...');
     const adminUser = await prisma.user.create({
@@ -58,18 +55,12 @@ async function createRailwayAdmin(options: CreateAdminOptions) {
         userType: 'ADMIN',
         isActive: true,
         isEmailVerified: true, // Pre-verify admin
-        emailVerificationToken: verificationToken,
         loyaltyPoints: 0,
-        totalBookings: 0,
-        preferences: {
-          language: 'en',
-          currency: 'USD',
-          notifications: {
-            email: true,
-            push: true,
-            telegram: false
-          }
-        }
+        language: 'en',
+        currency: 'USD',
+        emailNotifications: true,
+        pushNotifications: true,
+        telegramNotifications: false
       }
     });
 
