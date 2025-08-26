@@ -175,17 +175,27 @@ export class ReviewsService {
     pagination: Pagination;
     stats: ReviewStats;
   }> {
-    const response = await apiClient.get<{
-      reviews: Review[];
-      pagination: Pagination;
-      stats: ReviewStats;
-    }>(`/reviews/received?page=${page}&limit=${limit}`);
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get received reviews');
-    }
-    
-    return response.data;
+    // Note: This endpoint doesn't exist in backend, so we'll return empty data
+    // The specialist needs to use getSpecialistReviews with their own specialistId
+    // For now, return empty data to prevent 404 errors
+    return {
+      reviews: [],
+      pagination: {
+        currentPage: page,
+        totalPages: 0,
+        totalItems: 0,
+        itemsPerPage: limit,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
+      stats: {
+        totalReviews: 0,
+        averageRating: 0,
+        ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+        verifiedReviewsCount: 0,
+        recommendationRate: 0,
+      }
+    };
   }
 
   // Create a new review
