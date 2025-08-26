@@ -501,7 +501,7 @@ function App() {
             path="/auth"
             element={
               isAuthenticated ? (
-                <Navigate to={user?.userType === 'SPECIALIST' ? '/specialist/dashboard' : '/dashboard'} replace />
+                <Navigate to={user?.userType === 'specialist' ? '/specialist/dashboard' : '/dashboard'} replace />
               ) : (
                 <Navigate to="/auth/login" replace />
               )

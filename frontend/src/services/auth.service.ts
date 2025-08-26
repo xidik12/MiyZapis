@@ -270,7 +270,7 @@ export class AuthService {
   private transformUserFromBackend(backendUser: any): User {
     return {
       ...backendUser,
-      userType: backendUser.userType === 'CUSTOMER' ? 'customer' : backendUser.userType === 'SPECIALIST' ? 'specialist' : backendUser.userType.toLowerCase(),
+      userType: backendUser.userType === 'CUSTOMER' ? 'customer' : backendUser.userType === 'SPECIALIST' ? 'specialist' : backendUser.userType === 'ADMIN' ? 'admin' : backendUser.userType.toLowerCase(),
       // Set default values for missing frontend properties
       totalBookings: backendUser.totalBookings || 0,
       memberSince: backendUser.createdAt || backendUser.memberSince,

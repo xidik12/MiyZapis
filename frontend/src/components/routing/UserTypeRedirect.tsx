@@ -12,15 +12,15 @@ export const UserTypeRedirect: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated && user) {
       // Redirect authenticated users to their appropriate dashboard
-      if (user.userType === 'SPECIALIST') {
+      if (user.userType === 'specialist') {
         navigate('/specialist/dashboard', { replace: true });
         return;
       }
-      if (user.userType === 'CUSTOMER') {
+      if (user.userType === 'customer') {
         navigate('/dashboard', { replace: true });
         return;
       }
-      if (user.userType === 'ADMIN') {
+      if (user.userType === 'admin') {
         navigate('/admin/dashboard', { replace: true });
         return;
       }

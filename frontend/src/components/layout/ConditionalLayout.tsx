@@ -14,11 +14,11 @@ export const ConditionalLayout: React.FC<ConditionalLayoutProps> = ({ children }
   const user = useAppSelector(selectUser);
 
   // If user is authenticated, use the appropriate layout based on user type
-  if (isAuthenticated && user?.userType === 'CUSTOMER') {
+  if (isAuthenticated && user?.userType === 'customer') {
     return <CustomerLayout>{children}</CustomerLayout>;
   }
   
-  if (isAuthenticated && user?.userType === 'SPECIALIST') {
+  if (isAuthenticated && user?.userType === 'specialist') {
     return <SpecialistLayout>{children}</SpecialistLayout>;
   }
 
