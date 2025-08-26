@@ -202,17 +202,34 @@ const getEmptyProfile = (): SpecialistProfile => ({
 const mergeProfileData = (apiData: any): SpecialistProfile => {
   const defaultProfile = getEmptyProfile();
   
-  return {
+  console.log('🔄 mergeProfileData input:', apiData);
+  console.log('🔄 defaultProfile:', defaultProfile);
+  
+  // Parse JSON strings if they exist (backend stores some fields as JSON strings)
+  const parseJsonField = (field: any, fallback: any) => {
+    if (typeof field === 'string') {
+      try {
+        return JSON.parse(field);
+      } catch (e) {
+        console.warn('⚠️ Failed to parse JSON field:', field, e);
+        return fallback;
+      }
+    }
+    return field || fallback;
+  };
+  
+  const result = {
     ...defaultProfile,
     ...apiData,
-    // Ensure arrays are always arrays
-    languages: Array.isArray(apiData?.languages) ? apiData.languages : [],
-    specialties: Array.isArray(apiData?.specialties) ? apiData.specialties : [],
-    paymentMethods: Array.isArray(apiData?.paymentMethods) ? apiData.paymentMethods : [],
-    certifications: Array.isArray(apiData?.certifications) ? apiData.certifications : [],
-    portfolio: Array.isArray(apiData?.portfolio) ? apiData.portfolio : [],
+    // Parse backend JSON strings and ensure arrays are always arrays
+    languages: Array.isArray(apiData?.languages) ? apiData.languages : parseJsonField(apiData?.languages, []),
+    specialties: Array.isArray(apiData?.specialties) ? apiData.specialties : parseJsonField(apiData?.specialties, []),
+    paymentMethods: Array.isArray(apiData?.paymentMethods) ? apiData.paymentMethods : parseJsonField(apiData?.paymentMethods, []),
+    certifications: Array.isArray(apiData?.certifications) ? apiData.certifications : parseJsonField(apiData?.certifications, []),
+    portfolio: Array.isArray(apiData?.portfolio) ? apiData.portfolio : parseJsonField(apiData?.portfolioImages, []),
+    // Parse business hours from JSON string if needed
+    businessHours: apiData?.businessHours ? (typeof apiData.businessHours === 'string' ? parseJsonField(apiData.businessHours, defaultProfile.businessHours) : { ...defaultProfile.businessHours, ...apiData.businessHours }) : (apiData?.workingHours ? parseJsonField(apiData.workingHours, defaultProfile.businessHours) : defaultProfile.businessHours),
     // Ensure objects are always objects
-    businessHours: apiData?.businessHours ? { ...defaultProfile.businessHours, ...apiData.businessHours } : defaultProfile.businessHours,
     verification: apiData?.verification ? { ...defaultProfile.verification, ...apiData.verification } : defaultProfile.verification,
     location: apiData?.location ? { ...defaultProfile.location, ...apiData.location } : defaultProfile.location,
     serviceArea: apiData?.serviceArea ? { ...defaultProfile.serviceArea, ...apiData.serviceArea } : defaultProfile.serviceArea,
@@ -220,6 +237,9 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
     privacy: apiData?.privacy ? { ...defaultProfile.privacy, ...apiData.privacy } : defaultProfile.privacy,
     socialMedia: apiData?.socialMedia ? { ...defaultProfile.socialMedia, ...apiData.socialMedia } : defaultProfile.socialMedia,
   };
+  
+  console.log('🔄 mergeProfileData result:', result);
+  return result;
 };
 
 const SpecialistProfile: React.FC = () => {
@@ -321,12 +341,16 @@ const SpecialistProfile: React.FC = () => {
   useEffect(() => {
     const loadProfile = async () => {
       try {
+        console.log('📥 Starting profile load, user:', user);
         setLoading(true);
         
         if (user && isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
+          console.log('📡 API feature enabled, fetching specialist profile...');
           try {
             const specialistData = await specialistService.getProfile();
-            const updatedProfile = mergeProfileData({
+            console.log('📡 Raw data from backend getProfile:', specialistData);
+            
+            const profileInput = {
               ...specialistData,
               firstName: user.firstName || '',
               lastName: user.lastName || '',
@@ -348,9 +372,15 @@ const SpecialistProfile: React.FC = () => {
                   : '',
                 documentsSubmitted: [],
               },
-            });
+            };
+            
+            console.log('📥 Profile input before merge:', profileInput);
+            const updatedProfile = mergeProfileData(profileInput);
+            console.log('📥 Final merged profile:', updatedProfile);
+            
             setProfile(updatedProfile);
             setOriginalProfile(updatedProfile);
+            console.log('✅ Profile loaded successfully');
           } catch (specialistError) {
             console.warn('Specialist API not available, using user data only:', specialistError);
             const basicProfile = mergeProfileData({
@@ -391,10 +421,15 @@ const SpecialistProfile: React.FC = () => {
 
   // Handle profile changes
   const handleProfileChange = (field: string, value: any) => {
-    setProfile(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    console.log(`📝 Profile field changed: ${field} =`, value);
+    setProfile(prev => {
+      const newProfile = {
+        ...prev,
+        [field]: value
+      };
+      console.log('📝 New profile state:', newProfile);
+      return newProfile;
+    });
     setHasUnsavedChanges(true);
     
     // Clear validation error for this field
@@ -500,14 +535,15 @@ const SpecialistProfile: React.FC = () => {
             certifications: Array.isArray(profile.certifications) ? profile.certifications : []
           };
 
-          console.log('Sending specialist data to backend:', specialistData);
+          console.log('💾 Sending specialist data to backend:', specialistData);
+          console.log('💾 Current profile state before save:', profile);
 
           // Call the API to update the specialist profile
           try {
             const updateResult = await specialistService.updateProfile(specialistData);
-            console.log('Backend response for specialist update:', updateResult);
+            console.log('✅ Backend response for specialist update:', updateResult);
           } catch (updateError: any) {
-            console.log('Update failed, error:', updateError);
+            console.error('❌ Update failed, error:', updateError);
             // If specialist profile doesn't exist, try to create it first
             if (updateError.message?.includes('SPECIALIST_NOT_FOUND') || updateError.message?.includes('not found')) {
               console.log('Specialist profile not found, attempting to create...');
@@ -561,6 +597,7 @@ const SpecialistProfile: React.FC = () => {
         try {
           // Reload the profile from the API to ensure we have the latest data
           const apiData = await specialistService.getProfile();
+          console.log('Profile data after save reload:', apiData);
           const updatedProfile = mergeProfileData({
             ...apiData,
             firstName: user?.firstName || '',
@@ -568,6 +605,7 @@ const SpecialistProfile: React.FC = () => {
             email: user?.email || '',
             phone: user?.phoneNumber || '',
           });
+          console.log('Merged profile after save:', updatedProfile);
           setProfile(updatedProfile);
           setOriginalProfile(updatedProfile);
         } catch (reloadError) {
