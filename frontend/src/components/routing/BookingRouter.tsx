@@ -10,7 +10,7 @@ const BookingRouter: React.FC = () => {
 
   // If user is authenticated and is a customer, redirect to login to access protected booking
   // Non-authenticated users can see the public booking page but will need to login to proceed
-  if (isAuthenticated && user?.userType === 'customer') {
+  if (isAuthenticated && user?.userType === 'CUSTOMER') {
     return <Navigate to="/dashboard" replace />;
   }
 
