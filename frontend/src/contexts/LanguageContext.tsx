@@ -363,6 +363,10 @@ const translations: Translations = {
   'specialist.verified': { en: 'Verified', uk: 'Підтверджено', ru: 'Подтверждено' },
   'specialist.online': { en: 'Online', uk: 'Онлайн', ru: 'Онлайн' },
 
+  // Profession Form
+  'professionForm.searchProfessions': { en: 'Search professions...', uk: 'Пошук професій...', ru: 'Поиск профессий...' },
+  'professionForm.addCustomProfession': { en: 'Add Custom Profession', uk: 'Додати власну професію', ru: 'Добавить свою профессию' },
+
   // Location Names (for examples - in real app these would come from API)
   'location.newYork': { en: 'New York, NY', uk: 'Нью-Йорк, США', ru: 'Нью-Йорк, США' },
   'location.sanFrancisco': { en: 'San Francisco, CA', uk: 'Сан-Франциско, США', ru: 'Сан-Франциско, США' },

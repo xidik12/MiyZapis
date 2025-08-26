@@ -12,21 +12,28 @@ import { ServiceCategory } from '../../types';
 interface Service {
   id: string;
   name: string;
-  nameUk: string;
-  nameRu: string;
+  nameUk?: string;
+  nameRu?: string;
   description: string;
-  descriptionUk: string;
-  descriptionRu: string;
+  descriptionUk?: string;
+  descriptionRu?: string;
   category: string;
-  categoryUk: string;
-  categoryRu: string;
-  price: number;
+  categoryUk?: string;
+  categoryRu?: string;
+  basePrice: number;
+  price?: number; // For backwards compatibility
   currency: string;
   duration: number;
   isActive: boolean;
-  bookings: number;
-  rating: number;
-  availability: {
+  bookings?: number;
+  rating?: number;
+  requirements?: string[];
+  deliverables?: string[];
+  images?: string[];
+  requiresApproval?: boolean;
+  maxAdvanceBooking?: number;
+  minAdvanceBooking?: number;
+  availability?: {
     monday: boolean;
     tuesday: boolean;
     wednesday: boolean;
@@ -35,7 +42,7 @@ interface Service {
     saturday: boolean;
     sunday: boolean;
   };
-  timeSlots: string[];
+  timeSlots?: string[];
 }
 
 const sampleServices: Service[] = [
@@ -177,7 +184,7 @@ const SpecialistServices: React.FC = () => {
       descriptionUk: service.descriptionUk,
       descriptionRu: service.descriptionRu,
       category: existingCategory ? existingCategory.id : '',
-      price: service.price.toString(),
+      price: service.basePrice?.toString() || service.price?.toString() || '',
       duration: service.duration.toString(),
       isActive: service.isActive,
       availability: { ...service.availability },
@@ -262,18 +269,18 @@ const SpecialistServices: React.FC = () => {
 
     const serviceData = {
       name: formData.name,
-      nameUk: formData.nameUk || formData.name,
-      nameRu: formData.nameRu || formData.name,
       description: formData.description,
-      descriptionUk: formData.descriptionUk || formData.description,
-      descriptionRu: formData.descriptionRu || formData.description,
       category: finalCategory,
-      price: parseFloat(formData.price),
+      basePrice: parseFloat(formData.price),
       currency: currency,
       duration: parseInt(formData.duration),
       isActive: formData.isActive,
-      availability: { ...formData.availability },
-      timeSlots: formData.timeSlots.filter(slot => slot.trim())
+      requirements: [], // Empty for now, can be extended later
+      deliverables: [], // Empty for now, can be extended later
+      images: [], // Empty for now, can be extended later
+      requiresApproval: true,
+      maxAdvanceBooking: 30,
+      minAdvanceBooking: 1
     };
     
     try {
@@ -425,7 +432,7 @@ const SpecialistServices: React.FC = () => {
         </div>
         <div className="text-right ml-4">
           <div className="text-2xl font-bold text-primary-600 mb-2">
-            {service.price && !isNaN(service.price) ? formatPrice(service.price, service.currency as any) : 'N/A'}
+            {service.basePrice && !isNaN(service.basePrice) ? formatPrice(service.basePrice, service.currency as any) : 'N/A'}
           </div>
           <div className="text-sm text-gray-500 mb-3">
             {getLocalizedText(service, 'category')}

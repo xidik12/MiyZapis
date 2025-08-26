@@ -16,17 +16,32 @@ export const validateUpdateProfile = [
   
   body('phoneNumber')
     .optional()
-    .isMobilePhone('any')
-    .withMessage('Valid phone number is required'),
+    .custom((value) => {
+      // Allow null or empty string
+      if (value === null || value === '' || value === undefined) {
+        return true;
+      }
+      // If provided, must be a valid international phone number
+      if (typeof value === 'string' && value.length > 0) {
+        // More flexible international phone validation
+        // Allows formats like: +855 10 374 007, +1 555 123 4567, etc.
+        const phoneRegex = /^[\+]?[1-9]\d{0,3}[\s\-]?(\d[\s\-]?){8,14}$/;
+        if (!phoneRegex.test(value.replace(/\s+/g, ' ').trim())) {
+          throw new Error('Phone number format is invalid');
+        }
+      }
+      return true;
+    })
+    .withMessage('Valid international phone number is required'),
   
   body('language')
     .optional()
-    .isIn(['en', 'es', 'fr', 'de', 'ru', 'ar'])
+    .isIn(['en', 'uk', 'ru'])
     .withMessage('Valid language is required'),
   
   body('currency')
     .optional()
-    .isIn(['USD', 'EUR', 'GBP', 'RUB'])
+    .isIn(['USD', 'EUR', 'GBP', 'RUB', 'UAH'])
     .withMessage('Valid currency is required'),
   
   body('timezone')

@@ -271,7 +271,7 @@ const SpecialistProfile: React.FC = () => {
 
     // Location
     totalFields += 2;
-    if (profile.location.address && profile.location.city) completedFields += 2;
+    if (profile.location?.address && profile.location?.city) completedFields += 2;
 
     // Business hours (at least one day)
     totalFields++;
@@ -311,6 +311,13 @@ const SpecialistProfile: React.FC = () => {
               profession: specialistData.businessName || '',
               experience: specialistData.experience || 0,
               specialties: specialistData.specialties || [],
+              location: {
+                ...getEmptyProfile().location,
+                address: specialistData.address || '',
+                city: specialistData.city || '',
+                region: specialistData.state || '',
+                country: specialistData.country || '',
+              },
               verification: {
                 ...getEmptyProfile().verification,
                 isVerified: specialistData.isVerified || false,
