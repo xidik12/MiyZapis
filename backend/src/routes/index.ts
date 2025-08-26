@@ -23,6 +23,7 @@ import analyticsEnhancedRoutes from './analytics-enhanced';
 import telegramEnhancedRoutes from './telegram-enhanced';
 import diagnosticsRoutes from './diagnostics';
 import setupAdminRoutes from './setup-admin';
+import debugAdminRoutes from './debug-admin';
 
 const router = Router();
 
@@ -56,5 +57,8 @@ router.use('/diagnostics', diagnosticsRoutes);
 
 // Admin setup routes (for initial setup only)
 router.use('/setup', setupAdminRoutes);
+
+// Debug routes (for testing only)
+router.use('/debug', debugAdminRoutes);
 
 export default router;
