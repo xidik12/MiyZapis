@@ -698,15 +698,15 @@ const SpecialistProfile: React.FC = () => {
                   </div>
                   
                   {/* Verification Badge */}
-                  {profile.verification.isVerified && (
+                  {profile.verification?.isVerified && (
                     <div className="flex items-center gap-2 px-4 py-2 bg-success-50 text-success-700 dark:bg-success-900/20 dark:text-success-300 rounded-xl border border-success-200 dark:border-success-800">
                       <DocumentCheckIcon className="h-5 w-5" />
                       <span className="font-medium text-sm">
                         {language === 'uk' ? 'Підтверджено' : language === 'ru' ? 'Подтверждено' : 'Verified'}
                       </span>
-                      {formatVerificationDate(profile.verification.verifiedDate) && (
+                      {formatVerificationDate(profile.verification?.verifiedDate) && (
                         <span className="text-xs opacity-75 ml-1">
-                          ({formatVerificationDate(profile.verification.verifiedDate)})
+                          ({formatVerificationDate(profile.verification?.verifiedDate)})
                         </span>
                       )}
                     </div>
