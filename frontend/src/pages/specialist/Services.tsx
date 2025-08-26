@@ -6,6 +6,7 @@ import { serviceService } from '../../services/service.service';
 import { isFeatureEnabled } from '../../config/features';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
 import { FloatingElements, UkrainianOrnament } from '../../components/ui/UkrainianElements';
+import { CategoryDropdown } from '../../components/ui/CategoryDropdown';
 import { ServiceCategory } from '../../types';
 
 interface Service {
@@ -772,82 +773,22 @@ const SpecialistServices: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {t('serviceForm.category')} *
                   </label>
-                  {/* Show text input if categories failed to load and we're not loading */}
-                  {categoriesError && !categoriesLoading ? (
-                    <input
-                      type="text"
-                      value={formData.category}
-                      onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                      placeholder={t('serviceForm.enterCategoryName') || 'Enter category name'}
-                      className={`w-full px-4 py-3 rounded-xl border ${formErrors.category ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
-                    />
-                  ) : (
-                    <div className="relative">
-                      <select
-                        value={formData.category}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value === 'custom') {
-                            setShowCustomCategory(true);
-                            setFormData(prev => ({ ...prev, category: '' }));
-                          } else {
-                            setShowCustomCategory(false);
-                            setCustomCategory('');
-                            setFormData(prev => ({ ...prev, category: value }));
-                          }
-                        }}
-                        disabled={categoriesLoading}
-                        className={`w-full px-4 py-3 rounded-xl border ${formErrors.category ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed`}
-                      >
-                        <option value="">
-                          {categoriesLoading 
-                            ? t('serviceForm.loadingCategories') || 'Loading categories...'
-                            : t('serviceForm.selectCategory')
-                          }
-                        </option>
-                        {!categoriesLoading && categories.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
-                        {!categoriesLoading && !categoriesError && (
-                          <option value="custom">
-                            {t('serviceForm.addCustomCategory') || '+ Add Custom Category'}
-                          </option>
-                        )}
-                      </select>
-                      {categoriesLoading && (
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {categoriesError && (
-                    <p className="mt-1 text-sm text-orange-600">
-                      {t('serviceForm.categoriesWarning') || 'Categories failed to load. You can enter a category name directly.'}
-                    </p>
-                  )}
-                  {formErrors.category && <p className="mt-1 text-sm text-red-500">{formErrors.category}</p>}
-                  
-                  {/* Custom Category Input - only show when not in error fallback mode */}
-                  {showCustomCategory && !categoriesError && (
-                    <div className="mt-3">
-                      <input
-                        type="text"
-                        value={customCategory}
-                        onChange={(e) => {
-                          setCustomCategory(e.target.value);
-                          setFormData(prev => ({ ...prev, category: e.target.value }));
-                        }}
-                        placeholder={t('serviceForm.enterCustomCategory') || 'Enter custom category name'}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
-                      />
-                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        {t('serviceForm.customCategoryHint') || 'This will create a new category for your service'}
-                      </p>
-                    </div>
-                  )}
+                  <CategoryDropdown
+                    value={formData.category}
+                    onChange={(value) => {
+                      setFormData(prev => ({ ...prev, category: value }));
+                      setShowCustomCategory(false);
+                      setCustomCategory('');
+                    }}
+                    onCustomCategory={(customValue) => {
+                      setFormData(prev => ({ ...prev, category: customValue }));
+                      setCustomCategory(customValue);
+                      setShowCustomCategory(true);
+                    }}
+                    placeholder={t('serviceForm.selectCategory') || 'Select a category'}
+                    error={formErrors.category}
+                    allowCustom={true}
+                  />
                 </div>
 
                 {/* Active Status */}

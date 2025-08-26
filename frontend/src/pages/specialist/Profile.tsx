@@ -6,6 +6,7 @@ import { selectUser } from '../../store/slices/authSlice';
 import { specialistService } from '../../services/specialist.service';
 import { userService } from '../../services/user.service';
 import { isFeatureEnabled } from '../../config/features';
+import { ProfessionDropdown } from '../../components/ui/ProfessionDropdown';
 import { 
   CheckCircleIcon,
   XCircleIcon,
@@ -384,19 +385,24 @@ const SpecialistProfile: React.FC = () => {
   const validateProfile = (): boolean => {
     const errors: Record<string, string> = {};
 
-    if (!profile.firstName.trim()) {
+    if (!profile.firstName?.trim()) {
       errors.firstName = language === 'uk' ? 'Ім\'я обов\'язкове' : language === 'ru' ? 'Имя обязательно' : 'First name is required';
     }
-    if (!profile.lastName.trim()) {
+    if (!profile.lastName?.trim()) {
       errors.lastName = language === 'uk' ? 'Прізвище обов\'язкове' : language === 'ru' ? 'Фамилия обязательна' : 'Last name is required';
     }
-    if (!profile.email.trim()) {
+    if (!profile.email?.trim()) {
       errors.email = language === 'uk' ? 'Email обов\'язковий' : language === 'ru' ? 'Email обязателен' : 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email)) {
       errors.email = language === 'uk' ? 'Невірний формат email' : language === 'ru' ? 'Неверный формат email' : 'Invalid email format';
     }
-    if (!profile.profession.trim()) {
+    if (!profile.profession?.trim()) {
       errors.profession = language === 'uk' ? 'Професія обов\'язкова' : language === 'ru' ? 'Профессия обязательна' : 'Profession is required';
+    }
+    
+    // Validate phone if provided
+    if (profile.phone && profile.phone.trim() && !/^[\d\s\-\+\(\)]+$/.test(profile.phone)) {
+      errors.phone = language === 'uk' ? 'Невірний формат телефону' : language === 'ru' ? 'Неверный формат телефона' : 'Invalid phone format';
     }
 
     setValidationErrors(errors);
@@ -488,17 +494,22 @@ const SpecialistProfile: React.FC = () => {
           )) {
             // Update user info via user service
             const userUpdateData = {
-              firstName: profile.firstName,
-              lastName: profile.lastName,
-              phoneNumber: profile.phone
+              firstName: profile.firstName?.trim() || '',
+              lastName: profile.lastName?.trim() || '',
+              phoneNumber: profile.phone?.trim() || null
             };
+            
+            console.log('Updating user profile with data:', userUpdateData);
             
             try {
               // Import userService dynamically to avoid circular dependencies
               const { userService } = await import('../../services/user.service');
               await userService.updateProfile(userUpdateData);
-            } catch (userError) {
-              console.warn('Failed to update user info:', userError);
+              console.log('User profile updated successfully');
+            } catch (userError: any) {
+              console.error('Failed to update user info:', userError);
+              console.error('Error details:', userError.message);
+              // Don't throw error here - let specialist profile save continue
             }
           }
           
@@ -816,12 +827,14 @@ const SpecialistProfile: React.FC = () => {
                     {/* Name Fields */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {language === 'uk' ? 'Ім\'я *' : language === 'ru' ? 'Имя *' : 'First Name *'}
                         </label>
                         <input
+                          id="firstName"
+                          name="firstName"
                           type="text"
-                          value={profile.firstName}
+                          value={profile.firstName || ''}
                           disabled={!isEditing}
                           onChange={(e) => handleProfileChange('firstName', e.target.value)}
                           className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 ${
@@ -834,6 +847,7 @@ const SpecialistProfile: React.FC = () => {
                               : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                           } disabled:cursor-not-allowed dark:border-gray-600`}
                           placeholder={language === 'uk' ? 'Введіть ім\'я' : language === 'ru' ? 'Введите имя' : 'Enter first name'}
+                          autoComplete="given-name"
                         />
                         {validationErrors.firstName && (
                           <p className="text-error-600 text-sm mt-1 flex items-center gap-1">
@@ -844,14 +858,17 @@ const SpecialistProfile: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {language === 'uk' ? 'Прізвище *' : language === 'ru' ? 'Фамилия *' : 'Last Name *'}
                         </label>
                         <input
+                          id="lastName"
+                          name="lastName"
                           type="text"
-                          value={profile.lastName}
+                          value={profile.lastName || ''}
                           disabled={!isEditing}
                           onChange={(e) => handleProfileChange('lastName', e.target.value)}
+                          autoComplete="family-name"
                           className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 ${
                             validationErrors.lastName 
                               ? 'border-error-300 focus:border-error-500 focus:ring-error-500' 
@@ -875,16 +892,19 @@ const SpecialistProfile: React.FC = () => {
                     {/* Contact Information */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {language === 'uk' ? 'Електронна пошта *' : language === 'ru' ? 'Электронная почта *' : 'Email *'}
                         </label>
                         <div className="relative">
                           <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                           <input
+                            id="email"
+                            name="email"
                             type="email"
-                            value={profile.email}
+                            value={profile.email || ''}
                             disabled={!isEditing}
                             onChange={(e) => handleProfileChange('email', e.target.value)}
+                            autoComplete="email"
                             className={`w-full pl-11 pr-4 py-3 rounded-xl border transition-all duration-200 ${
                               validationErrors.email 
                                 ? 'border-error-300 focus:border-error-500 focus:ring-error-500' 
@@ -906,17 +926,24 @@ const SpecialistProfile: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {language === 'uk' ? 'Телефон' : language === 'ru' ? 'Телефон' : 'Phone'}
                         </label>
                         <div className="relative">
                           <PhoneIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                           <input
+                            id="phone"
+                            name="phone"
                             type="tel"
-                            value={profile.phone}
+                            value={profile.phone || ''}
                             disabled={!isEditing}
                             onChange={(e) => handleProfileChange('phone', e.target.value)}
-                            className={`w-full pl-11 pr-4 py-3 rounded-xl border transition-all duration-200 border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                            autoComplete="tel"
+                            className={`w-full pl-11 pr-4 py-3 rounded-xl border transition-all duration-200 ${
+                              validationErrors.phone 
+                                ? 'border-error-300 focus:border-error-500 focus:ring-error-500' 
+                                : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'
+                            } ${
                               !isEditing 
                                 ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
                                 : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
@@ -924,16 +951,24 @@ const SpecialistProfile: React.FC = () => {
                             placeholder="+380 XX XXX XXXX"
                           />
                         </div>
+                        {validationErrors.phone && (
+                          <p className="text-error-600 text-sm mt-1 flex items-center gap-1">
+                            <ExclamationTriangleIcon className="h-4 w-4" />
+                            {validationErrors.phone}
+                          </p>
+                        )}
                       </div>
                     </div>
 
                     {/* Bio */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {language === 'uk' ? 'Про себе' : language === 'ru' ? 'О себе' : 'Bio'}
                       </label>
                       <textarea
-                        value={profile.bio}
+                        id="bio"
+                        name="bio"
+                        value={profile.bio || ''}
                         disabled={!isEditing}
                         onChange={(e) => handleProfileChange('bio', e.target.value)}
                         rows={4}
@@ -949,16 +984,19 @@ const SpecialistProfile: React.FC = () => {
                     {/* Location */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {language === 'uk' ? 'Адреса' : language === 'ru' ? 'Адрес' : 'Address'}
                         </label>
                         <div className="relative">
                           <MapPinIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                           <input
+                            id="address"
+                            name="address"
                             type="text"
-                            value={profile.location.address}
+                            value={profile.location?.address || ''}
                             disabled={!isEditing}
-                            onChange={(e) => handleProfileChange('location', {...profile.location, address: e.target.value})}
+                            onChange={(e) => handleProfileChange('location', {...(profile.location || {}), address: e.target.value})}
+                            autoComplete="street-address"
                             className={`w-full pl-11 pr-4 py-3 rounded-xl border transition-all duration-200 border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
                               !isEditing 
                                 ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
@@ -970,14 +1008,17 @@ const SpecialistProfile: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="city" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {language === 'uk' ? 'Місто' : language === 'ru' ? 'Город' : 'City'}
                         </label>
                         <input
+                          id="city"
+                          name="city"
                           type="text"
-                          value={profile.location.city}
+                          value={profile.location?.city || ''}
                           disabled={!isEditing}
-                          onChange={(e) => handleProfileChange('location', {...profile.location, city: e.target.value})}
+                          onChange={(e) => handleProfileChange('location', {...(profile.location || {}), city: e.target.value})}
+                          autoComplete="address-level2"
                           className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
                             !isEditing 
                               ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
@@ -1008,28 +1049,32 @@ const SpecialistProfile: React.FC = () => {
                   <div className="space-y-6">
                     {/* Profession */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label htmlFor="profession" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {language === 'uk' ? 'Професія *' : language === 'ru' ? 'Профессия *' : 'Profession *'}
                       </label>
-                      <div className="relative">
-                        <BriefcaseIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                        <input
-                          type="text"
-                          value={profile.profession}
-                          disabled={!isEditing}
-                          onChange={(e) => handleProfileChange('profession', e.target.value)}
-                          className={`w-full pl-11 pr-4 py-3 rounded-xl border transition-all duration-200 ${
-                            validationErrors.profession 
-                              ? 'border-error-300 focus:border-error-500 focus:ring-error-500' 
-                              : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'
-                          } ${
-                            !isEditing 
-                              ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
-                              : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                          } disabled:cursor-not-allowed dark:border-gray-600`}
-                          placeholder={language === 'uk' ? 'Перукар, масажист, тренер...' : language === 'ru' ? 'Парикмахер, массажист, тренер...' : 'Hairstylist, Masseur, Trainer...'}
+                      {isEditing ? (
+                        <ProfessionDropdown
+                          value={profile.profession || ''}
+                          onChange={(value) => handleProfileChange('profession', value)}
+                          onCustomProfession={(customValue) => handleProfileChange('profession', customValue)}
+                          placeholder={language === 'uk' ? 'Оберіть професію' : language === 'ru' ? 'Выберите профессию' : 'Select a profession'}
+                          error={validationErrors.profession}
+                          allowCustom={true}
                         />
-                      </div>
+                      ) : (
+                        <div className="relative">
+                          <BriefcaseIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                          <input
+                            id="profession"
+                            name="profession"
+                            type="text"
+                            value={profile.profession || ''}
+                            disabled={true}
+                            className="w-full pl-11 pr-4 py-3 rounded-xl border bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:cursor-not-allowed dark:border-gray-600 border-gray-300"
+                            placeholder={language === 'uk' ? 'Професія не вказана' : language === 'ru' ? 'Профессия не указана' : 'Profession not specified'}
+                          />
+                        </div>
+                      )}
                       {validationErrors.profession && (
                         <p className="text-error-600 text-sm mt-1 flex items-center gap-1">
                           <ExclamationTriangleIcon className="h-4 w-4" />
@@ -1040,14 +1085,16 @@ const SpecialistProfile: React.FC = () => {
 
                     {/* Experience */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label htmlFor="experience" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {language === 'uk' ? 'Досвід роботи (років)' : language === 'ru' ? 'Опыт работы (лет)' : 'Years of Experience'}
                       </label>
                       <input
+                        id="experience"
+                        name="experience"
                         type="number"
                         min="0"
                         max="50"
-                        value={profile.experience}
+                        value={profile.experience || 0}
                         disabled={!isEditing}
                         onChange={(e) => handleProfileChange('experience', parseInt(e.target.value) || 0)}
                         className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
@@ -1061,13 +1108,15 @@ const SpecialistProfile: React.FC = () => {
 
                     {/* Education */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label htmlFor="education" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {language === 'uk' ? 'Освіта' : language === 'ru' ? 'Образование' : 'Education'}
                       </label>
                       <div className="relative">
                         <AcademicCapIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                         <textarea
-                          value={profile.education}
+                          id="education"
+                          name="education"
+                          value={profile.education || ''}
                           disabled={!isEditing}
                           onChange={(e) => handleProfileChange('education', e.target.value)}
                           rows={3}

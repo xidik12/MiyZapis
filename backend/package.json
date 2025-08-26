@@ -24,6 +24,7 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "create-admin": "tsx src/scripts/create-admin.ts",
+    "railway:create-admin": "tsx src/scripts/railway-admin-setup.ts",
     "docker:build": "docker build -t booking-platform-api .",
     "docker:run": "docker-compose up -d",
     "docker:stop": "docker-compose down",
