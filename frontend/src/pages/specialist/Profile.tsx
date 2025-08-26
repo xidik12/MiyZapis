@@ -1447,12 +1447,12 @@ const SpecialistProfile: React.FC = () => {
                             type="number"
                             min="0"
                             max="100"
-                            value={profile.serviceArea.radius}
+                            value={profile.serviceArea?.radius || 0}
                             disabled={!isEditing}
                             onChange={(e) => {
                               if (isEditing) {
                                 const newServiceArea = {
-                                  ...profile.serviceArea,
+                                  ...(profile.serviceArea || { radius: 0, cities: [] }),
                                   radius: parseInt(e.target.value) || 0
                                 };
                                 handleProfileChange('serviceArea', newServiceArea);
