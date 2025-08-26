@@ -1272,7 +1272,7 @@ const SpecialistProfile: React.FC = () => {
                         {language === 'uk' ? 'Графік роботи' : language === 'ru' ? 'График работы' : 'Business Hours'}
                       </h3>
                       <div className="space-y-3">
-                        {Object.entries(profile.businessHours).map(([day, hours]) => (
+                        {profile.businessHours && Object.entries(profile.businessHours).map(([day, hours]) => (
                           <div key={day} className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
                             <div className="w-24">
                               <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
