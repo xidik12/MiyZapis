@@ -198,6 +198,30 @@ const getEmptyProfile = (): SpecialistProfile => ({
   specialties: [],
 });
 
+// Safe merge function that ensures all required fields exist
+const mergeProfileData = (apiData: any): SpecialistProfile => {
+  const defaultProfile = getEmptyProfile();
+  
+  return {
+    ...defaultProfile,
+    ...apiData,
+    // Ensure arrays are always arrays
+    languages: Array.isArray(apiData?.languages) ? apiData.languages : [],
+    specialties: Array.isArray(apiData?.specialties) ? apiData.specialties : [],
+    paymentMethods: Array.isArray(apiData?.paymentMethods) ? apiData.paymentMethods : [],
+    certifications: Array.isArray(apiData?.certifications) ? apiData.certifications : [],
+    portfolio: Array.isArray(apiData?.portfolio) ? apiData.portfolio : [],
+    // Ensure objects are always objects
+    businessHours: apiData?.businessHours ? { ...defaultProfile.businessHours, ...apiData.businessHours } : defaultProfile.businessHours,
+    verification: apiData?.verification ? { ...defaultProfile.verification, ...apiData.verification } : defaultProfile.verification,
+    location: apiData?.location ? { ...defaultProfile.location, ...apiData.location } : defaultProfile.location,
+    serviceArea: apiData?.serviceArea ? { ...defaultProfile.serviceArea, ...apiData.serviceArea } : defaultProfile.serviceArea,
+    notifications: apiData?.notifications ? { ...defaultProfile.notifications, ...apiData.notifications } : defaultProfile.notifications,
+    privacy: apiData?.privacy ? { ...defaultProfile.privacy, ...apiData.privacy } : defaultProfile.privacy,
+    socialMedia: apiData?.socialMedia ? { ...defaultProfile.socialMedia, ...apiData.socialMedia } : defaultProfile.socialMedia,
+  };
+};
+
 const SpecialistProfile: React.FC = () => {
   const { language } = useLanguage();
   const user = useAppSelector(selectUser);
@@ -302,54 +326,49 @@ const SpecialistProfile: React.FC = () => {
         if (user && isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
           try {
             const specialistData = await specialistService.getProfile();
-            const updatedProfile = {
-              ...getEmptyProfile(),
+            const updatedProfile = mergeProfileData({
+              ...specialistData,
               firstName: user.firstName || '',
               lastName: user.lastName || '',
               email: user.email || '',
               phone: user.phoneNumber || '',
               profession: specialistData.businessName || '',
-              experience: specialistData.experience || 0,
-              specialties: specialistData.specialties || [],
               location: {
-                ...getEmptyProfile().location,
                 address: specialistData.address || '',
                 city: specialistData.city || '',
                 region: specialistData.state || '',
                 country: specialistData.country || '',
               },
               verification: {
-                ...getEmptyProfile().verification,
                 isVerified: specialistData.isVerified || false,
                 verifiedDate: specialistData.isVerified && specialistData.verifiedDate 
                   ? specialistData.verifiedDate 
                   : specialistData.isVerified 
                   ? new Date().toISOString().split('T')[0] 
                   : '',
+                documentsSubmitted: [],
               },
-            };
+            });
             setProfile(updatedProfile);
             setOriginalProfile(updatedProfile);
           } catch (specialistError) {
             console.warn('Specialist API not available, using user data only:', specialistError);
-            const basicProfile = {
-              ...getEmptyProfile(),
+            const basicProfile = mergeProfileData({
               firstName: user.firstName || '',
               lastName: user.lastName || '',
               email: user.email || '',
               phone: user.phoneNumber || '',
-            };
+            });
             setProfile(basicProfile);
             setOriginalProfile(basicProfile);
           }
         } else {
-          const basicProfile = {
-            ...getEmptyProfile(),
+          const basicProfile = mergeProfileData({
             firstName: user?.firstName || '',
             lastName: user?.lastName || '',
             email: user?.email || '',
             phone: user?.phoneNumber || '',
-          };
+          });
           setProfile(basicProfile);
           setOriginalProfile(basicProfile);
         }
@@ -530,7 +549,14 @@ const SpecialistProfile: React.FC = () => {
       if (isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
         try {
           // Reload the profile from the API to ensure we have the latest data
-          const updatedProfile = await specialistService.getProfile();
+          const apiData = await specialistService.getProfile();
+          const updatedProfile = mergeProfileData({
+            ...apiData,
+            firstName: user?.firstName || '',
+            lastName: user?.lastName || '',
+            email: user?.email || '',
+            phone: user?.phoneNumber || '',
+          });
           setProfile(updatedProfile);
           setOriginalProfile(updatedProfile);
         } catch (reloadError) {
