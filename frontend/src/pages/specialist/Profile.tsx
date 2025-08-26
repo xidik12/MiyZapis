@@ -485,28 +485,19 @@ const SpecialistProfile: React.FC = () => {
       
       if (isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
         try {
-          // Prepare the specialist profile data for API
+          // Prepare the specialist profile data for API - only fields backend accepts
           const specialistData = {
-            bio: profile.bio,
-            bioUk: profile.bioUk,
-            bioRu: profile.bioRu,
-            profession: profile.profession,
-            specialties: JSON.stringify(profile.specialties),
-            experience: profile.experience,
-            hourlyRate: profile.hourlyRate,
-            currency: profile.currency,
-            availability: JSON.stringify(profile.availability),
-            location: JSON.stringify(profile.location),
-            contactInfo: JSON.stringify(profile.contactInfo),
-            businessHours: JSON.stringify(profile.businessHours),
-            languages: JSON.stringify(profile.languages),
-            education: JSON.stringify(profile.education),
-            certifications: JSON.stringify(profile.certifications),
-            socialMedia: JSON.stringify(profile.socialMedia),
-            avatar: profile.avatar,
-            portfolio: JSON.stringify(profile.portfolio),
-            workingHours: JSON.stringify(profile.workingHours),
-            isAvailableForBooking: profile.isAvailableForBooking
+            businessName: profile.profession || `${profile.firstName} ${profile.lastName}`,
+            bio: profile.bio || '',
+            specialties: Array.isArray(profile.specialties) ? profile.specialties : [],
+            address: profile.location?.address || '',
+            city: profile.location?.city || '',
+            state: profile.location?.region || '',
+            country: profile.location?.country || '',
+            timezone: 'UTC', // Default timezone
+            workingHours: profile.businessHours || {},
+            portfolioImages: Array.isArray(profile.portfolio) ? profile.portfolio : [],
+            certifications: Array.isArray(profile.certifications) ? profile.certifications : []
           };
 
           // Call the API to update the specialist profile
