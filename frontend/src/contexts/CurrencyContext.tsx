@@ -6,7 +6,7 @@ interface CurrencyContextType {
   currency: Currency;
   setCurrency: (currency: Currency) => void;
   convertPrice: (price: number, fromCurrency?: Currency) => number;
-  formatPrice: (price: number, fromCurrency?: Currency) => string;
+  formatPrice: (price: number | undefined | null, fromCurrency?: Currency) => string;
   getCurrencySymbol: (currency?: Currency) => string;
   getCurrencyCode: (currency?: Currency) => string;
 }
@@ -57,7 +57,12 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   // Format price with currency symbol
-  const formatPrice = (price: number, fromCurrency: Currency = 'UAH'): string => {
+  const formatPrice = (price: number | undefined | null, fromCurrency: Currency = 'UAH'): string => {
+    // Handle undefined/null prices
+    if (price == null || isNaN(price)) {
+      return `${getCurrencySymbol(currency)}0`;
+    }
+    
     const convertedPrice = convertPrice(price, fromCurrency);
     const symbol = getCurrencySymbol(currency);
     

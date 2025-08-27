@@ -50,22 +50,40 @@ export class SpecialistService {
 
   // Upload specialist portfolio images
   async uploadPortfolioImage(file: File): Promise<{ imageUrl: string }> {
-    try {
-      // Use simplified endpoint that should work
-      const response = await apiClient.upload<any[]>('/files/upload-simple?purpose=portfolio', file);
-      console.log('Simple upload response:', response);
-      
-      if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
-        throw new Error(response.error?.message || 'Failed to upload portfolio image');
-      }
-      
-      // Return the first uploaded file's URL
-      const uploadedFile = response.data[0];
-      return { imageUrl: uploadedFile.url || uploadedFile.path };
-    } catch (error) {
-      console.error('Upload error details:', error);
-      throw error;
+    console.log('📸 Processing portfolio image:', file.name, 'Size:', file.size);
+    
+    // Validate file size (limit to 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      throw new Error('File size too large. Please choose an image smaller than 5MB.');
     }
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error('Invalid file type. Please choose a JPEG, PNG, or WebP image.');
+    }
+    
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        const base64String = e.target?.result as string;
+        console.log('✅ Image converted to base64, size:', base64String.length);
+        
+        // Store with timestamp for uniqueness
+        const imageUrl = `data:${file.type};base64,${base64String.split(',')[1]}`;
+        
+        resolve({ imageUrl: base64String }); // Return full data URL
+      };
+      
+      reader.onerror = (error) => {
+        console.error('❌ Failed to read file:', error);
+        reject(new Error('Failed to process image file'));
+      };
+      
+      reader.readAsDataURL(file);
+    });
   }
 
   // Get specialist's services (for own profile)

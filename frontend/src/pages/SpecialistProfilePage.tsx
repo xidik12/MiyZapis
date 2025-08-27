@@ -151,10 +151,10 @@ const SpecialistProfilePage: React.FC = () => {
               </div>
             </div>
             
-            <div className="flex items-center space-x-4 mt-6 md:mt-0">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 mt-6 md:mt-0">
               <button
                 onClick={() => setIsFavorite(!isFavorite)}
-                className={`flex items-center px-4 py-2 rounded-lg border transition-colors ${
+                className={`flex items-center justify-center px-4 py-2 rounded-lg border transition-colors ${
                   isFavorite
                     ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
                     : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -171,13 +171,13 @@ const SpecialistProfilePage: React.FC = () => {
               {services.length > 0 ? (
                 <Link
                   to={`/book/${services[0]?.id}`}
-                  className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors flex items-center"
+                  className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center"
                 >
                   <CalendarIcon className="w-5 h-5 mr-2" />
                   {t('actions.bookNow')}
                 </Link>
               ) : (
-                <div className="bg-gray-400 text-white px-6 py-2 rounded-lg cursor-not-allowed flex items-center">
+                <div className="bg-gray-400 text-white px-6 py-2 rounded-lg cursor-not-allowed flex items-center justify-center">
                   <CalendarIcon className="w-5 h-5 mr-2" />
                   {t('actions.noServicesAvailable') || 'No services available'}
                 </div>
@@ -233,7 +233,7 @@ const SpecialistProfilePage: React.FC = () => {
                       key={service.id}
                       className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-primary-300 transition-colors"
                     >
-                      <div className="flex justify-between items-start">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
                         <div className="flex-1">
                           <h3 className="font-medium text-gray-900 dark:text-white">
                             {service.name}
@@ -246,13 +246,13 @@ const SpecialistProfilePage: React.FC = () => {
                             <span>{service.duration} {t('time.minutes')}</span>
                           </div>
                         </div>
-                        <div className="text-right ml-4">
+                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start mt-3 sm:mt-0 sm:ml-4 sm:text-right">
                           <p className="text-lg font-bold text-gray-900 dark:text-white">
-                            {formatPrice(service.price, service.currency)}
+                            {formatPrice(service.price || service.basePrice || 0, service.currency)}
                           </p>
                           <Link
                             to={`/book/${service.id}`}
-                            className="inline-block mt-2 text-primary-600 hover:text-primary-700 text-sm font-medium"
+                            className="inline-block mt-0 sm:mt-2 px-3 py-1 bg-primary-600 text-white hover:bg-primary-700 rounded text-sm font-medium transition-colors"
                           >
                             {t('actions.book')}
                           </Link>

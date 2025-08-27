@@ -59,13 +59,29 @@ const BookingFlow: React.FC = () => {
         
         if (serviceId) {
           // Primary flow: fetch by service ID
-          const serviceData = await serviceService.getService(serviceId);
-          setService(serviceData);
-          
-          // Fetch specialist data from the service
-          if (serviceData.specialistId) {
-            const specialistData = await specialistService.getPublicProfile(serviceData.specialistId);
-            setSpecialist(specialistData);
+          try {
+            const serviceData = await serviceService.getService(serviceId);
+            setService(serviceData);
+            
+            // Fetch specialist data from the service
+            if (serviceData.specialistId) {
+              const specialistData = await specialistService.getPublicProfile(serviceData.specialistId);
+              setSpecialist(specialistData);
+            }
+          } catch (error) {
+            console.warn('Service not found by ID, trying specialist approach:', error);
+            // If service fetch fails, try to find specialist services
+            if (specialistId) {
+              const specialistData = await specialistService.getPublicProfile(specialistId);
+              setSpecialist(specialistData);
+              
+              const services = await specialistService.getSpecialistServices(specialistId);
+              if (services.length > 0) {
+                // Find service by ID or use first service
+                const foundService = services.find(s => s.id === serviceId) || services[0];
+                setService(foundService);
+              }
+            }
           }
         } else if (specialistId) {
           // Fallback: fetch by specialist ID (for backward compatibility)
@@ -208,7 +224,7 @@ const BookingFlow: React.FC = () => {
                   </div>
                   <div className="text-right ml-4">
                     <p className="text-lg font-bold text-gray-900 dark:text-white">
-                      {formatPrice(service.price, service.currency)}
+                      {formatPrice(service.price || service.basePrice || 0, service.currency)}
                     </p>
                   </div>
                 </div>
@@ -225,7 +241,7 @@ const BookingFlow: React.FC = () => {
                 {t('booking.selectDate')}
               </h3>
               
-              <div className="grid grid-cols-7 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
                 {getAvailableDates().slice(0, 14).map((date) => (
                   <button
                     key={date.toISOString()}
@@ -254,7 +270,7 @@ const BookingFlow: React.FC = () => {
                 </h3>
                 
                 {availableSlots.length > 0 ? (
-                  <div className="grid grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                     {availableSlots.map((time) => (
                       <button
                         key={time}
@@ -342,7 +358,7 @@ const BookingFlow: React.FC = () => {
                   <div className="flex justify-between">
                     <span className="text-lg font-bold text-gray-900 dark:text-white">{t('booking.total')}</span>
                     <span className="text-lg font-bold text-gray-900 dark:text-white">
-                      {formatPrice(service.price, service.currency)}
+                      {formatPrice(service.price || service.basePrice || 0, service.currency)}
                     </span>
                   </div>
                 </div>
@@ -425,7 +441,7 @@ const BookingFlow: React.FC = () => {
 
         {/* Progress Steps */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between overflow-x-auto pb-2">
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center">
                 <div
@@ -437,9 +453,9 @@ const BookingFlow: React.FC = () => {
                 >
                   {index + 1}
                 </div>
-                <div className="ml-3 hidden sm:block">
+                <div className="ml-3 hidden md:block">
                   <p
-                    className={`text-sm font-medium ${
+                    className={`text-sm font-medium whitespace-nowrap ${
                       index <= currentStep
                         ? 'text-primary-600'
                         : 'text-gray-500 dark:text-gray-400'
@@ -450,7 +466,7 @@ const BookingFlow: React.FC = () => {
                 </div>
                 {index < steps.length - 1 && (
                   <div
-                    className={`w-12 h-0.5 mx-4 ${
+                    className={`w-8 sm:w-12 h-0.5 mx-2 sm:mx-4 flex-shrink-0 ${
                       index < currentStep
                         ? 'bg-primary-600'
                         : 'bg-gray-200 dark:bg-gray-700'
@@ -469,18 +485,19 @@ const BookingFlow: React.FC = () => {
 
         {/* Navigation Buttons */}
         {currentStep < steps.length - 1 && (
-          <div className="flex justify-between">
+          <div className="flex justify-between gap-4">
             <button
               onClick={handlePrevStep}
               disabled={currentStep === 0}
-              className={`flex items-center px-6 py-2 rounded-lg transition-colors ${
+              className={`flex items-center px-4 sm:px-6 py-2 rounded-lg transition-colors flex-shrink-0 ${
                 currentStep === 0
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
               <ArrowLeftIcon className="w-5 h-5 mr-2" />
-              {t('navigation.previous')}
+              <span className="hidden sm:inline">{t('navigation.previous')}</span>
+              <span className="sm:hidden">{t('navigation.prev') || 'Prev'}</span>
             </button>
             
             <button
@@ -489,9 +506,10 @@ const BookingFlow: React.FC = () => {
                 (currentStep === 1 && (!selectedDate || !selectedTime)) ||
                 (currentStep === 2 && !service)
               }
-              className="flex items-center px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="flex items-center px-4 sm:px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0"
             >
-              {t('navigation.next')}
+              <span className="hidden sm:inline">{t('navigation.next')}</span>
+              <span className="sm:hidden">{t('navigation.next') || 'Next'}</span>
               <ArrowRightIcon className="w-5 h-5 ml-2" />
             </button>
           </div>

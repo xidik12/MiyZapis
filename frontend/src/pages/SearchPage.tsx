@@ -213,16 +213,19 @@ const SearchPage: React.FC = () => {
             {service.specialist.businessName} • {service.specialist.user.firstName} {service.specialist.user.lastName}
           </p>
 
-          <div className="flex items-center mt-2 text-sm text-gray-500 dark:text-gray-400">
-            <MapPinIcon className="w-4 h-4 mr-1" />
-            <span className="mr-4">{service.location}</span>
-            <ClockIcon className="w-4 h-4 mr-1" />
-            <span>{service.duration} {t('common.minutes')}</span>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center">
+              <MapPinIcon className="w-4 h-4 mr-1" />
+              <span className="truncate">{service.location}</span>
+            </div>
+            <div className="flex items-center">
+              <ClockIcon className="w-4 h-4 mr-1" />
+              <span>{service.duration} {t('common.minutes')}</span>
+            </div>
             {service.distance && (
-              <>
-                <span className="mx-2">•</span>
+              <div className="flex items-center">
                 <span>{service.distance.toFixed(1)} km</span>
-              </>
+              </div>
             )}
           </div>
 
@@ -244,7 +247,7 @@ const SearchPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex space-x-3 mt-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4">
             <Link
               to={`/specialist/${service.specialist.id}`}
               className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-center py-2 px-4 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
@@ -297,19 +300,19 @@ const SearchPage: React.FC = () => {
 
         {/* Filters and Controls */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="flex items-center px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               <FunnelIcon className="w-5 h-5 mr-2" />
-              {t('search.filters')}
+              <span className="hidden sm:inline">{t('search.filters')}</span>
             </button>
 
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white"
+              className="px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
             >
               {categories.map((category) => (
                 <option key={category.id} value={category.id === 'all' ? '' : category.id}>
@@ -321,7 +324,7 @@ const SearchPage: React.FC = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white"
+              className="px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
             >
               <option value="rating">{t('search.sortBy.rating')}</option>
               <option value="price">{t('search.sortBy.price')}</option>
@@ -330,11 +333,11 @@ const SearchPage: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              {t('search.showing')} {filteredServices.length} {t('search.results')}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-sm text-gray-600 dark:text-gray-400 order-2 sm:order-1">
+              <span className="hidden sm:inline">{t('search.showing')} </span>{filteredServices.length} <span className="hidden sm:inline">{t('search.results')}</span>
             </span>
-            <div className="flex items-center space-x-1 ml-4">
+            <div className="flex items-center space-x-1 order-1 sm:order-2">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-2 rounded ${

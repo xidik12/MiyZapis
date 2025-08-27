@@ -1396,6 +1396,10 @@ const translations: Translations = {
 
   // Navigation
   'navigation.goBack': { en: 'Go Back', uk: 'Повернутися', ru: 'Вернуться' },
+  'navigation.back': { en: 'Back', uk: 'Назад', ru: 'Назад' },
+  'navigation.next': { en: 'Next', uk: 'Далі', ru: 'Далее' },
+  'navigation.previous': { en: 'Previous', uk: 'Попередній', ru: 'Предыдущий' },
+  'navigation.prev': { en: 'Prev', uk: 'Попер', ru: 'Пред' },
 
   // Search Page (duplicates removed - definitions exist earlier in the file)
   'search.placeholder': { en: 'Search for services...', uk: 'Пошук послуг...', ru: 'Поиск услуг...' },
@@ -1413,6 +1417,11 @@ const translations: Translations = {
   // Service availability
   'service.available': { en: 'Available', uk: 'Доступна', ru: 'Доступна' },
   'service.unavailable': { en: 'Unavailable', uk: 'Недоступна', ru: 'Недоступна' },
+
+  // File upload errors
+  'errors.fileTooLarge': { en: 'File size too large. Please choose an image smaller than 5MB.', uk: 'Файл занадто великий. Оберіть зображення менше 5МБ.', ru: 'Файл слишком большой. Выберите изображение меньше 5МБ.' },
+  'errors.invalidFileType': { en: 'Invalid file type. Please choose a JPEG, PNG, or WebP image.', uk: 'Невірний тип файлу. Оберіть зображення JPEG, PNG або WebP.', ru: 'Неверный тип файла. Выберите изображение JPEG, PNG или WebP.' },
+  'errors.fileProcessingFailed': { en: 'Failed to process image file', uk: 'Не вдалося обробити файл зображення', ru: 'Не удалось обработать файл изображения' },
 
   // Common terms
   'common.minutes': { en: 'min', uk: 'хв', ru: 'мин' },
