@@ -60,13 +60,19 @@ const BookingFlow: React.FC = () => {
         if (serviceId) {
           // Primary flow: fetch by service ID
           try {
+            console.log('🔍 BookingFlow: Fetching service with ID:', serviceId);
             const serviceData = await serviceService.getService(serviceId);
+            console.log('✅ BookingFlow: Service fetched successfully:', serviceData);
             setService(serviceData);
             
             // Fetch specialist data from the service
             if (serviceData.specialistId) {
+              console.log('🔍 BookingFlow: Fetching specialist with ID:', serviceData.specialistId);
               const specialistData = await specialistService.getPublicProfile(serviceData.specialistId);
+              console.log('✅ BookingFlow: Specialist fetched successfully:', specialistData);
               setSpecialist(specialistData);
+            } else {
+              console.warn('⚠️ BookingFlow: Service has no specialistId:', serviceData);
             }
           } catch (error) {
             console.warn('Service not found by ID, trying specialist approach:', error);
@@ -181,6 +187,9 @@ const BookingFlow: React.FC = () => {
   }
 
   if (!specialist || !service) {
+    console.log('❌ BookingFlow: Missing data - specialist:', specialist, 'service:', service);
+    console.log('🔍 BookingFlow: Service ID from params:', serviceId);
+    console.log('🔍 BookingFlow: Specialist ID from params:', specialistId);
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

@@ -72,7 +72,7 @@ export class ServiceService {
       throw new Error('Service ID is required');
     }
     
-    const response = await apiClient.get<Service>(`/services/${serviceId}`);
+    const response = await apiClient.get<{service: Service}>(`/services/${serviceId}`);
     console.log('📦 API: Service response:', response);
     
     if (!response.success || !response.data) {
@@ -80,8 +80,11 @@ export class ServiceService {
       throw new Error(response.error?.message || 'Failed to get service details');
     }
     
-    console.log('✅ API: Service retrieved:', response.data);
-    return response.data;
+    // Extract service from response.data.service
+    const serviceData = response.data.service || response.data;
+    console.log('✅ API: Service retrieved:', serviceData);
+    console.log('🔍 API: Extracted service data for booking:', serviceData);
+    return serviceData;
   }
 
   // Get featured/popular services
