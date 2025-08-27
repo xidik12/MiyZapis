@@ -154,7 +154,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
         {!isCollapsed && (
           <Link to="/" className="flex items-center space-x-2 group">
             <img 
-              src="/logo.svg" 
+              src="/miyzapis_logo.png" 
               alt="МійЗапис Logo" 
               className="w-8 h-8 group-hover:scale-110 transition-all duration-300"
             />
@@ -167,7 +167,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
         {isCollapsed && (
           <Link to="/" className="flex justify-center w-full">
             <img 
-              src="/logo.svg" 
+              src="/miyzapis_logo.png" 
               alt="МійЗапис Logo" 
               className="w-8 h-8 hover:scale-110 transition-all duration-300"
             />

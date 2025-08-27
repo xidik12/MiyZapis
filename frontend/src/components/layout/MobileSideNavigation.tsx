@@ -167,7 +167,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
             }}
           >
             <img 
-              src="/logo.svg" 
+              src="/miyzapis_logo.png" 
               alt="МійЗапис Logo" 
               className="w-10 h-10 group-hover:scale-110 transition-all duration-300"
             />

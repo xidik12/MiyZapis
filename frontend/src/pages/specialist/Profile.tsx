@@ -1665,6 +1665,11 @@ const SpecialistProfile: React.FC = () => {
                             </>
                           )}
                         </button>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                          {language === 'uk' ? 'Максимальний розмір файлу: 5МБ. Підтримуються формати: JPG, PNG, WebP' :
+                           language === 'ru' ? 'Максимальный размер файла: 5МБ. Поддерживаемые форматы: JPG, PNG, WebP' :
+                           'Maximum file size: 5MB. Supported formats: JPG, PNG, WebP'}
+                        </p>
                       </div>
                     )}
                   </div>

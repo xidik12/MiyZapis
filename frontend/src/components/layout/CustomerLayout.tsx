@@ -184,7 +184,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
           {!isCollapsed && (
             <div className="flex items-center space-x-2">
               <img 
-                src="/logo.svg" 
+                src="/miyzapis_logo.png" 
                 alt="МійЗапис Logo" 
                 className="w-8 h-8"
               />

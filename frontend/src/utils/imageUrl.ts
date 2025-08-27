@@ -1,6 +1,6 @@
 /**
  * Utility function to ensure image URLs are absolute and point to the correct domain
- * - Static assets (logo.svg, etc.) stay on frontend domain
+ * - Static assets (miyzapis_logo.png, etc.) stay on frontend domain
  * - Uploaded files (/uploads/*) go to backend domain
  */
 export function getAbsoluteImageUrl(url: string | undefined | null): string {

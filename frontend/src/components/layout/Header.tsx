@@ -104,7 +104,7 @@ export const Header: React.FC = () => {
               }}
             >
               <img 
-                src="/logo.svg" 
+                src="/miyzapis_logo.png" 
                 alt="МійЗапис Logo" 
                 className="w-8 h-8 xs:w-10 xs:h-10 group-hover:scale-110 transition-all duration-300"
               />

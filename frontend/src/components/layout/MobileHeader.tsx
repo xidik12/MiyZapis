@@ -17,7 +17,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuToggle }) => {
           className="flex items-center space-x-2 group"
         >
           <img 
-            src="/logo.svg" 
+            src="/miyzapis_logo.png" 
             alt="МійЗапис Logo" 
             className="w-8 h-8 group-hover:scale-110 transition-all duration-300"
           />
