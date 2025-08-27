@@ -479,6 +479,13 @@ function App() {
               </Suspense>
             </ConditionalLayout>
           } />
+          <Route path="/booking/:serviceId" element={
+            <ConditionalLayout>
+              <Suspense fallback={<SuspenseLoader />}>
+                <BookingRouter />
+              </Suspense>
+            </ConditionalLayout>
+          } />
           <Route path="/payment/:bookingId" element={
             <MainLayout>
               <Suspense fallback={<SuspenseLoader />}>

@@ -22,9 +22,12 @@ interface BookingStep {
 }
 
 const BookingFlow: React.FC = () => {
-  const { specialistId } = useParams();
+  const { serviceId: paramServiceId, specialistId } = useParams();
   const [searchParams] = useSearchParams();
-  const serviceId = searchParams.get('service');
+  const queryServiceId = searchParams.get('service');
+  
+  // Always prioritize service ID from URL params, then query params, then specialist route
+  const serviceId = paramServiceId || queryServiceId;
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
@@ -49,21 +52,27 @@ const BookingFlow: React.FC = () => {
 
   useEffect(() => {
     const fetchBookingData = async () => {
-      if (!specialistId) return;
+      if (!serviceId && !specialistId) return;
 
       try {
         setLoading(true);
         
-        // Fetch specialist data
-        const specialistData = await specialistService.getSpecialist(specialistId);
-        setSpecialist(specialistData);
-
-        // If service ID is provided, fetch service data
         if (serviceId) {
+          // Primary flow: fetch by service ID
           const serviceData = await serviceService.getService(serviceId);
           setService(serviceData);
-        } else {
-          // Fetch specialist's services
+          
+          // Fetch specialist data from the service
+          if (serviceData.specialistId) {
+            const specialistData = await specialistService.getPublicProfile(serviceData.specialistId);
+            setSpecialist(specialistData);
+          }
+        } else if (specialistId) {
+          // Fallback: fetch by specialist ID (for backward compatibility)
+          const specialistData = await specialistService.getPublicProfile(specialistId);
+          setSpecialist(specialistData);
+          
+          // Fetch specialist's first service
           const services = await specialistService.getSpecialistServices(specialistId);
           if (services.length > 0) {
             setService(services[0]); // Select first service by default

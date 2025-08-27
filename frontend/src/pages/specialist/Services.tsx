@@ -274,7 +274,7 @@ const SpecialistServices: React.FC = () => {
   // Removed availability and timeSlots functions as they're not part of backend schema
 
   const getLocalizedText = (item: any, field: string) => {
-    return item[field];
+    return item[field] || '';
   };
 
   const handleDeleteService = async (serviceId: string) => {
@@ -374,7 +374,7 @@ const SpecialistServices: React.FC = () => {
           {t('services.edit')}
         </button>
         <button
-          onClick={() => toggleServiceStatus(service.id)}
+          onClick={() => handleToggleServiceStatus(service.id, !service.isActive)}
           className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
             service.isActive
               ? 'bg-warning-50 hover:bg-warning-100 text-warning-700 dark:bg-warning-900/20 dark:hover:bg-warning-900/30 dark:text-warning-300'
@@ -383,7 +383,10 @@ const SpecialistServices: React.FC = () => {
         >
           {service.isActive ? t('services.deactivate') : t('services.activate')}
         </button>
-        <button className="p-2 bg-error-50 hover:bg-error-100 text-error-600 rounded-lg transition-colors duration-200 dark:bg-error-900/20 dark:hover:bg-error-900/30 dark:text-error-300">
+        <button 
+          onClick={() => handleDeleteService(service.id)}
+          className="p-2 bg-error-50 hover:bg-error-100 text-error-600 rounded-lg transition-colors duration-200 dark:bg-error-900/20 dark:hover:bg-error-900/30 dark:text-error-300"
+        >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>

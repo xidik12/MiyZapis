@@ -1386,6 +1386,11 @@ const translations: Translations = {
   'booking.offline': { en: 'Offline', uk: 'Офлайн', ru: 'Офлайн' },
   'booking.confirmBooking': { en: 'Confirm Booking', uk: 'Підтвердити бронювання', ru: 'Подтвердить бронирование' },
   'booking.next': { en: 'Next', uk: 'Далі', ru: 'Далее' },
+  'booking.selectService': { en: 'Select Service', uk: 'Оберіть послугу', ru: 'Выберите услугу' },
+  'booking.selectDateTime': { en: 'Select Date & Time', uk: 'Оберіть дату та час', ru: 'Выберите дату и время' },
+  'booking.bookingDetails': { en: 'Booking Details', uk: 'Деталі бронювання', ru: 'Детали бронирования' },
+  'booking.payment': { en: 'Payment', uk: 'Оплата', ru: 'Оплата' },
+  'booking.confirmation': { en: 'Confirmation', uk: 'Підтвердження', ru: 'Подтверждение' },
 
   // Search Page (duplicates removed - definitions exist earlier in the file)
   'search.placeholder': { en: 'Search for services...', uk: 'Пошук послуг...', ru: 'Поиск услуг...' },
