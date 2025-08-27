@@ -288,6 +288,7 @@ const SpecialistProfile: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [showErrorMessage, setShowErrorMessage] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [isUploadingPortfolio, setIsUploadingPortfolio] = useState(false);
 
   // Active tab state
   const [activeTab, setActiveTab] = useState<'personal' | 'professional' | 'business' | 'portfolio'>('personal');
@@ -697,6 +698,73 @@ const SpecialistProfile: React.FC = () => {
       );
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Handle portfolio image upload
+  const handlePortfolioUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    
+    // Validate file type and size
+    if (!file.type.startsWith('image/')) {
+      showErrorNotification(
+        language === 'uk' ? 'Будь ласка, оберіть файл зображення' :
+        language === 'ru' ? 'Пожалуйста, выберите файл изображения' :
+        'Please select an image file'
+      );
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      showErrorNotification(
+        language === 'uk' ? 'Розмір файлу повинен бути менше 5МБ' :
+        language === 'ru' ? 'Размер файла должен быть меньше 5МБ' :
+        'File size must be less than 5MB'
+      );
+      return;
+    }
+
+    try {
+      setIsUploadingPortfolio(true);
+      console.log('📸 Uploading portfolio image:', file.name);
+      
+      const result = await specialistService.uploadPortfolioImage(file);
+      console.log('✅ Portfolio image uploaded:', result);
+      
+      // Add the new image to the portfolio
+      const newPortfolioItem = {
+        id: `portfolio_${Date.now()}`,
+        imageUrl: result.imageUrl,
+        title: '',
+        description: '',
+        tags: []
+      };
+      
+      const updatedPortfolio = [...profile.portfolio, newPortfolioItem];
+      handleProfileChange('portfolio', updatedPortfolio);
+      
+      showSuccessNotification(
+        language === 'uk' ? 'Зображення успішно додано до портфоліо' :
+        language === 'ru' ? 'Изображение успешно добавлено в портфолио' :
+        'Image successfully added to portfolio'
+      );
+
+      // Clear the file input
+      event.target.value = '';
+      
+    } catch (error: any) {
+      console.error('❌ Portfolio upload error:', error);
+      showErrorNotification(
+        error.message || 
+        (language === 'uk' ? 'Помилка завантаження зображення' :
+         language === 'ru' ? 'Ошибка загрузки изображения' :
+         'Failed to upload image')
+      );
+    } finally {
+      setIsUploadingPortfolio(false);
     }
   };
 
@@ -1569,23 +1637,88 @@ const SpecialistProfile: React.FC = () => {
                         {language === 'uk' ? 'Покажіть свої роботи та досягнення' : language === 'ru' ? 'Покажите свои работы и достижения' : 'Showcase your work and achievements'}
                       </p>
                     </div>
-                  </div>
-
-                  <div className="text-center py-16">
-                    <PhotoIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                      {language === 'uk' ? 'Портфоліо поки порожнє' : language === 'ru' ? 'Портфолио пока пустое' : 'Portfolio is empty'}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-6">
-                      {language === 'uk' ? 'Додайте фотографії своїх робіт, щоб клієнти побачили ваші навички' : language === 'ru' ? 'Добавьте фотографии своих работ, чтобы клиенты увидели ваши навыки' : 'Add photos of your work to show clients your skills'}
-                    </p>
                     {isEditing && (
-                      <button className="px-6 py-3 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2 mx-auto">
-                        <PlusIcon className="h-5 w-5" />
-                        {language === 'uk' ? 'Додати фото' : language === 'ru' ? 'Добавить фото' : 'Add Photo'}
-                      </button>
+                      <div className="relative">
+                        <input
+                          type="file"
+                          id="portfolio-upload"
+                          accept="image/*"
+                          onChange={handlePortfolioUpload}
+                          className="hidden"
+                          disabled={isUploadingPortfolio}
+                        />
+                        <button
+                          onClick={() => document.getElementById('portfolio-upload')?.click()}
+                          disabled={isUploadingPortfolio}
+                          className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isUploadingPortfolio ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                              {language === 'uk' ? 'Завантаження...' : language === 'ru' ? 'Загрузка...' : 'Uploading...'}
+                            </>
+                          ) : (
+                            <>
+                              <PlusIcon className="h-4 w-4" />
+                              {language === 'uk' ? 'Додати фото' : language === 'ru' ? 'Добавить фото' : 'Add Photo'}
+                            </>
+                          )}
+                        </button>
+                      </div>
                     )}
                   </div>
+
+                  {profile.portfolio && profile.portfolio.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {profile.portfolio.map((item, index) => (
+                        <div
+                          key={item.id || index}
+                          className="group relative bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
+                        >
+                          <div className="aspect-square overflow-hidden">
+                            <img
+                              src={item.imageUrl}
+                              alt={item.title || `Portfolio item ${index + 1}`}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                          {item.title && (
+                            <div className="p-4">
+                              <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">
+                                {item.title}
+                              </h3>
+                              {item.description && (
+                                <p className="text-gray-600 dark:text-gray-400 text-xs">
+                                  {item.description}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                          {isEditing && (
+                            <button
+                              onClick={() => {
+                                const updatedPortfolio = profile.portfolio.filter((_, i) => i !== index);
+                                handleProfileChange('portfolio', updatedPortfolio);
+                              }}
+                              className="absolute top-2 right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <XCircleIcon className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-16">
+                      <PhotoIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                        {language === 'uk' ? 'Портфоліо поки порожнє' : language === 'ru' ? 'Портфолио пока пустое' : 'Portfolio is empty'}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 mb-6">
+                        {language === 'uk' ? 'Додайте фотографії своїх робіт, щоб клієнти побачили ваші навички' : language === 'ru' ? 'Добавьте фотографии своих работ, чтобы клиенты увидели ваши навыки' : 'Add photos of your work to show clients your skills'}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 

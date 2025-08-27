@@ -36,9 +36,16 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 
   // Load Google Maps API
   useEffect(() => {
+    // Only try to load if we have a valid API key
+    const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+    
+    if (!apiKey) {
+      console.warn('Google Maps API key not found. Map functionality disabled.');
+      setMapError(true);
+      return;
+    }
+    
     if (!window.google && !document.querySelector('script[src*="googleapis"]')) {
-      // Use environment variable or fallback to demo key (for development only)
-      const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || 'AIzaSyBdVl-cGnaq0C6VytBh6gQWHzH_WqrPcLc';
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
       script.async = true;
@@ -254,9 +261,9 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                       <div className="text-red-600 mb-2">
                         <MapPin className="h-12 w-12 mx-auto mb-2 opacity-50" />
                       </div>
-                      <p className="text-red-800 font-medium mb-1">Google Maps Failed to Load</p>
-                      <p className="text-red-600 text-sm mb-3">Please check your internet connection or try again later.</p>
-                      <p className="text-xs text-red-500">You can still enter your address manually in the location fields.</p>
+                      <p className="text-red-800 font-medium mb-1">Google Maps Not Available</p>
+                      <p className="text-red-600 text-sm mb-3">Map functionality requires an API key configuration.</p>
+                      <p className="text-xs text-red-500">You can still enter your address manually in the text fields when editing.</p>
                     </div>
                   </div>
                 ) : mapLoaded ? (
