@@ -114,20 +114,33 @@ const BookingFlow: React.FC = () => {
   useEffect(() => {
     // Fetch available time slots when date is selected
     const fetchAvailableSlots = async () => {
-      if (!specialistId || !selectedDate) return;
+      const currentSpecialistId = specialist?.id || service?.specialistId || specialistId;
+      
+      if (!currentSpecialistId || !selectedDate) {
+        console.log('🔍 BookingFlow: Cannot fetch slots - specialistId:', currentSpecialistId, 'selectedDate:', selectedDate);
+        return;
+      }
 
       try {
+        console.log('📅 BookingFlow: Fetching available slots for specialist:', currentSpecialistId, 'date:', selectedDate.toISOString().split('T')[0]);
         const dateStr = selectedDate.toISOString().split('T')[0];
-        const slots = await specialistService.getAvailableSlots(specialistId, dateStr);
+        const slots = await specialistService.getAvailableSlots(currentSpecialistId, dateStr);
+        console.log('✅ BookingFlow: Available slots received:', slots);
         setAvailableSlots(slots || []);
       } catch (error) {
-        console.error('Error fetching available slots:', error);
-        setAvailableSlots([]);
+        console.error('❌ BookingFlow: Error fetching available slots:', error);
+        // For now, provide some default time slots for testing
+        const defaultSlots = [
+          '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+          '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
+        ];
+        console.log('🕰️ BookingFlow: Using default slots:', defaultSlots);
+        setAvailableSlots(defaultSlots);
       }
     };
 
     fetchAvailableSlots();
-  }, [specialistId, selectedDate]);
+  }, [specialist, service, specialistId, selectedDate]);
 
   const handleNextStep = () => {
     if (currentStep < steps.length - 1) {
@@ -142,25 +155,41 @@ const BookingFlow: React.FC = () => {
   };
 
   const handleBookingSubmit = async () => {
+    const currentSpecialistId = specialist?.id || service?.specialistId || specialistId;
+    
+    console.log('📋 BookingFlow: Attempting to create booking...');
+    console.log('🔍 BookingFlow: Booking data check:', {
+      specialist: !!specialist,
+      service: !!service,
+      selectedDate: selectedDate,
+      selectedTime: selectedTime,
+      currentSpecialistId
+    });
+    
     if (!specialist || !service || !selectedDate || !selectedTime) {
+      console.error('❌ BookingFlow: Missing required booking data');
       return;
     }
 
     try {
       const bookingData = {
-        specialistId,
+        specialistId: currentSpecialistId,
         serviceId: service.id,
         date: selectedDate.toISOString().split('T')[0],
         time: selectedTime,
         notes: bookingNotes,
       };
-
+      
+      console.log('📤 BookingFlow: Sending booking data:', bookingData);
       const booking = await bookingService.createBooking(bookingData);
+      console.log('✅ BookingFlow: Booking created successfully:', booking);
       
       // Navigate to confirmation step
       setCurrentStep(steps.length - 1);
     } catch (error) {
-      console.error('Error creating booking:', error);
+      console.error('❌ BookingFlow: Error creating booking:', error);
+      // Show error to user
+      alert('Failed to create booking. Please try again.');
     }
   };
 

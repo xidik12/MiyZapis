@@ -23,10 +23,16 @@ export interface BookingFilters {
 export class BookingService {
   // Create new booking
   async createBooking(data: CreateBookingRequest): Promise<{ booking: Booking; paymentIntent?: PaymentIntent }> {
+    console.log('📤 BookingService: Creating booking with data:', data);
     const response = await apiClient.post<{ booking: Booking; paymentIntent?: PaymentIntent }>('/bookings', data);
+    console.log('📦 BookingService: Create booking response:', response);
+    
     if (!response.success || !response.data) {
+      console.error('❌ BookingService: Failed to create booking:', response.error);
       throw new Error(response.error?.message || 'Failed to create booking');
     }
+    
+    console.log('✅ BookingService: Booking created successfully');
     return response.data;
   }
 
