@@ -249,16 +249,21 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
     portfolio: Array.isArray(specialist?.portfolio) ? specialist.portfolio : parseJsonField(specialist?.portfolioImages, []),
     // Parse business hours from JSON string if needed - prioritize workingHours from backend
     businessHours: specialist?.workingHours ? parseJsonField(specialist.workingHours, defaultProfile.businessHours) : (specialist?.businessHours ? (typeof specialist.businessHours === 'string' ? parseJsonField(specialist.businessHours, defaultProfile.businessHours) : { ...defaultProfile.businessHours, ...specialist.businessHours }) : defaultProfile.businessHours),
-    // Ensure objects are always objects
+    // Parse service area from JSON string
+    serviceArea: specialist?.serviceArea ? parseJsonField(specialist.serviceArea, defaultProfile.serviceArea) : defaultProfile.serviceArea,
+    // Parse notification settings from JSON string
+    notifications: specialist?.notifications ? parseJsonField(specialist.notifications, defaultProfile.notifications) : defaultProfile.notifications,
+    // Parse privacy settings from JSON string  
+    privacy: specialist?.privacy ? parseJsonField(specialist.privacy, defaultProfile.privacy) : defaultProfile.privacy,
+    // Parse social media from JSON string
+    socialMedia: specialist?.socialMedia ? parseJsonField(specialist.socialMedia, defaultProfile.socialMedia) : defaultProfile.socialMedia,
+    // Verification details
     verification: { 
       ...defaultProfile.verification,
       isVerified: specialist?.isVerified || false,
-      ...(specialist?.verification || {})
+      verifiedDate: specialist?.verifiedDate ? new Date(specialist.verifiedDate).toISOString().split('T')[0] : '',
+      documentsSubmitted: parseJsonField(specialist?.documentsSubmitted, [])
     },
-    serviceArea: specialist?.serviceArea ? { ...defaultProfile.serviceArea, ...specialist.serviceArea } : defaultProfile.serviceArea,
-    notifications: specialist?.notifications ? { ...defaultProfile.notifications, ...specialist.notifications } : defaultProfile.notifications,
-    privacy: specialist?.privacy ? { ...defaultProfile.privacy, ...specialist.privacy } : defaultProfile.privacy,
-    socialMedia: specialist?.socialMedia ? { ...defaultProfile.socialMedia, ...specialist.socialMedia } : defaultProfile.socialMedia,
   };
   
   console.log('🔄 mergeProfileData result:', result);
@@ -554,7 +559,11 @@ const SpecialistProfile: React.FC = () => {
           const specialistData = {
             businessName: profile.profession || `${profile.firstName} ${profile.lastName}`,
             bio: profile.bio || '',
+            bioUk: profile.bioUk || '',
+            bioRu: profile.bioRu || '',
             education: profile.education || '',
+            educationUk: profile.educationUk || '',
+            educationRu: profile.educationRu || '',
             specialties: Array.isArray(profile.specialties) ? profile.specialties : [],
             experience: profile.experience || 0,
             languages: Array.isArray(profile.languages) ? profile.languages : [],
@@ -568,6 +577,9 @@ const SpecialistProfile: React.FC = () => {
             workingHours: profile.businessHours || {},
             paymentMethods: Array.isArray(profile.paymentMethods) ? profile.paymentMethods : [],
             serviceArea: profile.serviceArea || { radius: 0, cities: [] },
+            notifications: profile.notifications || {},
+            privacy: profile.privacy || {},
+            socialMedia: profile.socialMedia || {},
             portfolioImages: Array.isArray(profile.portfolio) ? profile.portfolio : [],
             certifications: Array.isArray(profile.certifications) ? profile.certifications : []
           };

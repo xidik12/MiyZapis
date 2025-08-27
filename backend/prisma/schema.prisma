@@ -82,7 +82,11 @@ model Specialist {
   // Business profile
   businessName String?
   bio          String?
+  bioUk        String? // Ukrainian bio
+  bioRu        String? // Russian bio
   education    String? // Education background
+  educationUk  String? // Ukrainian education
+  educationRu  String? // Russian education
   
   // Professional details
   specialties  String // JSON string of specialty tags
@@ -103,6 +107,13 @@ model Specialist {
   // Business operations
   paymentMethods String? // JSON string of accepted payment methods
   serviceArea    String? // JSON string for service area settings (radius, cities)
+  notifications  String? // JSON string for notification preferences
+  privacy        String? // JSON string for privacy settings
+  socialMedia    String? // JSON string for social media profiles
+  
+  // Verification details
+  verifiedDate   DateTime? // Date when verified
+  documentsSubmitted String? // JSON string of submitted documents
   
   // Business metrics
   rating           Float   @default(0.0)

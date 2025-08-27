@@ -5,7 +5,11 @@ import { Specialist, User, Service } from '@prisma/client';
 interface CreateSpecialistData {
   businessName?: string;
   bio?: string;
+  bioUk?: string;
+  bioRu?: string;
   education?: string;
+  educationUk?: string;
+  educationRu?: string;
   specialties: string[];
   experience?: number;
   languages?: string[];
@@ -19,6 +23,9 @@ interface CreateSpecialistData {
   workingHours?: Record<string, any>;
   paymentMethods?: string[];
   serviceArea?: Record<string, any>;
+  notifications?: Record<string, any>;
+  privacy?: Record<string, any>;
+  socialMedia?: Record<string, any>;
   portfolioImages?: string[];
   certifications?: string[];
 }
@@ -26,7 +33,11 @@ interface CreateSpecialistData {
 interface UpdateSpecialistData {
   businessName?: string;
   bio?: string;
+  bioUk?: string;
+  bioRu?: string;
   education?: string;
+  educationUk?: string;
+  educationRu?: string;
   specialties?: string[];
   experience?: number;
   languages?: string[];
@@ -40,6 +51,9 @@ interface UpdateSpecialistData {
   workingHours?: Record<string, any>;
   paymentMethods?: string[];
   serviceArea?: Record<string, any>;
+  notifications?: Record<string, any>;
+  privacy?: Record<string, any>;
+  socialMedia?: Record<string, any>;
   portfolioImages?: string[];
   certifications?: string[];
 }
@@ -87,7 +101,11 @@ export class SpecialistService {
           userId,
           businessName: data.businessName || `${user.firstName} ${user.lastName}`,
           bio: data.bio || '',
+          bioUk: data.bioUk,
+          bioRu: data.bioRu,
           education: data.education,
+          educationUk: data.educationUk,
+          educationRu: data.educationRu,
           specialties: JSON.stringify(data.specialties || []),
           experience: data.experience || 0,
           languages: JSON.stringify(data.languages || []),
@@ -101,6 +119,9 @@ export class SpecialistService {
           workingHours: JSON.stringify(data.workingHours || {}),
           paymentMethods: JSON.stringify(data.paymentMethods || []),
           serviceArea: JSON.stringify(data.serviceArea || {}),
+          notifications: JSON.stringify(data.notifications || {}),
+          privacy: JSON.stringify(data.privacy || {}),
+          socialMedia: JSON.stringify(data.socialMedia || {}),
           portfolioImages: JSON.stringify(data.portfolioImages || []),
           certifications: JSON.stringify(data.certifications || []),
         },
@@ -169,7 +190,11 @@ export class SpecialistService {
         data: {
           ...(data.businessName && { businessName: data.businessName }),
           ...(data.bio !== undefined && { bio: data.bio }),
+          ...(data.bioUk !== undefined && { bioUk: data.bioUk }),
+          ...(data.bioRu !== undefined && { bioRu: data.bioRu }),
           ...(data.education !== undefined && { education: data.education }),
+          ...(data.educationUk !== undefined && { educationUk: data.educationUk }),
+          ...(data.educationRu !== undefined && { educationRu: data.educationRu }),
           ...(data.specialties && { specialties: JSON.stringify(data.specialties) }),
           ...(data.experience !== undefined && { experience: data.experience }),
           ...(data.languages && { languages: JSON.stringify(data.languages) }),
@@ -183,6 +208,9 @@ export class SpecialistService {
           ...(data.workingHours && { workingHours: JSON.stringify(data.workingHours) }),
           ...(data.paymentMethods && { paymentMethods: JSON.stringify(data.paymentMethods) }),
           ...(data.serviceArea && { serviceArea: JSON.stringify(data.serviceArea) }),
+          ...(data.notifications && { notifications: JSON.stringify(data.notifications) }),
+          ...(data.privacy && { privacy: JSON.stringify(data.privacy) }),
+          ...(data.socialMedia && { socialMedia: JSON.stringify(data.socialMedia) }),
           ...(data.portfolioImages && { portfolioImages: JSON.stringify(data.portfolioImages) }),
           ...(data.certifications && { certifications: JSON.stringify(data.certifications) }),
           updatedAt: new Date(),

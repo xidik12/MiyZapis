@@ -29,6 +29,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 }) => {
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapError, setMapError] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
@@ -36,10 +37,17 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   // Load Google Maps API
   useEffect(() => {
     if (!window.google && !document.querySelector('script[src*="googleapis"]')) {
+      // Use environment variable or fallback to demo key (for development only)
+      const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || 'AIzaSyBdVl-cGnaq0C6VytBh6gQWHzH_WqrPcLc';
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBdVl-cGnaq0C6VytBh6gQWHzH_WqrPcLc&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
       script.async = true;
       script.onload = () => setMapLoaded(true);
+      script.onerror = () => {
+        console.error('Failed to load Google Maps API');
+        setMapLoaded(false);
+        setMapError(true);
+      };
       document.head.appendChild(script);
     } else if (window.google) {
       setMapLoaded(true);
@@ -240,7 +248,18 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             {/* Map Container */}
             <div className="flex-1 p-4">
               <div className="h-96 w-full rounded-lg overflow-hidden">
-                {mapLoaded ? (
+                {mapError ? (
+                  <div className="h-full w-full bg-red-50 border border-red-200 flex items-center justify-center">
+                    <div className="text-center p-4">
+                      <div className="text-red-600 mb-2">
+                        <MapPin className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      </div>
+                      <p className="text-red-800 font-medium mb-1">Google Maps Failed to Load</p>
+                      <p className="text-red-600 text-sm mb-3">Please check your internet connection or try again later.</p>
+                      <p className="text-xs text-red-500">You can still enter your address manually in the location fields.</p>
+                    </div>
+                  </div>
+                ) : mapLoaded ? (
                   <div ref={mapRef} className="h-full w-full" />
                 ) : (
                   <div className="h-full w-full bg-gray-100 flex items-center justify-center">
