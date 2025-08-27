@@ -14,21 +14,45 @@ export class ServiceService {
   async searchServices(filters: SearchFilters = {}): Promise<SearchResult> {
     const params = new URLSearchParams();
     
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        if (Array.isArray(value)) {
-          value.forEach(v => params.append(key, v.toString()));
-        } else {
-          params.append(key, value.toString());
-        }
-      }
-    });
+    // Map frontend filters to backend parameters
+    if (filters.query) params.append('search', filters.query);
+    if (filters.category) params.append('category', filters.category);
+    if (filters.location) params.append('location', filters.location);
+    if (filters.minPrice) params.append('minPrice', filters.minPrice.toString());
+    if (filters.maxPrice) params.append('maxPrice', filters.maxPrice.toString());
+    if (filters.rating) params.append('rating', filters.rating.toString());
+    if (filters.sortBy) params.append('sortBy', filters.sortBy);
+    if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
 
-    const response = await apiClient.get<SearchResult>(`/services/search?${params}`);
+    const response = await apiClient.get<{
+      services: Service[];
+      total: number;
+      page: number;
+      totalPages: number;
+    }>(`/services?${params}`);
+    
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to search services');
     }
-    return response.data;
+    
+    // Transform backend response to match frontend SearchResult interface
+    return {
+      services: response.data.services || [],
+      specialists: [], // Not needed for service-focused search
+      pagination: {
+        currentPage: response.data.page || 1,
+        totalPages: response.data.totalPages || 1,
+        totalItems: response.data.total || 0,
+        itemsPerPage: 20,
+        hasNext: (response.data.page || 1) < (response.data.totalPages || 1),
+        hasPrev: (response.data.page || 1) > 1
+      },
+      filters: {
+        categories: [],
+        priceRanges: [],
+        specialties: []
+      }
+    };
   }
 
   // Get service categories

@@ -96,35 +96,35 @@ const SearchPage: React.FC = () => {
         
         const data = await serviceService.searchServices(filters);
         
-        // Transform the data to match our interface
+        // Transform the data to match our interface based on actual backend response
         const servicesWithSpecialists = (data.services || []).map((service: any) => ({
           id: service.id,
           name: service.name,
           description: service.description,
-          price: service.price,
-          duration: service.duration,
-          category: service.category,
-          location: service.specialist?.location?.city || service.specialist?.location?.address || '',
+          price: service.basePrice || service.price || 0,
+          duration: service.duration || 0,
+          category: service.category || '',
+          location: '', // Backend doesn't seem to have location info yet
           rating: service.specialist?.rating || 0,
-          reviewCount: service.specialist?.totalReviews || 0,
+          reviewCount: service.specialist?.reviewCount || 0,
           specialist: {
-            id: service.specialistId,
-            user: service.specialist?.user || {
-              firstName: '',
-              lastName: '',
-              avatar: undefined,
+            id: service.specialist?.id || '',
+            user: {
+              firstName: service.specialist?.user?.firstName || '',
+              lastName: service.specialist?.user?.lastName || '',
+              avatar: service.specialist?.user?.avatar || undefined,
               isVerified: service.specialist?.isVerified || false
             },
             businessName: service.specialist?.businessName || '',
-            location: service.specialist?.location?.city || service.specialist?.location?.address || '',
-            isOnline: true, // Assume online for now, can be enhanced later
-            responseTime: service.specialist?.responseTime || '',
-            completedBookings: service.specialist?.totalBookings || 0,
-            experience: service.specialist?.experience ? `${service.specialist.experience} years` : '',
+            location: '', // Backend doesn't seem to have location info yet
+            isOnline: true, // Assume online for now
+            responseTime: '', // Not available in backend response
+            completedBookings: 0, // Not available in backend response
+            experience: '', // Not available in backend response
             rating: service.specialist?.rating || 0
           },
-          distance: service.distance,
-          isAvailable: service.isActive !== false
+          distance: undefined, // Not available in backend response
+          isAvailable: true // Assume available if service exists
         }));
         
         setServices(servicesWithSpecialists);

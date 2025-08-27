@@ -1391,6 +1391,12 @@ const translations: Translations = {
   'booking.payment': { en: 'Payment', uk: 'Оплата', ru: 'Оплата' },
   'booking.confirmation': { en: 'Confirmation', uk: 'Підтвердження', ru: 'Подтверждение' },
 
+  // Booking errors
+  'errors.bookingDataNotFound': { en: 'Service not found or unavailable', uk: 'Послуга не знайдена або недоступна', ru: 'Услуга не найдена или недоступна' },
+
+  // Navigation
+  'navigation.goBack': { en: 'Go Back', uk: 'Повернутися', ru: 'Вернуться' },
+
   // Search Page (duplicates removed - definitions exist earlier in the file)
   'search.placeholder': { en: 'Search for services...', uk: 'Пошук послуг...', ru: 'Поиск услуг...' },
   'search.filters': { en: 'Filters', uk: 'Фільтри', ru: 'Фильтры' },
