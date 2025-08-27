@@ -41,8 +41,9 @@ router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, a
     // Write file to disk
     fs.writeFileSync(filepath, file.buffer);
     
-    // Create response that matches what frontend expects
-    const fileUrl = `/uploads/${purpose}/${filename}`;
+    // Create response that matches what frontend expects - using absolute URL
+    const baseUrl = 'https://miyzapis-backend-production.up.railway.app';
+    const fileUrl = `${baseUrl}/uploads/${purpose}/${filename}`;
     const mockResponse = [{
       id: 'simple-' + timestamp,
       filename: filename,
