@@ -1,5 +1,5 @@
 import React, { useEffect, Suspense } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from './hooks/redux';
 import { getCurrentUser, selectIsAuthenticated, selectUser } from './store/slices/authSlice';
 import { getAuthToken } from './services/api';
@@ -75,6 +75,12 @@ const SuspenseLoader = () => (
     <LoadingSpinner size="lg" />
   </div>
 );
+
+// Component to redirect from /book/:serviceId to /booking/:serviceId
+const BookingRouteRedirect: React.FC = () => {
+  const { serviceId } = useParams<{ serviceId: string }>();
+  return <Navigate to={`/booking/${serviceId}`} replace />;
+};
 
 // Page title updater hook
 const usePageTitle = () => {
@@ -472,12 +478,9 @@ function App() {
               </Suspense>
             </MainLayout>
           } />
+          {/* Redirect old booking route to new one */}
           <Route path="/book/:serviceId" element={
-            <ConditionalLayout>
-              <Suspense fallback={<SuspenseLoader />}>
-                <BookingRouter />
-              </Suspense>
-            </ConditionalLayout>
+            <BookingRouteRedirect />
           } />
           <Route path="/booking/:serviceId" element={
             <ConditionalLayout>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
-import { specialistService } from '../services';
+import { serviceService } from '../services';
 import {
   MagnifyingGlassIcon,
   MapPinIcon,
@@ -19,25 +19,34 @@ import {
 } from '@heroicons/react/24/solid';
 import { Avatar } from '../components/ui/Avatar';
 
-interface Specialist {
+interface ServiceWithSpecialist {
   id: string;
-  user: {
-    firstName: string;
-    lastName: string;
-    avatar?: string;
-    isVerified: boolean;
-  };
-  businessName: string;
+  name: string;
+  description: string;
+  price: number;
+  duration: number;
   category: string;
   location: string;
   rating: number;
   reviewCount: number;
-  priceFrom: number;
-  isOnline: boolean;
-  responseTime: string;
-  completedBookings: number;
-  experience: string;
-  description: string;
+  specialist: {
+    id: string;
+    user: {
+      firstName: string;
+      lastName: string;
+      avatar?: string;
+      isVerified: boolean;
+    };
+    businessName: string;
+    location: string;
+    isOnline: boolean;
+    responseTime: string;
+    completedBookings: number;
+    experience: string;
+    rating: number;
+  };
+  distance?: number;
+  isAvailable: boolean;
 }
 
 const SearchPage: React.FC = () => {
@@ -46,8 +55,8 @@ const SearchPage: React.FC = () => {
   const { formatPrice } = useCurrency();
 
   // State
-  const [specialists, setSpecialists] = useState<Specialist[]>([]);
-  const [filteredSpecialists, setFilteredSpecialists] = useState<Specialist[]>([]);
+  const [services, setServices] = useState<ServiceWithSpecialist[]>([]);
+  const [filteredServices, setFilteredServices] = useState<ServiceWithSpecialist[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
@@ -69,27 +78,67 @@ const SearchPage: React.FC = () => {
     { id: 'technology', name: t('category.technology') },
   ];
 
-  // Fetch specialists from API
+  // Fetch services from API
   useEffect(() => {
-    const fetchSpecialists = async () => {
+    const fetchServices = async () => {
       try {
         setLoading(true);
-        const data = await specialistService.searchSpecialists(searchQuery, {
-          location: selectedLocation,
-          rating: selectedRating,
-        });
-        setSpecialists(data.specialists || []);
-        setFilteredSpecialists(data.specialists || []);
+        const filters = {
+          query: searchQuery,
+          category: selectedCategory || undefined,
+          location: selectedLocation || undefined,
+          minPrice: priceRange.min > 0 ? priceRange.min : undefined,
+          maxPrice: priceRange.max < 1000 ? priceRange.max : undefined,
+          rating: selectedRating > 0 ? selectedRating : undefined,
+          sortBy: sortBy as 'rating' | 'price' | 'reviews' | 'distance',
+          sortOrder: 'desc' as const, // Default to descending (best first)
+        };
+        
+        const data = await serviceService.searchServices(filters);
+        
+        // Transform the data to match our interface
+        const servicesWithSpecialists = (data.services || []).map((service: any) => ({
+          id: service.id,
+          name: service.name,
+          description: service.description,
+          price: service.price,
+          duration: service.duration,
+          category: service.category,
+          location: service.specialist?.location?.city || service.specialist?.location?.address || '',
+          rating: service.specialist?.rating || 0,
+          reviewCount: service.specialist?.totalReviews || 0,
+          specialist: {
+            id: service.specialistId,
+            user: service.specialist?.user || {
+              firstName: '',
+              lastName: '',
+              avatar: undefined,
+              isVerified: service.specialist?.isVerified || false
+            },
+            businessName: service.specialist?.businessName || '',
+            location: service.specialist?.location?.city || service.specialist?.location?.address || '',
+            isOnline: true, // Assume online for now, can be enhanced later
+            responseTime: service.specialist?.responseTime || '',
+            completedBookings: service.specialist?.totalBookings || 0,
+            experience: service.specialist?.experience ? `${service.specialist.experience} years` : '',
+            rating: service.specialist?.rating || 0
+          },
+          distance: service.distance,
+          isAvailable: service.isActive !== false
+        }));
+        
+        setServices(servicesWithSpecialists);
+        setFilteredServices(servicesWithSpecialists);
       } catch (error) {
-        console.error('Error fetching specialists:', error);
-        setSpecialists([]);
-        setFilteredSpecialists([]);
+        console.error('Error fetching services:', error);
+        setServices([]);
+        setFilteredServices([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSpecialists();
+    fetchServices();
   }, [searchQuery, selectedCategory, selectedLocation, priceRange, selectedRating, sortBy]);
 
   // Update URL params
@@ -125,24 +174,24 @@ const SearchPage: React.FC = () => {
     ));
   };
 
-  const renderSpecialistCard = (specialist: Specialist) => (
+  const renderServiceCard = (service: ServiceWithSpecialist) => (
     <div
-      key={specialist.id}
+      key={service.id}
       className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 dark:border-gray-700"
     >
       <div className="flex items-start space-x-4">
         <div className="relative">
           <Avatar
-            src={specialist.user.avatar}
-            alt={`${specialist.user.firstName} ${specialist.user.lastName}`}
+            src={service.specialist.user.avatar}
+            alt={`${service.specialist.user.firstName} ${service.specialist.user.lastName}`}
             size="lg"
             fallbackIcon={false}
             lazy={true}
           />
-          {specialist.user.isVerified && (
+          {service.specialist.user.isVerified && (
             <CheckBadgeIcon className="absolute -bottom-1 -right-1 w-6 h-6 text-primary-600 bg-white rounded-full" />
           )}
-          {specialist.isOnline && (
+          {service.specialist.isOnline && (
             <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
           )}
         </div>
@@ -150,53 +199,66 @@ const SearchPage: React.FC = () => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
-              {specialist.user.firstName} {specialist.user.lastName}
+              {service.name}
             </h3>
             <div className="flex items-center space-x-1">
-              {renderStars(specialist.rating)}
+              {renderStars(service.rating)}
               <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">
-                {specialist.rating} ({specialist.reviewCount})
+                {service.rating.toFixed(1)} ({service.reviewCount})
               </span>
             </div>
           </div>
 
           <p className="text-sm text-primary-600 dark:text-primary-400 font-medium">
-            {specialist.businessName}
+            {service.specialist.businessName} • {service.specialist.user.firstName} {service.specialist.user.lastName}
           </p>
 
           <div className="flex items-center mt-2 text-sm text-gray-500 dark:text-gray-400">
             <MapPinIcon className="w-4 h-4 mr-1" />
-            <span className="mr-4">{specialist.location}</span>
+            <span className="mr-4">{service.location}</span>
             <ClockIcon className="w-4 h-4 mr-1" />
-            <span>{t('specialist.responseTime')}: {specialist.responseTime && specialist.responseTime !== '0' ? specialist.responseTime : (language === 'uk' ? 'Зазвичай протягом дня' : language === 'ru' ? 'Обычно в течение дня' : 'Usually within a day')}</span>
+            <span>{service.duration} {t('common.minutes')}</span>
+            {service.distance && (
+              <>
+                <span className="mx-2">•</span>
+                <span>{service.distance.toFixed(1)} km</span>
+              </>
+            )}
           </div>
 
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
-            {specialist.description}
+            {service.description}
           </p>
 
           <div className="flex items-center justify-between mt-4">
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              {specialist.completedBookings} {t('specialist.completedJobs')} • {specialist.experience}
+              {service.specialist.completedBookings} {t('specialist.completedJobs')} • {service.specialist.experience}
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t('pricing.from')}</p>
+              <div className={`text-xs px-2 py-1 rounded-full mb-1 ${service.isAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                {service.isAvailable ? t('service.available') : t('service.unavailable')}
+              </div>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {specialist.priceFrom ? formatPrice(specialist.priceFrom, 'UAH') : (language === 'uk' ? 'За домовленістю' : language === 'ru' ? 'По договорённости' : 'By agreement')}
+                {formatPrice(service.price, 'UAH')}
               </p>
             </div>
           </div>
 
           <div className="flex space-x-3 mt-4">
             <Link
-              to={`/specialist/${specialist.id}`}
-              className="flex-1 bg-primary-600 text-white text-center py-2 px-4 rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
+              to={`/specialist/${service.specialist.id}`}
+              className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-center py-2 px-4 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
             >
               {t('actions.viewProfile')}
             </Link>
             <Link
-              to={`/booking/${specialist.id}`}
-              className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-center py-2 px-4 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+              to={`/booking/${service.id}`}
+              className={`flex-1 text-white text-center py-2 px-4 rounded-lg transition-colors text-sm font-medium ${
+                service.isAvailable 
+                  ? 'bg-primary-600 hover:bg-primary-700' 
+                  : 'bg-gray-400 cursor-not-allowed'
+              }`}
+              onClick={(e) => !service.isAvailable && e.preventDefault()}
             >
               {t('actions.book')}
             </Link>
@@ -263,14 +325,14 @@ const SearchPage: React.FC = () => {
             >
               <option value="rating">{t('search.sortBy.rating')}</option>
               <option value="price">{t('search.sortBy.price')}</option>
-              <option value="experience">{t('search.sortBy.experience')}</option>
+              <option value="distance">{t('search.sortBy.distance')}</option>
               <option value="reviews">{t('search.sortBy.reviews')}</option>
             </select>
           </div>
 
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              {t('search.showing')} {filteredSpecialists.length} {t('search.results')}
+              {t('search.showing')} {filteredServices.length} {t('search.results')}
             </span>
             <div className="flex items-center space-x-1 ml-4">
               <button
@@ -302,13 +364,13 @@ const SearchPage: React.FC = () => {
           <div className="flex justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
           </div>
-        ) : filteredSpecialists.length > 0 ? (
+        ) : filteredServices.length > 0 ? (
           <div className={`grid gap-6 ${
             viewMode === 'grid' 
               ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
               : 'grid-cols-1'
           }`}>
-            {filteredSpecialists.map(renderSpecialistCard)}
+            {filteredServices.map(renderServiceCard)}
           </div>
         ) : (
           <div className="text-center py-12">

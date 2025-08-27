@@ -1239,7 +1239,6 @@ const translations: Translations = {
   'reviews.sortBy.helpful': { en: 'Most Helpful', uk: 'Найкорисніші', ru: 'Самые полезные' },
   'reviews.verifiedOnly': { en: 'Verified Only', uk: 'Тільки підтверджені', ru: 'Только подтвержденные' },
   'reviews.withComments': { en: 'With Comments', uk: 'З коментарями', ru: 'С комментариями' },
-  'reviews.noReviews': { en: 'No reviews yet', uk: 'Відгуків поки немає', ru: 'Пока нет отзывов' },
   'reviews.noReviewsDescription': { en: 'Your reviews will appear here once customers leave feedback', uk: 'Ваші відгуки з\'являться тут, коли клієнти залишать відгуки', ru: 'Ваши отзывы появятся здесь, когда клиенты оставят отзывы' },
   'reviews.yourResponse': { en: 'Your Response', uk: 'Ваша відповідь', ru: 'Ваш ответ' },
   'reviews.writeResponse': { en: 'Write your response...', uk: 'Напишіть вашу відповідь...', ru: 'Напишите ваш ответ...' },
@@ -1402,8 +1401,15 @@ const translations: Translations = {
   'search.clearFilters': { en: 'Clear all filters', uk: 'Очистити всі фільтри', ru: 'Очистить все фильтры' },
   'search.sortBy.rating': { en: 'Sort by Rating', uk: 'Сортувати за рейтингом', ru: 'Сортировать по рейтингу' },
   'search.sortBy.price': { en: 'Sort by Price', uk: 'Сортувати за ціною', ru: 'Сортировать по цене' },
-  'search.sortBy.experience': { en: 'Sort by Experience', uk: 'Сортувати за досвідом', ru: 'Сортировать по опыту' },
+  'search.sortBy.distance': { en: 'Sort by Distance', uk: 'Сортувати за відстанню', ru: 'Сортировать по расстоянию' },
   'search.sortBy.reviews': { en: 'Sort by Reviews', uk: 'Сортувати за відгуками', ru: 'Сортировать по отзывам' },
+
+  // Service availability
+  'service.available': { en: 'Available', uk: 'Доступна', ru: 'Доступна' },
+  'service.unavailable': { en: 'Unavailable', uk: 'Недоступна', ru: 'Недоступна' },
+
+  // Common terms
+  'common.minutes': { en: 'min', uk: 'хв', ru: 'мин' },
 
   // Categories (duplicates removed - definitions exist earlier in the file)
 
