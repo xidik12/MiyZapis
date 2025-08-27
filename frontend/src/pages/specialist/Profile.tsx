@@ -7,6 +7,7 @@ import { specialistService } from '../../services/specialist.service';
 import { userService } from '../../services/user.service';
 import { isFeatureEnabled } from '../../config/features';
 import { ProfessionDropdown } from '../../components/ui/ProfessionDropdown';
+import { LocationPicker } from '../../components/LocationPicker';
 import { 
   CheckCircleIcon,
   XCircleIcon,
@@ -205,6 +206,9 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
   console.log('🔄 mergeProfileData input:', apiData);
   console.log('🔄 defaultProfile:', defaultProfile);
   
+  // Extract specialist data from nested structure
+  const specialist = apiData?.specialist || apiData;
+  
   // Parse JSON strings if they exist (backend stores some fields as JSON strings)
   const parseJsonField = (field: any, fallback: any) => {
     if (typeof field === 'string') {
@@ -220,22 +224,41 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
   
   const result = {
     ...defaultProfile,
-    ...apiData,
+    // User data (flat from apiData)
+    firstName: apiData?.firstName || '',
+    lastName: apiData?.lastName || '',
+    email: apiData?.email || '',
+    phone: apiData?.phone || specialist?.user?.phoneNumber || '',
+    // Specialist data (from nested specialist object)
+    profession: specialist?.businessName || '',
+    bio: specialist?.bio || '',
+    experience: specialist?.experience || 0,
+    education: specialist?.education || '',
+    // Location data from specialist
+    location: {
+      address: specialist?.address || '',
+      city: specialist?.city || '',
+      region: specialist?.state || '',
+      country: specialist?.country || '',
+    },
     // Parse backend JSON strings and ensure arrays are always arrays
-    languages: Array.isArray(apiData?.languages) ? apiData.languages : parseJsonField(apiData?.languages, []),
-    specialties: Array.isArray(apiData?.specialties) ? apiData.specialties : parseJsonField(apiData?.specialties, []),
-    paymentMethods: Array.isArray(apiData?.paymentMethods) ? apiData.paymentMethods : parseJsonField(apiData?.paymentMethods, []),
-    certifications: Array.isArray(apiData?.certifications) ? apiData.certifications : parseJsonField(apiData?.certifications, []),
-    portfolio: Array.isArray(apiData?.portfolio) ? apiData.portfolio : parseJsonField(apiData?.portfolioImages, []),
+    languages: Array.isArray(specialist?.languages) ? specialist.languages : parseJsonField(specialist?.languages, []),
+    specialties: Array.isArray(specialist?.specialties) ? specialist.specialties : parseJsonField(specialist?.specialties, []),
+    paymentMethods: Array.isArray(specialist?.paymentMethods) ? specialist.paymentMethods : parseJsonField(specialist?.paymentMethods, []),
+    certifications: Array.isArray(specialist?.certifications) ? specialist.certifications : parseJsonField(specialist?.certifications, []),
+    portfolio: Array.isArray(specialist?.portfolio) ? specialist.portfolio : parseJsonField(specialist?.portfolioImages, []),
     // Parse business hours from JSON string if needed - prioritize workingHours from backend
-    businessHours: apiData?.workingHours ? parseJsonField(apiData.workingHours, defaultProfile.businessHours) : (apiData?.businessHours ? (typeof apiData.businessHours === 'string' ? parseJsonField(apiData.businessHours, defaultProfile.businessHours) : { ...defaultProfile.businessHours, ...apiData.businessHours }) : defaultProfile.businessHours),
+    businessHours: specialist?.workingHours ? parseJsonField(specialist.workingHours, defaultProfile.businessHours) : (specialist?.businessHours ? (typeof specialist.businessHours === 'string' ? parseJsonField(specialist.businessHours, defaultProfile.businessHours) : { ...defaultProfile.businessHours, ...specialist.businessHours }) : defaultProfile.businessHours),
     // Ensure objects are always objects
-    verification: apiData?.verification ? { ...defaultProfile.verification, ...apiData.verification } : defaultProfile.verification,
-    location: apiData?.location ? { ...defaultProfile.location, ...apiData.location } : defaultProfile.location,
-    serviceArea: apiData?.serviceArea ? { ...defaultProfile.serviceArea, ...apiData.serviceArea } : defaultProfile.serviceArea,
-    notifications: apiData?.notifications ? { ...defaultProfile.notifications, ...apiData.notifications } : defaultProfile.notifications,
-    privacy: apiData?.privacy ? { ...defaultProfile.privacy, ...apiData.privacy } : defaultProfile.privacy,
-    socialMedia: apiData?.socialMedia ? { ...defaultProfile.socialMedia, ...apiData.socialMedia } : defaultProfile.socialMedia,
+    verification: { 
+      ...defaultProfile.verification,
+      isVerified: specialist?.isVerified || false,
+      ...(specialist?.verification || {})
+    },
+    serviceArea: specialist?.serviceArea ? { ...defaultProfile.serviceArea, ...specialist.serviceArea } : defaultProfile.serviceArea,
+    notifications: specialist?.notifications ? { ...defaultProfile.notifications, ...specialist.notifications } : defaultProfile.notifications,
+    privacy: specialist?.privacy ? { ...defaultProfile.privacy, ...specialist.privacy } : defaultProfile.privacy,
+    socialMedia: specialist?.socialMedia ? { ...defaultProfile.socialMedia, ...specialist.socialMedia } : defaultProfile.socialMedia,
   };
   
   console.log('🔄 mergeProfileData result:', result);
@@ -536,6 +559,8 @@ const SpecialistProfile: React.FC = () => {
             city: profile.location?.city || '',
             state: profile.location?.region || '',
             country: profile.location?.country || '',
+            latitude: profile.location?.latitude || null,
+            longitude: profile.location?.longitude || null,
             timezone: 'UTC', // Default timezone
             workingHours: profile.businessHours || {},
             portfolioImages: Array.isArray(profile.portfolio) ? profile.portfolio : [],
@@ -1078,52 +1103,31 @@ const SpecialistProfile: React.FC = () => {
                       />
                     </div>
 
-                    {/* Location */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {language === 'uk' ? 'Адреса' : language === 'ru' ? 'Адрес' : 'Address'}
-                        </label>
-                        <div className="relative">
-                          <MapPinIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                          <input
-                            id="address"
-                            name="address"
-                            type="text"
-                            value={profile.location?.address || ''}
-                            disabled={!isEditing}
-                            onChange={(e) => handleProfileChange('location', {...(profile.location || {}), address: e.target.value})}
-                            autoComplete="street-address"
-                            className={`w-full pl-11 pr-4 py-3 rounded-xl border transition-all duration-200 border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
-                              !isEditing 
-                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
-                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                            } disabled:cursor-not-allowed dark:border-gray-600`}
-                            placeholder={language === 'uk' ? 'вул. Хрещатик, 1' : language === 'ru' ? 'ул. Крещатик, 1' : 'Khreshchatyk Street, 1'}
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label htmlFor="city" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {language === 'uk' ? 'Місто' : language === 'ru' ? 'Город' : 'City'}
-                        </label>
-                        <input
-                          id="city"
-                          name="city"
-                          type="text"
-                          value={profile.location?.city || ''}
-                          disabled={!isEditing}
-                          onChange={(e) => handleProfileChange('location', {...(profile.location || {}), city: e.target.value})}
-                          autoComplete="address-level2"
-                          className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
-                            !isEditing 
-                              ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
-                              : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                          } disabled:cursor-not-allowed dark:border-gray-600`}
-                          placeholder={language === 'uk' ? 'Київ' : language === 'ru' ? 'Киев' : 'Kyiv'}
+                    {/* Location Picker */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {language === 'uk' ? 'Розташування' : language === 'ru' ? 'Местоположение' : 'Location'}
+                      </label>
+                      {isEditing ? (
+                        <LocationPicker
+                          location={profile.location || { address: '', city: '', region: '', country: '' }}
+                          onLocationChange={(newLocation) => handleProfileChange('location', newLocation)}
+                          className="border-gray-300 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600"
                         />
-                      </div>
+                      ) : (
+                        <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
+                          <div className="flex items-center space-x-2">
+                            <MapPinIcon className="h-5 w-5 text-gray-400" />
+                            <span>
+                              {profile.location?.address || profile.location?.city ? 
+                                [profile.location.address, profile.location.city, profile.location.region, profile.location.country]
+                                  .filter(Boolean).join(', ') 
+                                : (language === 'uk' ? 'Локація не вказана' : language === 'ru' ? 'Местоположение не указано' : 'No location specified')
+                              }
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
