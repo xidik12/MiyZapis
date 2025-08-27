@@ -1,5 +1,7 @@
 /**
- * Utility function to ensure image URLs are absolute and point to the backend domain
+ * Utility function to ensure image URLs are absolute and point to the correct domain
+ * - Static assets (logo.svg, etc.) stay on frontend domain
+ * - Uploaded files (/uploads/*) go to backend domain
  */
 export function getAbsoluteImageUrl(url: string | undefined | null): string {
   if (!url) return '';
@@ -7,6 +9,11 @@ export function getAbsoluteImageUrl(url: string | undefined | null): string {
   // If it's already an absolute URL, return as is
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
+  }
+  
+  // Static assets (like logo.svg) should stay on frontend domain
+  if (url.startsWith('/') && !url.startsWith('/uploads')) {
+    return url; // Keep relative for static assets
   }
   
   // If it's a relative URL starting with /uploads, convert to absolute backend URL
@@ -19,6 +26,6 @@ export function getAbsoluteImageUrl(url: string | undefined | null): string {
     return `https://miyzapis-backend-production.up.railway.app/uploads/${url}`;
   }
   
-  // Default: prepend backend domain
-  return `https://miyzapis-backend-production.up.railway.app${url}`;
+  // Default: keep as relative
+  return url;
 }
