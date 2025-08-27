@@ -100,6 +100,12 @@ export class FileController {
           // Process the file
           const processedFile = await this.processFile(file, purpose);
           
+          logger.info('File processed, uploading to storage', {
+            filename: processedFile.filename,
+            bufferSize: processedFile.buffer.length,
+            mimetype: processedFile.mimetype
+          });
+
           // Upload to storage (S3 or local)
           const fileUrl = await this.fileUploadService.uploadToStorage(
             processedFile.buffer,
@@ -107,7 +113,19 @@ export class FileController {
             processedFile.mimetype
           );
 
+          logger.info('File uploaded to storage successfully', {
+            filename: processedFile.filename,
+            url: fileUrl
+          });
+
           // Save file record to database
+          logger.info('Saving file record to database', {
+            filename: processedFile.filename,
+            uploadedBy: userId,
+            purpose,
+            url: fileUrl
+          });
+
           const fileRecord = await prisma.file.create({
             data: {
               filename: processedFile.filename,
@@ -125,6 +143,12 @@ export class FileController {
               isPublic,
               isProcessed: true
             }
+          });
+
+          logger.info('File record saved to database', {
+            fileId: fileRecord.id,
+            filename: fileRecord.filename,
+            url: fileRecord.url
           });
 
           uploadedFiles.push(fileRecord);
@@ -172,35 +196,52 @@ export class FileController {
           bufferLength: file.buffer.length 
         });
 
-        const image = sharp(file.buffer);
-        const metadata = await image.metadata();
-        width = metadata.width;
-        height = metadata.height;
+        try {
+          const image = sharp(file.buffer);
+          const metadata = await image.metadata();
+          width = metadata.width;
+          height = metadata.height;
 
-        logger.info('Image metadata extracted', { 
-          width, height, format: metadata.format 
-        });
+          logger.info('Image metadata extracted', { 
+            width, height, format: metadata.format 
+          });
 
-      // Resize based on purpose
-      switch (purpose) {
-        case 'avatar':
-          processedBuffer = await image
-            .resize(300, 300, { fit: 'cover' })
-            .jpeg({ quality: 85 })
-            .toBuffer();
-          break;
-        case 'service_image':
-        case 'portfolio':
-          processedBuffer = await image
-            .resize(1200, 800, { fit: 'inside', withoutEnlargement: true })
-            .jpeg({ quality: 85 })
-            .toBuffer();
-          break;
-        default:
-          // Keep original size for other purposes
-          break;
+          // Resize based on purpose
+          switch (purpose) {
+            case 'avatar':
+              logger.info('Resizing avatar image');
+              processedBuffer = await image
+                .resize(300, 300, { fit: 'cover' })
+                .jpeg({ quality: 85 })
+                .toBuffer();
+              break;
+            case 'service_image':
+            case 'portfolio':
+              logger.info('Resizing portfolio/service image');
+              processedBuffer = await image
+                .resize(1200, 800, { fit: 'inside', withoutEnlargement: true })
+                .jpeg({ quality: 85 })
+                .toBuffer();
+              break;
+            default:
+              logger.info('Keeping original image size');
+              // Keep original size for other purposes
+              break;
+          }
+          
+          logger.info('Image processing completed', {
+            originalSize: file.buffer.length,
+            processedSize: processedBuffer.length
+          });
+        } catch (sharpError) {
+          logger.error('Sharp processing failed, using original buffer', {
+            error: sharpError instanceof Error ? sharpError.message : String(sharpError),
+            originalName: file.originalname
+          });
+          // Fall back to original buffer if Sharp fails
+          processedBuffer = file.buffer;
+        }
       }
-    }
 
       return {
         buffer: processedBuffer,
