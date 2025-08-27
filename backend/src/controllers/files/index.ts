@@ -70,6 +70,11 @@ export class FileController {
         hasUser: !!req.user
       });
 
+      if (!req.user?.id) {
+        logger.error('No user ID found in request');
+        return errorResponse(res, 'Authentication required', 401);
+      }
+
       const userId = req.user.id;
       const purpose = req.query.purpose as string || 'general';
       const entityType = req.query.entityType as string;
@@ -85,6 +90,13 @@ export class FileController {
 
       for (const file of req.files as Express.Multer.File[]) {
         try {
+          logger.info('Processing file', { 
+            originalName: file.originalname, 
+            mimeType: file.mimetype, 
+            size: file.size,
+            purpose 
+          });
+
           // Process the file
           const processedFile = await this.processFile(file, purpose);
           
@@ -143,20 +155,31 @@ export class FileController {
   };
 
   private async processFile(file: Express.Multer.File, purpose: string) {
-    const fileId = uuidv4();
-    const ext = path.extname(file.originalname);
-    const filename = `${purpose}/${fileId}${ext}`;
+    try {
+      const fileId = uuidv4();
+      const ext = path.extname(file.originalname);
+      const filename = `${purpose}/${fileId}${ext}`;
 
-    let processedBuffer = file.buffer;
-    let width: number | undefined;
-    let height: number | undefined;
+      let processedBuffer = file.buffer;
+      let width: number | undefined;
+      let height: number | undefined;
 
-    // Process images
-    if (file.mimetype.startsWith('image/')) {
-      const image = sharp(file.buffer);
-      const metadata = await image.metadata();
-      width = metadata.width;
-      height = metadata.height;
+      // Process images
+      if (file.mimetype.startsWith('image/')) {
+        logger.info('Processing image with Sharp', { 
+          originalName: file.originalname,
+          mimeType: file.mimetype,
+          bufferLength: file.buffer.length 
+        });
+
+        const image = sharp(file.buffer);
+        const metadata = await image.metadata();
+        width = metadata.width;
+        height = metadata.height;
+
+        logger.info('Image metadata extracted', { 
+          width, height, format: metadata.format 
+        });
 
       // Resize based on purpose
       switch (purpose) {
@@ -179,13 +202,22 @@ export class FileController {
       }
     }
 
-    return {
-      buffer: processedBuffer,
-      filename,
-      mimetype: file.mimetype,
-      width,
-      height
-    };
+      return {
+        buffer: processedBuffer,
+        filename,
+        mimetype: file.mimetype,
+        width,
+        height
+      };
+    } catch (error) {
+      logger.error('Error processing file:', {
+        error: error instanceof Error ? error.message : String(error),
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+        purpose
+      });
+      throw error;
+    }
   }
 
   getFile = async (req: Request, res: Response) => {
