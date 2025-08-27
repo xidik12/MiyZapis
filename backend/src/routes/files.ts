@@ -110,6 +110,14 @@ router.post('/upload', authMiddleware, fileController.uploadMiddleware, async (r
       ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` 
       : 'http://localhost:3000';
     const fileUrl = `${baseUrl}/uploads/${purpose}/${filename}`;
+    
+    console.log('🔧 URL Generation Debug:', {
+      RAILWAY_PUBLIC_DOMAIN: process.env.RAILWAY_PUBLIC_DOMAIN,
+      baseUrl,
+      fileUrl,
+      filename,
+      purpose
+    });
     const response = [{
       id: 'upload-' + timestamp,
       filename: filename,
