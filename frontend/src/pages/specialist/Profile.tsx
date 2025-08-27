@@ -554,7 +554,10 @@ const SpecialistProfile: React.FC = () => {
           const specialistData = {
             businessName: profile.profession || `${profile.firstName} ${profile.lastName}`,
             bio: profile.bio || '',
+            education: profile.education || '',
             specialties: Array.isArray(profile.specialties) ? profile.specialties : [],
+            experience: profile.experience || 0,
+            languages: Array.isArray(profile.languages) ? profile.languages : [],
             address: profile.location?.address || '',
             city: profile.location?.city || '',
             state: profile.location?.region || '',
@@ -563,6 +566,8 @@ const SpecialistProfile: React.FC = () => {
             longitude: profile.location?.longitude || null,
             timezone: 'UTC', // Default timezone
             workingHours: profile.businessHours || {},
+            paymentMethods: Array.isArray(profile.paymentMethods) ? profile.paymentMethods : [],
+            serviceArea: profile.serviceArea || { radius: 0, cities: [] },
             portfolioImages: Array.isArray(profile.portfolio) ? profile.portfolio : [],
             certifications: Array.isArray(profile.certifications) ? profile.certifications : []
           };

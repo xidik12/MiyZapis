@@ -5,7 +5,10 @@ import { Specialist, User, Service } from '@prisma/client';
 interface CreateSpecialistData {
   businessName?: string;
   bio?: string;
+  education?: string;
   specialties: string[];
+  experience?: number;
+  languages?: string[];
   address?: string;
   city?: string;
   state?: string;
@@ -14,6 +17,8 @@ interface CreateSpecialistData {
   longitude?: number;
   timezone?: string;
   workingHours?: Record<string, any>;
+  paymentMethods?: string[];
+  serviceArea?: Record<string, any>;
   portfolioImages?: string[];
   certifications?: string[];
 }
@@ -21,7 +26,10 @@ interface CreateSpecialistData {
 interface UpdateSpecialistData {
   businessName?: string;
   bio?: string;
+  education?: string;
   specialties?: string[];
+  experience?: number;
+  languages?: string[];
   address?: string;
   city?: string;
   state?: string;
@@ -30,6 +38,8 @@ interface UpdateSpecialistData {
   longitude?: number;
   timezone?: string;
   workingHours?: Record<string, any>;
+  paymentMethods?: string[];
+  serviceArea?: Record<string, any>;
   portfolioImages?: string[];
   certifications?: string[];
 }
@@ -77,7 +87,10 @@ export class SpecialistService {
           userId,
           businessName: data.businessName || `${user.firstName} ${user.lastName}`,
           bio: data.bio || '',
+          education: data.education,
           specialties: JSON.stringify(data.specialties || []),
+          experience: data.experience || 0,
+          languages: JSON.stringify(data.languages || []),
           address: data.address,
           city: data.city,
           state: data.state,
@@ -86,6 +99,8 @@ export class SpecialistService {
           longitude: data.longitude,
           timezone: data.timezone || user.timezone,
           workingHours: JSON.stringify(data.workingHours || {}),
+          paymentMethods: JSON.stringify(data.paymentMethods || []),
+          serviceArea: JSON.stringify(data.serviceArea || {}),
           portfolioImages: JSON.stringify(data.portfolioImages || []),
           certifications: JSON.stringify(data.certifications || []),
         },
@@ -154,7 +169,10 @@ export class SpecialistService {
         data: {
           ...(data.businessName && { businessName: data.businessName }),
           ...(data.bio !== undefined && { bio: data.bio }),
+          ...(data.education !== undefined && { education: data.education }),
           ...(data.specialties && { specialties: JSON.stringify(data.specialties) }),
+          ...(data.experience !== undefined && { experience: data.experience }),
+          ...(data.languages && { languages: JSON.stringify(data.languages) }),
           ...(data.address !== undefined && { address: data.address }),
           ...(data.city !== undefined && { city: data.city }),
           ...(data.state !== undefined && { state: data.state }),
@@ -163,6 +181,8 @@ export class SpecialistService {
           ...(data.longitude !== undefined && { longitude: data.longitude }),
           ...(data.timezone && { timezone: data.timezone }),
           ...(data.workingHours && { workingHours: JSON.stringify(data.workingHours) }),
+          ...(data.paymentMethods && { paymentMethods: JSON.stringify(data.paymentMethods) }),
+          ...(data.serviceArea && { serviceArea: JSON.stringify(data.serviceArea) }),
           ...(data.portfolioImages && { portfolioImages: JSON.stringify(data.portfolioImages) }),
           ...(data.certifications && { certifications: JSON.stringify(data.certifications) }),
           updatedAt: new Date(),

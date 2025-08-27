@@ -82,11 +82,13 @@ model Specialist {
   // Business profile
   businessName String?
   bio          String?
+  education    String? // Education background
   
   // Professional details
   specialties  String // JSON string of specialty tags
   experience   Int      @default(0) // Years of experience
   isVerified   Boolean  @default(false)
+  languages    String? // JSON string of supported languages
   
   // Location
   address      String?
@@ -97,6 +99,10 @@ model Specialist {
   longitude    Float?
   timezone     String   @default("UTC")
   workingHours String   // JSON string for working hours
+  
+  // Business operations
+  paymentMethods String? // JSON string of accepted payment methods
+  serviceArea    String? // JSON string for service area settings (radius, cities)
   
   // Business metrics
   rating           Float   @default(0.0)
