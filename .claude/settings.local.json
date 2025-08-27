@@ -76,7 +76,8 @@
       "Bash(./update-cors-railway.sh:*)",
       "Bash(NODE_ENV=test npm start)",
       "Bash(NODE_ENV=development npm start)",
-      "Bash(railway shell:*)"
+      "Bash(railway shell:*)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

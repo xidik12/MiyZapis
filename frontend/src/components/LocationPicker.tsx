@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, X } from 'lucide-react';
+import { MapPin, X, Search } from 'lucide-react';
 
 interface Location {
   address: string;
@@ -30,14 +30,21 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<any>(null);
+  const placesServiceRef = useRef<any>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load Google Maps API
   useEffect(() => {
     // Only try to load if we have a valid API key
-    const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     
     if (!apiKey) {
       console.warn('Google Maps API key not found. Map functionality disabled.');
@@ -68,6 +75,15 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     }
   }, [isMapOpen, mapLoaded]);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const initializeMap = () => {
     if (!window.google || !mapRef.current) return;
 
@@ -86,6 +102,28 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       streetViewControl: false,
       fullscreenControl: false,
     });
+
+    // Initialize Places service for reverse geocoding
+    placesServiceRef.current = new window.google.maps.places.PlacesService(mapInstanceRef.current);
+
+    // Initialize Autocomplete for search input
+    if (searchInputRef.current) {
+      autocompleteRef.current = new window.google.maps.places.Autocomplete(
+        searchInputRef.current,
+        {
+          fields: ['place_id', 'geometry', 'name', 'formatted_address', 'address_components'],
+          types: ['address']
+        }
+      );
+
+      // Handle place selection from autocomplete
+      autocompleteRef.current.addListener('place_changed', () => {
+        const place = autocompleteRef.current.getPlace();
+        if (place.geometry && place.geometry.location) {
+          handlePlaceSelect(place);
+        }
+      });
+    }
 
     // Add click listener to map
     mapInstanceRef.current.addListener('click', (event: any) => {
@@ -156,48 +194,149 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       { location: { lat, lng } },
       (results: any[], status: string) => {
         if (status === 'OK' && results[0]) {
-          const addressComponents = results[0].address_components;
-          const formattedAddress = results[0].formatted_address;
-          
-          let address = '';
-          let city = '';
-          let region = '';
-          let country = '';
-          
-          // Extract address components
-          addressComponents.forEach((component: any) => {
-            const types = component.types;
-            
-            if (types.includes('street_number') || types.includes('route')) {
-              address += component.long_name + ' ';
-            } else if (types.includes('locality') || types.includes('administrative_area_level_2')) {
-              city = component.long_name;
-            } else if (types.includes('administrative_area_level_1')) {
-              region = component.long_name;
-            } else if (types.includes('country')) {
-              country = component.long_name;
-            }
-          });
-
-          // If no specific address found, use formatted address
-          if (!address.trim()) {
-            address = formattedAddress;
-          }
-
-          const newLocation: Location = {
-            address: address.trim(),
-            city,
-            region,
-            country,
+          const locationData = extractLocationFromPlace(results[0]);
+          onLocationChange({
+            ...locationData,
             latitude: lat,
             longitude: lng,
-          };
-
-          console.log('📍 Location extracted:', newLocation);
-          onLocationChange(newLocation);
+          });
         }
       }
     );
+  };
+
+  const extractLocationFromPlace = (place: any): Location => {
+    const addressComponents = place.address_components || [];
+    const formattedAddress = place.formatted_address || '';
+    
+    let address = '';
+    let city = '';
+    let region = '';
+    let country = '';
+    
+    // Extract address components with improved logic
+    addressComponents.forEach((component: any) => {
+      const types = component.types;
+      
+      if (types.includes('street_number')) {
+        address = component.long_name + ' ' + address;
+      } else if (types.includes('route')) {
+        address += component.long_name;
+      } else if (types.includes('locality')) {
+        city = component.long_name;
+      } else if (types.includes('administrative_area_level_2') && !city) {
+        city = component.long_name;
+      } else if (types.includes('administrative_area_level_1')) {
+        region = component.long_name;
+      } else if (types.includes('country')) {
+        country = component.long_name;
+      }
+    });
+
+    // If no specific address found, use formatted address
+    if (!address.trim()) {
+      // Extract street address from formatted address
+      const addressParts = formattedAddress.split(',');
+      address = addressParts[0] || formattedAddress;
+    }
+
+    const location: Location = {
+      address: address.trim(),
+      city: city || '',
+      region: region || '',
+      country: country || '',
+    };
+
+    console.log('📍 Location extracted:', location);
+    return location;
+  };
+
+  const handlePlaceSelect = (place: any) => {
+    if (!place.geometry || !place.geometry.location) return;
+
+    const lat = place.geometry.location.lat();
+    const lng = place.geometry.location.lng();
+
+    // Extract location data from place
+    const locationData = extractLocationFromPlace(place);
+
+    // Update map position
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.setCenter({ lat, lng });
+      mapInstanceRef.current.setZoom(15);
+    }
+
+    // Update or create marker
+    if (markerRef.current) {
+      markerRef.current.setPosition({ lat, lng });
+    } else {
+      markerRef.current = new window.google.maps.Marker({
+        position: { lat, lng },
+        map: mapInstanceRef.current,
+        draggable: true,
+      });
+
+      // Add drag listener to new marker
+      markerRef.current.addListener('dragend', (dragEvent: any) => {
+        const newLat = dragEvent.latLng.lat();
+        const newLng = dragEvent.latLng.lng();
+        reverseGeocode(newLat, newLng);
+      });
+    }
+
+    // Update location state
+    onLocationChange({
+      ...locationData,
+      latitude: lat,
+      longitude: lng,
+    });
+
+    // Clear search
+    setSearchQuery('');
+    setSearchResults([]);
+  };
+
+  const performPlaceSearch = async (query: string) => {
+    if (!window.google || !placesServiceRef.current || !query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+
+    const request = {
+      query: query,
+      fields: ['place_id', 'geometry', 'name', 'formatted_address', 'address_components'],
+    };
+
+    placesServiceRef.current.textSearch(request, (results: any[], status: string) => {
+      setIsSearching(false);
+      if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
+        setSearchResults(results.slice(0, 5)); // Limit to 5 results
+      } else {
+        setSearchResults([]);
+      }
+    });
+  };
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Debounce search
+    searchTimeoutRef.current = setTimeout(() => {
+      performPlaceSearch(value);
+    }, 300);
+  };
+
+  const selectSearchResult = (place: any) => {
+    handlePlaceSelect(place);
+    setSearchResults([]);
   };
 
   const handleOpenMap = () => {
@@ -252,6 +391,55 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
               </button>
             </div>
 
+            {/* Search Bar */}
+            {!mapError && (
+              <div className="p-4 border-b bg-gray-50">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search for an address or place..."
+                    value={searchQuery}
+                    onChange={handleSearchInputChange}
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  {isSearching && (
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Search Results */}
+                {searchResults.length > 0 && (
+                  <div className="mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {searchResults.map((place, index) => (
+                      <button
+                        key={place.place_id || index}
+                        onClick={() => selectSearchResult(place)}
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 focus:outline-none focus:bg-blue-50"
+                      >
+                        <div className="flex items-start space-x-3">
+                          <MapPin className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {place.name}
+                            </p>
+                            <p className="text-sm text-gray-500 truncate">
+                              {place.formatted_address}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Map Container */}
             <div className="flex-1 p-4">
               <div className="h-96 w-full rounded-lg overflow-hidden">
@@ -281,7 +469,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
               {/* Instructions */}
               <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  <strong>Instructions:</strong> Click on the map to select your location, or drag the marker to adjust the position. 
+                  <strong>Instructions:</strong> Search for an address above, click on the map to select your location, or drag the marker to adjust the position. 
                   The address will be automatically extracted from the coordinates.
                 </p>
               </div>

@@ -50,7 +50,7 @@ export class SpecialistService {
 
   // Upload specialist portfolio images
   async uploadPortfolioImage(file: File): Promise<{ imageUrl: string }> {
-    const response = await apiClient.upload<{ imageUrl: string }>('/specialists/portfolio/upload', file);
+    const response = await apiClient.upload<{ imageUrl: string }>('/files/upload?purpose=portfolio', file);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to upload portfolio image');
     }
