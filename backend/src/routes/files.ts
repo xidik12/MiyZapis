@@ -105,13 +105,11 @@ router.post('/upload', authMiddleware, fileController.uploadMiddleware, async (r
     fs.writeFileSync(filepath, file.buffer);
     
     // Create response that matches what frontend expects (array format)
-    // Use absolute URL so images load from backend domain
-    const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN 
-      ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` 
-      : 'http://localhost:3000';
+    // Use absolute URL so images load from backend domain - HARDCODED FOR TESTING
+    const baseUrl = 'https://miyzapis-backend-production.up.railway.app';
     const fileUrl = `${baseUrl}/uploads/${purpose}/${filename}`;
     
-    console.log('🔧 URL Generation Debug:', {
+    console.log('🔧 URL Generation Debug (HARDCODED):', {
       RAILWAY_PUBLIC_DOMAIN: process.env.RAILWAY_PUBLIC_DOMAIN,
       baseUrl,
       fileUrl,
