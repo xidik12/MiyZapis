@@ -63,6 +63,13 @@ export class FileController {
 
   uploadFiles = async (req: Request, res: Response) => {
     try {
+      logger.info('File upload request started', {
+        userId: req.user?.id,
+        purpose: req.query.purpose,
+        filesCount: Array.isArray(req.files) ? req.files.length : 0,
+        hasUser: !!req.user
+      });
+
       const userId = req.user.id;
       const purpose = req.query.purpose as string || 'general';
       const entityType = req.query.entityType as string;
@@ -70,6 +77,7 @@ export class FileController {
       const isPublic = req.query.isPublic === 'true';
 
       if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+        logger.warn('No files provided in upload request');
         return errorResponse(res, 'No files provided', 400);
       }
 
@@ -118,9 +126,18 @@ export class FileController {
         return errorResponse(res, 'Failed to upload any files', 500);
       }
 
+      logger.info('Files uploaded successfully', { 
+        uploadedCount: uploadedFiles.length,
+        files: uploadedFiles.map(f => ({ id: f.id, filename: f.filename, url: f.url }))
+      });
       return successResponse(res, uploadedFiles, 'Files uploaded successfully', 201);
     } catch (error) {
-      logger.error('Error uploading files:', error);
+      logger.error('Error uploading files:', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId: req.user?.id,
+        purpose: req.query.purpose
+      });
       return errorResponse(res, 'Failed to upload files', 500);
     }
   };
