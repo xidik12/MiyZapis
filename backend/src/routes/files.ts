@@ -105,7 +105,11 @@ router.post('/upload', authMiddleware, fileController.uploadMiddleware, async (r
     fs.writeFileSync(filepath, file.buffer);
     
     // Create response that matches what frontend expects (array format)
-    const fileUrl = `/uploads/${purpose}/${filename}`;
+    // Use absolute URL so images load from backend domain
+    const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN 
+      ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` 
+      : 'http://localhost:3000';
+    const fileUrl = `${baseUrl}/uploads/${purpose}/${filename}`;
     const response = [{
       id: 'upload-' + timestamp,
       filename: filename,
