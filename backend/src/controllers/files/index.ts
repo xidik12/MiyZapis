@@ -71,7 +71,11 @@ export class FileController {
       });
 
       if (!req.user?.id) {
-        logger.error('No user ID found in request');
+        logger.error('No user ID found in request', { 
+          hasUser: !!req.user, 
+          userKeys: req.user ? Object.keys(req.user) : [],
+          headers: Object.keys(req.headers)
+        });
         return errorResponse(res, 'Authentication required', 401);
       }
 

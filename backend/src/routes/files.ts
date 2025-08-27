@@ -13,12 +13,39 @@ router.post('/test', authMiddleware, (req, res) => {
 
 // Simplified upload route for debugging
 router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'Simple upload test', 
-    filesReceived: req.files ? (Array.isArray(req.files) ? req.files.length : 1) : 0,
-    purpose: req.query.purpose 
-  });
+  try {
+    const files = req.files as Express.Multer.File[];
+    if (!files || !Array.isArray(files) || files.length === 0) {
+      return res.status(400).json({ success: false, error: 'No files provided' });
+    }
+    
+    const file = files[0];
+    // Create a simple mock response that matches what frontend expects
+    const mockResponse = [{
+      id: 'test-' + Date.now(),
+      filename: file.originalname,
+      url: `/uploads/portfolio/test-${Date.now()}-${file.originalname}`,
+      path: `/uploads/portfolio/test-${Date.now()}-${file.originalname}`,
+      originalName: file.originalname,
+      mimeType: file.mimetype,
+      size: file.size,
+      uploadedBy: req.user?.id,
+      purpose: req.query.purpose || 'portfolio',
+      createdAt: new Date().toISOString()
+    }];
+
+    res.json({ 
+      success: true, 
+      data: mockResponse,
+      message: 'Simple upload test successful'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: 'Simple upload test failed',
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
 });
 
 // Upload files (requires authentication)
