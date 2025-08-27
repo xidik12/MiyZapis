@@ -730,21 +730,25 @@ const SpecialistProfile: React.FC = () => {
 
     try {
       setIsUploadingPortfolio(true);
-      console.log('📸 Uploading portfolio image:', file.name);
+      console.log('📸 Uploading portfolio image:', file.name, 'Size:', file.size);
       
       const result = await specialistService.uploadPortfolioImage(file);
-      console.log('✅ Portfolio image uploaded:', result);
+      console.log('✅ Portfolio image uploaded, imageUrl length:', result.imageUrl?.length);
+      console.log('🔍 Image URL preview:', result.imageUrl?.substring(0, 100) + '...');
       
       // Add the new image to the portfolio
       const newPortfolioItem = {
         id: `portfolio_${Date.now()}`,
         imageUrl: result.imageUrl,
-        title: '',
+        title: file.name || '',
         description: '',
         tags: []
       };
       
+      console.log('💼 New portfolio item:', newPortfolioItem);
+      
       const updatedPortfolio = [...profile.portfolio, newPortfolioItem];
+      console.log('📋 Updated portfolio array:', updatedPortfolio.length, 'items');
       handleProfileChange('portfolio', updatedPortfolio);
       
       showSuccessNotification(

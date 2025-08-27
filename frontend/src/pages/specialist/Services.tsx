@@ -60,11 +60,15 @@ const SpecialistServices: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
+        console.log('📡 Loading services...');
         const servicesData = await specialistService.getServices();
+        console.log('📦 Services data received:', servicesData);
+        console.log('🔍 First service structure:', servicesData?.[0]);
+        console.log('🏷️ Service IDs:', servicesData?.map(s => ({ id: s.id, name: s.name })));
         setServices(Array.isArray(servicesData) ? servicesData : []);
       } catch (err: any) {
         setError(err.message || 'Failed to load services');
-        console.error('Error loading services:', err);
+        console.error('❌ Error loading services:', err);
       } finally {
         setLoading(false);
       }
@@ -290,13 +294,22 @@ const SpecialistServices: React.FC = () => {
   };
 
   const handleToggleServiceStatus = async (serviceId: string, isActive: boolean) => {
+    console.log('🔄 Toggling service status:', { serviceId, isActive });
+    
+    if (!serviceId) {
+      console.error('❌ Service ID is undefined or null');
+      setError('Service ID is missing. Cannot update service status.');
+      return;
+    }
+    
     try {
       const updatedService = await specialistService.toggleServiceStatus(serviceId, isActive);
+      console.log('✅ Service status updated:', updatedService);
       setServices(prev => prev.map(service => 
         service.id === serviceId ? updatedService : service
       ));
     } catch (err: any) {
-      console.error('Error toggling service status:', err);
+      console.error('❌ Error toggling service status:', err);
       setError(err.message || 'Failed to update service status');
     }
   };
@@ -374,7 +387,11 @@ const SpecialistServices: React.FC = () => {
           {t('services.edit')}
         </button>
         <button
-          onClick={() => handleToggleServiceStatus(service.id, !service.isActive)}
+          onClick={() => {
+            console.log('📝 Service object before toggle:', service);
+            console.log('🏷️ Service ID:', service.id);
+            handleToggleServiceStatus(service.id, !service.isActive);
+          }}
           className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
             service.isActive
               ? 'bg-warning-50 hover:bg-warning-100 text-warning-700 dark:bg-warning-900/20 dark:hover:bg-warning-900/30 dark:text-warning-300'

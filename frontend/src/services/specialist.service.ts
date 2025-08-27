@@ -41,10 +41,27 @@ export class SpecialistService {
 
   // Update specialist profile
   async updateProfile(data: Partial<Specialist>): Promise<Specialist> {
+    console.log('💾 API: Updating specialist profile...');
+    console.log('📝 API: Profile data size:', JSON.stringify(data).length, 'chars');
+    
+    // Check for large portfolio data
+    if (data.portfolio) {
+      const portfolioSize = JSON.stringify(data.portfolio).length;
+      console.log('💼 API: Portfolio data size:', portfolioSize, 'chars');
+      if (portfolioSize > 1000000) { // 1MB
+        console.warn('⚠️ API: Portfolio data is very large, this might cause issues');
+      }
+    }
+    
     const response = await apiClient.put<Specialist>('/specialists/profile', data);
+    console.log('📦 API: Update response:', response);
+    
     if (!response.success || !response.data) {
+      console.error('❌ API: Profile update failed:', response.error);
       throw new Error(response.error?.message || 'Failed to update specialist profile');
     }
+    
+    console.log('✅ API: Profile updated successfully');
     return response.data;
   }
 
@@ -88,11 +105,19 @@ export class SpecialistService {
 
   // Get specialist's services (for own profile)
   async getServices(): Promise<Service[]> {
+    console.log('📡 API: Getting specialist services...');
     const response = await apiClient.get<{services: Service[]}>('/specialists/services');
+    console.log('📦 API: Response received:', response);
+    
     if (!response.success || !response.data) {
+      console.error('❌ API: Failed response:', response.error);
       throw new Error(response.error?.message || 'Failed to get specialist services');
     }
-    return response.data.services || [];
+    
+    const services = response.data.services || [];
+    console.log('🔍 API: Extracted services:', services);
+    console.log('🏷️ API: Service IDs:', services.map(s => ({ id: s.id, name: s.name })));
+    return services;
   }
 
   // Get services by specialist ID (for public viewing)
@@ -133,10 +158,21 @@ export class SpecialistService {
 
   // Toggle service active status
   async toggleServiceStatus(serviceId: string, isActive: boolean): Promise<Service> {
+    console.log('🔄 API: Toggling service status:', { serviceId, isActive });
+    
+    if (!serviceId) {
+      throw new Error('Service ID is required');
+    }
+    
     const response = await apiClient.patch<Service>(`/specialists/services/${serviceId}/status`, { isActive });
+    console.log('📦 API: Toggle response:', response);
+    
     if (!response.success || !response.data) {
+      console.error('❌ API: Toggle failed:', response.error);
       throw new Error(response.error?.message || 'Failed to update service status');
     }
+    
+    console.log('✅ API: Service status updated successfully');
     return response.data;
   }
 
