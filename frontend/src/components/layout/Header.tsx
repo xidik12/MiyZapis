@@ -107,6 +107,11 @@ export const Header: React.FC = () => {
                 src="/miyzapis_logo.png" 
                 alt="МійЗапис Logo" 
                 className="w-8 h-8 xs:w-10 xs:h-10 group-hover:scale-110 transition-all duration-300"
+                onError={(e) => {
+                  console.log('🖼️ Logo failed to load, trying fallback');
+                  e.currentTarget.src = '/logo.svg';
+                }}
+                onLoad={() => console.log('✅ Logo loaded successfully')}
               />
               <div className="flex items-center space-x-2">
                 <span className="text-lg xs:text-xl font-bold ukraine-text-gradient hidden xs:block group-hover:text-primary-500 transition-colors duration-300">

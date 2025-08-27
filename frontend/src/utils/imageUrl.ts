@@ -6,6 +6,11 @@
 export function getAbsoluteImageUrl(url: string | undefined | null): string {
   if (!url) return '';
   
+  // Handle data URLs (base64 encoded images)
+  if (url.startsWith('data:')) {
+    return url;
+  }
+  
   // If it's already an absolute URL, return as is
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;

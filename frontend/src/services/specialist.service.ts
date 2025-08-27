@@ -82,23 +82,57 @@ export class SpecialistService {
     }
     
     return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Resize image to max 800x600 to reduce size
+        const maxWidth = 800;
+        const maxHeight = 600;
+        let { width, height } = img;
+        
+        if (width > height) {
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Convert to smaller format with compression
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const base64String = e.target?.result as string;
+              console.log('✅ Image processed and compressed, size:', base64String.length);
+              resolve({ imageUrl: base64String });
+            };
+            reader.onerror = () => reject(new Error('Failed to process compressed image'));
+            reader.readAsDataURL(blob);
+          } else {
+            reject(new Error('Failed to compress image'));
+          }
+        }, 'image/jpeg', 0.8); // 80% quality JPEG
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image for processing'));
+      
       const reader = new FileReader();
-      
       reader.onload = (e) => {
-        const base64String = e.target?.result as string;
-        console.log('✅ Image converted to base64, size:', base64String.length);
-        
-        // Store with timestamp for uniqueness
-        const imageUrl = `data:${file.type};base64,${base64String.split(',')[1]}`;
-        
-        resolve({ imageUrl: base64String }); // Return full data URL
+        img.src = e.target?.result as string;
       };
-      
-      reader.onerror = (error) => {
-        console.error('❌ Failed to read file:', error);
-        reject(new Error('Failed to process image file'));
-      };
-      
+      reader.onerror = () => reject(new Error('Failed to read file'));
       reader.readAsDataURL(file);
     });
   }
@@ -164,7 +198,7 @@ export class SpecialistService {
       throw new Error('Service ID is required');
     }
     
-    const response = await apiClient.patch<Service>(`/specialists/services/${serviceId}/status`, { isActive });
+    const response = await apiClient.patch<{service: Service, message: string}>(`/specialists/services/${serviceId}/status`, { isActive });
     console.log('📦 API: Toggle response:', response);
     
     if (!response.success || !response.data) {
@@ -173,7 +207,10 @@ export class SpecialistService {
     }
     
     console.log('✅ API: Service status updated successfully');
-    return response.data;
+    // Extract the service object from the response
+    const serviceData = response.data.service || response.data;
+    console.log('🔍 API: Extracted service data:', serviceData);
+    return serviceData;
   }
 
   // Get specialist availability

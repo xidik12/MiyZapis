@@ -157,6 +157,10 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
               src="/miyzapis_logo.png" 
               alt="МійЗапис Logo" 
               className="w-8 h-8 group-hover:scale-110 transition-all duration-300"
+              onError={(e) => {
+                console.log('🖼️ SideNav logo failed, trying fallback');
+                e.currentTarget.src = '/logo.svg';
+              }}
             />
             <span className="text-lg font-bold ukraine-text-gradient">
               {environment.APP_NAME}
@@ -170,6 +174,10 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
               src="/miyzapis_logo.png" 
               alt="МійЗапис Logo" 
               className="w-8 h-8 hover:scale-110 transition-all duration-300"
+              onError={(e) => {
+                console.log('🖼️ SideNav collapsed logo failed, trying fallback');
+                e.currentTarget.src = '/logo.svg';
+              }}
             />
           </Link>
         )}
