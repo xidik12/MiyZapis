@@ -11,8 +11,8 @@ router.post('/test', authMiddleware, (req, res) => {
   res.json({ success: true, message: 'Test endpoint works', userId: req.user?.id });
 });
 
-// Simplified upload route for debugging
-router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, (req, res) => {
+// Simplified upload route that actually saves files
+router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, async (req, res) => {
   try {
     const files = req.files as Express.Multer.File[];
     if (!files || !Array.isArray(files) || files.length === 0) {
@@ -20,29 +20,55 @@ router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, (
     }
     
     const file = files[0];
-    // Create a simple mock response that matches what frontend expects
+    const purpose = req.query.purpose || 'portfolio';
+    
+    // Create uploads directory if it doesn't exist
+    const fs = require('fs');
+    const path = require('path');
+    const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+    const purposeDir = path.join(uploadsDir, purpose);
+    
+    if (!fs.existsSync(purposeDir)) {
+      fs.mkdirSync(purposeDir, { recursive: true });
+    }
+    
+    // Save file with unique name
+    const timestamp = Date.now();
+    const ext = path.extname(file.originalname);
+    const filename = `${purpose}-${timestamp}${ext}`;
+    const filepath = path.join(purposeDir, filename);
+    
+    // Write file to disk
+    fs.writeFileSync(filepath, file.buffer);
+    
+    // Create response that matches what frontend expects
+    const fileUrl = `/uploads/${purpose}/${filename}`;
     const mockResponse = [{
-      id: 'test-' + Date.now(),
-      filename: file.originalname,
-      url: `/uploads/portfolio/test-${Date.now()}-${file.originalname}`,
-      path: `/uploads/portfolio/test-${Date.now()}-${file.originalname}`,
+      id: 'simple-' + timestamp,
+      filename: filename,
+      url: fileUrl,
+      path: fileUrl,
       originalName: file.originalname,
       mimeType: file.mimetype,
       size: file.size,
       uploadedBy: req.user?.id,
-      purpose: req.query.purpose || 'portfolio',
+      purpose: purpose,
       createdAt: new Date().toISOString()
     }];
+
+    console.log('File saved:', filepath);
+    console.log('File URL:', fileUrl);
 
     res.json({ 
       success: true, 
       data: mockResponse,
-      message: 'Simple upload test successful'
+      message: 'File uploaded successfully'
     });
   } catch (error) {
+    console.error('Upload error:', error);
     res.status(500).json({ 
       success: false, 
-      error: 'Simple upload test failed',
+      error: 'File upload failed',
       details: error instanceof Error ? error.message : String(error)
     });
   }

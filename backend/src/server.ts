@@ -3,6 +3,7 @@ import cors from 'cors';
 import compression from 'compression';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
+import path from 'path';
 
 import { config } from '@/config';
 import { testDatabaseConnection, closeDatabaseConnection } from '@/config/database';
@@ -56,6 +57,19 @@ app.use(sanitizeInput);
 
 // Request logging
 app.use(requestLogger);
+
+// Static file serving for uploads
+const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+app.use('/uploads', express.static(uploadsDir, {
+  maxAge: '1y', // Cache uploaded files for 1 year
+  etag: true,
+  lastModified: true
+}));
+
+logger.info('Static file serving configured', { 
+  uploadsDir,
+  route: '/uploads'
+});
 
 
 // API routes
