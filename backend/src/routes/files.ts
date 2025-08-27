@@ -22,28 +22,23 @@ router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, a
     const file = files[0];
     const purpose = req.query.purpose || 'portfolio';
     
-    // Create uploads directory if it doesn't exist
+    // Use flat directory structure to avoid permission issues
     const fs = require('fs');
     const path = require('path');
     const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
-    const purposeDir = path.join(uploadsDir, purpose);
     
-    if (!fs.existsSync(purposeDir)) {
-      fs.mkdirSync(purposeDir, { recursive: true });
-    }
-    
-    // Save file with unique name
+    // Save file with purpose prefix instead of subdirectory
     const timestamp = Date.now();
     const ext = path.extname(file.originalname);
     const filename = `${purpose}-${timestamp}${ext}`;
-    const filepath = path.join(purposeDir, filename);
+    const filepath = path.join(uploadsDir, filename);
     
     // Write file to disk
     fs.writeFileSync(filepath, file.buffer);
     
     // Create response that matches what frontend expects - using absolute URL
     const baseUrl = 'https://miyzapis-backend-production.up.railway.app';
-    const fileUrl = `${baseUrl}/uploads/${purpose}/${filename}`;
+    const fileUrl = `${baseUrl}/uploads/${filename}`;
     const mockResponse = [{
       id: 'simple-' + timestamp,
       filename: filename,
@@ -86,29 +81,24 @@ router.post('/upload', authMiddleware, fileController.uploadMiddleware, async (r
     const file = files[0];
     const purpose = req.query.purpose || 'general';
     
-    // Create uploads directory if it doesn't exist
+    // Use flat directory structure to avoid permission issues  
     const fs = require('fs');
     const path = require('path');
     const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
-    const purposeDir = path.join(uploadsDir, purpose);
     
-    if (!fs.existsSync(purposeDir)) {
-      fs.mkdirSync(purposeDir, { recursive: true });
-    }
-    
-    // Save file with unique name
+    // Save file with purpose prefix instead of subdirectory
     const timestamp = Date.now();
     const ext = path.extname(file.originalname);
     const filename = `${purpose}-${timestamp}${ext}`;
-    const filepath = path.join(purposeDir, filename);
+    const filepath = path.join(uploadsDir, filename);
     
     // Write file to disk
     fs.writeFileSync(filepath, file.buffer);
     
     // Create response that matches what frontend expects (array format)
-    // Use absolute URL so images load from backend domain - HARDCODED FOR TESTING
+    // Use absolute URL so images load from backend domain
     const baseUrl = 'https://miyzapis-backend-production.up.railway.app';
-    const fileUrl = `${baseUrl}/uploads/${purpose}/${filename}`;
+    const fileUrl = `${baseUrl}/uploads/${filename}`;
     
     console.log('🔧 URL Generation Debug (HARDCODED):', {
       RAILWAY_PUBLIC_DOMAIN: process.env.RAILWAY_PUBLIC_DOMAIN,
