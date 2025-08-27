@@ -50,13 +50,23 @@ export class SpecialistService {
 
   // Upload specialist portfolio images
   async uploadPortfolioImage(file: File): Promise<{ imageUrl: string }> {
-    const response = await apiClient.upload<any[]>('/files/upload?purpose=portfolio', file);
-    if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
-      throw new Error(response.error?.message || 'Failed to upload portfolio image');
+    // Try simplified endpoint first for debugging
+    try {
+      const response = await apiClient.upload<any>('/files/upload-simple?purpose=portfolio', file);
+      console.log('Simple upload response:', response);
+      
+      // If simple upload works, try the full upload
+      const fullResponse = await apiClient.upload<any[]>('/files/upload?purpose=portfolio', file);
+      if (!fullResponse.success || !fullResponse.data || !Array.isArray(fullResponse.data) || fullResponse.data.length === 0) {
+        throw new Error(fullResponse.error?.message || 'Failed to upload portfolio image');
+      }
+      // Return the first uploaded file's URL
+      const uploadedFile = fullResponse.data[0];
+      return { imageUrl: uploadedFile.url || uploadedFile.path };
+    } catch (error) {
+      console.error('Upload error details:', error);
+      throw error;
     }
-    // Return the first uploaded file's URL
-    const uploadedFile = response.data[0];
-    return { imageUrl: uploadedFile.url || uploadedFile.path };
   }
 
   // Get specialist's services (for own profile)

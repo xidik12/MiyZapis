@@ -6,6 +6,21 @@ import { fileController } from '@/controllers/files';
 
 const router = Router();
 
+// Simple test endpoint to check if the route works
+router.post('/test', authMiddleware, (req, res) => {
+  res.json({ success: true, message: 'Test endpoint works', userId: req.user?.id });
+});
+
+// Simplified upload route for debugging
+router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'Simple upload test', 
+    filesReceived: req.files ? (Array.isArray(req.files) ? req.files.length : 1) : 0,
+    purpose: req.query.purpose 
+  });
+});
+
 // Upload files (requires authentication)
 router.post(
   '/upload',
