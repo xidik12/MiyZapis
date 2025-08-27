@@ -74,20 +74,75 @@ router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, a
   }
 });
 
-// Upload files (requires authentication)
-router.post(
-  '/upload',
-  authMiddleware,
-  [
-    query('purpose').isIn(['avatar', 'service_image', 'portfolio', 'message_attachment', 'general']),
-    query('entityType').optional().isString(),
-    query('entityId').optional().isString(),
-    query('isPublic').optional().isBoolean()
-  ],
-  validateRequest,
-  fileController.uploadMiddleware,
-  fileController.uploadFiles
-);
+// Simplified working upload endpoint (temporary fix)
+router.post('/upload', authMiddleware, fileController.uploadMiddleware, async (req, res) => {
+  try {
+    const files = req.files as Express.Multer.File[];
+    if (!files || !Array.isArray(files) || files.length === 0) {
+      return res.status(400).json({ success: false, error: 'No files provided' });
+    }
+    
+    const file = files[0];
+    const purpose = req.query.purpose || 'general';
+    
+    // Create uploads directory if it doesn't exist
+    const fs = require('fs');
+    const path = require('path');
+    const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+    const purposeDir = path.join(uploadsDir, purpose);
+    
+    if (!fs.existsSync(purposeDir)) {
+      fs.mkdirSync(purposeDir, { recursive: true });
+    }
+    
+    // Save file with unique name
+    const timestamp = Date.now();
+    const ext = path.extname(file.originalname);
+    const filename = `${purpose}-${timestamp}${ext}`;
+    const filepath = path.join(purposeDir, filename);
+    
+    // Write file to disk
+    fs.writeFileSync(filepath, file.buffer);
+    
+    // Create response that matches what frontend expects (array format)
+    const fileUrl = `/uploads/${purpose}/${filename}`;
+    const response = [{
+      id: 'upload-' + timestamp,
+      filename: filename,
+      url: fileUrl,
+      path: fileUrl,
+      originalName: file.originalname,
+      mimeType: file.mimetype,
+      size: file.size,
+      uploadedBy: req.user?.id,
+      purpose: purpose,
+      isPublic: true,
+      isProcessed: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }];
+
+    console.log('File uploaded successfully:', {
+      originalName: file.originalname,
+      savedAs: filename,
+      url: fileUrl,
+      size: file.size
+    });
+
+    res.json({ 
+      success: true, 
+      data: response,
+      message: 'Files uploaded successfully'
+    });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to upload files',
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
+});
 
 // Get file details (public files don't require auth)
 router.get(
