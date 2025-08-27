@@ -8,6 +8,7 @@ import { userService } from '../../services/user.service';
 import { isFeatureEnabled } from '../../config/features';
 import { ProfessionDropdown } from '../../components/ui/ProfessionDropdown';
 import { LocationPicker } from '../../components/LocationPicker';
+import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { 
   CheckCircleIcon,
   XCircleIcon,
@@ -1677,7 +1678,7 @@ const SpecialistProfile: React.FC = () => {
                         >
                           <div className="aspect-square overflow-hidden">
                             <img
-                              src={item.imageUrl}
+                              src={getAbsoluteImageUrl(item.imageUrl)}
                               alt={item.title || `Portfolio item ${index + 1}`}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />

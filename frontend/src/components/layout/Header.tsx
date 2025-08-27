@@ -5,6 +5,7 @@ import { selectUser, selectIsAuthenticated, logout } from '@/store/slices/authSl
 import { selectNotifications, updateNotificationMessages } from '@/store/slices/notificationSlice';
 import { environment } from '@/config/environment';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import { 
   Bars3Icon, 
   XMarkIcon, 
@@ -214,7 +215,7 @@ export const Header: React.FC = () => {
                   >
                     {user?.avatar ? (
                       <img
-                        src={user.avatar}
+                        src={getAbsoluteImageUrl(user.avatar)}
                         alt={`${user.firstName} ${user.lastName}`}
                         className="w-8 h-8 rounded-full object-cover"
                       />
