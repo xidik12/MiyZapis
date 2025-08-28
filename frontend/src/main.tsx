@@ -140,8 +140,8 @@ if (environment.DEBUG) {
   console.log('Environment:', environment);
 }
 
-// Service worker registration for PWA
-if (environment.ENABLE_PWA && 'serviceWorker' in navigator) {
+// Service worker registration for PWA (only in production)
+if (environment.ENABLE_PWA && 'serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/service-worker.js')

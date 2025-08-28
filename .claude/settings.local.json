@@ -79,7 +79,8 @@
       "Bash(railway shell:*)",
       "Bash(git log:*)",
       "Bash(railway volumes:*)",
-      "Bash(railway volume:*)"
+      "Bash(railway volume:*)",
+      "Bash(railway:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

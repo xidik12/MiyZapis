@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, selectIsAuthenticated, logout } from '@/store/slices/authSlice';
-import { selectNotifications, updateNotificationMessages } from '@/store/slices/notificationSlice';
+import { selectNotifications } from '@/store/slices/notificationSlice';
 import { environment } from '@/config/environment';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
@@ -59,9 +59,8 @@ export const Header: React.FC = () => {
   }, [location.pathname]);
 
   // Update notification messages when language changes
-  useEffect(() => {
-    dispatch(updateNotificationMessages({ t }));
-  }, [language, t, dispatch]);
+  // Note: Removed dispatch call to prevent Redux serialization error
+  // The updateNotificationMessages action doesn't perform any actual updates
 
   const handleLogout = async () => {
     try {

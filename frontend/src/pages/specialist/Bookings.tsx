@@ -246,9 +246,11 @@ const SpecialistBookings: React.FC = () => {
   };
   
   // Duration translation function
-  const getTranslatedDuration = (duration: string): string => {
+  const getTranslatedDuration = (duration: string | number): string => {
+    // Handle both string and number types
+    const durationStr = typeof duration === 'string' ? duration : `${duration}`;
     // Replace Ukrainian abbreviation with translated one
-    return duration.replace(/\s*хв\s*$/i, ` ${t('time.minutes')}`);
+    return durationStr.replace(/\s*хв\s*$/i, ` ${t('time.minutes')}`);
   };
   
   const [filters, setFilters] = useState<FilterState>({
