@@ -108,15 +108,25 @@ export const Header: React.FC = () => {
                 className="w-8 h-8 xs:w-10 xs:h-10 group-hover:scale-110 transition-all duration-300"
                 onError={(e) => {
                   const img = e.currentTarget as HTMLImageElement;
-                  if (img.src.includes('miyzapis_logo.png')) {
+                  const currentSrc = img.src;
+                  
+                  if (currentSrc.includes('miyzapis_logo.png')) {
                     console.log('🖼️ Primary logo failed, trying SVG fallback');
                     img.src = '/logo.svg';
-                  } else if (img.src.includes('logo.svg')) {
+                  } else if (currentSrc.includes('logo.svg')) {
                     console.log('🖼️ SVG logo failed, trying favicon fallback');
                     img.src = '/favicon.svg';
                   } else {
-                    console.log('🖼️ All logos failed, hiding image');
+                    console.log('🖼️ All logos failed, replacing with app name');
                     img.style.display = 'none';
+                    // Add app name as fallback
+                    const parent = img.parentElement;
+                    if (parent && !parent.querySelector('.logo-fallback')) {
+                      const fallback = document.createElement('div');
+                      fallback.className = 'logo-fallback w-8 h-8 xs:w-10 xs:h-10 bg-blue-600 text-white rounded flex items-center justify-center text-xs font-bold';
+                      fallback.textContent = 'МЗ';
+                      parent.insertBefore(fallback, img);
+                    }
                   }
                 }}
                 onLoad={() => console.log('✅ Logo loaded successfully')}
