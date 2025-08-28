@@ -19,24 +19,39 @@ export class NotificationService {
     unreadCount: number;
     pagination: Pagination;
   }> {
-    const params = new URLSearchParams();
-    
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        params.append(key, value.toString());
-      }
-    });
+    try {
+      const params = new URLSearchParams();
+      
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params.append(key, value.toString());
+        }
+      });
 
-    const response = await apiClient.get<{
-      notifications: Notification[];
-      unreadCount: number;
-      pagination: Pagination;
-    }>(`/notifications?${params}`);
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get notifications');
+      const response = await apiClient.get<{
+        notifications: Notification[];
+        unreadCount: number;
+        pagination: Pagination;
+      }>(`/notifications?${params}`);
+      
+      if (!response.success || !response.data) {
+        // Return empty data instead of throwing
+        return {
+          notifications: [],
+          unreadCount: 0,
+          pagination: { page: 1, limit: 20, total: 0, totalPages: 0 }
+        };
+      }
+      return response.data;
+    } catch (error) {
+      // Return empty data for any API errors to prevent app crashes
+      console.warn('Notifications API error:', error);
+      return {
+        notifications: [],
+        unreadCount: 0,
+        pagination: { page: 1, limit: 20, total: 0, totalPages: 0 }
+      };
     }
-    return response.data;
   }
 
   // Get unread notification count

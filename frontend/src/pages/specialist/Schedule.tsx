@@ -260,17 +260,18 @@ const SpecialistSchedule: React.FC = () => {
         const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
         
         const availabilityBlocks = await specialistService.getAvailabilityBlocks(startDate, endDate);
+        console.log('📦 Schedule: Availability blocks received:', availabilityBlocks);
         
         // Convert availability blocks to time slots format
-        const formattedSlots: TimeSlot[] = availabilityBlocks.map(block => ({
+        const formattedSlots: TimeSlot[] = Array.isArray(availabilityBlocks) ? availabilityBlocks.map(block => ({
           id: block.id,
-          date: block.startDateTime.split('T')[0],
-          startTime: block.startDateTime.split('T')[1].substring(0, 5),
-          endTime: block.endDateTime.split('T')[1].substring(0, 5),
-          isAvailable: block.isAvailable,
-          reason: block.reason,
-          isRecurring: block.recurring || false,
-        }));
+          date: block.startDateTime?.split('T')[0] || new Date().toISOString().split('T')[0],
+          startTime: block.startDateTime?.split('T')[1]?.substring(0, 5) || '09:00',
+          endTime: block.endDateTime?.split('T')[1]?.substring(0, 5) || '10:00',
+          isAvailable: block.isAvailable !== false, // Default to available
+          reason: block.reason || '',
+          isRecurring: block.recurring || block.isRecurring || false,
+        })) : [];
         
         setTimeSlots(formattedSlots);
       } catch (err: any) {
