@@ -21,8 +21,13 @@ export const fetchBookings = createAsyncThunk(
   'booking/fetchBookings',
   async (filters: BookingFilters = {}, { rejectWithValue }) => {
     try {
-      return await bookingService.getBookings(filters);
+      console.log('📡 Fetching bookings with filters:', filters);
+      const result = await bookingService.getBookings(filters);
+      console.log('📦 Bookings API response:', result);
+      console.log('📊 Number of bookings received:', result.bookings?.length || 0);
+      return result;
     } catch (error: any) {
+      console.error('❌ Failed to fetch bookings:', error);
       return rejectWithValue(error.message || 'Failed to fetch bookings');
     }
   }
