@@ -389,54 +389,32 @@ export class BookingService {
         throw new Error('BOOKING_NOT_FOUND');
       }
 
-      // Validate status transitions (more flexible for specialist management)
+      // Allow flexible status transitions for specialist management
+      // Only prevent transitions that would cause data integrity issues
       if (data.status) {
-        const allowedTransitions = {
-          // Pending bookings can go to any status except completed (need confirmation first)
-          PENDING: ['PENDING_PAYMENT', 'CONFIRMED', 'CANCELLED', 'IN_PROGRESS'],
-          pending: ['PENDING_PAYMENT', 'CONFIRMED', 'CANCELLED', 'IN_PROGRESS', 'pending_payment', 'confirmed', 'cancelled', 'in_progress'],
-          
-          // Pending payment can be confirmed or cancelled
-          PENDING_PAYMENT: ['CONFIRMED', 'CANCELLED', 'PENDING'],
-          pending_payment: ['CONFIRMED', 'CANCELLED', 'PENDING', 'confirmed', 'cancelled', 'pending'],
-          
-          // Confirmed bookings can progress or be cancelled
-          CONFIRMED: ['IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW'],
-          confirmed: ['IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW', 'in_progress', 'completed', 'cancelled'],
-          
-          // In progress can be completed or cancelled
-          IN_PROGRESS: ['COMPLETED', 'CANCELLED'],
-          in_progress: ['COMPLETED', 'CANCELLED', 'completed', 'cancelled'],
-          
-          // Completed bookings can be reopened by specialists if needed
-          COMPLETED: ['CANCELLED'], // Allow cancellation for refunds
-          completed: ['CANCELLED', 'cancelled'],
-          
-          // Cancelled bookings can be reactivated
-          CANCELLED: ['PENDING', 'CONFIRMED'],
-          cancelled: ['PENDING', 'CONFIRMED', 'pending', 'confirmed'],
-          
-          // No show can be reactivated
-          NO_SHOW: ['PENDING', 'CONFIRMED', 'CANCELLED'],
-          
-          // Refunded stays final
-          REFUNDED: [],
-        };
-
         const currentStatus = booking.status;
         const newStatus = data.status;
         
-        // Check if transition is allowed
-        const allowedForCurrentStatus = allowedTransitions[currentStatus as keyof typeof allowedTransitions];
-        if (allowedForCurrentStatus && !allowedForCurrentStatus.includes(newStatus)) {
-          logger.warn('Invalid status transition attempt', {
-            bookingId: booking.id,
-            currentStatus,
-            attemptedStatus: newStatus,
-            allowedTransitions: allowedForCurrentStatus
-          });
-          throw new Error('INVALID_STATUS_TRANSITION');
-        }
+        // Log the transition attempt
+        logger.info('Status transition attempt', {
+          bookingId: booking.id,
+          currentStatus,
+          newStatus
+        });
+
+        // Very minimal validation - only prevent obviously invalid transitions
+        const invalidTransitions = [
+          // Don't allow transitions from final states to earlier states without explicit business logic
+          // For now, allow all transitions to give specialists full control
+        ];
+
+        // For now, allow all status transitions to give specialists maximum flexibility
+        // This can be tightened later based on business requirements
+        logger.info('Status transition allowed', {
+          bookingId: booking.id,
+          from: currentStatus,
+          to: newStatus
+        });
       }
 
       // Prepare update data

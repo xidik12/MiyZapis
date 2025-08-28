@@ -79,11 +79,12 @@ export class BookingService {
 
   // Update booking
   async updateBooking(bookingId: string, data: Partial<Booking>): Promise<Booking> {
-    const response = await apiClient.put<Booking>(`/bookings/${bookingId}`, data);
+    const response = await apiClient.put<{ booking: Booking }>(`/bookings/${bookingId}`, data);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to update booking');
     }
-    return response.data;
+    // Backend returns { booking }, so extract the booking
+    return response.data.booking;
   }
 
   // Cancel booking
