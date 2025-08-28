@@ -853,7 +853,8 @@ export class EnhancedAuthService {
       });
 
       // Send verification email
-      const verificationLink = `${config.isProduction ? 'https://miyzapis-frontend.up.railway.app' : 'http://localhost:3000'}/auth/verify-email?token=${verificationToken}`;
+      const frontendUrl = config.frontend?.url || (config.isProduction ? 'https://miyzapis.com' : 'http://localhost:3000');
+      const verificationLink = `${frontendUrl}/auth/verify-email?token=${verificationToken}`;
       
       const emailSent = await emailService.sendVerificationEmail(user.email, {
         firstName: user.firstName,
