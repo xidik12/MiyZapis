@@ -9,6 +9,8 @@ import {
   PencilIcon
 } from '@heroicons/react/24/outline';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useAppSelector } from '../../hooks/redux';
+import { selectUser } from '../../store/slices/authSlice';
 import { specialistService } from '../../services/specialist.service';
 import { isFeatureEnabled } from '../../config/features';
 
@@ -234,12 +236,54 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({ isOpen, onClose, onSave, ed
 
 const SpecialistSchedule: React.FC = () => {
   const { t } = useLanguage();
+  const user = useAppSelector(selectUser);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingSlot, setEditingSlot] = useState<TimeSlot | null>(null);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  // Generate default schedule from working hours
+  const generateDefaultSchedule = (workingHours: any): TimeSlot[] => {
+    const slots: TimeSlot[] = [];
+    const today = new Date();
+    
+    // Generate slots for the next 7 days
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'lowercase' });
+      
+      // Check if the specialist works on this day
+      if (workingHours && workingHours[dayName] && workingHours[dayName].isWorking) {
+        const startTime = workingHours[dayName].startTime || '09:00';
+        const endTime = workingHours[dayName].endTime || '17:00';
+        
+        // Create hourly slots
+        const start = new Date(`2000-01-01T${startTime}:00`);
+        const end = new Date(`2000-01-01T${endTime}:00`);
+        
+        while (start < end) {
+          const slotStart = start.toTimeString().substring(0, 5);
+          start.setHours(start.getHours() + 1);
+          const slotEnd = start.toTimeString().substring(0, 5);
+          
+          slots.push({
+            id: `default-${date.toISOString().split('T')[0]}-${slotStart}`,
+            date: date.toISOString().split('T')[0],
+            startTime: slotStart,
+            endTime: slotEnd,
+            isAvailable: true,
+            reason: '',
+            isRecurring: false,
+          });
+        }
+      }
+    }
+    
+    return slots;
+  };
 
   // Load blocked slots from API
   useEffect(() => {
@@ -263,15 +307,24 @@ const SpecialistSchedule: React.FC = () => {
         console.log('📦 Schedule: Availability blocks received:', availabilityBlocks);
         
         // Convert availability blocks to time slots format
-        const formattedSlots: TimeSlot[] = Array.isArray(availabilityBlocks) ? availabilityBlocks.map(block => ({
-          id: block.id,
-          date: block.startDateTime?.split('T')[0] || new Date().toISOString().split('T')[0],
-          startTime: block.startDateTime?.split('T')[1]?.substring(0, 5) || '09:00',
-          endTime: block.endDateTime?.split('T')[1]?.substring(0, 5) || '10:00',
-          isAvailable: block.isAvailable !== false, // Default to available
-          reason: block.reason || '',
-          isRecurring: block.recurring || block.isRecurring || false,
-        })) : [];
+        let formattedSlots: TimeSlot[] = Array.isArray(availabilityBlocks) && availabilityBlocks.length > 0 
+          ? availabilityBlocks.map(block => ({
+              id: block.id,
+              date: block.startDateTime?.split('T')[0] || new Date().toISOString().split('T')[0],
+              startTime: block.startDateTime?.split('T')[1]?.substring(0, 5) || '09:00',
+              endTime: block.endDateTime?.split('T')[1]?.substring(0, 5) || '10:00',
+              isAvailable: block.isAvailable !== false, // Default to available
+              reason: block.reason || '',
+              isRecurring: block.recurring || block.isRecurring || false,
+            }))
+          : [];
+        
+        // If no availability blocks, generate default schedule from working hours
+        if (formattedSlots.length === 0) {
+          console.log('📅 Schedule: No availability blocks, generating default schedule from working hours');
+          formattedSlots = generateDefaultSchedule(user?.workingHours);
+          console.log('📅 Schedule: Generated default slots:', formattedSlots.length);
+        }
         
         setTimeSlots(formattedSlots);
       } catch (err: any) {
@@ -283,7 +336,7 @@ const SpecialistSchedule: React.FC = () => {
     };
 
     loadAvailabilityBlocks();
-  }, []);
+  }, [user]);
 
   const handleAddTimeSlot = async (newSlot: Omit<TimeSlot, 'id'>) => {
     if (!isFeatureEnabled('ENABLE_SPECIALIST_SCHEDULE_API')) {
