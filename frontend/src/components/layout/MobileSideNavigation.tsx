@@ -170,6 +170,16 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
               src="/miyzapis_logo.png" 
               alt="МійЗапис Logo" 
               className="w-10 h-10 group-hover:scale-110 transition-all duration-300"
+              onError={(e) => {
+                const img = e.currentTarget as HTMLImageElement;
+                if (img.src.includes('miyzapis_logo.png')) {
+                  img.src = '/logo.svg';
+                } else if (img.src.includes('logo.svg')) {
+                  img.src = '/favicon.svg';
+                } else {
+                  img.style.display = 'none';
+                }
+              }}
             />
             <span className="text-xl font-bold ukraine-text-gradient group-hover:text-primary-500 transition-colors duration-300">
               {environment.APP_NAME}

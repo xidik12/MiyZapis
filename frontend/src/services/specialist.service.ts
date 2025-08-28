@@ -67,7 +67,7 @@ export class SpecialistService {
 
   // Upload specialist portfolio images
   async uploadPortfolioImage(file: File): Promise<{ imageUrl: string }> {
-    console.log('📸 Processing portfolio image:', file.name, 'Size:', file.size);
+    console.log('📸 Uploading portfolio image:', file.name, 'Size:', file.size);
     
     // Validate file size (limit to 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
@@ -81,60 +81,40 @@ export class SpecialistService {
       throw new Error('Invalid file type. Please choose a JPEG, PNG, or WebP image.');
     }
     
-    return new Promise((resolve, reject) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
+    try {
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('files', file);
       
-      img.onload = () => {
-        // Resize image to max 800x600 to reduce size
-        const maxWidth = 800;
-        const maxHeight = 600;
-        let { width, height } = img;
-        
-        if (width > height) {
-          if (width > maxWidth) {
-            height = (height * maxWidth) / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width = (width * maxHeight) / height;
-            height = maxHeight;
-          }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        ctx?.drawImage(img, 0, 0, width, height);
-        
-        // Convert to smaller format with compression
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const base64String = e.target?.result as string;
-              console.log('✅ Image processed and compressed, size:', base64String.length);
-              resolve({ imageUrl: base64String });
-            };
-            reader.onerror = () => reject(new Error('Failed to process compressed image'));
-            reader.readAsDataURL(blob);
-          } else {
-            reject(new Error('Failed to compress image'));
-          }
-        }, 'image/jpeg', 0.8); // 80% quality JPEG
-      };
+      // Upload to backend
+      const response = await apiClient.post<Array<{
+        id: string;
+        filename: string;
+        url: string;
+        originalName: string;
+        mimeType: string;
+        size: number;
+        uploadedBy: string;
+        purpose: string;
+        createdAt: string;
+      }>>('/files/upload?purpose=portfolio', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       
-      img.onerror = () => reject(new Error('Failed to load image for processing'));
+      if (!response.success || !response.data || response.data.length === 0) {
+        throw new Error(response.error?.message || 'Failed to upload image');
+      }
       
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        img.src = e.target?.result as string;
-      };
-      reader.onerror = () => reject(new Error('Failed to read file'));
-      reader.readAsDataURL(file);
-    });
+      const uploadedFile = response.data[0];
+      console.log('✅ Image uploaded successfully:', uploadedFile.url);
+      
+      return { imageUrl: uploadedFile.url };
+    } catch (error: any) {
+      console.error('❌ Image upload failed:', error);
+      throw new Error(error.response?.data?.error || error.message || 'Failed to upload image');
+    }
   }
 
   // Get specialist's services (for own profile)
@@ -282,7 +262,7 @@ export class SpecialistService {
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
 
-    const response = await apiClient.get<{ blocks: BlockedSlot[] }>(`/availability/specialists/availability/blocks?${params}`);
+    const response = await apiClient.get<{ blocks: BlockedSlot[] }>(`/specialists/availability/blocks?${params}`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get availability blocks');
     }
@@ -299,7 +279,7 @@ export class SpecialistService {
     recurringDays?: string[];
     recurringUntil?: string;
   }): Promise<{ message: string; block: BlockedSlot }> {
-    const response = await apiClient.post<{ message: string; block: BlockedSlot }>('/availability/specialists/availability/blocks', data);
+    const response = await apiClient.post<{ message: string; block: BlockedSlot }>('/specialists/availability/blocks', data);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to create availability block');
     }
@@ -316,7 +296,7 @@ export class SpecialistService {
     recurringDays?: string[];
     recurringUntil?: string;
   }): Promise<{ message: string; block: BlockedSlot }> {
-    const response = await apiClient.put<{ message: string; block: BlockedSlot }>(`/availability/specialists/availability/blocks/${blockId}`, data);
+    const response = await apiClient.put<{ message: string; block: BlockedSlot }>(`/specialists/availability/blocks/${blockId}`, data);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to update availability block');
     }
@@ -325,7 +305,7 @@ export class SpecialistService {
 
   // Delete availability block
   async deleteAvailabilityBlock(blockId: string): Promise<{ message: string }> {
-    const response = await apiClient.delete<{ message: string }>(`/availability/specialists/availability/blocks/${blockId}`);
+    const response = await apiClient.delete<{ message: string }>(`/specialists/availability/blocks/${blockId}`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to delete availability block');
     }
@@ -529,7 +509,7 @@ export class SpecialistService {
       const endDate = `${date}T23:59:59.999Z`;
       
       const response = await apiClient.get<{ availableSlots: string[] }>(
-        `/availability/specialists/${specialistId}/slots?date=${date}`
+        `/specialists/${specialistId}/slots?date=${date}`
       );
       
       if (!response.success || !response.data) {

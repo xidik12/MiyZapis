@@ -1,15 +1,15 @@
 // Feature flags for controlling application features
 export const FEATURE_FLAGS = {
-  // Notifications system - disable until backend API is ready
-  ENABLE_NOTIFICATIONS_API: false,
+  // Notifications system - enabled with backend API ready
+  ENABLE_NOTIFICATIONS_API: true,
   
   // Specialist APIs - now enabled with proper backend implementation
   ENABLE_SPECIALIST_SERVICES_API: true,
   ENABLE_SPECIALIST_SCHEDULE_API: true,
   ENABLE_SPECIALIST_PROFILE_API: true,
   
-  // Real-time features
-  ENABLE_WEBSOCKETS: false,
+  // Real-time features  
+  ENABLE_WEBSOCKETS: true,
   
   // Analytics features
   ENABLE_REAL_TIME_ANALYTICS: false,

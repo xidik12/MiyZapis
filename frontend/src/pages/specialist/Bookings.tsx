@@ -3,8 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { RootState, AppDispatch } from '../../store';
-import { fetchBookings } from '../../store/slices/bookingSlice';
-import { Booking } from '../../types';
+import { fetchBookings, updateBookingStatus } from '../../store/slices/bookingSlice';
+import { Booking, BookingStatus } from '../../types';
 import { 
   EyeIcon, 
   CheckCircleIcon, 
@@ -88,11 +88,18 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600">{t('bookingDetails.name')}</label>
-                <p className="font-medium">{booking.customerName}</p>
+                <p className="font-medium">
+                  {booking.customer 
+                    ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
+                    : t('bookingDetails.customerNotAvailable')
+                  }
+                </p>
               </div>
               <div>
                 <label className="text-sm text-gray-600">{t('bookingDetails.contact')}</label>
-                <p className="font-medium">+380 (67) 123-45-67</p>
+                <p className="font-medium">
+                  {booking.customer?.phoneNumber || booking.customer?.email || t('bookingDetails.contactNotAvailable')}
+                </p>
               </div>
             </div>
           </div>
@@ -103,25 +110,27 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600">{t('bookings.service')}</label>
-                <p className="font-medium">{getTranslatedServiceName(booking.serviceName)}</p>
+                <p className="font-medium">
+                  {booking.service?.name || t('bookingDetails.serviceNotAvailable')}
+                </p>
               </div>
               <div>
                 <label className="text-sm text-gray-600">{t('bookingDetails.duration')}</label>
-                <p className="font-medium">{getTranslatedDuration(booking.duration)}</p>
+                <p className="font-medium">{booking.duration} {t('time.minutes')}</p>
               </div>
               <div>
                 <label className="text-sm text-gray-600">{t('bookings.amount')}</label>
-                <p className="font-medium">{formatPrice(booking.amount)}</p>
+                <p className="font-medium">{formatPrice(booking.totalAmount)}</p>
               </div>
               <div>
                 <label className="text-sm text-gray-600">{t('bookings.type')}</label>
                 <div className="flex items-center">
                   <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    booking.type === 'online' 
+                    booking.meetingLink 
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-blue-100 text-blue-800'
                   }`}>
-                    {booking.type === 'online' ? t('bookings.online') : t('bookings.inPerson')}
+                    {booking.meetingLink ? t('bookings.online') : t('bookings.inPerson')}
                   </span>
                 </div>
               </div>
@@ -134,17 +143,19 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600">{t('bookings.date')}</label>
-                <p className="font-medium">{new Date(booking.date).toLocaleDateString('uk-UA')}</p>
+                <p className="font-medium">{new Date(booking.scheduledAt).toLocaleDateString('uk-UA')}</p>
               </div>
               <div>
                 <label className="text-sm text-gray-600">{t('bookingDetails.time')}</label>
-                <p className="font-medium">{booking.time}</p>
+                <p className="font-medium">{new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}</p>
               </div>
             </div>
-            {booking.location && (
+            {booking.meetingLink && (
               <div className="mt-4">
-                <label className="text-sm text-gray-600">{t('bookingDetails.location')}</label>
-                <p className="font-medium">{booking.location}</p>
+                <label className="text-sm text-gray-600">{t('bookingDetails.meetingLink')}</label>
+                <a href={booking.meetingLink} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:text-blue-800 underline">
+                  {t('bookingDetails.joinMeeting')}
+                </a>
               </div>
             )}
             {booking.notes && (
@@ -194,7 +205,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder={t('bookingDetails.messagePlaceholder')}
-              className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white"
               rows={3}
             />
             <div className="flex space-x-2 mt-3">
@@ -271,14 +282,17 @@ const SpecialistBookings: React.FC = () => {
   const filteredAndSortedBookings = useMemo(() => {
     let filtered = bookings.filter(booking => {
       const matchesStatus = filters.status === 'all' || booking.status === filters.status;
+      const customerName = booking.customer ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() : '';
+      const serviceName = booking.service?.name || '';
       const matchesSearch = !filters.searchTerm || 
-        booking.customerName?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-        booking.serviceName.toLowerCase().includes(filters.searchTerm.toLowerCase());
+        customerName.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        serviceName.toLowerCase().includes(filters.searchTerm.toLowerCase());
+      const bookingDate = new Date(booking.scheduledAt);
       const matchesDateRange = filters.dateRange === 'all' || (
-        filters.dateRange === 'today' && new Date(booking.date).toDateString() === new Date().toDateString()
+        filters.dateRange === 'today' && bookingDate.toDateString() === new Date().toDateString()
       ) || (
         filters.dateRange === 'week' && 
-        new Date(booking.date) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        bookingDate >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
       );
       
       return matchesStatus && matchesSearch && matchesDateRange;
@@ -290,12 +304,12 @@ const SpecialistBookings: React.FC = () => {
       
       switch (sortBy) {
         case 'date':
-          aVal = new Date(`${a.date} ${a.time}`);
-          bVal = new Date(`${b.date} ${b.time}`);
+          aVal = new Date(a.scheduledAt);
+          bVal = new Date(b.scheduledAt);
           break;
         case 'amount':
-          aVal = a.amount;
-          bVal = b.amount;
+          aVal = a.totalAmount;
+          bVal = b.totalAmount;
           break;
         case 'status':
           aVal = a.status;
@@ -324,12 +338,12 @@ const SpecialistBookings: React.FC = () => {
   
   const handleStatusChange = async (bookingId: string, newStatus: keyof typeof statusColors) => {
     try {
-      // In a real app, this would call the booking service to update status
-      // For now, we'll just update local state until backend is fully integrated
-      // TODO: Implement actual API call when backend booking status update is ready
-      // await dispatch(updateBookingStatus({ bookingId, status: newStatus }));
-    } catch (error) {
-      console.error('Failed to update booking status:', error);
+      console.log('📝 Updating booking status:', { bookingId, newStatus });
+      await dispatch(updateBookingStatus({ bookingId, status: newStatus as BookingStatus })).unwrap();
+      console.log('✅ Booking status updated successfully');
+    } catch (error: any) {
+      console.error('❌ Failed to update booking status:', error);
+      // TODO: Show error notification to user
     }
   };
   
@@ -621,41 +635,49 @@ const SpecialistBookings: React.FC = () => {
                         <div className="flex-shrink-0 h-10 w-10">
                           <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
                             <span className="text-white font-medium text-sm">
-                              {booking.customerName?.split(' ').map(n => n[0]).join('')}
+                              {booking.customer 
+                                ? `${booking.customer.firstName?.[0] || ''}${booking.customer.lastName?.[0] || ''}` 
+                                : 'N/A'
+                              }
                             </span>
                           </div>
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {booking.customerName}
+                            {booking.customer 
+                              ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
+                              : t('bookingDetails.customerNotAvailable')
+                            }
                           </div>
                           <div className="text-sm text-gray-500">ID: #{booking.id}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{getTranslatedServiceName(booking.serviceName)}</div>
-                      <div className="text-sm text-gray-500">{getTranslatedDuration(booking.duration)}</div>
+                      <div className="text-sm text-gray-900">{booking.service?.name || t('bookingDetails.serviceNotAvailable')}</div>
+                      <div className="text-sm text-gray-500">{booking.duration} {t('time.minutes')}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {new Date(booking.date).toLocaleDateString('uk-UA')}
+                        {new Date(booking.scheduledAt).toLocaleDateString('uk-UA')}
                       </div>
-                      <div className="text-sm text-gray-500">{booking.time}</div>
+                      <div className="text-sm text-gray-500">
+                        {new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(booking.status)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {formatPrice(booking.amount)}
+                      {formatPrice(booking.totalAmount)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                        booking.type === 'online' 
+                        booking.meetingLink 
                           ? 'bg-green-100 text-green-800' 
                           : 'bg-blue-100 text-blue-800'
                       }`}>
-                        {booking.type === 'online' ? t('bookings.online') : t('bookings.inPerson')}
+                        {booking.meetingLink ? t('bookings.online') : t('bookings.inPerson')}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

@@ -206,6 +206,16 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
                 src="/miyzapis_logo.png" 
                 alt="МійЗапис Logo" 
                 className="w-8 h-8 group-hover:scale-110 transition-all duration-300"
+                onError={(e) => {
+                  const img = e.currentTarget as HTMLImageElement;
+                  if (img.src.includes('miyzapis_logo.png')) {
+                    img.src = '/logo.svg';
+                  } else if (img.src.includes('logo.svg')) {
+                    img.src = '/favicon.svg';
+                  } else {
+                    img.style.display = 'none';
+                  }
+                }}
               />
               <span className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-500 transition-colors duration-300">
                 МійЗапис

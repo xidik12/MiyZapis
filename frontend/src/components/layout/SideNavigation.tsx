@@ -158,8 +158,15 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
               alt="МійЗапис Logo" 
               className="w-8 h-8 group-hover:scale-110 transition-all duration-300"
               onError={(e) => {
-                console.log('🖼️ SideNav logo failed, trying fallback');
-                e.currentTarget.src = '/logo.svg';
+                const img = e.currentTarget as HTMLImageElement;
+                if (img.src.includes('miyzapis_logo.png')) {
+                  console.log('🖼️ SideNav logo failed, trying SVG fallback');
+                  img.src = '/logo.svg';
+                } else if (img.src.includes('logo.svg')) {
+                  img.src = '/favicon.svg';
+                } else {
+                  img.style.display = 'none';
+                }
               }}
             />
             <span className="text-lg font-bold ukraine-text-gradient">
@@ -175,8 +182,15 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
               alt="МійЗапис Logo" 
               className="w-8 h-8 hover:scale-110 transition-all duration-300"
               onError={(e) => {
-                console.log('🖼️ SideNav collapsed logo failed, trying fallback');
-                e.currentTarget.src = '/logo.svg';
+                const img = e.currentTarget as HTMLImageElement;
+                if (img.src.includes('miyzapis_logo.png')) {
+                  console.log('🖼️ SideNav collapsed logo failed, trying SVG fallback');
+                  img.src = '/logo.svg';
+                } else if (img.src.includes('logo.svg')) {
+                  img.src = '/favicon.svg';
+                } else {
+                  img.style.display = 'none';
+                }
               }}
             />
           </Link>

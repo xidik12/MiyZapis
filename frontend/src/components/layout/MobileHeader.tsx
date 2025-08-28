@@ -20,6 +20,20 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuToggle }) => {
             src="/miyzapis_logo.png" 
             alt="МійЗапис Logo" 
             className="w-8 h-8 group-hover:scale-110 transition-all duration-300"
+            onError={(e) => {
+              const img = e.currentTarget as HTMLImageElement;
+              if (img.src.includes('miyzapis_logo.png')) {
+                console.log('🖼️ Mobile primary logo failed, trying SVG fallback');
+                img.src = '/logo.svg';
+              } else if (img.src.includes('logo.svg')) {
+                console.log('🖼️ Mobile SVG logo failed, trying favicon fallback');
+                img.src = '/favicon.svg';
+              } else {
+                console.log('🖼️ Mobile all logos failed, hiding image');
+                img.style.display = 'none';
+              }
+            }}
+            onLoad={() => console.log('✅ Mobile logo loaded successfully')}
           />
           <span className="text-lg font-bold ukraine-text-gradient">
             {environment.APP_NAME}

@@ -24,16 +24,54 @@ export class BookingService {
   // Create new booking
   async createBooking(data: CreateBookingRequest): Promise<{ booking: Booking; paymentIntent?: PaymentIntent }> {
     console.log('📤 BookingService: Creating booking with data:', data);
-    const response = await apiClient.post<{ booking: Booking; paymentIntent?: PaymentIntent }>('/bookings', data);
-    console.log('📦 BookingService: Create booking response:', response);
     
-    if (!response.success || !response.data) {
-      console.error('❌ BookingService: Failed to create booking:', response.error);
-      throw new Error(response.error?.message || 'Failed to create booking');
+    try {
+      // Optional: Check for conflicts before creating (client-side validation)
+      if (data.specialistId && data.scheduledAt && data.duration) {
+        try {
+          const conflicts = await this.checkBookingConflicts(
+            data.specialistId, 
+            data.scheduledAt, 
+            data.duration
+          );
+          
+          if (conflicts.hasConflicts) {
+            console.warn('⚠️ BookingService: Conflicts detected before booking creation:', conflicts.conflicts);
+            throw new Error('Time slot conflicts detected. Please choose a different time.');
+          }
+        } catch (conflictError) {
+          // If conflict check fails, continue with booking (backend will handle it)
+          console.warn('⚠️ BookingService: Could not check conflicts, proceeding with booking:', conflictError);
+        }
+      }
+      
+      const response = await apiClient.post<{ booking: Booking; paymentIntent?: PaymentIntent }>('/bookings', data);
+      console.log('📦 BookingService: Create booking response:', response);
+      
+      if (!response.success || !response.data) {
+        console.error('❌ BookingService: Failed to create booking:', response.error);
+        const error = new Error(response.error?.message || 'Failed to create booking');
+        (error as any).response = { status: response.error?.code === 'BOOKING_CONFLICT' ? 409 : 400, data: response.error };
+        throw error;
+      }
+      
+      console.log('✅ BookingService: Booking created successfully');
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ BookingService: Booking creation failed:', error);
+      
+      // Re-throw with proper error structure for Redux to handle
+      if (error.response) {
+        throw error; // Already has response structure
+      } else {
+        const wrappedError = new Error(error.message || 'Failed to create booking');
+        (wrappedError as any).response = { 
+          status: error.message?.includes('conflicts detected') ? 409 : 500, 
+          data: { error: error.message } 
+        };
+        throw wrappedError;
+      }
     }
-    
-    console.log('✅ BookingService: Booking created successfully');
-    return response.data;
   }
 
   // Get user's bookings
