@@ -73,8 +73,21 @@ router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, a
 // Simplified working upload endpoint (temporary fix)
 router.post('/upload', authMiddleware, fileController.uploadMiddleware, async (req, res) => {
   try {
+    console.log('📤 Upload request received:', {
+      userId: req.user?.id,
+      hasUser: !!req.user,
+      purpose: req.query.purpose,
+      filesCount: Array.isArray(req.files) ? req.files.length : 0
+    });
+
+    if (!req.user?.id) {
+      console.log('❌ No user authenticated');
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+
     const files = req.files as Express.Multer.File[];
     if (!files || !Array.isArray(files) || files.length === 0) {
+      console.log('❌ No files provided');
       return res.status(400).json({ success: false, error: 'No files provided' });
     }
     
@@ -86,6 +99,12 @@ router.post('/upload', authMiddleware, fileController.uploadMiddleware, async (r
     const path = require('path');
     const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
     
+    // Ensure uploads directory exists
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+      console.log('📁 Created uploads directory:', uploadsDir);
+    }
+    
     // Save file with purpose prefix instead of subdirectory
     const timestamp = Date.now();
     const ext = path.extname(file.originalname);
@@ -94,19 +113,13 @@ router.post('/upload', authMiddleware, fileController.uploadMiddleware, async (r
     
     // Write file to disk
     fs.writeFileSync(filepath, file.buffer);
+    console.log('💾 File saved to disk:', filepath);
     
     // Create response that matches what frontend expects (array format)
     // Use absolute URL so images load from backend domain
     const baseUrl = 'https://miyzapis-backend-production.up.railway.app';
     const fileUrl = `${baseUrl}/uploads/${filename}`;
     
-    console.log('🔧 URL Generation Debug (HARDCODED):', {
-      RAILWAY_PUBLIC_DOMAIN: process.env.RAILWAY_PUBLIC_DOMAIN,
-      baseUrl,
-      fileUrl,
-      filename,
-      purpose
-    });
     const response = [{
       id: 'upload-' + timestamp,
       filename: filename,
@@ -115,7 +128,7 @@ router.post('/upload', authMiddleware, fileController.uploadMiddleware, async (r
       originalName: file.originalname,
       mimeType: file.mimetype,
       size: file.size,
-      uploadedBy: req.user?.id,
+      uploadedBy: req.user.id,
       purpose: purpose,
       isPublic: true,
       isProcessed: true,
@@ -123,11 +136,12 @@ router.post('/upload', authMiddleware, fileController.uploadMiddleware, async (r
       updatedAt: new Date().toISOString()
     }];
 
-    console.log('File uploaded successfully:', {
+    console.log('✅ File uploaded successfully:', {
       originalName: file.originalname,
       savedAs: filename,
       url: fileUrl,
-      size: file.size
+      size: file.size,
+      userId: req.user.id
     });
 
     res.json({ 
@@ -136,7 +150,7 @@ router.post('/upload', authMiddleware, fileController.uploadMiddleware, async (r
       message: 'Files uploaded successfully'
     });
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error('❌ Upload error:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Failed to upload files',

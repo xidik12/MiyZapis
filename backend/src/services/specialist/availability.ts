@@ -41,6 +41,70 @@ export interface TimeSlot {
 
 export class AvailabilityService {
   /**
+   * Fix specialists with empty working hours and generate availability
+   */
+  static async fixAndGenerateAvailability() {
+    try {
+      // Find specialists with empty or null working hours
+      const specialists = await prisma.specialist.findMany({
+        where: {
+          OR: [
+            { workingHours: null },
+            { workingHours: '' },
+            { workingHours: '{}' }
+          ]
+        },
+        select: { id: true, businessName: true }
+      });
+
+      logger.info('Found specialists with empty working hours:', { count: specialists.length });
+
+      const defaultWorkingHours = {
+        monday: { isWorking: true, start: '09:00', end: '17:00' },
+        tuesday: { isWorking: true, start: '09:00', end: '17:00' },
+        wednesday: { isWorking: true, start: '09:00', end: '17:00' },
+        thursday: { isWorking: true, start: '09:00', end: '17:00' },
+        friday: { isWorking: true, start: '09:00', end: '17:00' },
+        saturday: { isWorking: false, start: '09:00', end: '17:00' },
+        sunday: { isWorking: false, start: '09:00', end: '17:00' }
+      };
+
+      let updated = 0;
+      let generated = 0;
+
+      for (const specialist of specialists) {
+        try {
+          // Update working hours
+          await prisma.specialist.update({
+            where: { id: specialist.id },
+            data: { workingHours: JSON.stringify(defaultWorkingHours) }
+          });
+          updated++;
+
+          // Generate availability blocks
+          await this.generateAvailabilityFromWorkingHours(specialist.id);
+          generated++;
+
+          logger.info('Fixed specialist availability:', {
+            specialistId: specialist.id,
+            businessName: specialist.businessName
+          });
+        } catch (error) {
+          logger.error('Failed to fix specialist availability:', {
+            specialistId: specialist.id,
+            error: error instanceof Error ? error.message : String(error)
+          });
+        }
+      }
+
+      return { updated, generated, total: specialists.length };
+    } catch (error) {
+      logger.error('Error fixing specialist availability:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Generate availability blocks from working hours
    */
   static async generateAvailabilityFromWorkingHours(

@@ -170,7 +170,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           <div className="bg-purple-50 rounded-lg p-4">
             <h4 className="font-semibold text-gray-900 mb-3">{t('bookingDetails.statusManagement')}</h4>
             <div className="flex flex-wrap gap-2 mb-4">
-              {Object.keys(statusColors).map((status) => (
+              {['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'IN_PROGRESS', 'NO_SHOW'].map((status) => (
                 <label key={status} className="flex items-center cursor-pointer">
                   <input
                     type="radio"

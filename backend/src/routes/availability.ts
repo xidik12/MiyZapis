@@ -123,4 +123,7 @@ router.delete('/specialists/availability/blocks/:id', authenticateToken, Availab
 // Generate availability blocks from working hours (specialist only)
 router.post('/specialists/availability/generate', authenticateToken, AvailabilityController.generateFromWorkingHours);
 
+// Fix all specialists with empty working hours (admin/debug endpoint)
+router.post('/specialists/availability/fix-all', authenticateToken, AvailabilityController.fixAllSpecialists);
+
 export default router;
