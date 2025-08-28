@@ -258,15 +258,14 @@ export class SpecialistService {
 
   // Get all availability blocks (both available and blocked)
   async getAvailabilityBlocks(startDate?: string, endDate?: string): Promise<BlockedSlot[]> {
-    const params = new URLSearchParams();
-    if (startDate) params.append('startDate', startDate);
-    if (endDate) params.append('endDate', endDate);
-
-    const response = await apiClient.get<{ blocks: BlockedSlot[] }>(`/specialists/availability/blocks?${params}`);
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get availability blocks');
+    try {
+      // Use the working blocked slots endpoint as the main availability blocks endpoint doesn't exist
+      return await this.getBlockedSlots(startDate, endDate);
+    } catch (error) {
+      // Return empty array if blocked slots endpoint fails
+      console.warn('Failed to get availability blocks:', error);
+      return [];
     }
-    return response.data.blocks;
   }
 
   // Create availability block (available or blocked)
@@ -279,7 +278,7 @@ export class SpecialistService {
     recurringDays?: string[];
     recurringUntil?: string;
   }): Promise<{ message: string; block: BlockedSlot }> {
-    const response = await apiClient.post<{ message: string; block: BlockedSlot }>('/specialists/availability/blocks', data);
+    const response = await apiClient.post<{ message: string; block: BlockedSlot }>('/specialists/availability/block', data);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to create availability block');
     }
@@ -296,7 +295,7 @@ export class SpecialistService {
     recurringDays?: string[];
     recurringUntil?: string;
   }): Promise<{ message: string; block: BlockedSlot }> {
-    const response = await apiClient.put<{ message: string; block: BlockedSlot }>(`/specialists/availability/blocks/${blockId}`, data);
+    const response = await apiClient.put<{ message: string; block: BlockedSlot }>(`/specialists/availability/block/${blockId}`, data);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to update availability block');
     }
@@ -305,7 +304,7 @@ export class SpecialistService {
 
   // Delete availability block
   async deleteAvailabilityBlock(blockId: string): Promise<{ message: string }> {
-    const response = await apiClient.delete<{ message: string }>(`/specialists/availability/blocks/${blockId}`);
+    const response = await apiClient.delete<{ message: string }>(`/specialists/availability/block/${blockId}`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to delete availability block');
     }
