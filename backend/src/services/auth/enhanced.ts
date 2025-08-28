@@ -177,7 +177,15 @@ export class EnhancedAuthService {
       });
 
       // Send verification email (non-blocking)
-      const verificationLink = `${config.isProduction ? 'https://miyzapis-frontend.up.railway.app' : 'http://localhost:3000'}/auth/verify-email?token=${verificationToken}`;
+      const frontendUrl = process.env.FRONTEND_URL || (config.isProduction ? 'https://miyzapis.up.railway.app' : 'http://localhost:3000');
+      const verificationLink = `${frontendUrl}/auth/verify-email?token=${verificationToken}`;
+      
+      logger.info('Attempting to send verification email', {
+        userId: user.id,
+        email: user.email,
+        verificationLink: verificationLink.replace(verificationToken, '[TOKEN]'),
+        emailServiceInitialized: !!emailService
+      });
       
       // Send email in background to avoid blocking registration response
       emailService.sendVerificationEmail(user.email, {
@@ -185,12 +193,24 @@ export class EnhancedAuthService {
         verificationLink,
       }).then((emailSent) => {
         if (!emailSent) {
-          logger.warn('Verification email failed to send', { userId: user.id });
+          logger.warn('Verification email failed to send', { 
+            userId: user.id, 
+            email: user.email,
+            reason: 'Email service returned false'
+          });
         } else {
-          logger.info('Verification email sent successfully', { userId: user.id });
+          logger.info('Verification email sent successfully', { 
+            userId: user.id,
+            email: user.email
+          });
         }
       }).catch((error) => {
-        logger.error('Error sending verification email', { userId: user.id, error: error.message });
+        logger.error('Error sending verification email', { 
+          userId: user.id, 
+          email: user.email,
+          error: error.message,
+          stack: error.stack
+        });
       });
 
       logger.info('User registered successfully', { 
@@ -833,7 +853,8 @@ export class EnhancedAuthService {
       });
 
       // Send verification email
-      const verificationLink = `${config.isProduction ? 'https://miyzapis-frontend.up.railway.app' : 'http://localhost:3000'}/auth/verify-email?token=${verificationToken}`;
+      const frontendUrl = config.frontend?.url || (config.isProduction ? 'https://miyzapis.com' : 'http://localhost:3000');
+      const verificationLink = `${frontendUrl}/auth/verify-email?token=${verificationToken}`;
       
       const emailSent = await emailService.sendVerificationEmail(user.email, {
         firstName: user.firstName,

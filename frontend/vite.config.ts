@@ -93,7 +93,17 @@ export default defineConfig({
       output: {
         entryFileNames: `assets/[name]-[hash].js`,
         chunkFileNames: `assets/[name]-[hash].js`,
-        assetFileNames: `assets/[name]-[hash].[ext]`,
+        assetFileNames: (assetInfo) => {
+          // Keep logos and manifest files with original names
+          if (assetInfo.name && (
+            assetInfo.name.includes('logo') || 
+            assetInfo.name.includes('favicon') ||
+            assetInfo.name.includes('manifest')
+          )) {
+            return `[name].[ext]`;
+          }
+          return `assets/[name]-[hash].[ext]`;
+        },
         manualChunks: {
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],

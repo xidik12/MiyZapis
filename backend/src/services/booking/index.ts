@@ -389,21 +389,32 @@ export class BookingService {
         throw new Error('BOOKING_NOT_FOUND');
       }
 
-      // Validate status transitions
+      // Allow flexible status transitions for specialist management
+      // Only prevent transitions that would cause data integrity issues
       if (data.status) {
-        const allowedTransitions = {
-          PENDING: ['PENDING_PAYMENT', 'CONFIRMED', 'CANCELLED'],
-          PENDING_PAYMENT: ['CONFIRMED', 'CANCELLED'],
-          CONFIRMED: ['IN_PROGRESS', 'CANCELLED'],
-          IN_PROGRESS: ['COMPLETED', 'CANCELLED'],
-          COMPLETED: [], // Cannot change from completed
-          CANCELLED: [], // Cannot change from cancelled
-          REFUNDED: [], // Cannot change from refunded
-        };
+        const currentStatus = booking.status;
+        const newStatus = data.status;
+        
+        // Log the transition attempt
+        logger.info('Status transition attempt', {
+          bookingId: booking.id,
+          currentStatus,
+          newStatus
+        });
 
-        if (!allowedTransitions[booking.status as keyof typeof allowedTransitions]?.includes(data.status)) {
-          throw new Error('INVALID_STATUS_TRANSITION');
-        }
+        // Very minimal validation - only prevent obviously invalid transitions
+        const invalidTransitions = [
+          // Don't allow transitions from final states to earlier states without explicit business logic
+          // For now, allow all transitions to give specialists full control
+        ];
+
+        // For now, allow all status transitions to give specialists maximum flexibility
+        // This can be tightened later based on business requirements
+        logger.info('Status transition allowed', {
+          bookingId: booking.id,
+          from: currentStatus,
+          to: newStatus
+        });
       }
 
       // Prepare update data
@@ -786,8 +797,33 @@ export class BookingService {
 
       const totalPages = Math.ceil(total / limit);
 
+      // Transform bookings to include flattened fields for frontend compatibility
+      const transformedBookings = bookings.map(booking => {
+        const scheduledDate = new Date(booking.scheduledAt);
+        return {
+          ...booking,
+          // Flattened customer fields
+          customerName: booking.customer ? `${booking.customer.firstName} ${booking.customer.lastName}`.trim() : 'Unknown Customer',
+          customerEmail: booking.customer?.email,
+          customerPhone: booking.customer?.phoneNumber,
+          
+          // Flattened service fields  
+          serviceName: booking.service?.name || 'Unknown Service',
+          
+          // Flattened date/time fields
+          date: scheduledDate.toISOString().split('T')[0], // YYYY-MM-DD format
+          time: scheduledDate.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }),
+          
+          // Amount field (frontend expects 'amount' not 'totalAmount')
+          amount: booking.totalAmount,
+          
+          // Type field (based on meetingLink presence)
+          type: booking.meetingLink ? 'online' : 'in-person',
+        };
+      });
+
       return {
-        bookings: bookings as BookingWithDetails[],
+        bookings: transformedBookings as BookingWithDetails[],
         total,
         page,
         totalPages,

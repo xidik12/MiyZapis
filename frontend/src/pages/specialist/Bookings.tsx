@@ -11,12 +11,19 @@ import {
   CheckIcon
 } from '@heroicons/react/24/outline';
 
-// Status colors for bookings
+// Status colors for bookings (matching backend status values)
 const statusColors = {
-  confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
+  PENDING: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  CONFIRMED: 'bg-blue-100 text-blue-800 border-blue-200',
+  COMPLETED: 'bg-green-100 text-green-800 border-green-200',
+  CANCELLED: 'bg-red-100 text-red-800 border-red-200',
+  IN_PROGRESS: 'bg-purple-100 text-purple-800 border-purple-200',
+  NO_SHOW: 'bg-gray-100 text-gray-800 border-gray-200',
+  // Legacy lowercase support for compatibility
   pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  cancelled: 'bg-red-100 text-red-800 border-red-200',
+  confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
   completed: 'bg-green-100 text-green-800 border-green-200',
+  cancelled: 'bg-red-100 text-red-800 border-red-200',
   inProgress: 'bg-purple-100 text-purple-800 border-purple-200',
   noShow: 'bg-gray-100 text-gray-800 border-gray-200'
 };
@@ -35,7 +42,7 @@ interface BookingDetailModalProps {
   onClose: () => void;
   onStatusChange: (bookingId: string, newStatus: keyof typeof statusColors) => void;
   getTranslatedServiceName: (serviceName: string) => string;
-  getTranslatedDuration: (duration: string) => string;
+  getTranslatedDuration: (duration: string | number) => string;
 }
 
 const BookingDetailModal: React.FC<BookingDetailModalProps> = ({ 
@@ -48,7 +55,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 }) => {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
-  const [selectedStatus, setSelectedStatus] = useState(booking?.status || 'confirmed');
+  const [selectedStatus, setSelectedStatus] = useState(booking?.status || 'PENDING');
   const [message, setMessage] = useState('');
   
   if (!isOpen || !booking) return null;
@@ -91,14 +98,14 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 <p className="font-medium">
                   {booking.customer 
                     ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
-                    : t('bookingDetails.customerNotAvailable')
+                    : (booking.customerName || 'Unknown Customer')
                   }
                 </p>
               </div>
               <div>
                 <label className="text-sm text-gray-600">{t('bookingDetails.contact')}</label>
                 <p className="font-medium">
-                  {booking.customer?.phoneNumber || booking.customer?.email || t('bookingDetails.contactNotAvailable')}
+                  {booking.customer?.phoneNumber || booking.customer?.email || booking.customerEmail || booking.customerPhone || t('bookingDetails.contactNotAvailable')}
                 </p>
               </div>
             </div>
@@ -111,7 +118,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               <div>
                 <label className="text-sm text-gray-600">{t('bookings.service')}</label>
                 <p className="font-medium">
-                  {booking.service?.name || t('bookingDetails.serviceNotAvailable')}
+                  {booking.service?.name || getTranslatedServiceName(booking.serviceName || 'Unknown Service')}
                 </p>
               </div>
               <div>
@@ -143,7 +150,9 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600">{t('bookings.date')}</label>
-                <p className="font-medium">{new Date(booking.scheduledAt).toLocaleDateString('uk-UA')}</p>
+                <p className="font-medium">
+                  {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleDateString('uk-UA') : booking.date}
+                </p>
               </div>
               <div>
                 <label className="text-sm text-gray-600">{t('bookingDetails.time')}</label>
@@ -153,9 +162,11 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             {booking.meetingLink && (
               <div className="mt-4">
                 <label className="text-sm text-gray-600">{t('bookingDetails.meetingLink')}</label>
-                <a href={booking.meetingLink} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:text-blue-800 underline">
-                  {t('bookingDetails.joinMeeting')}
-                </a>
+                <p className="font-medium text-blue-600 hover:text-blue-800">
+                  <a href={booking.meetingLink} target="_blank" rel="noopener noreferrer" className="underline">
+                    {t('bookingDetails.joinMeeting')}
+                  </a>
+                </p>
               </div>
             )}
             {booking.notes && (
@@ -170,14 +181,14 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           <div className="bg-purple-50 rounded-lg p-4">
             <h4 className="font-semibold text-gray-900 mb-3">{t('bookingDetails.statusManagement')}</h4>
             <div className="flex flex-wrap gap-2 mb-4">
-              {Object.keys(statusColors).map((status) => (
+              {['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'IN_PROGRESS', 'NO_SHOW'].map((status) => (
                 <label key={status} className="flex items-center cursor-pointer">
                   <input
                     type="radio"
                     name="status"
                     value={status}
                     checked={selectedStatus === status}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    onChange={(e) => setSelectedStatus(e.target.value as BookingStatus)}
                     className="sr-only"
                   />
                   <span className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
@@ -240,8 +251,8 @@ const SpecialistBookings: React.FC = () => {
     dispatch(fetchBookings({}));
   }, [dispatch]);
   
-  // Service name translation mapping
-  const getTranslatedServiceName = (ukrainianName: string): string => {
+  // Simple service name translation
+  const getTranslatedServiceName = (serviceName: string): string => {
     const serviceMapping: { [key: string]: string } = {
       'Консультація з психології': 'service.consultation',
       'Індивідуальна терапія': 'service.individualTherapy',
@@ -253,13 +264,15 @@ const SpecialistBookings: React.FC = () => {
       'Психологічна консультація': 'service.psychologyConsultation',
     };
     
-    return serviceMapping[ukrainianName] ? t(serviceMapping[ukrainianName]) : ukrainianName;
+    return serviceMapping[serviceName] ? t(serviceMapping[serviceName]) : serviceName;
   };
   
   // Duration translation function
-  const getTranslatedDuration = (duration: string): string => {
+  const getTranslatedDuration = (duration: string | number): string => {
+    // Handle both string and number types
+    const durationStr = typeof duration === 'string' ? duration : `${duration} хв`;
     // Replace Ukrainian abbreviation with translated one
-    return duration.replace(/\s*хв\s*$/i, ` ${t('time.minutes')}`);
+    return durationStr.replace(/\s*хв\s*$/i, ` ${t('time.minutes')}`);
   };
   
   const [filters, setFilters] = useState<FilterState>({
@@ -282,17 +295,19 @@ const SpecialistBookings: React.FC = () => {
   const filteredAndSortedBookings = useMemo(() => {
     let filtered = bookings.filter(booking => {
       const matchesStatus = filters.status === 'all' || booking.status === filters.status;
-      const customerName = booking.customer ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() : '';
-      const serviceName = booking.service?.name || '';
+      const customerName = booking.customer ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() : (booking.customerName || '');
+      const serviceName = booking.service?.name || booking.serviceName || '';
       const matchesSearch = !filters.searchTerm || 
         customerName.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
         serviceName.toLowerCase().includes(filters.searchTerm.toLowerCase());
-      const bookingDate = new Date(booking.scheduledAt);
+      
+      const bookingDate = booking.scheduledAt ? new Date(booking.scheduledAt) : (booking.date ? new Date(booking.date) : null);
       const matchesDateRange = filters.dateRange === 'all' || (
-        filters.dateRange === 'today' && bookingDate.toDateString() === new Date().toDateString()
+        bookingDate && filters.dateRange === 'today' && bookingDate.toDateString() === new Date().toDateString()
       ) || (
-        filters.dateRange === 'week' && 
+        bookingDate && filters.dateRange === 'week' && 
         bookingDate >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      )
       );
       
       return matchesStatus && matchesSearch && matchesDateRange;
@@ -339,15 +354,25 @@ const SpecialistBookings: React.FC = () => {
   const handleStatusChange = async (bookingId: string, newStatus: keyof typeof statusColors) => {
     try {
       console.log('📝 Updating booking status:', { bookingId, newStatus });
-      await dispatch(updateBookingStatus({ bookingId, status: newStatus as BookingStatus })).unwrap();
-      console.log('✅ Booking status updated successfully');
+      
+      const result = await dispatch(updateBookingStatus({ 
+        bookingId, 
+        status: newStatus as BookingStatus 
+      }));
+      
+      if (updateBookingStatus.fulfilled.match(result)) {
+        console.log('✅ Booking status updated successfully');
+        // Optionally show a success toast here
+      } else {
+        console.error('❌ Failed to update booking status:', result.payload);
+        // Optionally show an error toast here
+      }
     } catch (error: any) {
       console.error('❌ Failed to update booking status:', error);
-      // TODO: Show error notification to user
     }
   };
   
-  const handleBulkStatusChange = async (newStatus: keyof typeof statusColors) => {
+  const handleBulkStatusChange = async (_newStatus: keyof typeof statusColors) => {
     try {
       // In a real app, this would call the booking service to update multiple statuses
       // TODO: Implement actual API call when backend bulk update is ready
@@ -379,8 +404,8 @@ const SpecialistBookings: React.FC = () => {
     setShowDetailModal(true);
   };
   
-  const getStatusBadge = (status: keyof typeof statusColors) => {
-    const colorClass = statusColors[status];
+  const getStatusBadge = (status: BookingStatus) => {
+    const colorClass = statusColors[status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800 border-gray-200';
     return (
       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${colorClass}`}>
         {t(`dashboard.booking.status.${status}`)}
@@ -456,19 +481,19 @@ const SpecialistBookings: React.FC = () => {
             <div className="bg-white rounded-lg p-3 shadow-sm border">
               <p className="text-sm text-gray-600">{t('bookings.confirmed')}</p>
               <p className="text-xl font-bold text-green-600">
-                {filteredAndSortedBookings.filter(b => b.status === 'confirmed').length}
+                {filteredAndSortedBookings.filter(b => b.status === 'CONFIRMED' || b.status === 'confirmed').length}
               </p>
             </div>
             <div className="bg-white rounded-lg p-3 shadow-sm border">
               <p className="text-sm text-gray-600">{t('bookings.pending')}</p>
               <p className="text-xl font-bold text-yellow-600">
-                {filteredAndSortedBookings.filter(b => b.status === 'pending').length}
+                {filteredAndSortedBookings.filter(b => b.status === 'PENDING' || b.status === 'pending').length}
               </p>
             </div>
             <div className="bg-white rounded-lg p-3 shadow-sm border">
               <p className="text-sm text-gray-600">{t('bookings.completed')}</p>
               <p className="text-xl font-bold text-blue-600">
-                {filteredAndSortedBookings.filter(b => b.status === 'completed').length}
+                {filteredAndSortedBookings.filter(b => b.status === 'COMPLETED' || b.status === 'completed').length}
               </p>
             </div>
           </div>
@@ -503,11 +528,11 @@ const SpecialistBookings: React.FC = () => {
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="all">{t('bookings.allStatus')}</option>
-                <option value="confirmed">{t('bookings.confirmed')}</option>
-                <option value="pending">{t('bookings.pending')}</option>
-                <option value="cancelled">{t('dashboard.booking.status.cancelled')}</option>
-                <option value="completed">{t('bookings.completed')}</option>
-                <option value="inProgress">{t('dashboard.booking.status.inProgress')}</option>
+                <option value="PENDING">{t('bookings.pending')}</option>
+                <option value="CONFIRMED">{t('bookings.confirmed')}</option>
+                <option value="COMPLETED">{t('bookings.completed')}</option>
+                <option value="CANCELLED">{t('dashboard.booking.status.CANCELLED')}</option>
+                <option value="IN_PROGRESS">{t('dashboard.booking.status.IN_PROGRESS')}</option>
                 <option value="noShow">{t('dashboard.booking.status.noShow')}</option>
               </select>
             </div>
@@ -637,7 +662,7 @@ const SpecialistBookings: React.FC = () => {
                             <span className="text-white font-medium text-sm">
                               {booking.customer 
                                 ? `${booking.customer.firstName?.[0] || ''}${booking.customer.lastName?.[0] || ''}` 
-                                : 'N/A'
+                                : (booking.customerName ? booking.customerName.split(' ').map(n => n[0]).join('') : 'UC')
                               }
                             </span>
                           </div>
@@ -646,7 +671,7 @@ const SpecialistBookings: React.FC = () => {
                           <div className="text-sm font-medium text-gray-900">
                             {booking.customer 
                               ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
-                              : t('bookingDetails.customerNotAvailable')
+                              : (booking.customerName || 'Unknown Customer')
                             }
                           </div>
                           <div className="text-sm text-gray-500">ID: #{booking.id}</div>
@@ -654,15 +679,17 @@ const SpecialistBookings: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{booking.service?.name || t('bookingDetails.serviceNotAvailable')}</div>
-                      <div className="text-sm text-gray-500">{booking.duration} {t('time.minutes')}</div>
+                      <div className="text-sm text-gray-900">
+                        {booking.service?.name || getTranslatedServiceName(booking.serviceName || 'Unknown Service')}
+                      </div>
+                      <div className="text-sm text-gray-500">{getTranslatedDuration(booking.duration)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {new Date(booking.scheduledAt).toLocaleDateString('uk-UA')}
+                        {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleDateString('uk-UA') : booking.date}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}
+                        {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }) : booking.time}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -690,18 +717,18 @@ const SpecialistBookings: React.FC = () => {
                           <EyeIcon className="w-4 h-4 mr-1" />
                           {t('bookings.view')}
                         </button>
-                        {booking.status === 'pending' ? (
+                        {(booking.status === 'PENDING' || booking.status === 'pending') ? (
                           <button
-                            onClick={() => handleStatusChange(booking.id, 'confirmed')}
+                            onClick={() => handleStatusChange(booking.id, 'CONFIRMED')}
                             className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
                             title={t('bookings.confirm')}
                           >
                             <CheckIcon className="w-4 h-4 mr-1" />
                             {t('bookings.confirm')}
                           </button>
-                        ) : booking.status === 'confirmed' ? (
+                        ) : (booking.status === 'CONFIRMED' || booking.status === 'confirmed') ? (
                           <button
-                            onClick={() => handleStatusChange(booking.id, 'completed')}
+                            onClick={() => handleStatusChange(booking.id, 'COMPLETED')}
                             className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
                             title={t('bookings.complete')}
                           >

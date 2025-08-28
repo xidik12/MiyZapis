@@ -3,6 +3,7 @@ import nodemailer from 'nodemailer';
 import { logger } from '@/utils/logger';
 import { config } from '@/config';
 import { redis } from '@/config/redis';
+import { EmailService } from '@/services/email';
 import axios from 'axios';
 
 interface NotificationData {
@@ -29,26 +30,11 @@ interface SMSOptions {
 
 export class NotificationService {
   private prisma: PrismaClient;
-  private emailTransporter?: nodemailer.Transporter;
+  private emailService: EmailService;
 
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
-    // Only setup email if SMTP config is available
-    if (config.email.smtp.auth.user) {
-      this.setupEmailTransporter();
-    }
-  }
-
-  private setupEmailTransporter() {
-    this.emailTransporter = nodemailer.createTransport({
-      host: config.email.smtp.host,
-      port: config.email.smtp.port,
-      secure: config.email.smtp.secure,
-      auth: {
-        user: config.email.smtp.auth.user,
-        pass: config.email.smtp.auth.pass,
-      },
-    });
+    this.emailService = new EmailService();
   }
 
   async sendNotification(userId: string, data: NotificationData): Promise<Notification> {
@@ -124,73 +110,134 @@ export class NotificationService {
     notificationId: string
   ): Promise<void> {
     try {
-      // Get email template
-      const template = await this.prisma.emailTemplate.findUnique({
-        where: { name: data.emailTemplate! }
+      logger.info('Attempting to send email notification', {
+        userId: user.id,
+        email: user.email,
+        type: data.type,
+        emailTemplate: data.emailTemplate
       });
 
-      if (!template || !template.isActive) {
-        logger.warn('Email template not found or inactive:', data.emailTemplate);
-        return;
-      }
+      let emailSent = false;
 
-      // Get localized content
-      const language = user.language || 'en';
-      let subject = template.subject;
-      let htmlContent = template.htmlContent;
-      let textContent = template.textContent;
+      // Use specific email methods based on notification type
+      if (data.type === 'BOOKING_CONFIRMED' || data.type === 'BOOKING_PENDING' || data.type === 'BOOKING_REQUEST') {
+        // Create a simple booking notification email
+        const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>${data.title}</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #007bff; color: white; padding: 20px; text-align: center; }
+            .content { padding: 30px 20px; }
+            .booking-details { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>${data.title}</h1>
+            </div>
+            <div class="content">
+              <h2>Hi ${user.firstName}!</h2>
+              <p>${data.message}</p>
+              
+              <div class="booking-details">
+                <h3>Booking Details:</h3>
+                ${data.data ? Object.entries(data.data).map(([key, value]) => 
+                  `<p><strong>${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:</strong> ${value}</p>`
+                ).join('') : ''}
+              </div>
+              
+              <p>You can view and manage your bookings by logging into your MiyZapis account.</p>
+            </div>
+            <div class="footer">
+              <p>© 2024 MiyZapis. All rights reserved.</p>
+              <p>This is an automated email, please do not reply.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+        `;
 
-      if (language === 'uk') {
-        subject = template.subjectUk || template.subject;
-        htmlContent = template.htmlContentUk || template.htmlContent;
-        textContent = template.textContentUk || template.textContent;
-      } else if (language === 'ru') {
-        subject = template.subjectRu || template.subject;
-        htmlContent = template.htmlContentRu || template.htmlContent;
-        textContent = template.textContentRu || template.textContent;
-      }
-
-      // Replace template variables
-      const variables = {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        fullName: `${user.firstName} ${user.lastName}`,
-        title: data.title,
-        message: data.message,
-        ...data.data
-      };
-
-      subject = this.replaceTemplateVariables(subject, variables);
-      htmlContent = this.replaceTemplateVariables(htmlContent, variables);
-      textContent = textContent ? this.replaceTemplateVariables(textContent, variables) : undefined;
-
-      // Send email
-      if (this.emailTransporter) {
-        await this.emailTransporter.sendMail({
-          from: config.email.from,
+        emailSent = await this.emailService.sendEmail({
           to: user.email,
-          subject,
-          html: htmlContent,
-          text: textContent,
+          subject: data.title,
+          html,
+          text: `${data.title}\n\nHi ${user.firstName}!\n\n${data.message}\n\nBooking Details:\n${data.data ? Object.entries(data.data).map(([key, value]) => `${key}: ${value}`).join('\n') : ''}`
         });
       } else {
-        logger.warn('Email transporter not configured, skipping email send');
-        return;
+        // Fallback for other notification types
+        const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>${data.title}</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #007bff; color: white; padding: 20px; text-align: center; }
+            .content { padding: 30px 20px; }
+            .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>${data.title}</h1>
+            </div>
+            <div class="content">
+              <h2>Hi ${user.firstName}!</h2>
+              <p>${data.message}</p>
+            </div>
+            <div class="footer">
+              <p>© 2024 MiyZapis. All rights reserved.</p>
+              <p>This is an automated email, please do not reply.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+        `;
+
+        emailSent = await this.emailService.sendEmail({
+          to: user.email,
+          subject: data.title,
+          html,
+          text: `${data.title}\n\nHi ${user.firstName}!\n\n${data.message}`
+        });
       }
 
-      // Update notification status
-      await this.prisma.notification.update({
-        where: { id: notificationId },
-        data: { emailSent: true }
-      });
+      if (emailSent) {
+        // Update notification status
+        await this.prisma.notification.update({
+          where: { id: notificationId },
+          data: { emailSent: true }
+        });
 
-      logger.info('Email notification sent successfully', {
+        logger.info('Email notification sent successfully', {
+          userId: user.id,
+          email: user.email,
+          type: data.type
+        });
+      } else {
+        logger.warn('Email notification failed to send', {
+          userId: user.id,
+          email: user.email,
+          type: data.type
+        });
+      }
+    } catch (error) {
+      logger.error('Error sending email notification:', {
+        error: error instanceof Error ? error.message : String(error),
         userId: user.id,
         email: user.email,
         type: data.type
       });
-    } catch (error) {
-      logger.error('Error sending email notification:', error);
     }
   }
 
@@ -200,50 +247,64 @@ export class NotificationService {
     notificationId: string
   ): Promise<void> {
     try {
-      // Get SMS template
-      const template = await this.prisma.sMSTemplate.findUnique({
-        where: { name: data.smsTemplate! }
+      logger.info('Attempting to send SMS notification', {
+        userId: user.id,
+        phoneNumber: user.phoneNumber ? `${user.phoneNumber.substring(0, 5)}...` : 'NOT_SET',
+        type: data.type
       });
 
-      if (!template || !template.isActive) {
-        logger.warn('SMS template not found or inactive:', data.smsTemplate);
+      if (!user.phoneNumber) {
+        logger.warn('User has no phone number, skipping SMS notification', {
+          userId: user.id,
+          type: data.type
+        });
         return;
       }
 
-      // Get localized content
-      const language = user.language || 'en';
-      let content = template.content;
+      // Create simple SMS message
+      let smsMessage = `${data.title}\n\nHi ${user.firstName}!\n\n${data.message}`;
 
-      if (language === 'uk') {
-        content = template.contentUk || template.content;
-      } else if (language === 'ru') {
-        content = template.contentRu || template.content;
+      // Add booking details for booking notifications
+      if (data.data && (data.type === 'BOOKING_CONFIRMED' || data.type === 'BOOKING_PENDING' || data.type === 'BOOKING_REQUEST')) {
+        smsMessage += `\n\nService: ${data.data.serviceName || 'N/A'}`;
+        if (data.data.scheduledAt) {
+          smsMessage += `\nDate: ${new Date(data.data.scheduledAt).toLocaleDateString()}`;
+        }
       }
 
-      // Replace template variables
-      const variables = {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        title: data.title,
-        message: data.message,
-        ...data.data
-      };
-
-      content = this.replaceTemplateVariables(content, variables);
+      smsMessage += '\n\n- MiyZapis';
 
       // Send SMS (integrate with SMS provider)
-      await this.sendSMS({
-        to: user.phoneNumber,
-        message: content
-      });
+      try {
+        await this.sendSMS({
+          to: user.phoneNumber,
+          message: smsMessage
+        });
 
-      logger.info('SMS notification sent successfully', {
+        // Update notification status
+        await this.prisma.notification.update({
+          where: { id: notificationId },
+          data: { smsSent: true }
+        });
+
+        logger.info('SMS notification sent successfully', {
+          userId: user.id,
+          phoneNumber: user.phoneNumber.substring(0, 5) + '...',
+          type: data.type
+        });
+      } catch (smsError) {
+        logger.warn('SMS sending failed (provider issue)', {
+          userId: user.id,
+          type: data.type,
+          error: smsError instanceof Error ? smsError.message : String(smsError)
+        });
+      }
+    } catch (error) {
+      logger.error('Error sending SMS notification:', {
+        error: error instanceof Error ? error.message : String(error),
         userId: user.id,
-        phoneNumber: user.phoneNumber,
         type: data.type
       });
-    } catch (error) {
-      logger.error('Error sending SMS notification:', error);
     }
   }
 

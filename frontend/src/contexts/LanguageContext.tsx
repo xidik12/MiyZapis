@@ -442,6 +442,12 @@ const translations: Translations = {
   'dashboard.booking.status.completed': { en: 'Completed', uk: 'Завершено', ru: 'Завершено' },
   'dashboard.booking.status.inProgress': { en: 'In Progress', uk: 'В процесі', ru: 'В процессе' },
   'dashboard.booking.status.noShow': { en: 'No Show', uk: 'Не з\'явився', ru: 'Не явился' },
+  'dashboard.booking.status.PENDING': { en: 'Pending', uk: 'Очікує', ru: 'Ожидает' },
+  'dashboard.booking.status.CONFIRMED': { en: 'Confirmed', uk: 'Підтверджено', ru: 'Подтверждено' },
+  'dashboard.booking.status.CANCELLED': { en: 'Cancelled', uk: 'Скасовано', ru: 'Отменено' },
+  'dashboard.booking.status.COMPLETED': { en: 'Completed', uk: 'Завершено', ru: 'Завершено' },
+  'dashboard.booking.status.IN_PROGRESS': { en: 'In Progress', uk: 'В процесі', ru: 'В процессе' },
+  'dashboard.booking.status.NO_SHOW': { en: 'No Show', uk: 'Не з\'явився', ru: 'Не явился' },
 
   // Dashboard - Specialist Quick Actions
   'dashboard.specialist.addService': { en: 'Add Service', uk: 'Додати послугу', ru: 'Добавить услугу' },
@@ -985,6 +991,26 @@ const translations: Translations = {
   'booking.rescheduleAlert': { en: 'Reschedule functionality would be implemented here', uk: 'Функціонал перенесення буде реалізовано тут', ru: 'Функционал переноса будет реализован здесь' },
   'booking.reviewAlert': { en: 'Review functionality would be implemented here', uk: 'Функціонал відгуків буде реалізовано тут', ru: 'Функционал отзывов будет реализован здесь' },
 
+  // Booking Flow & Actions
+  'booking.bookService': { en: 'Book Service', uk: 'Забронювати послугу', ru: 'Забронировать услугу' },
+  'booking.selectedService': { en: 'Selected Service', uk: 'Обрана послуга', ru: 'Выбранная услуга' },
+  'booking.selectDate': { en: 'Select Date', uk: 'Оберіть дату', ru: 'Выберите дату' },
+  'booking.selectTime': { en: 'Select Time', uk: 'Оберіть час', ru: 'Выберите время' },
+  'booking.noAvailableSlots': { en: 'No available slots', uk: 'Немає вільних слотів', ru: 'Нет свободных слотов' },
+  'booking.notesPlaceholder': { en: 'Add any special notes or requests...', uk: 'Додайте будь-які особливі примітки або побажання...', ru: 'Добавьте любые особые заметки или пожелания...' },
+  'booking.summary': { en: 'Booking Summary', uk: 'Підсумок бронювання', ru: 'Итоги бронирования' },
+  'booking.dateTime': { en: 'Date & Time', uk: 'Дата та час', ru: 'Дата и время' },
+  'booking.duration': { en: 'Duration', uk: 'Тривалість', ru: 'Продолжительность' },
+  'booking.total': { en: 'Total', uk: 'Всього', ru: 'Итого' },
+  'booking.paymentIntegrationPending': { en: 'Payment integration pending', uk: 'Інтеграція платежів в розробці', ru: 'Интеграция платежей в разработке' },
+  'booking.bookingRequested': { en: 'Booking Requested', uk: 'Запит на бронювання', ru: 'Запрос на бронирование' },
+  'booking.manualBookingMessage': { en: 'Your booking request has been sent successfully!', uk: 'Ваш запит на бронювання успішно надіслано!', ru: 'Ваш запрос на бронирование успешно отправлен!' },
+  'booking.waitingForSpecialistConfirmation': { en: 'Waiting for specialist confirmation', uk: 'Очікування підтвердження спеціаліста', ru: 'Ожидание подтверждения специалиста' },
+  'booking.viewBookings': { en: 'View My Bookings', uk: 'Переглянути мої бронювання', ru: 'Посмотреть мои бронирования' },
+  'booking.bookingId': { en: 'Booking ID', uk: 'ID бронювання', ru: 'ID бронирования' },
+  'booking.status': { en: 'Status', uk: 'Статус', ru: 'Статус' },
+  'booking.pending': { en: 'Pending', uk: 'Очікує', ru: 'Ожидает' },
+
   // Empty States
   'empty.noCancelledBookings': { en: 'No cancelled bookings', uk: 'Немає скасованих бронювань', ru: 'Нет отмененных бронирований' },
   'empty.bookFirstService': { en: 'Book your first service to see it here.', uk: 'Забронюйте свою першу послугу, щоб побачити її тут.', ru: 'Забронируйте свою первую услугу, чтобы увидеть её здесь.' },
@@ -1449,6 +1475,7 @@ const translations: Translations = {
   'actions.bookNow': { en: 'Book Now', uk: 'Забронювати зараз', ru: 'Забронировать сейчас' },
   'actions.noServicesAvailable': { en: 'No services available', uk: 'Послуги недоступні', ru: 'Услуги недоступны' },
   'actions.favorite': { en: 'Favorite', uk: 'Обране', ru: 'Избранное' },
+  'actions.unfavorite': { en: 'Remove from Favorites', uk: 'Видалити з обраного', ru: 'Удалить из избранного' },
   
   // Errors
   'errors.specialistNotFound': { en: 'Specialist not found', uk: 'Спеціаліста не знайдено', ru: 'Специалист не найден' },

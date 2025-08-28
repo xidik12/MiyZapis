@@ -1,11 +1,9 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { HelpService } from '@/services/help';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { AuthenticatedRequest } from '@/types';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/config/database';
 
 export class HelpController {
   private helpService: HelpService;

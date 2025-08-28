@@ -1,7 +1,6 @@
-import { PrismaClient, Review, Specialist } from '@prisma/client';
+import { Review, Specialist } from '@prisma/client';
 import { logger } from '@/utils/logger';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/config/database';
 
 export interface CreateReviewData {
   bookingId: string;

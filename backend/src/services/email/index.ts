@@ -28,8 +28,26 @@ class EmailService {
 
   private initializeTransporter() {
     try {
-      if (!config.email.smtp.host || !config.email.smtp.auth.user) {
-        logger.warn('Email service disabled - SMTP configuration missing');
+      logger.info('Initializing email service...', {
+        host: config.email.smtp.host || 'NOT_SET',
+        port: config.email.smtp.port,
+        user: config.email.smtp.auth.user ? `${config.email.smtp.auth.user.substring(0, 5)}...` : 'NOT_SET',
+        pass: config.email.smtp.auth.pass ? '[CONFIGURED]' : 'NOT_SET',
+        secure: config.email.smtp.secure
+      });
+
+      if (!config.email.smtp.host) {
+        logger.warn('Email service disabled - SMTP_HOST not configured');
+        return;
+      }
+
+      if (!config.email.smtp.auth.user) {
+        logger.warn('Email service disabled - SMTP_USER not configured');
+        return;
+      }
+
+      if (!config.email.smtp.auth.pass) {
+        logger.warn('Email service disabled - SMTP_PASS not configured');
         return;
       }
 
@@ -41,6 +59,10 @@ class EmailService {
           user: config.email.smtp.auth.user,
           pass: config.email.smtp.auth.pass,
         },
+        // Add additional options for better reliability
+        connectionTimeout: 10000, // 10 seconds
+        greetingTimeout: 5000, // 5 seconds
+        socketTimeout: 10000, // 10 seconds
       });
 
       logger.info('Email service initialized successfully');

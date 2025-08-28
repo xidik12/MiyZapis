@@ -69,6 +69,17 @@ interface SpecialistWithUser extends Specialist {
 }
 
 export class SpecialistService {
+  private static getDefaultWorkingHours() {
+    return {
+      monday: { isWorking: true, start: '09:00', end: '17:00' },
+      tuesday: { isWorking: true, start: '09:00', end: '17:00' },
+      wednesday: { isWorking: true, start: '09:00', end: '17:00' },
+      thursday: { isWorking: true, start: '09:00', end: '17:00' },
+      friday: { isWorking: true, start: '09:00', end: '17:00' },
+      saturday: { isWorking: false, start: '09:00', end: '17:00' },
+      sunday: { isWorking: false, start: '09:00', end: '17:00' }
+    };
+  }
   // Create specialist profile
   static async createProfile(
     userId: string,
@@ -118,7 +129,7 @@ export class SpecialistService {
           latitude: data.latitude,
           longitude: data.longitude,
           timezone: data.timezone || user.timezone,
-          workingHours: JSON.stringify(data.workingHours || {}),
+          workingHours: JSON.stringify(data.workingHours || SpecialistService.getDefaultWorkingHours()),
           paymentMethods: JSON.stringify(data.paymentMethods || []),
           serviceArea: JSON.stringify(data.serviceArea || {}),
           notifications: JSON.stringify(data.notifications || {}),
@@ -162,6 +173,18 @@ export class SpecialistService {
         userId, 
         specialistId: specialist.id 
       });
+
+      // Generate initial availability blocks from working hours
+      try {
+        const { AvailabilityService } = await import('./availability');
+        await AvailabilityService.generateAvailabilityFromWorkingHours(specialist.id);
+        logger.info('Initial availability blocks generated', {
+          specialistId: specialist.id
+        });
+      } catch (availabilityError) {
+        logger.warn('Failed to generate initial availability blocks:', availabilityError);
+        // Don't throw error as profile creation was successful
+      }
 
       return specialist as SpecialistWithUser;
     } catch (error) {
@@ -251,6 +274,20 @@ export class SpecialistService {
 
         return updatedSpecialist as SpecialistWithUser;
       });
+
+      // If working hours were updated, regenerate availability blocks
+      if (data.workingHours) {
+        try {
+          const { AvailabilityService } = await import('./availability');
+          await AvailabilityService.generateAvailabilityFromWorkingHours(result.id);
+          logger.info('Availability blocks regenerated from updated working hours', {
+            specialistId: result.id
+          });
+        } catch (availabilityError) {
+          logger.warn('Failed to regenerate availability blocks:', availabilityError);
+          // Don't throw error as profile update was successful
+        }
+      }
 
       logger.info('Specialist profile updated successfully', { 
         userId, 

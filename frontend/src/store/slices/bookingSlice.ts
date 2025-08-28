@@ -84,10 +84,13 @@ export const cancelBooking = createAsyncThunk(
 
 export const updateBookingStatus = createAsyncThunk(
   'booking/updateBookingStatus',
-  async ({ bookingId, status }: { bookingId: string; status: BookingStatus }, { rejectWithValue }) => {
+  async ({ bookingId, status, notes }: { bookingId: string; status: BookingStatus; notes?: string }, { rejectWithValue }) => {
     try {
-      const updatedBooking = await bookingService.updateBooking(bookingId, { status });
-      return { bookingId, status, booking: updatedBooking };
+      const updateData: { status: BookingStatus; specialistNotes?: string } = { status };
+      if (notes) {
+        updateData.specialistNotes = notes;
+      }
+      return await bookingService.updateBooking(bookingId, updateData);
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update booking status');
     }
@@ -104,7 +107,7 @@ const bookingSlice = createSlice({
     setCurrentBooking: (state, action: PayloadAction<Booking | null>) => {
       state.currentBooking = action.payload;
     },
-    updateBookingStatus: (state, action: PayloadAction<{
+    updateBookingLocal: (state, action: PayloadAction<{
       bookingId: string;
       status: BookingStatus;
       booking?: Booking;
@@ -192,32 +195,25 @@ const bookingSlice = createSlice({
       .addCase(cancelBooking.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
-      });
-
-    // Update Booking Status
-    builder
+      })
+      
+      // Update Booking Status
       .addCase(updateBookingStatus.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
       .addCase(updateBookingStatus.fulfilled, (state, action) => {
         state.isLoading = false;
-        const { bookingId, status, booking } = action.payload;
-        const existingBooking = state.bookings.find(b => b.id === bookingId);
+        const updatedBooking = action.payload;
+        const existingBooking = state.bookings.find(b => b.id === updatedBooking.id);
         
         if (existingBooking) {
-          existingBooking.status = status;
-          if (booking) {
-            Object.assign(existingBooking, booking);
-          }
+          Object.assign(existingBooking, updatedBooking);
         }
 
         // Update current booking if it matches
-        if (state.currentBooking?.id === bookingId) {
-          state.currentBooking.status = status;
-          if (booking) {
-            Object.assign(state.currentBooking, booking);
-          }
+        if (state.currentBooking?.id === updatedBooking.id) {
+          state.currentBooking = updatedBooking;
         }
         
         state.error = null;
@@ -229,5 +225,5 @@ const bookingSlice = createSlice({
   },
 });
 
-export const { clearError, setCurrentBooking, updateBookingStatus: updateBookingStatusLocally } = bookingSlice.actions;
+export const { clearError, setCurrentBooking, updateBookingLocal } = bookingSlice.actions;
 export default bookingSlice.reducer;

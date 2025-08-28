@@ -240,6 +240,57 @@ export class MessagingService {
       }
     });
 
+    try {
+      // Emit message to conversation room via Socket.IO
+      if (this.io) {
+        this.io.to(`conversation:${conversationId}`).emit('new_message', {
+          message,
+          conversationId
+        });
+        
+        // Also emit to receiver specifically if they're not in the room
+        const receiverSocketId = await redis?.hget(
+          `conversation:${conversationId}:participants`,
+          receiverId
+        );
+        
+        if (receiverSocketId) {
+          this.io.to(receiverSocketId).emit('new_message', {
+            message,
+            conversationId
+          });
+        }
+        
+        logger.info('Message emitted via socket', {
+          messageId: message.id,
+          conversationId,
+          senderId,
+          receiverId
+        });
+      }
+
+      // Send push notification to receiver
+      await this.notificationService.sendNotification(receiverId, {
+        type: 'NEW_MESSAGE',
+        title: `New message from ${message.sender.firstName} ${message.sender.lastName}`,
+        message: content.length > 100 ? content.substring(0, 97) + '...' : content,
+        data: {
+          conversationId,
+          messageId: message.id,
+          senderId,
+          senderName: `${message.sender.firstName} ${message.sender.lastName}`
+        }
+      });
+      
+      logger.info('Message notification sent', {
+        messageId: message.id,
+        receiverId
+      });
+    } catch (notificationError) {
+      logger.error('Failed to send message notification or socket emit:', notificationError);
+      // Don't throw error as message was successfully created
+    }
+
     return message;
   }
 

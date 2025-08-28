@@ -166,7 +166,7 @@ export interface ServiceCategory {
 }
 
 // Booking Types
-export type BookingStatus = 'pending_payment' | 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
+export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'IN_PROGRESS' | 'NO_SHOW' | 'pending_payment' | 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
 
 export interface Booking extends BaseEntity {
   serviceId: string;
@@ -192,6 +192,16 @@ export interface Booking extends BaseEntity {
   cancellationDeadline?: string;
   cancellationReason?: string;
   rescheduleHistory?: RescheduleRecord[];
+  
+  // Flattened fields for frontend convenience (added by backend transform)
+  customerName: string;
+  customerEmail?: string;  
+  customerPhone?: string;
+  serviceName: string;
+  date: string; // YYYY-MM-DD format
+  time?: string; // HH:MM format  
+  amount: number; // Same as totalAmount
+  type?: 'online' | 'in-person'; // Based on meetingLink presence
 }
 
 export interface RescheduleRecord {
