@@ -1271,6 +1271,8 @@ const translations: Translations = {
   'settings.subtitle': { en: 'Manage your account preferences and business settings', uk: 'Керуйте налаштуваннями облікового запису та бізнесу', ru: 'Управляйте настройками аккаунта и бизнеса' },
   'settings.account': { en: 'Account', uk: 'Обліковий запис', ru: 'Аккаунт' },
   'settings.accountDescription': { en: 'Manage your account and booking preferences', uk: 'Керуйте обліковим записом та налаштуваннями бронювання', ru: 'Управляйте аккаунтом и настройками бронирования' },
+  'settings.profile': { en: 'Profile', uk: 'Профіль', ru: 'Профиль' },
+  'settings.profileDescription': { en: 'Manage your profile photo and personal information', uk: 'Керуйте фото профілю та особистою інформацією', ru: 'Управляйте фото профиля и личной информацией' },
   'settings.notifications': { en: 'Notifications', uk: 'Сповіщення', ru: 'Уведомления' },
   'settings.notificationsDescription': { en: 'Configure how you receive notifications', uk: 'Налаштуйте отримання сповіщень', ru: 'Настройте получение уведомлений' },
   'settings.privacy': { en: 'Privacy', uk: 'Конфіденційність', ru: 'Конфиденциальность' },
