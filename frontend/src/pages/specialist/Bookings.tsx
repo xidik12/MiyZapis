@@ -95,7 +95,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600">{t('bookingDetails.name')}</label>
-                <p className="font-medium">
+                <p className="font-medium text-gray-900">
                   {booking.customer 
                     ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
                     : (booking.customerName || 'Unknown Customer')
@@ -104,7 +104,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               </div>
               <div>
                 <label className="text-sm text-gray-600">{t('bookingDetails.contact')}</label>
-                <p className="font-medium">
+                <p className="font-medium text-gray-900">
                   {booking.customer?.phoneNumber || booking.customer?.email || booking.customerEmail || booking.customerPhone || t('bookingDetails.contactNotAvailable')}
                 </p>
               </div>
@@ -117,17 +117,17 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600">{t('bookings.service')}</label>
-                <p className="font-medium">
+                <p className="font-medium text-gray-900">
                   {booking.service?.name || getTranslatedServiceName(booking.serviceName || 'Unknown Service')}
                 </p>
               </div>
               <div>
                 <label className="text-sm text-gray-600">{t('bookingDetails.duration')}</label>
-                <p className="font-medium">{booking.duration} {t('time.minutes')}</p>
+                <p className="font-medium text-gray-900">{booking.duration} {t('time.minutes')}</p>
               </div>
               <div>
                 <label className="text-sm text-gray-600">{t('bookings.amount')}</label>
-                <p className="font-medium">{formatPrice(booking.totalAmount)}</p>
+                <p className="font-medium text-gray-900">{formatPrice(booking.totalAmount)}</p>
               </div>
               <div>
                 <label className="text-sm text-gray-600">{t('bookings.type')}</label>
@@ -150,13 +150,13 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600">{t('bookings.date')}</label>
-                <p className="font-medium">
+                <p className="font-medium text-gray-900">
                   {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleDateString('uk-UA') : booking.date}
                 </p>
               </div>
               <div>
                 <label className="text-sm text-gray-600">{t('bookingDetails.time')}</label>
-                <p className="font-medium">{new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}</p>
+                <p className="font-medium text-gray-900">{new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}</p>
               </div>
             </div>
             {booking.meetingLink && (
