@@ -367,6 +367,15 @@ const SpecialistBookings: React.FC = () => {
   };
   
   const openBookingDetails = (booking: Booking) => {
+    console.log('📋 Opening booking details:', booking);
+    console.log('📋 Fields check:', {
+      customerName: booking.customerName,
+      serviceName: booking.serviceName,
+      date: booking.date,
+      time: booking.time,
+      amount: booking.amount,
+      type: booking.type
+    });
     setSelectedBooking(booking);
     setShowDetailModal(true);
   };

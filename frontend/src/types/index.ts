@@ -192,6 +192,16 @@ export interface Booking extends BaseEntity {
   cancellationDeadline?: string;
   cancellationReason?: string;
   rescheduleHistory?: RescheduleRecord[];
+  
+  // Flattened fields for frontend convenience (added by backend transform)
+  customerName?: string;
+  customerEmail?: string;  
+  customerPhone?: string;
+  serviceName?: string;
+  date?: string; // YYYY-MM-DD format
+  time?: string; // HH:MM format  
+  amount?: number; // Same as totalAmount
+  type?: 'online' | 'in-person'; // Based on meetingLink presence
 }
 
 export interface RescheduleRecord {
