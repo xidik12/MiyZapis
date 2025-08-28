@@ -13,6 +13,47 @@ import { prisma } from '@/config/database';
 
 export class AvailabilityController {
   /**
+   * Generate availability blocks from working hours
+   * POST /specialists/availability/generate
+   */
+  static async generateFromWorkingHours(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const specialistId = req.user?.specialistProfile?.id;
+      
+      if (!specialistId) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Specialist profile not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      logger.info('Generating availability blocks from working hours', { specialistId });
+
+      const result = await AvailabilityService.generateAvailabilityFromWorkingHours(specialistId);
+
+      res.status(200).json(
+        createSuccessResponse(
+          result,
+          'Availability blocks generated successfully',
+          req.headers['x-request-id'] as string
+        )
+      );
+    } catch (error) {
+      logger.error('Error generating availability blocks:', error);
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_ERROR,
+          'Failed to generate availability blocks',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+  /**
    * Get specialist availability
    * GET /specialists/:id/availability
    */

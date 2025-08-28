@@ -162,6 +162,17 @@ export class FileController {
             url: absoluteUrl
           });
 
+          // Check if user exists before creating file record
+          const userExists = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true }
+          });
+
+          if (!userExists) {
+            logger.error('User not found when creating file record', { userId });
+            throw new Error('User not found');
+          }
+
           const fileRecord = await prisma.file.create({
             data: {
               filename: processedFile.filename,
