@@ -19,10 +19,10 @@ const initialState: BookingState = {
 // Async thunks
 export const fetchBookings = createAsyncThunk(
   'booking/fetchBookings',
-  async (filters: BookingFilters = {}, { rejectWithValue }) => {
+  async ({ filters = {}, userType = 'customer' }: { filters?: BookingFilters; userType?: 'customer' | 'specialist' } = {}, { rejectWithValue }) => {
     try {
-      console.log('📡 Fetching bookings with filters:', filters);
-      const result = await bookingService.getBookings(filters);
+      console.log('📡 Fetching bookings with filters:', filters, 'userType:', userType);
+      const result = await bookingService.getBookings(filters, userType);
       console.log('📦 Bookings API response:', result);
       console.log('📊 Number of bookings received:', result.bookings?.length || 0);
       return result;

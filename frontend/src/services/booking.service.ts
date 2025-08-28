@@ -90,8 +90,11 @@ export class BookingService {
   }
 
   // Get user's bookings
-  async getBookings(filters: BookingFilters = {}): Promise<{ bookings: Booking[]; pagination: Pagination }> {
+  async getBookings(filters: BookingFilters = {}, userType: 'customer' | 'specialist' = 'customer'): Promise<{ bookings: Booking[]; pagination: Pagination }> {
     const params = new URLSearchParams();
+    
+    // Add userType parameter - this is crucial for the backend to determine filtering
+    params.append('userType', userType);
     
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -99,6 +102,7 @@ export class BookingService {
       }
     });
 
+    console.log('📡 BookingService: Fetching bookings with userType:', userType, 'filters:', filters);
     const response = await apiClient.get<{ bookings: Booking[]; pagination: Pagination }>(`/bookings?${params}`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get bookings');

@@ -248,7 +248,7 @@ const SpecialistBookings: React.FC = () => {
   
   // Load bookings on component mount
   useEffect(() => {
-    dispatch(fetchBookings({}));
+    dispatch(fetchBookings({ filters: {}, userType: 'specialist' }));
   }, [dispatch]);
   
   // Simple service name translation
@@ -445,7 +445,7 @@ const SpecialistBookings: React.FC = () => {
             </div>
             <div className="mt-4">
               <button
-                onClick={() => dispatch(fetchBookings({}))}
+                onClick={() => dispatch(fetchBookings({ filters: {}, userType: 'specialist' }))}
                 className="bg-red-100 hover:bg-red-200 text-red-800 font-medium py-2 px-4 rounded-lg transition-colors"
               >
                 {t('common.retry')}
