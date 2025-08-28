@@ -56,12 +56,28 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Add request timestamp for debugging
+    // Add detailed debugging information
+    const requestStartTime = Date.now();
+    const requestId = `req_${requestStartTime}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Store debugging info in config
+    (config as any).metadata = {
+      startTime: requestStartTime,
+      requestId: requestId
+    };
+
     if (environment.DEBUG) {
-      console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
-        headers: config.headers,
-        data: config.data,
-      });
+      console.group(`🚀 [API Request] ${requestId}`);
+      console.log(`Method: ${config.method?.toUpperCase()}`);
+      console.log(`URL: ${config.url}`);
+      console.log(`Base URL: ${config.baseURL}`);
+      console.log(`Full URL: ${config.baseURL}${config.url}`);
+      console.log(`Headers:`, JSON.stringify(config.headers, null, 2));
+      console.log(`Data:`, config.data ? JSON.stringify(config.data, null, 2) : 'No data');
+      console.log(`Params:`, config.params ? JSON.stringify(config.params, null, 2) : 'No params');
+      console.log(`Timestamp: ${new Date().toISOString()}`);
+      console.log(`Auth Token:`, token ? `${token.substring(0, 20)}...` : 'No token');
+      console.groupEnd();
     }
     
     return config;
@@ -75,17 +91,70 @@ api.interceptors.request.use(
 // Response interceptor for error handling and token refresh
 api.interceptors.response.use(
   (response: AxiosResponse<ApiResponse<any>>) => {
+    const metadata = (response.config as any).metadata;
+    const responseTime = metadata ? Date.now() - metadata.startTime : 0;
+
     if (environment.DEBUG) {
-      console.log(`[API Response] ${response.config.method?.toUpperCase()} ${response.config.url}`, response.data);
+      console.group(`✅ [API Response] ${metadata?.requestId || 'unknown'}`);
+      console.log(`Method: ${response.config.method?.toUpperCase()}`);
+      console.log(`URL: ${response.config.url}`);
+      console.log(`Status: ${response.status} ${response.statusText}`);
+      console.log(`Response Time: ${responseTime}ms`);
+      console.log(`Headers:`, response.headers);
+      console.log(`Data:`, response.data);
+      console.groupEnd();
     }
-    
+
     return response;
   },
   async (error) => {
     const originalRequest = error.config;
     
+    // Enhanced error debugging
+    const metadata = (originalRequest as any)?.metadata;
+    const responseTime = metadata ? Date.now() - metadata.startTime : 0;
+
     if (environment.DEBUG) {
-      console.error(`[API Error] ${originalRequest?.method?.toUpperCase()} ${originalRequest?.url}`, error.response?.data || error.message);
+      console.group(`❌ [API ERROR] ${metadata?.requestId || 'unknown'}`);
+      console.error(`Method: ${originalRequest?.method?.toUpperCase()}`);
+      console.error(`URL: ${originalRequest?.url}`);
+      console.error(`Base URL: ${originalRequest?.baseURL}`);
+      console.error(`Full URL: ${originalRequest?.baseURL}${originalRequest?.url}`);
+      console.error(`Response Time: ${responseTime}ms`);
+      console.error(`Timestamp: ${new Date().toISOString()}`);
+
+      if (error.response) {
+        console.error(`Status: ${error.response.status} ${error.response.statusText}`);
+        console.error(`Status Code: ${error.response.status}`);
+        console.error(`Response Headers:`, error.response.headers);
+        console.error(`Response Data:`, error.response.data);
+
+        // Special detailed logging for 500 errors
+        if (error.response.status >= 500) {
+          console.error(`🚨 CRITICAL SERVER ERROR 🚨`);
+          console.error(`Error Details:`, {
+            status: error.response.status,
+            statusText: error.response.statusText,
+            url: `${originalRequest?.baseURL}${originalRequest?.url}`,
+            method: originalRequest?.method?.toUpperCase(),
+            requestData: originalRequest?.data,
+            requestHeaders: originalRequest?.headers,
+            responseHeaders: error.response.headers,
+            responseData: error.response.data,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            url: window.location.href
+          });
+        }
+      } else if (error.request) {
+        console.error(`Network Error - No response received`);
+        console.error(`Request:`, error.request);
+      } else {
+        console.error(`Request Setup Error:`, error.message);
+      }
+
+      console.error(`Error Object:`, error);
+      console.groupEnd();
     }
 
     // Handle 401 Unauthorized - attempt token refresh
@@ -309,5 +378,131 @@ export const createCancelToken = () => {
 export const isRequestCancelled = (error: any): boolean => {
   return axios.isCancel(error);
 };
+
+// Debug utilities for 500 error diagnosis
+export const debugApiConnection = async () => {
+  console.group('🔍 API Connection Debug Info');
+
+  console.log('Environment:', environment);
+  console.log('Base URL:', api.defaults.baseURL);
+  console.log('Timeout:', api.defaults.timeout);
+  console.log('Headers:', api.defaults.headers);
+
+  // Test basic connectivity
+  try {
+    const healthResponse = await axios.get(`${environment.API_URL.replace('/api/v1', '')}/health`, { timeout: 5000 });
+    console.log('Health Check Response:', healthResponse.data);
+  } catch (error: any) {
+    console.error('Health Check Failed:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message
+    });
+  }
+
+  // Test API v1 endpoint
+  try {
+    const apiResponse = await axios.get(`${environment.API_URL}`, { timeout: 5000 });
+    console.log('API v1 Response:', apiResponse.data);
+  } catch (error: any) {
+    console.error('API v1 Check Failed:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message
+    });
+  }
+
+  console.groupEnd();
+};
+
+export const debugAuthStatus = () => {
+  console.group('🔐 Authentication Debug Info');
+
+  const authToken = getAuthToken();
+  const refreshToken = getRefreshToken();
+
+  console.log('Auth Token Present:', !!authToken);
+  console.log('Auth Token Preview:', authToken ? `${authToken.substring(0, 20)}...` : 'None');
+  console.log('Refresh Token Present:', !!refreshToken);
+  console.log('Refresh Token Preview:', refreshToken ? `${refreshToken.substring(0, 20)}...` : 'None');
+  console.log('LocalStorage Keys:', Object.keys(localStorage).filter(key => key.includes('auth') || key.includes('token')));
+
+  console.groupEnd();
+};
+
+export const debugBrowserInfo = () => {
+  console.group('🌐 Browser Debug Info');
+
+  console.log('User Agent:', navigator.userAgent);
+  console.log('Language:', navigator.language);
+  console.log('Languages:', navigator.languages);
+  console.log('Cookie Enabled:', navigator.cookieEnabled);
+  console.log('Online Status:', navigator.onLine);
+  console.log('URL:', window.location.href);
+  console.log('Protocol:', window.location.protocol);
+  console.log('Host:', window.location.host);
+  console.log('Pathname:', window.location.pathname);
+  console.log('Search:', window.location.search);
+
+  console.groupEnd();
+};
+
+export const runFullDiagnostics = async () => {
+  console.group('🚨 FULL API DIAGNOSTICS - 500 Error Investigation');
+  console.log('Timestamp:', new Date().toISOString());
+
+  await debugApiConnection();
+  debugAuthStatus();
+  debugBrowserInfo();
+
+  // Test common failing endpoints
+  const testEndpoints = [
+    '/services',
+    '/specialists/profile',
+    '/analytics/overview',
+    '/bookings'
+  ];
+
+  console.group('🧪 Testing Common Endpoints');
+
+  for (const endpoint of testEndpoints) {
+    try {
+      console.log(`Testing ${endpoint}...`);
+      const response = await axios.get(`${environment.API_URL}${endpoint}`, {
+        timeout: 10000,
+        headers: {
+          Authorization: getAuthToken() ? `Bearer ${getAuthToken()}` : undefined
+        }
+      });
+      console.log(`✅ ${endpoint}: ${response.status} - ${response.statusText}`);
+    } catch (error: any) {
+      console.error(`❌ ${endpoint}:`, {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message
+      });
+    }
+  }
+
+  console.groupEnd();
+  console.groupEnd();
+};
+
+// Make debug functions available globally for easy access
+if (environment.DEBUG) {
+  (window as any).debugApiConnection = debugApiConnection;
+  (window as any).debugAuthStatus = debugAuthStatus;
+  (window as any).debugBrowserInfo = debugBrowserInfo;
+  (window as any).runFullDiagnostics = runFullDiagnostics;
+
+  console.log('🔧 Debug functions available:');
+  console.log('- debugApiConnection()');
+  console.log('- debugAuthStatus()');
+  console.log('- debugBrowserInfo()');
+  console.log('- runFullDiagnostics()');
+}
 
 export default apiClient;
