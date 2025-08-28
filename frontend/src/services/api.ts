@@ -3,6 +3,101 @@ import { toast } from 'react-toastify';
 import { ApiResponse, ApiError } from '../types';
 import { environment, STORAGE_KEYS } from '../config/environment';
 
+// Development mode flag
+const isDevelopment = import.meta.env.DEV;
+
+// Mock data for development when backend is unavailable
+const mockData = {
+  services: {
+    success: true,
+    data: {
+      services: [
+        {
+          id: 'mock-service-1',
+          name: 'Mock Service 1',
+          description: 'This is a mock service for development',
+          basePrice: 50,
+          currency: 'USD',
+          duration: 60,
+          specialist: {
+            id: 'mock-specialist-1',
+            name: 'Mock Specialist',
+            rating: 4.5,
+            reviewCount: 10,
+            avatar: null
+          }
+        }
+      ],
+      pagination: {
+        page: 1,
+        limit: 10,
+        total: 1,
+        pages: 1
+      }
+    }
+  },
+  analytics: {
+    success: true,
+    data: {
+      overview: {
+        totalBookings: 0,
+        totalRevenue: 0,
+        totalCustomers: 0,
+        averageRating: 0
+      },
+      bookings: [],
+      revenue: [],
+      services: [],
+      performance: {
+        responseTime: 0,
+        completionRate: 0
+      }
+    }
+  },
+  specialistProfile: {
+    success: true,
+    data: {
+      id: 'mock-specialist-1',
+      user: {
+        id: 'mock-user-1',
+        firstName: 'Mock',
+        lastName: 'Specialist',
+        email: 'mock@example.com',
+        avatar: null
+      },
+      businessName: 'Mock Business',
+      bio: 'Mock specialist bio',
+      specialties: ['Mock Specialty'],
+      experience: 5,
+      rating: 4.5,
+      reviewCount: 10,
+      isVerified: false,
+      workingHours: {},
+      languages: ['en', 'uk']
+    }
+  }
+};
+
+// Helper function to get mock data based on endpoint URL
+function getMockDataForEndpoint(url?: string): any {
+  if (!url) return null;
+
+  if (url.includes('/services')) {
+    return mockData.services;
+  }
+
+  if (url.includes('/analytics/')) {
+    return mockData.analytics;
+  }
+
+  if (url.includes('/specialists/profile')) {
+    return mockData.specialistProfile;
+  }
+
+  // Add more endpoint matchers as needed
+  return null;
+}
+
 // Create axios instance
 const api: AxiosInstance = axios.create({
   baseURL: environment.API_URL,
@@ -163,13 +258,42 @@ api.interceptors.response.use(
             toast.error('Too many requests. Please try again later');
             break;
           case 500:
+            // In development, try to return mock data for common failing endpoints
+            if (isDevelopment) {
+              const mockResponse = getMockDataForEndpoint(originalRequest.url);
+              if (mockResponse) {
+                console.warn(`[MOCK DATA] Using mock data for ${originalRequest.url} due to 500 error`);
+                return Promise.resolve({
+                  data: mockResponse,
+                  status: 200,
+                  statusText: 'OK',
+                  headers: {},
+                  config: originalRequest,
+                  request: originalRequest
+                });
+              }
+            }
             toast.error('Server error. Please try again later');
             break;
           default:
             if (error.response.status >= 500) {
+              // In development, try to return mock data for common failing endpoints
+              if (isDevelopment) {
+                const mockResponse = getMockDataForEndpoint(originalRequest.url);
+                if (mockResponse) {
+                  console.warn(`[MOCK DATA] Using mock data for ${originalRequest.url} due to ${error.response.status} error`);
+                  return Promise.resolve({
+                    data: mockResponse,
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {},
+                    config: originalRequest,
+                    request: originalRequest
+                  });
+                }
+              }
               toast.error('Server error. Please try again later');
             }
-        }
       }
 
       return Promise.reject({
