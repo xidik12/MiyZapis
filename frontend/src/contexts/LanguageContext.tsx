@@ -1475,6 +1475,7 @@ const translations: Translations = {
   'actions.bookNow': { en: 'Book Now', uk: 'Забронювати зараз', ru: 'Забронировать сейчас' },
   'actions.noServicesAvailable': { en: 'No services available', uk: 'Послуги недоступні', ru: 'Услуги недоступны' },
   'actions.favorite': { en: 'Favorite', uk: 'Обране', ru: 'Избранное' },
+  'actions.unfavorite': { en: 'Remove from Favorites', uk: 'Видалити з обраного', ru: 'Удалить из избранного' },
   
   // Errors
   'errors.specialistNotFound': { en: 'Specialist not found', uk: 'Спеціаліста не знайдено', ru: 'Специалист не найден' },
