@@ -442,6 +442,12 @@ const translations: Translations = {
   'dashboard.booking.status.completed': { en: 'Completed', uk: 'Завершено', ru: 'Завершено' },
   'dashboard.booking.status.inProgress': { en: 'In Progress', uk: 'В процесі', ru: 'В процессе' },
   'dashboard.booking.status.noShow': { en: 'No Show', uk: 'Не з\'явився', ru: 'Не явился' },
+  'dashboard.booking.status.PENDING': { en: 'Pending', uk: 'Очікує', ru: 'Ожидает' },
+  'dashboard.booking.status.CONFIRMED': { en: 'Confirmed', uk: 'Підтверджено', ru: 'Подтверждено' },
+  'dashboard.booking.status.CANCELLED': { en: 'Cancelled', uk: 'Скасовано', ru: 'Отменено' },
+  'dashboard.booking.status.COMPLETED': { en: 'Completed', uk: 'Завершено', ru: 'Завершено' },
+  'dashboard.booking.status.IN_PROGRESS': { en: 'In Progress', uk: 'В процесі', ru: 'В процессе' },
+  'dashboard.booking.status.NO_SHOW': { en: 'No Show', uk: 'Не з\'явився', ru: 'Не явился' },
 
   // Dashboard - Specialist Quick Actions
   'dashboard.specialist.addService': { en: 'Add Service', uk: 'Додати послугу', ru: 'Добавить услугу' },

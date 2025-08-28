@@ -786,8 +786,33 @@ export class BookingService {
 
       const totalPages = Math.ceil(total / limit);
 
+      // Transform bookings to include flattened fields for frontend compatibility
+      const transformedBookings = bookings.map(booking => {
+        const scheduledDate = new Date(booking.scheduledAt);
+        return {
+          ...booking,
+          // Flattened customer fields
+          customerName: booking.customer ? `${booking.customer.firstName} ${booking.customer.lastName}`.trim() : 'Unknown Customer',
+          customerEmail: booking.customer?.email,
+          customerPhone: booking.customer?.phoneNumber,
+          
+          // Flattened service fields  
+          serviceName: booking.service?.name || 'Unknown Service',
+          
+          // Flattened date/time fields
+          date: scheduledDate.toISOString().split('T')[0], // YYYY-MM-DD format
+          time: scheduledDate.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }),
+          
+          // Amount field (frontend expects 'amount' not 'totalAmount')
+          amount: booking.totalAmount,
+          
+          // Type field (based on meetingLink presence)
+          type: booking.meetingLink ? 'online' : 'in-person',
+        };
+      });
+
       return {
-        bookings: bookings as BookingWithDetails[],
+        bookings: transformedBookings as BookingWithDetails[],
         total,
         page,
         totalPages,

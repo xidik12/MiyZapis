@@ -92,7 +92,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               </div>
               <div>
                 <label className="text-sm text-gray-600">{t('bookingDetails.contact')}</label>
-                <p className="font-medium">+380 (67) 123-45-67</p>
+                <p className="font-medium">{booking.customerEmail || booking.customerPhone || t('common.notProvided')}</p>
               </div>
             </div>
           </div>
@@ -134,17 +134,21 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600">{t('bookings.date')}</label>
-                <p className="font-medium">{new Date(booking.date).toLocaleDateString('uk-UA')}</p>
+                <p className="font-medium">{booking.date}</p>
               </div>
               <div>
                 <label className="text-sm text-gray-600">{t('bookingDetails.time')}</label>
                 <p className="font-medium">{booking.time}</p>
               </div>
             </div>
-            {booking.location && (
+            {booking.meetingLink && (
               <div className="mt-4">
-                <label className="text-sm text-gray-600">{t('bookingDetails.location')}</label>
-                <p className="font-medium">{booking.location}</p>
+                <label className="text-sm text-gray-600">{t('bookingDetails.meetingLink')}</label>
+                <p className="font-medium text-blue-600 hover:text-blue-800">
+                  <a href={booking.meetingLink} target="_blank" rel="noopener noreferrer">
+                    {booking.meetingLink}
+                  </a>
+                </p>
               </div>
             )}
             {booking.notes && (
@@ -229,8 +233,8 @@ const SpecialistBookings: React.FC = () => {
     dispatch(fetchBookings({}));
   }, [dispatch]);
   
-  // Service name translation mapping
-  const getTranslatedServiceName = (ukrainianName: string): string => {
+  // Simple service name translation
+  const getTranslatedServiceName = (serviceName: string): string => {
     const serviceMapping: { [key: string]: string } = {
       'Консультація з психології': 'service.consultation',
       'Індивідуальна терапія': 'service.individualTherapy',
@@ -242,7 +246,7 @@ const SpecialistBookings: React.FC = () => {
       'Психологічна консультація': 'service.psychologyConsultation',
     };
     
-    return serviceMapping[ukrainianName] ? t(serviceMapping[ukrainianName]) : ukrainianName;
+    return serviceMapping[serviceName] ? t(serviceMapping[serviceName]) : serviceName;
   };
   
   // Duration translation function
@@ -274,10 +278,10 @@ const SpecialistBookings: React.FC = () => {
     let filtered = bookings.filter(booking => {
       const matchesStatus = filters.status === 'all' || booking.status === filters.status;
       const matchesSearch = !filters.searchTerm || 
-        booking.customerName?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        booking.customerName.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
         booking.serviceName.toLowerCase().includes(filters.searchTerm.toLowerCase());
       const matchesDateRange = filters.dateRange === 'all' || (
-        filters.dateRange === 'today' && new Date(booking.date).toDateString() === new Date().toDateString()
+        filters.dateRange === 'today' && booking.date === new Date().toISOString().split('T')[0]
       ) || (
         filters.dateRange === 'week' && 
         new Date(booking.date) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -623,7 +627,7 @@ const SpecialistBookings: React.FC = () => {
                         <div className="flex-shrink-0 h-10 w-10">
                           <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
                             <span className="text-white font-medium text-sm">
-                              {booking.customerName?.split(' ').map(n => n[0]).join('')}
+                              {booking.customerName.split(' ').map(n => n[0]).join('')}
                             </span>
                           </div>
                         </div>
@@ -641,7 +645,7 @@ const SpecialistBookings: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {new Date(booking.date).toLocaleDateString('uk-UA')}
+                        {booking.date}
                       </div>
                       <div className="text-sm text-gray-500">{booking.time}</div>
                     </td>
