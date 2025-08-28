@@ -1,12 +1,10 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { AnalyticsService } from '@/services/analytics/index';
 import { successResponse, errorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { AuthenticatedRequest } from '@/types';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/config/database';
 
 export class AnalyticsController {
   private analyticsService: AnalyticsService;

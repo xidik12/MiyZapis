@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
 import { logger } from '@/utils/logger';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/config/database';
 
 export interface AnalyticsFilters {
   startDate?: Date;

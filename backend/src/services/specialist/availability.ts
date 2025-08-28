@@ -1,7 +1,6 @@
-import { PrismaClient, AvailabilityBlock } from '@prisma/client';
+import { AvailabilityBlock } from '@prisma/client';
 import { logger } from '@/utils/logger';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/config/database';
 
 export interface CreateAvailabilityBlockData {
   specialistId: string;

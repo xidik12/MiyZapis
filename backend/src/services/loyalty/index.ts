@@ -1,7 +1,6 @@
-import { PrismaClient, LoyaltyTransaction } from '@prisma/client';
+import { LoyaltyTransaction } from '@prisma/client';
 import { logger } from '@/utils/logger';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/config/database';
 
 export interface CreateLoyaltyTransactionData {
   userId: string;
