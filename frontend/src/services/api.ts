@@ -111,23 +111,17 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     
     // Enhanced error debugging
-    const metadata = (originalRequest as any)?.metadata;
-    const responseTime = metadata ? Date.now() - metadata.startTime : 0;
-
     if (environment.DEBUG) {
+      const metadata = (originalRequest as any)?.metadata;
+      const responseTime = metadata ? Date.now() - metadata.startTime : 0;
+
       console.group(`❌ [API ERROR] ${metadata?.requestId || 'unknown'}`);
       console.error(`Method: ${originalRequest?.method?.toUpperCase()}`);
       console.error(`URL: ${originalRequest?.url}`);
-      console.error(`Base URL: ${originalRequest?.baseURL}`);
-      console.error(`Full URL: ${originalRequest?.baseURL}${originalRequest?.url}`);
       console.error(`Response Time: ${responseTime}ms`);
-      console.error(`Timestamp: ${new Date().toISOString()}`);
 
       if (error.response) {
         console.error(`Status: ${error.response.status} ${error.response.statusText}`);
-        console.error(`Status Code: ${error.response.status}`);
-        console.error(`Response Headers:`, error.response.headers);
-        console.error(`Response Data:`, error.response.data);
 
         // Special detailed logging for 500 errors
         if (error.response.status >= 500) {
@@ -137,23 +131,16 @@ api.interceptors.response.use(
             statusText: error.response.statusText,
             url: `${originalRequest?.baseURL}${originalRequest?.url}`,
             method: originalRequest?.method?.toUpperCase(),
-            requestData: originalRequest?.data,
-            requestHeaders: originalRequest?.headers,
-            responseHeaders: error.response.headers,
             responseData: error.response.data,
-            timestamp: new Date().toISOString(),
-            userAgent: navigator.userAgent,
-            url: window.location.href
+            timestamp: new Date().toISOString()
           });
         }
       } else if (error.request) {
         console.error(`Network Error - No response received`);
-        console.error(`Request:`, error.request);
       } else {
         console.error(`Request Setup Error:`, error.message);
       }
 
-      console.error(`Error Object:`, error);
       console.groupEnd();
     }
 
@@ -234,10 +221,11 @@ api.interceptors.response.use(
           case 500:
             toast.error('Server error. Please try again later');
             break;
-          default:
+                    default:
             if (error.response.status >= 500) {
               toast.error('Server error. Please try again later');
             }
+        }
       }
 
       return Promise.reject({
