@@ -253,7 +253,7 @@ const SpecialistSchedule: React.FC = () => {
     for (let i = 0; i < 7; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
-      const dayName = date.toLocaleDateString('en-US', { weekday: 'lowercase' });
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
       
       // Check if the specialist works on this day
       if (workingHours && workingHours[dayName] && workingHours[dayName].isWorking) {
