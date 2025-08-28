@@ -28,6 +28,7 @@ interface CreateSpecialistData {
   socialMedia?: Record<string, any>;
   portfolioImages?: string[];
   certifications?: string[];
+  autoBooking?: boolean;
 }
 
 interface UpdateSpecialistData {
@@ -56,6 +57,7 @@ interface UpdateSpecialistData {
   socialMedia?: Record<string, any>;
   portfolioImages?: string[];
   certifications?: string[];
+  autoBooking?: boolean;
 }
 
 interface SpecialistWithUser extends Specialist {
@@ -124,6 +126,7 @@ export class SpecialistService {
           socialMedia: JSON.stringify(data.socialMedia || {}),
           portfolioImages: JSON.stringify(data.portfolioImages || []),
           certifications: JSON.stringify(data.certifications || []),
+          autoBooking: data.autoBooking ?? false,
         },
         include: {
           user: {
@@ -213,6 +216,7 @@ export class SpecialistService {
           ...(data.socialMedia && { socialMedia: JSON.stringify(data.socialMedia) }),
           ...(data.portfolioImages && { portfolioImages: JSON.stringify(data.portfolioImages) }),
           ...(data.certifications && { certifications: JSON.stringify(data.certifications) }),
+          ...(data.autoBooking !== undefined && { autoBooking: data.autoBooking }),
           updatedAt: new Date(),
         },
         include: {

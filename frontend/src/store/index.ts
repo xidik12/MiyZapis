@@ -10,6 +10,7 @@ import specialistSlice from './slices/specialistSlice';
 import notificationSlice from './slices/notificationSlice';
 import paymentSlice from './slices/paymentSlice';
 import uiSlice from './slices/uiSlice';
+import favoritesSlice from './slices/favoritesSlice';
 
 // Root reducer
 const rootReducer = combineReducers({
@@ -21,6 +22,7 @@ const rootReducer = combineReducers({
   notification: notificationSlice,
   payment: paymentSlice,
   ui: uiSlice,
+  favorites: favoritesSlice,
 });
 
 // Persist configuration
@@ -28,7 +30,7 @@ const persistConfig = {
   key: 'root',
   storage,
   whitelist: ['auth', 'user', 'ui'], // Only persist certain slices
-  blacklist: ['booking', 'service', 'specialist', 'notification', 'payment'], // Don't persist real-time data
+  blacklist: ['booking', 'service', 'specialist', 'notification', 'payment', 'favorites'], // Don't persist real-time data
 };
 
 // Create persisted reducer

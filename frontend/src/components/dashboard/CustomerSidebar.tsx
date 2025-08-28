@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, logout } from '@/store/slices/authSlice';
+import { selectFavoritesCount, fetchFavoritesCount } from '@/store/slices/favoritesSlice';
 import {
   HomeIcon,
   CalendarIcon,
@@ -57,6 +58,15 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
   const location = useLocation();
   const { t } = useLanguage();
   const user = useAppSelector(selectUser);
+  const favoritesCount = useAppSelector(selectFavoritesCount);
+  const dispatch = useAppDispatch();
+
+  // Fetch favorites count on component mount
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchFavoritesCount());
+    }
+  }, [dispatch, user]);
 
   const navigationItems: NavigationItem[] = [
     {
@@ -94,7 +104,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       href: '/customer/favorites',
       icon: HeartIcon,
       iconSolid: HeartIconSolid,
-      badge: 0, // Dynamic count from API
+      badge: favoritesCount.specialists + favoritesCount.services,
     },
     {
       name: 'Reviews',
@@ -150,7 +160,6 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
   };
 
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
 
   const handleLogout = async () => {
     try {

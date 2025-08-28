@@ -6,7 +6,10 @@ import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { PaymentMethod } from '../../types';
 import { PaymentMethodsService } from '../../services/paymentMethods';
+import { fileUploadService } from '../../services/fileUpload.service';
+import { userService } from '../../services/user.service';
 import { toast } from 'react-toastify';
+import { Avatar } from '../../components/ui/Avatar';
 import { 
   UserCircleIcon,
   BellIcon,
@@ -19,7 +22,8 @@ import {
   EyeSlashIcon,
   PencilIcon,
   TrashIcon,
-  PlusIcon
+  PlusIcon,
+  CameraIcon
 } from '@heroicons/react/24/outline';
 
 
@@ -48,6 +52,11 @@ const CustomerSettings: React.FC = () => {
     phone: currentUser?.phone || '',
     avatar: currentUser?.avatar || '',
   });
+
+  // Profile image upload states
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [uploadSuccess, setUploadSuccess] = useState(false);
 
   // Notification settings
   const [notifications, setNotifications] = useState({
@@ -180,6 +189,92 @@ const CustomerSettings: React.FC = () => {
     setShowAddAddressModal(false);
   };
 
+  // Handle profile image upload
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type and size
+    if (!file.type.startsWith('image/')) {
+      setUploadError(
+        language === 'uk' ? 'Будь ласка, оберіть файл зображення' :
+        language === 'ru' ? 'Пожалуйста, выберите файл изображения' :
+        'Please select an image file'
+      );
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      setUploadError(
+        language === 'uk' ? 'Розмір файлу повинен бути менше 5МБ' :
+        language === 'ru' ? 'Размер файла должен быть меньше 5МБ' :
+        'File size must be less than 5MB'
+      );
+      return;
+    }
+
+    try {
+      setIsUploadingImage(true);
+      setUploadError('');
+      setUploadSuccess(false);
+      
+      // Upload the image
+      const result = await fileUploadService.uploadAvatar(file);
+      
+      // Update user profile with new avatar URL
+      await userService.updateProfile({ avatar: result.url });
+      
+      // Update local state
+      setUser(prev => ({ ...prev, avatar: result.url }));
+      setUploadSuccess(true);
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setUploadSuccess(false), 3000);
+      
+    } catch (error: any) {
+      console.error('Error uploading avatar:', error);
+      setUploadError(
+        error.message ||
+        (language === 'uk' ? 'Помилка завантаження зображення' :
+         language === 'ru' ? 'Ошибка загрузки изображения' :
+         'Failed to upload image')
+      );
+    } finally {
+      setIsUploadingImage(false);
+      // Clear the file input
+      event.target.value = '';
+    }
+  };
+
+  // Handle profile image removal
+  const handleImageRemove = async () => {
+    try {
+      setIsUploadingImage(true);
+      setUploadError('');
+      
+      // Update user profile to remove avatar
+      await userService.updateProfile({ avatar: null });
+      
+      // Update local state
+      setUser(prev => ({ ...prev, avatar: '' }));
+      setUploadSuccess(true);
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setUploadSuccess(false), 3000);
+      
+    } catch (error: any) {
+      console.error('Error removing avatar:', error);
+      setUploadError(
+        error.message ||
+        (language === 'uk' ? 'Помилка видалення зображення' :
+         language === 'ru' ? 'Ошибка удаления изображения' :
+         'Failed to remove image')
+      );
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
   const sections = [
     { id: 'account', label: t('customer.settings.account'), icon: UserCircleIcon },
     { id: 'notifications', label: t('customer.settings.notifications'), icon: BellIcon },
@@ -237,27 +332,73 @@ const CustomerSettings: React.FC = () => {
                   </h2>
                   
                   {/* Profile Picture */}
-                  <div className="flex items-center mb-6">
-                    {user.avatar ? (
-                      <img
-                        src={user.avatar}
-                        alt="Profile"
-                        className="w-20 h-20 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
-                        <span className="text-white font-bold text-2xl">
-                          {user.firstName?.[0]}{user.lastName?.[0]}
-                        </span>
+                  <div className="mb-8">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                      {language === 'uk' ? 'Фото профілю' : language === 'ru' ? 'Фото профиля' : 'Profile Photo'}
+                    </label>
+                    <div className="flex items-center space-x-6">
+                      <div className="relative">
+                        <Avatar
+                          src={user.avatar}
+                          alt={user.firstName || 'Profile'}
+                          size="xl"
+                          className="border-4 border-gray-200 dark:border-gray-600"
+                        />
+                        {isUploadingImage && (
+                          <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    <div className="ml-4">
-                      <button className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors">
-                        {t('profile.changePhoto')}
-                      </button>
-                      <button className="ml-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">
-                        {t('common.remove')}
-                      </button>
+                      
+                      <div className="flex flex-col space-y-3">
+                        <div className="flex space-x-3">
+                          <label className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageUpload}
+                              className="hidden"
+                              disabled={isUploadingImage}
+                            />
+                            <CameraIcon className="w-4 h-4 inline mr-2" />
+                            {isUploadingImage ? 
+                              (language === 'uk' ? 'Завантаження...' : language === 'ru' ? 'Загрузка...' : 'Uploading...') :
+                              (language === 'uk' ? 'Змінити фото' : language === 'ru' ? 'Изменить фото' : 'Change Photo')
+                            }
+                          </label>
+                          
+                          {user.avatar && (
+                            <button
+                              onClick={handleImageRemove}
+                              disabled={isUploadingImage}
+                              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600"
+                            >
+                              <TrashIcon className="w-4 h-4 inline mr-2" />
+                              {language === 'uk' ? 'Видалити' : language === 'ru' ? 'Удалить' : 'Remove'}
+                            </button>
+                          )}
+                        </div>
+                        
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {language === 'uk' ? 'Максимальний розмір: 5МБ. Підтримуються формати: JPG, PNG, WebP' :
+                           language === 'ru' ? 'Максимальный размер: 5МБ. Поддерживаемые форматы: JPG, PNG, WebP' :
+                           'Maximum size: 5MB. Supported formats: JPG, PNG, WebP'}
+                        </p>
+                        
+                        {/* Upload Status Messages */}
+                        {uploadError && (
+                          <div className="text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg border border-red-200 dark:border-red-800">
+                            {uploadError}
+                          </div>
+                        )}
+                        
+                        {uploadSuccess && (
+                          <div className="text-green-600 dark:text-green-400 text-sm bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-lg border border-green-200 dark:border-green-800">
+                            {language === 'uk' ? 'Фото успішно оновлено!' : language === 'ru' ? 'Фото успешно обновлено!' : 'Photo updated successfully!'}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 

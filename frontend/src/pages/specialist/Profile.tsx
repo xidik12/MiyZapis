@@ -5,6 +5,7 @@ import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { specialistService } from '../../services/specialist.service';
 import { userService } from '../../services/user.service';
+import { fileUploadService } from '../../services/fileUpload.service';
 import { isFeatureEnabled } from '../../config/features';
 import { ProfessionDropdown } from '../../components/ui/ProfessionDropdown';
 import { LocationPicker } from '../../components/LocationPicker';
@@ -290,6 +291,9 @@ const SpecialistProfile: React.FC = () => {
   const [showErrorMessage, setShowErrorMessage] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [isUploadingPortfolio, setIsUploadingPortfolio] = useState(false);
+  
+  // Avatar upload states
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   // Active tab state
   const [activeTab, setActiveTab] = useState<'personal' | 'professional' | 'business' | 'portfolio'>('personal');
@@ -702,6 +706,61 @@ const SpecialistProfile: React.FC = () => {
     }
   };
 
+  // Handle avatar upload
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type and size
+    if (!file.type.startsWith('image/')) {
+      showErrorNotification(
+        language === 'uk' ? 'Будь ласка, оберіть файл зображення' :
+        language === 'ru' ? 'Пожалуйста, выберите файл изображения' :
+        'Please select an image file'
+      );
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      showErrorNotification(
+        language === 'uk' ? 'Розмір файлу повинен бути менше 5МБ' :
+        language === 'ru' ? 'Размер файла должен быть меньше 5МБ' :
+        'File size must be less than 5MB'
+      );
+      return;
+    }
+
+    try {
+      setIsUploadingAvatar(true);
+      
+      // Upload the image
+      const result = await fileUploadService.uploadAvatar(file);
+      
+      // Update user profile with new avatar URL
+      await userService.updateProfile({ avatar: result.url });
+      
+      showSuccessNotification(
+        language === 'uk' ? 'Аватар успішно оновлено' :
+        language === 'ru' ? 'Аватар успешно обновлён' :
+        'Avatar updated successfully'
+      );
+
+      // Clear the file input
+      event.target.value = '';
+      
+    } catch (error: any) {
+      console.error('❤️ Avatar upload error:', error);
+      showErrorNotification(
+        error.message || 
+        (language === 'uk' ? 'Помилка завантаження аватара' :
+         language === 'ru' ? 'Ошибка загрузки аватара' :
+         'Failed to upload avatar')
+      );
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
   // Handle portfolio image upload
   const handlePortfolioUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -855,21 +914,30 @@ const SpecialistProfile: React.FC = () => {
             <div className="flex items-start gap-6">
               {/* Modern Avatar */}
               <div className="relative group">
-                <div className="w-28 h-28 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg ring-4 ring-white dark:ring-gray-800">
-                  {profile.firstName?.[0]}{profile.lastName?.[0]}
-                </div>
+                {user?.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={profile.firstName || 'Profile'}
+                    className="w-28 h-28 rounded-2xl object-cover shadow-lg ring-4 ring-white dark:ring-gray-800"
+                  />
+                ) : (
+                  <div className="w-28 h-28 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg ring-4 ring-white dark:ring-gray-800">
+                    {profile.firstName?.[0]}{profile.lastName?.[0]}
+                  </div>
+                )}
+                {isUploadingAvatar && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                  </div>
+                )}
                 {isEditing && (
-                  <label className="absolute -bottom-2 -right-2 bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-xl cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl opacity-0 group-hover:opacity-100">
+                  <label className="absolute -bottom-2 -right-2 bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-xl cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed">
                     <input
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          console.log('Avatar upload:', file.name);
-                        }
-                      }}
+                      disabled={isUploadingAvatar}
+                      onChange={handleAvatarUpload}
                     />
                     <CameraIcon className="h-4 w-4" />
                   </label>

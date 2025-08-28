@@ -29,7 +29,7 @@ const BookingFlow: React.FC = () => {
   // Always prioritize service ID from URL params, then query params, then specialist route
   const serviceId = paramServiceId || queryServiceId;
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
   const user = useAppSelector(selectUser);
   
@@ -41,6 +41,7 @@ const BookingFlow: React.FC = () => {
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [bookingNotes, setBookingNotes] = useState('');
+  const [bookingResult, setBookingResult] = useState<any>(null);
 
   const steps: BookingStep[] = [
     { id: 'service', title: t('booking.selectService'), completed: false },
@@ -66,13 +67,18 @@ const BookingFlow: React.FC = () => {
             setService(serviceData);
             
             // Fetch specialist data from the service
-            if (serviceData.specialistId) {
-              console.log('🔍 BookingFlow: Fetching specialist with ID:', serviceData.specialistId);
-              const specialistData = await specialistService.getPublicProfile(serviceData.specialistId);
+            const currentSpecialistId = serviceData.specialistId || serviceData.specialist?.id;
+            if (currentSpecialistId) {
+              console.log('🔍 BookingFlow: Fetching specialist with ID:', currentSpecialistId);
+              const specialistData = await specialistService.getPublicProfile(currentSpecialistId);
               console.log('✅ BookingFlow: Specialist fetched successfully:', specialistData);
               setSpecialist(specialistData);
+            } else if (serviceData.specialist) {
+              // Use embedded specialist data if available
+              console.log('✅ BookingFlow: Using embedded specialist data:', serviceData.specialist);
+              setSpecialist(serviceData.specialist);
             } else {
-              console.warn('⚠️ BookingFlow: Service has no specialistId:', serviceData);
+              console.warn('⚠️ BookingFlow: Service has no specialistId or specialist data:', serviceData);
             }
           } catch (error) {
             console.warn('Service not found by ID, trying specialist approach:', error);
@@ -114,7 +120,7 @@ const BookingFlow: React.FC = () => {
   useEffect(() => {
     // Fetch available time slots when date is selected
     const fetchAvailableSlots = async () => {
-      const currentSpecialistId = specialist?.id || service?.specialistId || specialistId;
+      const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
       
       if (!currentSpecialistId || !selectedDate) {
         console.log('🔍 BookingFlow: Cannot fetch slots - specialistId:', currentSpecialistId, 'selectedDate:', selectedDate);
@@ -155,7 +161,7 @@ const BookingFlow: React.FC = () => {
   };
 
   const handleBookingSubmit = async () => {
-    const currentSpecialistId = specialist?.id || service?.specialistId || specialistId;
+    const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
     
     console.log('📋 BookingFlow: Attempting to create booking...');
     console.log('🔍 BookingFlow: Booking data check:', {
@@ -172,17 +178,25 @@ const BookingFlow: React.FC = () => {
     }
 
     try {
+      // Combine date and time into scheduledAt DateTime
+      const [hours, minutes] = selectedTime.split(':').map(Number);
+      const scheduledAt = new Date(selectedDate);
+      scheduledAt.setHours(hours, minutes, 0, 0);
+      
       const bookingData = {
-        specialistId: currentSpecialistId,
         serviceId: service.id,
-        date: selectedDate.toISOString().split('T')[0],
-        time: selectedTime,
-        notes: bookingNotes,
+        scheduledAt: scheduledAt.toISOString(),
+        duration: service.duration || 60, // Default to 60 minutes if not specified
+        customerNotes: bookingNotes || undefined,
+        loyaltyPointsUsed: 0, // Default to 0
       };
       
       console.log('📤 BookingFlow: Sending booking data:', bookingData);
-      const booking = await bookingService.createBooking(bookingData);
-      console.log('✅ BookingFlow: Booking created successfully:', booking);
+      const result = await bookingService.createBooking(bookingData);
+      console.log('✅ BookingFlow: Booking created successfully:', result);
+      
+      // Store booking result for confirmation step
+      setBookingResult(result);
       
       // Navigate to confirmation step
       setCurrentStep(steps.length - 1);
@@ -293,7 +307,7 @@ const BookingFlow: React.FC = () => {
                     <div className="text-center">
                       <div className="font-medium">{date.getDate()}</div>
                       <div className="text-xs opacity-75">
-                        {date.toLocaleDateString(language, { weekday: 'short' })}
+                        {date.toLocaleDateString(language || 'en', { weekday: 'short' })}
                       </div>
                     </div>
                   </button>
@@ -381,7 +395,7 @@ const BookingFlow: React.FC = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">{t('booking.dateTime')}</span>
                   <span className="font-medium text-gray-900 dark:text-white">
-                    {selectedDate?.toLocaleDateString(language)} {selectedTime}
+                    {selectedDate?.toLocaleDateString(language || 'en')} {selectedTime}
                   </span>
                 </div>
                 
@@ -429,16 +443,33 @@ const BookingFlow: React.FC = () => {
         );
 
       case 4: // Confirmation
+        const booking = bookingResult?.booking;
+        const isAutoBooked = booking?.status === 'CONFIRMED';
+        const isPending = booking?.status === 'PENDING';
+        
         return (
           <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 text-center">
-              <CheckCircleIcon className="w-16 h-16 text-green-600 mx-auto mb-4" />
+              <CheckCircleIcon className={`w-16 h-16 mx-auto mb-4 ${isAutoBooked ? 'text-green-600' : 'text-yellow-600'}`} />
+              
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                {t('booking.bookingConfirmed')}
+                {isAutoBooked ? t('booking.bookingConfirmed') : t('booking.bookingRequested')}
               </h3>
+              
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {t('booking.confirmationMessage')}
+                {isAutoBooked 
+                  ? t('booking.autoBookingConfirmed') 
+                  : t('booking.manualBookingMessage')
+                }
               </p>
+              
+              {isPending && (
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    {t('booking.waitingForSpecialistConfirmation')}
+                  </p>
+                </div>
+              )}
               
               <button
                 onClick={() => navigate('/customer/bookings')}
@@ -446,6 +477,50 @@ const BookingFlow: React.FC = () => {
               >
                 {t('booking.viewBookings')}
               </button>
+            </div>
+            
+            {/* Booking Details */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+              <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                {t('booking.bookingDetails')}
+              </h4>
+              
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">{t('booking.bookingId')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {booking?.id || 'N/A'}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">{t('booking.status')}</span>
+                  <span className={`font-medium ${isAutoBooked ? 'text-green-600' : 'text-yellow-600'}`}>
+                    {isAutoBooked ? t('booking.confirmed') : t('booking.pending')}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">{t('booking.specialist')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {specialist.user?.firstName} {specialist.user?.lastName}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">{t('booking.service')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {service.name}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">{t('booking.dateTime')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {selectedDate?.toLocaleDateString(language || 'en')} {selectedTime}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         );

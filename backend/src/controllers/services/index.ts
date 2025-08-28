@@ -284,6 +284,7 @@ export class ServiceController {
             minAdvanceBooking: service.minAdvanceBooking,
             createdAt: service.createdAt,
             updatedAt: service.updatedAt,
+            specialistId: service.specialist.id, // Add specialistId for easier frontend access
             specialist: {
               id: service.specialist.id,
               businessName: service.specialist.businessName,
@@ -362,6 +363,7 @@ export class ServiceController {
             minAdvanceBooking: service.minAdvanceBooking,
             createdAt: service.createdAt,
             updatedAt: service.updatedAt,
+            specialistId: service.specialistId, // Add specialistId for easier frontend access
           })),
         })
       );
@@ -423,6 +425,7 @@ export class ServiceController {
             currency: service.currency,
             duration: service.duration,
             images: service.images ? JSON.parse(service.images) : [],
+            specialistId: service.specialist.id, // Add specialistId for easier frontend access
             specialist: {
               id: service.specialist.id,
               businessName: service.specialist.businessName,
@@ -504,6 +507,7 @@ export class ServiceController {
             currency: service.currency,
             duration: service.duration,
             images: service.images ? JSON.parse(service.images) : [],
+            specialistId: service.specialist.id, // Add specialistId for easier frontend access
             specialist: {
               id: service.specialist.id,
               businessName: service.specialist.businessName,

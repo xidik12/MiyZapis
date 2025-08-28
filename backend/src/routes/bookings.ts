@@ -10,6 +10,8 @@ router.get('/', authenticateToken, BookingController.getUserBookings);
 router.get('/stats', authenticateToken, BookingController.getSpecialistBookingStats);
 router.get('/:bookingId', authenticateToken, BookingController.getBooking);
 router.put('/:bookingId', authenticateToken, BookingController.updateBooking);
+router.put('/:bookingId/confirm', authenticateToken, BookingController.confirmBooking);
+router.put('/:bookingId/reject', authenticateToken, BookingController.rejectBooking);
 router.put('/:bookingId/cancel', authenticateToken, BookingController.cancelBooking);
 
 // Admin routes

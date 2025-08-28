@@ -574,6 +574,106 @@ export class AvailabilityController {
   }
 
   /**
+   * Get available time slots for a specific date
+   * GET /specialists/:id/slots?date=YYYY-MM-DD
+   */
+  static async getAvailableSlots(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { date } = req.query;
+
+      if (!id) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Specialist ID is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (!date || typeof date !== 'string') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Date is required in YYYY-MM-DD format',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Parse date and create start/end of day
+      const targetDate = new Date(date as string);
+      if (isNaN(targetDate.getTime())) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid date format, use YYYY-MM-DD',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Generate standard time slots (every 30 minutes from 9 AM to 6 PM)
+      const slots = [];
+      const startHour = 9; // 9 AM
+      const endHour = 18; // 6 PM
+      const slotDuration = 30; // 30 minutes
+
+      for (let hour = startHour; hour < endHour; hour++) {
+        for (let minute = 0; minute < 60; minute += slotDuration) {
+          const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+          slots.push(timeString);
+        }
+      }
+
+      // TODO: In the future, filter out unavailable slots based on:
+      // - Specialist working hours
+      // - Existing bookings
+      // - Blocked time slots
+      // For now, return all slots as available
+
+      logger.info('Generated available slots', {
+        specialistId: id,
+        date,
+        slotsCount: slots.length,
+      });
+
+      res.json(
+        createSuccessResponse({
+          availableSlots: slots,
+          date,
+          specialistId: id,
+        })
+      );
+    } catch (error: any) {
+      logger.error('Get available slots error:', error);
+
+      if (error.message === 'SPECIALIST_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Specialist not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get available slots',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  /**
    * Check time slot availability
    * POST /specialists/:id/availability/check
    */

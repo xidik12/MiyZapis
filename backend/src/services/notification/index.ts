@@ -513,6 +513,8 @@ export class NotificationService {
     const titles: Record<string, string> = {
       'BOOKING_CREATED': 'Нове бронювання',
       'BOOKING_CONFIRMED': 'Бронювання підтверджено',
+      'BOOKING_PENDING': 'Запит на бронювання відправлено',
+      'BOOKING_REQUEST': 'Новий запит на бронювання',
       'BOOKING_CANCELLED': 'Бронювання скасовано',
       'BOOKING_COMPLETED': 'Послуга завершена',
       'PAYMENT_RECEIVED': 'Оплата отримана',
@@ -529,6 +531,8 @@ export class NotificationService {
     const messages: Record<string, string> = {
       'BOOKING_CREATED': `Створено нове бронювання на послугу "${serviceName}" на ${scheduledAt}`,
       'BOOKING_CONFIRMED': `Ваше бронювання на послугу "${serviceName}" підтверджено на ${scheduledAt}`,
+      'BOOKING_PENDING': `Ваш запит на бронювання послуги "${serviceName}" відправлено спеціалісту і очікує підтвердження`,
+      'BOOKING_REQUEST': `Новий запит на бронювання послуги "${serviceName}" на ${scheduledAt} - потрібне ваше підтвердження`,
       'BOOKING_CANCELLED': `Бронювання на послугу "${serviceName}" було скасовано`,
       'BOOKING_COMPLETED': `Послуга "${serviceName}" успішно завершена`,
       'PAYMENT_RECEIVED': `Оплата за послугу "${serviceName}" отримана`,
@@ -542,6 +546,8 @@ export class NotificationService {
     const templates: Record<string, string> = {
       'BOOKING_CREATED': 'booking_created',
       'BOOKING_CONFIRMED': 'booking_confirmed',
+      'BOOKING_PENDING': 'booking_pending',
+      'BOOKING_REQUEST': 'specialist_booking_request',
       'BOOKING_CANCELLED': 'booking_cancelled',
       'BOOKING_COMPLETED': 'booking_completed',
       'PAYMENT_RECEIVED': 'payment_received',
@@ -555,6 +561,8 @@ export class NotificationService {
     const templates: Record<string, string> = {
       'BOOKING_CREATED': 'booking_created_sms',
       'BOOKING_CONFIRMED': 'booking_confirmed_sms',
+      'BOOKING_PENDING': 'booking_pending_sms',
+      'BOOKING_REQUEST': 'specialist_booking_request_sms',
       'BOOKING_CANCELLED': 'booking_cancelled_sms',
       'BOOKING_COMPLETED': 'booking_completed_sms'
     };

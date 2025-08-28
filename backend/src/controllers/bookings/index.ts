@@ -49,6 +49,10 @@ export class BookingController {
       res.status(201).json(
         createSuccessResponse({
           booking,
+          autoBooking: booking.service.specialist.autoBooking,
+          message: booking.service.specialist.autoBooking 
+            ? 'Your booking is automatically confirmed!' 
+            : 'Your booking request has been sent and is waiting for specialist confirmation.',
         })
       );
     } catch (error: any) {
@@ -332,6 +336,169 @@ export class BookingController {
         createErrorResponse(
           ErrorCodes.INTERNAL_SERVER_ERROR,
           'Failed to update booking',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Confirm booking (specialist only)
+  static async confirmBooking(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { bookingId } = req.params;
+
+      if (!bookingId) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Booking ID is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const booking = await BookingService.confirmBooking(bookingId, req.user.id);
+
+      res.json(
+        createSuccessResponse({
+          booking,
+          message: 'Booking confirmed successfully',
+        })
+      );
+    } catch (error: any) {
+      logger.error('Confirm booking error:', error);
+
+      if (error.message === 'BOOKING_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Booking not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'SPECIALIST_NOT_AUTHORIZED') {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.ACCESS_DENIED,
+            'You do not have permission to confirm this booking',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'BOOKING_NOT_PENDING') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.BUSINESS_RULE_VIOLATION,
+            'Only pending bookings can be confirmed',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to confirm booking',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Reject booking (specialist only)
+  static async rejectBooking(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { bookingId } = req.params;
+      const { reason } = req.body;
+
+      if (!bookingId) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Booking ID is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const booking = await BookingService.rejectBooking(bookingId, req.user.id, reason);
+
+      res.json(
+        createSuccessResponse({
+          booking,
+          message: 'Booking rejected successfully',
+        })
+      );
+    } catch (error: any) {
+      logger.error('Reject booking error:', error);
+
+      if (error.message === 'BOOKING_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Booking not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'SPECIALIST_NOT_AUTHORIZED') {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.ACCESS_DENIED,
+            'You do not have permission to reject this booking',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'BOOKING_NOT_PENDING') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.BUSINESS_RULE_VIOLATION,
+            'Only pending bookings can be rejected',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to reject booking',
           req.headers['x-request-id'] as string
         )
       );

@@ -3,6 +3,16 @@ import { useParams, Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { specialistService, reviewService } from '../services';
+import { useAppSelector, useAppDispatch } from '../hooks/redux';
+import { 
+  selectIsSpecialistFavorited, 
+  addSpecialistToFavorites, 
+  removeSpecialistFromFavorites,
+  checkSpecialistFavoriteStatus,
+  optimisticAddSpecialist,
+  optimisticRemoveSpecialist
+} from '../store/slices/favoritesSlice';
+import { selectUser } from '../store/slices/authSlice';
 import {
   StarIcon,
   MapPinIcon,
@@ -24,11 +34,85 @@ const SpecialistProfilePage: React.FC = () => {
   const { specialistId } = useParams();
   const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
+  const isFavorite = useAppSelector(selectIsSpecialistFavorited(specialistId || ''));
+  
   const [specialist, setSpecialist] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+
+  // Helper function to get localized description with fallbacks
+  const getLocalizedDescription = (specialist: any) => {
+    if (!specialist) return null;
+    
+    // Try to get description based on current language
+    if (language === 'uk' && specialist.bioUk) return specialist.bioUk;
+    if (language === 'ru' && specialist.bioRu) return specialist.bioRu;
+    if (specialist.bio) return specialist.bio;
+    
+    // Fallback order: bio -> bioUk -> bioRu
+    return specialist.bio || specialist.bioUk || specialist.bioRu || null;
+  };
+
+  // Helper function to format location from specialist data
+  const getFormattedLocation = (specialist: any) => {
+    if (!specialist) return null;
+    
+    const parts = [];
+    if (specialist.city) parts.push(specialist.city);
+    if (specialist.state && specialist.state !== specialist.city) parts.push(specialist.state);
+    if (specialist.country && specialist.country !== specialist.city && specialist.country !== specialist.state) {
+      parts.push(specialist.country);
+    }
+    
+    return parts.length > 0 ? parts.join(', ') : null;
+  };
+
+  // Helper function to format experience
+  const formatExperience = (experience: number) => {
+    if (!experience || experience === 0) return t('specialist.notSpecified');
+    
+    if (language === 'uk') {
+      if (experience === 1) return '1 рік';
+      if (experience < 5) return `${experience} роки`;
+      return `${experience} років`;
+    } else if (language === 'ru') {
+      if (experience === 1) return '1 год';
+      if (experience < 5) return `${experience} года`;
+      return `${experience} лет`;
+    } else {
+      return experience === 1 ? '1 year' : `${experience} years`;
+    }
+  };
+
+  // Handle favorite toggle
+  const handleFavoriteToggle = async () => {
+    if (!user || !specialistId || favoriteLoading) return;
+    
+    setFavoriteLoading(true);
+    
+    try {
+      if (isFavorite) {
+        // Optimistic update
+        dispatch(optimisticRemoveSpecialist(specialistId));
+        // Make API call
+        await dispatch(removeSpecialistFromFavorites(specialistId)).unwrap();
+      } else {
+        // Optimistic update
+        dispatch(optimisticAddSpecialist(specialistId));
+        // Make API call
+        await dispatch(addSpecialistToFavorites(specialistId)).unwrap();
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      // The Redux slice will automatically revert optimistic updates on error
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchSpecialistData = async () => {
@@ -67,6 +151,13 @@ const SpecialistProfilePage: React.FC = () => {
 
     fetchSpecialistData();
   }, [specialistId]);
+
+  // Check favorite status when user and specialist are available
+  useEffect(() => {
+    if (user && specialistId) {
+      dispatch(checkSpecialistFavoriteStatus(specialistId));
+    }
+  }, [dispatch, user, specialistId]);
 
   if (loading) {
     return (
@@ -114,8 +205,8 @@ const SpecialistProfilePage: React.FC = () => {
             <div className="flex items-center space-x-6">
               <div className="relative">
                 <Avatar
-                  src={specialist.user?.avatar}
-                  alt={specialist.user?.firstName || 'Specialist'}
+                  src={specialist.user?.avatar || specialist.avatar}
+                  alt={specialist.user?.firstName || specialist.firstName || 'Specialist'}
                   size="xl"
                   className="border-4 border-white shadow-lg"
                   fallbackIcon={false}
@@ -144,7 +235,7 @@ const SpecialistProfilePage: React.FC = () => {
                 
                 <div className="flex items-center mt-2 text-sm text-gray-500 dark:text-gray-400">
                   <MapPinIcon className="w-4 h-4 mr-1" />
-                  <span>{specialist.location || t('location.notSpecified')}</span>
+                  <span>{getFormattedLocation(specialist) || t('location.notSpecified')}</span>
                   <ClockIcon className="w-4 h-4 ml-4 mr-1" />
                   <span>{t('specialist.responseTime')}: {specialist.responseTime || 'N/A'} {t('time.minutes')}</span>
                 </div>
@@ -152,21 +243,26 @@ const SpecialistProfilePage: React.FC = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 mt-6 md:mt-0">
-              <button
-                onClick={() => setIsFavorite(!isFavorite)}
-                className={`flex items-center justify-center px-4 py-2 rounded-lg border transition-colors ${
-                  isFavorite
-                    ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
-                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                {isFavorite ? (
-                  <HeartIconSolid className="w-5 h-5 mr-2" />
-                ) : (
-                  <HeartIcon className="w-5 h-5 mr-2" />
-                )}
-                {t('actions.favorite')}
-              </button>
+              {user && (
+                <button
+                  onClick={handleFavoriteToggle}
+                  disabled={favoriteLoading}
+                  className={`flex items-center justify-center px-4 py-2 rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isFavorite
+                      ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
+                      : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {favoriteLoading ? (
+                    <div className="w-5 h-5 mr-2 animate-spin rounded-full border-2 border-gray-300 border-t-current"></div>
+                  ) : isFavorite ? (
+                    <HeartIconSolid className="w-5 h-5 mr-2" />
+                  ) : (
+                    <HeartIcon className="w-5 h-5 mr-2" />
+                  )}
+                  {isFavorite ? t('actions.unfavorite') : t('actions.favorite')}
+                </button>
+              )}
               
               {services.length > 0 ? (
                 <Link
@@ -198,7 +294,7 @@ const SpecialistProfilePage: React.FC = () => {
                 {t('specialist.about')}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                {specialist.description || t('specialist.noDescription')}
+                {getLocalizedDescription(specialist) || t('specialist.noDescription')}
               </p>
               
               {specialist.specialties && specialist.specialties.length > 0 && (
@@ -324,7 +420,7 @@ const SpecialistProfilePage: React.FC = () => {
               <div className="space-y-3">
                 <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                   <MapPinIcon className="w-4 h-4 mr-3" />
-                  <span>{specialist.location || t('location.notSpecified')}</span>
+                  <span>{getFormattedLocation(specialist) || t('location.notSpecified')}</span>
                 </div>
                 
                 <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
@@ -351,7 +447,7 @@ const SpecialistProfilePage: React.FC = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">{t('specialist.experience')}</span>
                   <span className="font-semibold text-gray-900 dark:text-white">
-                    {specialist.experience || t('specialist.notSpecified')}
+                    {formatExperience(specialist.experience)}
                   </span>
                 </div>
                 

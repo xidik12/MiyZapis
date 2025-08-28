@@ -110,6 +110,7 @@ model Specialist {
   notifications  String? // JSON string for notification preferences
   privacy        String? // JSON string for privacy settings
   socialMedia    String? // JSON string for social media profiles
+  autoBooking    Boolean @default(false) // Auto-approve bookings without manual confirmation
   
   // Verification details
   verifiedDate   DateTime? // Date when verified

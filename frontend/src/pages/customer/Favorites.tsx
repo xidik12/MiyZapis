@@ -3,14 +3,31 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
-import { favoritesService, FavoriteSpecialist, FavoriteService } from '../../services/favorites.service';
+import { FavoriteSpecialist, FavoriteService } from '../../services/favorites.service';
+import { useAppSelector, useAppDispatch } from '../../hooks/redux';
+import { 
+  selectFavorites, 
+  selectFavoriteSpecialists, 
+  selectFavoriteServices,
+  selectFavoritesLoading,
+  selectFavoritesError,
+  fetchFavoriteSpecialists,
+  fetchFavoriteServices,
+  removeSpecialistFromFavorites,
+  removeServiceFromFavorites,
+  optimisticRemoveSpecialist,
+  optimisticRemoveService,
+  clearError
+} from '../../store/slices/favoritesSlice';
 import { 
   HeartIcon,
   StarIcon,
   MapPinIcon,
   ClockIcon,
   UserIcon,
-  TrashIcon
+  TrashIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid, StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { Avatar } from '../../components/ui/Avatar';
@@ -21,73 +38,74 @@ const CustomerFavorites: React.FC = () => {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
-  const [favoriteSpecialists, setFavoriteSpecialists] = useState<FavoriteSpecialist[]>([]);
-  const [favoriteServices, setFavoriteServices] = useState<FavoriteService[]>([]);
-  const [specialistsPagination, setSpecialistsPagination] = useState<Pagination | null>(null);
-  const [servicesPagination, setServicesPagination] = useState<Pagination | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  
+  // Redux state
+  const favoritesState = useAppSelector(selectFavorites);
+  const favoriteSpecialists = useAppSelector(selectFavoriteSpecialists);
+  const favoriteServices = useAppSelector(selectFavoriteServices);
+  const isLoading = useAppSelector(selectFavoritesLoading);
+  const error = useAppSelector(selectFavoritesError);
+  
+  // Local state
   const [activeTab, setActiveTab] = useState<'specialists' | 'services'>('specialists');
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchFavorites = async (page: number = 1) => {
     try {
-      setIsLoading(true);
-      setError(null);
-
       if (activeTab === 'specialists') {
-        const response = await favoritesService.getFavoriteSpecialists(page, 12);
-        setFavoriteSpecialists(response.specialists);
-        setSpecialistsPagination(response.pagination);
+        dispatch(fetchFavoriteSpecialists({ page, limit: 12 }));
       } else {
-        const response = await favoritesService.getFavoriteServices(page, 12);
-        setFavoriteServices(response.services);
-        setServicesPagination(response.pagination);
+        dispatch(fetchFavoriteServices({ page, limit: 12 }));
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to fetch favorites:', error);
-      setError(error.message || 'Failed to fetch favorites');
-    } finally {
-      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     setCurrentPage(1);
     fetchFavorites(1);
-  }, [activeTab]);
+  }, [activeTab, dispatch]);
 
   const handleRemoveSpecialist = async (specialistId: string) => {
     try {
-      await favoritesService.removeSpecialistFromFavorites(specialistId);
-      setFavoriteSpecialists(prev => prev.filter(s => s.specialist.id !== specialistId));
+      // Optimistic update
+      dispatch(optimisticRemoveSpecialist(specialistId));
+      // Make API call
+      await dispatch(removeSpecialistFromFavorites(specialistId)).unwrap();
       
-      // Update pagination if needed
-      if (specialistsPagination && favoriteSpecialists.length === 1 && specialistsPagination.page > 1) {
-        const newPage = specialistsPagination.page - 1;
+      // Update pagination if needed - check if we need to go to previous page
+      const currentFavorites = favoriteSpecialists.filter(s => s.specialist.id !== specialistId);
+      if (currentFavorites.length === 0 && currentPage > 1) {
+        const newPage = currentPage - 1;
         setCurrentPage(newPage);
         fetchFavorites(newPage);
       }
     } catch (error: any) {
       console.error('Failed to remove specialist from favorites:', error);
-      setError(error.message || 'Failed to remove specialist from favorites');
+      // The Redux slice will automatically revert optimistic updates on error
     }
   };
 
   const handleRemoveService = async (serviceId: string) => {
     try {
-      await favoritesService.removeServiceFromFavorites(serviceId);
-      setFavoriteServices(prev => prev.filter(s => s.service.id !== serviceId));
+      // Optimistic update
+      dispatch(optimisticRemoveService(serviceId));
+      // Make API call
+      await dispatch(removeServiceFromFavorites(serviceId)).unwrap();
       
-      // Update pagination if needed
-      if (servicesPagination && favoriteServices.length === 1 && servicesPagination.page > 1) {
-        const newPage = servicesPagination.page - 1;
+      // Update pagination if needed - check if we need to go to previous page
+      const currentFavorites = favoriteServices.filter(s => s.service.id !== serviceId);
+      if (currentFavorites.length === 0 && currentPage > 1) {
+        const newPage = currentPage - 1;
         setCurrentPage(newPage);
         fetchFavorites(newPage);
       }
     } catch (error: any) {
       console.error('Failed to remove service from favorites:', error);
-      setError(error.message || 'Failed to remove service from favorites');
+      // The Redux slice will automatically revert optimistic updates on error
     }
   };
 
@@ -106,6 +124,43 @@ const CustomerFavorites: React.FC = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     fetchFavorites(page);
+  };
+
+  // Filter specialists and services based on search query
+  const filteredSpecialists = favoriteSpecialists.filter(favorite => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    const specialist = favorite.specialist;
+    const userName = `${specialist.user.firstName} ${specialist.user.lastName}`.toLowerCase();
+    const businessName = specialist.businessName?.toLowerCase() || '';
+    const specialties = specialist.specialties.join(' ').toLowerCase();
+    const description = specialist.description?.toLowerCase() || '';
+    
+    return userName.includes(query) || 
+           businessName.includes(query) || 
+           specialties.includes(query) || 
+           description.includes(query);
+  });
+
+  const filteredServices = favoriteServices.filter(favorite => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    const service = favorite.service;
+    const serviceName = service.name.toLowerCase();
+    const serviceDescription = service.description?.toLowerCase() || '';
+    const category = service.category.toLowerCase();
+    const specialistName = `${service.specialist.user.firstName} ${service.specialist.user.lastName}`.toLowerCase();
+    const businessName = service.specialist.businessName?.toLowerCase() || '';
+    
+    return serviceName.includes(query) ||
+           serviceDescription.includes(query) ||
+           category.includes(query) ||
+           specialistName.includes(query) ||
+           businessName.includes(query);
+  });
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
   };
 
   const renderPagination = (pagination: Pagination) => {
@@ -174,14 +229,46 @@ const CustomerFavorites: React.FC = () => {
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
             <div className="text-red-800">{error}</div>
-            <button
-              onClick={() => fetchFavorites(currentPage)}
-              className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
-            >
-              Try again
-            </button>
+            <div className="flex space-x-2 mt-2">
+              <button
+                onClick={() => fetchFavorites(currentPage)}
+                className="text-sm text-red-600 hover:text-red-800 underline"
+              >
+                Try again
+              </button>
+              <button
+                onClick={() => dispatch(clearError())}
+                className="text-sm text-red-600 hover:text-red-800 underline"
+              >
+                Dismiss
+              </button>
+            </div>
           </div>
         )}
+
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative max-w-md">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder={t('customer.favorites.searchPlaceholder') || `Search your ${activeTab}...`}
+              className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                onClick={handleClearSearch}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              >
+                <XMarkIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+              </button>
+            )}
+          </div>
+        </div>
 
         {/* Tabs */}
         <div className="mb-6">
@@ -203,8 +290,8 @@ const CustomerFavorites: React.FC = () => {
                   {tab.label}
                   <span className="ml-2 bg-gray-100 text-gray-600 py-0.5 px-2.5 rounded-full text-xs">
                     {tab.key === 'specialists' ? 
-                      (specialistsPagination?.total || 0) : 
-                      (servicesPagination?.total || 0)
+                      (favoritesState.specialistsPagination?.total || 0) : 
+                      (favoritesState.servicesPagination?.total || 0)
                     }
                   </span>
                 </button>
@@ -216,26 +303,49 @@ const CustomerFavorites: React.FC = () => {
         {/* Specialists Tab */}
         {activeTab === 'specialists' && (
           <>
-            {favoriteSpecialists.length === 0 && !isLoading ? (
+            {filteredSpecialists.length === 0 && !isLoading ? (
               <div className="bg-white rounded-lg shadow p-8 text-center">
                 <HeartIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {t('customer.favorites.noSpecialists')}
+                  {searchQuery ? 
+                    `No specialists found for "${searchQuery}"` : 
+                    (t('customer.favorites.noSpecialists') || 'No favorite specialists')
+                  }
                 </h3>
                 <p className="text-gray-500 mb-4">
-                  {t('empty.startBrowsingSpecialists')}
+                  {searchQuery ? 
+                    'Try adjusting your search terms or browse specialists to add favorites' :
+                    (t('empty.startBrowsingSpecialists') || 'Start browsing specialists to add your favorites')
+                  }
                 </p>
-                <button
-                  onClick={() => navigate('/search')}
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700"
-                >
-                  {t('empty.browseSpecialists')}
-                </button>
+                {searchQuery ? (
+                  <div className="flex justify-center space-x-3">
+                    <button
+                      onClick={handleClearSearch}
+                      className="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-gray-700"
+                    >
+                      Clear Search
+                    </button>
+                    <button
+                      onClick={() => navigate('/search')}
+                      className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700"
+                    >
+                      Browse Specialists
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => navigate('/search')}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700"
+                  >
+                    {t('empty.browseSpecialists') || 'Browse Specialists'}
+                  </button>
+                )}
               </div>
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {favoriteSpecialists.map((favorite) => {
+                  {filteredSpecialists.map((favorite) => {
                     const specialist = favorite.specialist;
                     return (
                       <div key={favorite.id} className="bg-white rounded-lg shadow hover:shadow-md transition-shadow">
@@ -330,7 +440,7 @@ const CustomerFavorites: React.FC = () => {
                     );
                   })}
                 </div>
-                {specialistsPagination && renderPagination(specialistsPagination)}
+                {favoritesState.specialistsPagination && renderPagination(favoritesState.specialistsPagination)}
               </>
             )}
           </>
@@ -339,26 +449,49 @@ const CustomerFavorites: React.FC = () => {
         {/* Services Tab */}
         {activeTab === 'services' && (
           <>
-            {favoriteServices.length === 0 && !isLoading ? (
+            {filteredServices.length === 0 && !isLoading ? (
               <div className="bg-white rounded-lg shadow p-8 text-center">
                 <HeartIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {t('customer.favorites.noServices')}
+                  {searchQuery ? 
+                    `No services found for "${searchQuery}"` : 
+                    (t('customer.favorites.noServices') || 'No favorite services')
+                  }
                 </h3>
                 <p className="text-gray-500 mb-4">
-                  {t('empty.startBrowsingServices')}
+                  {searchQuery ? 
+                    'Try adjusting your search terms or browse services to add favorites' :
+                    (t('empty.startBrowsingServices') || 'Start browsing services to add your favorites')
+                  }
                 </p>
-                <button
-                  onClick={() => navigate('/search')}
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700"
-                >
-                  {t('empty.browseServices')}
-                </button>
+                {searchQuery ? (
+                  <div className="flex justify-center space-x-3">
+                    <button
+                      onClick={handleClearSearch}
+                      className="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-gray-700"
+                    >
+                      Clear Search
+                    </button>
+                    <button
+                      onClick={() => navigate('/search')}
+                      className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700"
+                    >
+                      Browse Services
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => navigate('/search')}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700"
+                  >
+                    {t('empty.browseServices') || 'Browse Services'}
+                  </button>
+                )}
               </div>
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {favoriteServices.map((favorite) => {
+                  {filteredServices.map((favorite) => {
                     const service = favorite.service;
                     return (
                       <div key={favorite.id} className="bg-white rounded-lg shadow hover:shadow-md transition-shadow overflow-hidden">
@@ -439,7 +572,7 @@ const CustomerFavorites: React.FC = () => {
                     );
                   })}
                 </div>
-                {servicesPagination && renderPagination(servicesPagination)}
+                {favoritesState.servicesPagination && renderPagination(favoritesState.servicesPagination)}
               </>
             )}
           </>

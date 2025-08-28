@@ -519,6 +519,35 @@ export class SpecialistService {
     return response.data;
   }
 
+  // Get available time slots for a specific date
+  async getAvailableSlots(specialistId: string, date: string): Promise<string[]> {
+    try {
+      console.log('📅 API: Getting available slots for specialist:', specialistId, 'date:', date);
+      
+      // Calculate start and end of the day for the availability query
+      const startDate = `${date}T00:00:00.000Z`;
+      const endDate = `${date}T23:59:59.999Z`;
+      
+      const response = await apiClient.get<{ availableSlots: string[] }>(
+        `/availability/specialists/${specialistId}/slots?date=${date}`
+      );
+      
+      if (!response.success || !response.data) {
+        console.warn('⚠️ API: No available slots data, returning empty array');
+        // Return empty array instead of throwing error to handle gracefully
+        return [];
+      }
+      
+      const slots = response.data.availableSlots || [];
+      console.log('✅ API: Available slots received:', slots);
+      return slots;
+    } catch (error) {
+      console.error('❌ API: Error getting available slots:', error);
+      // Return empty array to handle errors gracefully
+      return [];
+    }
+  }
+
   // Search for other specialists (for networking)
   async searchSpecialists(query: string, filters: {
     specialties?: string[];

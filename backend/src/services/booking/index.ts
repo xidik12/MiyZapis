@@ -1,5 +1,6 @@
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
+import { NotificationService } from '@/services/notification';
 import { Booking, User, Service, Specialist } from '@prisma/client';
 
 interface CreateBookingData {
@@ -30,6 +31,8 @@ interface BookingWithDetails extends Booking {
 }
 
 export class BookingService {
+  private static notificationService = new NotificationService(prisma);
+
   // Create a new booking
   static async createBooking(data: CreateBookingData): Promise<BookingWithDetails> {
     try {
@@ -130,6 +133,9 @@ export class BookingService {
         throw new Error('INSUFFICIENT_LOYALTY_POINTS');
       }
 
+      // Determine initial booking status based on specialist's auto-booking setting
+      const initialStatus = service.specialist.autoBooking ? 'CONFIRMED' : 'PENDING';
+      
       // Create booking
       const booking = await prisma.booking.create({
         data: {
@@ -144,7 +150,8 @@ export class BookingService {
           loyaltyPointsUsed,
           customerNotes: data.customerNotes,
           deliverables: JSON.stringify([]), // Empty deliverables initially
-          status: 'PENDING', // Will be updated to PENDING_PAYMENT after payment intent creation
+          status: initialStatus, // Auto-booking: CONFIRMED if autoBooking enabled, otherwise PENDING
+          confirmedAt: service.specialist.autoBooking ? new Date() : null, // Auto-confirm if auto-booking
         },
         include: {
           customer: {
@@ -219,11 +226,81 @@ export class BookingService {
         });
       }
 
+      // Send appropriate notifications based on auto-booking setting
+      try {
+        if (service.specialist.autoBooking) {
+          // Auto-booking ON: Send "booking confirmed" notifications
+          await this.notificationService.sendNotification(booking.customerId, {
+            type: 'BOOKING_CONFIRMED',
+            title: 'Your booking is confirmed',
+            message: `Your booking for ${service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()} is automatically confirmed.`,
+            data: {
+              bookingId: booking.id,
+              serviceName: service.name,
+              scheduledAt: booking.scheduledAt,
+              status: 'CONFIRMED'
+            },
+            emailTemplate: 'booking_confirmed',
+            smsTemplate: 'booking_confirmed_sms'
+          });
+
+          await this.notificationService.sendNotification(booking.specialistId, {
+            type: 'BOOKING_CONFIRMED',
+            title: 'You have been booked',
+            message: `You have been booked for ${service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()}.`,
+            data: {
+              bookingId: booking.id,
+              serviceName: service.name,
+              scheduledAt: booking.scheduledAt,
+              customerName: `${booking.customer.firstName} ${booking.customer.lastName}`,
+              status: 'CONFIRMED'
+            },
+            emailTemplate: 'specialist_booking_confirmed',
+            smsTemplate: 'specialist_booking_confirmed_sms'
+          });
+        } else {
+          // Auto-booking OFF: Send "booking pending" notifications
+          await this.notificationService.sendNotification(booking.customerId, {
+            type: 'BOOKING_PENDING',
+            title: 'Your booking request has been sent',
+            message: `Your booking request for ${service.name} has been sent to the specialist and is waiting for confirmation.`,
+            data: {
+              bookingId: booking.id,
+              serviceName: service.name,
+              scheduledAt: booking.scheduledAt,
+              status: 'PENDING'
+            },
+            emailTemplate: 'booking_pending',
+            smsTemplate: 'booking_pending_sms'
+          });
+
+          await this.notificationService.sendNotification(booking.specialistId, {
+            type: 'BOOKING_REQUEST',
+            title: 'New booking request requires confirmation',
+            message: `New booking request for ${service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()} - requires your confirmation.`,
+            data: {
+              bookingId: booking.id,
+              serviceName: service.name,
+              scheduledAt: booking.scheduledAt,
+              customerName: `${booking.customer.firstName} ${booking.customer.lastName}`,
+              status: 'PENDING'
+            },
+            emailTemplate: 'specialist_booking_request',
+            smsTemplate: 'specialist_booking_request_sms'
+          });
+        }
+      } catch (notificationError) {
+        logger.error('Failed to send booking notifications:', notificationError);
+        // Don't throw error as booking was successful
+      }
+
       logger.info('Booking created successfully', { 
         bookingId: booking.id,
         customerId: data.customerId,
         serviceId: data.serviceId,
         totalAmount,
+        status: initialStatus,
+        autoBooking: service.specialist.autoBooking,
       });
 
       return booking as BookingWithDetails;
@@ -315,7 +392,7 @@ export class BookingService {
       // Validate status transitions
       if (data.status) {
         const allowedTransitions = {
-          PENDING: ['PENDING_PAYMENT', 'CANCELLED'],
+          PENDING: ['PENDING_PAYMENT', 'CONFIRMED', 'CANCELLED'],
           PENDING_PAYMENT: ['CONFIRMED', 'CANCELLED'],
           CONFIRMED: ['IN_PROGRESS', 'CANCELLED'],
           IN_PROGRESS: ['COMPLETED', 'CANCELLED'],
@@ -404,6 +481,44 @@ export class BookingService {
           },
         },
       });
+
+      // Send notifications for status changes
+      try {
+        if (data.status === 'CONFIRMED' && booking.status === 'PENDING') {
+          // Booking was confirmed by specialist
+          await this.notificationService.sendNotification(booking.customerId, {
+            type: 'BOOKING_CONFIRMED',
+            title: 'Your booking is confirmed',
+            message: `Your booking for ${updatedBooking.service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()} has been confirmed by the specialist.`,
+            data: {
+              bookingId: booking.id,
+              serviceName: updatedBooking.service.name,
+              scheduledAt: booking.scheduledAt,
+              status: 'CONFIRMED'
+            },
+            emailTemplate: 'booking_confirmed',
+            smsTemplate: 'booking_confirmed_sms'
+          });
+
+          await this.notificationService.sendNotification(booking.specialistId, {
+            type: 'BOOKING_CONFIRMED',
+            title: 'Booking confirmed',
+            message: `You have confirmed the booking for ${updatedBooking.service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()}.`,
+            data: {
+              bookingId: booking.id,
+              serviceName: updatedBooking.service.name,
+              scheduledAt: booking.scheduledAt,
+              customerName: `${updatedBooking.customer.firstName} ${updatedBooking.customer.lastName}`,
+              status: 'CONFIRMED'
+            },
+            emailTemplate: 'specialist_booking_confirmed',
+            smsTemplate: 'specialist_booking_confirmed_sms'
+          });
+        }
+      } catch (notificationError) {
+        logger.error('Failed to send booking status update notifications:', notificationError);
+        // Don't throw error as booking update was successful
+      }
 
       // Award loyalty points when booking is completed
       if (data.status === 'COMPLETED') {
@@ -679,6 +794,59 @@ export class BookingService {
       };
     } catch (error) {
       logger.error('Error getting user bookings:', error);
+      throw error;
+    }
+  }
+
+  // Confirm a pending booking (specialist action)
+  static async confirmBooking(
+    bookingId: string,
+    specialistUserId: string
+  ): Promise<BookingWithDetails> {
+    try {
+      const booking = await this.getBooking(bookingId);
+
+      // Verify the specialist owns this booking
+      if (booking.specialistId !== specialistUserId) {
+        throw new Error('SPECIALIST_NOT_AUTHORIZED');
+      }
+
+      // Verify booking is in PENDING status
+      if (booking.status !== 'PENDING') {
+        throw new Error('BOOKING_NOT_PENDING');
+      }
+
+      // Update booking to CONFIRMED
+      return await this.updateBooking(bookingId, { status: 'CONFIRMED' });
+    } catch (error) {
+      logger.error('Error confirming booking:', error);
+      throw error;
+    }
+  }
+
+  // Reject a pending booking (specialist action)
+  static async rejectBooking(
+    bookingId: string,
+    specialistUserId: string,
+    reason?: string
+  ): Promise<BookingWithDetails> {
+    try {
+      const booking = await this.getBooking(bookingId);
+
+      // Verify the specialist owns this booking
+      if (booking.specialistId !== specialistUserId) {
+        throw new Error('SPECIALIST_NOT_AUTHORIZED');
+      }
+
+      // Verify booking is in PENDING status
+      if (booking.status !== 'PENDING') {
+        throw new Error('BOOKING_NOT_PENDING');
+      }
+
+      // Cancel the booking with rejection reason
+      return await this.cancelBooking(bookingId, specialistUserId, reason || 'Booking rejected by specialist');
+    } catch (error) {
+      logger.error('Error rejecting booking:', error);
       throw error;
     }
   }

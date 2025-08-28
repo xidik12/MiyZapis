@@ -318,13 +318,152 @@ function App() {
             }
           />
 
-          {/* Customer protected routes */}
+          {/* Customer protected routes with /customer prefix */}
+          <Route
+            path="/customer/dashboard"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerDashboard />
+                  </Suspense>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/bookings"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerBookings />
+                  </Suspense>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/profile"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerProfile />
+                  </Suspense>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/loyalty"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerLoyalty />
+                  </Suspense>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/favorites"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerFavorites />
+                  </Suspense>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/settings"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerSettings />
+                  </Suspense>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/support"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerHelpSupport />
+                  </Suspense>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/history"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <div className="p-6">
+                    <h1 className="text-2xl font-bold">Booking History</h1>
+                    <p className="text-gray-600 mt-2">View your past bookings and service history</p>
+                  </div>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/reviews"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <div className="p-6">
+                    <h1 className="text-2xl font-bold">My Reviews</h1>
+                    <p className="text-gray-600 mt-2">Manage your reviews and ratings</p>
+                  </div>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/payments"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <PaymentMethods />
+                  </Suspense>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/notifications"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <div className="p-6">
+                    <h1 className="text-2xl font-bold">Notifications</h1>
+                    <p className="text-gray-600 mt-2">View your notifications and alerts</p>
+                  </div>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Legacy customer routes without /customer prefix for backward compatibility */}
           <Route
             path="/dashboard"
             element={
               <ProtectedRoute requiredUserType="customer">
                 <CustomerLayout>
-                  <CustomerDashboard />
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerDashboard />
+                  </Suspense>
                 </CustomerLayout>
               </ProtectedRoute>
             }
@@ -334,7 +473,9 @@ function App() {
             element={
               <ProtectedRoute requiredUserType="customer">
                 <CustomerLayout>
-                  <CustomerBookings />
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerBookings />
+                  </Suspense>
                 </CustomerLayout>
               </ProtectedRoute>
             }
@@ -344,7 +485,9 @@ function App() {
             element={
               <ProtectedRoute requiredUserType="customer">
                 <CustomerLayout>
-                  <CustomerProfile />
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerProfile />
+                  </Suspense>
                 </CustomerLayout>
               </ProtectedRoute>
             }
@@ -354,7 +497,9 @@ function App() {
             element={
               <ProtectedRoute requiredUserType="customer">
                 <CustomerLayout>
-                  <CustomerLoyalty />
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerLoyalty />
+                  </Suspense>
                 </CustomerLayout>
               </ProtectedRoute>
             }
@@ -364,7 +509,9 @@ function App() {
             element={
               <ProtectedRoute requiredUserType="customer">
                 <CustomerLayout>
-                  <CustomerFavorites />
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerFavorites />
+                  </Suspense>
                 </CustomerLayout>
               </ProtectedRoute>
             }
@@ -374,7 +521,9 @@ function App() {
             element={
               <ProtectedRoute requiredUserType="customer">
                 <CustomerLayout>
-                  <CustomerSettings />
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerSettings />
+                  </Suspense>
                 </CustomerLayout>
               </ProtectedRoute>
             }
@@ -384,7 +533,9 @@ function App() {
             element={
               <ProtectedRoute requiredUserType="customer">
                 <CustomerLayout>
-                  <CustomerHelpSupport />
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerHelpSupport />
+                  </Suspense>
                 </CustomerLayout>
               </ProtectedRoute>
             }
