@@ -36,6 +36,21 @@ export class BookingService {
     return response.data;
   }
 
+  // Update booking (status, notes, etc.)
+  async updateBooking(bookingId: string, data: { status?: string; specialistNotes?: string; customerNotes?: string; preparationNotes?: string; completionNotes?: string; }): Promise<Booking> {
+    console.log('📤 BookingService: Updating booking:', bookingId, data);
+    const response = await apiClient.put<Booking>(`/bookings/${bookingId}`, data);
+    console.log('📦 BookingService: Update booking response:', response);
+    
+    if (!response.success || !response.data) {
+      console.error('❌ BookingService: Failed to update booking:', response.error);
+      throw new Error(response.error?.message || 'Failed to update booking');
+    }
+    
+    console.log('✅ BookingService: Booking updated successfully');
+    return response.data;
+  }
+
   // Get user's bookings
   async getBookings(filters: BookingFilters = {}): Promise<{ bookings: Booking[]; pagination: Pagination }> {
     const params = new URLSearchParams();

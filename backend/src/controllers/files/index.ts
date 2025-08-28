@@ -100,7 +100,23 @@ export class FileController {
           });
 
           // Process the file
-          const processedFile = await this.processFile(file, purpose);
+          let processedFile;
+          try {
+            processedFile = await this.processFile(file, purpose);
+          } catch (processError) {
+            logger.error('File processing failed, using original file', {
+              error: processError instanceof Error ? processError.message : String(processError),
+              originalName: file.originalname
+            });
+            // Fallback to original file if processing fails
+            processedFile = {
+              buffer: file.buffer,
+              filename: `${purpose}/${Date.now()}-${file.originalname}`,
+              mimetype: file.mimetype,
+              width: undefined,
+              height: undefined
+            };
+          }
           
           logger.info('File processed, uploading to storage', {
             filename: processedFile.filename,
@@ -109,23 +125,41 @@ export class FileController {
           });
 
           // Upload to storage (S3 or local)
-          const fileUrl = await this.fileUploadService.uploadToStorage(
-            processedFile.buffer,
-            processedFile.filename,
-            processedFile.mimetype
-          );
+          let fileUrl;
+          try {
+            fileUrl = await this.fileUploadService.uploadToStorage(
+              processedFile.buffer,
+              processedFile.filename,
+              processedFile.mimetype
+            );
+          } catch (storageError) {
+            logger.error('Storage upload failed', {
+              error: storageError instanceof Error ? storageError.message : String(storageError),
+              filename: processedFile.filename
+            });
+            throw storageError;
+          }
 
           logger.info('File uploaded to storage successfully', {
             filename: processedFile.filename,
             url: fileUrl
           });
 
+          // Convert relative URL to absolute URL for production
+          let absoluteUrl = fileUrl;
+          if (fileUrl.startsWith('/uploads/')) {
+            const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN 
+              ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+              : 'https://miyzapis-backend-production.up.railway.app';
+            absoluteUrl = `${baseUrl}${fileUrl}`;
+          }
+
           // Save file record to database
           logger.info('Saving file record to database', {
             filename: processedFile.filename,
             uploadedBy: userId,
             purpose,
-            url: fileUrl
+            url: absoluteUrl
           });
 
           const fileRecord = await prisma.file.create({
@@ -134,8 +168,8 @@ export class FileController {
               originalName: file.originalname,
               mimeType: file.mimetype,
               size: processedFile.buffer.length,
-              path: fileUrl,
-              url: fileUrl,
+              path: absoluteUrl,
+              url: absoluteUrl,
               width: processedFile.width,
               height: processedFile.height,
               uploadedBy: userId,
@@ -155,8 +189,21 @@ export class FileController {
 
           uploadedFiles.push(fileRecord);
         } catch (fileError) {
-          logger.error(`Error processing file ${file.originalname}:`, fileError);
-          // Continue with other files
+          logger.error(`Error processing file ${file.originalname}:`, {
+            error: fileError instanceof Error ? fileError.message : String(fileError),
+            stack: fileError instanceof Error ? fileError.stack : undefined
+          });
+          
+          // Return error immediately if it's a critical error
+          if (fileError instanceof Error && (
+            fileError.message.includes('Authentication') ||
+            fileError.message.includes('database') ||
+            fileError.message.includes('connection')
+          )) {
+            throw fileError;
+          }
+          
+          // Continue with other files for non-critical errors
         }
       }
 

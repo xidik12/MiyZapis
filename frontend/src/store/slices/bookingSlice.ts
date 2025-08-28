@@ -61,6 +61,21 @@ export const cancelBooking = createAsyncThunk(
   }
 );
 
+export const updateBookingStatus = createAsyncThunk(
+  'booking/updateBookingStatus',
+  async ({ bookingId, status, notes }: { bookingId: string; status: string; notes?: string }, { rejectWithValue }) => {
+    try {
+      const updateData: { status: string; specialistNotes?: string } = { status };
+      if (notes) {
+        updateData.specialistNotes = notes;
+      }
+      return await bookingService.updateBooking(bookingId, updateData);
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to update booking status');
+    }
+  }
+);
+
 const bookingSlice = createSlice({
   name: 'booking',
   initialState,
@@ -71,7 +86,7 @@ const bookingSlice = createSlice({
     setCurrentBooking: (state, action: PayloadAction<Booking | null>) => {
       state.currentBooking = action.payload;
     },
-    updateBookingStatus: (state, action: PayloadAction<{
+    updateBookingLocal: (state, action: PayloadAction<{
       bookingId: string;
       status: BookingStatus;
       booking?: Booking;
@@ -159,9 +174,30 @@ const bookingSlice = createSlice({
       .addCase(cancelBooking.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+      })
+      
+      // Update Booking Status
+      .addCase(updateBookingStatus.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateBookingStatus.fulfilled, (state, action) => {
+        state.isLoading = false;
+        const updatedBooking = action.payload;
+        const existingBooking = state.bookings.find(b => b.id === updatedBooking.id);
+        if (existingBooking) {
+          Object.assign(existingBooking, updatedBooking);
+        }
+        if (state.currentBooking?.id === updatedBooking.id) {
+          state.currentBooking = updatedBooking;
+        }
+      })
+      .addCase(updateBookingStatus.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
-export const { clearError, setCurrentBooking, updateBookingStatus } = bookingSlice.actions;
+export const { clearError, setCurrentBooking, updateBookingLocal } = bookingSlice.actions;
 export default bookingSlice.reducer;

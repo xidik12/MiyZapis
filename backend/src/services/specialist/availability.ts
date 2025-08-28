@@ -41,6 +41,95 @@ export interface TimeSlot {
 
 export class AvailabilityService {
   /**
+   * Generate availability blocks from working hours
+   */
+  static async generateAvailabilityFromWorkingHours(
+    specialistId: string,
+    weeksAhead: number = 4
+  ) {
+    try {
+      const specialist = await prisma.specialist.findUnique({
+        where: { id: specialistId }
+      });
+
+      if (!specialist || !specialist.workingHours) {
+        throw new Error('SPECIALIST_NOT_FOUND_OR_NO_WORKING_HOURS');
+      }
+
+      const workingHours = JSON.parse(specialist.workingHours);
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + (weeksAhead * 7));
+
+      // Remove old future availability blocks to regenerate
+      await prisma.availabilityBlock.deleteMany({
+        where: {
+          specialistId,
+          startDateTime: { gte: new Date() },
+          isRecurring: false,
+          // Don't delete manually created blocks (those without a specific pattern)
+          reason: 'Working hours'
+        }
+      });
+
+      const newBlocks = [];
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+      // Generate blocks for each day in the date range
+      for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
+        const dayName = dayNames[date.getDay()];
+        const daySchedule = workingHours[dayName];
+
+        if (daySchedule && daySchedule.isWorking) {
+          // Create availability block for this working day
+          const startDateTime = new Date(date);
+          const endDateTime = new Date(date);
+          
+          // Parse time strings (e.g., "09:00")
+          const [startHour, startMinute] = daySchedule.start.split(':').map(Number);
+          const [endHour, endMinute] = daySchedule.end.split(':').map(Number);
+          
+          startDateTime.setHours(startHour, startMinute, 0, 0);
+          endDateTime.setHours(endHour, endMinute, 0, 0);
+
+          // Only create blocks for future dates
+          if (startDateTime > new Date()) {
+            newBlocks.push({
+              specialistId,
+              startDateTime,
+              endDateTime,
+              isAvailable: true,
+              reason: 'Working hours',
+              isRecurring: false
+            });
+          }
+        }
+      }
+
+      // Batch create availability blocks
+      if (newBlocks.length > 0) {
+        await prisma.availabilityBlock.createMany({
+          data: newBlocks
+        });
+        
+        logger.info('Generated availability blocks from working hours', {
+          specialistId,
+          blocksCreated: newBlocks.length,
+          weeksAhead
+        });
+      }
+
+      return {
+        blocksCreated: newBlocks.length,
+        dateRange: { startDate, endDate }
+      };
+    } catch (error) {
+      logger.error('Error generating availability from working hours:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get specialist availability for a date range
    */
   static async getSpecialistAvailability(
