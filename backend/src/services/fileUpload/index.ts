@@ -77,6 +77,17 @@ export class FileUploadService {
       // Use /tmp for Railway, local uploads for development
       const uploadsDir = process.env.UPLOAD_DIR || (process.env.RAILWAY_ENVIRONMENT ? '/tmp/uploads' : path.join(process.cwd(), 'uploads'));
       
+      // For Railway, use flat directory structure to avoid permission issues
+      let finalFilename = filename;
+      if (process.env.RAILWAY_ENVIRONMENT) {
+        // Replace directory separators with underscores for flat structure
+        finalFilename = filename.replace(/[/\\]/g, '_');
+        logger.info('Railway environment detected, using flat filename structure', {
+          original: filename,
+          flattened: finalFilename
+        });
+      }
+      
       // Ensure uploads directory exists
       try {
         await fs.access(uploadsDir);
@@ -84,25 +95,28 @@ export class FileUploadService {
         await fs.mkdir(uploadsDir, { recursive: true });
       }
 
-      const filePath = path.join(uploadsDir, filename);
-      const fileDir = path.dirname(filePath);
+      const filePath = path.join(uploadsDir, finalFilename);
       
-      // Ensure subdirectory exists
-      try {
-        await fs.access(fileDir);
-      } catch {
-        await fs.mkdir(fileDir, { recursive: true });
+      // For local development, ensure subdirectory exists
+      if (!process.env.RAILWAY_ENVIRONMENT) {
+        const fileDir = path.dirname(filePath);
+        try {
+          await fs.access(fileDir);
+        } catch {
+          await fs.mkdir(fileDir, { recursive: true });
+        }
       }
 
       await fs.writeFile(filePath, buffer);
 
       // Return URL for accessing the file
-      const fileUrl = `/uploads/${filename}`;
+      const fileUrl = `/uploads/${finalFilename}`;
       
       logger.info('File uploaded locally successfully', {
-        filename,
+        filename: finalFilename,
         path: filePath,
-        url: fileUrl
+        url: fileUrl,
+        isRailway: !!process.env.RAILWAY_ENVIRONMENT
       });
 
       return fileUrl;
