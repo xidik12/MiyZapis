@@ -247,6 +247,7 @@ const SpecialistSchedule: React.FC = () => {
   // Generate default schedule from working hours
   const generateDefaultSchedule = (workingHours: any): TimeSlot[] => {
     console.log('🔍 generateDefaultSchedule called with workingHours:', workingHours);
+    console.log('🔍 Available day keys in workingHours:', workingHours ? Object.keys(workingHours) : 'N/A');
     const slots: TimeSlot[] = [];
     const today = new Date();
     
@@ -255,7 +256,8 @@ const SpecialistSchedule: React.FC = () => {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-      console.log(`🔍 Checking day: ${dayName}, workingHours[${dayName}]:`, workingHours?.[dayName]);
+      console.log(`🔍 Generated dayName: "${dayName}", looking for workingHours["${dayName}"]`);
+      console.log(`🔍 Found data:`, workingHours?.[dayName]);
       
       // Check if the specialist works on this day (support both isWorking and isOpen)
       const dayData = workingHours?.[dayName];
