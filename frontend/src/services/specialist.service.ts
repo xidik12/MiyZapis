@@ -498,89 +498,107 @@ export class SpecialistService {
     return response.data;
   }
 
+  // Get available dates for a specialist (for booking flow)
+  async getAvailableDates(specialistId: string, from?: string, to?: string): Promise<{
+    availableDates: Array<{
+      date: string;
+      dayName: string;
+      workingHours: string;
+      availableSlots: number;
+      totalSlots: number;
+    }>;
+    dateRange: {
+      from: string;
+      to: string;
+    };
+    specialist: {
+      id: string;
+      name: string;
+    };
+  }> {
+    try {
+      console.log('📅 API: Getting available dates for specialist:', specialistId);
+      
+      const params = new URLSearchParams();
+      if (from) params.append('from', from);
+      if (to) params.append('to', to);
+      
+      const response = await apiClient.get<{
+        availableDates: Array<{
+          date: string;
+          dayName: string;
+          workingHours: string;
+          availableSlots: number;
+          totalSlots: number;
+        }>;
+        dateRange: {
+          from: string;
+          to: string;
+        };
+        specialist: {
+          id: string;
+          name: string;
+        };
+      }>(`/specialists/${specialistId}/available-dates?${params}`);
+      
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Failed to get available dates');
+      }
+      
+      console.log('✅ API: Available dates retrieved:', response.data.availableDates.length, 'dates');
+      return response.data;
+    } catch (error) {
+      console.error('❌ API: Error getting available dates:', error);
+      // Return empty result to handle errors gracefully
+      return {
+        availableDates: [],
+        dateRange: {
+          from: from || new Date().toISOString().split('T')[0],
+          to: to || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        },
+        specialist: {
+          id: specialistId,
+          name: 'Unknown'
+        }
+      };
+    }
+  }
+
   // Get available time slots for a specific date
   async getAvailableSlots(specialistId: string, date: string): Promise<string[]> {
     try {
       console.log('📅 API: Getting available slots for specialist:', specialistId, 'date:', date);
       
-      // First try to get availability blocks for this date
-      const startDate = `${date}T00:00:00.000Z`;
-      const endDate = `${date}T23:59:59.999Z`;
+      const response = await apiClient.get<{
+        availableSlots: string[];
+        date: string;
+        specialistId: string;
+        workingHours?: {
+          start: string;
+          end: string;
+          dayName: string;
+        };
+        bookingsCount?: number;
+        reason?: string;
+      }>(`/specialists/${specialistId}/slots?date=${date}`);
       
-      try {
-        const availabilityBlocks = await this.getAvailabilityBlocks(date, date);
-        console.log('📦 API: Availability blocks for date:', availabilityBlocks);
-        
-        // Convert availability blocks to time slots
-        const slots = availabilityBlocks
-          .filter(block => block.isAvailable !== false) // Include available slots
-          .map(block => {
-            const startTime = block.startDateTime?.split('T')[1]?.substring(0, 5);
-            return startTime;
-          })
-          .filter(Boolean);
-          
-        if (slots.length > 0) {
-          console.log('✅ API: Available slots from blocks:', slots);
-          return slots;
-        }
-      } catch (blockError) {
-        console.warn('⚠️ API: Failed to get availability blocks, generating from working hours');
+      if (!response.success || !response.data) {
+        console.warn('⚠️ API: Failed to get available slots from backend:', response.error);
+        // Fallback to empty array
+        return [];
       }
       
-      // If no availability blocks, generate from working hours
-      let specialist;
-      if (specialistId) {
-        try {
-          const profile = await this.getPublicProfile(specialistId);
-          specialist = profile.specialist || profile;
-        } catch (err) {
-          console.warn('⚠️ API: Failed to get specialist profile for working hours');
-        }
-      }
+      const slots = response.data.availableSlots || [];
+      console.log('✅ API: Available slots from backend:', {
+        date,
+        specialistId,
+        slotsCount: slots.length,
+        workingHours: response.data.workingHours,
+        bookingsCount: response.data.bookingsCount,
+        reason: response.data.reason
+      });
       
-      const workingHours = specialist?.workingHours;
-      
-      // Parse working hours if it's a JSON string
-      let parsedWorkingHours = workingHours;
-      if (typeof workingHours === 'string') {
-        try {
-          parsedWorkingHours = JSON.parse(workingHours);
-        } catch (err) {
-          console.warn('⚠️ API: Failed to parse working hours JSON');
-          return [];
-        }
-      }
-      
-      if (parsedWorkingHours) {
-        const requestedDate = new Date(date);
-        const dayName = requestedDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-        console.log(`📅 API: Checking working hours for ${dayName}`);
-        
-        const dayData = parsedWorkingHours[dayName];
-        const isWorking = dayData?.isWorking || dayData?.isOpen;
-        
-        if (isWorking) {
-          const startTime = dayData.startTime || dayData.start || '09:00';
-          const endTime = dayData.endTime || dayData.end || '17:00';
-          
-          // Generate hourly slots
-          const slots: string[] = [];
-          const start = new Date(`2000-01-01T${startTime}:00`);
-          const end = new Date(`2000-01-01T${endTime}:00`);
-          
-          while (start < end) {
-            slots.push(start.toTimeString().substring(0, 5));
-            start.setHours(start.getHours() + 1);
-          }
-          
-          console.log('✅ API: Generated slots from working hours:', slots);
-          return slots;
-        }
-      }
-      
-      console.log('⚠️ API: No working hours found or not working on this day, returning empty array');
-      return [];
+      return slots;
     } catch (error) {
       console.error('❌ API: Error getting available slots:', error);
       // Return empty array to handle errors gracefully

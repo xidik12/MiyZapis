@@ -686,36 +686,196 @@ export class AvailabilityController {
         return;
       }
 
-      // Generate standard time slots (every 30 minutes from 9 AM to 6 PM)
-      const slots = [];
-      const startHour = 9; // 9 AM
-      const endHour = 18; // 6 PM
-      const slotDuration = 30; // 30 minutes
+      // Don't allow bookings for past dates
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (targetDate < today) {
+        logger.info('Requested date is in the past', {
+          specialistId: id,
+          requestedDate: date,
+          today: today.toISOString().split('T')[0]
+        });
+        
+        res.json(
+          createSuccessResponse({
+            availableSlots: [],
+            date,
+            specialistId: id,
+            reason: 'Past date - no slots available'
+          })
+        );
+        return;
+      }
 
-      for (let hour = startHour; hour < endHour; hour++) {
-        for (let minute = 0; minute < 60; minute += slotDuration) {
-          const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-          slots.push(timeString);
+      // Get specialist with working hours
+      const specialist = await prisma.specialist.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          workingHours: true,
+          userId: true,
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              isActive: true
+            }
+          }
+        }
+      });
+
+      if (!specialist) {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Specialist not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (!specialist.user.isActive) {
+        res.json(
+          createSuccessResponse({
+            availableSlots: [],
+            date,
+            specialistId: id,
+            reason: 'Specialist is not active'
+          })
+        );
+        return;
+      }
+
+      // Parse working hours
+      let workingHours: any = {};
+      if (specialist.workingHours) {
+        try {
+          workingHours = typeof specialist.workingHours === 'string' 
+            ? JSON.parse(specialist.workingHours) 
+            : specialist.workingHours;
+        } catch (error) {
+          logger.warn('Invalid working hours format', { specialistId: id, workingHours: specialist.workingHours });
         }
       }
 
-      // TODO: In the future, filter out unavailable slots based on:
-      // - Specialist working hours
-      // - Existing bookings
-      // - Blocked time slots
-      // For now, return all slots as available
+      // Check if specialist is working on this day
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const dayName = dayNames[targetDate.getDay()];
+      const daySchedule = workingHours[dayName];
+
+      if (!daySchedule || !daySchedule.isWorking) {
+        logger.info('Specialist not working on this day', {
+          specialistId: id,
+          date,
+          dayName,
+          schedule: daySchedule
+        });
+
+        res.json(
+          createSuccessResponse({
+            availableSlots: [],
+            date,
+            specialistId: id,
+            reason: `Specialist not working on ${dayName}s`
+          })
+        );
+        return;
+      }
+
+      // Generate time slots based on working hours
+      const slots = [];
+      const startTime = daySchedule.start || '09:00';
+      const endTime = daySchedule.end || '17:00';
+      const slotDuration = 30; // 30 minutes
+
+      const [startHour, startMinute] = startTime.split(':').map(Number);
+      const [endHour, endMinute] = endTime.split(':').map(Number);
+
+      const startMinutesFromMidnight = startHour * 60 + startMinute;
+      const endMinutesFromMidnight = endHour * 60 + endMinute;
+
+      for (let minutes = startMinutesFromMidnight; minutes < endMinutesFromMidnight; minutes += slotDuration) {
+        const hour = Math.floor(minutes / 60);
+        const minute = minutes % 60;
+        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        slots.push(timeString);
+      }
+
+      // Get existing bookings for this date
+      const startOfDay = new Date(targetDate);
+      const endOfDay = new Date(targetDate);
+      endOfDay.setDate(endOfDay.getDate() + 1);
+
+      const existingBookings = await prisma.booking.findMany({
+        where: {
+          specialistId: specialist.userId,
+          scheduledAt: {
+            gte: startOfDay,
+            lt: endOfDay
+          },
+          status: {
+            in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'PENDING_PAYMENT']
+          }
+        },
+        select: {
+          scheduledAt: true,
+          duration: true
+        }
+      });
+
+      // Filter out booked time slots
+      const availableSlots = slots.filter(slot => {
+        const [slotHour, slotMinute] = slot.split(':').map(Number);
+        const slotDateTime = new Date(targetDate);
+        slotDateTime.setHours(slotHour, slotMinute, 0, 0);
+        
+        // Check if this slot conflicts with any existing booking
+        return !existingBookings.some(booking => {
+          const bookingStart = new Date(booking.scheduledAt);
+          const bookingEnd = new Date(bookingStart.getTime() + (booking.duration * 60 * 1000));
+          
+          // Check if slot overlaps with booking
+          const slotEnd = new Date(slotDateTime.getTime() + (30 * 60 * 1000)); // 30-minute slots
+          return (slotDateTime < bookingEnd && slotEnd > bookingStart);
+        });
+      });
+
+      // Filter out past time slots for today
+      const now = new Date();
+      const filteredSlots = availableSlots.filter(slot => {
+        const [slotHour, slotMinute] = slot.split(':').map(Number);
+        const slotDateTime = new Date(targetDate);
+        slotDateTime.setHours(slotHour, slotMinute, 0, 0);
+        
+        // If it's today, only show future time slots
+        if (targetDate.toDateString() === now.toDateString()) {
+          return slotDateTime > now;
+        }
+        return true;
+      });
 
       logger.info('Generated available slots', {
         specialistId: id,
         date,
-        slotsCount: slots.length,
+        dayName,
+        workingHours: `${startTime}-${endTime}`,
+        totalSlots: slots.length,
+        existingBookings: existingBookings.length,
+        availableSlots: filteredSlots.length,
       });
 
       res.json(
         createSuccessResponse({
-          availableSlots: slots,
+          availableSlots: filteredSlots,
           date,
           specialistId: id,
+          workingHours: {
+            start: startTime,
+            end: endTime,
+            dayName
+          },
+          bookingsCount: existingBookings.length
         })
       );
     } catch (error: any) {
@@ -736,6 +896,216 @@ export class AvailabilityController {
         createErrorResponse(
           ErrorCodes.INTERNAL_SERVER_ERROR,
           'Failed to get available slots',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  /**
+   * Get available dates for a specialist (for booking flow)
+   * GET /specialists/:id/available-dates?from=YYYY-MM-DD&to=YYYY-MM-DD
+   */
+  static async getAvailableDates(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { from, to } = req.query;
+
+      if (!id) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Specialist ID is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Default date range if not provided (next 30 days)
+      const fromDate = from ? new Date(from as string) : new Date();
+      const toDate = to ? new Date(to as string) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+      if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid date format, use YYYY-MM-DD',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Get specialist with working hours
+      const specialist = await prisma.specialist.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          workingHours: true,
+          userId: true,
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              isActive: true
+            }
+          }
+        }
+      });
+
+      if (!specialist) {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Specialist not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (!specialist.user.isActive) {
+        res.json(
+          createSuccessResponse({
+            availableDates: [],
+            dateRange: {
+              from: fromDate.toISOString().split('T')[0],
+              to: toDate.toISOString().split('T')[0]
+            },
+            reason: 'Specialist is not active'
+          })
+        );
+        return;
+      }
+
+      // Parse working hours
+      let workingHours: any = {};
+      if (specialist.workingHours) {
+        try {
+          workingHours = typeof specialist.workingHours === 'string' 
+            ? JSON.parse(specialist.workingHours) 
+            : specialist.workingHours;
+        } catch (error) {
+          logger.warn('Invalid working hours format', { specialistId: id, workingHours: specialist.workingHours });
+        }
+      }
+
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const availableDates = [];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Check each date in the range
+      for (let date = new Date(fromDate); date <= toDate; date.setDate(date.getDate() + 1)) {
+        // Skip past dates
+        if (date < today) continue;
+
+        const dayName = dayNames[date.getDay()];
+        const daySchedule = workingHours[dayName];
+
+        // Check if specialist is working on this day
+        if (daySchedule && daySchedule.isWorking) {
+          // Check if there are any available time slots on this date
+          const startTime = daySchedule.start || '09:00';
+          const endTime = daySchedule.end || '17:00';
+          
+          // Generate time slots for this day
+          const [startHour, startMinute] = startTime.split(':').map(Number);
+          const [endHour, endMinute] = endTime.split(':').map(Number);
+          const startMinutesFromMidnight = startHour * 60 + startMinute;
+          const endMinutesFromMidnight = endHour * 60 + endMinute;
+          
+          const daySlots = [];
+          for (let minutes = startMinutesFromMidnight; minutes < endMinutesFromMidnight; minutes += 30) {
+            const hour = Math.floor(minutes / 60);
+            const minute = minutes % 60;
+            const slotDateTime = new Date(date);
+            slotDateTime.setHours(hour, minute, 0, 0);
+            
+            // Skip past time slots for today
+            if (date.toDateString() === today.toDateString() && slotDateTime <= new Date()) {
+              continue;
+            }
+            
+            daySlots.push(slotDateTime);
+          }
+
+          // Check if any slots are available (not booked)
+          if (daySlots.length > 0) {
+            const startOfDay = new Date(date);
+            const endOfDay = new Date(date);
+            endOfDay.setDate(endOfDay.getDate() + 1);
+
+            const existingBookings = await prisma.booking.findMany({
+              where: {
+                specialistId: specialist.userId,
+                scheduledAt: {
+                  gte: startOfDay,
+                  lt: endOfDay
+                },
+                status: {
+                  in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'PENDING_PAYMENT']
+                }
+              },
+              select: {
+                scheduledAt: true,
+                duration: true
+              }
+            });
+
+            // Check if at least one slot is available
+            const hasAvailableSlot = daySlots.some(slotDateTime => {
+              return !existingBookings.some(booking => {
+                const bookingStart = new Date(booking.scheduledAt);
+                const bookingEnd = new Date(bookingStart.getTime() + (booking.duration * 60 * 1000));
+                const slotEnd = new Date(slotDateTime.getTime() + (30 * 60 * 1000));
+                return (slotDateTime < bookingEnd && slotEnd > bookingStart);
+              });
+            });
+
+            if (hasAvailableSlot) {
+              availableDates.push({
+                date: date.toISOString().split('T')[0],
+                dayName,
+                workingHours: `${startTime}-${endTime}`,
+                availableSlots: daySlots.length - existingBookings.length,
+                totalSlots: daySlots.length
+              });
+            }
+          }
+        }
+      }
+
+      logger.info('Generated available dates', {
+        specialistId: id,
+        dateRange: {
+          from: fromDate.toISOString().split('T')[0],
+          to: toDate.toISOString().split('T')[0]
+        },
+        totalDates: availableDates.length
+      });
+
+      res.json(
+        createSuccessResponse({
+          availableDates,
+          dateRange: {
+            from: fromDate.toISOString().split('T')[0],
+            to: toDate.toISOString().split('T')[0]
+          },
+          specialist: {
+            id: specialist.id,
+            name: `${specialist.user.firstName} ${specialist.user.lastName}`
+          }
+        })
+      );
+    } catch (error: any) {
+      logger.error('Get available dates error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get available dates',
           req.headers['x-request-id'] as string
         )
       );
