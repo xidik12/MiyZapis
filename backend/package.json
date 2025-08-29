@@ -80,6 +80,7 @@
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.8",
     "prisma": "^5.8.1",
+    "resend": "^6.0.1",
     "sharp": "^0.33.2",
     "socket.io": "^4.7.4",
     "stripe": "^14.15.0",

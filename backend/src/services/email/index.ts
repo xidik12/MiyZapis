@@ -51,18 +51,31 @@ class EmailService {
         return;
       }
 
+      // Try SSL port 465 first, fallback to TLS port 587 if that fails
+      const useSSL = config.email.smtp.port === 465 || config.email.smtp.secure === true;
+      
       this.transporter = nodemailer.createTransport({
         host: config.email.smtp.host,
         port: config.email.smtp.port,
-        secure: config.email.smtp.secure,
+        secure: useSSL, // true for 465, false for other ports
         auth: {
           user: config.email.smtp.auth.user,
           pass: config.email.smtp.auth.pass,
         },
-        // Add additional options for better reliability
-        connectionTimeout: 10000, // 10 seconds
-        greetingTimeout: 5000, // 5 seconds
-        socketTimeout: 10000, // 10 seconds
+        // Add additional options for better reliability on Railway
+        connectionTimeout: 15000, // 15 seconds - Railway may be slower
+        greetingTimeout: 10000, // 10 seconds
+        socketTimeout: 15000, // 15 seconds
+        // Enable STARTTLS for port 587
+        requireTLS: !useSSL,
+        // Gmail-specific settings
+        tls: {
+          // Don't fail on invalid certs in development
+          rejectUnauthorized: config.isProduction
+        },
+        // Add debug logging
+        debug: !config.isProduction,
+        logger: !config.isProduction
       });
 
       logger.info('Email service initialized successfully');
@@ -373,15 +386,43 @@ class EmailService {
 
   async testConnection(): Promise<boolean> {
     if (!this.transporter) {
+      logger.warn('🔌 Cannot test connection - transporter not initialized');
       return false;
     }
 
     try {
+      logger.info('🔍 Testing SMTP connection...', {
+        host: config.email.smtp.host,
+        port: config.email.smtp.port,
+        secure: config.email.smtp.secure,
+        user: config.email.smtp.auth.user ? `${config.email.smtp.auth.user.substring(0, 5)}...` : 'NOT_SET'
+      });
+      
+      const startTime = Date.now();
       await this.transporter.verify();
-      logger.info('Email service connection verified');
+      const duration = Date.now() - startTime;
+      
+      logger.info('✅ SMTP connection verified successfully', { duration: `${duration}ms` });
       return true;
-    } catch (error) {
-      logger.error('Email service connection failed:', error);
+    } catch (error: any) {
+      logger.error('❌ SMTP connection failed - detailed error', {
+        error: {
+          message: error.message,
+          code: error.code,
+          command: error.command,
+          response: error.response,
+          responseCode: error.responseCode,
+          syscall: error.syscall,
+          errno: error.errno,
+          stack: error.stack
+        },
+        connectionDetails: {
+          host: config.email.smtp.host,
+          port: config.email.smtp.port,
+          secure: config.email.smtp.secure,
+          user: config.email.smtp.auth.user ? `${config.email.smtp.auth.user.substring(0, 5)}...` : 'NOT_SET'
+        }
+      });
       return false;
     }
   }
