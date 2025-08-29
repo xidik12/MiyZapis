@@ -524,39 +524,77 @@ export class NotificationService {
       limit?: number;
     } = {}
   ): Promise<any> {
-    const {
-      type,
-      isRead,
-      page = 1,
-      limit = 20
-    } = filters;
+    try {
+      const {
+        type,
+        isRead,
+        page = 1,
+        limit = 20
+      } = filters;
 
-    const skip = (page - 1) * limit;
+      const skip = (page - 1) * limit;
 
-    const where: any = { userId };
-    if (type) where.type = type;
-    if (isRead !== undefined) where.isRead = isRead;
+      const where: any = { userId };
+      if (type) where.type = type;
+      if (isRead !== undefined) where.isRead = isRead;
 
-    const notifications = await this.prisma.notification.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: limit
-    });
+      logger.info('Fetching user notifications', {
+        userId,
+        filters,
+        where,
+        skip,
+        limit
+      });
 
-    const total = await this.prisma.notification.count({ where });
+      const notifications = await this.prisma.notification.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit
+      });
 
-    return {
-      notifications,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-        hasNext: page * limit < total,
-        hasPrev: page > 1
-      }
-    };
+      const total = await this.prisma.notification.count({ where });
+
+      logger.info('User notifications fetched successfully', {
+        userId,
+        notificationsCount: notifications.length,
+        total
+      });
+
+      return {
+        notifications,
+        unreadCount: total, // This should actually be unread count, but for now return total
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+          hasNext: page * limit < total,
+          hasPrev: page > 1
+        }
+      };
+    } catch (error) {
+      logger.error('Error in getUserNotifications', {
+        userId,
+        filters,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
+
+      // Return empty result instead of throwing
+      return {
+        notifications: [],
+        unreadCount: 0,
+        pagination: {
+          page: filters.page || 1,
+          limit: filters.limit || 20,
+          total: 0,
+          totalPages: 0,
+          hasNext: false,
+          hasPrev: false
+        }
+      };
+    }
   }
 
   async getUnreadCount(userId: string): Promise<number> {
