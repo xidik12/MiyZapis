@@ -246,6 +246,7 @@ const SpecialistSchedule: React.FC = () => {
 
   // Generate default schedule from working hours
   const generateDefaultSchedule = (workingHours: any): TimeSlot[] => {
+    console.log('🔍 generateDefaultSchedule called with workingHours:', workingHours);
     const slots: TimeSlot[] = [];
     const today = new Date();
     
@@ -254,11 +255,13 @@ const SpecialistSchedule: React.FC = () => {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+      console.log(`🔍 Checking day: ${dayName}, workingHours[${dayName}]:`, workingHours?.[dayName]);
       
       // Check if the specialist works on this day
       if (workingHours && workingHours[dayName] && workingHours[dayName].isWorking) {
-        const startTime = workingHours[dayName].startTime || '09:00';
-        const endTime = workingHours[dayName].endTime || '17:00';
+        const startTime = workingHours[dayName].start || workingHours[dayName].startTime || '09:00';
+        const endTime = workingHours[dayName].end || workingHours[dayName].endTime || '17:00';
+        console.log(`✅ Creating slots for ${dayName}: ${startTime} - ${endTime}`);
         
         // Create hourly slots
         const start = new Date(`2000-01-01T${startTime}:00`);
@@ -269,7 +272,7 @@ const SpecialistSchedule: React.FC = () => {
           start.setHours(start.getHours() + 1);
           const slotEnd = start.toTimeString().substring(0, 5);
           
-          slots.push({
+          const slot = {
             id: `default-${date.toISOString().split('T')[0]}-${slotStart}`,
             date: date.toISOString().split('T')[0],
             startTime: slotStart,
@@ -277,11 +280,15 @@ const SpecialistSchedule: React.FC = () => {
             isAvailable: true,
             reason: '',
             isRecurring: false,
-          });
+          };
+          
+          slots.push(slot);
+          console.log(`⏰ Created slot: ${slot.date} ${slot.startTime}-${slot.endTime}`);
         }
       }
     }
     
+    console.log(`🎯 generateDefaultSchedule completed. Total slots created: ${slots.length}`);
     return slots;
   };
 
