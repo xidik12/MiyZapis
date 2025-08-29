@@ -94,7 +94,10 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
     // Use Railway-compatible upload directory
     const fs = require('fs');
     const path = require('path');
-    const uploadsDir = process.env.RAILWAY_ENVIRONMENT ? '/tmp/uploads' : path.join(process.cwd(), 'uploads');
+    
+    // Railway sets various environment variables we can check
+    const isRailway = process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_SERVICE_NAME || process.env.RAILWAY_PROJECT_NAME;
+    const uploadsDir = process.env.UPLOAD_DIR || (isRailway ? '/tmp/uploads' : path.join(process.cwd(), 'uploads'));
     
     console.log('📂 Upload directory:', uploadsDir);
 
