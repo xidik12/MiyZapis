@@ -66,40 +66,109 @@ class EmailService {
       });
 
       logger.info('Email service initialized successfully');
+      
+      // Test connection on initialization
+      this.testConnection().then((connected) => {
+        if (connected) {
+          logger.info('✅ SMTP connection test successful');
+        } else {
+          logger.warn('⚠️ SMTP connection test failed');
+        }
+      }).catch((error) => {
+        logger.error('❌ SMTP connection test error:', error);
+      });
     } catch (error) {
       logger.error('Failed to initialize email service:', error);
     }
   }
 
   async sendEmail(options: EmailOptions): Promise<boolean> {
+    logger.info('📧 Starting email send process', {
+      to: options.to,
+      subject: options.subject,
+      from: config.email.from,
+      transporterAvailable: !!this.transporter
+    });
+
     if (!this.transporter) {
-      logger.warn('Email service not available - skipping email send');
+      logger.warn('❌ Email service not available - transporter not initialized', {
+        smtpConfig: {
+          host: config.email.smtp.host || 'NOT_SET',
+          port: config.email.smtp.port,
+          user: config.email.smtp.auth.user ? `${config.email.smtp.auth.user.substring(0, 5)}...` : 'NOT_SET',
+          pass: config.email.smtp.auth.pass ? '[CONFIGURED]' : 'NOT_SET',
+          secure: config.email.smtp.secure
+        }
+      });
       return false;
     }
 
     try {
-      const result = await this.transporter.sendMail({
+      logger.info('📤 Attempting to send email via SMTP', {
+        host: config.email.smtp.host,
+        port: config.email.smtp.port,
+        secure: config.email.smtp.secure,
+        user: config.email.smtp.auth.user ? `${config.email.smtp.auth.user.substring(0, 5)}...` : 'NOT_SET'
+      });
+
+      const mailOptions = {
         from: config.email.from,
         to: options.to,
         subject: options.subject,
         html: options.html,
         text: options.text,
+      };
+
+      logger.info('📨 Mail options prepared', {
+        from: mailOptions.from,
+        to: mailOptions.to,
+        subject: mailOptions.subject,
+        hasHtml: !!mailOptions.html,
+        hasText: !!mailOptions.text
       });
 
-      logger.info('Email sent successfully', { 
+      const result = await this.transporter.sendMail(mailOptions);
+
+      logger.info('✅ Email sent successfully', { 
         to: options.to, 
         subject: options.subject,
-        messageId: result.messageId 
+        messageId: result.messageId,
+        response: result.response,
+        accepted: result.accepted,
+        rejected: result.rejected,
+        pending: result.pending
       });
       
       return true;
-    } catch (error) {
-      logger.error('Failed to send email:', error);
+    } catch (error: any) {
+      logger.error('❌ Failed to send email - detailed error', {
+        to: options.to,
+        subject: options.subject,
+        error: {
+          message: error.message,
+          code: error.code,
+          command: error.command,
+          response: error.response,
+          responseCode: error.responseCode,
+          stack: error.stack
+        },
+        smtpConfig: {
+          host: config.email.smtp.host,
+          port: config.email.smtp.port,
+          secure: config.email.smtp.secure,
+          user: config.email.smtp.auth.user ? `${config.email.smtp.auth.user.substring(0, 5)}...` : 'NOT_SET'
+        }
+      });
       return false;
     }
   }
 
   async sendVerificationEmail(email: string, data: EmailVerificationData): Promise<boolean> {
+    logger.info('📧 sendVerificationEmail called', {
+      email: email,
+      firstName: data.firstName,
+      verificationLink: data.verificationLink.replace(/token=[^&]+/, 'token=[HIDDEN]')
+    });
     const html = `
     <!DOCTYPE html>
     <html>
