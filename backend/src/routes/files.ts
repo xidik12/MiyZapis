@@ -3,12 +3,51 @@ import { param, query } from 'express-validator';
 import { authenticateToken as authMiddleware, optionalAuth as optionalAuthMiddleware } from '@/middleware/auth/jwt';
 import { validateRequest } from '@/middleware/validation';
 import { fileController } from '@/controllers/files';
+import path from 'path';
 
 const router = Router();
 
 // Simple test endpoint to check if the route works
 router.post('/test', authMiddleware, (req, res) => {
   res.json({ success: true, message: 'Test endpoint works', userId: req.user?.id });
+});
+
+// Railway environment detection debug endpoint (no auth needed)
+router.get('/debug-railway-env', (req, res) => {
+  const railwayDetectionResults = {
+    RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
+    RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME,
+    RAILWAY_PROJECT_NAME: process.env.RAILWAY_PROJECT_NAME,
+    RAILWAY_SERVICE: process.env.RAILWAY_SERVICE,
+    RAILWAY_PROJECT: process.env.RAILWAY_PROJECT,
+    NODE_ENV: process.env.NODE_ENV,
+    PORT: process.env.PORT,
+    VERCEL: process.env.VERCEL,
+    NETLIFY: process.env.NETLIFY
+  };
+
+  const isRailway = !!(
+    process.env.RAILWAY_ENVIRONMENT || 
+    process.env.RAILWAY_SERVICE_NAME || 
+    process.env.RAILWAY_PROJECT_NAME ||
+    process.env.RAILWAY_SERVICE ||
+    process.env.RAILWAY_PROJECT ||
+    (process.env.PORT && process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.NETLIFY)
+  );
+
+  const uploadsDir = process.env.UPLOAD_DIR || (isRailway ? '/tmp/uploads' : path.join(process.cwd(), 'uploads'));
+
+  res.json({
+    success: true,
+    data: {
+      isDetectedAsRailway: isRailway,
+      uploadsDirectory: uploadsDir,
+      currentWorkingDirectory: process.cwd(),
+      environmentVariables: railwayDetectionResults,
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString()
+    }
+  });
 });
 
 // Test notification endpoint
