@@ -28,12 +28,14 @@ class EmailService {
 
   private initializeTransporter() {
     try {
-      logger.info('Initializing email service...', {
+      logger.info('📧 Initializing email service with enhanced debugging...', {
         host: config.email.smtp.host || 'NOT_SET',
         port: config.email.smtp.port,
         user: config.email.smtp.auth.user ? `${config.email.smtp.auth.user.substring(0, 5)}...` : 'NOT_SET',
         pass: config.email.smtp.auth.pass ? '[CONFIGURED]' : 'NOT_SET',
-        secure: config.email.smtp.secure
+        secure: config.email.smtp.secure,
+        environment: process.env.NODE_ENV || 'unknown',
+        timestamp: new Date().toISOString()
       });
 
       if (!config.email.smtp.host) {
