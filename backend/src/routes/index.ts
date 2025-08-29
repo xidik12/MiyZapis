@@ -24,6 +24,7 @@ import telegramEnhancedRoutes from './telegram-enhanced';
 import diagnosticsRoutes from './diagnostics';
 import setupAdminRoutes from './setup-admin';
 import debugAdminRoutes from './debug-admin';
+import debugEmailRoutes from './debug-email';
 
 const router = Router();
 
@@ -60,5 +61,6 @@ router.use('/setup', setupAdminRoutes);
 
 // Debug routes (for testing only)
 router.use('/debug', debugAdminRoutes);
+router.use('/debug/email', debugEmailRoutes);
 
 export default router;
