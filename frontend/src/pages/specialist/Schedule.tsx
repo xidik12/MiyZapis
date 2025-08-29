@@ -329,7 +329,24 @@ const SpecialistSchedule: React.FC = () => {
         // If no availability blocks, generate default schedule from working hours
         if (formattedSlots.length === 0) {
           console.log('📅 Schedule: No availability blocks, generating default schedule from working hours');
-          formattedSlots = generateDefaultSchedule(user?.workingHours);
+          
+          // Try to get working hours from user first, then from specialist profile
+          let workingHours = user?.workingHours;
+          
+          // If working hours not available in user object, fetch from specialist profile
+          if (!workingHours && isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
+            try {
+              console.log('📡 Fetching specialist profile for working hours...');
+              const specialistData = await specialistService.getProfile();
+              const specialist = specialistData.specialist || specialistData;
+              workingHours = specialist?.workingHours;
+              console.log('📦 Working hours from specialist profile:', workingHours);
+            } catch (err) {
+              console.warn('⚠️ Failed to fetch specialist profile for working hours:', err);
+            }
+          }
+          
+          formattedSlots = generateDefaultSchedule(workingHours);
           console.log('📅 Schedule: Generated default slots:', formattedSlots.length);
         }
         
