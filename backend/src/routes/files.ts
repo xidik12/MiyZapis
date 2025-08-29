@@ -42,6 +42,70 @@ router.post('/test-notification', authMiddleware, async (req, res) => {
   }
 });
 
+// Test notifications fetch endpoint
+router.get('/test-notifications', authMiddleware, async (req, res) => {
+  try {
+    const { NotificationService } = require('@/services/notification');
+    const { prisma } = require('@/config/database');
+    
+    const notificationService = new NotificationService(prisma);
+    
+    const result = await notificationService.getUserNotifications(req.user?.id, { limit: 10 });
+    
+    res.json({ 
+      success: true, 
+      message: 'Notifications fetched successfully',
+      data: result,
+      userId: req.user?.id
+    });
+  } catch (error) {
+    console.error('Test notifications fetch error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch notifications',
+      details: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
+  }
+});
+
+// Database test endpoint
+router.get('/test-db', authMiddleware, async (req, res) => {
+  try {
+    const { prisma } = require('@/config/database');
+    
+    // Test database connection
+    const userCount = await prisma.user.count();
+    
+    // Try to access notification table
+    let notificationCount = 0;
+    let notificationError = null;
+    try {
+      notificationCount = await prisma.notification.count();
+    } catch (error) {
+      notificationError = error instanceof Error ? error.message : String(error);
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Database connection test',
+      data: {
+        userCount,
+        notificationCount,
+        notificationError,
+        hasNotificationTable: !notificationError
+      }
+    });
+  } catch (error) {
+    console.error('Database test error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Database connection failed',
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
+});
+
 // Robust file upload that works on Railway
 router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, async (req, res) => {
   try {
