@@ -352,6 +352,18 @@ const SpecialistSchedule: React.FC = () => {
             }
           }
           
+          // Parse working hours if it's a JSON string
+          if (typeof workingHours === 'string') {
+            try {
+              console.log('🔄 Parsing working hours JSON string...');
+              workingHours = JSON.parse(workingHours);
+              console.log('✅ Successfully parsed working hours:', workingHours);
+            } catch (err) {
+              console.warn('⚠️ Failed to parse working hours JSON:', err);
+              workingHours = null;
+            }
+          }
+          
           formattedSlots = generateDefaultSchedule(workingHours);
           console.log('📅 Schedule: Generated default slots:', formattedSlots.length);
         }
