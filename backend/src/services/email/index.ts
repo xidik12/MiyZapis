@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import { config } from '@/config';
 import { logger } from '@/utils/logger';
+import { resendEmailService } from './resend-email';
 
 interface EmailOptions {
   to: string;
@@ -102,11 +103,33 @@ class EmailService {
       to: options.to,
       subject: options.subject,
       from: config.email.from,
-      transporterAvailable: !!this.transporter
+      resendAvailable: !!process.env.RESEND_API_KEY,
+      smtpAvailable: !!this.transporter
     });
 
+    // Try Resend first (preferred method for Railway)
+    if (process.env.RESEND_API_KEY) {
+      logger.info('📤 Attempting to send email via Resend API (preferred)');
+      
+      try {
+        const success = await resendEmailService.sendEmail(options);
+        if (success) {
+          logger.info('✅ Email sent successfully via Resend');
+          return true;
+        } else {
+          logger.warn('⚠️ Resend failed, falling back to SMTP');
+        }
+      } catch (error: any) {
+        logger.error('❌ Resend API error, falling back to SMTP', {
+          error: error.message
+        });
+      }
+    }
+
+    // Fallback to SMTP
     if (!this.transporter) {
-      logger.warn('❌ Email service not available - transporter not initialized', {
+      logger.warn('❌ No email service available - both Resend and SMTP unavailable', {
+        resendConfigured: !!process.env.RESEND_API_KEY,
         smtpConfig: {
           host: config.email.smtp.host || 'NOT_SET',
           port: config.email.smtp.port,
@@ -119,7 +142,7 @@ class EmailService {
     }
 
     try {
-      logger.info('📤 Attempting to send email via SMTP', {
+      logger.info('📤 Attempting to send email via SMTP (fallback)', {
         host: config.email.smtp.host,
         port: config.email.smtp.port,
         secure: config.email.smtp.secure,
@@ -134,7 +157,7 @@ class EmailService {
         text: options.text,
       };
 
-      logger.info('📨 Mail options prepared', {
+      logger.info('📨 SMTP mail options prepared', {
         from: mailOptions.from,
         to: mailOptions.to,
         subject: mailOptions.subject,
@@ -144,7 +167,7 @@ class EmailService {
 
       const result = await this.transporter.sendMail(mailOptions);
 
-      logger.info('✅ Email sent successfully', { 
+      logger.info('✅ Email sent successfully via SMTP', { 
         to: options.to, 
         subject: options.subject,
         messageId: result.messageId,
@@ -156,7 +179,7 @@ class EmailService {
       
       return true;
     } catch (error: any) {
-      logger.error('❌ Failed to send email - detailed error', {
+      logger.error('❌ Failed to send email via SMTP - detailed error', {
         to: options.to,
         subject: options.subject,
         error: {
@@ -182,8 +205,25 @@ class EmailService {
     logger.info('📧 sendVerificationEmail called', {
       email: email,
       firstName: data.firstName,
-      verificationLink: data.verificationLink.replace(/token=[^&]+/, 'token=[HIDDEN]')
+      verificationLink: data.verificationLink.replace(/token=[^&]+/, 'token=[HIDDEN]'),
+      resendAvailable: !!process.env.RESEND_API_KEY
     });
+
+    // Try Resend first if available
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const success = await resendEmailService.sendVerificationEmail(email, data);
+        if (success) {
+          logger.info('✅ Verification email sent via Resend');
+          return true;
+        }
+        logger.warn('⚠️ Resend verification email failed, falling back to SMTP');
+      } catch (error: any) {
+        logger.error('❌ Resend verification email error, falling back to SMTP', {
+          error: error.message
+        });
+      }
+    }
     const html = `
     <!DOCTYPE html>
     <html>
@@ -256,6 +296,27 @@ class EmailService {
   }
 
   async sendPasswordResetEmail(email: string, data: PasswordResetData): Promise<boolean> {
+    logger.info('📧 sendPasswordResetEmail called', {
+      email: email,
+      firstName: data.firstName,
+      resendAvailable: !!process.env.RESEND_API_KEY
+    });
+
+    // Try Resend first if available
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const success = await resendEmailService.sendPasswordResetEmail(email, data);
+        if (success) {
+          logger.info('✅ Password reset email sent via Resend');
+          return true;
+        }
+        logger.warn('⚠️ Resend password reset email failed, falling back to SMTP');
+      } catch (error: any) {
+        logger.error('❌ Resend password reset email error, falling back to SMTP', {
+          error: error.message
+        });
+      }
+    }
     const html = `
     <!DOCTYPE html>
     <html>
@@ -329,6 +390,27 @@ class EmailService {
   }
 
   async sendWelcomeEmail(email: string, firstName: string): Promise<boolean> {
+    logger.info('📧 sendWelcomeEmail called', {
+      email: email,
+      firstName: firstName,
+      resendAvailable: !!process.env.RESEND_API_KEY
+    });
+
+    // Try Resend first if available
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const success = await resendEmailService.sendWelcomeEmail(email, firstName);
+        if (success) {
+          logger.info('✅ Welcome email sent via Resend');
+          return true;
+        }
+        logger.warn('⚠️ Resend welcome email failed, falling back to SMTP');
+      } catch (error: any) {
+        logger.error('❌ Resend welcome email error, falling back to SMTP', {
+          error: error.message
+        });
+      }
+    }
     const html = `
     <!DOCTYPE html>
     <html>
