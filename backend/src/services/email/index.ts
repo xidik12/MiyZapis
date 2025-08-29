@@ -29,7 +29,7 @@ class EmailService {
 
   private initializeTransporter() {
     try {
-      logger.info('📧 Initializing email service with enhanced debugging...', {
+      logger.info('🚀 Initializing email service with Resend + SMTP hybrid...', {
         host: config.email.smtp.host || 'NOT_SET',
         port: config.email.smtp.port,
         user: config.email.smtp.auth.user ? `${config.email.smtp.auth.user.substring(0, 5)}...` : 'NOT_SET',
