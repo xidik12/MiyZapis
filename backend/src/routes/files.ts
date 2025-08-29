@@ -160,8 +160,37 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
     const path = require('path');
     
     // Railway sets various environment variables we can check
-    const isRailway = process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_SERVICE_NAME || process.env.RAILWAY_PROJECT_NAME;
+    // Let's check all possible Railway indicators
+    const railwayIndicators = {
+      RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
+      RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME,
+      RAILWAY_PROJECT_NAME: process.env.RAILWAY_PROJECT_NAME,
+      RAILWAY_SERVICE: process.env.RAILWAY_SERVICE,
+      RAILWAY_PROJECT: process.env.RAILWAY_PROJECT,
+      NODE_ENV: process.env.NODE_ENV,
+      PORT: process.env.PORT,
+      // Railway typically sets PORT and other indicators
+    };
+    
+    console.log('🔍 Environment detection:', railwayIndicators);
+    
+    // More robust Railway detection
+    const isRailway = !!(
+      process.env.RAILWAY_ENVIRONMENT || 
+      process.env.RAILWAY_SERVICE_NAME || 
+      process.env.RAILWAY_PROJECT_NAME ||
+      process.env.RAILWAY_SERVICE ||
+      process.env.RAILWAY_PROJECT ||
+      (process.env.PORT && process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.NETLIFY)
+    );
+    
     const uploadsDir = process.env.UPLOAD_DIR || (isRailway ? '/tmp/uploads' : path.join(process.cwd(), 'uploads'));
+    
+    console.log('🏗️ Railway detection result:', {
+      isRailway,
+      uploadsDir,
+      cwd: process.cwd()
+    });
     
     console.log('📂 Upload directory:', uploadsDir);
 

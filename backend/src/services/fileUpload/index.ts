@@ -75,16 +75,30 @@ export class FileUploadService {
   private async uploadToLocal(buffer: Buffer, filename: string): Promise<string> {
     try {
       // Use /tmp for Railway, local uploads for development
-      // Railway sets various environment variables we can check
-      const isRailway = process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_SERVICE_NAME || process.env.RAILWAY_PROJECT_NAME;
+      // More robust Railway detection - Railway might not set the specific vars we expect
+      const isRailway = !!(
+        process.env.RAILWAY_ENVIRONMENT || 
+        process.env.RAILWAY_SERVICE_NAME || 
+        process.env.RAILWAY_PROJECT_NAME ||
+        process.env.RAILWAY_SERVICE ||
+        process.env.RAILWAY_PROJECT ||
+        // Railway typically runs in production with PORT but without Vercel/Netlify vars
+        (process.env.PORT && process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.NETLIFY)
+      );
+      
       const uploadsDir = process.env.UPLOAD_DIR || (isRailway ? '/tmp/uploads' : path.join(process.cwd(), 'uploads'));
       
       logger.info('Upload directory detection', {
         RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
         RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME,
         RAILWAY_PROJECT_NAME: process.env.RAILWAY_PROJECT_NAME,
+        RAILWAY_SERVICE: process.env.RAILWAY_SERVICE,
+        RAILWAY_PROJECT: process.env.RAILWAY_PROJECT,
+        NODE_ENV: process.env.NODE_ENV,
+        PORT: process.env.PORT,
         isRailway: !!isRailway,
-        uploadsDir
+        uploadsDir,
+        cwd: process.cwd()
       });
       
       // For Railway, use flat directory structure to avoid permission issues
