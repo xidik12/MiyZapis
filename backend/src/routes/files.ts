@@ -30,7 +30,8 @@ router.get('/railway-env', (req, res) => {
           RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT || null,
           RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME || null,
           NODE_ENV: process.env.NODE_ENV || null,
-          PORT: process.env.PORT || null
+          PORT: process.env.PORT || null,
+          UPLOAD_DIR: process.env.UPLOAD_DIR || null
         }
       }
     });
