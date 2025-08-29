@@ -62,7 +62,7 @@ class ResendEmailService {
       logger.info('📤 Attempting to send email via Resend');
 
       const result = await this.resend.emails.send({
-        from: 'MiyZapis <onboarding@resend.dev>',
+        from: 'MiyZapis <noreply@miyzapis.com>',
         to: options.to,
         subject: options.subject,
         html: options.html,
