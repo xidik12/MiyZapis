@@ -257,8 +257,12 @@ const SpecialistSchedule: React.FC = () => {
       const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
       console.log(`🔍 Checking day: ${dayName}, workingHours[${dayName}]:`, workingHours?.[dayName]);
       
-      // Check if the specialist works on this day
-      if (workingHours && workingHours[dayName] && workingHours[dayName].isWorking) {
+      // Check if the specialist works on this day (support both isWorking and isOpen)
+      const dayData = workingHours?.[dayName];
+      const isWorking = dayData?.isWorking || dayData?.isOpen;
+      console.log(`🔍 Day ${dayName}: isWorking=${dayData?.isWorking}, isOpen=${dayData?.isOpen}, final=${isWorking}`);
+      
+      if (workingHours && dayData && isWorking) {
         const startTime = workingHours[dayName].start || workingHours[dayName].startTime || '09:00';
         const endTime = workingHours[dayName].end || workingHours[dayName].endTime || '17:00';
         console.log(`✅ Creating slots for ${dayName}: ${startTime} - ${endTime}`);
