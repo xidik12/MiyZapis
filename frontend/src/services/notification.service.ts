@@ -76,7 +76,7 @@ export class NotificationService {
 
   // Mark all notifications as read
   async markAllAsRead(): Promise<{ message: string; markedCount: number }> {
-    const response = await apiClient.put<{ message: string; markedCount: number }>('/notifications/mark-all-read');
+    const response = await apiClient.put<{ message: string; markedCount: number }>('/notifications/read-all');
     
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to mark all notifications as read');
@@ -106,7 +106,7 @@ export class NotificationService {
 
   // Get notification preferences
   async getPreferences(): Promise<NotificationPreferences> {
-    const response = await apiClient.get<NotificationPreferences>('/notifications/preferences');
+    const response = await apiClient.get<NotificationPreferences>('/notifications/settings');
     
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get notification preferences');
@@ -119,10 +119,10 @@ export class NotificationService {
     message: string;
     preferences: NotificationPreferences;
   }> {
-    const response = await apiClient.post<{
+    const response = await apiClient.put<{
       message: string;
       preferences: NotificationPreferences;
-    }>('/notifications/preferences', preferences);
+    }>('/notifications/settings', preferences);
     
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to update notification preferences');

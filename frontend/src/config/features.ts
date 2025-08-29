@@ -1,7 +1,7 @@
 // Feature flags for controlling application features
 export const FEATURE_FLAGS = {
-  // Notifications system - temporarily disabled to reduce console errors
-  ENABLE_NOTIFICATIONS_API: false,
+  // Notifications system - enabled since backend is working correctly
+  ENABLE_NOTIFICATIONS_API: true,
   
   // Specialist APIs - now enabled with proper backend implementation
   ENABLE_SPECIALIST_SERVICES_API: true,
