@@ -97,7 +97,7 @@ export class SpecialistService {
         uploadedBy: string;
         purpose: string;
         createdAt: string;
-      }>>('/files/upload?purpose=portfolio', formData, {
+      }>>('/files/upload-robust?purpose=portfolio', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

@@ -35,7 +35,10 @@ export class FileUploadService {
         formData.append('folder', options.folder);
       }
 
-      const uploadUrl = options.type ? `${API_ENDPOINTS.USERS.UPLOAD_AVATAR}?purpose=${options.type}` : API_ENDPOINTS.USERS.UPLOAD_AVATAR;
+      // Use robust upload endpoint for better reliability
+      const uploadUrl = `/files/upload-robust?purpose=${options.type || 'general'}`;
+      console.log('🚀 Using robust upload endpoint:', uploadUrl);
+      
       const response = await apiClient.post<FileUploadResponse[]>(uploadUrl, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
