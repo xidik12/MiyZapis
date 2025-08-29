@@ -70,101 +70,29 @@ router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, a
   }
 });
 
-// Ultra-simplified upload endpoint
-router.post('/upload', authMiddleware, (req, res) => {
-  const multer = require('multer');
-  const upload = multer({ storage: multer.memoryStorage() });
-  
-  upload.array('files', 5)(req, res, (err) => {
-    if (err) {
-      console.error('❌ Multer error:', err);
-      return res.status(400).json({ success: false, error: 'Multer error: ' + err.message });
+// Main upload endpoint using proper FileController
+router.post('/upload', authMiddleware, fileController.uploadMiddleware, fileController.uploadFiles);
+
+// Serve static uploaded files
+router.get('/uploads/:filename', (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const path = require('path');
+    const fs = require('fs');
+    
+    // Use same upload directory logic as upload
+    const uploadsDir = process.env.UPLOAD_DIR || (process.env.RAILWAY_ENVIRONMENT ? '/tmp/uploads' : path.join(process.cwd(), 'uploads'));
+    const filepath = path.join(uploadsDir, filename);
+    
+    if (!fs.existsSync(filepath)) {
+      return res.status(404).json({ success: false, error: 'File not found' });
     }
     
-    try {
-      console.log('📤 Upload request received:', {
-        userId: req.user?.id,
-        hasUser: !!req.user,
-        purpose: req.query.purpose,
-        filesCount: Array.isArray(req.files) ? req.files.length : 0
-      });
-
-      if (!req.user?.id) {
-        console.log('❌ No user authenticated');
-        return res.status(401).json({ success: false, error: 'Authentication required' });
-      }
-
-      const files = req.files as Express.Multer.File[];
-      if (!files || !Array.isArray(files) || files.length === 0) {
-        console.log('❌ No files provided');
-        return res.status(400).json({ success: false, error: 'No files provided' });
-      }
-      
-      const file = files[0];
-      const purpose = req.query.purpose || 'general';
-      
-      const fs = require('fs');
-      const path = require('path');
-      const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
-      
-      // Ensure uploads directory exists
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
-        console.log('📁 Created uploads directory:', uploadsDir);
-      }
-      
-      // Save file
-      const timestamp = Date.now();
-      const ext = path.extname(file.originalname);
-      const filename = `${purpose}-${timestamp}${ext}`;
-      const filepath = path.join(uploadsDir, filename);
-      
-      fs.writeFileSync(filepath, file.buffer);
-      console.log('💾 File saved to disk:', filepath);
-      
-      // Create response
-      const baseUrl = 'https://miyzapis-backend-production.up.railway.app';
-      const fileUrl = `${baseUrl}/uploads/${filename}`;
-      
-      const response = [{
-        id: 'upload-' + timestamp,
-        filename: filename,
-        url: fileUrl,
-        path: fileUrl,
-        originalName: file.originalname,
-        mimeType: file.mimetype,
-        size: file.size,
-        uploadedBy: req.user.id,
-        purpose: purpose,
-        isPublic: true,
-        isProcessed: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }];
-
-      console.log('✅ File uploaded successfully:', {
-        originalName: file.originalname,
-        savedAs: filename,
-        url: fileUrl,
-        size: file.size,
-        userId: req.user.id
-      });
-
-      return res.json({ 
-        success: true, 
-        data: response,
-        message: 'Files uploaded successfully'
-      });
-      
-    } catch (error) {
-      console.error('❌ Upload error:', error);
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Failed to upload files',
-        details: error instanceof Error ? error.message : String(error)
-      });
-    }
-  });
+    res.sendFile(filepath);
+  } catch (error) {
+    console.error('Error serving file:', error);
+    res.status(500).json({ success: false, error: 'Failed to serve file' });
+  }
 });
 
 // Get file details (public files don't require auth)

@@ -74,7 +74,8 @@ export class FileUploadService {
 
   private async uploadToLocal(buffer: Buffer, filename: string): Promise<string> {
     try {
-      const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+      // Use /tmp for Railway, local uploads for development
+      const uploadsDir = process.env.UPLOAD_DIR || (process.env.RAILWAY_ENVIRONMENT ? '/tmp/uploads' : path.join(process.cwd(), 'uploads'));
       
       // Ensure uploads directory exists
       try {
@@ -149,7 +150,7 @@ export class FileUploadService {
     try {
       // Convert URL to local file path
       const filename = fileUrl.replace('/uploads/', '');
-      const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+      const uploadsDir = process.env.UPLOAD_DIR || (process.env.RAILWAY_ENVIRONMENT ? '/tmp/uploads' : path.join(process.cwd(), 'uploads'));
       const filePath = path.join(uploadsDir, filename);
 
       try {
