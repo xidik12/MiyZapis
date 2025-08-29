@@ -229,6 +229,12 @@ export class BookingService {
       // Send appropriate notifications based on auto-booking setting
       try {
         if (service.specialist.autoBooking) {
+          logger.info('📧 Auto-booking is ON, sending booking confirmed notifications', {
+            bookingId: booking.id,
+            customerId: booking.customerId,
+            specialistId: booking.specialistId
+          });
+          
           // Auto-booking ON: Send "booking confirmed" notifications
           await this.notificationService.sendNotification(booking.customerId, {
             type: 'BOOKING_CONFIRMED',
@@ -259,6 +265,12 @@ export class BookingService {
             smsTemplate: 'specialist_booking_confirmed_sms'
           });
         } else {
+          logger.info('📧 Auto-booking is OFF, sending booking pending notifications', {
+            bookingId: booking.id,
+            customerId: booking.customerId,
+            specialistId: booking.specialistId
+          });
+          
           // Auto-booking OFF: Send "booking pending" notifications
           await this.notificationService.sendNotification(booking.customerId, {
             type: 'BOOKING_PENDING',

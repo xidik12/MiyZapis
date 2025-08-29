@@ -39,6 +39,14 @@ export class NotificationService {
 
   async sendNotification(userId: string, data: NotificationData): Promise<Notification> {
     try {
+      logger.info('🔔 Starting notification send process', {
+        userId,
+        type: data.type,
+        title: data.title,
+        hasEmailTemplate: !!data.emailTemplate,
+        hasSMSTemplate: !!data.smsTemplate
+      });
+
       // Get user preferences
       const user = await this.prisma.user.findUnique({
         where: { id: userId },
@@ -57,8 +65,18 @@ export class NotificationService {
       });
 
       if (!user) {
+        logger.error('❌ User not found for notification', { userId });
         throw new Error('User not found');
       }
+
+      logger.info('👤 User found for notification', {
+        userId,
+        email: user.email ? `${user.email.substring(0, 5)}...` : 'NOT_SET',
+        firstName: user.firstName,
+        emailNotifications: user.emailNotifications,
+        pushNotifications: user.pushNotifications,
+        telegramNotifications: user.telegramNotifications
+      });
 
       // Create notification record
       const notification = await this.prisma.notification.create({
@@ -71,35 +89,99 @@ export class NotificationService {
         }
       });
 
+      logger.info('📝 Notification record created', {
+        notificationId: notification.id,
+        userId,
+        type: data.type
+      });
+
       // Send via different channels based on user preferences
       const promises = [];
 
       // Email notification
-      if (user.emailNotifications && user.email && data.emailTemplate) {
+      if (user.emailNotifications && user.email) {
+        logger.info('📧 Queuing email notification', { userId, email: user.email });
         promises.push(this.sendEmailNotification(user, data, notification.id));
+      } else {
+        logger.info('📧 Skipping email notification', {
+          userId,
+          emailNotifications: user.emailNotifications,
+          hasEmail: !!user.email,
+          hasEmailTemplate: !!data.emailTemplate
+        });
       }
 
       // SMS notification
       if (user.phoneNumber && data.smsTemplate) {
+        logger.info('📱 Queuing SMS notification', { userId });
         promises.push(this.sendSMSNotification(user, data, notification.id));
+      } else {
+        logger.info('📱 Skipping SMS notification', {
+          userId,
+          hasPhoneNumber: !!user.phoneNumber,
+          hasSMSTemplate: !!data.smsTemplate
+        });
       }
 
       // Telegram notification
       if (user.telegramNotifications && user.telegramId) {
+        logger.info('💬 Queuing Telegram notification', { userId, telegramId: user.telegramId });
         promises.push(this.sendTelegramNotification(user, data, notification.id));
+      } else {
+        logger.info('💬 Skipping Telegram notification', {
+          userId,
+          telegramNotifications: user.telegramNotifications,
+          hasTelegramId: !!user.telegramId
+        });
       }
 
       // Push notification (via WebSocket or Firebase)
       if (user.pushNotifications) {
+        logger.info('🔔 Queuing push notification', { userId });
         promises.push(this.sendPushNotification(user, data, notification.id));
+      } else {
+        logger.info('🔔 Skipping push notification', {
+          userId,
+          pushNotifications: user.pushNotifications
+        });
       }
 
+      logger.info('📤 Executing notification delivery', {
+        userId,
+        channelsQueued: promises.length,
+        totalChannelsAvailable: 4
+      });
+
       // Execute all notification sends in parallel
-      await Promise.allSettled(promises);
+      const results = await Promise.allSettled(promises);
+      
+      // Log results
+      results.forEach((result, index) => {
+        const channels = ['email', 'sms', 'telegram', 'push'];
+        if (result.status === 'rejected') {
+          logger.error(`❌ ${channels[index]} notification failed`, {
+            userId,
+            error: result.reason
+          });
+        } else {
+          logger.info(`✅ ${channels[index]} notification completed`, { userId });
+        }
+      });
+
+      logger.info('🎉 Notification process completed', {
+        userId,
+        notificationId: notification.id,
+        type: data.type,
+        channelsAttempted: promises.length
+      });
 
       return notification;
     } catch (error) {
-      logger.error('Error sending notification:', error);
+      logger.error('💥 Error in notification process:', {
+        userId,
+        type: data.type,
+        error: error instanceof Error ? error.message : String(error)
+      });
       throw error;
     }
   }

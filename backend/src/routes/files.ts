@@ -11,6 +11,37 @@ router.post('/test', authMiddleware, (req, res) => {
   res.json({ success: true, message: 'Test endpoint works', userId: req.user?.id });
 });
 
+// Test notification endpoint
+router.post('/test-notification', authMiddleware, async (req, res) => {
+  try {
+    const { NotificationService } = require('@/services/notification');
+    const { prisma } = require('@/config/database');
+    
+    const notificationService = new NotificationService(prisma);
+    
+    await notificationService.sendNotification(req.user?.id, {
+      type: 'TEST_NOTIFICATION',
+      title: 'Test Notification',
+      message: 'This is a test notification to debug the system.',
+      emailTemplate: 'test',
+      priority: 'NORMAL'
+    });
+    
+    res.json({ 
+      success: true, 
+      message: 'Test notification sent',
+      userId: req.user?.id
+    });
+  } catch (error) {
+    console.error('Test notification error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to send test notification',
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
+});
+
 // Robust file upload that works on Railway
 router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, async (req, res) => {
   try {
