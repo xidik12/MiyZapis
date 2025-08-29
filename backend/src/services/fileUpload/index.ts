@@ -86,7 +86,8 @@ export class FileUploadService {
         (process.env.PORT && process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.NETLIFY)
       );
       
-      const uploadsDir = process.env.UPLOAD_DIR || (isRailway ? '/tmp/uploads' : path.join(process.cwd(), 'uploads'));
+      // Force /tmp/uploads on Railway regardless of UPLOAD_DIR env var
+      const uploadsDir = isRailway ? '/tmp/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
       
       logger.info('Upload directory detection', {
         RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
@@ -188,7 +189,9 @@ export class FileUploadService {
     try {
       // Convert URL to local file path
       const filename = fileUrl.replace('/uploads/', '');
-      const uploadsDir = process.env.UPLOAD_DIR || (process.env.RAILWAY_ENVIRONMENT ? '/tmp/uploads' : path.join(process.cwd(), 'uploads'));
+      // Force /tmp/uploads on Railway regardless of UPLOAD_DIR env var
+      const isRailway = !!(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_SERVICE_NAME || process.env.RAILWAY_PROJECT_NAME);
+      const uploadsDir = isRailway ? '/tmp/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
       const filePath = path.join(uploadsDir, filename);
 
       try {

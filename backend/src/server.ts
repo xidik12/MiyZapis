@@ -87,7 +87,8 @@ logger.info('🏗️ Railway environment detection results', {
 });
 
 // Static file serving for uploads
-const uploadsDir = process.env.UPLOAD_DIR || (isRailway ? '/tmp/uploads' : path.join(process.cwd(), 'uploads'));
+// Force /tmp/uploads on Railway regardless of UPLOAD_DIR env var
+const uploadsDir = isRailway ? '/tmp/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
 app.use('/uploads', express.static(uploadsDir, {
   maxAge: '1y', // Cache uploaded files for 1 year
   etag: true,

@@ -25,7 +25,7 @@ router.get('/railway-env', (req, res) => {
       success: true,
       data: {
         isRailway: isRailway,
-        uploadsDir: process.env.UPLOAD_DIR || (isRailway ? '/tmp/uploads' : path.join(process.cwd(), 'uploads')),
+        uploadsDir: isRailway ? '/tmp/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads')),
         env: {
           RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT || null,
           RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME || null,
@@ -216,7 +216,7 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
       (process.env.PORT && process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.NETLIFY)
     );
     
-    const uploadsDir = process.env.UPLOAD_DIR || (isRailway ? '/tmp/uploads' : path.join(process.cwd(), 'uploads'));
+    const uploadsDir = isRailway ? '/tmp/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
     
     console.log('🏗️ Railway detection result:', {
       isRailway,
@@ -339,7 +339,14 @@ router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, a
     // Use flat directory structure to avoid permission issues
     const fs = require('fs');
     const path = require('path');
-    const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+    // Force /tmp/uploads on Railway
+    const railwayIndicators = {
+      RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
+      RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME,
+      RAILWAY_PROJECT_NAME: process.env.RAILWAY_PROJECT_NAME
+    };
+    const isRailwayEnv = !!(railwayIndicators.RAILWAY_ENVIRONMENT || railwayIndicators.RAILWAY_SERVICE_NAME || railwayIndicators.RAILWAY_PROJECT_NAME);
+    const uploadsDir = isRailwayEnv ? '/tmp/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
     
     // Save file with purpose prefix instead of subdirectory
     const timestamp = Date.now();
@@ -395,7 +402,9 @@ router.get('/uploads/:filename', (req, res) => {
     const fs = require('fs');
     
     // Use same upload directory logic as upload
-    const uploadsDir = process.env.UPLOAD_DIR || (process.env.RAILWAY_ENVIRONMENT ? '/tmp/uploads' : path.join(process.cwd(), 'uploads'));
+    // Force /tmp/uploads on Railway
+    const isRailwayServe = !!(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_SERVICE_NAME);
+    const uploadsDir = isRailwayServe ? '/tmp/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
     const filepath = path.join(uploadsDir, filename);
     
     if (!fs.existsSync(filepath)) {
