@@ -3,7 +3,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
-import { selectUser, updateUser } from '../../store/slices/authSlice';
+import { selectUser, updateUserProfile } from '../../store/slices/authSlice';
 import { PaymentMethod } from '../../types';
 import { PaymentMethodsService } from '../../services/paymentMethods';
 import { fileUploadService } from '../../services/fileUpload.service';
@@ -226,7 +226,7 @@ const CustomerSettings: React.FC = () => {
       const updatedUser = await userService.updateProfile({ avatar: result.url });
       
       // Update Redux store with the new user data
-      dispatch(updateUser(updatedUser));
+      dispatch(updateUserProfile(updatedUser));
       
       // Update local state
       setUser(prev => ({ ...prev, avatar: result.url }));
@@ -260,7 +260,7 @@ const CustomerSettings: React.FC = () => {
       const updatedUser = await userService.updateProfile({ avatar: null });
       
       // Update Redux store with the new user data
-      dispatch(updateUser(updatedUser));
+      dispatch(updateUserProfile(updatedUser));
       
       // Update local state
       setUser(prev => ({ ...prev, avatar: '' }));
