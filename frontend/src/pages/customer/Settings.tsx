@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useAppSelector } from '../../hooks/redux';
-import { selectUser } from '../../store/slices/authSlice';
+import { useAppSelector, useAppDispatch } from '../../hooks/redux';
+import { selectUser, updateUser } from '../../store/slices/authSlice';
 import { PaymentMethod } from '../../types';
 import { PaymentMethodsService } from '../../services/paymentMethods';
 import { fileUploadService } from '../../services/fileUpload.service';
@@ -45,6 +45,7 @@ const CustomerSettings: React.FC = () => {
   
   // Get actual user data from Redux store
   const currentUser = useAppSelector(selectUser);
+  const dispatch = useAppDispatch();
   const [user, setUser] = useState({
     firstName: currentUser?.firstName || '',
     lastName: currentUser?.lastName || '',
@@ -222,7 +223,10 @@ const CustomerSettings: React.FC = () => {
       const result = await fileUploadService.uploadAvatar(file);
       
       // Update user profile with new avatar URL
-      await userService.updateProfile({ avatar: result.url });
+      const updatedUser = await userService.updateProfile({ avatar: result.url });
+      
+      // Update Redux store with the new user data
+      dispatch(updateUser(updatedUser));
       
       // Update local state
       setUser(prev => ({ ...prev, avatar: result.url }));
@@ -253,7 +257,10 @@ const CustomerSettings: React.FC = () => {
       setUploadError('');
       
       // Update user profile to remove avatar
-      await userService.updateProfile({ avatar: null });
+      const updatedUser = await userService.updateProfile({ avatar: null });
+      
+      // Update Redux store with the new user data
+      dispatch(updateUser(updatedUser));
       
       // Update local state
       setUser(prev => ({ ...prev, avatar: '' }));
