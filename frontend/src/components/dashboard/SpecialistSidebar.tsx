@@ -3,6 +3,7 @@ import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, logout } from '@/store/slices/authSlice';
+import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import {
   HomeIcon,
   CalendarIcon,
@@ -188,11 +189,19 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">
-                  {user?.firstName?.charAt(0) || 'S'}
-                </span>
-              </div>
+              {user?.avatar ? (
+                <img
+                  src={getAbsoluteImageUrl(user.avatar)}
+                  alt={`${user.firstName} ${user.lastName}`}
+                  className="w-10 h-10 rounded-xl object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">
+                    {user?.firstName?.charAt(0) || 'S'}
+                  </span>
+                </div>
+              )}
               <div className="hidden sm:block">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   {user?.firstName} {user?.lastName}

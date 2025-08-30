@@ -6,6 +6,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser, logout } from '../../store/slices/authSlice';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
+import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import {
   HomeIcon,
   CalendarIcon,
@@ -235,11 +236,19 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         {/* User profile section */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
-              <span className="text-white font-semibold">
-                {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
-              </span>
-            </div>
+            {user?.avatar ? (
+              <img
+                src={getAbsoluteImageUrl(user.avatar)}
+                alt={`${user.firstName} ${user.lastName}`}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
+                <span className="text-white font-semibold">
+                  {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+                </span>
+              </div>
+            )}
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
                 <h2 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
