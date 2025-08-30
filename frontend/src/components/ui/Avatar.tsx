@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { UserCircleIcon } from '@heroicons/react/24/outline';
+import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 
 interface AvatarProps {
   src?: string | null;
@@ -89,8 +90,11 @@ export const Avatar: React.FC<AvatarProps> = ({
     }
   }, [src, lazy]);
 
+  // Process the image URL to ensure it's absolute
+  const absoluteSrc = src ? getAbsoluteImageUrl(src) : null;
+
   // If no src provided or image failed to load, show fallback
-  if (!src || imageError) {
+  if (!absoluteSrc || imageError) {
     if (fallbackIcon) {
       return (
         <UserCircleIcon 
@@ -131,7 +135,7 @@ export const Avatar: React.FC<AvatarProps> = ({
       {shouldLoad && (
         <img
           ref={lazy ? setRef : undefined}
-          src={src}
+          src={absoluteSrc}
           alt={alt}
           className={`${sizeClasses[size]} rounded-full object-cover transition-opacity duration-200 ${
             imageLoading ? 'opacity-0' : 'opacity-100'
