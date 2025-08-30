@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
-import { selectUser, updateUser } from '../../store/slices/authSlice';
+import { selectUser, updateUserProfile } from '../../store/slices/authSlice';
 import { fileUploadService } from '../../services/fileUpload.service';
 import { userService } from '../../services/user.service';
 import { Avatar } from '../../components/ui/Avatar';
@@ -124,7 +124,7 @@ const SpecialistSettings: React.FC = () => {
       const updatedUser = await userService.updateProfile({ avatar: result.url });
       
       // Update Redux store with the new user data
-      dispatch(updateUser(updatedUser));
+      dispatch(updateUserProfile(updatedUser));
       
       // Update local state
       setProfileImage(result.url);
@@ -158,7 +158,7 @@ const SpecialistSettings: React.FC = () => {
       const updatedUser = await userService.updateProfile({ avatar: null });
       
       // Update Redux store with the new user data
-      dispatch(updateUser(updatedUser));
+      dispatch(updateUserProfile(updatedUser));
       
       // Update local state
       setProfileImage('');
@@ -224,7 +224,7 @@ const SpecialistSettings: React.FC = () => {
       // const updatedUser = await userService.updateProfile({
       //   // Map settings to user fields here
       // });
-      // dispatch(updateUser(updatedUser));
+      // dispatch(updateUserProfile(updatedUser));
       
       // For now, just show success feedback
       setUploadSuccess(true);
