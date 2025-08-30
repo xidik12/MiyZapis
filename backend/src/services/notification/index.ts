@@ -363,11 +363,11 @@ export class NotificationService {
           message: smsMessage
         });
 
-        // Update notification status
-        await this.prisma.notification.update({
-          where: { id: notificationId },
-          data: { smsSent: true }
-        });
+        // Update notification status (temporarily commented out until migration completes)
+        // await this.prisma.notification.update({
+        //   where: { id: notificationId },
+        //   data: { smsSent: true }
+        // });
 
         logger.info('SMS notification sent successfully', {
           userId: user.id,
