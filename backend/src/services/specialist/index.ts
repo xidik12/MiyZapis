@@ -199,6 +199,18 @@ export class SpecialistService {
     data: UpdateSpecialistData
   ): Promise<SpecialistWithUser> {
     try {
+      // Debug logging to see what data is being saved
+      logger.info('🔄 Updating specialist profile', {
+        userId,
+        fieldsPresent: Object.keys(data),
+        bio: data.bio,
+        bioUk: data.bioUk,
+        bioRu: data.bioRu,
+        city: data.city,
+        state: data.state,
+        country: data.country,
+        portfolioImages: data.portfolioImages ? (Array.isArray(data.portfolioImages) ? `Array[${data.portfolioImages.length}]` : typeof data.portfolioImages) : null
+      });
       // Use transaction to ensure atomicity
       const result = await prisma.$transaction(async (tx) => {
         // Find specialist by userId
@@ -273,6 +285,22 @@ export class SpecialistService {
         });
 
         return updatedSpecialist as SpecialistWithUser;
+      });
+
+      // Debug logging to see what was actually saved
+      logger.info('✅ Specialist profile updated in database', {
+        specialistId: result.id,
+        userId,
+        savedFields: {
+          bio: result.bio,
+          bioUk: result.bioUk,
+          bioRu: result.bioRu,
+          city: result.city,
+          state: result.state,
+          country: result.country,
+          portfolioImages: result.portfolioImages,
+          specialties: result.specialties
+        }
       });
 
       // If working hours were updated, regenerate availability blocks
