@@ -349,6 +349,7 @@ model Notification {
   
   // Delivery channels
   emailSent     Boolean @default(false)
+  smsSent       Boolean @default(false)
   pushSent      Boolean @default(false)
   telegramSent  Boolean @default(false)
   
