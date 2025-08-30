@@ -123,8 +123,8 @@ const SpecialistSettings: React.FC = () => {
       // Update user profile with new avatar URL
       const updatedUser = await userService.updateProfile({ avatar: result.url });
       
-      // Update Redux store with the new user data
-      dispatch(updateUserProfile(updatedUser));
+      // Update Redux store with only the avatar field
+      dispatch(updateUserProfile({ avatar: result.url }));
       
       // Update local state
       setProfileImage(result.url);
@@ -157,8 +157,8 @@ const SpecialistSettings: React.FC = () => {
       // Update user profile to remove avatar
       const updatedUser = await userService.updateProfile({ avatar: null });
       
-      // Update Redux store with the new user data
-      dispatch(updateUserProfile(updatedUser));
+      // Update Redux store with only the avatar field
+      dispatch(updateUserProfile({ avatar: null }));
       
       // Update local state
       setProfileImage('');
