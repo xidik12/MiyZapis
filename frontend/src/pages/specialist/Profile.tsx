@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
-import { useAppSelector } from '../../hooks/redux';
-import { selectUser } from '../../store/slices/authSlice';
+import { useAppSelector, useAppDispatch } from '../../hooks/redux';
+import { selectUser, updateUserProfile } from '../../store/slices/authSlice';
 import { specialistService } from '../../services/specialist.service';
 import { userService } from '../../services/user.service';
 import { fileUploadService } from '../../services/fileUpload.service';
@@ -275,6 +275,7 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
 const SpecialistProfile: React.FC = () => {
   const { language } = useLanguage();
   const user = useAppSelector(selectUser);
+  const dispatch = useAppDispatch();
   
   // State management
   const [profile, setProfile] = useState<SpecialistProfile>(getEmptyProfile());
@@ -634,6 +635,9 @@ const SpecialistProfile: React.FC = () => {
               const { userService } = await import('../../services/user.service');
               await userService.updateProfile(userUpdateData);
               console.log('User profile updated successfully');
+              
+              // Update Redux store so changes persist
+              dispatch(updateUserProfile(userUpdateData));
             } catch (userError: any) {
               console.error('Failed to update user info:', userError);
               console.error('Error details:', userError.message);
@@ -738,6 +742,9 @@ const SpecialistProfile: React.FC = () => {
       
       // Update user profile with new avatar URL
       await userService.updateProfile({ avatar: result.url });
+      
+      // Update Redux store so changes persist
+      dispatch(updateUserProfile({ avatar: result.url }));
       
       showSuccessNotification(
         language === 'uk' ? 'Аватар успішно оновлено' :
