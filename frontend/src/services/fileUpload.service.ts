@@ -25,27 +25,28 @@ export class FileUploadService {
       this.validateFile(file, options);
 
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('files', file); // Use 'files' field name for multer array upload
       
+      const queryParams = new URLSearchParams();
       if (options.type) {
-        formData.append('type', options.type);
+        queryParams.append('purpose', options.type);
       }
-      
       if (options.folder) {
-        formData.append('folder', options.folder);
+        queryParams.append('folder', options.folder);
       }
 
-      const response = await apiClient.post<FileUploadResponse>(API_ENDPOINTS.USERS.UPLOAD_AVATAR, formData, {
+      const endpoint = `/files/upload${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+      const response = await apiClient.post<FileUploadResponse[]>(endpoint, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      if (!response.success || !response.data) {
+      if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
         throw new Error(response.error?.message || 'Failed to upload file');
       }
 
-      return response.data;
+      return response.data[0]; // Return the first uploaded file
     } catch (error: any) {
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to upload file';
       throw new Error(errorMessage);

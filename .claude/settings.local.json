@@ -80,7 +80,14 @@
       "Bash(git log:*)",
       "Bash(railway volumes:*)",
       "Bash(railway volume:*)",
-      "Bash(railway:*)"
+      "Bash(railway:*)",
+      "Bash(git pull:*)",
+      "Bash(git checkout:*)",
+      "Bash(npx tsx:*)",
+      "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot-Dev/backend/test_file_upload.sh)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npm start)",
+      "WebFetch(domain:miyzapis.com)",
+      "Bash(API_URL=https://miyzapis-backend-production.up.railway.app/api/v1 node avatar-persistence-test.js)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

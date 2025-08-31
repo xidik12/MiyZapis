@@ -52,6 +52,21 @@ router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, a
       createdAt: new Date().toISOString()
     }];
 
+    // Update user avatar if this is an avatar upload
+    if (purpose === 'avatar') {
+      try {
+        const { UserService } = await import('@/services/user');
+        await UserService.updateAvatar(req.user.id, fileUrl);
+        console.log('👤 User avatar updated in database:', {
+          userId: req.user.id,
+          avatarUrl: fileUrl
+        });
+      } catch (avatarError) {
+        console.error('❌ Failed to update user avatar:', avatarError);
+        // Don't fail the upload if avatar update fails
+      }
+    }
+
     console.log('File saved:', filepath);
     console.log('File URL:', fileUrl);
 
@@ -142,12 +157,28 @@ router.post('/upload', authMiddleware, (req, res) => {
         updatedAt: new Date().toISOString()
       }];
 
+      // Update user avatar if this is an avatar upload
+      if (purpose === 'avatar') {
+        try {
+          const { UserService } = await import('@/services/user');
+          await UserService.updateAvatar(req.user.id, fileUrl);
+          console.log('👤 User avatar updated in database:', {
+            userId: req.user.id,
+            avatarUrl: fileUrl
+          });
+        } catch (avatarError) {
+          console.error('❌ Failed to update user avatar:', avatarError);
+          // Don't fail the upload if avatar update fails
+        }
+      }
+
       console.log('✅ File uploaded successfully:', {
         originalName: file.originalname,
         savedAs: filename,
         url: fileUrl,
         size: file.size,
-        userId: req.user.id
+        userId: req.user.id,
+        purpose: purpose
       });
 
       return res.json({ 

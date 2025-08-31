@@ -61,20 +61,21 @@ export class UserService {
   async uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
     try {
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', 'avatar');
-
-      const response = await apiClient.post<{ url: string; filename: string }>(API_ENDPOINTS.USERS.UPLOAD_AVATAR, formData, {
+      formData.append('files', file); // Note: files field name for multer array upload
+      
+      const response = await apiClient.post<any>('/files/upload?purpose=avatar', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      if (!response.success || !response.data) {
+      if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
         throw new Error(response.error?.message || 'Failed to upload avatar');
       }
 
-      return { avatarUrl: response.data.url };
+      // Return the URL of the first uploaded file
+      const uploadedFile = response.data[0];
+      return { avatarUrl: uploadedFile.url || uploadedFile.path };
     } catch (error: any) {
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to upload avatar';
       throw new Error(errorMessage);

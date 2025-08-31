@@ -69,72 +69,14 @@ export class SpecialistService {
   async uploadPortfolioImage(file: File): Promise<{ imageUrl: string }> {
     console.log('📸 Processing portfolio image:', file.name, 'Size:', file.size);
     
-    // Validate file size (limit to 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      throw new Error('File size too large. Please choose an image smaller than 5MB.');
-    }
+    // Import fileUploadService dynamically to avoid circular dependencies
+    const { fileUploadService } = await import('./fileUpload.service');
     
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      throw new Error('Invalid file type. Please choose a JPEG, PNG, or WebP image.');
-    }
+    // Use the proper backend file upload service
+    const result = await fileUploadService.uploadPortfolioImage(file);
     
-    return new Promise((resolve, reject) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      
-      img.onload = () => {
-        // Resize image to max 800x600 to reduce size
-        const maxWidth = 800;
-        const maxHeight = 600;
-        let { width, height } = img;
-        
-        if (width > height) {
-          if (width > maxWidth) {
-            height = (height * maxWidth) / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width = (width * maxHeight) / height;
-            height = maxHeight;
-          }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        ctx?.drawImage(img, 0, 0, width, height);
-        
-        // Convert to smaller format with compression
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const base64String = e.target?.result as string;
-              console.log('✅ Image processed and compressed, size:', base64String.length);
-              resolve({ imageUrl: base64String });
-            };
-            reader.onerror = () => reject(new Error('Failed to process compressed image'));
-            reader.readAsDataURL(blob);
-          } else {
-            reject(new Error('Failed to compress image'));
-          }
-        }, 'image/jpeg', 0.8); // 80% quality JPEG
-      };
-      
-      img.onerror = () => reject(new Error('Failed to load image for processing'));
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        img.src = e.target?.result as string;
-      };
-      reader.onerror = () => reject(new Error('Failed to read file'));
-      reader.readAsDataURL(file);
-    });
+    console.log('✅ Portfolio image uploaded successfully:', result.url);
+    return { imageUrl: result.url };
   }
 
   // Get specialist's services (for own profile)

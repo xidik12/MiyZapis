@@ -248,11 +248,27 @@ export class AuthService {
 
   // Upload user avatar
   async uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
-    const response = await apiClient.upload<{ url: string }>(API_ENDPOINTS.USERS.UPLOAD_AVATAR, file);
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to upload avatar');
+    try {
+      const formData = new FormData();
+      formData.append('files', file);
+      
+      const response = await apiClient.post<any>('/files/upload?purpose=avatar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
+        throw new Error(response.error?.message || 'Failed to upload avatar');
+      }
+
+      // Return the URL of the first uploaded file
+      const uploadedFile = response.data[0];
+      return { avatarUrl: uploadedFile.url || uploadedFile.path };
+    } catch (error: any) {
+      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to upload avatar';
+      throw new Error(errorMessage);
     }
-    return { avatarUrl: response.data.url };
   }
 
   // Delete account
@@ -268,9 +284,18 @@ export class AuthService {
 
   // Helper method to transform backend user format to frontend format
   private transformUserFromBackend(backendUser: any): User {
+    // Ensure avatar URL is properly formatted
+    let avatarUrl = backendUser.avatar;
+    if (avatarUrl && avatarUrl.startsWith('/uploads/')) {
+      // Convert relative URL to absolute URL for production
+      const baseUrl = environment.API_BASE_URL || 'https://miyzapis-backend-production.up.railway.app';
+      avatarUrl = `${baseUrl}${avatarUrl}`;
+    }
+
     return {
       ...backendUser,
       userType: backendUser.userType === 'CUSTOMER' ? 'customer' : backendUser.userType === 'SPECIALIST' ? 'specialist' : backendUser.userType === 'ADMIN' ? 'admin' : backendUser.userType.toLowerCase(),
+      avatar: avatarUrl, // Use the transformed avatar URL
       // Set default values for missing frontend properties
       totalBookings: backendUser.totalBookings || 0,
       memberSince: backendUser.createdAt || backendUser.memberSince,

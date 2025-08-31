@@ -130,24 +130,23 @@ export class UserService {
     }
   }
 
-  // Upload avatar (placeholder implementation)
-  static async uploadAvatar(userId: string, _file: any): Promise<string> {
+  // Update user avatar URL after file upload
+  static async updateAvatar(userId: string, avatarUrl: string): Promise<string> {
     try {
-      // TODO: Implement actual file upload to S3 or similar service
-      // For now, return a placeholder URL
-      const avatarUrl = `https://example.com/avatars/${userId}_${Date.now()}.jpg`;
-
-      // Update user avatar URL
+      // Update user avatar URL in database
       await prisma.user.update({
         where: { id: userId },
-        data: { avatar: avatarUrl },
+        data: { 
+          avatar: avatarUrl,
+          updatedAt: new Date()
+        },
       });
 
-      logger.info('Avatar uploaded successfully', { userId, avatarUrl });
+      logger.info('Avatar URL updated successfully', { userId, avatarUrl });
 
       return avatarUrl;
     } catch (error) {
-      logger.error('Error uploading avatar:', error);
+      logger.error('Error updating avatar URL:', error);
       throw error;
     }
   }

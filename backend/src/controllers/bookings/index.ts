@@ -168,6 +168,17 @@ export class BookingController {
         return;
       }
 
+      if (error.message === 'DUPLICATE_BOOKING') {
+        res.status(409).json(
+          createErrorResponse(
+            ErrorCodes.BUSINESS_RULE_VIOLATION,
+            'A booking already exists for this time slot',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
       if (error.message === 'SCHEDULED_TIME_MUST_BE_FUTURE') {
         res.status(400).json(
           createErrorResponse(
