@@ -29,6 +29,7 @@ import {
   HeartIcon as HeartIconSolid,
 } from '@heroicons/react/24/solid';
 import { Avatar } from '../components/ui/Avatar';
+import { getAbsoluteImageUrl } from '../utils/imageUrl';
 
 const SpecialistProfilePage: React.FC = () => {
   const { specialistId } = useParams();
@@ -123,6 +124,19 @@ const SpecialistProfilePage: React.FC = () => {
         
         // Fetch specialist profile
         const specialistData = await specialistService.getPublicProfile(specialistId);
+        console.log('🔍 Specialist data received:', specialistData);
+        console.log('🏢 Bio fields:', { 
+          bio: specialistData.bio, 
+          bioUk: specialistData.bioUk, 
+          bioRu: specialistData.bioRu 
+        });
+        console.log('📍 Location fields:', { 
+          city: specialistData.city, 
+          state: specialistData.state, 
+          country: specialistData.country, 
+          address: specialistData.address 
+        });
+        console.log('📷 Portfolio images:', specialistData.portfolioImages);
         setSpecialist(specialistData);
 
         // Fetch specialist reviews with basic parameters
@@ -297,24 +311,77 @@ const SpecialistProfilePage: React.FC = () => {
                 {getLocalizedDescription(specialist) || t('specialist.noDescription')}
               </p>
               
-              {specialist.specialties && specialist.specialties.length > 0 && (
-                <div className="mt-4">
-                  <h3 className="font-medium text-gray-900 dark:text-white mb-2">
-                    {t('specialist.specialties')}
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {specialist.specialties.map((specialty: string, index: number) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-sm"
-                      >
-                        {specialty}
-                      </span>
+              {(() => {
+                let specialties = [];
+                try {
+                  if (specialist.specialties) {
+                    specialties = typeof specialist.specialties === 'string' 
+                      ? JSON.parse(specialist.specialties)
+                      : specialist.specialties;
+                  }
+                } catch (error) {
+                  console.error('Error parsing specialties:', error);
+                }
+                
+                return specialties && specialties.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="font-medium text-gray-900 dark:text-white mb-2">
+                      {t('specialist.specialties')}
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {specialties.map((specialty: string, index: number) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-sm"
+                        >
+                          {specialty}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Portfolio */}
+            {(() => {
+              let portfolioImages = [];
+              try {
+                if (specialist.portfolioImages) {
+                  portfolioImages = typeof specialist.portfolioImages === 'string' 
+                    ? JSON.parse(specialist.portfolioImages)
+                    : specialist.portfolioImages;
+                }
+              } catch (error) {
+                console.error('Error parsing portfolio images:', error);
+              }
+              
+              return portfolioImages && portfolioImages.length > 0 && (
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                    Portfolio
+                  </h2>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {portfolioImages.map((portfolioItem: any, index: number) => (
+                      <div key={portfolioItem.id || index} className="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+                        <img
+                          src={getAbsoluteImageUrl(portfolioItem.imageUrl || portfolioItem)}
+                          alt={`Portfolio ${index + 1}`}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                          loading="lazy"
+                          onError={(e) => {
+                            // Fallback for broken images
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            console.warn('Failed to load portfolio image:', target.src);
+                          }}
+                        />
+                      </div>
                     ))}
                   </div>
                 </div>
-              )}
-            </div>
+              );
+            })()}
 
             {/* Services */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">

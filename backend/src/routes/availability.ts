@@ -102,6 +102,9 @@ const validateCheckTimeSlot = [
 // Get specialist availability for date range
 router.get('/specialists/:id/availability', AvailabilityController.getSpecialistAvailability);
 
+// Get available dates for a specialist (for booking flow)
+router.get('/specialists/:id/available-dates', AvailabilityController.getAvailableDates);
+
 // Get available time slots for a specific date (for booking flow)
 router.get('/specialists/:id/slots', AvailabilityController.getAvailableSlots);
 

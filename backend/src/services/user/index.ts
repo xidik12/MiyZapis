@@ -7,6 +7,7 @@ interface UpdateProfileData {
   lastName?: string;
   email?: string;
   phoneNumber?: string;
+  avatar?: string | null;
   language?: string;
   currency?: string;
   timezone?: string;

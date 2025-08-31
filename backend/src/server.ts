@@ -58,8 +58,37 @@ app.use(sanitizeInput);
 // Request logging
 app.use(requestLogger);
 
+// Railway environment detection (for debugging)
+const railwayDetectionResults = {
+  RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
+  RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME,
+  RAILWAY_PROJECT_NAME: process.env.RAILWAY_PROJECT_NAME,
+  RAILWAY_SERVICE: process.env.RAILWAY_SERVICE,
+  RAILWAY_PROJECT: process.env.RAILWAY_PROJECT,
+  NODE_ENV: process.env.NODE_ENV,
+  PORT: process.env.PORT,
+  VERCEL: process.env.VERCEL,
+  NETLIFY: process.env.NETLIFY
+};
+
+const isRailway = !!(
+  process.env.RAILWAY_ENVIRONMENT || 
+  process.env.RAILWAY_SERVICE_NAME || 
+  process.env.RAILWAY_PROJECT_NAME ||
+  process.env.RAILWAY_SERVICE ||
+  process.env.RAILWAY_PROJECT ||
+  (process.env.PORT && process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.NETLIFY)
+);
+
+logger.info('🏗️ Railway environment detection results', {
+  isDetectedAsRailway: isRailway,
+  environmentVariables: railwayDetectionResults,
+  cwd: process.cwd()
+});
+
 // Static file serving for uploads
-const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+// Force /tmp/uploads on Railway regardless of UPLOAD_DIR env var
+const uploadsDir = isRailway ? '/tmp/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
 app.use('/uploads', express.static(uploadsDir, {
   maxAge: '1y', // Cache uploaded files for 1 year
   etag: true,
@@ -78,7 +107,8 @@ app.use('/uploads', express.static(uploadsDir, {
 
 logger.info('Static file serving configured', { 
   uploadsDir,
-  route: '/uploads'
+  route: '/uploads',
+  isRailwayEnvironment: isRailway
 });
 
 

@@ -40,6 +40,13 @@ const BookingFlow: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [availableDates, setAvailableDates] = useState<Array<{
+    date: string;
+    dayName: string;
+    workingHours: string;
+    availableSlots: number;
+    totalSlots: number;
+  }>>([]);
   const [bookingNotes, setBookingNotes] = useState('');
   const [bookingResult, setBookingResult] = useState<any>(null);
 
@@ -116,6 +123,30 @@ const BookingFlow: React.FC = () => {
 
     fetchBookingData();
   }, [specialistId, serviceId]);
+
+  useEffect(() => {
+    // Fetch available dates when specialist is loaded
+    const fetchAvailableDates = async () => {
+      const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
+      
+      if (!currentSpecialistId) {
+        console.log('🔍 BookingFlow: Cannot fetch dates - specialistId not found');
+        return;
+      }
+
+      try {
+        console.log('📅 BookingFlow: Fetching available dates for specialist:', currentSpecialistId);
+        const dateData = await specialistService.getAvailableDates(currentSpecialistId);
+        console.log('✅ BookingFlow: Available dates received:', dateData.availableDates);
+        setAvailableDates(dateData.availableDates || []);
+      } catch (error) {
+        console.error('❌ BookingFlow: Error fetching available dates:', error);
+        setAvailableDates([]);
+      }
+    };
+
+    fetchAvailableDates();
+  }, [specialist, service, specialistId]);
 
   useEffect(() => {
     // Fetch available time slots when date is selected
@@ -207,18 +238,12 @@ const BookingFlow: React.FC = () => {
     }
   };
 
-  // Generate available dates (next 30 days)
-  const getAvailableDates = () => {
-    const dates = [];
-    const today = new Date();
-    
-    for (let i = 1; i <= 30; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      dates.push(date);
-    }
-    
-    return dates;
+  // Convert available dates to Date objects for display
+  const getDisplayDates = () => {
+    return availableDates.map(dateInfo => ({
+      date: new Date(dateInfo.date),
+      dateInfo
+    }));
   };
 
   if (loading) {
@@ -293,26 +318,41 @@ const BookingFlow: React.FC = () => {
                 {t('booking.selectDate')}
               </h3>
               
-              <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
-                {getAvailableDates().slice(0, 14).map((date) => (
-                  <button
-                    key={date.toISOString()}
-                    onClick={() => setSelectedDate(date)}
-                    className={`p-2 text-sm rounded-lg border transition-colors ${
-                      selectedDate?.toDateString() === date.toDateString()
-                        ? 'bg-primary-600 text-white border-primary-600'
-                        : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className="font-medium">{date.getDate()}</div>
-                      <div className="text-xs opacity-75">
-                        {date.toLocaleDateString(language || 'en', { weekday: 'short' })}
+              {getDisplayDates().length > 0 ? (
+                <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
+                  {getDisplayDates().slice(0, 14).map(({ date, dateInfo }) => (
+                    <button
+                      key={date.toISOString()}
+                      onClick={() => setSelectedDate(date)}
+                      className={`p-2 text-sm rounded-lg border transition-colors ${
+                        selectedDate?.toDateString() === date.toDateString()
+                          ? 'bg-primary-600 text-white border-primary-600'
+                          : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300'
+                      }`}
+                      title={`${dateInfo.availableSlots} available slots (${dateInfo.workingHours})`}
+                    >
+                      <div className="text-center">
+                        <div className="font-medium">{date.getDate()}</div>
+                        <div className="text-xs opacity-75">
+                          {date.toLocaleDateString(language || 'en', { weekday: 'short' })}
+                        </div>
+                        <div className="text-xs text-primary-600 font-medium mt-1">
+                          {dateInfo.availableSlots} slots
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 dark:text-gray-400 mb-2">
+                    {t('booking.noAvailableDates')}
+                  </p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500">
+                    The specialist has no available time slots in the next 30 days
+                  </p>
+                </div>
+              )}
             </div>
 
             {selectedDate && (

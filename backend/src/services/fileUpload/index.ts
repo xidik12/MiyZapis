@@ -74,7 +74,44 @@ export class FileUploadService {
 
   private async uploadToLocal(buffer: Buffer, filename: string): Promise<string> {
     try {
-      const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+      // Use /tmp for Railway, local uploads for development
+      // More robust Railway detection - Railway might not set the specific vars we expect
+      const isRailway = !!(
+        process.env.RAILWAY_ENVIRONMENT || 
+        process.env.RAILWAY_SERVICE_NAME || 
+        process.env.RAILWAY_PROJECT_NAME ||
+        process.env.RAILWAY_SERVICE ||
+        process.env.RAILWAY_PROJECT ||
+        // Railway typically runs in production with PORT but without Vercel/Netlify vars
+        (process.env.PORT && process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.NETLIFY)
+      );
+      
+      // Force /tmp/uploads on Railway regardless of UPLOAD_DIR env var
+      const uploadsDir = isRailway ? '/tmp/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
+      
+      logger.info('Upload directory detection', {
+        RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
+        RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME,
+        RAILWAY_PROJECT_NAME: process.env.RAILWAY_PROJECT_NAME,
+        RAILWAY_SERVICE: process.env.RAILWAY_SERVICE,
+        RAILWAY_PROJECT: process.env.RAILWAY_PROJECT,
+        NODE_ENV: process.env.NODE_ENV,
+        PORT: process.env.PORT,
+        isRailway: !!isRailway,
+        uploadsDir,
+        cwd: process.cwd()
+      });
+      
+      // For Railway, use flat directory structure to avoid permission issues
+      let finalFilename = filename;
+      if (isRailway) {
+        // Replace directory separators with underscores for flat structure
+        finalFilename = filename.replace(/[/\\]/g, '_');
+        logger.info('Railway environment detected, using flat filename structure', {
+          original: filename,
+          flattened: finalFilename
+        });
+      }
       
       // Ensure uploads directory exists
       try {
@@ -83,25 +120,28 @@ export class FileUploadService {
         await fs.mkdir(uploadsDir, { recursive: true });
       }
 
-      const filePath = path.join(uploadsDir, filename);
-      const fileDir = path.dirname(filePath);
+      const filePath = path.join(uploadsDir, finalFilename);
       
-      // Ensure subdirectory exists
-      try {
-        await fs.access(fileDir);
-      } catch {
-        await fs.mkdir(fileDir, { recursive: true });
+      // For local development, ensure subdirectory exists
+      if (!isRailway) {
+        const fileDir = path.dirname(filePath);
+        try {
+          await fs.access(fileDir);
+        } catch {
+          await fs.mkdir(fileDir, { recursive: true });
+        }
       }
 
       await fs.writeFile(filePath, buffer);
 
       // Return URL for accessing the file
-      const fileUrl = `/uploads/${filename}`;
+      const fileUrl = `/uploads/${finalFilename}`;
       
       logger.info('File uploaded locally successfully', {
-        filename,
+        filename: finalFilename,
         path: filePath,
-        url: fileUrl
+        url: fileUrl,
+        isRailway: !!process.env.RAILWAY_ENVIRONMENT
       });
 
       return fileUrl;
@@ -149,7 +189,9 @@ export class FileUploadService {
     try {
       // Convert URL to local file path
       const filename = fileUrl.replace('/uploads/', '');
-      const uploadsDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads');
+      // Force /tmp/uploads on Railway regardless of UPLOAD_DIR env var
+      const isRailway = !!(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_SERVICE_NAME || process.env.RAILWAY_PROJECT_NAME);
+      const uploadsDir = isRailway ? '/tmp/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
       const filePath = path.join(uploadsDir, filename);
 
       try {

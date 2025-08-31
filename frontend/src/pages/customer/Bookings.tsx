@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { bookingService } from '../../services/booking.service';
+import { Booking as ApiBooking } from '../../types';
 import { 
   CalendarIcon, 
   ClockIcon, 
@@ -16,26 +18,11 @@ import {
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { Avatar } from '../../components/ui/Avatar';
 
-interface Booking {
-  id: string;
-  serviceId: string;
-  serviceName: string;
-  specialistId: string;
-  specialistName: string;
-  specialistAvatar: string;
-  specialistRating: number;
-  date: string;
-  time: string;
-  duration: number;
-  price: number;
-  currency: string;
+// Use the API booking type and extend it for UI needs
+interface Booking extends Omit<ApiBooking, 'status'> {
   status: 'upcoming' | 'completed' | 'cancelled' | 'in_progress';
-  location: {
-    type: 'online' | 'specialist_location' | 'customer_location';
-    address?: string;
-    notes?: string;
-  };
-  notes?: string;
+  specialistAvatar?: string;
+  specialistRating?: number;
   canCancel: boolean;
   canReschedule: boolean;
   hasReview: boolean;
@@ -50,6 +37,27 @@ const statusColors = {
   rescheduled: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
 };
 
+// Map API booking status to UI status
+const mapApiStatusToUIStatus = (apiStatus: string): 'upcoming' | 'completed' | 'cancelled' | 'in_progress' => {
+  switch (apiStatus.toLowerCase()) {
+    case 'pending':
+    case 'confirmed':
+      return 'upcoming';
+    case 'in_progress':
+    case 'started':
+      return 'in_progress';
+    case 'completed':
+    case 'finished':
+      return 'completed';
+    case 'cancelled':
+    case 'canceled':
+    case 'no_show':
+      return 'cancelled';
+    default:
+      return 'upcoming';
+  }
+};
+
 const CustomerBookings: React.FC = () => {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
@@ -62,13 +70,32 @@ const CustomerBookings: React.FC = () => {
     const fetchBookings = async () => {
       try {
         setIsLoading(true);
-        // TODO: Replace with actual API call when backend is ready
-        // const response = await bookingApi.getCustomerBookings();
-        // setBookings(response.data);
+        const response = await bookingService.getBookings();
         
-        // For now, set empty bookings for new users
-        await new Promise(resolve => setTimeout(resolve, 800)); // Simulate loading
-        setBookings([]);
+        // Transform API bookings to UI format
+        const transformedBookings: Booking[] = response.bookings.map((booking: ApiBooking) => {
+          // Parse date and time from scheduledAt
+          const scheduledDate = new Date(booking.scheduledAt);
+          
+          return {
+            ...booking,
+            // Map API status to UI status
+            status: mapApiStatusToUIStatus(booking.status),
+            // Extract date and time
+            date: scheduledDate.toISOString().split('T')[0],
+            time: scheduledDate.toTimeString().split(' ')[0],
+            // Default values for UI-specific fields
+            specialistAvatar: booking.specialist?.profileImage || '',
+            specialistRating: booking.specialist?.rating || 5,
+            canCancel: ['pending', 'confirmed'].includes(booking.status) && 
+                      new Date(booking.scheduledAt) > new Date(Date.now() + 24 * 60 * 60 * 1000),
+            canReschedule: ['pending', 'confirmed'].includes(booking.status) && 
+                          new Date(booking.scheduledAt) > new Date(Date.now() + 24 * 60 * 60 * 1000),
+            hasReview: booking.review ? true : false,
+          };
+        });
+        
+        setBookings(transformedBookings);
       } catch (error) {
         console.error('Failed to fetch bookings:', error);
         setBookings([]);
@@ -87,14 +114,20 @@ const CustomerBookings: React.FC = () => {
     return false;
   });
 
-  const handleCancelBooking = (bookingId: string) => {
-    setBookings(prev => 
-      prev.map(booking => 
-        booking.id === bookingId 
-          ? { ...booking, status: 'cancelled' as const, canCancel: false, canReschedule: false }
-          : booking
-      )
-    );
+  const handleCancelBooking = async (bookingId: string) => {
+    try {
+      await bookingService.cancelBooking(bookingId, 'Customer requested cancellation');
+      setBookings(prev => 
+        prev.map(booking => 
+          booking.id === bookingId 
+            ? { ...booking, status: 'cancelled' as const, canCancel: false, canReschedule: false }
+            : booking
+        )
+      );
+    } catch (error) {
+      console.error('Failed to cancel booking:', error);
+      alert('Failed to cancel booking. Please try again.');
+    }
   };
 
   const handleRescheduleBooking = (bookingId: string) => {
@@ -237,7 +270,7 @@ const CustomerBookings: React.FC = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-2">
                           <h3 className="text-lg font-semibold text-gray-900 truncate">
-                            {booking.serviceName}
+                            {booking.service?.name || booking.serviceName || 'Unknown Service'}
                           </h3>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
                             {getStatusText(booking.status)}
@@ -246,11 +279,18 @@ const CustomerBookings: React.FC = () => {
                         
                         <div className="flex items-center text-sm text-gray-600 mb-1">
                           <UserIcon className="h-4 w-4 mr-1" />
-                          <span className="mr-4">{booking.specialistName}</span>
-                          <div className="flex items-center">
-                            <StarIconSolid className="h-4 w-4 text-yellow-400 mr-1" />
-                            <span>{booking.specialistRating}</span>
-                          </div>
+                          <span className="mr-4">
+                            {booking.specialist?.firstName && booking.specialist?.lastName 
+                              ? `${booking.specialist.firstName} ${booking.specialist.lastName}`
+                              : booking.specialistName || 'Unknown Specialist'
+                            }
+                          </span>
+                          {booking.specialistRating && (
+                            <div className="flex items-center">
+                              <StarIconSolid className="h-4 w-4 text-yellow-400 mr-1" />
+                              <span>{booking.specialistRating}</span>
+                            </div>
+                          )}
                         </div>
                         
                         <div className="flex items-center text-sm text-gray-600 mb-1">
@@ -262,19 +302,20 @@ const CustomerBookings: React.FC = () => {
                         
                         <div className="flex items-center text-sm text-gray-600 mb-2">
                           <MapPinIcon className="h-4 w-4 mr-1" />
-                                                  <span>
-                          {booking.location.type === 'online' ? t('booking.onlineSession') : booking.location.address}
-                        </span>
+                          <span>
+                            {booking.locationType === 'online' ? t('booking.onlineSession') : 
+                             booking.location || booking.specialist?.businessAddress || 'Location TBD'}
+                          </span>
                         </div>
                         
-                        {booking.notes && (
+                        {booking.customerNotes && (
                           <div className="text-sm text-gray-600 mb-2">
-                            <span className="font-medium">{t('booking.notes')}:</span> {booking.notes}
+                            <span className="font-medium">{t('booking.notes')}:</span> {booking.customerNotes}
                           </div>
                         )}
                         
                         <div className="text-lg font-semibold text-gray-900">
-                          {formatPrice(booking.price)}
+                          {formatPrice(booking.totalPrice || booking.price || booking.service?.price || 0)}
                         </div>
                       </div>
                     </div>
@@ -371,12 +412,19 @@ const CustomerBookings: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t('booking.service')}</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedBooking.serviceName}</p>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {selectedBooking.service?.name || selectedBooking.serviceName || 'Unknown Service'}
+                  </p>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t('booking.specialist')}</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedBooking.specialistName}</p>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {selectedBooking.specialist?.firstName && selectedBooking.specialist?.lastName 
+                      ? `${selectedBooking.specialist.firstName} ${selectedBooking.specialist.lastName}`
+                      : selectedBooking.specialistName || 'Unknown Specialist'
+                    }
+                  </p>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
@@ -393,22 +441,24 @@ const CustomerBookings: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t('booking.location')}</label>
                   <p className="mt-1 text-sm text-gray-900">
-                    {selectedBooking.location.type === 'online' 
+                    {selectedBooking.locationType === 'online' 
                       ? t('booking.onlineSession')
-                      : selectedBooking.location.address
+                      : selectedBooking.location || selectedBooking.specialist?.businessAddress || 'Location TBD'
                     }
                   </p>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t('booking.price')}</label>
-                  <p className="mt-1 text-sm text-gray-900">{formatPrice(selectedBooking.price)}</p>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {formatPrice(selectedBooking.totalPrice || selectedBooking.price || selectedBooking.service?.price || 0)}
+                  </p>
                 </div>
                 
-                {selectedBooking.notes && (
+                {selectedBooking.customerNotes && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700">{t('booking.notes')}</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedBooking.notes}</p>
+                    <p className="mt-1 text-sm text-gray-900">{selectedBooking.customerNotes}</p>
                   </div>
                 )}
               </div>

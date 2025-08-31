@@ -156,6 +156,7 @@ router.put('/profile', authenticateToken, validateUpdateProfile, async (req: Aut
     if (req.body.firstName) updateData.firstName = req.body.firstName;
     if (req.body.lastName) updateData.lastName = req.body.lastName;
     if (req.body.phoneNumber !== undefined) updateData.phoneNumber = req.body.phoneNumber;
+    if (req.body.avatar !== undefined) updateData.avatar = req.body.avatar;
     if (req.body.language) updateData.language = req.body.language;
     if (req.body.currency) updateData.currency = req.body.currency;
     if (req.body.timezone) updateData.timezone = req.body.timezone;

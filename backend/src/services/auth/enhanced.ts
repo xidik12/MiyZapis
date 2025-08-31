@@ -188,28 +188,40 @@ export class EnhancedAuthService {
       });
       
       // Send email in background to avoid blocking registration response
+      logger.info('🚀 Initiating verification email send process', {
+        userId: user.id,
+        email: user.email,
+        verificationLink: verificationLink.replace(verificationToken, '[HIDDEN_TOKEN]'),
+        firstName: user.firstName
+      });
+
       emailService.sendVerificationEmail(user.email, {
         firstName: user.firstName,
         verificationLink,
       }).then((emailSent) => {
         if (!emailSent) {
-          logger.warn('Verification email failed to send', { 
+          logger.error('💥 Verification email failed to send', { 
             userId: user.id, 
             email: user.email,
-            reason: 'Email service returned false'
+            reason: 'Email service returned false - check SMTP configuration and logs above'
           });
         } else {
-          logger.info('Verification email sent successfully', { 
+          logger.info('✅ Verification email sent successfully', { 
             userId: user.id,
-            email: user.email
+            email: user.email,
+            verificationToken: verificationToken.substring(0, 8) + '...'
           });
         }
       }).catch((error) => {
-        logger.error('Error sending verification email', { 
+        logger.error('💥 Critical error sending verification email', { 
           userId: user.id, 
           email: user.email,
-          error: error.message,
-          stack: error.stack
+          error: {
+            message: error.message,
+            name: error.name,
+            code: error.code,
+            stack: error.stack
+          }
         });
       });
 
