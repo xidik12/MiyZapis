@@ -362,10 +362,10 @@ const SpecialistProfilePage: React.FC = () => {
                     Portfolio
                   </h2>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {portfolioImages.map((imageUrl: string, index: number) => (
-                      <div key={index} className="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+                    {portfolioImages.map((portfolioItem: any, index: number) => (
+                      <div key={portfolioItem.id || index} className="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
                         <img
-                          src={getAbsoluteImageUrl(imageUrl)}
+                          src={getAbsoluteImageUrl(portfolioItem.imageUrl || portfolioItem)}
                           alt={`Portfolio ${index + 1}`}
                           className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
                           loading="lazy"

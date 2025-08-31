@@ -3,8 +3,16 @@
  * - Static assets (miyzapis_logo.png, etc.) stay on frontend domain
  * - Uploaded files (/uploads/*) go to backend domain
  */
-export function getAbsoluteImageUrl(url: string | undefined | null): string {
+export function getAbsoluteImageUrl(url: string | undefined | null | any): string {
   if (!url) return '';
+  
+  // Handle case where url is an object with imageUrl property (portfolio images)
+  if (typeof url === 'object' && url.imageUrl) {
+    url = url.imageUrl;
+  }
+  
+  // Ensure url is now a string
+  if (typeof url !== 'string') return '';
   
   // Handle data URLs (base64 encoded images)
   if (url.startsWith('data:')) {
