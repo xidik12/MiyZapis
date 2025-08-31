@@ -65,6 +65,8 @@ model User {
   uploadedFiles        File[]
   reportsMade          Report[]                @relation("ReportsMade")
   reportsReceived      Report[]                @relation("ReportsReceived")
+  favoriteSpecialists  FavoriteSpecialist[]    @relation("UserFavoriteSpecialists")
+  favoriteServices     FavoriteService[]       @relation("UserFavoriteServices")
 
   // Indexes for performance
   @@index([email])
@@ -136,6 +138,7 @@ model Specialist {
   reviews            Review[]             @relation("SpecialistReviews")
   availabilityBlocks AvailabilityBlock[]
   analytics          SpecialistAnalytics[]
+  favorites          FavoriteSpecialist[] @relation("SpecialistFavorites")
 
   // Indexes for performance
   @@index([city, isVerified])
@@ -182,6 +185,7 @@ model Service {
   specialist     Specialist @relation(fields: [specialistId], references: [id], onDelete: Cascade)
   categoryModel  Category?  @relation(fields: [categoryId], references: [id])
   bookings       Booking[]
+  favorites      FavoriteService[] @relation("ServiceFavorites")
 
   // Indexes for performance
   @@index([categoryId, isActive])
@@ -798,4 +802,44 @@ model PaymentMethod {
   @@index([userId, isActive])
   @@index([stripeCustomerId])
   @@map("payment_methods")
+}
+
+model FavoriteSpecialist {
+  id           String @id @default(cuid())
+  userId       String
+  specialistId String
+  
+  // Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  user         User @relation("UserFavoriteSpecialists", fields: [userId], references: [id], onDelete: Cascade)
+  specialist   Specialist @relation("SpecialistFavorites", fields: [specialistId], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@unique([userId, specialistId])
+  @@index([userId])
+  @@index([specialistId])
+  @@map("favorite_specialists")
+}
+
+model FavoriteService {
+  id        String @id @default(cuid())
+  userId    String
+  serviceId String
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user      User @relation("UserFavoriteServices", fields: [userId], references: [id], onDelete: Cascade)
+  service   Service @relation("ServiceFavorites", fields: [serviceId], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@unique([userId, serviceId])
+  @@index([userId])
+  @@index([serviceId])
+  @@map("favorite_services")
 }
