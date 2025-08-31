@@ -23,11 +23,11 @@ export class SpecialistService {
 
   // Get public specialist profile (for customers)
   async getPublicProfile(specialistId: string): Promise<Specialist> {
-    const response = await apiClient.get<Specialist>(`/specialists/${specialistId}/public`);
+    const response = await apiClient.get<{specialist: Specialist}>(`/specialists/${specialistId}/public`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get specialist profile');
     }
-    return response.data;
+    return response.data.specialist;
   }
 
   // Create specialist profile
