@@ -24,6 +24,14 @@ export function getAbsoluteImageUrl(url: string | undefined | null | any): strin
     return url;
   }
   
+  // Handle WebP images specifically - add error handling
+  if (url.toLowerCase().includes('.webp')) {
+    // For WebP images, ensure proper server handling
+    if (url.startsWith('/uploads')) {
+      return `https://miyzapis-backend-production.up.railway.app${url}`;
+    }
+  }
+  
   // Static assets (like logo.svg) should stay on frontend domain
   if (url.startsWith('/') && !url.startsWith('/uploads')) {
     return url; // Keep relative for static assets

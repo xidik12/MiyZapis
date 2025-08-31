@@ -369,6 +369,12 @@ const SpecialistProfilePage: React.FC = () => {
                           alt={`Portfolio ${index + 1}`}
                           className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
                           loading="lazy"
+                          onError={(e) => {
+                            // Fallback for broken images
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            console.warn('Failed to load portfolio image:', target.src);
+                          }}
                         />
                       </div>
                     ))}

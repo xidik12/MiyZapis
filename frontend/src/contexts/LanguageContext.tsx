@@ -892,6 +892,7 @@ const translations: Translations = {
   'specialist.noDescription': { en: 'No description available', uk: 'Опис відсутній', ru: 'Описание отсутствует' },
   'specialist.services': { en: 'Services', uk: 'Послуги', ru: 'Услуги' },
   'specialist.noServices': { en: 'No services available', uk: 'Послуги відсутні', ru: 'Услуги отсутствуют' },
+  'specialist.specialties': { en: 'Specialties', uk: 'Спеціалізації', ru: 'Специализации' },
   'specialist.contactInfo': { en: 'Contact Information', uk: 'Контактна інформація', ru: 'Контактная информация' },
   'specialist.quickStats': { en: 'Quick Stats', uk: 'Швидка статистика', ru: 'Краткая статистика' },
   'specialist.experience': { en: 'Experience', uk: 'Досвід', ru: 'Опыт' },
