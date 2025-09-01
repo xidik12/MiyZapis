@@ -286,10 +286,16 @@ export class AuthService {
   private transformUserFromBackend(backendUser: any): User {
     // Ensure avatar URL is properly formatted
     let avatarUrl = backendUser.avatar;
+    console.log('🔄 Transforming user avatar from backend:', avatarUrl);
     if (avatarUrl && avatarUrl.startsWith('/uploads/')) {
       // Convert relative URL to absolute URL for production
       const baseUrl = environment.API_BASE_URL || 'https://miyzapis-backend-production.up.railway.app';
       avatarUrl = `${baseUrl}${avatarUrl}`;
+      console.log('✅ Avatar URL transformed to absolute:', avatarUrl);
+    } else if (avatarUrl && avatarUrl.startsWith('http')) {
+      console.log('✅ Avatar URL already absolute:', avatarUrl);
+    } else if (!avatarUrl) {
+      console.log('⚠️ No avatar URL provided for user');
     }
 
     return {

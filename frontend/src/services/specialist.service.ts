@@ -23,11 +23,91 @@ export class SpecialistService {
 
   // Get public specialist profile (for customers)
   async getPublicProfile(specialistId: string): Promise<Specialist> {
-    const response = await apiClient.get<Specialist>(`/specialists/${specialistId}/public`);
+    const response = await apiClient.get<{ specialist: any }>(`/specialists/${specialistId}/public`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get specialist profile');
     }
-    return response.data;
+    
+    // Extract the specialist data from the nested response
+    const specialistData = response.data.specialist;
+    console.log('🔍 Raw specialist data from API:', specialistData);
+    
+    // Transform the response to match frontend expectations
+    const transformedSpecialist = {
+      ...specialistData,
+      // Handle user data nesting
+      user: specialistData.user ? {
+        ...specialistData.user,
+        firstName: specialistData.user.firstName || specialistData.firstName,
+        lastName: specialistData.user.lastName || specialistData.lastName,
+        avatar: specialistData.user.avatar || specialistData.avatar,
+        isVerified: specialistData.user.isVerified || specialistData.isVerified || false
+      } : {
+        firstName: specialistData.firstName,
+        lastName: specialistData.lastName,
+        avatar: specialistData.avatar,
+        isVerified: specialistData.isVerified || false
+      },
+      // Also keep avatar at root level for backward compatibility
+      avatar: specialistData.user?.avatar || specialistData.avatar,
+      // Flatten location data to root level for compatibility
+      city: specialistData.location?.city || specialistData.city,
+      state: specialistData.location?.state || specialistData.state,
+      country: specialistData.location?.country || specialistData.country,
+      address: specialistData.location?.address || specialistData.address,
+      // Ensure specialties is properly handled
+      specialties: Array.isArray(specialistData.specialties) 
+        ? specialistData.specialties 
+        : (typeof specialistData.specialties === 'string' 
+           ? JSON.parse(specialistData.specialties) 
+           : []),
+      // Ensure portfolio images are properly structured
+      portfolioImages: (() => {
+        try {
+          const portfolioData = Array.isArray(specialistData.portfolioImages)
+            ? specialistData.portfolioImages
+            : (typeof specialistData.portfolioImages === 'string'
+               ? JSON.parse(specialistData.portfolioImages)
+               : []);
+          
+          // Filter out overly large base64 images that could cause performance issues
+          const filteredPortfolio = portfolioData.filter((item: any) => {
+            if (typeof item === 'string' && item.startsWith('data:image/')) {
+              // If base64 image is larger than 500KB, skip it
+              return item.length < 500000;
+            } else if (typeof item === 'object' && item.imageUrl && item.imageUrl.startsWith('data:image/')) {
+              return item.imageUrl.length < 500000;
+            }
+            return true; // Keep all non-base64 images
+          });
+          
+          console.log('📸 Portfolio images processed:', {
+            original: portfolioData.length,
+            filtered: filteredPortfolio.length,
+            removed: portfolioData.length - filteredPortfolio.length
+          });
+          
+          return filteredPortfolio;
+        } catch (error) {
+          console.error('❌ Error processing portfolio images:', error);
+          return [];
+        }
+      })(),
+      // Handle bio fields
+      bio: specialistData.bio || specialistData.description,
+      bioUk: specialistData.bioUk,
+      bioRu: specialistData.bioRu,
+      // Ensure other common fields
+      businessName: specialistData.businessName,
+      rating: specialistData.rating || 0,
+      reviewCount: specialistData.reviewCount || specialistData.totalReviews || 0,
+      completedBookings: specialistData.completedBookings || specialistData.totalBookings || 0,
+      experience: specialistData.experience || 0,
+      responseTime: specialistData.responseTime
+    };
+    
+    console.log('✅ Transformed specialist data:', transformedSpecialist);
+    return transformedSpecialist;
   }
 
   // Create specialist profile

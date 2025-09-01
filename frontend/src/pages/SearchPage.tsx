@@ -112,8 +112,8 @@ const SearchPage: React.FC = () => {
             user: {
               firstName: service.specialist?.user?.firstName || '',
               lastName: service.specialist?.user?.lastName || '',
-              avatar: service.specialist?.user?.avatar || undefined,
-              isVerified: service.specialist?.isVerified || false
+              avatar: service.specialist?.user?.avatar || service.specialist?.avatar || undefined,
+              isVerified: service.specialist?.user?.isVerified || service.specialist?.isVerified || false
             },
             businessName: service.specialist?.businessName || '',
             location: '', // Backend doesn't seem to have location info yet

@@ -66,10 +66,11 @@ export const Avatar: React.FC<AvatarProps> = ({
   }, []);
 
   const handleImageError = useCallback((error: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    console.log('🚨 Avatar image failed to load:', src);
     setImageError(true);
     setImageLoading(false);
     onError?.(error.nativeEvent);
-  }, [onError]);
+  }, [onError, src]);
 
   const handleImageLoad = useCallback(() => {
     setImageLoading(false);
@@ -92,6 +93,11 @@ export const Avatar: React.FC<AvatarProps> = ({
 
   // Process the image URL to ensure it's absolute
   const absoluteSrc = src ? getAbsoluteImageUrl(src) : null;
+  
+  // Debug logging for avatar URLs
+  if (src && absoluteSrc !== src) {
+    console.log('🔄 Avatar URL transformed:', { original: src, absolute: absoluteSrc });
+  }
 
   // If no src provided or image failed to load, show fallback
   if (!absoluteSrc || imageError) {

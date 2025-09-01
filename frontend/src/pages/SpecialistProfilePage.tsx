@@ -137,6 +137,12 @@ const SpecialistProfilePage: React.FC = () => {
           address: specialistData.address 
         });
         console.log('📷 Portfolio images:', specialistData.portfolioImages);
+        console.log('🏷️ Specialties:', specialistData.specialties);
+        console.log('👤 User data:', specialistData.user);
+        console.log('🖼️ Avatar paths:', {
+          userAvatar: specialistData.user?.avatar,
+          directAvatar: specialistData.avatar
+        });
         setSpecialist(specialistData);
 
         // Fetch specialist reviews with basic parameters
@@ -315,13 +321,18 @@ const SpecialistProfilePage: React.FC = () => {
                 let specialties = [];
                 try {
                   if (specialist.specialties) {
-                    specialties = typeof specialist.specialties === 'string' 
-                      ? JSON.parse(specialist.specialties)
-                      : specialist.specialties;
+                    specialties = Array.isArray(specialist.specialties)
+                      ? specialist.specialties
+                      : (typeof specialist.specialties === 'string' 
+                         ? JSON.parse(specialist.specialties)
+                         : []);
                   }
                 } catch (error) {
                   console.error('Error parsing specialties:', error);
+                  specialties = [];
                 }
+                
+                console.log('🏷️ Specialties processed:', specialties);
                 
                 return specialties && specialties.length > 0 && (
                   <div className="mt-4">
@@ -348,13 +359,18 @@ const SpecialistProfilePage: React.FC = () => {
               let portfolioImages = [];
               try {
                 if (specialist.portfolioImages) {
-                  portfolioImages = typeof specialist.portfolioImages === 'string' 
-                    ? JSON.parse(specialist.portfolioImages)
-                    : specialist.portfolioImages;
+                  portfolioImages = Array.isArray(specialist.portfolioImages) 
+                    ? specialist.portfolioImages
+                    : (typeof specialist.portfolioImages === 'string' 
+                       ? JSON.parse(specialist.portfolioImages)
+                       : []);
                 }
               } catch (error) {
                 console.error('Error parsing portfolio images:', error);
+                portfolioImages = [];
               }
+              
+              console.log('🖼️ Portfolio images processed:', portfolioImages);
               
               return portfolioImages && portfolioImages.length > 0 && (
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
@@ -362,22 +378,31 @@ const SpecialistProfilePage: React.FC = () => {
                     Portfolio
                   </h2>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {portfolioImages.map((portfolioItem: any, index: number) => (
-                      <div key={portfolioItem.id || index} className="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
-                        <img
-                          src={getAbsoluteImageUrl(portfolioItem.imageUrl || portfolioItem)}
-                          alt={`Portfolio ${index + 1}`}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
-                          loading="lazy"
-                          onError={(e) => {
-                            // Fallback for broken images
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            console.warn('Failed to load portfolio image:', target.src);
-                          }}
-                        />
-                      </div>
-                    ))}
+                    {portfolioImages.map((portfolioItem: any, index: number) => {
+                      // Handle both direct base64 strings and objects with imageUrl
+                      const imageUrl = portfolioItem.imageUrl || portfolioItem;
+                      
+                      // Check if it's a base64 image (starts with data:image)
+                      const isBase64 = typeof imageUrl === 'string' && imageUrl.startsWith('data:image');
+                      const finalImageUrl = isBase64 ? imageUrl : getAbsoluteImageUrl(imageUrl);
+                      
+                      return (
+                        <div key={portfolioItem.id || `portfolio-${index}`} className="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+                          <img
+                            src={finalImageUrl}
+                            alt={`Portfolio ${index + 1}`}
+                            className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                            loading="lazy"
+                            onError={(e) => {
+                              // Fallback for broken images
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              console.warn('Failed to load portfolio image:', target.src);
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               );
