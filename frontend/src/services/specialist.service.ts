@@ -32,6 +32,11 @@ export class SpecialistService {
     const specialistData = response.data.specialist;
     console.log('🔍 Raw specialist data from API:', specialistData);
     
+    // Check if avatar URLs are accessible (basic validation)
+    if (specialistData.user?.avatar && specialistData.user.avatar.includes('/uploads/')) {
+      console.log('⚠️ Avatar URL points to uploads directory - may not be accessible if files were lost');
+    }
+    
     // Transform the response to match frontend expectations
     const transformedSpecialist = {
       ...specialistData,

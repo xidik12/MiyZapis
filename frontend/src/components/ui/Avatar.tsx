@@ -67,6 +67,8 @@ export const Avatar: React.FC<AvatarProps> = ({
 
   const handleImageError = useCallback((error: React.SyntheticEvent<HTMLImageElement, Event>) => {
     console.log('🚨 Avatar image failed to load:', src);
+    console.log('🔍 This is likely due to missing files on the backend server.');
+    console.log('💡 Consider: 1) Re-uploading avatar, 2) Check if files moved to cloud storage, 3) Backend file serving issue');
     setImageError(true);
     setImageLoading(false);
     onError?.(error.nativeEvent);
