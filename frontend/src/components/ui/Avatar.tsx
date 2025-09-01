@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { UserCircleIcon } from '@heroicons/react/24/outline';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
+import { OptimizedImage } from './OptimizedImage';
 
 interface AvatarProps {
   src?: string | null;
@@ -141,8 +142,7 @@ export const Avatar: React.FC<AvatarProps> = ({
       
       {/* Actual image */}
       {shouldLoad && (
-        <img
-          ref={lazy ? setRef : undefined}
+        <OptimizedImage
           src={absoluteSrc}
           alt={alt}
           className={`${sizeClasses[size]} rounded-full object-cover transition-opacity duration-200 ${
@@ -150,7 +150,6 @@ export const Avatar: React.FC<AvatarProps> = ({
           } ${className}`}
           onError={handleImageError}
           onLoad={handleImageLoad}
-          loading={lazy ? 'lazy' : 'eager'}
         />
       )}
     </div>

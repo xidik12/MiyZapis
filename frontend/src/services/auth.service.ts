@@ -84,6 +84,21 @@ export class AuthService {
       const userData = response.data as { user: User; tokens: AuthTokens };
       if (userData.user) {
         userData.user = this.transformUserFromBackend(userData.user);
+        
+        // If user has a Google avatar URL, save it to backend storage
+        if (userData.user.avatar && (userData.user.avatar.includes('googleusercontent.com') || userData.user.avatar.includes('google.com'))) {
+          console.log('🔄 Saving Google avatar to backend storage...');
+          try {
+            const savedAvatar = await this.saveExternalImage(userData.user.avatar, 'avatar');
+            // Update user profile with the saved avatar URL
+            await this.updateProfile({ avatar: savedAvatar.avatarUrl });
+            userData.user.avatar = savedAvatar.avatarUrl;
+            console.log('✅ Google avatar saved and profile updated');
+          } catch (saveError) {
+            console.warn('⚠️ Failed to save Google avatar to backend:', saveError);
+            // Continue with original Google URL as fallback
+          }
+        }
       }
       
       return userData;
@@ -271,6 +286,28 @@ export class AuthService {
     }
   }
 
+  // Save external image (e.g., Google avatar) to backend storage
+  async saveExternalImage(imageUrl: string, purpose: 'avatar' | 'portfolio' = 'avatar'): Promise<{ avatarUrl: string }> {
+    try {
+      console.log('💾 Saving external image to backend:', imageUrl);
+      
+      const response = await apiClient.post<any>('/files/save-external', {
+        imageUrl,
+        purpose
+      });
+
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Failed to save external image');
+      }
+
+      console.log('✅ External image saved to backend:', response.data.url);
+      return { avatarUrl: response.data.url };
+    } catch (error: any) {
+      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to save external image';
+      throw new Error(errorMessage);
+    }
+  }
+
   // Delete account
   async deleteAccount(password: string): Promise<{ message: string }> {
     const response = await apiClient.delete<{ message: string }>(API_ENDPOINTS.USERS.DELETE_ACCOUNT, {
@@ -284,21 +321,22 @@ export class AuthService {
 
   // Helper method to transform backend user format to frontend format
   private transformUserFromBackend(backendUser: any): User {
-    // Ensure avatar URL is properly formatted
+    // Ensure avatar URL is properly formatted - all avatars should now be stored in backend
     let avatarUrl = backendUser.avatar;
     console.log('🔄 Transforming user avatar from backend:', avatarUrl);
     
-    // Special handling for Google avatars - they should never be converted
-    if (avatarUrl && (avatarUrl.includes('googleusercontent.com') || avatarUrl.includes('google.com'))) {
-      console.log('🔵 Google avatar detected - preserving original URL:', avatarUrl);
-      // Don't transform Google URLs
-    } else if (avatarUrl && avatarUrl.startsWith('/uploads/')) {
+    if (avatarUrl && avatarUrl.startsWith('/uploads/')) {
       // Convert relative URL to absolute URL for production
       const baseUrl = environment.API_BASE_URL || 'https://miyzapis-backend-production.up.railway.app';
       avatarUrl = `${baseUrl}${avatarUrl}`;
-      console.log('✅ Local avatar URL transformed to absolute:', avatarUrl);
+      console.log('✅ Backend avatar URL transformed to absolute:', avatarUrl);
     } else if (avatarUrl && avatarUrl.startsWith('http')) {
-      console.log('✅ Avatar URL already absolute (external):', avatarUrl);
+      // Check if this is still a direct Google URL (should be rare after our changes)
+      if (avatarUrl.includes('googleusercontent.com') || avatarUrl.includes('google.com')) {
+        console.warn('⚠️ Google avatar URL detected - this should be saved to backend storage!');
+      } else {
+        console.log('✅ Avatar URL already absolute:', avatarUrl);
+      }
     } else if (!avatarUrl) {
       console.log('⚠️ No avatar URL provided for user');
     } else {

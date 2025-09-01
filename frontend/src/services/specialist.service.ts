@@ -210,11 +210,43 @@ export class SpecialistService {
 
   // Delete service
   async deleteService(serviceId: string): Promise<{ message: string }> {
-    const response = await apiClient.delete<{ message: string }>(`/specialists/services/${serviceId}`);
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to delete service');
+    try {
+      console.log('🗑️ API: Deleting service:', serviceId);
+      
+      if (!serviceId || serviceId.trim() === '') {
+        throw new Error('Service ID is required for deletion');
+      }
+      
+      const response = await apiClient.delete<{ message: string }>(`/specialists/services/${serviceId}`);
+      console.log('📦 API: Delete response:', response);
+      
+      if (!response.success || !response.data) {
+        const errorMessage = response.error?.message || 'Failed to delete service';
+        console.error('❌ API: Delete failed:', response.error);
+        throw new Error(errorMessage);
+      }
+      
+      console.log('✅ API: Service deleted successfully');
+      return response.data;
+    } catch (error: any) {
+      console.error('🚨 API: Service deletion error:', {
+        serviceId,
+        error: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      
+      // Provide more specific error messages based on status code
+      if (error.response?.status === 500) {
+        throw new Error('Server error occurred while deleting service. This may be due to existing bookings or dependencies.');
+      } else if (error.response?.status === 404) {
+        throw new Error('Service not found or already deleted.');
+      } else if (error.response?.status === 403) {
+        throw new Error('You do not have permission to delete this service.');
+      }
+      
+      throw new Error(error.message || 'Failed to delete service');
     }
-    return response.data;
   }
 
   // Toggle service active status

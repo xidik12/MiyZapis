@@ -282,14 +282,44 @@ const SpecialistServices: React.FC = () => {
   };
 
   const handleDeleteService = async (serviceId: string) => {
-    if (!confirm('Are you sure you want to delete this service?')) return;
+    if (!serviceId) {
+      setError('Cannot delete service: Service ID is missing');
+      return;
+    }
+    
+    if (!confirm('Are you sure you want to delete this service? This action cannot be undone.')) return;
+    
+    // Show loading state
+    setLoading(true);
+    setError(null);
     
     try {
+      console.log('🗑️ Starting service deletion for ID:', serviceId);
       await specialistService.deleteService(serviceId);
+      
+      // Remove from local state on successful deletion
       setServices(prev => prev.filter(service => service.id !== serviceId));
+      console.log('✅ Service deleted successfully and removed from UI');
+      
     } catch (err: any) {
-      console.error('Error deleting service:', err);
-      setError(err.message || 'Failed to delete service');
+      console.error('❌ Service deletion failed:', {
+        serviceId,
+        error: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
+      
+      // More user-friendly error messages
+      let errorMessage = err.message || 'Failed to delete service';
+      if (err.message?.includes('existing bookings')) {
+        errorMessage = 'Cannot delete service because it has existing bookings. Please cancel all bookings first or contact support.';
+      } else if (err.message?.includes('dependencies')) {
+        errorMessage = 'Cannot delete service due to existing dependencies. Please contact support for assistance.';
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 

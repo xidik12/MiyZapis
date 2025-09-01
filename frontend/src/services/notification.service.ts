@@ -20,13 +20,22 @@ export class NotificationService {
     pagination: Pagination;
   }> {
     try {
+      // Set default values to prevent backend issues
+      const defaultFilters = {
+        page: 1,
+        limit: 20,
+        ...filters
+      };
+      
       const params = new URLSearchParams();
       
-      Object.entries(filters).forEach(([key, value]) => {
+      Object.entries(defaultFilters).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           params.append(key, value.toString());
         }
       });
+
+      console.log('📡 Fetching notifications with params:', params.toString());
 
       const response = await apiClient.get<{
         notifications: Notification[];
@@ -35,13 +44,15 @@ export class NotificationService {
       }>(`/notifications?${params}`);
       
       if (!response.success || !response.data) {
-        // Return empty data instead of throwing
+        console.warn('⚠️ Notifications API returned unsuccessful response, using empty data');
         return {
           notifications: [],
           unreadCount: 0,
           pagination: { page: 1, limit: 20, total: 0, totalPages: 0 }
         };
       }
+      
+      console.log('✅ Notifications fetched successfully:', response.data.notifications.length, 'notifications');
       return response.data;
     } catch (error: any) {
       // Log detailed error information for debugging
@@ -51,11 +62,18 @@ export class NotificationService {
         statusText: error.response?.statusText,
         data: error.response?.data,
         url: error.config?.url,
-        method: error.config?.method
+        method: error.config?.method,
+        params: filters
       });
       
-      // For now, return empty data to prevent app crashes
-      // TODO: Fix backend notifications service returning 500 errors
+      // Check if it's a specific backend error that can be resolved
+      if (error.response?.status === 500) {
+        console.warn('🔧 Backend notifications service error - returning empty data to prevent crash');
+      } else if (error.response?.status === 404) {
+        console.warn('📭 Notifications endpoint not found - user may not have notifications enabled');
+      }
+      
+      // Always return empty data to prevent app crashes
       return {
         notifications: [],
         unreadCount: 0,
