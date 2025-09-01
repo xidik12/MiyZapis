@@ -14,13 +14,19 @@ export function getAbsoluteImageUrl(url: string | undefined | null | any): strin
   // Ensure url is now a string
   if (typeof url !== 'string') return '';
   
+  // Debug logging for Google avatars
+  if (url.includes('googleusercontent.com') || url.includes('google.com')) {
+    console.log('🔍 Processing Google avatar URL:', url);
+  }
+  
   // Handle data URLs (base64 encoded images)
   if (url.startsWith('data:')) {
     return url;
   }
   
-  // If it's already an absolute URL, return as is
+  // If it's already an absolute URL, return as is (including Google avatars)
   if (url.startsWith('http://') || url.startsWith('https://')) {
+    console.log('✅ Returning absolute URL as-is:', url.substring(0, 50) + '...');
     return url;
   }
   

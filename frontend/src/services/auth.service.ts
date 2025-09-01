@@ -287,15 +287,22 @@ export class AuthService {
     // Ensure avatar URL is properly formatted
     let avatarUrl = backendUser.avatar;
     console.log('🔄 Transforming user avatar from backend:', avatarUrl);
-    if (avatarUrl && avatarUrl.startsWith('/uploads/')) {
+    
+    // Special handling for Google avatars - they should never be converted
+    if (avatarUrl && (avatarUrl.includes('googleusercontent.com') || avatarUrl.includes('google.com'))) {
+      console.log('🔵 Google avatar detected - preserving original URL:', avatarUrl);
+      // Don't transform Google URLs
+    } else if (avatarUrl && avatarUrl.startsWith('/uploads/')) {
       // Convert relative URL to absolute URL for production
       const baseUrl = environment.API_BASE_URL || 'https://miyzapis-backend-production.up.railway.app';
       avatarUrl = `${baseUrl}${avatarUrl}`;
-      console.log('✅ Avatar URL transformed to absolute:', avatarUrl);
+      console.log('✅ Local avatar URL transformed to absolute:', avatarUrl);
     } else if (avatarUrl && avatarUrl.startsWith('http')) {
-      console.log('✅ Avatar URL already absolute:', avatarUrl);
+      console.log('✅ Avatar URL already absolute (external):', avatarUrl);
     } else if (!avatarUrl) {
       console.log('⚠️ No avatar URL provided for user');
+    } else {
+      console.log('🤔 Unexpected avatar URL format:', avatarUrl);
     }
 
     return {

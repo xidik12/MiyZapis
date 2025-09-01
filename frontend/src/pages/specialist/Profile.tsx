@@ -718,6 +718,19 @@ const SpecialistProfile: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Warn user if they're replacing a Google avatar
+    if (user?.avatar && (user.avatar.includes('googleusercontent.com') || user.avatar.includes('google.com'))) {
+      const confirmed = window.confirm(
+        language === 'uk' ? 'Ви впевнені, що хочете замінити аватар з Google?' :
+        language === 'ru' ? 'Вы уверены, что хотите заменить аватар из Google?' :
+        'Are you sure you want to replace your Google avatar?'
+      );
+      if (!confirmed) {
+        event.target.value = ''; // Reset file input
+        return;
+      }
+    }
+
     // Validate file type and size
     if (!file.type.startsWith('image/')) {
       showErrorNotification(
