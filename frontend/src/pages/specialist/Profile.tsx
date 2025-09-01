@@ -1011,9 +1011,11 @@ const SpecialistProfile: React.FC = () => {
               {!isEditing && (
                 <button 
                   onClick={() => {
-                    if (user?.userType === 'SPECIALIST') {
-                      // Open specialist's public profile in a new tab - use current user ID
-                      const publicProfileUrl = `/specialist/${user.id}`;
+                    if (user?.userType === 'specialist') {
+                      // Open specialist's public profile in a new tab - use specialist profile ID
+                      const specialistId = (profile as any).id || user.id;
+                      const publicProfileUrl = `/specialist/${specialistId}`;
+                      console.log('🔍 Opening preview for specialist ID:', specialistId);
                       window.open(publicProfileUrl, '_blank');
                     } else {
                       console.warn('User is not a specialist');

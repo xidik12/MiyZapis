@@ -47,6 +47,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [supportsWebP, setSupportsWebP] = useState<boolean | null>(null);
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
   // Check WebP support on component mount
   useEffect(() => {
@@ -58,7 +59,25 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     setImageSrc(src);
     setHasError(false);
     setIsLoading(true);
-  }, [src]);
+    
+    // Clear existing timeout
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    
+    // Add timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      console.log('⏰ Image loading timeout for:', src);
+      setHasError(true);
+      setIsLoading(false);
+    }, 10000); // 10 second timeout
+    
+    setTimeoutId(timeout);
+    
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [src, timeoutId]);
 
   // Generate fallback URL for WebP images
   const generateFallbackSrc = (originalSrc: string): string => {
@@ -76,11 +95,13 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   const handleImageError = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
     const img = event.currentTarget;
+    console.log('🚨 OptimizedImage failed to load:', imageSrc);
     
     // If this is a WebP image and we haven't tried the fallback yet
     if (imageSrc.includes('.webp') && !hasError) {
       const fallback = generateFallbackSrc(imageSrc);
       if (fallback !== imageSrc) {
+        console.log('🔄 Trying WebP fallback:', fallback);
         setImageSrc(fallback);
         setHasError(false);
         return;
@@ -91,17 +112,25 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     if (supportsWebP === false && imageSrc.includes('.webp')) {
       const fallback = generateFallbackSrc(imageSrc);
       if (fallback !== imageSrc) {
+        console.log('🔄 WebP not supported, trying fallback:', fallback);
         setImageSrc(fallback);
         return;
       }
     }
     
+    console.log('❌ All image loading attempts failed for:', src);
     setHasError(true);
     setIsLoading(false);
     onError?.(event);
   };
 
   const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    // Clear timeout when image loads successfully
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      setTimeoutId(null);
+    }
+    
     setIsLoading(false);
     setHasError(false);
     onLoad?.(event);

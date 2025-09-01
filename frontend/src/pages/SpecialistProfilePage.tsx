@@ -107,8 +107,22 @@ const SpecialistProfilePage: React.FC = () => {
         // Make API call
         await dispatch(addSpecialistToFavorites(specialistId)).unwrap();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error toggling favorite:', error);
+      
+      // Handle specific error cases
+      if (error.response?.status === 409) {
+        console.log('🚫 Conflict error - likely trying to favorite own profile or already favorited');
+        // Show user-friendly message
+        alert('You cannot favorite your own profile or this specialist is already in your favorites.');
+      } else if (error.response?.status === 401) {
+        console.log('🔒 Authentication required');
+        alert('Please log in to add favorites.');
+      } else {
+        console.log('❌ Generic favorites error:', error.message);
+        alert('Failed to update favorites. Please try again.');
+      }
+      
       // The Redux slice will automatically revert optimistic updates on error
     } finally {
       setFavoriteLoading(false);
@@ -263,7 +277,7 @@ const SpecialistProfilePage: React.FC = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 mt-6 md:mt-0">
-              {user && (
+              {user && specialist?.userId !== user.id && (
                 <button
                   onClick={handleFavoriteToggle}
                   disabled={favoriteLoading}
