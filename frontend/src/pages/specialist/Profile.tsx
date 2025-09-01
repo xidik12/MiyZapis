@@ -227,6 +227,8 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
   
   const result = {
     ...defaultProfile,
+    // Preserve the real specialist ID
+    id: specialist?.id || defaultProfile.id,
     // User data (flat from apiData)
     firstName: apiData?.firstName || '',
     lastName: apiData?.lastName || '',

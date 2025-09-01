@@ -43,9 +43,19 @@ export class NotificationService {
         };
       }
       return response.data;
-    } catch (error) {
-      // Return empty data for any API errors to prevent app crashes
-      console.warn('Notifications API error:', error);
+    } catch (error: any) {
+      // Log detailed error information for debugging
+      console.error('🚨 Notifications API error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: error.config?.url,
+        method: error.config?.method
+      });
+      
+      // For now, return empty data to prevent app crashes
+      // TODO: Fix backend notifications service returning 500 errors
       return {
         notifications: [],
         unreadCount: 0,

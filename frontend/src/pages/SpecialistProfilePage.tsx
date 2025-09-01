@@ -277,7 +277,15 @@ const SpecialistProfilePage: React.FC = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 mt-6 md:mt-0">
-              {user && specialist?.userId !== user.id && (
+              {(() => {
+                const shouldShowFavorite = user && specialist?.userId !== user.id;
+                console.log('🔍 Favorite button logic:', {
+                  user: user?.id,
+                  specialistUserId: specialist?.userId,
+                  shouldShow: shouldShowFavorite
+                });
+                return shouldShowFavorite;
+              })() && (
                 <button
                   onClick={handleFavoriteToggle}
                   disabled={favoriteLoading}

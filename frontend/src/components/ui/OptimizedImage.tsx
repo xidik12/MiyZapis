@@ -60,9 +60,10 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     setHasError(false);
     setIsLoading(true);
     
-    // Clear existing timeout
+    // Clear any existing timeout
     if (timeoutId) {
       clearTimeout(timeoutId);
+      setTimeoutId(null);
     }
     
     // Add timeout to prevent infinite loading
@@ -70,19 +71,26 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       console.log('⏰ Image loading timeout for:', src);
       setHasError(true);
       setIsLoading(false);
-    }, 10000); // 10 second timeout
+    }, 5000); // 5 second timeout (reduced from 10s)
     
     setTimeoutId(timeout);
     
     return () => {
-      if (timeout) clearTimeout(timeout);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
     };
-  }, [src, timeoutId]);
+  }, [src]); // Removed timeoutId from dependencies to prevent infinite loop
 
   // Generate fallback URL for WebP images
   const generateFallbackSrc = (originalSrc: string): string => {
     if (fallbackSrc) {
       return fallbackSrc;
+    }
+    
+    // Handle base64 data URLs - they should work directly
+    if (originalSrc.startsWith('data:')) {
+      return originalSrc;
     }
     
     // If the source is a WebP image, try to convert to JPEG
@@ -97,6 +105,21 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     const img = event.currentTarget;
     console.log('🚨 OptimizedImage failed to load:', imageSrc);
     
+    // Clear timeout when we get an error
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      setTimeoutId(null);
+    }
+    
+    // Don't retry for base64 data URLs - they should work or fail immediately
+    if (imageSrc.startsWith('data:')) {
+      console.log('❌ Base64 image failed to load - this indicates corrupted data');
+      setHasError(true);
+      setIsLoading(false);
+      onError?.(event);
+      return;
+    }
+
     // If this is a WebP image and we haven't tried the fallback yet
     if (imageSrc.includes('.webp') && !hasError) {
       const fallback = generateFallbackSrc(imageSrc);
@@ -104,6 +127,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         console.log('🔄 Trying WebP fallback:', fallback);
         setImageSrc(fallback);
         setHasError(false);
+        setIsLoading(true); // Reset loading state for retry
         return;
       }
     }
@@ -114,6 +138,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       if (fallback !== imageSrc) {
         console.log('🔄 WebP not supported, trying fallback:', fallback);
         setImageSrc(fallback);
+        setIsLoading(true); // Reset loading state for retry
         return;
       }
     }
