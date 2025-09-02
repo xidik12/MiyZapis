@@ -64,7 +64,13 @@ const SpecialistServices: React.FC = () => {
         const servicesData = await specialistService.getServices();
         console.log('📦 Services data received:', servicesData);
         console.log('🔍 First service structure:', servicesData?.[0]);
-        console.log('🏷️ Service IDs:', servicesData?.map(s => ({ id: s.id, name: s.name })));
+        console.log('🏷️ Service IDs and metadata:', servicesData?.map(s => ({ 
+          id: s.id, 
+          name: s.name,
+          createdAt: s.createdAt,
+          updatedAt: s.updatedAt 
+        })));
+        console.log('📊 Total services loaded:', servicesData?.length || 0);
         setServices(Array.isArray(servicesData) ? servicesData : []);
       } catch (err: any) {
         setError(err.message || 'Failed to load services');
@@ -295,11 +301,53 @@ const SpecialistServices: React.FC = () => {
     
     try {
       console.log('🗑️ Starting service deletion for ID:', serviceId);
-      await specialistService.deleteService(serviceId);
       
-      // Remove from local state on successful deletion
-      setServices(prev => prev.filter(service => service.id !== serviceId));
-      console.log('✅ Service deleted successfully and removed from UI');
+      // Debug: Check if service exists before deletion
+      const servicesBefore = services.length;
+      const serviceToDelete = services.find(s => s.id === serviceId);
+      console.log('📊 Pre-deletion state:', {
+        totalServices: servicesBefore,
+        serviceToDelete: serviceToDelete ? { id: serviceToDelete.id, name: serviceToDelete.name } : 'NOT FOUND',
+        allServiceIds: services.map(s => s.id)
+      });
+      
+      const result = await specialistService.deleteService(serviceId);
+      console.log('📦 Backend deletion result:', result);
+      
+      // Verify deletion by fetching services again from backend
+      console.log('🔍 Verifying deletion by re-fetching services...');
+      const refreshedServices = await specialistService.getServices();
+      console.log('📊 Post-deletion verification:', {
+        backendServicesCount: refreshedServices.length,
+        deletedServiceStillExists: refreshedServices.some(s => s.id === serviceId),
+        backendServiceIds: refreshedServices.map(s => s.id)
+      });
+      
+      // Check if service was actually deleted from backend
+      const serviceStillExists = refreshedServices.some(s => s.id === serviceId);
+      
+      if (serviceStillExists) {
+        // Backend says success but service still exists - this is the bug!
+        console.error('🚨 DELETION BUG DETECTED: Backend returned success but service still exists!', {
+          serviceId,
+          backendResponse: result,
+          serviceStillInBackend: true
+        });
+        
+        // Update UI to reflect actual backend state
+        setServices(refreshedServices);
+        
+        throw new Error(
+          `Deletion failed: Backend returned success but service still exists in database. ` +
+          `This indicates a backend bug. Please check server logs and database state. ` +
+          `Service ID: ${serviceId}`
+        );
+      }
+      
+      // If we reach here, deletion was actually successful
+      setServices(refreshedServices); // Use fresh data from backend
+      console.log('✅ Service deletion verified: Service no longer exists on backend');
+      alert('Service deleted successfully and verified!');
       
     } catch (err: any) {
       console.error('❌ Service deletion failed:', {
@@ -311,13 +359,22 @@ const SpecialistServices: React.FC = () => {
       
       // More user-friendly error messages
       let errorMessage = err.message || 'Failed to delete service';
-      if (err.message?.includes('existing bookings')) {
+      
+      // Check for specific backend error details
+      if (err.response?.data?.error) {
+        errorMessage = `Backend Error: ${err.response.data.error}`;
+      } else if (err.response?.data?.message) {
+        errorMessage = `Backend Error: ${err.response.data.message}`;
+      } else if (err.response?.status === 500) {
+        errorMessage = 'Server error occurred while deleting service. This may be due to existing bookings or database dependencies. Please try again later or contact support.';
+      } else if (err.message?.includes('existing bookings')) {
         errorMessage = 'Cannot delete service because it has existing bookings. Please cancel all bookings first or contact support.';
       } else if (err.message?.includes('dependencies')) {
         errorMessage = 'Cannot delete service due to existing dependencies. Please contact support for assistance.';
       }
       
       setError(errorMessage);
+      alert(`Deletion failed: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -630,6 +687,52 @@ const SpecialistServices: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Debug Panel - Only show in development or when needed */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium text-yellow-800">🔧 Service Deletion Debug Panel</h4>
+                <div className="flex gap-2">
+                  <button
+                    onClick={async () => {
+                      console.log('🔄 Manual service refresh initiated...');
+                      try {
+                        const freshServices = await specialistService.getServices();
+                        console.log('📦 Fresh services from backend:', freshServices.map(s => ({ id: s.id, name: s.name })));
+                        setServices(freshServices);
+                        alert(`Refreshed! Found ${freshServices.length} services on backend`);
+                      } catch (error) {
+                        console.error('❌ Refresh failed:', error);
+                        alert('Refresh failed - check console');
+                      }
+                    }}
+                    className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                  >
+                    Refresh Services
+                  </button>
+                  <button
+                    onClick={() => {
+                      console.log('📊 Current frontend state:', {
+                        totalServices: services.length,
+                        serviceIds: services.map(s => s.id),
+                        services: services.map(s => ({ id: s.id, name: s.name, createdAt: s.createdAt }))
+                      });
+                    }}
+                    className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                  >
+                    Log State
+                  </button>
+                </div>
+              </div>
+              <div className="text-xs text-yellow-700">
+                <strong>Current Services ({services.length}):</strong> {services.map(s => `${s.name} (${s.id})`).join(', ') || 'None'}
+              </div>
+              <div className="text-xs text-yellow-600 mt-1">
+                Use "Refresh Services" after deletion to check if service persists on backend. Check browser console for detailed logs.
+              </div>
+            </div>
+          )}
 
           {/* Services Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

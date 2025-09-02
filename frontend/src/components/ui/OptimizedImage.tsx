@@ -87,17 +87,34 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
           }, 2000);
           setTimeoutId(timeout);
         })
-        .catch(() => {
+        .catch((fetchError) => {
           // Network error or file doesn't exist
           console.log('🚨 Backend file HEAD request failed - file likely missing:', src);
+          console.log('💡 Suggestion: Files may have been lost during deployment. Consider re-uploading images or implementing cloud storage.');
           setHasError(true);
           setIsLoading(false);
         });
     } else {
-      // For non-backend files or data URLs, use normal timeout
-      const timeoutDuration = 3000;
+      // For non-backend files or data URLs, use different timeout based on type
+      let timeoutDuration = 3000;
+      
+      // Longer timeout for base64 images as they might be large
+      if (src.startsWith('data:image/')) {
+        const sizeKB = Math.round(src.length / 1024);
+        if (sizeKB > 200) {
+          timeoutDuration = 10000; // 10 seconds for large base64 images
+          console.log(`🖼️ Large base64 image detected (${sizeKB}KB), using extended timeout`);
+        }
+      }
+      
       const timeout = setTimeout(() => {
-        console.log('⏰ Image loading timeout for:', src);
+        if (src.startsWith('data:image/')) {
+          const sizeKB = Math.round(src.length / 1024);
+          console.log(`⏰ Base64 image timeout (${sizeKB}KB):`, src.substring(0, 50) + '...');
+          console.log('💡 Consider converting large images to files for better performance');
+        } else {
+          console.log('⏰ Image loading timeout for:', src);
+        }
         setHasError(true);
         setIsLoading(false);
       }, timeoutDuration);
@@ -229,7 +246,8 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
                 {isBackendUpload ? (
                   <div>
                     <div className="font-medium">Image unavailable</div>
-                    <div className="text-xs mt-1">File may have been lost during server update</div>
+                    <div className="text-xs mt-1">File lost during server update</div>
+                    <div className="text-xs text-blue-600 mt-1">Please re-upload image</div>
                   </div>
                 ) : (
                   'Image failed to load'

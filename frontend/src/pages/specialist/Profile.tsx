@@ -11,6 +11,7 @@ import { ProfessionDropdown } from '../../components/ui/ProfessionDropdown';
 import { LocationPicker } from '../../components/LocationPicker';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import OptimizedImage from '../../components/ui/OptimizedImage';
+import AutoMigrateAvatar from '../../components/AutoMigrateAvatar';
 import { 
   CheckCircleIcon,
   XCircleIcon,
@@ -892,6 +893,16 @@ const SpecialistProfile: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900">
+      {/* Auto-migrate Google avatars */}
+      <AutoMigrateAvatar 
+        showStatus={true} 
+        onMigrationComplete={(success, newAvatarUrl) => {
+          if (success && newAvatarUrl) {
+            setProfile(prev => ({ ...prev, avatar: newAvatarUrl }));
+          }
+        }}
+      />
+      
       {/* Success/Error Notifications */}
       {showSuccessMessage && (
         <div className="fixed top-4 right-4 z-50 animate-slide-in">

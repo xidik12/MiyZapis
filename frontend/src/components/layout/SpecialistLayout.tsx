@@ -9,6 +9,7 @@ import { fetchNotifications } from '../../store/slices/notificationSlice';
 import { isFeatureEnabled } from '../../config/features';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
+import { NotificationBell } from '../notifications/NotificationBell';
 import {
   ChartBarIcon,
   CalendarIcon,
@@ -405,17 +406,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
 
           <div className="flex items-center space-x-4">
             {/* Notifications */}
-            <Link 
-              to="/specialist/notifications"
-              className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              <BellIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-              {isFeatureEnabled('ENABLE_NOTIFICATIONS_API') && unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
-            </Link>
+            <NotificationBell />
 
             {/* Settings */}
             <Link 

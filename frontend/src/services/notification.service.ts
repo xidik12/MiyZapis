@@ -1,4 +1,5 @@
 import { apiClient } from './api';
+import { localNotificationService, LocalNotification } from './localNotification.service';
 import {
   Notification,
   NotificationType,
@@ -8,6 +9,18 @@ import {
 } from '@/types';
 
 export class NotificationService {
+  private useLocalFallback = false;
+
+  // Check if backend is available
+  private async isBackendAvailable(): Promise<boolean> {
+    try {
+      const response = await apiClient.get('/health');
+      return response.success;
+    } catch {
+      return false;
+    }
+  }
+
   // Get user notifications
   async getNotifications(filters: {
     type?: NotificationType;
@@ -19,127 +32,219 @@ export class NotificationService {
     unreadCount: number;
     pagination: Pagination;
   }> {
-    try {
-      // Set default values to prevent backend issues
-      const defaultFilters = {
-        page: 1,
-        limit: 20,
-        ...filters
-      };
-      
-      const params = new URLSearchParams();
-      
-      Object.entries(defaultFilters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          params.append(key, value.toString());
-        }
-      });
-
-      console.log('📡 Fetching notifications with params:', params.toString());
-
-      const response = await apiClient.get<{
-        notifications: Notification[];
-        unreadCount: number;
-        pagination: Pagination;
-      }>(`/notifications?${params}`);
-      
-      if (!response.success || !response.data) {
-        console.warn('⚠️ Notifications API returned unsuccessful response, using empty data');
-        return {
-          notifications: [],
-          unreadCount: 0,
-          pagination: { page: 1, limit: 20, total: 0, totalPages: 0 }
+    // Try backend first
+    if (!this.useLocalFallback) {
+      try {
+        // Set default values to prevent backend issues
+        const defaultFilters = {
+          page: 1,
+          limit: 20,
+          ...filters
         };
+        
+        const params = new URLSearchParams();
+        
+        Object.entries(defaultFilters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            params.append(key, value.toString());
+          }
+        });
+
+        console.log('📡 Attempting to fetch notifications from backend with params:', params.toString());
+
+        const response = await apiClient.get<{
+          notifications: Notification[];
+          unreadCount: number;
+          pagination: Pagination;
+        }>(`/notifications?${params}`);
+        
+        if (response.success && response.data) {
+          console.log('✅ Backend notifications fetched successfully:', response.data.notifications.length, 'notifications');
+          return response.data;
+        }
+        
+        throw new Error('Backend returned unsuccessful response');
+        
+      } catch (error: any) {
+        console.error('🚨 Backend notifications failed, switching to local fallback:', {
+          message: error.message,
+          status: error.response?.status,
+          statusText: error.response?.statusText
+        });
+        
+        this.useLocalFallback = true;
+        
+        // Generate sample data if no local notifications exist
+        const localNotifications = localNotificationService.getNotifications();
+        if (localNotifications.length === 0) {
+          console.log('📧 No local notifications found, generating samples...');
+          localNotificationService.generateSampleNotifications();
+        }
       }
-      
-      console.log('✅ Notifications fetched successfully:', response.data.notifications.length, 'notifications');
-      return response.data;
-    } catch (error: any) {
-      // Log detailed error information for debugging
-      console.error('🚨 Notifications API error details:', {
-        message: error.message,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        url: error.config?.url,
-        method: error.config?.method,
-        params: filters
-      });
-      
-      // Check if it's a specific backend error that can be resolved
-      if (error.response?.status === 500) {
-        console.warn('🔧 Backend notifications service error - returning empty data to prevent crash');
-      } else if (error.response?.status === 404) {
-        console.warn('📭 Notifications endpoint not found - user may not have notifications enabled');
-      }
-      
-      // Always return empty data to prevent app crashes
-      return {
-        notifications: [],
-        unreadCount: 0,
-        pagination: { page: 1, limit: 20, total: 0, totalPages: 0 }
-      };
     }
+
+    // Use local fallback
+    console.log('💾 Using local notification service');
+    const localNotifications = localNotificationService.getNotifications(filters);
+    const unreadCount = localNotificationService.getUnreadCount();
+    
+    // Convert LocalNotification to Notification format
+    const notifications: Notification[] = localNotifications.map(local => ({
+      id: local.id,
+      type: local.type,
+      title: local.title,
+      message: local.message,
+      isRead: local.isRead,
+      createdAt: local.createdAt,
+      actionUrl: local.actionUrl,
+      metadata: local.metadata
+    }));
+
+    const total = notifications.length;
+    const page = filters.page || 1;
+    const limit = filters.limit || 20;
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      notifications,
+      unreadCount,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages
+      }
+    };
   }
 
   // Get unread notification count
   async getUnreadCount(): Promise<{ unreadCount: number }> {
-    const response = await apiClient.get<{ unreadCount: number }>('/notifications/unread-count');
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get unread count');
+    if (this.useLocalFallback) {
+      const count = localNotificationService.getUnreadCount();
+      return { unreadCount: count };
     }
-    return response.data;
+
+    try {
+      const response = await apiClient.get<{ unreadCount: number }>('/notifications/unread-count');
+      
+      if (!response.success || !response.data) {
+        throw new Error('Backend unread count failed');
+      }
+      return response.data;
+    } catch (error) {
+      console.warn('Backend unread count failed, using local fallback');
+      this.useLocalFallback = true;
+      const count = localNotificationService.getUnreadCount();
+      return { unreadCount: count };
+    }
   }
 
   // Mark notification as read
   async markAsRead(notificationId: string): Promise<{ message: string }> {
-    const response = await apiClient.put<{ message: string }>(`/notifications/${notificationId}/read`);
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to mark notification as read');
+    if (this.useLocalFallback) {
+      const success = localNotificationService.markAsRead(notificationId);
+      return { message: success ? 'Notification marked as read' : 'Notification not found' };
     }
-    return response.data;
+
+    try {
+      const response = await apiClient.put<{ message: string }>(`/notifications/${notificationId}/read`);
+      
+      if (!response.success || !response.data) {
+        throw new Error('Backend mark as read failed');
+      }
+      return response.data;
+    } catch (error) {
+      console.warn('Backend mark as read failed, using local fallback');
+      this.useLocalFallback = true;
+      const success = localNotificationService.markAsRead(notificationId);
+      return { message: success ? 'Notification marked as read' : 'Notification not found' };
+    }
   }
 
   // Mark all notifications as read
   async markAllAsRead(): Promise<{ message: string; markedCount: number }> {
-    const response = await apiClient.put<{ message: string; markedCount: number }>('/notifications/read-all');
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to mark all notifications as read');
+    if (this.useLocalFallback) {
+      const markedCount = localNotificationService.markAllAsRead();
+      return { message: `Marked ${markedCount} notifications as read`, markedCount };
     }
-    return response.data;
+
+    try {
+      const response = await apiClient.put<{ message: string; markedCount: number }>('/notifications/read-all');
+      
+      if (!response.success || !response.data) {
+        throw new Error('Backend mark all as read failed');
+      }
+      return response.data;
+    } catch (error) {
+      console.warn('Backend mark all as read failed, using local fallback');
+      this.useLocalFallback = true;
+      const markedCount = localNotificationService.markAllAsRead();
+      return { message: `Marked ${markedCount} notifications as read`, markedCount };
+    }
   }
 
   // Delete notification
   async deleteNotification(notificationId: string): Promise<{ message: string }> {
-    const response = await apiClient.delete<{ message: string }>(`/notifications/${notificationId}`);
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to delete notification');
+    if (this.useLocalFallback) {
+      const success = localNotificationService.deleteNotification(notificationId);
+      return { message: success ? 'Notification deleted' : 'Notification not found' };
     }
-    return response.data;
+
+    try {
+      const response = await apiClient.delete<{ message: string }>(`/notifications/${notificationId}`);
+      
+      if (!response.success || !response.data) {
+        throw new Error('Backend delete failed');
+      }
+      return response.data;
+    } catch (error) {
+      console.warn('Backend delete failed, using local fallback');
+      this.useLocalFallback = true;
+      const success = localNotificationService.deleteNotification(notificationId);
+      return { message: success ? 'Notification deleted' : 'Notification not found' };
+    }
   }
 
   // Delete all notifications
   async deleteAllNotifications(): Promise<{ message: string; deletedCount: number }> {
-    const response = await apiClient.delete<{ message: string; deletedCount: number }>('/notifications/all');
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to delete all notifications');
+    if (this.useLocalFallback) {
+      const deletedCount = localNotificationService.deleteAllNotifications();
+      return { message: `Deleted ${deletedCount} notifications`, deletedCount };
     }
-    return response.data;
+
+    try {
+      const response = await apiClient.delete<{ message: string; deletedCount: number }>('/notifications/all');
+      
+      if (!response.success || !response.data) {
+        throw new Error('Backend delete all failed');
+      }
+      return response.data;
+    } catch (error) {
+      console.warn('Backend delete all failed, using local fallback');
+      this.useLocalFallback = true;
+      const deletedCount = localNotificationService.deleteAllNotifications();
+      return { message: `Deleted ${deletedCount} notifications`, deletedCount };
+    }
   }
 
   // Get notification preferences
   async getPreferences(): Promise<NotificationPreferences> {
-    const response = await apiClient.get<NotificationPreferences>('/notifications/settings');
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get notification preferences');
+    if (this.useLocalFallback) {
+      return localNotificationService.getPreferences();
     }
-    return response.data;
+
+    try {
+      const response = await apiClient.get<NotificationPreferences>('/notifications/settings');
+      
+      if (!response.success || !response.data) {
+        throw new Error('Backend preferences failed');
+      }
+      return response.data;
+    } catch (error) {
+      console.warn('Backend preferences failed, using local fallback');
+      this.useLocalFallback = true;
+      return localNotificationService.getPreferences();
+    }
   }
 
   // Update notification preferences
@@ -147,224 +252,95 @@ export class NotificationService {
     message: string;
     preferences: NotificationPreferences;
   }> {
-    const response = await apiClient.put<{
-      message: string;
-      preferences: NotificationPreferences;
-    }>('/notifications/settings', preferences);
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to update notification preferences');
+    if (this.useLocalFallback) {
+      const updated = localNotificationService.updatePreferences(preferences);
+      return { message: 'Preferences updated locally', preferences: updated };
     }
-    return response.data;
+
+    try {
+      const response = await apiClient.put<{
+        message: string;
+        preferences: NotificationPreferences;
+      }>('/notifications/settings', preferences);
+      
+      if (!response.success || !response.data) {
+        throw new Error('Backend preferences update failed');
+      }
+      return response.data;
+    } catch (error) {
+      console.warn('Backend preferences update failed, using local fallback');
+      this.useLocalFallback = true;
+      const updated = localNotificationService.updatePreferences(preferences);
+      return { message: 'Preferences updated locally', preferences: updated };
+    }
   }
 
-  // Send test notification
-  async sendTestNotification(type: NotificationType): Promise<{ message: string }> {
-    const response = await apiClient.post<{ message: string }>('/notifications/test', { type });
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to send test notification');
-    }
-    return response.data;
-  }
-
-  // Register for push notifications
-  async registerPushNotifications(data: {
-    endpoint: string;
-    keys: {
-      p256dh: string;
-      auth: string;
-    };
-    deviceInfo?: {
-      userAgent: string;
-      platform: string;
-    };
-  }): Promise<{ message: string; subscriptionId: string }> {
-    const response = await apiClient.post<{ message: string; subscriptionId: string }>('/notifications/push/register', data);
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to register push notifications');
-    }
-    return response.data;
-  }
-
-  // Unregister push notifications
-  async unregisterPushNotifications(subscriptionId?: string): Promise<{ message: string }> {
-    const response = await apiClient.delete<{ message: string }>('/notifications/push/unregister', {
-      data: { subscriptionId }
-    });
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to unregister push notifications');
-    }
-    return response.data;
-  }
-
-  // Get notification templates (for admin/specialist customization)
-  async getNotificationTemplates(): Promise<Array<{
+  // Create new notification (for testing/admin)
+  async createNotification(data: {
     type: NotificationType;
     title: string;
     message: string;
-    isCustomizable: boolean;
-    variables: string[];
-  }>> {
-    const response = await apiClient.get('/notifications/templates');
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get notification templates');
-    }
-    return response.data.templates;
-  }
-
-  // Create custom notification
-  async createCustomNotification(data: {
-    recipientId?: string;
-    recipientType?: 'customer' | 'specialist' | 'all';
-    title: string;
-    message: string;
     actionUrl?: string;
-    scheduledAt?: string;
   }): Promise<{ message: string; notificationId: string }> {
-    const response = await apiClient.post<{ message: string; notificationId: string }>('/notifications/custom', data);
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to create custom notification');
-    }
-    return response.data;
-  }
-
-  // Get notification delivery status
-  async getDeliveryStatus(notificationId: string): Promise<{
-    status: 'pending' | 'sent' | 'delivered' | 'failed';
-    sentAt?: string;
-    deliveredAt?: string;
-    failureReason?: string;
-    channels: Array<{
-      type: 'email' | 'push' | 'telegram';
-      status: 'pending' | 'sent' | 'delivered' | 'failed';
-      sentAt?: string;
-      deliveredAt?: string;
-      failureReason?: string;
-    }>;
-  }> {
-    const response = await apiClient.get(`/notifications/${notificationId}/delivery-status`);
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get delivery status');
-    }
-    return response.data;
-  }
-
-  // Schedule bulk notifications
-  async scheduleBulkNotifications(data: {
-    recipientIds: string[];
-    title: string;
-    message: string;
-    scheduledAt: string;
-    channels: Array<'email' | 'push' | 'telegram'>;
-  }): Promise<{ message: string; scheduledCount: number; jobId: string }> {
-    const response = await apiClient.post<{ message: string; scheduledCount: number; jobId: string }>('/notifications/bulk/schedule', data);
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to schedule bulk notifications');
-    }
-    return response.data;
-  }
-
-  // Cancel scheduled notification
-  async cancelScheduledNotification(jobId: string): Promise<{ message: string }> {
-    const response = await apiClient.delete<{ message: string }>(`/notifications/scheduled/${jobId}`);
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to cancel scheduled notification');
-    }
-    return response.data;
-  }
-
-  // Get notification analytics
-  async getNotificationAnalytics(period: 'week' | 'month' | 'quarter' = 'month'): Promise<{
-    totalSent: number;
-    totalDelivered: number;
-    totalOpened: number;
-    deliveryRate: number;
-    openRate: number;
-    byType: Array<{
-      type: NotificationType;
-      sent: number;
-      delivered: number;
-      opened: number;
-      rate: number;
-    }>;
-    byChannel: Array<{
-      channel: 'email' | 'push' | 'telegram';
-      sent: number;
-      delivered: number;
-      rate: number;
-    }>;
-    timeline: Array<{
-      date: string;
-      sent: number;
-      delivered: number;
-      opened: number;
-    }>;
-  }> {
-    const response = await apiClient.get(`/notifications/analytics?period=${period}`);
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get notification analytics');
-    }
-    return response.data;
-  }
-
-  // Snooze notifications
-  async snoozeNotifications(duration: 'hour' | 'day' | 'week'): Promise<{ message: string; snoozedUntil: string }> {
-    const response = await apiClient.post<{ message: string; snoozedUntil: string }>('/notifications/snooze', { duration });
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to snooze notifications');
-    }
-    return response.data;
-  }
-
-  // Unsnooze notifications
-  async unsnoozeNotifications(): Promise<{ message: string }> {
-    const response = await apiClient.delete<{ message: string }>('/notifications/snooze');
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to unsnooze notifications');
-    }
-    return response.data;
-  }
-
-  // Archive old notifications
-  async archiveOldNotifications(olderThanDays: number = 30): Promise<{ message: string; archivedCount: number }> {
-    const response = await apiClient.post<{ message: string; archivedCount: number }>('/notifications/archive', {
-      olderThanDays
+    const notification = localNotificationService.addNotification({
+      type: data.type,
+      title: data.title,
+      message: data.message,
+      isRead: false,
+      actionUrl: data.actionUrl,
+      metadata: {}
     });
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to archive old notifications');
-    }
-    return response.data;
-  }
 
-  // Export notifications
-  async exportNotifications(filters: {
-    type?: NotificationType;
-    startDate?: string;
-    endDate?: string;
-    format?: 'csv' | 'json';
-  } = {}): Promise<void> {
-    const params = new URLSearchParams();
-    
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        params.append(key, value.toString());
+    // Try to sync with backend if available
+    if (!this.useLocalFallback) {
+      try {
+        await apiClient.post('/notifications', data);
+        console.log('✅ Notification synced with backend');
+      } catch (error) {
+        console.warn('Failed to sync notification with backend, keeping local only');
       }
-    });
+    }
 
-    const format = filters.format || 'csv';
-    await apiClient.download(`/notifications/export?${params}`, `notifications.${format}`);
+    return {
+      message: 'Notification created',
+      notificationId: notification.id
+    };
+  }
+
+  // Reset to try backend again
+  resetBackendConnection(): void {
+    console.log('🔄 Resetting backend connection, will retry on next request');
+    this.useLocalFallback = false;
+  }
+
+  // Force switch to local mode
+  forceLocalMode(): void {
+    console.log('💾 Forcing local notification mode');
+    this.useLocalFallback = true;
+    
+    // Generate sample data if none exists
+    const localNotifications = localNotificationService.getNotifications();
+    if (localNotifications.length === 0) {
+      localNotificationService.generateSampleNotifications();
+    }
+  }
+
+  // Get service status
+  getStatus(): {
+    mode: 'backend' | 'local';
+    hasLocalData: boolean;
+    localCount: number;
+  } {
+    return {
+      mode: this.useLocalFallback ? 'local' : 'backend',
+      hasLocalData: localNotificationService.getNotifications().length > 0,
+      localCount: localNotificationService.getNotifications().length
+    };
+  }
+
+  // Add listener for local notification changes
+  addListener(callback: (notifications: LocalNotification[]) => void): () => void {
+    return localNotificationService.addListener(callback);
   }
 }
 

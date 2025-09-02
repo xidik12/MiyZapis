@@ -78,10 +78,21 @@ export class SpecialistService {
           // Filter out overly large base64 images that could cause performance issues
           const filteredPortfolio = portfolioData.filter((item: any) => {
             if (typeof item === 'string' && item.startsWith('data:image/')) {
-              // If base64 image is larger than 500KB, skip it
-              return item.length < 500000;
+              const sizeKB = Math.round(item.length / 1024);
+              if (item.length >= 500000) {
+                console.warn(`⚠️ Skipping large base64 portfolio image: ${sizeKB}KB (max 488KB)`);
+                console.warn('💡 Suggestion: Convert large images to files and upload via backend');
+                return false;
+              }
+              return true;
             } else if (typeof item === 'object' && item.imageUrl && item.imageUrl.startsWith('data:image/')) {
-              return item.imageUrl.length < 500000;
+              const sizeKB = Math.round(item.imageUrl.length / 1024);
+              if (item.imageUrl.length >= 500000) {
+                console.warn(`⚠️ Skipping large base64 portfolio image: ${sizeKB}KB (max 488KB)`);
+                console.warn('💡 Suggestion: Convert large images to files and upload via backend');
+                return false;
+              }
+              return true;
             }
             return true; // Keep all non-base64 images
           });
