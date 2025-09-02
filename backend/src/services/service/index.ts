@@ -219,12 +219,12 @@ export class ServiceService {
         throw new Error('UNAUTHORIZED_ACCESS');
       }
 
-      // Check for active bookings
+      // Only block deletion for truly active bookings (not completed, cancelled, or no-show)
       const activeBookings = await prisma.booking.findFirst({
         where: {
           serviceId,
           status: {
-            in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'],
+            in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS'],
           },
         },
       });
