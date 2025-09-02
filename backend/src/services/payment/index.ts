@@ -953,6 +953,7 @@ export class PaymentService {
     } = {}
   ): Promise<{
     totalEarnings: number;
+    pendingEarnings: number;
     totalTransactions: number;
     payments: Payment[];
     currency: string;
@@ -1003,14 +1004,127 @@ export class PaymentService {
         take: 20,
       });
 
+      // Get pending earnings (payments that are processing or pending)
+      const pendingEarnings = await prisma.payment.aggregate({
+        where: {
+          ...where,
+          status: { in: ['PENDING', 'PROCESSING'] },
+        },
+        _sum: { amount: true },
+      });
+
       return {
         totalEarnings: totalEarnings._sum.amount || 0,
+        pendingEarnings: pendingEarnings._sum.amount || 0,
         totalTransactions: totalEarnings._count,
         payments,
         currency: payments[0]?.currency || 'USD',
       };
     } catch (error) {
       logger.error('Error getting specialist earnings:', error);
+      throw error;
+    }
+  }
+
+  // Get earnings trends for analytics
+  static async getEarningsTrends(
+    specialistId: string,
+    options: {
+      period: string;
+      groupBy: string;
+    }
+  ): Promise<{
+    trends: Array<{
+      date: string;
+      earnings: number;
+      bookingCount: number;
+    }>;
+  }> {
+    try {
+      const { period, groupBy } = options;
+      
+      // Determine date range based on period
+      let dateRange: Date;
+      switch (period) {
+        case 'week':
+          dateRange = new Date();
+          dateRange.setDate(dateRange.getDate() - 7);
+          break;
+        case 'month':
+          dateRange = new Date();
+          dateRange.setMonth(dateRange.getMonth() - 1);
+          break;
+        case 'year':
+          dateRange = new Date();
+          dateRange.setFullYear(dateRange.getFullYear() - 1);
+          break;
+        default:
+          dateRange = new Date();
+          dateRange.setMonth(dateRange.getMonth() - 1);
+      }
+
+      // Get payments with earnings
+      const payments = await prisma.payment.findMany({
+        where: {
+          booking: { specialistId },
+          status: 'SUCCEEDED',
+          type: { in: ['FULL_PAYMENT', 'DEPOSIT'] },
+          createdAt: {
+            gte: dateRange
+          }
+        },
+        include: {
+          booking: {
+            select: {
+              id: true,
+              createdAt: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'asc'
+        }
+      });
+
+      // Group by date
+      const trendsMap = new Map();
+      
+      payments.forEach(payment => {
+        let dateKey: string;
+        const paymentDate = new Date(payment.createdAt);
+        
+        if (groupBy === 'day') {
+          dateKey = paymentDate.toISOString().split('T')[0]; // YYYY-MM-DD
+        } else if (groupBy === 'month') {
+          dateKey = paymentDate.toISOString().substring(0, 7); // YYYY-MM
+        } else {
+          dateKey = paymentDate.toISOString().split('T')[0]; // Default to day
+        }
+
+        if (!trendsMap.has(dateKey)) {
+          trendsMap.set(dateKey, {
+            date: dateKey,
+            earnings: 0,
+            bookingCount: 0,
+            bookingIds: new Set()
+          });
+        }
+
+        const trend = trendsMap.get(dateKey);
+        trend.earnings += payment.amount;
+        trend.bookingIds.add(payment.booking.id);
+      });
+
+      // Convert map to array and calculate final booking counts
+      const trends = Array.from(trendsMap.values()).map(trend => ({
+        date: trend.date,
+        earnings: trend.earnings,
+        bookingCount: trend.bookingIds.size
+      }));
+
+      return { trends };
+    } catch (error) {
+      logger.error('Error getting earnings trends:', error);
       throw error;
     }
   }

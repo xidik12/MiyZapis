@@ -615,6 +615,19 @@ export class SpecialistService {
     averageRating: number;
     responseTime: number;
     recentBookings: any[];
+    // Enhanced analytics
+    averageMonthlyRevenue: number;
+    monthlyBookings: number;
+    completionRate: number;
+    profileViews: number;
+    conversionRate: number;
+    revenueTrend: any[];
+    servicePerformance: any[];
+    revenueByService: any[];
+    reviewCount: number;
+    monthlyGrowth: number;
+    averageBookingValue: number;
+    activeClients: number;
   }> {
     try {
       const specialist = await prisma.specialist.findUnique({
@@ -636,15 +649,28 @@ export class SpecialistService {
         };
       }
 
-      const [bookings, recentBookings] = await Promise.all([
+      // Get comprehensive data for analytics
+      const [
+        bookings, 
+        recentBookings, 
+        allTimeBookings, 
+        reviews,
+        services,
+        monthlyData
+      ] = await Promise.all([
+        // Filtered bookings for the specified date range
         prisma.booking.findMany({
           where,
           select: {
             status: true,
             totalAmount: true,
             createdAt: true,
+            scheduledAt: true,
+            completedAt: true,
+            customerId: true,
           },
         }),
+        // Recent bookings for display
         prisma.booking.findMany({
           where: {
             specialistId: specialist.userId,
@@ -666,14 +692,193 @@ export class SpecialistService {
           orderBy: { createdAt: 'desc' },
           take: 10,
         }),
+        // All time bookings for trends and averages
+        prisma.booking.findMany({
+          where: {
+            specialistId: specialist.userId,
+          },
+          select: {
+            status: true,
+            totalAmount: true,
+            createdAt: true,
+            completedAt: true,
+            customerId: true,
+            serviceId: true,
+          },
+        }),
+        // Reviews for rating analysis
+        prisma.review.findMany({
+          where: {
+            specialist: {
+              userId: specialist.userId
+            }
+          },
+          select: {
+            rating: true,
+            createdAt: true,
+          }
+        }),
+        // Services for performance analysis
+        prisma.service.findMany({
+          where: {
+            specialistId: specialist.id,
+            isDeleted: false,
+          },
+          select: {
+            id: true,
+            name: true,
+            basePrice: true,
+            _count: {
+              select: {
+                bookings: true,
+              },
+            },
+          },
+        }),
+        // Monthly data for trends (last 12 months)
+        prisma.booking.groupBy({
+          by: ['createdAt'],
+          where: {
+            specialistId: specialist.userId,
+            createdAt: {
+              gte: new Date(new Date().setMonth(new Date().getMonth() - 12)),
+            },
+          },
+          _count: {
+            id: true,
+          },
+          _sum: {
+            totalAmount: true,
+          },
+        }),
       ]);
 
+      // Basic calculations
       const totalBookings = bookings.length;
       const completedBookings = bookings.filter(b => b.status === 'COMPLETED').length;
       const cancelledBookings = bookings.filter(b => b.status === 'CANCELLED').length;
       const totalRevenue = bookings
         .filter(b => b.status === 'COMPLETED')
         .reduce((sum, b) => sum + b.totalAmount, 0);
+
+      // Enhanced analytics calculations
+      const allTimeCompleted = allTimeBookings.filter(b => b.status === 'COMPLETED');
+      const monthsInOperation = Math.max(1, Math.floor(
+        (new Date().getTime() - new Date(specialist.createdAt).getTime()) / (1000 * 60 * 60 * 24 * 30)
+      ));
+      
+      const averageMonthlyRevenue = allTimeCompleted.reduce((sum, b) => sum + b.totalAmount, 0) / monthsInOperation;
+      const averageBookingValue = allTimeCompleted.length > 0 
+        ? allTimeCompleted.reduce((sum, b) => sum + b.totalAmount, 0) / allTimeCompleted.length 
+        : 0;
+      
+      // Current month calculations
+      const currentMonth = new Date();
+      const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+      const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+      
+      const monthlyBookings = bookings.filter(b => {
+        const bookingDate = new Date(b.createdAt);
+        return bookingDate >= monthStart && bookingDate <= monthEnd;
+      }).length;
+
+      // Completion rate
+      const completionRate = totalBookings > 0 ? (completedBookings / totalBookings) * 100 : 0;
+
+      // Active clients (unique customers in last 3 months)
+      const threeMonthsAgo = new Date();
+      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+      const activeClients = new Set(
+        allTimeBookings
+          .filter(b => new Date(b.createdAt) >= threeMonthsAgo)
+          .map(b => b.customerId)
+      ).size;
+
+      // Conversion rate (completed vs total bookings)
+      const conversionRate = totalBookings > 0 ? (completedBookings / totalBookings) * 100 : 0;
+
+      // Monthly growth (current month vs previous month)
+      const previousMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+      const previousMonthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 0);
+      
+      const currentMonthRevenue = bookings
+        .filter(b => {
+          const date = new Date(b.createdAt);
+          return date >= monthStart && date <= monthEnd && b.status === 'COMPLETED';
+        })
+        .reduce((sum, b) => sum + b.totalAmount, 0);
+      
+      const previousMonthRevenue = allTimeBookings
+        .filter(b => {
+          const date = new Date(b.createdAt);
+          return date >= previousMonth && date <= previousMonthEnd && b.status === 'COMPLETED';
+        })
+        .reduce((sum, b) => sum + b.totalAmount, 0);
+      
+      const monthlyGrowth = previousMonthRevenue > 0 
+        ? ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100 
+        : currentMonthRevenue > 0 ? 100 : 0;
+
+      // Revenue trend (last 6 months)
+      const revenueTrend = [];
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+        const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        
+        const monthRevenue = allTimeBookings
+          .filter(b => {
+            const bookingDate = new Date(b.createdAt);
+            return bookingDate >= monthStart && bookingDate <= monthEnd && b.status === 'COMPLETED';
+          })
+          .reduce((sum, b) => sum + b.totalAmount, 0);
+        
+        const monthBookings = allTimeBookings
+          .filter(b => {
+            const bookingDate = new Date(b.createdAt);
+            return bookingDate >= monthStart && bookingDate <= monthEnd;
+          }).length;
+        
+        revenueTrend.push({
+          date: monthStart.toISOString().substring(0, 7), // YYYY-MM format
+          revenue: monthRevenue,
+          bookings: monthBookings,
+        });
+      }
+
+      // Service performance
+      const servicePerformance = await Promise.all(
+        services.map(async (service) => {
+          const serviceBookings = await prisma.booking.findMany({
+            where: {
+              serviceId: service.id,
+            },
+            select: {
+              status: true,
+              totalAmount: true,
+            },
+          });
+          
+          const completed = serviceBookings.filter(b => b.status === 'COMPLETED');
+          const revenue = completed.reduce((sum, b) => sum + b.totalAmount, 0);
+          
+          return {
+            serviceName: service.name,
+            totalBookings: serviceBookings.length,
+            completedBookings: completed.length,
+            revenue,
+            completionRate: serviceBookings.length > 0 ? (completed.length / serviceBookings.length) * 100 : 0,
+          };
+        })
+      );
+
+      // Revenue by service
+      const revenueByService = servicePerformance.map(sp => ({
+        serviceName: sp.serviceName,
+        revenue: sp.revenue,
+        percentage: totalRevenue > 0 ? (sp.revenue / totalRevenue) * 100 : 0,
+      }));
 
       return {
         totalBookings,
@@ -692,6 +897,19 @@ export class SpecialistService {
           totalAmount: booking.totalAmount,
           createdAt: booking.createdAt,
         })),
+        // Enhanced analytics
+        averageMonthlyRevenue,
+        monthlyBookings,
+        completionRate,
+        profileViews: 0, // TODO: Implement profile view tracking
+        conversionRate,
+        revenueTrend,
+        servicePerformance,
+        revenueByService,
+        reviewCount: reviews.length,
+        monthlyGrowth,
+        averageBookingValue,
+        activeClients,
       };
     } catch (error) {
       logger.error('Error getting specialist analytics:', error);

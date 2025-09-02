@@ -1250,17 +1250,82 @@ export class SpecialistController {
         groupBy: period === 'year' ? 'month' : 'day',
       });
 
+      // Get additional analytics for comprehensive earnings dashboard
+      const specialist = await SpecialistService.getProfileByUserId(req.user.id);
+      const analytics = await SpecialistService.getAnalytics(
+        specialist.id,
+        startDate,
+        endDate
+      );
+
+      // Calculate earnings-specific metrics
+      const currentMonth = new Date();
+      const lastMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+      const lastMonthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 0);
+      
+      const lastMonthEarnings = await PaymentService.getSpecialistEarnings(req.user.id, {
+        fromDate: lastMonth,
+        toDate: lastMonthEnd,
+      });
+
+      const monthlyGrowthPercentage = lastMonthEarnings.totalEarnings > 0 
+        ? ((earningsData.totalEarnings - lastMonthEarnings.totalEarnings) / lastMonthEarnings.totalEarnings) * 100 
+        : earningsData.totalEarnings > 0 ? 100 : 0;
+
       // Format response data to match frontend expectations
       const responseData = {
-        totalRevenue: earningsData.totalEarnings || 0,
-        pendingRevenue: earningsData.pendingEarnings || 0,
-        paidRevenue: earningsData.totalEarnings - (earningsData.pendingEarnings || 0),
-        platformFee: (earningsData.totalEarnings || 0) * 0.1, // 10% platform fee
-        netRevenue: (earningsData.totalEarnings || 0) * 0.9,
+        // Main earnings metrics
+        totalEarnings: earningsData.totalEarnings || 0,
+        thisMonth: earningsData.totalEarnings || 0,
+        pending: earningsData.pendingEarnings || 0,
+        lastPayout: 0, // TODO: Implement payout tracking
+        
+        // Secondary metrics
+        completedBookings: analytics.completedBookings,
+        activeClients: analytics.activeClients,
+        averageBookingValue: analytics.averageBookingValue,
+        monthlyGrowth: monthlyGrowthPercentage,
+        
+        // Chart data
         breakdown: trendsData.trends.map(trend => ({
           date: trend.date,
           revenue: trend.earnings,
           bookings: trend.bookingCount,
+        })),
+        
+        // Detailed analytics
+        performanceMetrics: {
+          conversionRate: analytics.conversionRate,
+          repeatCustomers: 0, // TODO: Calculate repeat customers
+          avgSessionValue: analytics.averageBookingValue,
+        },
+        
+        timeAnalysis: {
+          peakHours: 'No data', // TODO: Implement peak hours analysis
+          bestDay: 'No data',   // TODO: Implement best day analysis
+          avgBookingDuration: 90, // TODO: Calculate from service data
+        },
+        
+        growthInsights: {
+          monthlyGrowth: monthlyGrowthPercentage,
+          newCustomers: 0, // TODO: Calculate new vs returning customers
+          revenueTrend: monthlyGrowthPercentage > 0 ? 'Increasing' : 'Stable',
+        },
+        
+        // Legacy fields for backwards compatibility
+        totalRevenue: earningsData.totalEarnings || 0,
+        pendingRevenue: earningsData.pendingEarnings || 0,
+        paidRevenue: earningsData.totalEarnings - (earningsData.pendingEarnings || 0),
+        platformFee: (earningsData.totalEarnings || 0) * 0.1,
+        netRevenue: (earningsData.totalEarnings || 0) * 0.9,
+        
+        // Recent payments for payouts section
+        recentPayouts: earningsData.payments.slice(0, 5).map(payment => ({
+          id: payment.id,
+          amount: payment.amount,
+          date: payment.createdAt,
+          status: payment.status,
+          type: payment.type,
         })),
       };
 
