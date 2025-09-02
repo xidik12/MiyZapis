@@ -107,11 +107,20 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         }
       }
       
+      // Longer timeout for Google/external avatar services as they might be slower
+      if (src.includes('googleusercontent.com') || src.includes('gravatar.com') || src.includes('github.com')) {
+        timeoutDuration = 8000; // 8 seconds for external avatar services
+        console.log(`🌐 External avatar service detected, using extended timeout: ${src}`);
+      }
+      
       const timeout = setTimeout(() => {
         if (src.startsWith('data:image/')) {
           const sizeKB = Math.round(src.length / 1024);
           console.log(`⏰ Base64 image timeout (${sizeKB}KB):`, src.substring(0, 50) + '...');
           console.log('💡 Consider converting large images to files for better performance');
+        } else if (src.includes('googleusercontent.com')) {
+          console.log('⏰ Google avatar loading timeout for:', src);
+          console.log('💡 This might be due to network issues or CORS. Google avatars should work.');
         } else {
           console.log('⏰ Image loading timeout for:', src);
         }
@@ -156,6 +165,15 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     if (timeoutId) {
       clearTimeout(timeoutId);
       setTimeoutId(null);
+    }
+    
+    // Special handling for Google avatars
+    if (imageSrc.includes('googleusercontent.com')) {
+      console.log('❌ Google avatar failed to load - this might be due to:');
+      console.log('   1. Network connectivity issues');
+      console.log('   2. CORS policy changes by Google');
+      console.log('   3. Avatar URL expiration');
+      console.log('   💡 Consider implementing avatar download to backend storage');
     }
     
     // Don't retry for base64 data URLs - they should work or fail immediately

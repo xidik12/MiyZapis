@@ -179,7 +179,7 @@ export class FileController {
               originalName: file.originalname,
               mimeType: file.mimetype,
               size: processedFile.buffer.length,
-              path: absoluteUrl,
+              path: fileUrl, // Use local file path, not absolute URL
               url: absoluteUrl,
               width: processedFile.width,
               height: processedFile.height,

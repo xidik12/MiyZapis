@@ -174,6 +174,10 @@ model Service {
   maxAdvanceBooking Int    @default(30) // Days
   minAdvanceBooking Int    @default(1)  // Hours
   
+  // Soft deletion
+  isDeleted        Boolean @default(false)
+  deletedAt        DateTime?
+  
   // Service images
   images String? // JSON string of image URLs
   
@@ -188,11 +192,12 @@ model Service {
   favorites      FavoriteService[] @relation("ServiceFavorites")
 
   // Indexes for performance
-  @@index([categoryId, isActive])
-  @@index([specialistId, isActive])
+  @@index([categoryId, isActive, isDeleted])
+  @@index([specialistId, isActive, isDeleted])
   @@index([basePrice])
   @@index([duration])
-  @@index([isActive])
+  @@index([isActive, isDeleted])
+  @@index([isDeleted])
 
   @@map("services")
 }

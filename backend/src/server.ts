@@ -87,8 +87,20 @@ logger.info('🏗️ Railway environment detection results', {
 });
 
 // Static file serving for uploads
-// Force /tmp/uploads on Railway regardless of UPLOAD_DIR env var
-const uploadsDir = isRailway ? '/tmp/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
+// Use persistent volume /app/uploads on Railway
+const uploadsDir = isRailway ? '/app/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
+
+// Ensure uploads directory exists
+try {
+  const fs = require('fs');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true, mode: 0o755 });
+    logger.info('Created uploads directory', { uploadsDir });
+  }
+} catch (error) {
+  logger.error('Failed to create uploads directory', { uploadsDir, error });
+}
+
 app.use('/uploads', express.static(uploadsDir, {
   maxAge: '1y', // Cache uploaded files for 1 year
   etag: true,

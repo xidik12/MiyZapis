@@ -380,20 +380,63 @@ export class SpecialistController {
         return;
       }
 
-      const { startDate, endDate } = req.query;
+      const { startDate, endDate, period } = req.query;
 
       // Get specialist ID from user
       const specialist = await SpecialistService.getProfileByUserId(req.user.id);
 
+      // Handle date filtering more intelligently
+      let analyticsStartDate: Date | undefined;
+      let analyticsEndDate: Date | undefined;
+
+      if (startDate && endDate) {
+        analyticsStartDate = new Date(startDate as string);
+        analyticsEndDate = new Date(endDate as string);
+      } else if (period) {
+        // Handle predefined periods
+        const now = new Date();
+        switch (period) {
+          case 'daily':
+            analyticsStartDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            analyticsEndDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+            break;
+          case 'weekly':
+            analyticsStartDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            analyticsEndDate = now;
+            break;
+          case 'monthly':
+            analyticsStartDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            analyticsEndDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            break;
+          case 'yearly':
+            analyticsStartDate = new Date(now.getFullYear(), 0, 1);
+            analyticsEndDate = new Date(now.getFullYear() + 1, 0, 1);
+            break;
+          default:
+            // For any other period or 'all-time', don't apply date filters
+            break;
+        }
+      }
+      // If no date parameters provided, show all-time data
+
       const analytics = await SpecialistService.getAnalytics(
         specialist.id,
-        startDate ? new Date(startDate as string) : undefined,
-        endDate ? new Date(endDate as string) : undefined
+        analyticsStartDate,
+        analyticsEndDate
       );
 
       res.json(
         createSuccessResponse({
           analytics,
+          // Add debugging info for date filtering
+          debug: {
+            dateFiltering: {
+              startDate: analyticsStartDate?.toISOString(),
+              endDate: analyticsEndDate?.toISOString(),
+              period: period,
+              hasDateFilter: !!(analyticsStartDate && analyticsEndDate)
+            }
+          }
         })
       );
     } catch (error: any) {
@@ -720,10 +763,99 @@ export class SpecialistController {
         return;
       }
 
+      if (error.message === 'ACTIVE_BOOKINGS_EXIST') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Cannot delete service with active bookings. Only pending, confirmed, or in-progress bookings prevent deletion.',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Log the full error for debugging
+      logger.error('Unhandled service deletion error:', {
+        message: error.message,
+        stack: error.stack,
+        serviceId: req.params.serviceId,
+        userId: req.user?.id
+      });
+
       res.status(500).json(
         createErrorResponse(
           ErrorCodes.INTERNAL_SERVER_ERROR,
           'Failed to delete service',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Restore service
+  static async restoreService(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { serviceId } = req.params;
+
+      const restoredService = await ServiceService.restoreService(serviceId, req.user.id);
+
+      res.json(
+        createSuccessResponse({
+          message: 'Service restored successfully',
+          service: restoredService,
+        })
+      );
+    } catch (error: any) {
+      logger.error('Restore service error:', error);
+
+      if (error.message === 'DELETED_SERVICE_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Deleted service not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'SPECIALIST_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Specialist profile not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'UNAUTHORIZED_ACCESS') {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.FORBIDDEN,
+            'You can only restore your own services',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to restore service',
           req.headers['x-request-id'] as string
         )
       );
@@ -1161,17 +1293,82 @@ export class SpecialistController {
         groupBy: period === 'year' ? 'month' : 'day',
       });
 
+      // Get additional analytics for comprehensive earnings dashboard
+      const specialist = await SpecialistService.getProfileByUserId(req.user.id);
+      const analytics = await SpecialistService.getAnalytics(
+        specialist.id,
+        startDate,
+        endDate
+      );
+
+      // Calculate earnings-specific metrics
+      const currentMonth = new Date();
+      const lastMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+      const lastMonthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 0);
+      
+      const lastMonthEarnings = await PaymentService.getSpecialistEarnings(req.user.id, {
+        fromDate: lastMonth,
+        toDate: lastMonthEnd,
+      });
+
+      const monthlyGrowthPercentage = lastMonthEarnings.totalEarnings > 0 
+        ? ((earningsData.totalEarnings - lastMonthEarnings.totalEarnings) / lastMonthEarnings.totalEarnings) * 100 
+        : earningsData.totalEarnings > 0 ? 100 : 0;
+
       // Format response data to match frontend expectations
       const responseData = {
-        totalRevenue: earningsData.totalEarnings || 0,
-        pendingRevenue: earningsData.pendingEarnings || 0,
-        paidRevenue: earningsData.totalEarnings - (earningsData.pendingEarnings || 0),
-        platformFee: (earningsData.totalEarnings || 0) * 0.1, // 10% platform fee
-        netRevenue: (earningsData.totalEarnings || 0) * 0.9,
+        // Main earnings metrics
+        totalEarnings: earningsData.totalEarnings || 0,
+        thisMonth: earningsData.totalEarnings || 0,
+        pending: earningsData.pendingEarnings || 0,
+        lastPayout: 0, // TODO: Implement payout tracking
+        
+        // Secondary metrics
+        completedBookings: analytics.completedBookings,
+        activeClients: analytics.activeClients,
+        averageBookingValue: analytics.averageBookingValue,
+        monthlyGrowth: monthlyGrowthPercentage,
+        
+        // Chart data
         breakdown: trendsData.trends.map(trend => ({
           date: trend.date,
           revenue: trend.earnings,
           bookings: trend.bookingCount,
+        })),
+        
+        // Detailed analytics
+        performanceMetrics: {
+          conversionRate: analytics.conversionRate,
+          repeatCustomers: 0, // TODO: Calculate repeat customers
+          avgSessionValue: analytics.averageBookingValue,
+        },
+        
+        timeAnalysis: {
+          peakHours: 'No data', // TODO: Implement peak hours analysis
+          bestDay: 'No data',   // TODO: Implement best day analysis
+          avgBookingDuration: 90, // TODO: Calculate from service data
+        },
+        
+        growthInsights: {
+          monthlyGrowth: monthlyGrowthPercentage,
+          newCustomers: 0, // TODO: Calculate new vs returning customers
+          revenueTrend: monthlyGrowthPercentage > 0 ? 'Increasing' : 'Stable',
+        },
+        
+        // Legacy fields for backwards compatibility
+        totalRevenue: earningsData.totalEarnings || 0,
+        pendingRevenue: earningsData.pendingEarnings || 0,
+        paidRevenue: earningsData.totalEarnings - (earningsData.pendingEarnings || 0),
+        platformFee: (earningsData.totalEarnings || 0) * 0.1,
+        netRevenue: (earningsData.totalEarnings || 0) * 0.9,
+        
+        // Recent payments for payouts section
+        recentPayouts: earningsData.payments.slice(0, 5).map(payment => ({
+          id: payment.id,
+          amount: payment.amount,
+          date: payment.createdAt,
+          status: payment.status,
+          type: payment.type,
         })),
       };
 

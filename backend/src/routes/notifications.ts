@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body, param, query } from 'express-validator';
 import { authenticateToken } from '@/middleware/auth/jwt';
-import { NotificationController } from '@/controllers/notifications';
+import { SimpleNotificationController } from '@/controllers/notifications/simple';
 
 const router = Router();
 
@@ -22,31 +22,21 @@ const validateBulkNotification = [
   body('data').optional().isObject().withMessage('Data must be an object'),
 ];
 
-// Get user notifications
-router.get('/', authenticateToken, NotificationController.getNotifications);
+// Test backend connection
+router.get('/test-backend', authenticateToken, SimpleNotificationController.testBackend);
 
-// Get unread notification count
-router.get('/unread-count', authenticateToken, NotificationController.getUnreadCount);
+// Get user notifications (simplified)
+router.get('/', authenticateToken, SimpleNotificationController.getNotifications);
 
-// Get notification preferences
-router.get('/settings', authenticateToken, NotificationController.getPreferences);
+// Get unread notification count (simplified)
+router.get('/unread-count', authenticateToken, SimpleNotificationController.getUnreadCount);
 
-// Mark notification as read
-router.put('/:id/read', authenticateToken, NotificationController.markAsRead);
+// Mark notification as read (simplified)
+router.put('/:id/read', authenticateToken, SimpleNotificationController.markAsRead);
 
-// Mark all notifications as read
-router.put('/read-all', authenticateToken, NotificationController.markAllAsRead);
+// Mark all notifications as read (simplified)
+router.put('/read-all', authenticateToken, SimpleNotificationController.markAllAsRead);
 
-// Update notification preferences
-router.put('/settings', authenticateToken, validateNotificationPreferences, NotificationController.updatePreferences);
-
-// Delete notification
-router.delete('/:id', authenticateToken, NotificationController.deleteNotification);
-
-// Send test notification (development only)
-router.post('/test', authenticateToken, NotificationController.sendTestNotification);
-
-// Send bulk notification (Admin only)
-router.post('/bulk', authenticateToken, validateBulkNotification, NotificationController.sendBulkNotification);
+// Simplified endpoints only - other functionality temporarily disabled
 
 export default router;
