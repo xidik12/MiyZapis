@@ -233,13 +233,9 @@ export class ServiceService {
         throw new Error('ACTIVE_BOOKINGS_EXIST');
       }
 
-      // Soft delete by setting isActive to false
-      await prisma.service.update({
+      // Hard delete the service from database
+      await prisma.service.delete({
         where: { id: serviceId },
-        data: {
-          isActive: false,
-          updatedAt: new Date(),
-        },
       });
 
       logger.info('Service deleted successfully', {
