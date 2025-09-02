@@ -5,7 +5,6 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser, logout } from '../../store/slices/authSlice';
-import { fetchNotifications } from '../../store/slices/notificationSlice';
 import { isFeatureEnabled } from '../../config/features';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
@@ -134,8 +133,6 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
   const location = useLocation();
-  const notificationState = useAppSelector((state: any) => state.notifications);
-  const unreadCount = notificationState?.unreadCount || 0;
 
   // Check if mobile view
   useEffect(() => {
@@ -152,15 +149,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Fetch notifications on mount with error handling
-  useEffect(() => {
-    if (user && isFeatureEnabled('ENABLE_NOTIFICATIONS_API')) {
-      dispatch(fetchNotifications({ limit: 50 })).catch((error) => {
-        console.warn('Failed to fetch notifications:', error);
-        // Don't show error to user, just log it - notifications are not critical
-      });
-    }
-  }, [user, dispatch]);
+  // Notifications are now handled by the NotificationBell component
 
   const isCurrentPath = (path: string) => location.pathname === path;
 
