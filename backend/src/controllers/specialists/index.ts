@@ -720,6 +720,25 @@ export class SpecialistController {
         return;
       }
 
+      if (error.message === 'ACTIVE_BOOKINGS_EXIST') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Cannot delete service with active bookings. Only pending, confirmed, or in-progress bookings prevent deletion.',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Log the full error for debugging
+      logger.error('Unhandled service deletion error:', {
+        message: error.message,
+        stack: error.stack,
+        serviceId: req.params.serviceId,
+        userId: req.user?.id
+      });
+
       res.status(500).json(
         createErrorResponse(
           ErrorCodes.INTERNAL_SERVER_ERROR,
