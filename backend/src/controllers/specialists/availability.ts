@@ -764,7 +764,7 @@ export class AvailabilityController {
       const dayName = dayNames[targetDate.getDay()];
       const daySchedule = workingHours[dayName];
 
-      if (!daySchedule || !daySchedule.isWorking) {
+      if (!daySchedule || (!daySchedule.isWorking && !daySchedule.isOpen)) {
         logger.info('Specialist not working on this day', {
           specialistId: id,
           date,
@@ -785,8 +785,8 @@ export class AvailabilityController {
 
       // Generate time slots based on working hours
       const slots = [];
-      const startTime = daySchedule.start || '09:00';
-      const endTime = daySchedule.end || '17:00';
+      const startTime = daySchedule.start || daySchedule.startTime || '09:00';
+      const endTime = daySchedule.end || daySchedule.endTime || '17:00';
       const slotDuration = 15; // 15 minutes
 
       const [startHour, startMinute] = startTime.split(':').map(Number);
@@ -1005,10 +1005,10 @@ export class AvailabilityController {
         const daySchedule = workingHours[dayName];
 
         // Check if specialist is working on this day
-        if (daySchedule && daySchedule.isWorking) {
+        if (daySchedule && (daySchedule.isWorking || daySchedule.isOpen)) {
           // Check if there are any available time slots on this date
-          const startTime = daySchedule.start || '09:00';
-          const endTime = daySchedule.end || '17:00';
+          const startTime = daySchedule.start || daySchedule.startTime || '09:00';
+          const endTime = daySchedule.end || daySchedule.endTime || '17:00';
           
           // Generate time slots for this day
           const [startHour, startMinute] = startTime.split(':').map(Number);
