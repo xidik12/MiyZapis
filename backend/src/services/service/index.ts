@@ -200,12 +200,15 @@ export class ServiceService {
     }
   }
 
-  // Delete a service (soft delete by setting isActive to false)
+  // Delete a service (soft delete to preserve booking history and allow restoration)
   static async deleteService(serviceId: string, specialistUserId: string): Promise<void> {
     try {
       // Verify service exists and belongs to specialist
       const existingService = await prisma.service.findUnique({
-        where: { id: serviceId },
+        where: { 
+          id: serviceId,
+          isDeleted: false // Only allow deletion of non-deleted services
+        },
         include: {
           specialist: true,
         },
@@ -233,12 +236,17 @@ export class ServiceService {
         throw new Error('ACTIVE_BOOKINGS_EXIST');
       }
 
-      // Hard delete the service from database
-      await prisma.service.delete({
+      // Soft delete the service - preserves all data including booking history
+      await prisma.service.update({
         where: { id: serviceId },
+        data: { 
+          isDeleted: true,
+          deletedAt: new Date(),
+          isActive: false // Also mark as inactive for consistency
+        },
       });
 
-      logger.info('Service deleted successfully', {
+      logger.info('Service soft deleted successfully', {
         serviceId,
         specialistId: existingService.specialist.id,
       });
@@ -248,11 +256,84 @@ export class ServiceService {
     }
   }
 
+  // Restore a deleted service
+  static async restoreService(serviceId: string, specialistUserId: string): Promise<ServiceWithDetails> {
+    try {
+      // Verify service exists and belongs to specialist (include deleted services)
+      const existingService = await prisma.service.findUnique({
+        where: { 
+          id: serviceId,
+          isDeleted: true // Only allow restoration of deleted services
+        },
+        include: {
+          specialist: true,
+        },
+      });
+
+      if (!existingService) {
+        throw new Error('DELETED_SERVICE_NOT_FOUND');
+      }
+
+      if (existingService.specialist.userId !== specialistUserId) {
+        throw new Error('UNAUTHORIZED_ACCESS');
+      }
+
+      // Restore the service
+      const restoredService = await prisma.service.update({
+        where: { id: serviceId },
+        data: { 
+          isDeleted: false,
+          deletedAt: null,
+          isActive: true // Mark as active when restoring
+        },
+        include: {
+          specialist: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  firstName: true,
+                  lastName: true,
+                  avatar: true,
+                  userType: true,
+                  phoneNumber: true,
+                  isEmailVerified: true,
+                  isPhoneVerified: true,
+                  isActive: true,
+                  loyaltyPoints: true,
+                  language: true,
+                  currency: true,
+                  timezone: true,
+                  createdAt: true,
+                  updatedAt: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      logger.info('Service restored successfully', {
+        serviceId,
+        specialistId: existingService.specialist.id,
+      });
+
+      return restoredService as ServiceWithDetails;
+    } catch (error) {
+      logger.error('Error restoring service:', error);
+      throw error;
+    }
+  }
+
   // Get service by ID
   static async getService(serviceId: string): Promise<ServiceWithDetails> {
     try {
       const service = await prisma.service.findUnique({
-        where: { id: serviceId },
+        where: { 
+          id: serviceId,
+          isDeleted: false // Only return non-deleted services
+        },
         include: {
           specialist: {
             include: {
@@ -295,7 +376,8 @@ export class ServiceService {
   // Get specialist's services by user ID
   static async getSpecialistServices(
     specialistUserId: string,
-    includeInactive: boolean = false
+    includeInactive: boolean = false,
+    includeDeleted: boolean = false
   ): Promise<ServiceWithDetails[]> {
     try {
       const specialist = await prisma.specialist.findUnique({
@@ -312,6 +394,10 @@ export class ServiceService {
 
       if (!includeInactive) {
         where.isActive = true;
+      }
+
+      if (!includeDeleted) {
+        where.isDeleted = false;
       }
 
       const services = await prisma.service.findMany({
@@ -369,6 +455,7 @@ export class ServiceService {
 
       const where: any = {
         specialistId: specialistId,
+        isDeleted: false, // Never show deleted services in public access
       };
 
       if (!includeInactive) {
@@ -433,6 +520,7 @@ export class ServiceService {
 
       const where: any = {
         isActive: true,
+        isDeleted: false, // Exclude deleted services from search
         specialist: {
           user: {
             isActive: true,
@@ -536,6 +624,7 @@ export class ServiceService {
         by: ['category'],
         where: {
           isActive: true,
+          isDeleted: false, // Exclude deleted services from categories
           specialist: {
             user: {
               isActive: true,
@@ -665,6 +754,7 @@ export class ServiceService {
       const services = await prisma.service.findMany({
         where: {
           isActive: true,
+          isDeleted: false, // Exclude deleted services from popular services
           specialist: {
             user: {
               isActive: true,

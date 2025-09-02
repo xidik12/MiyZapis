@@ -41,6 +41,7 @@ router.get('/services', authenticateToken, requireSpecialist, SpecialistControll
 router.post('/services', authenticateToken, requireSpecialist, SpecialistController.createService);
 router.put('/services/:serviceId', authenticateToken, requireSpecialist, SpecialistController.updateService);
 router.delete('/services/:serviceId', authenticateToken, requireSpecialist, SpecialistController.deleteService);
+router.post('/services/:serviceId/restore', authenticateToken, requireSpecialist, SpecialistController.restoreService);
 router.patch('/services/:serviceId/status', authenticateToken, requireSpecialist, SpecialistController.toggleServiceStatus);
 
 // Specialist availability/schedule routes (frontend expects these - must come before parameterized routes)

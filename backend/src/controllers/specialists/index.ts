@@ -749,6 +749,76 @@ export class SpecialistController {
     }
   }
 
+  // Restore service
+  static async restoreService(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { serviceId } = req.params;
+
+      const restoredService = await ServiceService.restoreService(serviceId, req.user.id);
+
+      res.json(
+        createSuccessResponse({
+          message: 'Service restored successfully',
+          service: restoredService,
+        })
+      );
+    } catch (error: any) {
+      logger.error('Restore service error:', error);
+
+      if (error.message === 'DELETED_SERVICE_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Deleted service not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'SPECIALIST_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Specialist profile not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'UNAUTHORIZED_ACCESS') {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.FORBIDDEN,
+            'You can only restore your own services',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to restore service',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
   // Toggle service status
   static async toggleServiceStatus(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
