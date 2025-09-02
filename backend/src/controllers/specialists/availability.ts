@@ -787,7 +787,7 @@ export class AvailabilityController {
       const slots = [];
       const startTime = daySchedule.start || '09:00';
       const endTime = daySchedule.end || '17:00';
-      const slotDuration = 30; // 30 minutes
+      const slotDuration = 15; // 15 minutes
 
       const [startHour, startMinute] = startTime.split(':').map(Number);
       const [endHour, endMinute] = endTime.split(':').map(Number);
@@ -809,7 +809,7 @@ export class AvailabilityController {
 
       const existingBookings = await prisma.booking.findMany({
         where: {
-          specialistId: specialist.userId,
+          specialistId: specialist.id,
           scheduledAt: {
             gte: startOfDay,
             lt: endOfDay
@@ -836,7 +836,7 @@ export class AvailabilityController {
           const bookingEnd = new Date(bookingStart.getTime() + (booking.duration * 60 * 1000));
           
           // Check if slot overlaps with booking
-          const slotEnd = new Date(slotDateTime.getTime() + (30 * 60 * 1000)); // 30-minute slots
+          const slotEnd = new Date(slotDateTime.getTime() + (15 * 60 * 1000)); // 15-minute slots
           return (slotDateTime < bookingEnd && slotEnd > bookingStart);
         });
       });
@@ -1017,7 +1017,7 @@ export class AvailabilityController {
           const endMinutesFromMidnight = endHour * 60 + endMinute;
           
           const daySlots = [];
-          for (let minutes = startMinutesFromMidnight; minutes < endMinutesFromMidnight; minutes += 30) {
+          for (let minutes = startMinutesFromMidnight; minutes < endMinutesFromMidnight; minutes += 15) {
             const hour = Math.floor(minutes / 60);
             const minute = minutes % 60;
             const slotDateTime = new Date(date);
@@ -1039,7 +1039,7 @@ export class AvailabilityController {
 
             const existingBookings = await prisma.booking.findMany({
               where: {
-                specialistId: specialist.userId,
+                specialistId: specialist.id,
                 scheduledAt: {
                   gte: startOfDay,
                   lt: endOfDay
@@ -1059,7 +1059,7 @@ export class AvailabilityController {
               return !existingBookings.some(booking => {
                 const bookingStart = new Date(booking.scheduledAt);
                 const bookingEnd = new Date(bookingStart.getTime() + (booking.duration * 60 * 1000));
-                const slotEnd = new Date(slotDateTime.getTime() + (30 * 60 * 1000));
+                const slotEnd = new Date(slotDateTime.getTime() + (15 * 60 * 1000));
                 return (slotDateTime < bookingEnd && slotEnd > bookingStart);
               });
             });
