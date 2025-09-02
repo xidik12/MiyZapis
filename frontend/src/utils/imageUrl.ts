@@ -19,8 +19,14 @@ export function getAbsoluteImageUrl(url: string | undefined | null | any): strin
     return url;
   }
   
+  // Warn about Google URLs that should be stored in backend
+  if (url.includes('googleusercontent.com') || url.includes('google.com')) {
+    console.warn('⚠️ Google avatar URL detected - this should be saved to backend storage:', url);
+  }
+  
   // If it's already an absolute URL, return as is
   if (url.startsWith('http://') || url.startsWith('https://')) {
+    console.log('✅ Returning absolute URL as-is:', url.substring(0, 50) + '...');
     return url;
   }
   

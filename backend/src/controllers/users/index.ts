@@ -154,12 +154,13 @@ export class UserController {
         return;
       }
 
-      const avatarUrl = await UserService.uploadAvatar(req.user.id, req.file);
-
-      res.json(
-        createSuccessResponse({
-          avatarUrl,
-        })
+      // This endpoint should not be used - avatar uploads should go through /files/upload
+      res.status(400).json(
+        createErrorResponse(
+          ErrorCodes.VALIDATION_ERROR,
+          'Please use /files/upload?purpose=avatar endpoint for avatar uploads',
+          req.headers['x-request-id'] as string
+        )
       );
     } catch (error: any) {
       logger.error('Upload avatar controller error:', error);

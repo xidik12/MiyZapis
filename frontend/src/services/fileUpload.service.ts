@@ -25,39 +25,28 @@ export class FileUploadService {
       this.validateFile(file, options);
 
       const formData = new FormData();
-      formData.append('files', file);
+      formData.append('files', file); // Use 'files' field name for multer array upload
       
+      const queryParams = new URLSearchParams();
       if (options.type) {
-        formData.append('type', options.type);
+        queryParams.append('purpose', options.type);
       }
-      
       if (options.folder) {
-        formData.append('folder', options.folder);
+        queryParams.append('folder', options.folder);
       }
 
-      // Use robust upload endpoint for better reliability
-      const uploadUrl = `/files/upload-robust?purpose=${options.type || 'general'}`;
-      console.log('🚀 Using robust upload endpoint:', uploadUrl);
-      
-      const response = await apiClient.post<FileUploadResponse[]>(uploadUrl, formData, {
+      const endpoint = `/files/upload${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+      const response = await apiClient.post<FileUploadResponse[]>(endpoint, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      if (!response.success || !response.data || response.data.length === 0) {
+      if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
         throw new Error(response.error?.message || 'Failed to upload file');
       }
 
-      // Backend returns array of files, take the first one
-      const uploadedFile = response.data[0];
-      return {
-        url: uploadedFile.url || uploadedFile.path,
-        filename: uploadedFile.filename,
-        size: uploadedFile.size,
-        mimeType: uploadedFile.mimeType,
-        uploadedAt: uploadedFile.uploadedAt || uploadedFile.createdAt
-      } as FileUploadResponse;
+      return response.data[0]; // Return the first uploaded file
     } catch (error: any) {
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to upload file';
       throw new Error(errorMessage);
@@ -118,6 +107,28 @@ export class FileUploadService {
       maxSize: 20 * 1024 * 1024, // 20MB
       allowedTypes: ['application/pdf', 'image/jpeg', 'image/png']
     });
+  }
+
+  // Save external image (e.g., Google avatar) to backend storage
+  async saveExternalImage(imageUrl: string, purpose: 'avatar' | 'portfolio' = 'avatar'): Promise<FileUploadResponse> {
+    try {
+      console.log('💾 Saving external image to backend:', imageUrl);
+      
+      const response = await apiClient.post<FileUploadResponse>('/files/save-external', {
+        imageUrl,
+        purpose
+      });
+
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Failed to save external image');
+      }
+
+      console.log('✅ External image saved to backend:', response.data.url);
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to save external image';
+      throw new Error(errorMessage);
+    }
   }
 
   // Delete a file

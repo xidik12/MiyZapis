@@ -122,8 +122,10 @@ export const uploadAvatar = createAsyncThunk(
   async (file: File, { rejectWithValue, dispatch }) => {
     try {
       const response = await authService.uploadAvatar(file);
-      // Update user profile with new avatar URL
+      // Update user profile with new avatar URL immediately
       dispatch(updateUserProfile({ avatar: response.avatarUrl }));
+      // Also refresh the current user data to ensure consistency
+      dispatch(getCurrentUser());
       return response.avatarUrl;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to upload avatar');

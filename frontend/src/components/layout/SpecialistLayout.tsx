@@ -5,10 +5,10 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser, logout } from '../../store/slices/authSlice';
-import { fetchNotifications } from '../../store/slices/notificationSlice';
 import { isFeatureEnabled } from '../../config/features';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
+import { NotificationBell } from '../notifications/NotificationBell';
 import {
   ChartBarIcon,
   CalendarIcon,
@@ -133,8 +133,6 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
   const location = useLocation();
-  const notificationState = useAppSelector((state: any) => state.notifications);
-  const unreadCount = notificationState?.unreadCount || 0;
 
   // Check if mobile view
   useEffect(() => {
@@ -151,15 +149,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Fetch notifications on mount with error handling
-  useEffect(() => {
-    if (user && isFeatureEnabled('ENABLE_NOTIFICATIONS_API')) {
-      dispatch(fetchNotifications({ limit: 50 })).catch((error) => {
-        console.warn('Failed to fetch notifications:', error);
-        // Don't show error to user, just log it - notifications are not critical
-      });
-    }
-  }, [user, dispatch]);
+  // Notifications are now handled by the NotificationBell component
 
   const isCurrentPath = (path: string) => location.pathname === path;
 
@@ -405,17 +395,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
 
           <div className="flex items-center space-x-4">
             {/* Notifications */}
-            <Link 
-              to="/specialist/notifications"
-              className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              <BellIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-              {isFeatureEnabled('ENABLE_NOTIFICATIONS_API') && unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
-            </Link>
+            <NotificationBell />
 
             {/* Settings */}
             <Link 

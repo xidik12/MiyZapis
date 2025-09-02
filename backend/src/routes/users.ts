@@ -207,69 +207,27 @@ router.put('/profile', authenticateToken, validateUpdateProfile, async (req: Aut
   }
 });
 
-// Upload user avatar
-router.post('/avatar', authenticateToken, validateUploadAvatar, async (req: AuthenticatedRequest, res: Response) => {
+// Upload user avatar - redirect to file upload endpoint
+router.post('/avatar', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json(
-        createErrorResponse(
-          ErrorCodes.VALIDATION_ERROR,
-          'Invalid avatar data',
-          req.headers['x-request-id'] as string,
-          formatValidationErrors(errors.array())
-        )
-      );
-    }
-
-    const userId = req.userId;
-    
-    // In production, you'd handle file upload to cloud storage (AWS S3, Cloudinary, etc.)
-    // For demo purposes, we'll simulate avatar URL generation
-    
-    let avatarUrl: string;
-    
-    if (req.file) {
-      // Simulate file upload processing
-      avatarUrl = `https://api.bookingplatform.com/uploads/avatars/${userId}/${Date.now()}-${req.file.filename}`;
-    } else if (req.body.avatar) {
-      // External URL provided
-      avatarUrl = req.body.avatar;
-    } else {
-      return res.status(400).json(
-        createErrorResponse(
-          ErrorCodes.VALIDATION_ERROR,
-          'Avatar file or URL is required',
-          req.headers['x-request-id'] as string
-        )
-      );
-    }
-
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: { avatar: avatarUrl },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        avatar: true,
-        updatedAt: true
-      }
-    });
-
-    return res.json(createSuccessResponse({
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      avatar: user.avatar,
-      updatedAt: user.updatedAt
-    }));
+    return res.status(400).json(
+      createErrorResponse(
+        ErrorCodes.VALIDATION_ERROR,
+        'Please use POST /files/upload?purpose=avatar for avatar uploads',
+        req.headers['x-request-id'] as string,
+        [{
+          field: 'endpoint',
+          message: 'Use the files upload endpoint with purpose=avatar parameter',
+          code: 'DEPRECATED_ENDPOINT'
+        }]
+      )
+    );
   } catch (error) {
-    logger.error('Upload avatar error:', error);
+    logger.error('Avatar upload endpoint error:', error);
     res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
-        'Failed to upload avatar',
+        'Failed to handle avatar upload request',
         req.headers['x-request-id'] as string
       )
     );

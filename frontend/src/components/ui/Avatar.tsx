@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { UserCircleIcon } from '@heroicons/react/24/outline';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
+import { OptimizedImage } from './OptimizedImage';
 
 interface AvatarProps {
   src?: string | null;
@@ -66,10 +67,13 @@ export const Avatar: React.FC<AvatarProps> = ({
   }, []);
 
   const handleImageError = useCallback((error: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    console.log('🚨 Avatar image failed to load:', src);
+    console.log('🔍 This is likely due to missing files on the backend server.');
+    console.log('💡 Consider: 1) Re-uploading avatar, 2) Check if files moved to cloud storage, 3) Backend file serving issue');
     setImageError(true);
     setImageLoading(false);
     onError?.(error.nativeEvent);
-  }, [onError]);
+  }, [onError, src]);
 
   const handleImageLoad = useCallback(() => {
     setImageLoading(false);
@@ -92,6 +96,11 @@ export const Avatar: React.FC<AvatarProps> = ({
 
   // Process the image URL to ensure it's absolute
   const absoluteSrc = src ? getAbsoluteImageUrl(src) : null;
+  
+  // Debug logging for avatar URLs
+  if (src && absoluteSrc !== src) {
+    console.log('🔄 Avatar URL transformed:', { original: src, absolute: absoluteSrc });
+  }
 
   // If no src provided or image failed to load, show fallback
   if (!absoluteSrc || imageError) {
@@ -133,8 +142,7 @@ export const Avatar: React.FC<AvatarProps> = ({
       
       {/* Actual image */}
       {shouldLoad && (
-        <img
-          ref={lazy ? setRef : undefined}
+        <OptimizedImage
           src={absoluteSrc}
           alt={alt}
           className={`${sizeClasses[size]} rounded-full object-cover transition-opacity duration-200 ${
@@ -142,7 +150,6 @@ export const Avatar: React.FC<AvatarProps> = ({
           } ${className}`}
           onError={handleImageError}
           onLoad={handleImageLoad}
-          loading={lazy ? 'lazy' : 'eager'}
         />
       )}
     </div>

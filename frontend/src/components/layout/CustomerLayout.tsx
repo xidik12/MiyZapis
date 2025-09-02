@@ -7,6 +7,7 @@ import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser, logout } from '../../store/slices/authSlice';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
+import { NotificationBell } from '../notifications/NotificationBell';
 import {
   HomeIcon,
   CalendarIcon,
@@ -385,10 +386,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
 
           <div className="flex items-center space-x-4">
             {/* Notifications */}
-            <button className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-              <BellIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-              {/* TODO: Show notification badge only when there are actual notifications */}
-            </button>
+            <NotificationBell />
 
             {/* Settings */}
             <Link 

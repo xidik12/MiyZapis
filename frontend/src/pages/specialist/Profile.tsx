@@ -10,6 +10,8 @@ import { isFeatureEnabled } from '../../config/features';
 import { ProfessionDropdown } from '../../components/ui/ProfessionDropdown';
 import { LocationPicker } from '../../components/LocationPicker';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
+import OptimizedImage from '../../components/ui/OptimizedImage';
+import AutoMigrateAvatar from '../../components/AutoMigrateAvatar';
 import { 
   CheckCircleIcon,
   XCircleIcon,
@@ -226,6 +228,8 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
   
   const result = {
     ...defaultProfile,
+    // Preserve the real specialist ID
+    id: specialist?.id || defaultProfile.id,
     // User data (flat from apiData)
     firstName: apiData?.firstName || '',
     lastName: apiData?.lastName || '',
@@ -715,6 +719,19 @@ const SpecialistProfile: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Warn user if they're replacing a Google avatar
+    if (user?.avatar && (user.avatar.includes('googleusercontent.com') || user.avatar.includes('google.com'))) {
+      const confirmed = window.confirm(
+        language === 'uk' ? 'Ви впевнені, що хочете замінити аватар з Google?' :
+        language === 'ru' ? 'Вы уверены, что хотите заменить аватар из Google?' :
+        'Are you sure you want to replace your Google avatar?'
+      );
+      if (!confirmed) {
+        event.target.value = ''; // Reset file input
+        return;
+      }
+    }
+
     // Validate file type and size
     if (!file.type.startsWith('image/')) {
       showErrorNotification(
@@ -876,6 +893,16 @@ const SpecialistProfile: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900">
+      {/* Auto-migrate Google avatars */}
+      <AutoMigrateAvatar 
+        showStatus={true} 
+        onMigrationComplete={(success, newAvatarUrl) => {
+          if (success && newAvatarUrl) {
+            setProfile(prev => ({ ...prev, avatar: newAvatarUrl }));
+          }
+        }}
+      />
+      
       {/* Success/Error Notifications */}
       {showSuccessMessage && (
         <div className="fixed top-4 right-4 z-50 animate-slide-in">
@@ -922,7 +949,7 @@ const SpecialistProfile: React.FC = () => {
               {/* Modern Avatar */}
               <div className="relative group">
                 {user?.avatar ? (
-                  <img
+                  <OptimizedImage
                     src={user.avatar}
                     alt={profile.firstName || 'Profile'}
                     className="w-28 h-28 rounded-2xl object-cover shadow-lg ring-4 ring-white dark:ring-gray-800"
@@ -1010,9 +1037,11 @@ const SpecialistProfile: React.FC = () => {
               {!isEditing && (
                 <button 
                   onClick={() => {
-                    if (user?.userType === 'SPECIALIST') {
-                      // Open specialist's public profile in a new tab - use current user ID
-                      const publicProfileUrl = `/specialist/${user.id}`;
+                    if (user?.userType === 'specialist') {
+                      // Open specialist's public profile in a new tab - use specialist profile ID
+                      const specialistId = (profile as any).id || user.id;
+                      const publicProfileUrl = `/specialist/${specialistId}`;
+                      console.log('🔍 Opening preview for specialist ID:', specialistId);
                       window.open(publicProfileUrl, '_blank');
                     } else {
                       console.warn('User is not a specialist');
@@ -1761,10 +1790,13 @@ const SpecialistProfile: React.FC = () => {
                           className="group relative bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
                         >
                           <div className="aspect-square overflow-hidden">
-                            <img
+                            <OptimizedImage
                               src={getAbsoluteImageUrl(item.imageUrl)}
                               alt={item.title || `Portfolio item ${index + 1}`}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              onError={(e) => {
+                                console.error('Portfolio image failed to load:', item.imageUrl);
+                              }}
                             />
                           </div>
                           {item.title && (

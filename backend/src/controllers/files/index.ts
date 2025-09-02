@@ -198,6 +198,25 @@ export class FileController {
             url: fileRecord.url
           });
 
+          // Update user avatar if this is an avatar upload
+          if (purpose === 'avatar' && userId) {
+            try {
+              const { UserService } = await import('@/services/user');
+              await UserService.updateAvatar(userId, absoluteUrl);
+              logger.info('User avatar updated in database', {
+                userId,
+                avatarUrl: absoluteUrl
+              });
+            } catch (avatarUpdateError) {
+              logger.error('Failed to update user avatar in database:', {
+                error: avatarUpdateError instanceof Error ? avatarUpdateError.message : String(avatarUpdateError),
+                userId,
+                avatarUrl: absoluteUrl
+              });
+              // Don't fail the entire upload if avatar update fails
+            }
+          }
+
           uploadedFiles.push(fileRecord);
         } catch (fileError) {
           logger.error(`Error processing file ${file.originalname}:`, {
@@ -241,8 +260,9 @@ export class FileController {
   private async processFile(file: Express.Multer.File, purpose: string) {
     try {
       const fileId = uuidv4();
-      const ext = path.extname(file.originalname);
-      const filename = `${purpose}/${fileId}${ext}`;
+      let ext = path.extname(file.originalname);
+      // We'll update the extension after processing if needed
+      let filename = `${purpose}/${fileId}${ext}`;
 
       let processedBuffer = file.buffer;
       let width: number | undefined;
@@ -270,18 +290,34 @@ export class FileController {
           switch (purpose) {
             case 'avatar':
               logger.info('Resizing avatar image');
-              processedBuffer = await image
-                .resize(300, 300, { fit: 'cover' })
-                .jpeg({ quality: 85 })
-                .toBuffer();
+              // Check if input is webp and maintain format, otherwise convert to jpeg
+              if (metadata.format === 'webp') {
+                processedBuffer = await image
+                  .resize(300, 300, { fit: 'cover' })
+                  .webp({ quality: 85 })
+                  .toBuffer();
+              } else {
+                processedBuffer = await image
+                  .resize(300, 300, { fit: 'cover' })
+                  .jpeg({ quality: 85 })
+                  .toBuffer();
+              }
               break;
             case 'service_image':
             case 'portfolio':
               logger.info('Resizing portfolio/service image');
-              processedBuffer = await image
-                .resize(1200, 800, { fit: 'inside', withoutEnlargement: true })
-                .jpeg({ quality: 85 })
-                .toBuffer();
+              // Check if input is webp and maintain format, otherwise convert to jpeg
+              if (metadata.format === 'webp') {
+                processedBuffer = await image
+                  .resize(1200, 800, { fit: 'inside', withoutEnlargement: true })
+                  .webp({ quality: 85 })
+                  .toBuffer();
+              } else {
+                processedBuffer = await image
+                  .resize(1200, 800, { fit: 'inside', withoutEnlargement: true })
+                  .jpeg({ quality: 85 })
+                  .toBuffer();
+              }
               break;
             default:
               logger.info('Keeping original image size');
@@ -303,10 +339,50 @@ export class FileController {
         }
       }
 
+      // Determine the correct MIME type and extension based on processing
+      let finalMimeType = file.mimetype;
+      if (file.mimetype.startsWith('image/') && processedBuffer !== file.buffer) {
+        // If image was processed, determine MIME type and extension based on output format
+        try {
+          const processedImage = sharp(processedBuffer);
+          const processedMetadata = await processedImage.metadata();
+          if (processedMetadata.format === 'webp') {
+            finalMimeType = 'image/webp';
+            // Update filename extension if format changed
+            if (!ext.toLowerCase().endsWith('.webp')) {
+              filename = `${purpose}/${fileId}.webp`;
+            }
+          } else if (processedMetadata.format === 'jpeg') {
+            finalMimeType = 'image/jpeg';
+            // Update filename extension if format changed
+            if (!ext.toLowerCase().endsWith('.jpg') && !ext.toLowerCase().endsWith('.jpeg')) {
+              filename = `${purpose}/${fileId}.jpg`;
+            }
+          } else if (processedMetadata.format === 'png') {
+            finalMimeType = 'image/png';
+            // Update filename extension if format changed
+            if (!ext.toLowerCase().endsWith('.png')) {
+              filename = `${purpose}/${fileId}.png`;
+            }
+          }
+          
+          logger.info('Image format determined after processing', {
+            originalFormat: file.mimetype,
+            processedFormat: finalMimeType,
+            filename: filename
+          });
+        } catch (metadataError) {
+          logger.warn('Could not determine processed image format, using original MIME type', {
+            originalMimeType: file.mimetype,
+            error: metadataError instanceof Error ? metadataError.message : String(metadataError)
+          });
+        }
+      }
+
       return {
         buffer: processedBuffer,
         filename,
-        mimetype: file.mimetype,
+        mimetype: finalMimeType,
         width,
         height
       };

@@ -92,7 +92,17 @@ const uploadsDir = isRailway ? '/tmp/uploads' : (process.env.UPLOAD_DIR || path.
 app.use('/uploads', express.static(uploadsDir, {
   maxAge: '1y', // Cache uploaded files for 1 year
   etag: true,
-  lastModified: true
+  lastModified: true,
+  setHeaders: (res, path) => {
+    // Ensure proper MIME types for image formats
+    if (path.endsWith('.webp')) {
+      res.setHeader('Content-Type', 'image/webp');
+    } else if (path.endsWith('.avif')) {
+      res.setHeader('Content-Type', 'image/avif');
+    }
+    // Add Cache-Control header for better caching
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  }
 }));
 
 logger.info('Static file serving configured', { 

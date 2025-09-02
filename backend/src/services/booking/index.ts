@@ -31,7 +31,7 @@ interface BookingWithDetails extends Booking {
 }
 
 export class BookingService {
-  private static notificationService = new NotificationService(prisma);
+  private static notificationService = new NotificationService();
 
   // Create a new booking
   static async createBooking(data: CreateBookingData): Promise<BookingWithDetails> {
@@ -56,6 +56,28 @@ export class BookingService {
       // Validate scheduled time is in the future
       if (data.scheduledAt <= new Date()) {
         throw new Error('SCHEDULED_TIME_MUST_BE_FUTURE');
+      }
+
+      // Check for duplicate bookings (same customer, service, and time)
+      const existingBooking = await prisma.booking.findFirst({
+        where: {
+          customerId: data.customerId,
+          serviceId: data.serviceId,
+          scheduledAt: data.scheduledAt,
+          status: {
+            not: 'CANCELLED'
+          }
+        }
+      });
+
+      if (existingBooking) {
+        logger.warn('Duplicate booking attempt detected', {
+          customerId: data.customerId,
+          serviceId: data.serviceId,
+          scheduledAt: data.scheduledAt,
+          existingBookingId: existingBooking.id
+        });
+        throw new Error('DUPLICATE_BOOKING');
       }
 
       // Validate service exists and is active
@@ -236,7 +258,7 @@ export class BookingService {
           });
           
           // Auto-booking ON: Send "booking confirmed" notifications
-          await this.notificationService.sendNotification(booking.customerId, {
+          await BookingService.notificationService.sendNotification(booking.customerId, {
             type: 'BOOKING_CONFIRMED',
             title: 'Your booking is confirmed',
             message: `Your booking for ${service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()} is automatically confirmed.`,
@@ -250,7 +272,7 @@ export class BookingService {
             smsTemplate: 'booking_confirmed_sms'
           });
 
-          await this.notificationService.sendNotification(booking.specialistId, {
+          await BookingService.notificationService.sendNotification(booking.specialistId, {
             type: 'BOOKING_CONFIRMED',
             title: 'You have been booked',
             message: `You have been booked for ${service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()}.`,
@@ -272,7 +294,7 @@ export class BookingService {
           });
           
           // Auto-booking OFF: Send "booking pending" notifications
-          await this.notificationService.sendNotification(booking.customerId, {
+          await BookingService.notificationService.sendNotification(booking.customerId, {
             type: 'BOOKING_PENDING',
             title: 'Your booking request has been sent',
             message: `Your booking request for ${service.name} has been sent to the specialist and is waiting for confirmation.`,
@@ -286,7 +308,7 @@ export class BookingService {
             smsTemplate: 'booking_pending_sms'
           });
 
-          await this.notificationService.sendNotification(booking.specialistId, {
+          await BookingService.notificationService.sendNotification(booking.specialistId, {
             type: 'BOOKING_REQUEST',
             title: 'New booking request requires confirmation',
             message: `New booking request for ${service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()} - requires your confirmation.`,
@@ -509,7 +531,7 @@ export class BookingService {
       try {
         if (data.status === 'CONFIRMED' && booking.status === 'PENDING') {
           // Booking was confirmed by specialist
-          await this.notificationService.sendNotification(booking.customerId, {
+          await BookingService.notificationService.sendNotification(booking.customerId, {
             type: 'BOOKING_CONFIRMED',
             title: 'Your booking is confirmed',
             message: `Your booking for ${updatedBooking.service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()} has been confirmed by the specialist.`,
@@ -523,7 +545,7 @@ export class BookingService {
             smsTemplate: 'booking_confirmed_sms'
           });
 
-          await this.notificationService.sendNotification(booking.specialistId, {
+          await BookingService.notificationService.sendNotification(booking.specialistId, {
             type: 'BOOKING_CONFIRMED',
             title: 'Booking confirmed',
             message: `You have confirmed the booking for ${updatedBooking.service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()}.`,

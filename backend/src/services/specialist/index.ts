@@ -80,6 +80,16 @@ export class SpecialistService {
       sunday: { isWorking: false, start: '09:00', end: '17:00' }
     };
   }
+
+  private static parseJsonField<T>(field: string | null, defaultValue: T): T {
+    if (!field) return defaultValue;
+    try {
+      return JSON.parse(field) as T;
+    } catch (error) {
+      logger.warn('Failed to parse JSON field', { field, error });
+      return defaultValue;
+    }
+  }
   // Create specialist profile
   static async createProfile(
     userId: string,
@@ -371,7 +381,22 @@ export class SpecialistService {
         throw new Error('SPECIALIST_NOT_FOUND');
       }
 
-      return specialist as SpecialistWithUser;
+      // Parse JSON fields for frontend consumption
+      const parsedSpecialist = {
+        ...specialist,
+        specialties: SpecialistService.parseJsonField(specialist.specialties, []),
+        languages: SpecialistService.parseJsonField(specialist.languages, []),
+        workingHours: SpecialistService.parseJsonField(specialist.workingHours, {}),
+        paymentMethods: SpecialistService.parseJsonField(specialist.paymentMethods, []),
+        serviceArea: SpecialistService.parseJsonField(specialist.serviceArea, {}),
+        notifications: SpecialistService.parseJsonField(specialist.notifications, {}),
+        privacy: SpecialistService.parseJsonField(specialist.privacy, {}),
+        socialMedia: SpecialistService.parseJsonField(specialist.socialMedia, {}),
+        portfolioImages: SpecialistService.parseJsonField(specialist.portfolioImages, []),
+        certifications: SpecialistService.parseJsonField(specialist.certifications, []),
+      };
+
+      return parsedSpecialist as SpecialistWithUser;
     } catch (error) {
       logger.error('Error getting specialist profile:', error);
       throw error;
@@ -420,7 +445,22 @@ export class SpecialistService {
         throw new Error('SPECIALIST_NOT_FOUND');
       }
 
-      return specialist as SpecialistWithUser;
+      // Parse JSON fields for frontend consumption
+      const parsedSpecialist = {
+        ...specialist,
+        specialties: SpecialistService.parseJsonField(specialist.specialties, []),
+        languages: SpecialistService.parseJsonField(specialist.languages, []),
+        workingHours: SpecialistService.parseJsonField(specialist.workingHours, {}),
+        paymentMethods: SpecialistService.parseJsonField(specialist.paymentMethods, []),
+        serviceArea: SpecialistService.parseJsonField(specialist.serviceArea, {}),
+        notifications: SpecialistService.parseJsonField(specialist.notifications, {}),
+        privacy: SpecialistService.parseJsonField(specialist.privacy, {}),
+        socialMedia: SpecialistService.parseJsonField(specialist.socialMedia, {}),
+        portfolioImages: SpecialistService.parseJsonField(specialist.portfolioImages, []),
+        certifications: SpecialistService.parseJsonField(specialist.certifications, []),
+      };
+
+      return parsedSpecialist as SpecialistWithUser;
     } catch (error) {
       logger.error('Error getting specialist profile:', error);
       throw error;
@@ -491,7 +531,7 @@ export class SpecialistService {
           orderBy = { rating: 'desc' };
       }
 
-      const [specialists, total] = await Promise.all([
+      const [rawSpecialists, total] = await Promise.all([
         prisma.specialist.findMany({
           where,
           include: {
@@ -532,6 +572,21 @@ export class SpecialistService {
         }),
         prisma.specialist.count({ where }),
       ]);
+
+      // Parse JSON fields for each specialist in search results
+      const specialists = rawSpecialists.map(specialist => ({
+        ...specialist,
+        specialties: SpecialistService.parseJsonField(specialist.specialties, []),
+        languages: SpecialistService.parseJsonField(specialist.languages, []),
+        workingHours: SpecialistService.parseJsonField(specialist.workingHours, {}),
+        paymentMethods: SpecialistService.parseJsonField(specialist.paymentMethods, []),
+        serviceArea: SpecialistService.parseJsonField(specialist.serviceArea, {}),
+        notifications: SpecialistService.parseJsonField(specialist.notifications, {}),
+        privacy: SpecialistService.parseJsonField(specialist.privacy, {}),
+        socialMedia: SpecialistService.parseJsonField(specialist.socialMedia, {}),
+        portfolioImages: SpecialistService.parseJsonField(specialist.portfolioImages, []),
+        certifications: SpecialistService.parseJsonField(specialist.certifications, []),
+      }));
 
       const totalPages = Math.ceil(total / limit);
 
