@@ -43,6 +43,80 @@ router.get('/railway-env', (req, res) => {
   }
 });
 
+// File system diagnostic endpoint (no auth needed)
+router.get('/fs-test', async (req, res) => {
+  try {
+    const fs = require('fs').promises;
+    const path = require('path');
+    
+    const isRailway = !!(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_SERVICE_NAME);
+    const uploadsDir = isRailway ? '/app/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
+    
+    const testResults = {
+      uploadsDir,
+      isRailway,
+      tests: {} as any
+    };
+    
+    // Test 1: Check if uploads directory exists
+    try {
+      await fs.access(uploadsDir);
+      testResults.tests.directoryExists = true;
+    } catch (error) {
+      testResults.tests.directoryExists = false;
+      testResults.tests.directoryError = error instanceof Error ? error.message : String(error);
+    }
+    
+    // Test 2: Try to create uploads directory
+    try {
+      await fs.mkdir(uploadsDir, { recursive: true });
+      testResults.tests.directoryCreation = 'success';
+    } catch (error) {
+      testResults.tests.directoryCreation = 'failed';
+      testResults.tests.directoryCreationError = error instanceof Error ? error.message : String(error);
+    }
+    
+    // Test 3: Try to write a test file
+    const testFilePath = path.join(uploadsDir, 'test-write.txt');
+    try {
+      await fs.writeFile(testFilePath, 'test content');
+      testResults.tests.fileWrite = 'success';
+    } catch (error) {
+      testResults.tests.fileWrite = 'failed';
+      testResults.tests.fileWriteError = error instanceof Error ? error.message : String(error);
+    }
+    
+    // Test 4: Try to read the test file
+    try {
+      const content = await fs.readFile(testFilePath, 'utf8');
+      testResults.tests.fileRead = content === 'test content' ? 'success' : 'content-mismatch';
+    } catch (error) {
+      testResults.tests.fileRead = 'failed';
+      testResults.tests.fileReadError = error instanceof Error ? error.message : String(error);
+    }
+    
+    // Test 5: Clean up test file
+    try {
+      await fs.unlink(testFilePath);
+      testResults.tests.fileDelete = 'success';
+    } catch (error) {
+      testResults.tests.fileDelete = 'failed';
+      testResults.tests.fileDeleteError = error instanceof Error ? error.message : String(error);
+    }
+    
+    res.json({
+      success: true,
+      data: testResults
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'File system test failed',
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
+});
+
 // Test notification endpoint
 router.post('/test-notification', authMiddleware, async (req, res) => {
   try {
