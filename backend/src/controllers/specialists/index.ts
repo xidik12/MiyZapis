@@ -380,20 +380,63 @@ export class SpecialistController {
         return;
       }
 
-      const { startDate, endDate } = req.query;
+      const { startDate, endDate, period } = req.query;
 
       // Get specialist ID from user
       const specialist = await SpecialistService.getProfileByUserId(req.user.id);
 
+      // Handle date filtering more intelligently
+      let analyticsStartDate: Date | undefined;
+      let analyticsEndDate: Date | undefined;
+
+      if (startDate && endDate) {
+        analyticsStartDate = new Date(startDate as string);
+        analyticsEndDate = new Date(endDate as string);
+      } else if (period) {
+        // Handle predefined periods
+        const now = new Date();
+        switch (period) {
+          case 'daily':
+            analyticsStartDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            analyticsEndDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+            break;
+          case 'weekly':
+            analyticsStartDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            analyticsEndDate = now;
+            break;
+          case 'monthly':
+            analyticsStartDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            analyticsEndDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            break;
+          case 'yearly':
+            analyticsStartDate = new Date(now.getFullYear(), 0, 1);
+            analyticsEndDate = new Date(now.getFullYear() + 1, 0, 1);
+            break;
+          default:
+            // For any other period or 'all-time', don't apply date filters
+            break;
+        }
+      }
+      // If no date parameters provided, show all-time data
+
       const analytics = await SpecialistService.getAnalytics(
         specialist.id,
-        startDate ? new Date(startDate as string) : undefined,
-        endDate ? new Date(endDate as string) : undefined
+        analyticsStartDate,
+        analyticsEndDate
       );
 
       res.json(
         createSuccessResponse({
           analytics,
+          // Add debugging info for date filtering
+          debug: {
+            dateFiltering: {
+              startDate: analyticsStartDate?.toISOString(),
+              endDate: analyticsEndDate?.toISOString(),
+              period: period,
+              hasDateFilter: !!(analyticsStartDate && analyticsEndDate)
+            }
+          }
         })
       );
     } catch (error: any) {
