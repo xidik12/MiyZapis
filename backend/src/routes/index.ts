@@ -51,7 +51,7 @@ router.use('/admin', adminRoutes);
 
 // New enhanced API routes
 router.use('/loyalty', loyaltyRoutes);
-router.use('/availability', availabilityRoutes);
+router.use('/', availabilityRoutes);  // Mount availability routes at root to match /specialists/:id/slots pattern
 router.use('/analytics-enhanced', analyticsEnhancedRoutes);
 router.use('/telegram', telegramEnhancedRoutes);
 router.use('/diagnostics', diagnosticsRoutes);

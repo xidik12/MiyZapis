@@ -269,13 +269,13 @@ const SpecialistSchedule: React.FC = () => {
         const endTime = workingHours[dayName].end || workingHours[dayName].endTime || '17:00';
         console.log(`✅ Creating slots for ${dayName}: ${startTime} - ${endTime}`);
         
-        // Create hourly slots
+        // Create 15-minute slots
         const start = new Date(`2000-01-01T${startTime}:00`);
         const end = new Date(`2000-01-01T${endTime}:00`);
         
         while (start < end) {
           const slotStart = start.toTimeString().substring(0, 5);
-          start.setHours(start.getHours() + 1);
+          start.setMinutes(start.getMinutes() + 15);
           const slotEnd = start.toTimeString().substring(0, 5);
           
           const slot = {
