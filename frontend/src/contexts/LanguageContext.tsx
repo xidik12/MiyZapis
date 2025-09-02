@@ -998,6 +998,7 @@ const translations: Translations = {
   'booking.selectDate': { en: 'Select Date', uk: 'Оберіть дату', ru: 'Выберите дату' },
   'booking.selectTime': { en: 'Select Time', uk: 'Оберіть час', ru: 'Выберите время' },
   'booking.noAvailableSlots': { en: 'No available slots', uk: 'Немає вільних слотів', ru: 'Нет свободных слотов' },
+  'booking.noAvailableDates': { en: 'No available dates', uk: 'Немає доступних дат', ru: 'Нет доступных дат' },
   'booking.notesPlaceholder': { en: 'Add any special notes or requests...', uk: 'Додайте будь-які особливі примітки або побажання...', ru: 'Добавьте любые особые заметки или пожелания...' },
   'booking.summary': { en: 'Booking Summary', uk: 'Підсумок бронювання', ru: 'Итоги бронирования' },
   'booking.dateTime': { en: 'Date & Time', uk: 'Дата та час', ru: 'Дата и время' },
