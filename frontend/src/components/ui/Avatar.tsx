@@ -1,7 +1,6 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { UserCircleIcon } from '@heroicons/react/24/outline';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
-import { OptimizedImage } from './OptimizedImage';
 
 interface AvatarProps {
   src?: string | null;
@@ -33,156 +32,65 @@ export const Avatar: React.FC<AvatarProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(!!src);
-  const [shouldLoad, setShouldLoad] = useState(!lazy);
-  const imgRef = useRef<HTMLImageElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-
-  // Set up intersection observer for lazy loading
-  const setRef = useCallback((node: HTMLImageElement | null) => {
-    if (imgRef.current) {
-      observerRef.current?.unobserve(imgRef.current);
-    }
-    
-    if (node && lazy && !shouldLoad) {
-      observerRef.current = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting) {
-            setShouldLoad(true);
-            observerRef.current?.disconnect();
-          }
-        },
-        { threshold: 0.1 }
-      );
-      observerRef.current.observe(node);
-    }
-    
-    imgRef.current = node;
-  }, [lazy, shouldLoad]);
-
-  // Cleanup observer on unmount
-  useEffect(() => {
-    return () => {
-      observerRef.current?.disconnect();
-    };
-  }, []);
 
   const handleImageError = useCallback((error: React.SyntheticEvent<HTMLImageElement, Event>) => {
     console.log('🚨 Avatar image failed to load:', src);
-    console.log('🔍 This is likely due to missing files on the backend server.');
-    console.log('💡 Consider: 1) Re-uploading avatar, 2) Check if files moved to cloud storage, 3) Backend file serving issue');
     setImageError(true);
     setImageLoading(false);
     onError?.(error.nativeEvent);
   }, [onError, src]);
 
   const handleImageLoad = useCallback(() => {
+    console.log('✅ Avatar image loaded successfully:', src);
     setImageLoading(false);
     onLoad?.();
-  }, [onLoad]);
+  }, [onLoad, src]);
 
   // Reset states when src changes
   useEffect(() => {
     if (src) {
       setImageError(false);
       setImageLoading(true);
-      if (!lazy) {
-        setShouldLoad(true);
-      }
     } else {
       setImageError(false);
       setImageLoading(false);
     }
-  }, [src, lazy]);
+  }, [src]);
 
   // Process the image URL to ensure it's absolute
   const absoluteSrc = src ? getAbsoluteImageUrl(src) : null;
   
-  // Enhanced debug logging for avatar URLs
-  console.log('🖼️ Avatar component debug:', {
-    originalSrc: src,
-    absoluteSrc,
-    srcType: typeof src,
-    srcLength: src?.length,
-    isNullOrEmpty: !src,
-    component: 'Avatar'
-  });
+  console.log('🎯 Avatar simplified - URL:', absoluteSrc?.substring(0, 50) + '...', 'Error:', imageError);
   
-  if (src && absoluteSrc !== src) {
-    console.log('🔄 Avatar URL transformed:', { original: src, absolute: absoluteSrc });
-  }
-
-  // Enhanced fallback logic - try direct image first if avatar component processing fails
-  if (!absoluteSrc || absoluteSrc.trim() === '') {
-    console.log('⚠️ Avatar: No valid src provided, showing fallback');
-    if (fallbackIcon) {
-      return (
-        <UserCircleIcon 
-          className={`${sizeClasses[size]} text-gray-400 dark:text-gray-500 ${className}`}
-        />
-      );
-    } else {
-      return (
-        <div 
-          className={`${sizeClasses[size]} bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center ${className}`}
-        >
-          <UserCircleIcon className="w-2/3 h-2/3 text-gray-400 dark:text-gray-500" />
-        </div>
-      );
-    }
-  }
-  
-  // If image failed to load, try direct img as fallback before showing icon
-  if (imageError) {
-    console.log('⚠️ Avatar: OptimizedImage failed, trying direct img tag');
+  // If no valid src or loading failed, show fallback
+  if (!absoluteSrc || imageError) {
+    console.log('⚠️ Avatar: Showing fallback icon');
     return (
-      <div className={`relative ${sizeClasses[size]}`}>
-        <img
-          src={absoluteSrc}
-          alt={alt}
-          className={`${sizeClasses[size]} rounded-full object-cover ${className}`}
-          onError={() => {
-            console.log('❌ Avatar: Direct img also failed, this URL is definitely invalid:', absoluteSrc);
-          }}
-          onLoad={() => {
-            console.log('✅ Avatar: Direct img succeeded where OptimizedImage failed:', absoluteSrc);
-            onLoad?.();
-          }}
-        />
-      </div>
+      <UserCircleIcon 
+        className={`${sizeClasses[size]} text-gray-400 dark:text-gray-500 ${className}`}
+      />
     );
   }
 
+  // Simple and direct approach - just like the working navbar
   return (
     <div className={`relative ${sizeClasses[size]}`}>
-      {/* Loading skeleton */}
       {imageLoading && (
         <div 
           className={`absolute inset-0 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse`}
         />
       )}
       
-      {/* Lazy loading placeholder */}
-      {lazy && !shouldLoad && (
-        <div 
-          ref={setRef}
-          className={`${sizeClasses[size]} bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center ${className}`}
-        >
-          <UserCircleIcon className="w-2/3 h-2/3 text-gray-300 dark:text-gray-600" />
-        </div>
-      )}
-      
-      {/* Actual image - use simple img tag like navbar for better compatibility */}
-      {shouldLoad && (
-        <img
-          src={absoluteSrc}
-          alt={alt}
-          className={`${sizeClasses[size]} rounded-full object-cover transition-opacity duration-200 ${
-            imageLoading ? 'opacity-0' : 'opacity-100'
-          } ${className}`}
-          onError={handleImageError}
-          onLoad={handleImageLoad}
-        />
-      )}
+      <img
+        src={absoluteSrc}
+        alt={alt}
+        className={`${sizeClasses[size]} rounded-full object-cover transition-opacity duration-200 ${
+          imageLoading ? 'opacity-0' : 'opacity-100'
+        } ${className}`}
+        onError={handleImageError}
+        onLoad={handleImageLoad}
+        loading={lazy ? 'lazy' : 'eager'}
+      />
     </div>
   );
 };
