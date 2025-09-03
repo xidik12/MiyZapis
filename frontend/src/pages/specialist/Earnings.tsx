@@ -125,6 +125,11 @@ const SpecialistEarnings: React.FC = () => {
         setLoading(prev => ({ ...prev, earnings: true, analytics: true }));
         setErrors(prev => ({ ...prev, earnings: null, analytics: null }));
         
+        console.log('🔍 Earnings: Starting data load...');
+        console.log('🔍 Auth token present:', !!localStorage.getItem('booking_app_token'));
+        console.log('🔍 Auth token preview:', localStorage.getItem('booking_app_token')?.substring(0, 20) + '...' || 'None');
+        console.log('🔍 User from Redux:', user);
+        
         // Load data from backend endpoints with retry logic and proper status mapping
         const [revenueData, analyticsOverview, servicesData, performanceData] = await Promise.allSettled([
           retryRequest(() => paymentService.getPaymentHistory({ limit: 100, status: 'SUCCEEDED' as any }), 2, 1000),
@@ -132,6 +137,13 @@ const SpecialistEarnings: React.FC = () => {
           retryRequest(() => analyticsService.getServiceAnalytics(), 2, 1000),
           retryRequest(() => analyticsService.getPerformanceAnalytics(), 2, 1000)
         ]);
+
+        console.log('🔍 Earnings API results:', {
+          revenue: revenueData.status,
+          analytics: analyticsOverview.status,
+          services: servicesData.status,
+          performance: performanceData.status
+        });
         
         // Process revenue data with better error handling
         let totalEarnings = 0;

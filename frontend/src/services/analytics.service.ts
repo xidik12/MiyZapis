@@ -175,29 +175,34 @@ export class AnalyticsService {
         }
       });
 
-      const response = await apiClient.get<AnalyticsOverview>(`${API_ENDPOINTS.ANALYTICS.OVERVIEW}?${params}`);
+      // Try specialist-specific analytics first, then fall back to general analytics
+      let response;
+      try {
+        console.log('🔍 Trying specialist analytics endpoint...');
+        response = await apiClient.get<AnalyticsOverview>(`${API_ENDPOINTS.ANALYTICS.SPECIALIST_OVERVIEW}?${params}`);
+      } catch (specialistError: any) {
+        console.log('🔍 Specialist analytics failed, trying general analytics:', specialistError.response?.status);
+        if (specialistError.response?.status === 404) {
+          // If specialist endpoint doesn't exist, try the general one
+          response = await apiClient.get<AnalyticsOverview>(`${API_ENDPOINTS.ANALYTICS.OVERVIEW}?${params}`);
+        } else {
+          throw specialistError;
+        }
+      }
       if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Failed to get analytics overview');
       }
       return response.data;
     } catch (error: any) {
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to get analytics overview';
-      console.warn('Analytics overview failed, using fallback:', errorMessage);
-      
-      // Return fallback data structure
-      return {
-        totalBookings: 0,
-        totalRevenue: 0,
-        averageRating: 0,
-        completionRate: 85,
-        responseTime: 15,
-        newCustomers: 0,
-        repeatCustomers: 0,
-        period: {
-          start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          end: new Date().toISOString().split('T')[0]
-        }
-      };
+      console.error('Analytics overview API call failed:', errorMessage);
+      console.error('Error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers
+      });
+      throw new Error(errorMessage);
     }
   }
 

@@ -77,12 +77,32 @@ const SpecialistDashboard: React.FC = () => {
       try {
         setLoading(true);
         
+        console.log('🔍 Dashboard: Starting data load...');
+        console.log('🔍 Auth token present:', !!localStorage.getItem('booking_app_token'));
+        console.log('🔍 User from Redux:', user);
+        
         // Load data from multiple sources with retry logic
         const [analyticsData, bookingsData, paymentsData] = await Promise.allSettled([
           retryRequest(() => analyticsService.getOverview(), 2, 1000),
           retryRequest(() => bookingService.getBookings({ limit: 5, status: 'confirmed,pending,inProgress' }), 2, 1000),
           retryRequest(() => paymentService.getPaymentHistory({ limit: 50, status: 'SUCCEEDED' as any }), 2, 1000)
         ]);
+
+        console.log('🔍 Dashboard API results:', {
+          analytics: analyticsData.status,
+          bookings: bookingsData.status,
+          payments: paymentsData.status
+        });
+
+        if (analyticsData.status === 'rejected') {
+          console.error('🔍 Analytics failed:', analyticsData.reason);
+        }
+        if (bookingsData.status === 'rejected') {
+          console.error('🔍 Bookings failed:', bookingsData.reason);
+        }
+        if (paymentsData.status === 'rejected') {
+          console.error('🔍 Payments failed:', paymentsData.reason);
+        }
 
         // Process analytics data
         let stats = {
