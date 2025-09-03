@@ -48,6 +48,15 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const [hasError, setHasError] = useState(false);
   const [supportsWebP, setSupportsWebP] = useState<boolean | null>(null);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  
+  // Debug logging for OptimizedImage
+  console.log('🖼️ OptimizedImage init:', { 
+    src, 
+    fallbackSrc, 
+    alt: alt?.substring(0, 30), 
+    isBackendUpload: src.includes('miyzapis-backend-production.up.railway.app/uploads/'),
+    className 
+  });
 
   // Check WebP support on component mount
   useEffect(() => {

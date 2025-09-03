@@ -111,8 +111,9 @@ export const Avatar: React.FC<AvatarProps> = ({
     console.log('🔄 Avatar URL transformed:', { original: src, absolute: absoluteSrc });
   }
 
-  // If no src provided or image failed to load, show fallback
-  if (!absoluteSrc || imageError) {
+  // Enhanced fallback logic - try direct image first if avatar component processing fails
+  if (!absoluteSrc || absoluteSrc.trim() === '') {
+    console.log('⚠️ Avatar: No valid src provided, showing fallback');
     if (fallbackIcon) {
       return (
         <UserCircleIcon 
@@ -128,6 +129,27 @@ export const Avatar: React.FC<AvatarProps> = ({
         </div>
       );
     }
+  }
+  
+  // If image failed to load, try direct img as fallback before showing icon
+  if (imageError) {
+    console.log('⚠️ Avatar: OptimizedImage failed, trying direct img tag');
+    return (
+      <div className={`relative ${sizeClasses[size]}`}>
+        <img
+          src={absoluteSrc}
+          alt={alt}
+          className={`${sizeClasses[size]} rounded-full object-cover ${className}`}
+          onError={() => {
+            console.log('❌ Avatar: Direct img also failed, this URL is definitely invalid:', absoluteSrc);
+          }}
+          onLoad={() => {
+            console.log('✅ Avatar: Direct img succeeded where OptimizedImage failed:', absoluteSrc);
+            onLoad?.();
+          }}
+        />
+      </div>
+    );
   }
 
   return (
