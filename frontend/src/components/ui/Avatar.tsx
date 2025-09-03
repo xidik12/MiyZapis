@@ -97,7 +97,16 @@ export const Avatar: React.FC<AvatarProps> = ({
   // Process the image URL to ensure it's absolute
   const absoluteSrc = src ? getAbsoluteImageUrl(src) : null;
   
-  // Debug logging for avatar URLs
+  // Enhanced debug logging for avatar URLs
+  console.log('🖼️ Avatar component debug:', {
+    originalSrc: src,
+    absoluteSrc,
+    srcType: typeof src,
+    srcLength: src?.length,
+    isNullOrEmpty: !src,
+    component: 'Avatar'
+  });
+  
   if (src && absoluteSrc !== src) {
     console.log('🔄 Avatar URL transformed:', { original: src, absolute: absoluteSrc });
   }

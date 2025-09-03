@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
@@ -34,6 +34,22 @@ const SpecialistSettings: React.FC = () => {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  
+  // Debug user avatar data
+  console.log('🔍 Settings component - User avatar debug:', {
+    userAvatar: user?.avatar,
+    profileImageState: profileImage,
+    userKeys: user ? Object.keys(user) : 'No user',
+    userId: user?.id
+  });
+  
+  // Update profileImage when user avatar changes
+  useEffect(() => {
+    if (user?.avatar !== profileImage) {
+      console.log('🔄 Settings: Updating profileImage state from user avatar:', user?.avatar);
+      setProfileImage(user?.avatar || '');
+    }
+  }, [user?.avatar]);
   
   // Settings state
   const [settings, setSettings] = useState({

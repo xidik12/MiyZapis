@@ -188,6 +188,14 @@ const SearchPage: React.FC = () => {
             fallbackIcon={false}
             lazy={true}
           />
+          {/* Debug search card avatar data */}
+          {console.log('🔍 SearchPage - Avatar debug for service:', service.id, {
+            specialistUserAvatar: service.specialist.user.avatar,
+            specialistUserKeys: service.specialist.user ? Object.keys(service.specialist.user) : 'No user',
+            specialistKeys: Object.keys(service.specialist),
+            serviceId: service.id,
+            specialistId: service.specialist.id
+          })}
           {service.specialist.user.isVerified && (
             <CheckBadgeIcon className="absolute -bottom-1 -right-1 w-6 h-6 text-primary-600 bg-white rounded-full" />
           )}

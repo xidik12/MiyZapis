@@ -245,6 +245,14 @@ const SpecialistProfilePage: React.FC = () => {
                   className="border-4 border-white shadow-lg"
                   fallbackIcon={false}
                 />
+                {/* Debug specialist avatar data */}
+                {console.log('🔍 SpecialistProfilePage - Avatar debug:', {
+                  specialistUserAvatar: specialist.user?.avatar,
+                  specialistAvatar: specialist.avatar,
+                  finalAvatarSrc: specialist.user?.avatar || specialist.avatar,
+                  specialistId: specialist.id,
+                  specialistKeys: Object.keys(specialist)
+                })}
                 {specialist.user?.isVerified && (
                   <CheckBadgeIcon className="absolute -bottom-1 -right-1 w-8 h-8 text-primary-600 bg-white rounded-full" />
                 )}
