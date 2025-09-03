@@ -64,7 +64,8 @@ export const validateCreateBooking = [
 // Update booking status validation
 export const validateUpdateBookingStatus = [
   param('id')
-    .isUUID()
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
   
   body('status')
@@ -135,12 +136,14 @@ export const validateGetBookings = [
   
   query('specialistId')
     .optional()
-    .isUUID()
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid specialist ID is required'),
   
   query('customerId')
     .optional()
-    .isUUID()
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid customer ID is required'),
   
   query('sortBy')
@@ -165,7 +168,8 @@ export const validateBookingId = [
 // Confirm booking validation
 export const validateConfirmBooking = [
   param('id')
-    .isUUID()
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
   
   body('specialistNotes')
@@ -184,7 +188,8 @@ export const validateConfirmBooking = [
 // Cancel booking validation
 export const validateCancelBooking = [
   param('id')
-    .isUUID()
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
   
   body('reason')
@@ -202,7 +207,8 @@ export const validateCancelBooking = [
 // Complete booking validation
 export const validateCompleteBooking = [
   param('id')
-    .isUUID()
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
   
   body('completionNotes')
@@ -225,7 +231,8 @@ export const validateCompleteBooking = [
 // Reschedule booking validation
 export const validateRescheduleBooking = [
   param('id')
-    .isUUID()
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
   
   body('newScheduledAt')
