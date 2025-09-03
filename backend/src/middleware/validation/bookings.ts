@@ -1,5 +1,10 @@
 import { body, param, query } from 'express-validator';
 
+// Helper for CUID validation (used instead of UUID in this project)
+const validateCUID = () => body().isLength({ min: 20, max: 30 }).matches(/^[a-z0-9]+$/);
+const validateCUIDParam = () => param().isLength({ min: 20, max: 30 }).matches(/^[a-z0-9]+$/);
+const validateCUIDQuery = () => query().isLength({ min: 20, max: 30 }).matches(/^[a-z0-9]+$/);
+
 // Booking statuses
 const BOOKING_STATUSES = [
   'PENDING', 
@@ -14,14 +19,16 @@ const BOOKING_STATUSES = [
 // Create booking validation
 export const validateCreateBooking = [
   body('serviceId')
-    .isUUID()
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid service ID is required'),
   
   // specialistId is optional since it's derived from the service
   body('specialistId')
     .optional()
-    .isUUID()
-    .withMessage('Specialist ID must be a valid UUID if provided'),
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
+    .withMessage('Specialist ID must be a valid ID if provided'),
   
   body('scheduledAt')
     .isISO8601()
@@ -29,7 +36,9 @@ export const validateCreateBooking = [
     .custom((value) => {
       const scheduledDate = new Date(value);
       const now = new Date();
-      if (scheduledDate <= now) {
+      // Allow booking up to 5 minutes in the past to account for network delays
+      const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+      if (scheduledDate.getTime() < (now.getTime() - bufferTime)) {
         throw new Error('Scheduled time must be in the future');
       }
       return true;
@@ -148,7 +157,8 @@ export const validateGetBookings = [
 // Booking ID param validation
 export const validateBookingId = [
   param('id')
-    .isUUID()
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
 ];
 
@@ -224,7 +234,9 @@ export const validateRescheduleBooking = [
     .custom((value) => {
       const scheduledDate = new Date(value);
       const now = new Date();
-      if (scheduledDate <= now) {
+      // Allow booking up to 5 minutes in the past to account for network delays
+      const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+      if (scheduledDate.getTime() < (now.getTime() - bufferTime)) {
         throw new Error('New scheduled time must be in the future');
       }
       return true;
