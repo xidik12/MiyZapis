@@ -85,7 +85,7 @@ const SpecialistDashboard: React.FC = () => {
         const [analyticsData, bookingsData, paymentsData] = await Promise.allSettled([
           retryRequest(() => analyticsService.getOverview(), 2, 1000),
           retryRequest(() => bookingService.getBookings({ limit: 5, status: 'confirmed,pending,inProgress' }), 2, 1000),
-          retryRequest(() => paymentService.getPaymentHistory({ limit: 50, status: 'SUCCEEDED' as any }), 2, 1000)
+          retryRequest(() => paymentService.getSpecialistEarnings({ limit: 50, status: 'succeeded' }), 2, 1000)
         ]);
 
         console.log('🔍 Dashboard API results:', {
@@ -132,25 +132,15 @@ const SpecialistDashboard: React.FC = () => {
           };
         }
 
-        // Process payments data for revenue calculation
+        // Process specialist earnings data
         if (paymentsData.status === 'fulfilled' && paymentsData.value) {
           try {
-            const payments = Array.isArray(paymentsData.value.payments) ? paymentsData.value.payments : [];
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
+            const earningsData = paymentsData.value;
+            console.log('📊 Dashboard processing specialist earnings:', earningsData);
             
-            const monthlyRevenue = payments
-              .filter(payment => {
-                try {
-                  const paymentDate = new Date(payment.createdAt || payment.updatedAt);
-                  return paymentDate.getMonth() === currentMonth && paymentDate.getFullYear() === currentYear;
-                } catch (e) {
-                  return false;
-                }
-              })
-              .reduce((sum, payment) => sum + (payment.amount || 0), 0);
-
-            stats.monthlyRevenue = monthlyRevenue;
+            // Use pre-calculated totals from specialist API
+            stats.monthlyRevenue = earningsData.totalEarnings || 0;
+            console.log('📊 Monthly revenue from specialist API:', stats.monthlyRevenue);
           } catch (err) {
             console.warn('Error processing payments data:', err);
           }

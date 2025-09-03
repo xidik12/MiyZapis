@@ -133,9 +133,9 @@ const SpecialistEarnings: React.FC = () => {
         console.log('🔍 Auth token preview:', localStorage.getItem('auth_token')?.substring(0, 20) + '...' || 'None');
         console.log('🔍 User from Redux:', user);
         
-        // Load data from backend endpoints with retry logic and proper status mapping
+        // Load data from backend endpoints with retry logic and proper specialist-specific APIs
         const [revenueData, analyticsOverview, bookingAnalytics, servicesData, performanceData] = await Promise.allSettled([
-          retryRequest(() => paymentService.getPaymentHistory({ limit: 100, status: 'succeeded' }), 2, 1000),
+          retryRequest(() => paymentService.getSpecialistEarnings({ limit: 100, status: 'succeeded' }), 2, 1000),
           retryRequest(() => analyticsService.getOverview(), 2, 1000),
           retryRequest(() => analyticsService.getBookingAnalytics(), 2, 1000),
           retryRequest(() => analyticsService.getServiceAnalytics(), 2, 1000),
@@ -158,28 +158,22 @@ const SpecialistEarnings: React.FC = () => {
         
         if (revenueData.status === 'fulfilled' && revenueData.value) {
           try {
-            const payments = Array.isArray(revenueData.value.payments) ? revenueData.value.payments : [];
-            console.log('📊 Processing payments data:', payments.length, 'payments');
-            console.log('📊 Sample payments:', payments.slice(0, 3)); // Log first 3 payments for debugging
+            const earningsData = revenueData.value;
+            console.log('📊 Processing specialist earnings data:', earningsData);
             
-            // Validate payment data and calculate totals
-            const validPayments = payments.filter(payment => 
-              payment && 
-              typeof payment.amount === 'number' && 
-              !isNaN(payment.amount) &&
-              (payment.createdAt || payment.updatedAt)
-            );
+            // Use pre-calculated totals from specialist API
+            totalEarnings = earningsData.totalEarnings || 0;
+            pendingEarnings = earningsData.pendingEarnings || 0;
             
-            console.log('📊 Valid payments:', validPayments.length, 'out of', payments.length);
-            console.log('📊 Payment amounts:', validPayments.map(p => ({ id: p.id, amount: p.amount, status: p.status })));
+            const payments = Array.isArray(earningsData.payments) ? earningsData.payments : [];
+            console.log('📊 Specialist payments:', payments.length, 'payments');
+            console.log('📊 Total earnings from API:', totalEarnings);
+            console.log('📊 Pending earnings from API:', pendingEarnings);
             
-            totalEarnings = validPayments.reduce((sum, payment) => sum + payment.amount, 0);
-            console.log('📊 Total earnings calculated:', totalEarnings);
-            
-            // Calculate this month's earnings
+            // Calculate this month's earnings from individual payments
             const currentMonth = new Date().getMonth();
             const currentYear = new Date().getFullYear();
-            thisMonthEarnings = validPayments
+            thisMonthEarnings = payments
               .filter(payment => {
                 try {
                   const paymentDate = new Date(payment.createdAt || payment.updatedAt);
@@ -193,7 +187,7 @@ const SpecialistEarnings: React.FC = () => {
             
             // Create monthly breakdown with better date handling
             const monthlyData = new Map<string, { earnings: number; bookings: number }>();
-            validPayments.forEach(payment => {
+            payments.forEach(payment => {
               try {
                 const date = new Date(payment.createdAt || payment.updatedAt);
                 const monthKey = date.toLocaleDateString('en', { month: 'short', year: 'numeric' });
