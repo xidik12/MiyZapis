@@ -171,9 +171,9 @@ export const Avatar: React.FC<AvatarProps> = ({
         </div>
       )}
       
-      {/* Actual image */}
+      {/* Actual image - use simple img tag like navbar for better compatibility */}
       {shouldLoad && (
-        <OptimizedImage
+        <img
           src={absoluteSrc}
           alt={alt}
           className={`${sizeClasses[size]} rounded-full object-cover transition-opacity duration-200 ${
