@@ -49,59 +49,124 @@ router.get('/fs-test', async (req, res) => {
     const fs = require('fs').promises;
     const path = require('path');
     
-    const isRailway = !!(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_SERVICE_NAME);
-    const uploadsDir = isRailway ? '/app/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
+    const isRailway = !!(
+      process.env.RAILWAY_ENVIRONMENT || 
+      process.env.RAILWAY_SERVICE_NAME || 
+      process.env.RAILWAY_PROJECT_NAME ||
+      process.env.RAILWAY_SERVICE ||
+      process.env.RAILWAY_PROJECT ||
+      (process.env.PORT && process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.NETLIFY)
+    );
+    
+    // Railway permission fix: Try multiple upload directories in order of preference
+    const uploadOptions = isRailway ? [
+      '/app/uploads',  // Preferred: persistent volume
+      '/tmp/uploads',  // Fallback 1: tmp directory
+      './uploads',     // Fallback 2: local directory
+      '/tmp'           // Last resort: directly in tmp
+    ] : [
+      process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'),
+      './uploads',
+      '/tmp/uploads'
+    ];
     
     const testResults = {
-      uploadsDir,
       isRailway,
-      tests: {} as any
+      uploadOptions,
+      directoryTests: [] as any[],
+      workingDirectory: null as string | null,
+      finalTest: {} as any
     };
     
-    // Test 1: Check if uploads directory exists
-    try {
-      await fs.access(uploadsDir);
-      testResults.tests.directoryExists = true;
-    } catch (error) {
-      testResults.tests.directoryExists = false;
-      testResults.tests.directoryError = error instanceof Error ? error.message : String(error);
+    // Test each directory option
+    for (const testDir of uploadOptions) {
+      const dirTest = {
+        directory: testDir,
+        exists: false,
+        canCreate: false,
+        canWrite: false,
+        canRead: false,
+        canDelete: false,
+        errors: [] as string[]
+      };
+      
+      try {
+        // Test 1: Check if directory exists
+        try {
+          await fs.access(testDir);
+          dirTest.exists = true;
+        } catch (error) {
+          dirTest.errors.push(`Directory doesn't exist: ${error instanceof Error ? error.message : error}`);
+        }
+        
+        // Test 2: Try to create directory
+        try {
+          await fs.mkdir(testDir, { recursive: true, mode: 0o755 });
+          dirTest.canCreate = true;
+        } catch (error) {
+          dirTest.errors.push(`Can't create directory: ${error instanceof Error ? error.message : error}`);
+        }
+        
+        // Test 3: Try to write a test file
+        const testFilePath = path.join(testDir, 'fs-test-' + Date.now() + '.txt');
+        try {
+          await fs.writeFile(testFilePath, 'test content', { mode: 0o644 });
+          dirTest.canWrite = true;
+          
+          // Test 4: Try to read the test file
+          try {
+            const content = await fs.readFile(testFilePath, 'utf8');
+            dirTest.canRead = content === 'test content';
+          } catch (error) {
+            dirTest.errors.push(`Can't read file: ${error instanceof Error ? error.message : error}`);
+          }
+          
+          // Test 5: Clean up test file
+          try {
+            await fs.unlink(testFilePath);
+            dirTest.canDelete = true;
+          } catch (error) {
+            dirTest.errors.push(`Can't delete file: ${error instanceof Error ? error.message : error}`);
+          }
+          
+          // If we can write, read, and delete, this directory works
+          if (dirTest.canWrite && dirTest.canRead && dirTest.canDelete && !testResults.workingDirectory) {
+            testResults.workingDirectory = testDir;
+          }
+          
+        } catch (error) {
+          dirTest.errors.push(`Can't write file: ${error instanceof Error ? error.message : error}`);
+        }
+      } catch (error) {
+        dirTest.errors.push(`General error: ${error instanceof Error ? error.message : error}`);
+      }
+      
+      testResults.directoryTests.push(dirTest);
     }
     
-    // Test 2: Try to create uploads directory
-    try {
-      await fs.mkdir(uploadsDir, { recursive: true });
-      testResults.tests.directoryCreation = 'success';
-    } catch (error) {
-      testResults.tests.directoryCreation = 'failed';
-      testResults.tests.directoryCreationError = error instanceof Error ? error.message : String(error);
-    }
-    
-    // Test 3: Try to write a test file
-    const testFilePath = path.join(uploadsDir, 'test-write.txt');
-    try {
-      await fs.writeFile(testFilePath, 'test content');
-      testResults.tests.fileWrite = 'success';
-    } catch (error) {
-      testResults.tests.fileWrite = 'failed';
-      testResults.tests.fileWriteError = error instanceof Error ? error.message : String(error);
-    }
-    
-    // Test 4: Try to read the test file
-    try {
-      const content = await fs.readFile(testFilePath, 'utf8');
-      testResults.tests.fileRead = content === 'test content' ? 'success' : 'content-mismatch';
-    } catch (error) {
-      testResults.tests.fileRead = 'failed';
-      testResults.tests.fileReadError = error instanceof Error ? error.message : String(error);
-    }
-    
-    // Test 5: Clean up test file
-    try {
-      await fs.unlink(testFilePath);
-      testResults.tests.fileDelete = 'success';
-    } catch (error) {
-      testResults.tests.fileDelete = 'failed';
-      testResults.tests.fileDeleteError = error instanceof Error ? error.message : String(error);
+    // Final comprehensive test with working directory
+    if (testResults.workingDirectory) {
+      const finalTestFile = path.join(testResults.workingDirectory, 'final-test-' + Date.now() + '.txt');
+      try {
+        await fs.writeFile(finalTestFile, 'Final test content');
+        const content = await fs.readFile(finalTestFile, 'utf8');
+        await fs.unlink(finalTestFile);
+        testResults.finalTest = {
+          status: 'success',
+          workingDirectory: testResults.workingDirectory,
+          message: 'File operations successful'
+        };
+      } catch (error) {
+        testResults.finalTest = {
+          status: 'failed',
+          error: error instanceof Error ? error.message : String(error)
+        };
+      }
+    } else {
+      testResults.finalTest = {
+        status: 'no_working_directory',
+        message: 'No directory found with full read/write/delete permissions'
+      };
     }
     
     res.json({
