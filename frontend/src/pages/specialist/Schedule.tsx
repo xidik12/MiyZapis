@@ -13,6 +13,7 @@ import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { specialistService } from '../../services/specialist.service';
 import { isFeatureEnabled } from '../../config/features';
+import { retryRequest } from '../../services/api';
 
 interface TimeSlot {
   id: string;
@@ -244,6 +245,7 @@ const SpecialistSchedule: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [operationInProgress, setOperationInProgress] = useState(false);
+  const [isOfflineMode, setIsOfflineMode] = useState(false);
 
   // Generate default schedule from working hours
   const generateDefaultSchedule = (workingHours: any): TimeSlot[] => {
@@ -317,7 +319,11 @@ const SpecialistSchedule: React.FC = () => {
         const startDate = new Date().toISOString().split('T')[0];
         const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
         
-        const availabilityBlocks = await specialistService.getAvailabilityBlocks(startDate, endDate);
+        const availabilityBlocks = await retryRequest(
+          () => specialistService.getAvailabilityBlocks(startDate, endDate),
+          3, // max retries
+          2000 // initial delay
+        );
         console.log('📦 Schedule: Availability blocks received:', availabilityBlocks);
         
         // Convert availability blocks to time slots format
@@ -356,7 +362,11 @@ const SpecialistSchedule: React.FC = () => {
           if (!workingHours && isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
             try {
               console.log('📡 Fetching specialist profile for working hours...');
-              const specialistData = await specialistService.getProfile();
+              const specialistData = await retryRequest(
+                () => specialistService.getProfile(),
+                2, // max retries for profile (less critical)
+                1000 // initial delay
+              );
               const specialist = specialistData.specialist || specialistData;
               workingHours = specialist?.workingHours;
               console.log('📦 Working hours from specialist profile:', workingHours);
@@ -382,9 +392,44 @@ const SpecialistSchedule: React.FC = () => {
         }
         
         setTimeSlots(formattedSlots);
+        setIsOfflineMode(false); // Reset offline mode when API succeeds
       } catch (err: any) {
-        setError(err.message || 'Failed to load schedule');
         console.error('Error loading availability blocks:', err);
+        
+        // Check if this is a network error
+        if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error') || err.code === 'NETWORK_ERROR') {
+          console.warn('Network error detected, falling back to default schedule generation');
+          
+          // Generate default schedule as fallback
+          try {
+            let workingHours = user?.workingHours;
+            
+            // Parse working hours if it's a JSON string
+            if (typeof workingHours === 'string') {
+              try {
+                workingHours = JSON.parse(workingHours);
+              } catch (parseErr) {
+                console.warn('Failed to parse working hours JSON:', parseErr);
+                workingHours = null;
+              }
+            }
+            
+            const fallbackSlots = generateDefaultSchedule(workingHours);
+            setTimeSlots(fallbackSlots);
+            setIsOfflineMode(true);
+            console.log('✅ Fallback schedule generated with', fallbackSlots.length, 'slots');
+            
+            // Don't set error for successful fallback - show the schedule with a warning banner instead
+            setError(null);
+          } catch (fallbackErr) {
+            console.error('Failed to generate fallback schedule:', fallbackErr);
+            setError('Unable to load schedule. Please check your internet connection.');
+            setTimeSlots([]);
+          }
+        } else {
+          // For non-network errors, show the original error
+          setError(err.message || 'Failed to load schedule');
+        }
       } finally {
         setLoading(false);
       }
@@ -424,14 +469,18 @@ const SpecialistSchedule: React.FC = () => {
       });
       
       // Use the correct API based on whether this is an available or blocked slot
-      const result = await specialistService.createAvailabilityBlock({
-        startDateTime,
-        endDateTime,
-        isAvailable: newSlot.isAvailable,
-        reason: newSlot.reason || (newSlot.isAvailable ? 'Available time' : 'Blocked time'),
-        recurring: newSlot.isRecurring,
-        recurringDays: newSlot.recurringDays || [],
-      });
+      const result = await retryRequest(
+        () => specialistService.createAvailabilityBlock({
+          startDateTime,
+          endDateTime,
+          isAvailable: newSlot.isAvailable,
+          reason: newSlot.reason || (newSlot.isAvailable ? 'Available time' : 'Blocked time'),
+          recurring: newSlot.isRecurring,
+          recurringDays: newSlot.recurringDays || [],
+        }),
+        2, // max retries for create operation
+        1500 // initial delay
+      );
       
       const slot: TimeSlot = {
         id: result.block.id,
@@ -447,7 +496,13 @@ const SpecialistSchedule: React.FC = () => {
       console.log('✅ Time slot added successfully');
     } catch (err: any) {
       console.error('Error adding time slot:', err);
-      setError(err.message || 'Failed to add time slot');
+      
+      // Check if this is a network error and provide appropriate message
+      if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error') || err.code === 'NETWORK_ERROR') {
+        setError('Unable to save time slot due to connection issues. Please check your internet and try again.');
+      } else {
+        setError(err.message || 'Failed to add time slot');
+      }
     } finally {
       setOperationInProgress(false);
     }
@@ -486,14 +541,18 @@ const SpecialistSchedule: React.FC = () => {
       });
       
       // Use the update API to modify the existing availability block
-      const result = await specialistService.updateAvailabilityBlock(editingSlot.id, {
-        startDateTime,
-        endDateTime,
-        isAvailable: updatedSlot.isAvailable,
-        reason: updatedSlot.reason || (updatedSlot.isAvailable ? 'Available time' : 'Blocked time'),
-        recurring: updatedSlot.isRecurring,
-        recurringDays: updatedSlot.recurringDays || [],
-      });
+      const result = await retryRequest(
+        () => specialistService.updateAvailabilityBlock(editingSlot.id, {
+          startDateTime,
+          endDateTime,
+          isAvailable: updatedSlot.isAvailable,
+          reason: updatedSlot.reason || (updatedSlot.isAvailable ? 'Available time' : 'Blocked time'),
+          recurring: updatedSlot.isRecurring,
+          recurringDays: updatedSlot.recurringDays || [],
+        }),
+        2, // max retries for update operation
+        1500 // initial delay
+      );
       
       setTimeSlots(prev => prev.map(slot => 
         slot.id === editingSlot.id 
@@ -509,7 +568,13 @@ const SpecialistSchedule: React.FC = () => {
       console.log('✅ Time slot updated successfully');
     } catch (err: any) {
       console.error('Error editing time slot:', err);
-      setError(err.message || 'Failed to edit time slot');
+      
+      // Check if this is a network error and provide appropriate message
+      if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error') || err.code === 'NETWORK_ERROR') {
+        setError('Unable to update time slot due to connection issues. Please check your internet and try again.');
+      } else {
+        setError(err.message || 'Failed to edit time slot');
+      }
     } finally {
       setOperationInProgress(false);
     }
@@ -529,7 +594,11 @@ const SpecialistSchedule: React.FC = () => {
     setOperationInProgress(true);
     try {
       console.log('🗑️ Deleting time slot:', id);
-      await specialistService.deleteAvailabilityBlock(id);
+      await retryRequest(
+        () => specialistService.deleteAvailabilityBlock(id),
+        2, // max retries for delete operation
+        1000 // initial delay
+      );
       setTimeSlots(prev => prev.filter(slot => slot.id !== id));
       
       // Clear any previous errors and show success message
@@ -537,7 +606,13 @@ const SpecialistSchedule: React.FC = () => {
       console.log('✅ Time slot deleted successfully');
     } catch (err: any) {
       console.error('Error deleting time slot:', err);
-      setError(err.message || 'Failed to delete time slot');
+      
+      // Check if this is a network error and provide appropriate message
+      if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error') || err.code === 'NETWORK_ERROR') {
+        setError('Unable to delete time slot due to connection issues. Please check your internet and try again.');
+      } else {
+        setError(err.message || 'Failed to delete time slot');
+      }
     } finally {
       setOperationInProgress(false);
     }
@@ -649,6 +724,36 @@ const SpecialistSchedule: React.FC = () => {
                   className="text-sm font-medium text-red-800 dark:text-red-200 hover:text-red-600 dark:hover:text-red-400"
                 >
                   Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Offline Mode Warning */}
+      {isOfflineMode && (
+        <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                Offline Mode
+              </h3>
+              <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
+                <p>Schedule loaded from local data. Changes will sync when connection is restored.</p>
+              </div>
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => window.location.reload()}
+                  className="text-sm font-medium text-yellow-800 dark:text-yellow-200 hover:text-yellow-600 dark:hover:text-yellow-400"
+                >
+                  Retry Connection
                 </button>
               </div>
             </div>
