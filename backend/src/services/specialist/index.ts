@@ -105,8 +105,9 @@ export class SpecialistService {
         throw new Error('USER_NOT_FOUND');
       }
 
-      if (user.userType !== 'SPECIALIST') {
-        throw new Error('USER_NOT_SPECIALIST');
+      // Allow customers to become specialists by creating a profile
+      if (user.userType !== 'SPECIALIST' && user.userType !== 'CUSTOMER') {
+        throw new Error('USER_NOT_ELIGIBLE_FOR_SPECIALIST');
       }
 
       // Check if specialist profile already exists
@@ -178,6 +179,15 @@ export class SpecialistService {
           },
         },
       });
+
+      // Update user type to SPECIALIST if they were a CUSTOMER
+      if (user.userType === 'CUSTOMER') {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { userType: 'SPECIALIST' }
+        });
+        logger.info('User type updated to SPECIALIST', { userId });
+      }
 
       logger.info('Specialist profile created successfully', { 
         userId, 

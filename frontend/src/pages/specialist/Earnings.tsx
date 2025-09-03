@@ -12,6 +12,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
+import { useAppSelector } from '../../hooks/redux';
+import { selectUser } from '../../store/slices/authSlice';
 import { specialistService } from '../../services/specialist.service';
 import { paymentService } from '../../services/payment.service';
 import { analyticsService } from '../../services/analytics.service';
@@ -62,6 +64,7 @@ interface ErrorState {
 const SpecialistEarnings: React.FC = () => {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
+  const user = useAppSelector(selectUser);
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('month');
   const [isExporting, setIsExporting] = useState(false);
   const [loading, setLoading] = useState<LoadingState>({
@@ -126,14 +129,15 @@ const SpecialistEarnings: React.FC = () => {
         setErrors(prev => ({ ...prev, earnings: null, analytics: null }));
         
         console.log('🔍 Earnings: Starting data load...');
-        console.log('🔍 Auth token present:', !!localStorage.getItem('booking_app_token'));
-        console.log('🔍 Auth token preview:', localStorage.getItem('booking_app_token')?.substring(0, 20) + '...' || 'None');
+        console.log('🔍 Auth token present:', !!localStorage.getItem('auth_token'));
+        console.log('🔍 Auth token preview:', localStorage.getItem('auth_token')?.substring(0, 20) + '...' || 'None');
         console.log('🔍 User from Redux:', user);
         
         // Load data from backend endpoints with retry logic and proper status mapping
-        const [revenueData, analyticsOverview, servicesData, performanceData] = await Promise.allSettled([
-          retryRequest(() => paymentService.getPaymentHistory({ limit: 100, status: 'SUCCEEDED' as any }), 2, 1000),
+        const [revenueData, analyticsOverview, bookingAnalytics, servicesData, performanceData] = await Promise.allSettled([
+          retryRequest(() => paymentService.getPaymentHistory({ limit: 100, status: 'succeeded' }), 2, 1000),
           retryRequest(() => analyticsService.getOverview(), 2, 1000),
+          retryRequest(() => analyticsService.getBookingAnalytics(), 2, 1000),
           retryRequest(() => analyticsService.getServiceAnalytics(), 2, 1000),
           retryRequest(() => analyticsService.getPerformanceAnalytics(), 2, 1000)
         ]);
@@ -141,6 +145,7 @@ const SpecialistEarnings: React.FC = () => {
         console.log('🔍 Earnings API results:', {
           revenue: revenueData.status,
           analytics: analyticsOverview.status,
+          bookings: bookingAnalytics.status,
           services: servicesData.status,
           performance: performanceData.status
         });
@@ -155,6 +160,7 @@ const SpecialistEarnings: React.FC = () => {
           try {
             const payments = Array.isArray(revenueData.value.payments) ? revenueData.value.payments : [];
             console.log('📊 Processing payments data:', payments.length, 'payments');
+            console.log('📊 Sample payments:', payments.slice(0, 3)); // Log first 3 payments for debugging
             
             // Validate payment data and calculate totals
             const validPayments = payments.filter(payment => 
@@ -164,7 +170,11 @@ const SpecialistEarnings: React.FC = () => {
               (payment.createdAt || payment.updatedAt)
             );
             
+            console.log('📊 Valid payments:', validPayments.length, 'out of', payments.length);
+            console.log('📊 Payment amounts:', validPayments.map(p => ({ id: p.id, amount: p.amount, status: p.status })));
+            
             totalEarnings = validPayments.reduce((sum, payment) => sum + payment.amount, 0);
+            console.log('📊 Total earnings calculated:', totalEarnings);
             
             // Calculate this month's earnings
             const currentMonth = new Date().getMonth();
@@ -216,6 +226,7 @@ const SpecialistEarnings: React.FC = () => {
         // Process analytics data with better error handling and fallbacks
         let analyticsData = {
           totalBookings: 0,
+          completedBookings: 0,
           averageRating: 0,
           completionRate: 0,
           newCustomers: 0,
@@ -249,10 +260,27 @@ const SpecialistEarnings: React.FC = () => {
           }
         }
         
+        // Process booking analytics data to get accurate completed bookings count
+        if (bookingAnalytics.status === 'fulfilled' && bookingAnalytics.value) {
+          try {
+            const bookings = bookingAnalytics.value;
+            console.log('📊 Processing booking analytics:', bookings);
+            
+            analyticsData.completedBookings = Math.max(0, bookings.completedBookings || 0);
+            // Update total bookings if booking analytics provides more accurate data
+            analyticsData.totalBookings = Math.max(analyticsData.totalBookings, bookings.totalBookings || 0);
+          } catch (err) {
+            console.error('Error processing booking analytics data:', err);
+          }
+        } else if (bookingAnalytics.status === 'rejected') {
+          console.warn('Booking analytics failed to load:', bookingAnalytics.reason);
+        }
+        
         // Transform data to match our interface with safe calculations
         const safeAnalyticsData = {
           ...analyticsData,
-          totalBookings: Math.max(analyticsData.totalBookings, monthlyBreakdown.reduce((sum, m) => sum + m.bookings, 0))
+          totalBookings: Math.max(analyticsData.totalBookings, monthlyBreakdown.reduce((sum, m) => sum + m.bookings, 0)),
+          completedBookings: Math.max(analyticsData.completedBookings, 0)
         };
         
         const transformedEarnings: EarningsData = {
@@ -260,10 +288,10 @@ const SpecialistEarnings: React.FC = () => {
           thisMonth: Math.round(thisMonthEarnings * 100) / 100,
           pending: Math.round(pendingEarnings * 100) / 100,
           lastPayout: Math.round((totalEarnings - pendingEarnings) * 100) / 100,
-          completedBookings: safeAnalyticsData.totalBookings,
+          completedBookings: safeAnalyticsData.completedBookings,
           activeClients: safeAnalyticsData.newCustomers + safeAnalyticsData.repeatCustomers,
-          averageBookingValue: safeAnalyticsData.totalBookings > 0 
-            ? Math.round((totalEarnings / safeAnalyticsData.totalBookings) * 100) / 100 
+          averageBookingValue: safeAnalyticsData.completedBookings > 0 
+            ? Math.round((totalEarnings / safeAnalyticsData.completedBookings) * 100) / 100 
             : 0,
           monthlyGrowth: calculateGrowthRate(monthlyBreakdown.map(item => ({ date: item.month, revenue: item.earnings }))),
           conversionRate: safeAnalyticsData.completionRate,

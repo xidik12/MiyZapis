@@ -50,7 +50,7 @@ router.post('/availability/block', authenticateToken, requireSpecialist, validat
 router.delete('/availability/block/:blockId', authenticateToken, requireSpecialist, SpecialistController.unblockTimeSlot);
 
 // Protected routes - require specialist access
-router.post('/profile', authenticateToken, requireSpecialist, SpecialistController.createProfile);
+router.post('/profile', authenticateToken, SpecialistController.createProfile);
 router.put('/profile', authenticateToken, requireSpecialist, SpecialistController.updateProfile);
 
 // Admin routes (must come before parameterized routes)

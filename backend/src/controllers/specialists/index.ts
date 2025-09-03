@@ -61,11 +61,11 @@ export class SpecialistController {
         return;
       }
 
-      if (error.message === 'USER_NOT_SPECIALIST') {
+      if (error.message === 'USER_NOT_ELIGIBLE_FOR_SPECIALIST') {
         res.status(400).json(
           createErrorResponse(
             ErrorCodes.BUSINESS_RULE_VIOLATION,
-            'User must be a specialist to create a specialist profile',
+            'User is not eligible to create a specialist profile',
             req.headers['x-request-id'] as string
           )
         );

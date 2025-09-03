@@ -78,7 +78,7 @@ const SpecialistDashboard: React.FC = () => {
         setLoading(true);
         
         console.log('🔍 Dashboard: Starting data load...');
-        console.log('🔍 Auth token present:', !!localStorage.getItem('booking_app_token'));
+        console.log('🔍 Auth token present:', !!localStorage.getItem('auth_token'));
         console.log('🔍 User from Redux:', user);
         
         // Load data from multiple sources with retry logic
