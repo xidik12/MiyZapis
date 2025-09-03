@@ -89,6 +89,25 @@ export class BookingService {
     return response.data;
   }
 
+  // Complete booking with payment confirmation
+  async completeBookingWithPayment(bookingId: string, data: { 
+    paymentConfirmed: boolean; 
+    completionNotes?: string; 
+    specialistNotes?: string; 
+  }): Promise<Booking> {
+    console.log('📤 BookingService: Completing booking with payment:', bookingId, data);
+    const response = await apiClient.post<Booking>(`/bookings/${bookingId}/complete`, data);
+    console.log('📦 BookingService: Complete booking response:', response);
+    
+    if (!response.success || !response.data) {
+      console.error('❌ BookingService: Failed to complete booking:', response.error);
+      throw new Error(response.error?.message || 'Failed to complete booking');
+    }
+    
+    console.log('✅ BookingService: Booking completed successfully');
+    return response.data;
+  }
+
   // Get user's bookings
   async getBookings(filters: BookingFilters = {}, userType: 'customer' | 'specialist' = 'customer'): Promise<{ bookings: Booking[]; pagination: Pagination }> {
     const params = new URLSearchParams();

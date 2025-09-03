@@ -19,6 +19,7 @@ router.get('/stats', authenticateToken, BookingController.getSpecialistBookingSt
 router.get('/:bookingId', authenticateToken, validateBookingId, BookingController.getBooking);
 router.put('/:bookingId', authenticateToken, validateBookingId, validateUpdateBookingStatus, BookingController.updateBooking);
 router.put('/:bookingId/confirm', authenticateToken, validateConfirmBooking, BookingController.confirmBooking);
+router.post('/:bookingId/complete', authenticateToken, validateBookingId, BookingController.completeBookingWithPayment);
 router.put('/:bookingId/reject', authenticateToken, validateBookingId, BookingController.rejectBooking);
 router.put('/:bookingId/cancel', authenticateToken, validateCancelBooking, BookingController.cancelBooking);
 

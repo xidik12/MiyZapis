@@ -45,6 +45,13 @@ interface BookingDetailModalProps {
   getTranslatedDuration: (duration: string | number) => string;
 }
 
+interface PaymentConfirmationModalProps {
+  booking: Booking | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (bookingId: string, paymentConfirmed: boolean, notes?: string) => void;
+}
+
 const BookingDetailModal: React.FC<BookingDetailModalProps> = ({ 
   booking, 
   isOpen, 
@@ -238,6 +245,138 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   );
 };
 
+const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
+  booking,
+  isOpen,
+  onClose,
+  onConfirm
+}) => {
+  const { t } = useLanguage();
+  const { formatPrice } = useCurrency();
+  const [completionNotes, setCompletionNotes] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (!isOpen || !booking) return null;
+
+  const handleConfirmPayment = async () => {
+    setIsSubmitting(true);
+    try {
+      await onConfirm(booking.id, true, completionNotes);
+      onClose();
+      setCompletionNotes('');
+    } catch (error) {
+      console.error('Failed to complete booking with payment:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeclinePayment = () => {
+    onConfirm(booking.id, false);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <h3 className="text-xl font-semibold text-gray-900">Payment Confirmation</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6">
+          <div className="mb-6">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-yellow-100 rounded-full mb-4">
+              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h4 className="text-lg font-medium text-gray-900 text-center mb-2">
+              Complete Booking
+            </h4>
+            <p className="text-gray-600 text-center">
+              Has the customer paid for this service?
+            </p>
+          </div>
+
+          {/* Booking Details */}
+          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-gray-600">Service:</span>
+              <span className="font-medium">{booking.service?.name || booking.serviceName}</span>
+            </div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-gray-600">Customer:</span>
+              <span className="font-medium">
+                {booking.customer 
+                  ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
+                  : (booking.customerName || 'Unknown Customer')
+                }
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Amount:</span>
+              <span className="font-bold text-green-600">{formatPrice(booking.totalAmount)}</span>
+            </div>
+          </div>
+
+          {/* Completion Notes */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Completion Notes (Optional)
+            </label>
+            <textarea
+              value={completionNotes}
+              onChange={(e) => setCompletionNotes(e.target.value)}
+              placeholder="Add any notes about the completed service..."
+              className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+              rows={3}
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex space-x-3">
+            <button
+              onClick={handleConfirmPayment}
+              disabled={isSubmitting}
+              className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+            >
+              {isSubmitting ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+              ) : (
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+              Yes, Payment Received
+            </button>
+            <button
+              onClick={handleDeclinePayment}
+              disabled={isSubmitting}
+              className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+            >
+              No, Not Paid Yet
+            </button>
+          </div>
+
+          <p className="text-xs text-gray-500 text-center mt-4">
+            Only complete the booking if payment has been received from the customer.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const SpecialistBookings: React.FC = () => {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
@@ -289,6 +428,8 @@ const SpecialistBookings: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [bookingToComplete, setBookingToComplete] = useState<Booking | null>(null);
   const itemsPerPage = 10;
   
   // Filter and sort bookings
@@ -351,6 +492,16 @@ const SpecialistBookings: React.FC = () => {
   );
   
   const handleStatusChange = async (bookingId: string, newStatus: keyof typeof statusColors) => {
+    // If trying to complete a booking, show payment confirmation modal instead
+    if (newStatus === 'COMPLETED') {
+      const booking = bookings.find(b => b.id === bookingId);
+      if (booking) {
+        setBookingToComplete(booking);
+        setShowPaymentModal(true);
+        return;
+      }
+    }
+
     try {
       console.log('📝 Updating booking status:', { bookingId, newStatus });
       
@@ -368,6 +519,33 @@ const SpecialistBookings: React.FC = () => {
       }
     } catch (error: any) {
       console.error('❌ Failed to update booking status:', error);
+    }
+  };
+
+  const handlePaymentConfirmation = async (bookingId: string, paymentConfirmed: boolean, notes?: string) => {
+    try {
+      console.log('📝 Completing booking with payment confirmation:', { bookingId, paymentConfirmed, notes });
+      
+      if (!paymentConfirmed) {
+        // Show a message that payment must be received first
+        alert('Please ensure payment is received before completing the booking.');
+        return;
+      }
+
+      // Use the new booking service method
+      const { bookingService } = await import('../../services/booking.service');
+      const result = await bookingService.completeBookingWithPayment(bookingId, {
+        paymentConfirmed,
+        completionNotes: notes,
+      });
+      console.log('✅ Booking completed with payment confirmation:', result);
+
+      // Refresh bookings to show updated status
+      dispatch(fetchBookings({ filters: {}, userType: 'specialist' }));
+      
+    } catch (error: any) {
+      console.error('❌ Failed to complete booking with payment confirmation:', error);
+      alert(`Failed to complete booking: ${error.message}`);
     }
   };
   
@@ -832,6 +1010,17 @@ const SpecialistBookings: React.FC = () => {
         onStatusChange={handleStatusChange}
         getTranslatedServiceName={getTranslatedServiceName}
         getTranslatedDuration={getTranslatedDuration}
+      />
+
+      {/* Payment Confirmation Modal */}
+      <PaymentConfirmationModal
+        booking={bookingToComplete}
+        isOpen={showPaymentModal}
+        onClose={() => {
+          setShowPaymentModal(false);
+          setBookingToComplete(null);
+        }}
+        onConfirm={handlePaymentConfirmation}
       />
       </div>
   );

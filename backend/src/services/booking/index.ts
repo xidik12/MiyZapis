@@ -953,6 +953,84 @@ export class BookingService {
     }
   }
 
+  // Complete booking with payment confirmation (specialist action)
+  static async completeBookingWithPayment(
+    bookingId: string,
+    specialistUserId: string,
+    data: {
+      paymentConfirmed: boolean;
+      completionNotes?: string;
+      specialistNotes?: string;
+    }
+  ): Promise<BookingWithDetails> {
+    try {
+      const booking = await this.getBooking(bookingId);
+
+      // Verify the specialist owns this booking
+      if (booking.specialistId !== specialistUserId) {
+        throw new Error('SPECIALIST_NOT_AUTHORIZED');
+      }
+
+      // Verify booking is in a state that can be completed
+      if (!['CONFIRMED', 'IN_PROGRESS'].includes(booking.status)) {
+        throw new Error('BOOKING_NOT_IN_PROGRESS');
+      }
+
+      // If payment not confirmed, don't complete the booking
+      if (!data.paymentConfirmed) {
+        throw new Error('PAYMENT_NOT_CONFIRMED');
+      }
+
+      // Update booking to COMPLETED with notes
+      const updateData: any = {
+        status: 'COMPLETED',
+        completionNotes: data.completionNotes,
+        specialistNotes: data.specialistNotes,
+      };
+
+      const completedBooking = await this.updateBooking(bookingId, updateData);
+
+      // Create payment record if payment was confirmed
+      if (data.paymentConfirmed) {
+        try {
+          await prisma.payment.create({
+            data: {
+              id: `pay_${bookingId}_${Date.now()}`,
+              bookingId: booking.id,
+              customerId: booking.customerId,
+              specialistId: booking.specialistId,
+              amount: booking.totalAmount,
+              currency: 'USD',
+              status: 'succeeded',
+              method: 'cash', // Default to cash payment
+              processedAt: new Date(),
+              description: `Payment for ${booking.service.name}`,
+              metadata: JSON.stringify({
+                confirmedBy: specialistUserId,
+                completedAt: new Date().toISOString(),
+                paymentMethod: 'specialist_confirmed'
+              }),
+            },
+          });
+
+          logger.info('Payment record created for completed booking', {
+            bookingId: booking.id,
+            amount: booking.totalAmount,
+            specialistId: specialistUserId
+          });
+        } catch (paymentError) {
+          logger.error('Failed to create payment record:', paymentError);
+          // Don't fail the completion if payment record creation fails
+        }
+      }
+
+      return completedBooking;
+    } catch (error) {
+      logger.error('Error completing booking with payment:', error);
+      throw error;
+    }
+  }
+
   // Get booking statistics for a specialist
   static async getSpecialistBookingStats(
     specialistId: string,
