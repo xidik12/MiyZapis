@@ -777,13 +777,23 @@ const SpecialistSchedule: React.FC = () => {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => openEditModal(slot)}
-                        className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                        disabled={operationInProgress}
+                        className={`p-2 rounded-lg transition-colors ${
+                          operationInProgress
+                            ? 'text-gray-300 cursor-not-allowed'
+                            : 'text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                        }`}
                       >
                         <PencilIcon className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteTimeSlot(slot.id)}
-                        className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        disabled={operationInProgress}
+                        className={`p-2 rounded-lg transition-colors ${
+                          operationInProgress
+                            ? 'text-gray-300 cursor-not-allowed'
+                            : 'text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
+                        }`}
                       >
                         <TrashIcon className="w-4 h-4" />
                       </button>

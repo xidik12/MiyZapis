@@ -25,6 +25,7 @@ import diagnosticsRoutes from './diagnostics';
 import setupAdminRoutes from './setup-admin';
 import debugAdminRoutes from './debug-admin';
 import debugEmailRoutes from './debug-email';
+import testNotificationRoutes from './test-notifications';
 
 const router = Router();
 
@@ -62,5 +63,6 @@ router.use('/setup', setupAdminRoutes);
 // Debug routes (for testing only)
 router.use('/debug', debugAdminRoutes);
 router.use('/debug/email', debugEmailRoutes);
+router.use('/test-notifications', testNotificationRoutes);
 
 export default router;

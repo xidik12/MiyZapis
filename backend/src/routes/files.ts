@@ -12,6 +12,70 @@ router.post('/test', authMiddleware, (req, res) => {
   res.json({ success: true, message: 'Test endpoint works', userId: req.user?.id });
 });
 
+// Test auth token generation endpoint (for testing only)
+router.post('/test-auth', async (req, res) => {
+  try {
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient();
+    const jwt = require('jsonwebtoken');
+    
+    // Create or find test user
+    let testUser = await prisma.user.findUnique({
+      where: { email: 'filetest@example.com' }
+    });
+    
+    if (!testUser) {
+      const bcrypt = require('bcryptjs');
+      const hashedPassword = await bcrypt.hash('TestPassword123!', 10);
+      
+      testUser = await prisma.user.create({
+        data: {
+          email: 'filetest@example.com',
+          password: hashedPassword,
+          firstName: 'File',
+          lastName: 'Test',
+          userType: 'CUSTOMER',
+          isEmailVerified: true,
+          isActive: true
+        }
+      });
+    }
+    
+    // Generate token
+    const token = jwt.sign(
+      { 
+        userId: testUser.id, 
+        email: testUser.email,
+        userType: testUser.userType
+      },
+      process.env.JWT_SECRET || 'default-secret',
+      { expiresIn: '24h' }
+    );
+    
+    await prisma.$disconnect();
+    
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: testUser.id,
+          email: testUser.email,
+          firstName: testUser.firstName,
+          lastName: testUser.lastName
+        },
+        token,
+        message: 'Test user created/found and token generated'
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create test auth token',
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
+});
+
 // Railway environment detection debug endpoint (no auth needed)
 router.get('/railway-env', (req, res) => {
   try {
