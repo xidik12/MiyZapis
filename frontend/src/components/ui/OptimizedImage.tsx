@@ -273,8 +273,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
                 {isBackendUpload ? (
                   <div>
                     <div className="font-medium">Image unavailable</div>
-                    <div className="text-xs mt-1">File lost during server update</div>
-                    <div className="text-xs text-blue-600 mt-1">Please re-upload image</div>
+                    <div className="text-xs mt-1">Re-upload needed</div>
                   </div>
                 ) : (
                   'Image failed to load'
