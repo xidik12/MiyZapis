@@ -4,7 +4,8 @@ import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { analyticsService, bookingService } from '../../services';
+import { analyticsService, bookingService, paymentService } from '../../services';
+import { retryRequest } from '../../services/api';
 // Removed SpecialistSidebar import - layout is handled by SpecialistLayout
 // Status colors for bookings
 const statusColors = {
@@ -70,6 +71,138 @@ const SpecialistDashboard: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // Load dashboard data
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true);
+        
+        // Load data from multiple sources with retry logic
+        const [analyticsData, bookingsData, paymentsData] = await Promise.allSettled([
+          retryRequest(() => analyticsService.getOverview(), 2, 1000),
+          retryRequest(() => bookingService.getBookings({ limit: 5, status: 'confirmed,pending,inProgress' }), 2, 1000),
+          retryRequest(() => paymentService.getPaymentHistory({ limit: 50, status: 'SUCCEEDED' as any }), 2, 1000)
+        ]);
+
+        // Process analytics data
+        let stats = {
+          totalBookings: 0,
+          monthlyRevenue: 0,
+          rating: 0,
+          reviewCount: 0,
+          responseTime: 0,
+          profileViews: 0,
+          favoriteCount: 0,
+          conversionRate: 0,
+          completionRate: 0,
+          repeatClients: 0,
+          punctuality: 85 // Default value
+        };
+
+        if (analyticsData.status === 'fulfilled' && analyticsData.value) {
+          const overview = analyticsData.value;
+          stats = {
+            ...stats,
+            totalBookings: overview.totalBookings || 0,
+            rating: overview.averageRating || 0,
+            responseTime: overview.responseTime || 15,
+            conversionRate: overview.completionRate || 0,
+            completionRate: overview.completionRate || 0,
+            repeatClients: overview.repeatCustomers || 0
+          };
+        }
+
+        // Process payments data for revenue calculation
+        if (paymentsData.status === 'fulfilled' && paymentsData.value) {
+          try {
+            const payments = Array.isArray(paymentsData.value.payments) ? paymentsData.value.payments : [];
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            
+            const monthlyRevenue = payments
+              .filter(payment => {
+                try {
+                  const paymentDate = new Date(payment.createdAt || payment.updatedAt);
+                  return paymentDate.getMonth() === currentMonth && paymentDate.getFullYear() === currentYear;
+                } catch (e) {
+                  return false;
+                }
+              })
+              .reduce((sum, payment) => sum + (payment.amount || 0), 0);
+
+            stats.monthlyRevenue = monthlyRevenue;
+          } catch (err) {
+            console.warn('Error processing payments data:', err);
+          }
+        }
+
+        // Process bookings data
+        let recentBookings = [];
+        let upcomingAppointments = [];
+
+        if (bookingsData.status === 'fulfilled' && bookingsData.value) {
+          try {
+            const bookings = Array.isArray(bookingsData.value.bookings) ? bookingsData.value.bookings : [];
+            console.log('📊 Dashboard bookings:', bookings);
+
+            recentBookings = bookings
+              .filter(booking => booking && booking.id)
+              .slice(0, 5)
+              .map(booking => ({
+                id: booking.id,
+                customerName: booking.customer?.firstName + ' ' + (booking.customer?.lastName || ''),
+                serviceName: booking.service?.name || 'Service',
+                date: booking.scheduledAt || booking.createdAt,
+                status: booking.status || 'pending',
+                amount: booking.totalAmount || 0
+              }));
+
+            upcomingAppointments = bookings
+              .filter(booking => {
+                if (!booking || !booking.scheduledAt) return false;
+                const bookingDate = new Date(booking.scheduledAt);
+                const today = new Date();
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                return bookingDate >= today && bookingDate <= tomorrow;
+              })
+              .map(booking => ({
+                id: booking.id,
+                customerName: booking.customer?.firstName + ' ' + (booking.customer?.lastName || ''),
+                serviceName: booking.service?.name || 'Service',
+                time: new Date(booking.scheduledAt).toLocaleTimeString('en-US', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                }),
+                duration: '60 min', // Default duration
+                type: 'offline' // Default type
+              }));
+          } catch (err) {
+            console.warn('Error processing bookings data:', err);
+          }
+        }
+
+        console.log('📊 Final dashboard data:', { stats, recentBookings, upcomingAppointments });
+
+        setDashboardData({
+          stats,
+          recentBookings,
+          upcomingAppointments
+        });
+
+      } catch (err) {
+        console.error('Error loading dashboard data:', err);
+        // Keep default empty state on error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      loadDashboardData();
+    }
+  }, [user]);
+
   const getGreeting = () => {
     const hour = currentTime.getHours();
     if (hour < 12) return t('dashboard.welcome.morning');
@@ -90,11 +223,20 @@ const SpecialistDashboard: React.FC = () => {
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{value}</p>
-          {description && (
+          {loading ? (
+            <div className="mb-2">
+              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-24"></div>
+            </div>
+          ) : (
+            <p className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{value}</p>
+          )}
+          {description && !loading && (
             <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
           )}
-          {change && (
+          {loading && (
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-16"></div>
+          )}
+          {change && !loading && (
             <div className={`flex items-center mt-2 text-sm ${
               changeType === 'positive' ? 'text-success-600' : 'text-error-600'
             }`}>
