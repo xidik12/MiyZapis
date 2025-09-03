@@ -63,7 +63,7 @@ export const validateCreateBooking = [
 
 // Update booking status validation
 export const validateUpdateBookingStatus = [
-  param('id')
+  param('bookingId')
     .isLength({ min: 20, max: 30 })
     .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
@@ -159,7 +159,7 @@ export const validateGetBookings = [
 
 // Booking ID param validation
 export const validateBookingId = [
-  param('id')
+  param('bookingId')
     .isLength({ min: 20, max: 30 })
     .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
@@ -167,7 +167,7 @@ export const validateBookingId = [
 
 // Confirm booking validation
 export const validateConfirmBooking = [
-  param('id')
+  param('bookingId')
     .isLength({ min: 20, max: 30 })
     .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
@@ -187,7 +187,7 @@ export const validateConfirmBooking = [
 
 // Cancel booking validation
 export const validateCancelBooking = [
-  param('id')
+  param('bookingId')
     .isLength({ min: 20, max: 30 })
     .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
@@ -206,7 +206,7 @@ export const validateCancelBooking = [
 
 // Complete booking validation
 export const validateCompleteBooking = [
-  param('id')
+  param('bookingId')
     .isLength({ min: 20, max: 30 })
     .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
@@ -230,7 +230,7 @@ export const validateCompleteBooking = [
 
 // Reschedule booking validation
 export const validateRescheduleBooking = [
-  param('id')
+  param('bookingId')
     .isLength({ min: 20, max: 30 })
     .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
