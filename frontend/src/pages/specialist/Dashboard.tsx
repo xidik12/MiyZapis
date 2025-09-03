@@ -84,7 +84,7 @@ const SpecialistDashboard: React.FC = () => {
         // Load data from multiple sources with retry logic
         const [analyticsData, bookingsData, paymentsData] = await Promise.allSettled([
           retryRequest(() => analyticsService.getOverview(), 2, 1000),
-          retryRequest(() => bookingService.getBookings({ limit: 5, status: 'confirmed,pending,inProgress' }), 2, 1000),
+          retryRequest(() => bookingService.getBookings({ limit: 5, status: 'confirmed,pending,inProgress' }, 'specialist'), 2, 1000),
           retryRequest(() => paymentService.getSpecialistEarnings({ limit: 50, status: 'succeeded' }), 2, 1000)
         ]);
 
@@ -138,8 +138,9 @@ const SpecialistDashboard: React.FC = () => {
             const earningsData = paymentsData.value;
             console.log('📊 Dashboard processing specialist earnings:', earningsData);
             
-            // Use pre-calculated totals from specialist API
-            stats.monthlyRevenue = earningsData.totalEarnings || 0;
+            // Handle nested earnings structure from specialist API
+            const earnings = earningsData.earnings || earningsData;
+            stats.monthlyRevenue = earnings.totalEarnings || 0;
             console.log('📊 Monthly revenue from specialist API:', stats.monthlyRevenue);
           } catch (err) {
             console.warn('Error processing payments data:', err);

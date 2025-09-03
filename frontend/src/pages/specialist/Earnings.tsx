@@ -161,11 +161,12 @@ const SpecialistEarnings: React.FC = () => {
             const earningsData = revenueData.value;
             console.log('📊 Processing specialist earnings data:', earningsData);
             
-            // Use pre-calculated totals from specialist API
-            totalEarnings = earningsData.totalEarnings || 0;
-            pendingEarnings = earningsData.pendingEarnings || 0;
+            // Handle nested earnings structure from specialist API
+            const earnings = earningsData.earnings || earningsData;
+            totalEarnings = earnings.totalEarnings || 0;
+            pendingEarnings = earnings.pendingEarnings || 0;
             
-            const payments = Array.isArray(earningsData.payments) ? earningsData.payments : [];
+            const payments = Array.isArray(earnings.payments) ? earnings.payments : [];
             console.log('📊 Specialist payments:', payments.length, 'payments');
             console.log('📊 Total earnings from API:', totalEarnings);
             console.log('📊 Pending earnings from API:', pendingEarnings);
