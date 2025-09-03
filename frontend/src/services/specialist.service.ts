@@ -356,7 +356,11 @@ export class SpecialistService {
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get availability blocks');
     }
-    return response.data.blocks;
+    
+    // Handle different response structures - the API returns data.blocks or data.data.blocks
+    const blocks = response.data.blocks || response.data.data?.blocks || [];
+    console.log('📦 getAvailabilityBlocks response:', { response: response.data, extractedBlocks: blocks });
+    return Array.isArray(blocks) ? blocks : [];
   }
 
   // Create availability block (available or blocked)
@@ -369,10 +373,25 @@ export class SpecialistService {
     recurringDays?: string[];
     recurringUntil?: string;
   }): Promise<{ message: string; block: BlockedSlot }> {
-    const response = await apiClient.post<{ message: string; block: BlockedSlot }>('/specialists/blocks', data);
+    // Convert frontend field names to backend field names
+    const backendData = {
+      startDateTime: data.startDateTime,
+      endDateTime: data.endDateTime,
+      isAvailable: data.isAvailable,
+      reason: data.reason,
+      isRecurring: data.recurring, // Note: backend uses isRecurring, not recurring
+      recurringDays: data.recurringDays,
+      recurringUntil: data.recurringUntil,
+    };
+    
+    console.log('📤 Creating availability block:', backendData);
+    
+    const response = await apiClient.post<{ message: string; block: BlockedSlot }>('/specialists/blocks', backendData);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to create availability block');
     }
+    
+    console.log('✅ Block created successfully:', response.data);
     return response.data;
   }
 
@@ -386,10 +405,25 @@ export class SpecialistService {
     recurringDays?: string[];
     recurringUntil?: string;
   }): Promise<{ message: string; block: BlockedSlot }> {
-    const response = await apiClient.put<{ message: string; block: BlockedSlot }>(`/specialists/blocks/${blockId}`, data);
+    // Convert frontend field names to backend field names
+    const backendData = {
+      startDateTime: data.startDateTime,
+      endDateTime: data.endDateTime,
+      isAvailable: data.isAvailable,
+      reason: data.reason,
+      isRecurring: data.recurring, // Note: backend uses isRecurring, not recurring
+      recurringDays: data.recurringDays,
+      recurringUntil: data.recurringUntil,
+    };
+    
+    console.log('📤 Updating availability block:', blockId, backendData);
+    
+    const response = await apiClient.put<{ message: string; block: BlockedSlot }>(`/specialists/blocks/${blockId}`, backendData);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to update availability block');
     }
+    
+    console.log('✅ Block updated successfully:', response.data);
     return response.data;
   }
 

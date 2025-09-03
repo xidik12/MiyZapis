@@ -74,7 +74,6 @@ export class FileUploadService {
 
   private async uploadToLocal(buffer: Buffer, filename: string): Promise<string> {
     try {
-      // Use /tmp for Railway, local uploads for development
       // More robust Railway detection - Railway might not set the specific vars we expect
       const isRailway = !!(
         process.env.RAILWAY_ENVIRONMENT || 
@@ -86,10 +85,19 @@ export class FileUploadService {
         (process.env.PORT && process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.NETLIFY)
       );
       
-      // Use persistent volume /app/uploads on Railway
-      const uploadsDir = isRailway ? '/app/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
+      // Railway permission fix: Try multiple upload directories in order of preference
+      const uploadOptions = isRailway ? [
+        '/app/uploads',  // Preferred: persistent volume
+        '/tmp/uploads',  // Fallback 1: tmp directory
+        './uploads',     // Fallback 2: local directory
+        '/tmp'           // Last resort: directly in tmp
+      ] : [
+        process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'),
+        './uploads',
+        '/tmp/uploads'
+      ];
       
-      logger.info('Upload directory detection', {
+      logger.info('Upload directory options', {
         RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
         RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME,
         RAILWAY_PROJECT_NAME: process.env.RAILWAY_PROJECT_NAME,
@@ -98,9 +106,43 @@ export class FileUploadService {
         NODE_ENV: process.env.NODE_ENV,
         PORT: process.env.PORT,
         isRailway: !!isRailway,
-        uploadsDir,
+        uploadOptions,
         cwd: process.cwd()
       });
+      
+      let uploadsDir: string | null = null;
+      let testFilePath: string | null = null;
+      
+      // Test each upload directory to find one that works
+      for (const testDir of uploadOptions) {
+        try {
+          logger.info(`Testing upload directory: ${testDir}`);
+          
+          // Try to create directory if it doesn't exist
+          try {
+            await fs.access(testDir);
+          } catch {
+            await fs.mkdir(testDir, { recursive: true, mode: 0o755 });
+          }
+          
+          // Test write permissions by writing a small test file
+          testFilePath = path.join(testDir, 'write-test-' + Date.now() + '.txt');
+          await fs.writeFile(testFilePath, 'test', { mode: 0o644 });
+          await fs.unlink(testFilePath); // Clean up test file
+          
+          // If we get here, the directory works
+          uploadsDir = testDir;
+          logger.info(`Upload directory confirmed working: ${uploadsDir}`);
+          break;
+        } catch (error) {
+          logger.warn(`Upload directory ${testDir} failed test:`, error instanceof Error ? error.message : error);
+          continue;
+        }
+      }
+      
+      if (!uploadsDir) {
+        throw new Error('No writable upload directory found. All options failed permission tests.');
+      }
       
       // For Railway, use flat directory structure to avoid permission issues
       let finalFilename = filename;
@@ -112,27 +154,21 @@ export class FileUploadService {
           flattened: finalFilename
         });
       }
-      
-      // Ensure uploads directory exists
-      try {
-        await fs.access(uploadsDir);
-      } catch {
-        await fs.mkdir(uploadsDir, { recursive: true });
-      }
 
       const filePath = path.join(uploadsDir, finalFilename);
       
       // For local development, ensure subdirectory exists
-      if (!isRailway) {
+      if (!isRailway && filename.includes('/')) {
         const fileDir = path.dirname(filePath);
         try {
           await fs.access(fileDir);
         } catch {
-          await fs.mkdir(fileDir, { recursive: true });
+          await fs.mkdir(fileDir, { recursive: true, mode: 0o755 });
         }
       }
 
-      await fs.writeFile(filePath, buffer);
+      // Write the actual file
+      await fs.writeFile(filePath, buffer, { mode: 0o644 });
 
       // Return URL for accessing the file
       const fileUrl = `/uploads/${finalFilename}`;
@@ -141,13 +177,14 @@ export class FileUploadService {
         filename: finalFilename,
         path: filePath,
         url: fileUrl,
-        isRailway: !!process.env.RAILWAY_ENVIRONMENT
+        uploadsDir,
+        isRailway: !!isRailway
       });
 
       return fileUrl;
     } catch (error) {
       logger.error('Error uploading file locally:', error);
-      throw new Error('Failed to upload file locally');
+      throw new Error(`Failed to upload file locally: ${error instanceof Error ? error.message : error}`);
     }
   }
 

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body, param, query } from 'express-validator';
 import { authenticateToken } from '@/middleware/auth/jwt';
-import { SimpleNotificationController } from '@/controllers/notifications/simple';
+import { NotificationController } from '@/controllers/notifications/index';
 
 const router = Router();
 
@@ -22,21 +22,48 @@ const validateBulkNotification = [
   body('data').optional().isObject().withMessage('Data must be an object'),
 ];
 
-// Test backend connection
-router.get('/test-backend', authenticateToken, SimpleNotificationController.testBackend);
+// Get user notifications
+router.get('/', authenticateToken, NotificationController.getNotifications);
 
-// Get user notifications (simplified)
-router.get('/', authenticateToken, SimpleNotificationController.getNotifications);
+// Get unread notification count
+router.get('/unread-count', authenticateToken, NotificationController.getUnreadCount);
 
-// Get unread notification count (simplified)
-router.get('/unread-count', authenticateToken, SimpleNotificationController.getUnreadCount);
+// Mark notification as read
+router.put('/:id/read', [
+  param('id').notEmpty().withMessage('Notification ID is required'),
+  authenticateToken
+], NotificationController.markAsRead);
 
-// Mark notification as read (simplified)
-router.put('/:id/read', authenticateToken, SimpleNotificationController.markAsRead);
+// Mark all notifications as read
+router.put('/read-all', authenticateToken, NotificationController.markAllAsRead);
 
-// Mark all notifications as read (simplified)
-router.put('/read-all', authenticateToken, SimpleNotificationController.markAllAsRead);
+// Delete notification
+router.delete('/:id', [
+  param('id').notEmpty().withMessage('Notification ID is required'),
+  authenticateToken
+], NotificationController.deleteNotification);
 
-// Simplified endpoints only - other functionality temporarily disabled
+// Get notification preferences
+router.get('/settings', authenticateToken, NotificationController.getPreferences);
+
+// Update notification preferences
+router.put('/settings', [
+  ...validateNotificationPreferences,
+  authenticateToken
+], NotificationController.updatePreferences);
+
+// Send test notification (for testing)
+router.post('/test', [
+  body('type').optional().isString(),
+  body('title').optional().isString(),
+  body('message').optional().isString(),
+  authenticateToken
+], NotificationController.sendTestNotification);
+
+// Send bulk notification (Admin only)
+router.post('/bulk', [
+  ...validateBulkNotification,
+  authenticateToken
+], NotificationController.sendBulkNotification);
 
 export default router;

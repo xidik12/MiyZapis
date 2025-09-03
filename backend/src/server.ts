@@ -86,39 +86,108 @@ logger.info('🏗️ Railway environment detection results', {
   cwd: process.cwd()
 });
 
-// Static file serving for uploads
-// Use persistent volume /app/uploads on Railway
-const uploadsDir = isRailway ? '/app/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
+// Static file serving for uploads with fallback directories
+// Railway permission fix: Try multiple upload directories in order of preference
+const uploadOptions = isRailway ? [
+  '/app/uploads',  // Preferred: persistent volume
+  '/tmp/uploads',  // Fallback 1: tmp directory
+  './uploads',     // Fallback 2: local directory
+  '/tmp'           // Last resort: directly in tmp
+] : [
+  process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'),
+  './uploads',
+  '/tmp/uploads'
+];
 
-// Ensure uploads directory exists
-try {
-  const fs = require('fs');
-  if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true, mode: 0o755 });
-    logger.info('Created uploads directory', { uploadsDir });
+let uploadsDir = uploadOptions[0]; // Default to first option
+
+// Find a working uploads directory
+for (const testDir of uploadOptions) {
+  try {
+    const fs = require('fs');
+    
+    // Try to create directory if it doesn't exist
+    if (!fs.existsSync(testDir)) {
+      fs.mkdirSync(testDir, { recursive: true, mode: 0o755 });
+    }
+    
+    // Test write permissions
+    const testFile = path.join(testDir, 'server-test-' + Date.now() + '.txt');
+    fs.writeFileSync(testFile, 'test', { mode: 0o644 });
+    fs.unlinkSync(testFile);
+    
+    uploadsDir = testDir;
+    logger.info('Found working uploads directory', { uploadsDir });
+    break;
+  } catch (error) {
+    logger.warn(`Upload directory ${testDir} not available:`, error instanceof Error ? error.message : error);
+    continue;
   }
-} catch (error) {
-  logger.error('Failed to create uploads directory', { uploadsDir, error });
 }
 
-app.use('/uploads', express.static(uploadsDir, {
-  maxAge: '1y', // Cache uploaded files for 1 year
-  etag: true,
-  lastModified: true,
-  setHeaders: (res, path) => {
-    // Ensure proper MIME types for image formats
-    if (path.endsWith('.webp')) {
-      res.setHeader('Content-Type', 'image/webp');
-    } else if (path.endsWith('.avif')) {
-      res.setHeader('Content-Type', 'image/avif');
+// Setup static file serving with multiple directory support
+app.use('/uploads', (req, res, next) => {
+  // Try to serve from the determined uploads directory first
+  express.static(uploadsDir, {
+    maxAge: '1y', // Cache uploaded files for 1 year
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, path) => {
+      // Ensure proper MIME types for image formats
+      if (path.endsWith('.webp')) {
+        res.setHeader('Content-Type', 'image/webp');
+      } else if (path.endsWith('.avif')) {
+        res.setHeader('Content-Type', 'image/avif');
+      }
+      // Add Cache-Control header for better caching
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     }
-    // Add Cache-Control header for better caching
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-  }
-}));
+  })(req, res, (err) => {
+    if (err) {
+      // If file not found in primary directory, try fallback directories
+      let foundFile = false;
+      
+      for (const fallbackDir of uploadOptions) {
+        if (fallbackDir === uploadsDir) continue; // Skip already tried directory
+        
+        try {
+          const fs = require('fs');
+          const filePath = path.join(fallbackDir, req.path);
+          
+          if (fs.existsSync(filePath)) {
+            express.static(fallbackDir, {
+              maxAge: '1y',
+              etag: true,
+              lastModified: true,
+              setHeaders: (res, path) => {
+                if (path.endsWith('.webp')) {
+                  res.setHeader('Content-Type', 'image/webp');
+                } else if (path.endsWith('.avif')) {
+                  res.setHeader('Content-Type', 'image/avif');
+                }
+                res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+              }
+            })(req, res, next);
+            foundFile = true;
+            break;
+          }
+        } catch (fallbackError) {
+          continue;
+        }
+      }
+      
+      if (!foundFile) {
+        next(err); // File not found in any directory
+      }
+    } else {
+      next(err);
+    }
+  });
+});
 
 logger.info('Static file serving configured', { 
   uploadsDir,
+  uploadOptions,
   route: '/uploads',
   isRailwayEnvironment: isRailway
 });

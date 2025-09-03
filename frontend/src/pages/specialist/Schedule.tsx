@@ -224,7 +224,7 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({ isOpen, onClose, onSave, ed
                 type="submit"
                 className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
               >
-                {editingSlot ? t('schedule.update') : t('schedule.add')} {t('schedule.addTimeSlot')}
+                {editingSlot ? t('schedule.update') : t('schedule.add')}
               </button>
             </div>
           </form>
@@ -243,6 +243,7 @@ const SpecialistSchedule: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [operationInProgress, setOperationInProgress] = useState(false);
 
   // Generate default schedule from working hours
   const generateDefaultSchedule = (workingHours: any): TimeSlot[] => {
@@ -320,17 +321,29 @@ const SpecialistSchedule: React.FC = () => {
         console.log('📦 Schedule: Availability blocks received:', availabilityBlocks);
         
         // Convert availability blocks to time slots format
-        let formattedSlots: TimeSlot[] = Array.isArray(availabilityBlocks) && availabilityBlocks.length > 0 
-          ? availabilityBlocks.map(block => ({
+        let formattedSlots: TimeSlot[] = [];
+        
+        if (Array.isArray(availabilityBlocks) && availabilityBlocks.length > 0) {
+          formattedSlots = availabilityBlocks.map(block => {
+            // Handle different date formats from API
+            const startDateTime = new Date(block.startDateTime);
+            const endDateTime = new Date(block.endDateTime);
+            
+            return {
               id: block.id,
-              date: block.startDateTime?.split('T')[0] || new Date().toISOString().split('T')[0],
-              startTime: block.startDateTime?.split('T')[1]?.substring(0, 5) || '09:00',
-              endTime: block.endDateTime?.split('T')[1]?.substring(0, 5) || '10:00',
+              date: startDateTime.toISOString().split('T')[0],
+              startTime: startDateTime.toTimeString().substring(0, 5),
+              endTime: endDateTime.toTimeString().substring(0, 5),
               isAvailable: block.isAvailable !== false, // Default to available
               reason: block.reason || '',
-              isRecurring: block.recurring || block.isRecurring || false,
-            }))
-          : [];
+              isRecurring: block.isRecurring || block.recurring || false,
+              recurringDays: block.recurringDays || [],
+            };
+          });
+          console.log('✅ Formatted availability blocks:', formattedSlots);
+        } else {
+          console.log('📝 No availability blocks found, will generate from working hours');
+        }
         
         // If no availability blocks, generate default schedule from working hours
         if (formattedSlots.length === 0) {
@@ -386,9 +399,29 @@ const SpecialistSchedule: React.FC = () => {
       return;
     }
 
+    setOperationInProgress(true);
     try {
-      const startDateTime = `${newSlot.date}T${newSlot.startTime}:00`;
-      const endDateTime = `${newSlot.date}T${newSlot.endTime}:00`;
+      // Validate time slot
+      if (!newSlot.date || !newSlot.startTime || !newSlot.endTime) {
+        throw new Error('Date, start time, and end time are required');
+      }
+      
+      // Create ISO datetime strings
+      const startDateTime = `${newSlot.date}T${newSlot.startTime}:00.000Z`;
+      const endDateTime = `${newSlot.date}T${newSlot.endTime}:00.000Z`;
+      
+      // Validate end time is after start time
+      if (new Date(startDateTime) >= new Date(endDateTime)) {
+        throw new Error('End time must be after start time');
+      }
+      
+      console.log('📅 Creating time slot:', {
+        startDateTime,
+        endDateTime,
+        isAvailable: newSlot.isAvailable,
+        isRecurring: newSlot.isRecurring,
+        recurringDays: newSlot.recurringDays
+      });
       
       // Use the correct API based on whether this is an available or blocked slot
       const result = await specialistService.createAvailabilityBlock({
@@ -408,9 +441,15 @@ const SpecialistSchedule: React.FC = () => {
       setTimeSlots(prev => [...prev, slot].sort((a, b) => 
         new Date(a.date + ' ' + a.startTime).getTime() - new Date(b.date + ' ' + b.startTime).getTime()
       ));
+      
+      // Clear any previous errors and show success message
+      setError(null);
+      console.log('✅ Time slot added successfully');
     } catch (err: any) {
       console.error('Error adding time slot:', err);
       setError(err.message || 'Failed to add time slot');
+    } finally {
+      setOperationInProgress(false);
     }
   };
 
@@ -422,9 +461,29 @@ const SpecialistSchedule: React.FC = () => {
       return;
     }
     
+    setOperationInProgress(true);
     try {
-      const startDateTime = `${updatedSlot.date}T${updatedSlot.startTime}:00`;
-      const endDateTime = `${updatedSlot.date}T${updatedSlot.endTime}:00`;
+      // Validate time slot
+      if (!updatedSlot.date || !updatedSlot.startTime || !updatedSlot.endTime) {
+        throw new Error('Date, start time, and end time are required');
+      }
+      
+      // Create ISO datetime strings
+      const startDateTime = `${updatedSlot.date}T${updatedSlot.startTime}:00.000Z`;
+      const endDateTime = `${updatedSlot.date}T${updatedSlot.endTime}:00.000Z`;
+      
+      // Validate end time is after start time
+      if (new Date(startDateTime) >= new Date(endDateTime)) {
+        throw new Error('End time must be after start time');
+      }
+      
+      console.log('📅 Updating time slot:', editingSlot.id, {
+        startDateTime,
+        endDateTime,
+        isAvailable: updatedSlot.isAvailable,
+        isRecurring: updatedSlot.isRecurring,
+        recurringDays: updatedSlot.recurringDays
+      });
       
       // Use the update API to modify the existing availability block
       const result = await specialistService.updateAvailabilityBlock(editingSlot.id, {
@@ -445,9 +504,14 @@ const SpecialistSchedule: React.FC = () => {
       ));
       
       setEditingSlot(null);
+      // Clear any previous errors and show success message
+      setError(null);
+      console.log('✅ Time slot updated successfully');
     } catch (err: any) {
       console.error('Error editing time slot:', err);
       setError(err.message || 'Failed to edit time slot');
+    } finally {
+      setOperationInProgress(false);
     }
   };
 
@@ -457,12 +521,25 @@ const SpecialistSchedule: React.FC = () => {
       return;
     }
     
+    // Add confirmation dialog
+    if (!window.confirm('Are you sure you want to delete this time slot?')) {
+      return;
+    }
+    
+    setOperationInProgress(true);
     try {
+      console.log('🗑️ Deleting time slot:', id);
       await specialistService.deleteAvailabilityBlock(id);
       setTimeSlots(prev => prev.filter(slot => slot.id !== id));
+      
+      // Clear any previous errors and show success message
+      setError(null);
+      console.log('✅ Time slot deleted successfully');
     } catch (err: any) {
       console.error('Error deleting time slot:', err);
       setError(err.message || 'Failed to delete time slot');
+    } finally {
+      setOperationInProgress(false);
     }
   };
 
@@ -536,12 +613,48 @@ const SpecialistSchedule: React.FC = () => {
         </div>
         <button 
           onClick={() => setShowAddModal(true)}
-          className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
+          disabled={operationInProgress}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-colors ${
+            operationInProgress 
+              ? 'bg-gray-400 cursor-not-allowed' 
+              : 'bg-primary-600 hover:bg-primary-700'
+          } text-white`}
         >
+          {operationInProgress && (
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
+          )}
           <PlusIcon className="w-5 h-5" />
           <span>{t('schedule.addTime')}</span>
         </button>
       </div>
+
+      {/* Error Alert */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <XMarkIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                Error
+              </h3>
+              <div className="mt-2 text-sm text-red-700 dark:text-red-300">
+                <p>{error}</p>
+              </div>
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => setError(null)}
+                  className="text-sm font-medium text-red-800 dark:text-red-200 hover:text-red-600 dark:hover:text-red-400"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

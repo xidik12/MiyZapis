@@ -17,9 +17,11 @@ export const validateCreateBooking = [
     .isUUID()
     .withMessage('Valid service ID is required'),
   
+  // specialistId is optional since it's derived from the service
   body('specialistId')
+    .optional()
     .isUUID()
-    .withMessage('Valid specialist ID is required'),
+    .withMessage('Specialist ID must be a valid UUID if provided'),
   
   body('scheduledAt')
     .isISO8601()
@@ -34,6 +36,7 @@ export const validateCreateBooking = [
     }),
   
   body('duration')
+    .optional()
     .isInt({ min: 15, max: 480 })
     .withMessage('Duration must be between 15 and 480 minutes'),
   

@@ -127,7 +127,7 @@ export class BookingService {
       const bookingEndTime = new Date(bookingStartTime.getTime() + (bookingDuration * 60 * 1000));
       
       logger.info('Checking for booking conflicts', {
-        specialistId: service.specialist.id,
+        specialistId: service.specialist.userId, // Use User ID for logging consistency
         bookingStartTime: bookingStartTime.toISOString(),
         bookingEndTime: bookingEndTime.toISOString(),
         duration: bookingDuration
@@ -136,7 +136,7 @@ export class BookingService {
       // Find any existing bookings that overlap with the requested time slot
       const existingBookings = await prisma.booking.findMany({
         where: {
-          specialistId: service.specialist.id,
+          specialistId: service.specialist.userId, // Use User ID, not Specialist ID
           status: {
             in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'],
           },
@@ -194,7 +194,7 @@ export class BookingService {
       const booking = await prisma.booking.create({
         data: {
           customerId: data.customerId,
-          specialistId: service.specialist.id,
+          specialistId: service.specialist.userId, // Use the User ID, not the Specialist ID
           serviceId: data.serviceId,
           scheduledAt: data.scheduledAt,
           duration: bookingDuration,

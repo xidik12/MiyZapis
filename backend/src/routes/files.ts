@@ -261,12 +261,11 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
       });
     }
 
-    // Use Railway-compatible upload directory
+    // Use Railway-compatible upload directory with fallback options
     const fs = require('fs');
     const path = require('path');
     
     // Railway sets various environment variables we can check
-    // Let's check all possible Railway indicators
     const railwayIndicators = {
       RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
       RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME,
@@ -290,29 +289,60 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
       (process.env.PORT && process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.NETLIFY)
     );
     
-    const uploadsDir = isRailway ? '/app/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
+    // Railway permission fix: Try multiple upload directories in order of preference
+    const uploadOptions = isRailway ? [
+      '/app/uploads',  // Preferred: persistent volume
+      '/tmp/uploads',  // Fallback 1: tmp directory
+      './uploads',     // Fallback 2: local directory
+      '/tmp'           // Last resort: directly in tmp
+    ] : [
+      process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'),
+      './uploads',
+      '/tmp/uploads'
+    ];
     
     console.log('🏗️ Railway detection result:', {
       isRailway,
-      uploadsDir,
+      uploadOptions,
       cwd: process.cwd()
     });
     
-    console.log('📂 Upload directory:', uploadsDir);
-
-    // Ensure upload directory exists
-    try {
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
-        console.log('✅ Created upload directory:', uploadsDir);
+    let uploadsDir = null;
+    
+    // Find a working uploads directory
+    for (const testDir of uploadOptions) {
+      try {
+        console.log(`🔍 Testing upload directory: ${testDir}`);
+        
+        // Try to create directory if it doesn't exist
+        if (!fs.existsSync(testDir)) {
+          fs.mkdirSync(testDir, { recursive: true, mode: 0o755 });
+        }
+        
+        // Test write permissions
+        const testFile = path.join(testDir, 'upload-test-' + Date.now() + '.txt');
+        fs.writeFileSync(testFile, 'test', { mode: 0o644 });
+        fs.unlinkSync(testFile);
+        
+        uploadsDir = testDir;
+        console.log('✅ Found working upload directory:', uploadsDir);
+        break;
+      } catch (error) {
+        console.warn(`⚠️ Upload directory ${testDir} failed test:`, error.message);
+        continue;
       }
-    } catch (dirError) {
-      console.error('❌ Failed to create upload directory:', dirError);
+    }
+    
+    if (!uploadsDir) {
+      console.error('❌ No writable upload directory found');
       return res.status(500).json({ 
         success: false, 
-        error: 'Failed to create upload directory' 
+        error: 'No writable upload directory available',
+        tested: uploadOptions
       });
     }
+    
+    console.log('📂 Using upload directory:', uploadsDir);
     
     // Create unique filename with flat structure
     const timestamp = Date.now();
@@ -417,10 +447,56 @@ router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, a
     const railwayIndicators = {
       RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
       RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME,
-      RAILWAY_PROJECT_NAME: process.env.RAILWAY_PROJECT_NAME
+      RAILWAY_PROJECT_NAME: process.env.RAILWAY_PROJECT_NAME,
+      RAILWAY_SERVICE: process.env.RAILWAY_SERVICE,
+      RAILWAY_PROJECT: process.env.RAILWAY_PROJECT
     };
-    const isRailwayEnv = !!(railwayIndicators.RAILWAY_ENVIRONMENT || railwayIndicators.RAILWAY_SERVICE_NAME || railwayIndicators.RAILWAY_PROJECT_NAME);
-    const uploadsDir = isRailwayEnv ? '/app/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
+    const isRailwayEnv = !!(railwayIndicators.RAILWAY_ENVIRONMENT || railwayIndicators.RAILWAY_SERVICE_NAME || railwayIndicators.RAILWAY_PROJECT_NAME || railwayIndicators.RAILWAY_SERVICE || railwayIndicators.RAILWAY_PROJECT || (process.env.PORT && process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.NETLIFY));
+    
+    // Railway permission fix: Try multiple upload directories in order of preference
+    const uploadOptions = isRailwayEnv ? [
+      '/app/uploads',  // Preferred: persistent volume
+      '/tmp/uploads',  // Fallback 1: tmp directory
+      './uploads',     // Fallback 2: local directory
+      '/tmp'           // Last resort: directly in tmp
+    ] : [
+      process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'),
+      './uploads',
+      '/tmp/uploads'
+    ];
+    
+    let uploadsDir = null;
+    
+    // Find a working uploads directory
+    for (const testDir of uploadOptions) {
+      try {
+        // Try to create directory if it doesn't exist
+        if (!fs.existsSync(testDir)) {
+          fs.mkdirSync(testDir, { recursive: true, mode: 0o755 });
+        }
+        
+        // Test write permissions
+        const testFile = path.join(testDir, 'simple-upload-test-' + Date.now() + '.txt');
+        fs.writeFileSync(testFile, 'test', { mode: 0o644 });
+        fs.unlinkSync(testFile);
+        
+        uploadsDir = testDir;
+        console.log('✅ Simple upload found working directory:', uploadsDir);
+        break;
+      } catch (error) {
+        console.warn(`⚠️ Simple upload directory ${testDir} failed test:`, error.message);
+        continue;
+      }
+    }
+    
+    if (!uploadsDir) {
+      console.error('❌ No writable upload directory found for simple upload');
+      return res.status(500).json({ 
+        success: false, 
+        error: 'No writable upload directory available',
+        tested: uploadOptions
+      });
+    }
     
     // Save file with purpose prefix instead of subdirectory
     const timestamp = Date.now();
@@ -475,14 +551,45 @@ router.get('/uploads/:filename', (req, res) => {
     const path = require('path');
     const fs = require('fs');
     
-    // Use same upload directory logic as upload
-    // Use persistent volume /app/uploads on Railway
-    const isRailwayServe = !!(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_SERVICE_NAME);
-    const uploadsDir = isRailwayServe ? '/app/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
-    const filepath = path.join(uploadsDir, filename);
+    // Use same upload directory logic as upload with fallback
+    const isRailwayServe = !!(
+      process.env.RAILWAY_ENVIRONMENT || 
+      process.env.RAILWAY_SERVICE_NAME || 
+      process.env.RAILWAY_PROJECT_NAME ||
+      process.env.RAILWAY_SERVICE ||
+      process.env.RAILWAY_PROJECT ||
+      (process.env.PORT && process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.NETLIFY)
+    );
     
-    if (!fs.existsSync(filepath)) {
-      return res.status(404).json({ success: false, error: 'File not found' });
+    // Try multiple directories to find the file
+    const uploadOptions = isRailwayServe ? [
+      '/app/uploads',
+      '/tmp/uploads',
+      './uploads',
+      '/tmp'
+    ] : [
+      process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'),
+      './uploads',
+      '/tmp/uploads'
+    ];
+    
+    let filepath = null;
+    
+    // Find the file in one of the upload directories
+    for (const testDir of uploadOptions) {
+      const testPath = path.join(testDir, filename);
+      if (fs.existsSync(testPath)) {
+        filepath = testPath;
+        break;
+      }
+    }
+    
+    if (!filepath) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'File not found',
+        searched: uploadOptions.map(dir => path.join(dir, filename))
+      });
     }
     
     res.sendFile(filepath);
