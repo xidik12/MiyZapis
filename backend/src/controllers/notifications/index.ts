@@ -33,7 +33,7 @@ export class NotificationController {
       const type = req.query.type as string;
       const isRead = req.query.isRead === 'true' ? true : req.query.isRead === 'false' ? false : undefined;
 
-      const result = await this.notificationService.getUserNotifications(
+      const result = await NotificationController.notificationService.getUserNotifications(
         req.user.id,
         { page, limit, type, isRead }
       );
@@ -108,7 +108,7 @@ export class NotificationController {
         return;
       }
 
-      await this.notificationService.markNotificationAsRead(notificationId, req.user.id);
+      await NotificationController.notificationService.markNotificationAsRead(notificationId, req.user.id);
 
       res.json(
         createSuccessResponse({
@@ -144,7 +144,7 @@ export class NotificationController {
         return;
       }
 
-      await this.notificationService.markAllNotificationsAsRead(req.user.id);
+      await NotificationController.notificationService.markAllNotificationsAsRead(req.user.id);
 
       res.json(
         createSuccessResponse({
@@ -389,7 +389,7 @@ export class NotificationController {
         return;
       }
 
-      const unreadCount = await this.notificationService.getUnreadCount(req.user.id);
+      const unreadCount = await NotificationController.notificationService.getUnreadCount(req.user.id);
 
       res.json(
         createSuccessResponse({
@@ -427,7 +427,7 @@ export class NotificationController {
 
       const { type, title, message } = req.body;
 
-      await this.notificationService.sendNotification(req.user.id, {
+      await NotificationController.notificationService.sendNotification(req.user.id, {
         type: type || 'TEST',
         title: title || 'Test Notification',
         message: message || 'This is a test notification',
@@ -508,9 +508,9 @@ export class NotificationController {
       };
 
       if (sendToAll) {
-        await this.notificationService.sendNotificationToAllUsers(notificationData);
+        await NotificationController.notificationService.sendNotificationToAllUsers(notificationData);
       } else if (userIds && Array.isArray(userIds)) {
-        await this.notificationService.sendBulkNotification(userIds, notificationData);
+        await NotificationController.notificationService.sendBulkNotification(userIds, notificationData);
       } else {
         res.status(400).json(
           createErrorResponse(
