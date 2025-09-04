@@ -45,7 +45,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   // Convert price from one currency to another
-  const convertPrice = (price: number, fromCurrency: Currency = 'UAH'): number => {
+  const convertPrice = (price: number, fromCurrency: Currency = 'USD'): number => {
     if (fromCurrency === currency) return price;
     
     // Convert to UAH first (base currency)
@@ -57,7 +57,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   // Format price with currency symbol
-  const formatPrice = (price: number | undefined | null, fromCurrency: Currency = 'UAH'): string => {
+  const formatPrice = (price: number | undefined | null, fromCurrency: Currency = 'USD'): string => {
     // Handle undefined/null prices
     if (price == null || isNaN(price)) {
       return `${getCurrencySymbol(currency)}0`;
