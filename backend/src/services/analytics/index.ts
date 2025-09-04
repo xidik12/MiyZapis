@@ -9,6 +9,20 @@ export class AnalyticsService {
     this.prisma = prisma;
   }
 
+  // Helper method to get user ID from specialist ID
+  private async getSpecialistUserId(specialistId: string): Promise<string> {
+    const specialist = await this.prisma.specialist.findUnique({
+      where: { id: specialistId },
+      select: { userId: true }
+    });
+
+    if (!specialist) {
+      throw new Error('Specialist not found');
+    }
+
+    return specialist.userId;
+  }
+
   async getDashboardData(specialistId: string): Promise<any> {
     try {
       const now = new Date();
@@ -511,18 +525,8 @@ export class AnalyticsService {
       const dateFilter = this.buildDateFilter(startDate, endDate);
       const now = new Date();
       
-      // First get the specialist to find their user ID
-      const specialist = await this.prisma.specialist.findUnique({
-        where: { id: specialistId },
-        select: { userId: true }
-      });
-
-      if (!specialist) {
-        throw new Error('Specialist not found');
-      }
-
       // Use user ID for booking queries since bookings are linked to user ID, not specialist ID
-      const userId = specialist.userId;
+      const userId = await this.getSpecialistUserId(specialistId);
       
       // Get basic statistics
       const [
