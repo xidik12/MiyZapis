@@ -511,6 +511,19 @@ export class AnalyticsService {
       const dateFilter = this.buildDateFilter(startDate, endDate);
       const now = new Date();
       
+      // First get the specialist to find their user ID
+      const specialist = await this.prisma.specialist.findUnique({
+        where: { id: specialistId },
+        select: { userId: true }
+      });
+
+      if (!specialist) {
+        throw new Error('Specialist not found');
+      }
+
+      // Use user ID for booking queries since bookings are linked to user ID, not specialist ID
+      const userId = specialist.userId;
+      
       // Get basic statistics
       const [
         totalBookings,
@@ -524,20 +537,20 @@ export class AnalyticsService {
       ] = await Promise.all([
         this.prisma.booking.count({
           where: {
-            specialistId,
+            specialistId: userId,
             createdAt: dateFilter
           }
         }),
         this.prisma.booking.count({
           where: {
-            specialistId,
+            specialistId: userId,
             status: 'COMPLETED',
             createdAt: dateFilter
           }
         }),
         this.prisma.booking.aggregate({
           where: {
-            specialistId,
+            specialistId: userId,
             status: 'COMPLETED',
             createdAt: dateFilter
           },
@@ -545,13 +558,13 @@ export class AnalyticsService {
         }),
         this.prisma.booking.count({
           where: {
-            specialistId,
+            specialistId: userId,
             status: 'PENDING'
           }
         }),
         this.prisma.booking.count({
           where: {
-            specialistId,
+            specialistId: userId,
             scheduledAt: {
               gte: startOfDay(now),
               lte: endOfDay(now)
@@ -560,7 +573,7 @@ export class AnalyticsService {
         }),
         this.prisma.review.aggregate({
           where: { 
-            specialistId,
+            specialistId: userId,
             createdAt: dateFilter
           },
           _avg: { rating: true },
@@ -568,13 +581,13 @@ export class AnalyticsService {
         }),
         this.prisma.review.count({
           where: { 
-            specialistId,
+            specialistId: userId,
             createdAt: dateFilter
           }
         }),
         this.prisma.booking.findMany({
           where: {
-            specialistId,
+            specialistId: userId,
             createdAt: dateFilter
           },
           distinct: ['customerId'],
@@ -588,7 +601,7 @@ export class AnalyticsService {
       // Get recent bookings trend
       const recentBookings = await this.prisma.booking.findMany({
         where: {
-          specialistId,
+          specialistId: userId,
           createdAt: dateFilter
         },
         select: {

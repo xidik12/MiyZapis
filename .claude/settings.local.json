@@ -100,7 +100,10 @@
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma migrate deploy)",
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npm run build)",
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma studio --browser=none)",
-      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma studio --browser=none --port=5558)"
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma studio --browser=none --port=5558)",
+      "Bash(git fetch:*)",
+      "Bash(PGPASSWORD=\"GVGsHSeKoazyvATppTqvabRFqGniRQsH\" psql -h caboose.proxy.rlwy.net -p 51538 -U postgres -d railway -c \"\\dt\")",
+      "Bash(PGPASSWORD=\"GVGsHSeKorazyvATppTqvabRFqGniRQsH\" psql -h caboose.proxy.rlwy.net -p 51538 -U postgres -d railway -c \"\\d bookings\")"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
