@@ -11,6 +11,7 @@ import { ProfessionDropdown } from '../../components/ui/ProfessionDropdown';
 import { LocationPicker } from '../../components/LocationPicker';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import OptimizedImage from '../../components/ui/OptimizedImage';
+import { Avatar } from '../../components/ui/Avatar';
 import AutoMigrateAvatar from '../../components/AutoMigrateAvatar';
 import { 
   CheckCircleIcon,
@@ -949,9 +950,10 @@ const SpecialistProfile: React.FC = () => {
               {/* Modern Avatar */}
               <div className="relative group">
                 {user?.avatar ? (
-                  <OptimizedImage
-                    src={getAbsoluteImageUrl(user.avatar)}
+                  <Avatar
+                    src={user.avatar}
                     alt={profile.firstName || 'Profile'}
+                    size="custom"
                     className="w-28 h-28 rounded-2xl object-cover shadow-lg ring-4 ring-white dark:ring-gray-800"
                   />
                 ) : (
@@ -1790,12 +1792,17 @@ const SpecialistProfile: React.FC = () => {
                           className="group relative bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
                         >
                           <div className="aspect-square overflow-hidden">
-                            <OptimizedImage
+                            <img
                               src={getAbsoluteImageUrl(item.imageUrl)}
                               alt={item.title || `Portfolio item ${index + 1}`}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               onError={(e) => {
                                 console.error('Portfolio image failed to load:', item.imageUrl);
+                                // Hide broken images
+                                e.currentTarget.style.display = 'none';
+                              }}
+                              onLoad={(e) => {
+                                console.log('✅ Portfolio image loaded successfully:', item.imageUrl);
                               }}
                             />
                           </div>
