@@ -773,7 +773,7 @@ const SpecialistAnalytics: React.FC = () => {
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                   {selectedPeriod === 'yearly' ? t('analytics.total') : t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.revenue')}
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white dark:text-white">
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {formatPrice(selectedPeriod === 'yearly' ? (analyticsData.overview?.totalRevenue || 0) : (periodStats?.currentRevenue || 0), 'UAH')}
                 </p>
                 <div className="flex items-center mt-2">
@@ -898,7 +898,7 @@ const SpecialistAnalytics: React.FC = () => {
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Revenue Trend Chart */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                 {selectedView === 'revenue' ? t('analytics.revenueTrend') : t('analytics.bookingsTrend')} ({t(`analytics.${selectedPeriod}`)})
@@ -967,7 +967,7 @@ const SpecialistAnalytics: React.FC = () => {
           </div>
           
           {/* Service Performance Pie Chart */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{t('analytics.servicePerformance')}</h2>
             {serviceData.length > 0 ? (
               <SimplePieChart data={serviceData} height="300px" />
@@ -986,7 +986,7 @@ const SpecialistAnalytics: React.FC = () => {
         </div>
         
         {/* Service Revenue Analysis */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{t('analytics.revenueByService')}</h2>
           {serviceRevenue.length > 0 ? (
             <SimpleBarChart
@@ -1009,7 +1009,7 @@ const SpecialistAnalytics: React.FC = () => {
         
         {/* Additional Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
@@ -1030,7 +1030,7 @@ const SpecialistAnalytics: React.FC = () => {
             </div>
           </div>
           
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
@@ -1051,7 +1051,7 @@ const SpecialistAnalytics: React.FC = () => {
             </div>
           </div>
           
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
@@ -1075,7 +1075,7 @@ const SpecialistAnalytics: React.FC = () => {
             </div>
           </div>
           
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">

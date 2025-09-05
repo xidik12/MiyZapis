@@ -379,7 +379,10 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
 
 // Helper function to get the booking currency
 const getBookingCurrency = (booking: Booking): 'USD' | 'EUR' | 'UAH' => {
-  return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+  // Force UAH as the base currency since all booking amounts are stored in UAH
+  // This fixes the double conversion issue where services marked as USD
+  // were causing UAH amounts to be converted again
+  return 'UAH';
 };
 
 const SpecialistBookings: React.FC = () => {
