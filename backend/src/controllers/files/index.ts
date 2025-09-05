@@ -173,23 +173,33 @@ export class FileController {
             throw new Error('User not found');
           }
 
+          // Prepare file record data - handle missing cloudProvider field gracefully
+          const fileData: any = {
+            filename: processedFile.filename,
+            originalName: file.originalname,
+            mimeType: file.mimetype,
+            size: processedFile.buffer.length,
+            path: fileUrl, // Use local file path, not absolute URL
+            url: absoluteUrl,
+            width: processedFile.width,
+            height: processedFile.height,
+            uploadedBy: userId,
+            purpose,
+            entityType,
+            entityId,
+            isPublic,
+            isProcessed: true
+          };
+
+          // Add cloud provider info if using S3
+          if (this.fileUploadService.isUsingS3()) {
+            fileData.cloudProvider = 'S3';
+            fileData.cloudKey = processedFile.filename;
+            fileData.cloudBucket = process.env.AWS_S3_BUCKET;
+          }
+
           const fileRecord = await prisma.file.create({
-            data: {
-              filename: processedFile.filename,
-              originalName: file.originalname,
-              mimeType: file.mimetype,
-              size: processedFile.buffer.length,
-              path: fileUrl, // Use local file path, not absolute URL
-              url: absoluteUrl,
-              width: processedFile.width,
-              height: processedFile.height,
-              uploadedBy: userId,
-              purpose,
-              entityType,
-              entityId,
-              isPublic,
-              isProcessed: true
-            }
+            data: fileData
           });
 
           logger.info('File record saved to database', {

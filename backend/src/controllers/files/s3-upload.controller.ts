@@ -134,21 +134,27 @@ export const uploadFiles = async (req: FileUploadRequest, res: Response): Promis
         );
 
         // Create database record (temporarily without cloud fields until migration)
+        // Save file record to database - handle missing cloudProvider field gracefully
+        const fileData: any = {
+          filename: path.basename(s3Result.key),
+          originalName: file.originalname,
+          mimeType: s3Result.mimeType,
+          size: s3Result.size,
+          path: s3Result.key, // Store S3 key in path field
+          url: s3Result.url,
+          uploadedBy: userId,
+          purpose: purpose,
+          isPublic: true,
+          isProcessed: true
+        };
+
+        // Add cloud provider info for S3
+        fileData.cloudProvider = 'S3';
+        fileData.cloudKey = s3Result.key;
+        fileData.cloudBucket = process.env.AWS_S3_BUCKET;
+
         const fileRecord = await prisma.file.create({
-          data: {
-            filename: path.basename(s3Result.key),
-            originalName: file.originalname,
-            mimeType: s3Result.mimeType,
-            size: s3Result.size,
-            path: s3Result.key, // Store S3 key in path field
-            url: s3Result.url,
-            uploadedBy: userId,
-            purpose: purpose,
-            isPublic: true,
-            isProcessed: true
-            // cloudProvider: 'S3', // TODO: Add after migration
-            // cloudKey: s3Result.key
-          }
+          data: fileData
         });
 
         uploadResults.push({

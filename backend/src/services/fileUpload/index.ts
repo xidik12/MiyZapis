@@ -26,6 +26,10 @@ export class FileUploadService {
     }
   }
 
+  isUsingS3(): boolean {
+    return this.useS3;
+  }
+
   private setupS3() {
     if (!AWS) {
       throw new Error('AWS SDK not available');
