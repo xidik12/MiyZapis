@@ -57,11 +57,11 @@ export class ServiceService {
 
   // Get service categories
   async getCategories(): Promise<ServiceCategory[]> {
-    const response = await apiClient.get<ServiceCategory[]>('/services/categories');
+    const response = await apiClient.get<{categories: ServiceCategory[]}>('/services/categories');
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get service categories');
     }
-    return response.data;
+    return response.data.categories;
   }
 
   // Get specific service details
