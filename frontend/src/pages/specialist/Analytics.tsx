@@ -152,8 +152,7 @@ const SimpleLineChart: React.FC<ChartProps & { color?: string }> = ({ data, labe
                   x={x}
                   y={y - 8}
                   textAnchor="middle"
-                  className="text-xs font-medium"
-                  fill={color}
+                  className="text-xs font-medium fill-gray-700 dark:fill-gray-300"
                   fontSize="8"
                 >
                   {value}
@@ -246,8 +245,8 @@ const SimplePieChart: React.FC<{ data: { label: string; value: number; color: st
               className="w-3 h-3 rounded-full mr-2"
               style={{ backgroundColor: item.color }}
             />
-            <span className="text-sm text-gray-600">{item.label}</span>
-            <span className="text-sm font-semibold text-gray-800 ml-2">{((item.value / total) * 100).toFixed(1)}%</span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">{item.label}</span>
+            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 ml-2">{((item.value / total) * 100).toFixed(1)}%</span>
           </div>
         ))}
       </div>
@@ -1015,7 +1014,7 @@ const SpecialistAnalytics: React.FC = () => {
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                   {t('analytics.responseTime')}
                 </p>
-                <p className="text-xl font-bold text-gray-900">
+                <p className="text-xl font-bold text-gray-900 dark:text-white">
                   {Math.round(analyticsData.performance?.averageResponseTime || 0)}m
                 </p>
                 <p className={`text-xs mt-1 ${responseTimeStatus.color}`}>
@@ -1036,7 +1035,7 @@ const SpecialistAnalytics: React.FC = () => {
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                   {t('analytics.completionRate')}
                 </p>
-                <p className="text-xl font-bold text-gray-900">
+                <p className="text-xl font-bold text-gray-900 dark:text-white">
                   {(analyticsData.performance?.completionRate || 0).toFixed(1)}%
                 </p>
                 <p className={`text-xs mt-1 ${completionRateStatus.color}`}>
@@ -1057,7 +1056,7 @@ const SpecialistAnalytics: React.FC = () => {
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                   {t('analytics.profileViews')}
                 </p>
-                <p className="text-xl font-bold text-gray-900">
+                <p className="text-xl font-bold text-gray-900 dark:text-white">
                   {((analyticsData.overview?.totalBookings || 0) * 4.2).toLocaleString()} {/* Estimate based on bookings */}
                 </p>
                 <p className={`text-xs mt-1 ${
@@ -1081,7 +1080,7 @@ const SpecialistAnalytics: React.FC = () => {
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                   {t('analytics.conversionRate')}
                 </p>
-                <p className="text-xl font-bold text-gray-900">
+                <p className="text-xl font-bold text-gray-900 dark:text-white">
                   {conversionRate.toFixed(1)}%
                 </p>
                 <div className="flex items-center mt-1">
@@ -1108,13 +1107,13 @@ const SpecialistAnalytics: React.FC = () => {
             </svg>
             {t('analytics.exportPdfReport')}
           </button>
-          <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center">
+          <button className="bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center">
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             {t('analytics.exportCsvData')}
           </button>
-          <button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center">
+          <button className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center">
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
             </svg>
