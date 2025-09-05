@@ -78,9 +78,11 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     // For backend uploads, try a faster pre-check using fetch
     const isBackendUpload = src.includes('miyzapis-backend-production.up.railway.app/uploads/') || 
                             src.includes('miyzapis-backend-production.up.railway.app/api/v1/files/s3-proxy/');
+    const isS3Proxy = src.includes('/s3-proxy/');
     
-    if (isBackendUpload && !src.startsWith('data:')) {
+    if (isBackendUpload && !src.startsWith('data:') && !isS3Proxy) {
       // Pre-check backend files with HEAD request to detect 404s faster
+      // Skip HEAD check for S3 proxy URLs to improve performance
       fetch(src, { method: 'HEAD' })
         .then(response => {
           if (!response.ok) {
@@ -117,6 +119,16 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
           setHasError(true);
           setIsLoading(false);
         });
+    } else if (isS3Proxy) {
+      // For S3 proxy URLs, skip HEAD check and use extended timeout directly
+      console.log('☁️ S3 proxy detected, using direct loading with extended timeout:', src);
+      const timeout = setTimeout(() => {
+        console.log('⏰ S3 proxy image loading timeout:', src);
+        console.log('💡 S3 proxy image may be large or have slow network connection.');
+        setHasError(true);
+        setIsLoading(false);
+      }, 15000); // 15 seconds for S3 proxy without HEAD check
+      setTimeoutId(timeout);
     } else {
       // For non-backend files or data URLs, use different timeout based on type
       let timeoutDuration = 3000;
@@ -179,6 +191,14 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     // Handle base64 data URLs - they should work directly
     if (originalSrc.startsWith('data:')) {
       return originalSrc;
+    }
+    
+    // If S3 proxy fails, try the original S3 URL directly
+    if (originalSrc.includes('/s3-proxy/')) {
+      const s3Path = originalSrc.replace(/.*\/s3-proxy\//, '');
+      const directS3Url = `https://miyzapis-storage.s3.ap-southeast-2.amazonaws.com/${s3Path}`;
+      console.log('🔄 S3 proxy failed, trying direct S3 URL:', directS3Url);
+      return directS3Url;
     }
     
     // If the source is a WebP image, try to convert to JPEG
