@@ -135,7 +135,7 @@ const SpecialistEarnings: React.FC = () => {
         console.log('🔍 User from Redux:', user);
         
         // Load data from backend endpoints - prioritize bookings API over payments API for accurate amounts
-        const [bookingsData, analyticsOverview, bookingAnalytics, servicesData, performanceData] = await Promise.allSettled([
+        const [completedBookingsData, analyticsOverview, bookingAnalytics, servicesData, performanceData] = await Promise.allSettled([
           retryRequest(() => bookingService.getBookings({ limit: 100, status: 'COMPLETED' }, 'specialist'), 2, 1000),
           retryRequest(() => analyticsService.getOverview(), 2, 1000),
           retryRequest(() => analyticsService.getBookingAnalytics(), 2, 1000),
@@ -144,7 +144,7 @@ const SpecialistEarnings: React.FC = () => {
         ]);
 
         console.log('🔍 Earnings API results:', {
-          bookings: bookingsData.status,
+          completedBookings: completedBookingsData.status,
           analytics: analyticsOverview.status,
           bookingAnalytics: bookingAnalytics.status,
           services: servicesData.status,
@@ -156,14 +156,25 @@ const SpecialistEarnings: React.FC = () => {
         let thisMonthEarnings = 0;
         let pendingEarnings = 0;
         let monthlyBreakdown: MonthlyEarning[] = [];
+        let uniqueCustomers = 0;
         
-        if (bookingsData.status === 'fulfilled' && bookingsData.value) {
+        if (completedBookingsData.status === 'fulfilled' && completedBookingsData.value) {
           try {
-            const bookingResponse = bookingsData.value;
+            const bookingResponse = completedBookingsData.value;
             console.log('📊 Processing completed bookings data:', bookingResponse);
             
             const completedBookings = Array.isArray(bookingResponse.bookings) ? bookingResponse.bookings : [];
             console.log('📊 Completed bookings:', completedBookings.length, 'bookings');
+            
+            // Count unique customers from actual booking data
+            const uniqueCustomerIds = new Set();
+            completedBookings.forEach(booking => {
+              if (booking.customer?.id) {
+                uniqueCustomerIds.add(booking.customer.id);
+              }
+            });
+            uniqueCustomers = uniqueCustomerIds.size;
+            console.log('📊 Unique customers calculated from bookings:', uniqueCustomers);
             
             // Calculate total earnings from completed bookings (accurate amounts)
             totalEarnings = completedBookings.reduce((sum, booking) => {
@@ -216,8 +227,8 @@ const SpecialistEarnings: React.FC = () => {
           } catch (err) {
             console.error('Error processing bookings data:', err);
           }
-        } else if (bookingsData.status === 'rejected') {
-          console.warn('Bookings data failed to load:', bookingsData.reason);
+        } else if (completedBookingsData.status === 'rejected') {
+          console.warn('Completed bookings data failed to load:', completedBookingsData.reason);
         }
         
         // Calculate analytics data from actual payment/booking data since analytics APIs are unreliable
@@ -294,7 +305,7 @@ const SpecialistEarnings: React.FC = () => {
           pending: Math.round(pendingEarnings * 100) / 100,
           lastPayout: Math.round((totalEarnings - pendingEarnings) * 100) / 100,
           completedBookings: safeAnalyticsData.completedBookings,
-          activeClients: safeAnalyticsData.newCustomers + safeAnalyticsData.repeatCustomers,
+          activeClients: uniqueCustomers, // Use actual unique customer count from bookings
           averageBookingValue: safeAnalyticsData.completedBookings > 0 
             ? Math.round((totalEarnings / safeAnalyticsData.completedBookings) * 100) / 100 
             : 0,
