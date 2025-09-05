@@ -950,7 +950,7 @@ const SpecialistProfile: React.FC = () => {
               <div className="relative group">
                 {user?.avatar ? (
                   <OptimizedImage
-                    src={user.avatar}
+                    src={getAbsoluteImageUrl(user.avatar)}
                     alt={profile.firstName || 'Profile'}
                     className="w-28 h-28 rounded-2xl object-cover shadow-lg ring-4 ring-white dark:ring-gray-800"
                   />
