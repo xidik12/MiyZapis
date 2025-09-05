@@ -132,6 +132,36 @@ const SimpleLineChart: React.FC<ChartProps & { color?: string }> = ({ data, labe
           fill={`url(#${gradientId})`}
           points={`0,100 ${points} 100,100`}
         />
+        {/* Add data point circles for better visibility */}
+        {data.map((value, index) => {
+          const x = data.length === 1 ? 50 : (index / (data.length - 1)) * 100;
+          const y = range === 0 ? 50 : 100 - ((value - min) / range * 80 + 10);
+          return (
+            <g key={index}>
+              <circle
+                cx={x}
+                cy={y}
+                r="1.5"
+                fill={color}
+                stroke="white"
+                strokeWidth="0.5"
+              />
+              {/* Show value labels for single data points */}
+              {data.length === 1 && (
+                <text
+                  x={x}
+                  y={y - 8}
+                  textAnchor="middle"
+                  className="text-xs font-medium"
+                  fill={color}
+                  fontSize="8"
+                >
+                  {value}
+                </text>
+              )}
+            </g>
+          );
+        })}
       </svg>
       <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-gray-500 px-1">
         {labels.map((label, index) => (
@@ -890,19 +920,40 @@ const SpecialistAnalytics: React.FC = () => {
               </div>
             </div>
             {!loading && (currentPeriodData.revenue.length > 0 || currentPeriodData.bookings.length > 0) ? (
-              <SimpleLineChart
-                data={(() => {
-                  const data = selectedView === 'revenue' ? currentPeriodData.revenue : currentPeriodData.bookings;
-                  console.log(`📊 Chart data for ${selectedView}:`, data);
-                  console.log(`📊 Revenue data:`, currentPeriodData.revenue);
-                  console.log(`📊 Bookings data:`, currentPeriodData.bookings);
-                  return data;
-                })()}
-                labels={translateChartLabels(currentPeriodData.labels, selectedPeriod)}
-                color={selectedView === 'revenue' ? '#059669' : '#2563eb'} // Green for revenue, blue for bookings
-                type="line"
-                height="300px"
-              />
+              <>
+                <SimpleLineChart
+                  data={(() => {
+                    const data = selectedView === 'revenue' ? currentPeriodData.revenue : currentPeriodData.bookings;
+                    console.log(`📊 Chart data for ${selectedView}:`, data, 'Values:', data.join(', '));
+                    console.log(`📊 Revenue data:`, currentPeriodData.revenue, 'Values:', currentPeriodData.revenue.join(', '));
+                    console.log(`📊 Bookings data:`, currentPeriodData.bookings, 'Values:', currentPeriodData.bookings.join(', '));
+                    console.log(`📊 Selected period: ${selectedPeriod}`);
+                    return data;
+                  })()}
+                  labels={translateChartLabels(currentPeriodData.labels, selectedPeriod)}
+                  color={selectedView === 'revenue' ? '#059669' : '#2563eb'} // Green for revenue, blue for bookings
+                  type="line"
+                  height="300px"
+                />
+                {/* Show data summary for better understanding */}
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex justify-between text-sm">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded-full bg-green-600 mr-2"></div>
+                      <span>Revenue: {formatPrice(currentPeriodData.revenue.reduce((sum, val) => sum + val, 0), 'USD')}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded-full bg-blue-600 mr-2"></div>
+                      <span>Bookings: {currentPeriodData.bookings.reduce((sum, val) => sum + val, 0)}</span>
+                    </div>
+                    {currentPeriodData.revenue.length === 1 && selectedPeriod === 'monthly' && (
+                      <div className="text-gray-500 italic">
+                        Switch to "daily" for detailed trends
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
             ) : (
               <div className="flex items-center justify-center h-64 text-gray-500">
                 <div className="text-center">
