@@ -692,6 +692,51 @@ if (process.env.ENABLE_S3_STORAGE === 'true') {
   router.post('/upload', authMiddleware, fileController.uploadMiddleware, fileController.uploadFiles);
 }
 
+// Proxy S3 images to handle CORS issues
+router.get('/s3-proxy/*', async (req, res) => {
+  try {
+    const s3Path = req.params[0]; // Gets everything after /s3-proxy/
+    const s3Url = `https://miyzapis-storage.s3.ap-southeast-2.amazonaws.com/${s3Path}`;
+    
+    console.log(`🔄 Proxying S3 request: ${s3Path}`);
+    
+    const response = await fetch(s3Url);
+    
+    if (!response.ok) {
+      console.log(`❌ S3 proxy failed: ${response.status} for ${s3Url}`);
+      return res.status(response.status).json({
+        success: false,
+        error: 'S3 file not found',
+        s3Status: response.status
+      });
+    }
+    
+    // Set appropriate headers
+    const contentType = response.headers.get('content-type') || 'application/octet-stream';
+    const contentLength = response.headers.get('content-length');
+    
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year cache
+    
+    if (contentLength) {
+      res.setHeader('Content-Length', contentLength);
+    }
+    
+    // Stream the response
+    const buffer = await response.arrayBuffer();
+    res.send(Buffer.from(buffer));
+    
+  } catch (error) {
+    console.error('❌ S3 proxy error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'S3 proxy failed',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // Serve static uploaded files
 router.get('/uploads/:filename', (req, res) => {
   try {

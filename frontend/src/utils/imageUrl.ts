@@ -40,8 +40,16 @@ export function getAbsoluteImageUrl(url: string | undefined | null | any): strin
     console.warn('⚠️ Google avatar URL detected - this should be saved to backend storage:', url);
   }
   
-  // If it's already an absolute URL, return as is
+  // If it's already an absolute URL, check if it's S3 and needs proxying
   if (url.startsWith('http://') || url.startsWith('https://')) {
+    // Convert S3 URLs to use backend proxy to handle CORS issues
+    if (url.includes('miyzapis-storage.s3.ap-southeast-2.amazonaws.com')) {
+      const s3Path = url.replace('https://miyzapis-storage.s3.ap-southeast-2.amazonaws.com/', '');
+      const proxyUrl = `https://miyzapis-backend-production.up.railway.app/api/v1/files/s3-proxy/${s3Path}`;
+      console.log('🔄 Converting S3 URL to proxy:', proxyUrl.substring(0, 80) + '...');
+      return proxyUrl;
+    }
+    
     console.log('✅ Returning absolute URL as-is:', url.substring(0, 50) + '...');
     return url;
   }

@@ -76,7 +76,8 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     }
     
     // For backend uploads, try a faster pre-check using fetch
-    const isBackendUpload = src.includes('miyzapis-backend-production.up.railway.app/uploads/');
+    const isBackendUpload = src.includes('miyzapis-backend-production.up.railway.app/uploads/') || 
+                            src.includes('miyzapis-backend-production.up.railway.app/api/v1/files/s3-proxy/');
     
     if (isBackendUpload && !src.startsWith('data:')) {
       // Pre-check backend files with HEAD request to detect 404s faster
