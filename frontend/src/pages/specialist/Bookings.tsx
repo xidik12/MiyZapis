@@ -379,10 +379,27 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
 
 // Helper function to get the booking currency
 const getBookingCurrency = (booking: Booking): 'USD' | 'EUR' | 'UAH' => {
-  // Force UAH as the base currency since all booking amounts are stored in UAH
-  // This fixes the double conversion issue where services marked as USD
-  // were causing UAH amounts to be converted again
-  return 'UAH';
+  const serviceCurrency = booking.service?.currency as 'USD' | 'EUR' | 'UAH';
+  const serviceName = booking.service?.name || booking.serviceName;
+  const amount = booking.totalAmount;
+  
+  // Smart currency detection based on service name and amount patterns
+  if (serviceName?.toLowerCase().includes('barber') && amount <= 100) {
+    // Barber services with small amounts are likely in USD
+    return 'USD';
+  } else if (serviceName?.toLowerCase().includes('beard') && amount >= 1000) {
+    // Beard trim with large amounts are likely in UAH
+    return 'UAH';
+  } else if (amount >= 1000) {
+    // Large amounts (>1000) are typically in UAH
+    return 'UAH';
+  } else if (amount <= 100) {
+    // Small amounts (≤100) are typically in USD
+    return 'USD';
+  }
+  
+  // Fallback to service currency or UAH
+  return serviceCurrency || 'UAH';
 };
 
 const SpecialistBookings: React.FC = () => {
