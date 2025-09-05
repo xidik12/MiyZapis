@@ -84,6 +84,12 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         .then(response => {
           if (!response.ok) {
             console.log('🚨 Backend file HEAD check failed:', response.status, src);
+            
+            // Special handling for portfolio images
+            if (src.includes('/uploads/portfolio_')) {
+              console.log('📁 Portfolio image missing - may need migration or re-upload');
+            }
+            
             setHasError(true);
             setIsLoading(false);
             return;
@@ -122,6 +128,12 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         console.log(`🌐 External avatar service detected, using extended timeout: ${src}`);
       }
       
+      // Longer timeout for S3 images as they might be larger and take time to load
+      if (src.includes('s3.ap-southeast-2.amazonaws.com') || src.includes('miyzapis-storage')) {
+        timeoutDuration = 10000; // 10 seconds for S3 images
+        console.log(`☁️ S3 image detected, using extended timeout: ${src}`);
+      }
+      
       const timeout = setTimeout(() => {
         if (src.startsWith('data:image/')) {
           const sizeKB = Math.round(src.length / 1024);
@@ -130,6 +142,9 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         } else if (src.includes('googleusercontent.com')) {
           console.log('⏰ Google avatar loading timeout for:', src);
           console.log('💡 This might be due to network issues or CORS. Google avatars should work.');
+        } else if (src.includes('s3.ap-southeast-2.amazonaws.com') || src.includes('miyzapis-storage')) {
+          console.log('⏰ S3 image loading timeout for:', src);
+          console.log('💡 S3 image might be large or have slow network connection. Check S3 CORS configuration.');
         } else {
           console.log('⏰ Image loading timeout for:', src);
         }

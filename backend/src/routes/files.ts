@@ -827,6 +827,41 @@ router.post('/save-external', authMiddleware, async (req, res) => {
   }
 });
 
+// Migrate missing portfolio image to S3
+router.post('/migrate-portfolio', authMiddleware, async (req, res) => {
+  try {
+    const { filename } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+
+    if (!filename) {
+      return res.status(400).json({ success: false, error: 'Filename is required' });
+    }
+
+    // For missing portfolio images, return a placeholder or suggest re-upload
+    console.log(`📁 Portfolio migration requested for missing file: ${filename}`);
+    
+    return res.json({
+      success: false,
+      error: 'File not found',
+      message: 'This portfolio image is no longer available. Please re-upload your portfolio images.',
+      code: 'PORTFOLIO_MIGRATION_NEEDED',
+      filename
+    });
+    
+  } catch (error) {
+    console.error('❌ Portfolio migration error:', error);
+    return res.status(500).json({ 
+      success: false, 
+      error: 'Portfolio migration failed',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // Delete file (requires authentication and ownership)
 router.delete(
   '/:id',
