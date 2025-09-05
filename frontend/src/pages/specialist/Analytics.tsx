@@ -53,11 +53,17 @@ const calculateGrowthPercentage = (current: number, previous: number): number =>
 const formatChartLabels = (period: 'daily' | 'weekly' | 'monthly' | 'yearly', data: any[]): string[] => {
   switch (period) {
     case 'daily':
-      return data.map(item => new Date(item.date).toLocaleDateString('uk-UA', { weekday: 'short' }));
+      return data.map(item => {
+        const date = new Date(item.date);
+        return `${date.getDate()}/${date.getMonth() + 1}`;
+      });
     case 'weekly':
       return data.map((_, index) => `Week ${index + 1}`);
     case 'monthly':
-      return data.map(item => new Date(item.month || item.date).toLocaleDateString('uk-UA', { month: 'short' }));
+      return data.map(item => {
+        const date = new Date(item.date);
+        return `${date.getMonth() + 1}/${date.getFullYear().toString().slice(2)}`;
+      });
     case 'yearly':
       return data.map(item => new Date(item.date).getFullYear().toString());
     default:
@@ -87,13 +93,21 @@ interface ChartProps {
 
 // Simple CSS-based chart components
 const SimpleLineChart: React.FC<ChartProps> = ({ data, labels, height = '200px' }) => {
+  if (data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full text-gray-500">
+        No data available
+      </div>
+    );
+  }
+  
   const max = Math.max(...data);
   const min = Math.min(...data);
-  const range = max - min;
+  const range = max - min || 1; // Prevent division by zero
   
   const points = data.map((value, index) => {
-    const x = (index / (data.length - 1)) * 100;
-    const y = 100 - ((value - min) / range * 80 + 10);
+    const x = data.length === 1 ? 50 : (index / (data.length - 1)) * 100;
+    const y = range === 0 ? 50 : 100 - ((value - min) / range * 80 + 10);
     return `${x},${y}`;
   }).join(' ');
   
@@ -127,12 +141,20 @@ const SimpleLineChart: React.FC<ChartProps> = ({ data, labels, height = '200px' 
 };
 
 const SimpleBarChart: React.FC<ChartProps> = ({ data, labels, color = '#3b97f2', height = '200px' }) => {
-  const max = Math.max(...data);
+  if (data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full text-gray-500">
+        No data available
+      </div>
+    );
+  }
+  
+  const max = Math.max(...data) || 1; // Prevent division by zero
   
   return (
     <div className="flex items-end justify-between space-x-1" style={{ height }}>
       {data.map((value, index) => {
-        const barHeight = (value / max) * 80; // 80% max height
+        const barHeight = max === 0 ? 0 : (value / max) * 80; // 80% max height
         return (
           <div key={index} className="flex flex-col items-center flex-1">
             <div className="text-xs text-gray-600 mb-1">{value}</div>
@@ -435,6 +457,10 @@ const SpecialistAnalytics: React.FC = () => {
         const dailyChartData = Array.from(chartDataByDay.values()).sort((a, b) => a.date.getTime() - b.date.getTime());
         const monthlyChartData = Array.from(chartDataByMonth.values()).sort((a, b) => a.date.getTime() - b.date.getTime());
         
+        console.log('📊 Chart Data Debug:');
+        console.log('Daily chart data points:', dailyChartData.length, dailyChartData);
+        console.log('Monthly chart data points:', monthlyChartData.length, monthlyChartData);
+        
         const newChartData = {
           daily: {
             revenue: dailyChartData.map(d => d.revenue),
@@ -457,6 +483,8 @@ const SpecialistAnalytics: React.FC = () => {
             labels: ['2024'] // Current year
           }
         };
+        
+        console.log('📈 Generated chart data:', newChartData);
         
         setChartData(newChartData);
         
@@ -544,37 +572,17 @@ const SpecialistAnalytics: React.FC = () => {
     return serviceMapping[ukrainianName] ? t(serviceMapping[ukrainianName]) : ukrainianName;
   };
   
-  // Translate chart labels for different periods
+  // Translate chart labels for different periods (simplified since we use numeric formats now)
   const translateChartLabels = (labels: string[], period: string): string[] => {
-    switch (period) {
-      case 'monthly':
-        // Ukrainian month names to translation keys
-        const monthMap: { [key: string]: string } = {
-          'Січ': 'month.january', 'Лют': 'month.february', 'Бер': 'month.march', 'Кві': 'month.april',
-          'Тра': 'month.may', 'Чер': 'month.june', 'Лип': 'month.july', 'Сер': 'month.august'
-        };
-        return labels.map(label => monthMap[label] ? t(monthMap[label]) : label);
-        
-      case 'daily':
-        // Ukrainian weekday names to translation keys
-        const dayMap: { [key: string]: string } = {
-          'Пн': 'weekday.monday', 'Вт': 'weekday.tuesday', 'Ср': 'weekday.wednesday', 
-          'Чт': 'weekday.thursday', 'Пт': 'weekday.friday', 'Сб': 'weekday.saturday', 'Нд': 'weekday.sunday'
-        };
-        return labels.map(label => dayMap[label] ? t(dayMap[label]) : label);
-        
-      case 'weekly':
-        // Ukrainian week numbers to translated format
-        return labels.map(label => label.replace('Тиж', t('schedule.week')));
-        
-      default:
-        return labels; // yearly and other periods are already in numbers/English
-    }
+    // Since we're now using simple numeric date formats (DD/MM, MM/YY), no translation needed
+    return labels;
   };
   
   // Get the appropriate data based on selected period
   const getCurrentPeriodData = () => {
-    return chartData[selectedPeriod] || { revenue: [], bookings: [], labels: [] };
+    const data = chartData[selectedPeriod] || { revenue: [], bookings: [], labels: [] };
+    console.log(`📈 getCurrentPeriodData for ${selectedPeriod}:`, data);
+    return data;
   };
   
   const currentPeriodData = getCurrentPeriodData();
@@ -879,7 +887,7 @@ const SpecialistAnalytics: React.FC = () => {
                 ))}
               </div>
             </div>
-            {currentPeriodData.revenue.length > 0 || currentPeriodData.bookings.length > 0 ? (
+            {!loading && (currentPeriodData.revenue.length > 0 || currentPeriodData.bookings.length > 0) ? (
               <SimpleLineChart
                 data={selectedView === 'revenue' ? currentPeriodData.revenue : currentPeriodData.bookings}
                 labels={translateChartLabels(currentPeriodData.labels, selectedPeriod)}
