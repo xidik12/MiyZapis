@@ -298,12 +298,15 @@ const SpecialistDashboard: React.FC = () => {
         }
 
         console.log('📊 Final dashboard data:', { stats, recentBookings, upcomingAppointments });
+        console.log('📊 Monthly Revenue being set to:', stats.monthlyRevenue);
 
         setDashboardData({
           stats,
           recentBookings,
           upcomingAppointments
         });
+
+        console.log('📊 Dashboard state updated. Current monthlyRevenue should be:', stats.monthlyRevenue);
 
       } catch (err) {
         console.error('Error loading dashboard data:', err);
@@ -419,7 +422,13 @@ const SpecialistDashboard: React.FC = () => {
         />
         <StatCard
           title={t('dashboard.specialist.monthlyRevenue')}
-          value={formatPrice(dashboardData.stats.monthlyRevenue, 'UAH')}
+          value={(() => {
+            console.log('📊 RENDER: dashboardData.stats.monthlyRevenue =', dashboardData.stats.monthlyRevenue);
+            console.log('📊 RENDER: formatPrice input =', dashboardData.stats.monthlyRevenue);
+            const formatted = formatPrice(dashboardData.stats.monthlyRevenue, 'UAH');
+            console.log('📊 RENDER: formatPrice output =', formatted);
+            return formatted;
+          })()}
           change={dashboardData.stats.monthlyRevenue > 0 ? `+8% ${t('dashboard.specialist.improvement')}` : ''}
           changeType="positive"
           icon={CurrencyDollarIcon}
