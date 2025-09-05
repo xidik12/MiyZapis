@@ -54,8 +54,8 @@ const SpecialistDashboard: React.FC = () => {
       favoriteCount: 0,
       conversionRate: 0,
       completionRate: 0,
-      repeatClients: 0,
-      punctuality: 0
+      repeatClients: 0
+      // Removed punctuality - no real data available
     },
     recentBookings: [],
     upcomingAppointments: []
@@ -104,19 +104,19 @@ const SpecialistDashboard: React.FC = () => {
           console.error('🔍 Completed bookings failed:', completedBookingsData.reason);
         }
 
-        // Calculate stats from completed bookings data (accurate source)
+        // Calculate stats from completed bookings data (accurate source) - NO MOCK DATA
         let stats = {
           totalBookings: 0,
           monthlyRevenue: 0,
           rating: 0,
           reviewCount: 0,
-          responseTime: 15, // Default value
+          responseTime: 0, // Only real data
           profileViews: 0,
           favoriteCount: 0,
           conversionRate: 0,
           completionRate: 0,
-          repeatClients: 0,
-          punctuality: 85 // Default value
+          repeatClients: 0
+          // Removed punctuality - no real data available
         };
 
         // Process completed bookings to calculate accurate stats
@@ -141,29 +141,33 @@ const SpecialistDashboard: React.FC = () => {
               monthlyRevenue: stats.monthlyRevenue
             });
             
-            // Calculate completion rate based on completed vs total
+            // Calculate completion rate based on completed vs total (real calculation only)
             if (upcomingBookingsData.status === 'fulfilled' && upcomingBookingsData.value) {
               const upcomingBookings = Array.isArray(upcomingBookingsData.value.bookings) ? upcomingBookingsData.value.bookings : [];
               const totalAllBookings = completedBookings.length + upcomingBookings.length;
-              stats.completionRate = totalAllBookings > 0 ? Math.round((completedBookings.length / totalAllBookings) * 100) : 100;
-            } else {
-              stats.completionRate = 95; // High default since we have completed bookings
+              if (totalAllBookings > 0) {
+                stats.completionRate = Math.round((completedBookings.length / totalAllBookings) * 100);
+                stats.conversionRate = stats.completionRate; // Use same real calculation
+              }
             }
             
-            // Estimate other metrics based on booking data
-            stats.conversionRate = stats.completionRate;
-            stats.rating = 4.5; // Default good rating
-            stats.reviewCount = Math.floor(completedBookings.length * 0.7); // Estimate 70% leave reviews
+            // Only use real data - no estimates or defaults
+            // rating: 0 (no real rating data available)
+            // reviewCount: 0 (no real review data available) 
+            // responseTime: 0 (no real response time data available)
             
-            // Calculate repeat clients (estimate based on customer frequency)
+            // Calculate repeat clients from actual customer booking frequency (real data only)
             const customerCounts = new Map();
             completedBookings.forEach(booking => {
               if (booking.customer?.id) {
                 customerCounts.set(booking.customer.id, (customerCounts.get(booking.customer.id) || 0) + 1);
               }
             });
-            const repeatCustomers = Array.from(customerCounts.values()).filter(count => count > 1).length;
-            stats.repeatClients = Math.round((repeatCustomers / Math.max(customerCounts.size, 1)) * 100);
+            
+            if (customerCounts.size > 0) {
+              const repeatCustomers = Array.from(customerCounts.values()).filter(count => count > 1).length;
+              stats.repeatClients = Math.round((repeatCustomers / customerCounts.size) * 100);
+            }
             
           } catch (err) {
             console.warn('Error processing completed bookings:', err);
@@ -419,10 +423,6 @@ const SpecialistDashboard: React.FC = () => {
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.repeatClients')}</span>
               <span className="font-semibold text-gray-900 dark:text-white">{dashboardData.stats.repeatClients}%</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.punctuality')}</span>
-              <span className="font-semibold text-primary-600">{dashboardData.stats.punctuality}%</span>
             </div>
           </div>
         </div>
