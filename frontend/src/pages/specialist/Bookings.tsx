@@ -134,7 +134,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               </div>
               <div>
                 <label className="text-sm text-gray-600">{t('bookings.amount')}</label>
-                <p className="font-medium text-gray-900">{formatPrice(booking.totalAmount)}</p>
+                <p className="font-medium text-gray-900">{formatPrice(booking.totalAmount, getBookingCurrency(booking))}</p>
               </div>
               <div>
                 <label className="text-sm text-gray-600">{t('bookings.type')}</label>
@@ -325,7 +325,7 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Amount:</span>
-              <span className="font-bold text-green-600">{formatPrice(booking.totalAmount)}</span>
+              <span className="font-bold text-green-600">{formatPrice(booking.totalAmount, getBookingCurrency(booking))}</span>
             </div>
           </div>
 
@@ -375,6 +375,11 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
       </div>
     </div>
   );
+};
+
+// Helper function to get the booking currency
+const getBookingCurrency = (booking: Booking): 'USD' | 'EUR' | 'UAH' => {
+  return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
 };
 
 const SpecialistBookings: React.FC = () => {
@@ -873,7 +878,7 @@ const SpecialistBookings: React.FC = () => {
                       {getStatusBadge(booking.status)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {formatPrice(booking.totalAmount)}
+                      {formatPrice(booking.totalAmount, getBookingCurrency(booking))}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
