@@ -362,18 +362,47 @@ const SpecialistEarnings: React.FC = () => {
           const earnings = earningsData.earnings || earningsData;
           const payments = Array.isArray(earnings.payments) ? earnings.payments : [];
           
-          console.log('📊 Transformed recent earnings (bookings):', payments);
+          console.log('📊 Raw payment data for debugging:', payments.slice(0, 2)); // Debug first 2 payments
           
           // Transform payment data into recent earnings format
           const recentEarnings: PayoutHistory[] = payments
             .slice(0, 10) // Show last 10 payments
-            .map((payment: any, index: number) => ({
-              id: payment.id || `payment-${index}`,
-              date: payment.createdAt || payment.updatedAt || new Date().toISOString(),
-              amount: payment.amount || 0,
-              status: 'completed' as const, // Since we have payments, they were completed
-              method: payment.description || payment.service?.name || 'Booking Service'
-            }));
+            .map((payment: any, index: number) => {
+              // Debug payment structure to find correct amount field
+              console.log(`📊 Payment ${index}:`, {
+                amount: payment.amount,
+                totalAmount: payment.totalAmount,
+                price: payment.price,
+                netAmount: payment.netAmount,
+                originalAmount: payment.originalAmount,
+                booking: payment.booking?.totalAmount || payment.booking?.amount
+              });
+              
+              // Try different amount fields - prioritize booking total, then various payment amounts
+              let actualAmount = 0;
+              if (payment.booking?.totalAmount) {
+                actualAmount = payment.booking.totalAmount;
+              } else if (payment.totalAmount) {
+                actualAmount = payment.totalAmount;
+              } else if (payment.netAmount) {
+                actualAmount = payment.netAmount;
+              } else if (payment.originalAmount) {
+                actualAmount = payment.originalAmount;
+              } else if (payment.amount) {
+                // If amount is very small (< 5), it might be in cents, so convert to dollars
+                actualAmount = payment.amount < 5 ? payment.amount * 100 : payment.amount;
+              }
+              
+              console.log(`📊 Final amount for payment ${index}: $${actualAmount}`);
+              
+              return {
+                id: payment.id || `payment-${index}`,
+                date: payment.createdAt || payment.updatedAt || new Date().toISOString(),
+                amount: actualAmount,
+                status: 'completed' as const, // Since we have payments, they were completed
+                method: payment.description || payment.service?.name || payment.booking?.service?.name || 'Booking Service'
+              };
+            });
           
           setPayoutHistory(recentEarnings);
         } else {
