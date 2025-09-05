@@ -312,9 +312,6 @@ const SpecialistEarnings: React.FC = () => {
         setEarningsData(transformedEarnings);
         setMonthlyEarnings(monthlyBreakdown);
         setLoading(prev => ({ ...prev, earnings: false, analytics: false }));
-        
-        // Process recent earnings from the same revenue data
-        processRecentEarnings(revenueData);
       } catch (err: any) {
         console.error('Error loading earnings:', err);
         
@@ -351,68 +348,52 @@ const SpecialistEarnings: React.FC = () => {
       }
     };
 
-    const processRecentEarnings = (revenueData: any) => {
+    const loadRecentCompletedBookings = async () => {
       try {
         setLoading(prev => ({ ...prev, payments: true }));
         setErrors(prev => ({ ...prev, payments: null }));
         
-        // Use the payments data we already have from the main earnings call
-        if (revenueData.status === 'fulfilled' && revenueData.value) {
-          const earningsData = revenueData.value;
-          const earnings = earningsData.earnings || earningsData;
-          const payments = Array.isArray(earnings.payments) ? earnings.payments : [];
-          
-          console.log('📊 Raw payment data for debugging:', payments.slice(0, 2)); // Debug first 2 payments
-          
-          // Transform payment data into recent earnings format
-          const recentEarnings: PayoutHistory[] = payments
-            .slice(0, 10) // Show last 10 payments
-            .map((payment: any, index: number) => {
-              // Debug payment structure to find correct amount field
-              console.log(`📊 Payment ${index}:`, {
-                amount: payment.amount,
-                totalAmount: payment.totalAmount,
-                price: payment.price,
-                netAmount: payment.netAmount,
-                originalAmount: payment.originalAmount,
-                booking: payment.booking?.totalAmount || payment.booking?.amount
-              });
-              
-              // Try different amount fields - prioritize booking total, then various payment amounts
-              let actualAmount = 0;
-              if (payment.booking?.totalAmount) {
-                actualAmount = payment.booking.totalAmount;
-              } else if (payment.totalAmount) {
-                actualAmount = payment.totalAmount;
-              } else if (payment.netAmount) {
-                actualAmount = payment.netAmount;
-              } else if (payment.originalAmount) {
-                actualAmount = payment.originalAmount;
-              } else if (payment.amount) {
-                // If amount is very small (< 5), it might be in cents, so convert to dollars
-                actualAmount = payment.amount < 5 ? payment.amount * 100 : payment.amount;
-              }
-              
-              console.log(`📊 Final amount for payment ${index}: $${actualAmount}`);
-              
-              return {
-                id: payment.id || `payment-${index}`,
-                date: payment.createdAt || payment.updatedAt || new Date().toISOString(),
-                amount: actualAmount,
-                status: 'completed' as const, // Since we have payments, they were completed
-                method: payment.description || payment.service?.name || payment.booking?.service?.name || 'Booking Service'
-              };
-            });
-          
-          setPayoutHistory(recentEarnings);
-        } else {
-          console.log('📊 No payment data available, showing empty state');
-          setPayoutHistory([]);
-        }
+        console.log('📊 Loading recent completed bookings for earnings...');
         
+        // Use the same bookings API that the Bookings page uses - this has correct amounts
+        const bookingData = await retryRequest(
+          () => bookingService.getBookings({
+            limit: 10,
+            status: 'COMPLETED', // Only completed bookings for earnings
+            sortBy: 'completedAt',
+            sortOrder: 'desc'
+          }, 'specialist'),
+          2, 1000
+        );
+        
+        console.log('📊 Raw booking data for recent earnings:', bookingData);
+        
+        // Transform booking data to match payout history interface
+        const bookings = Array.isArray(bookingData.bookings) ? bookingData.bookings : [];
+        const recentEarnings: PayoutHistory[] = bookings
+          .filter(booking => booking && booking.id && booking.totalAmount) // Only valid completed bookings
+          .map((booking: any) => {
+            console.log('📊 Processing completed booking:', {
+              id: booking.id,
+              totalAmount: booking.totalAmount,
+              serviceName: booking.service?.name,
+              completedAt: booking.completedAt
+            });
+            
+            return {
+              id: booking.id,
+              date: booking.completedAt || booking.updatedAt || new Date().toISOString(),
+              amount: booking.totalAmount, // Use the same field as Bookings page
+              status: 'completed' as const,
+              method: booking.service?.name || 'Service'
+            };
+          });
+        
+        console.log('📊 Transformed recent completed bookings:', recentEarnings);
+        setPayoutHistory(recentEarnings);
         setLoading(prev => ({ ...prev, payments: false }));
       } catch (err: any) {
-        console.error('Error loading recent earnings:', err);
+        console.error('Error loading recent completed bookings:', err);
         
         setPayoutHistory([]);
         setErrors(prev => ({ ...prev, payments: 'Recent earnings temporarily unavailable.' }));
@@ -421,6 +402,7 @@ const SpecialistEarnings: React.FC = () => {
     };
 
     loadEarningsData();
+    loadRecentCompletedBookings();
   }, [selectedPeriod]);
 
   // Helper functions
