@@ -20,6 +20,9 @@ interface Service {
   duration: number;
   isActive: boolean;
   bookings?: number;
+  _count?: {
+    bookings: number;
+  };
   rating?: number;
   requirements?: string[];
   deliverables?: string[];
@@ -287,6 +290,10 @@ const SpecialistServices: React.FC = () => {
     return item[field] || '';
   };
 
+  const getBookingCount = (service: Service): number => {
+    return service._count?.bookings || service.bookings || 0;
+  };
+
   const handleDeleteService = async (serviceId: string) => {
     if (!serviceId) {
       setError('Cannot delete service: Service ID is missing');
@@ -452,7 +459,7 @@ const SpecialistServices: React.FC = () => {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              {service.bookings || 0} {t('services.bookings')}
+              {getBookingCount(service)} {t('services.bookings')}
             </span>
             <span className="flex items-center gap-1">
               <svg className="w-4 h-4 text-secondary-500" fill="currentColor" viewBox="0 0 24 24">
@@ -596,7 +603,7 @@ const SpecialistServices: React.FC = () => {
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                     {t('services.totalBookings')}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{services.reduce((sum, s) => sum + (s.bookings || 0), 0)}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{services.reduce((sum, s) => sum + getBookingCount(s), 0)}</p>
                 </div>
               </div>
             </div>
@@ -640,10 +647,13 @@ const SpecialistServices: React.FC = () => {
                     {services.length === 0 
                       ? t('services.noDataYet') || 'No data yet'
                       : (() => {
-                          const validPrices = services.filter(s => s.price && !isNaN(s.price));
+                          const validPrices = services.filter(s => {
+                            const price = s.basePrice || s.price;
+                            return price && !isNaN(price);
+                          });
                           return validPrices.length === 0 
                             ? t('services.noDataYet') || 'No data yet'
-                            : formatPrice(validPrices.reduce((sum, s) => sum + s.price, 0) / validPrices.length);
+                            : formatPrice(validPrices.reduce((sum, s) => sum + (s.basePrice || s.price), 0) / validPrices.length);
                         })()
                     }
                   </p>

@@ -108,7 +108,9 @@
       "Bash(PGPASSWORD=\"GVGsHSeKorazyvATppTqvabRFqGniRQsH\" psql -h caboose.proxy.rlwy.net -p 51538 -U postgres -d railway -c \"\\d services\")",
       "Bash(PGPASSWORD=\"GVGsHSeKoazyvATppTqvabRFqGniRQsH\" psql -h caboose.proxy.rlwy.net -p 51538 -U postgres -d railway -c \"\\d services\")",
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" PORT=3000 npm start)",
-      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" node debug-bookings.js)"
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" node debug-bookings.js)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma studio --browser=none --port=5559)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npm start)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
