@@ -261,7 +261,7 @@ const SimplePieChart: React.FC<{ data: { label: string; value: number; color: st
 
 const SpecialistAnalytics: React.FC = () => {
   const { t } = useLanguage();
-  const { formatPrice } = useCurrency();
+  const { formatPrice, convertPrice } = useCurrency();
   const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({});
   const [chartData, setChartData] = useState<{
@@ -323,8 +323,12 @@ const SpecialistAnalytics: React.FC = () => {
         const completedBookings = Array.isArray(completedBookingsResult.bookings) ? completedBookingsResult.bookings : [];
         console.log('📊 Analytics: Processing', completedBookings.length, 'completed bookings');
         
-        // Calculate real metrics from booking data
-        const totalRevenue = completedBookings.reduce((sum, booking) => sum + (booking.totalAmount || 0), 0);
+        // Calculate real metrics from booking data with proper currency conversion
+        const totalRevenue = completedBookings.reduce((sum, booking) => {
+          const bookingCurrency = getBookingCurrency(booking);
+          const convertedAmount = convertPrice(booking.totalAmount || 0, bookingCurrency);
+          return sum + convertedAmount;
+        }, 0);
         const totalBookings = completedBookings.length;
         
         // Count unique customers

@@ -17,6 +17,12 @@ import { analyticsService } from '../../services/analytics.service';
 import { bookingService } from '../../services/booking.service';
 import { retryRequest } from '../../services/api';
 
+// Helper function to get the booking currency (same as Bookings page)
+const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
+  // Use the service's stored currency, defaulting to UAH if not specified
+  return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+};
+
 interface EarningsData {
   totalEarnings: number;
   thisMonth: number;
@@ -61,7 +67,7 @@ interface ErrorState {
 
 const SpecialistEarnings: React.FC = () => {
   const { t } = useLanguage();
-  const { formatPrice } = useCurrency();
+  const { formatPrice, convertPrice } = useCurrency();
   const user = useAppSelector(selectUser);
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('month');
   const [isExporting, setIsExporting] = useState(false);
@@ -163,9 +169,11 @@ const SpecialistEarnings: React.FC = () => {
             uniqueCustomers = uniqueCustomerIds.size;
             console.log('📊 Unique customers calculated from bookings:', uniqueCustomers);
             
-            // Calculate total earnings from completed bookings (accurate amounts)
+            // Calculate total earnings from completed bookings with proper currency conversion
             totalEarnings = completedBookings.reduce((sum, booking) => {
-              return sum + (booking.totalAmount || 0);
+              const bookingCurrency = getBookingCurrency(booking);
+              const convertedAmount = convertPrice(booking.totalAmount || 0, bookingCurrency);
+              return sum + convertedAmount;
             }, 0);
             
             console.log('📊 Total earnings calculated from bookings:', totalEarnings);
@@ -184,7 +192,11 @@ const SpecialistEarnings: React.FC = () => {
                   return false;
                 }
               })
-              .reduce((sum, booking) => sum + (booking.totalAmount || 0), 0);
+              .reduce((sum, booking) => {
+                const bookingCurrency = getBookingCurrency(booking);
+                const convertedAmount = convertPrice(booking.totalAmount || 0, bookingCurrency);
+                return sum + convertedAmount;
+              }, 0);
             
             // Create monthly breakdown from completed bookings
             const monthlyData = new Map<string, { earnings: number; bookings: number }>();
@@ -193,8 +205,10 @@ const SpecialistEarnings: React.FC = () => {
                 const date = new Date(booking.updatedAt || booking.createdAt);
                 const monthKey = date.toLocaleDateString('en', { month: 'short', year: 'numeric' });
                 const existing = monthlyData.get(monthKey) || { earnings: 0, bookings: 0 };
+                const bookingCurrency = getBookingCurrency(booking);
+                const convertedAmount = convertPrice(booking.totalAmount || 0, bookingCurrency);
                 monthlyData.set(monthKey, {
-                  earnings: existing.earnings + (booking.totalAmount || 0),
+                  earnings: existing.earnings + convertedAmount,
                   bookings: existing.bookings + 1
                 });
               } catch (e) {
