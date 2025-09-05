@@ -117,6 +117,7 @@ const SpecialistServices: React.FC = () => {
     descriptionRu: '',
     category: '',
     price: '',
+    currency: 'UAH', // Default to UAH
     duration: '',
     isActive: true,
     availability: {
@@ -146,6 +147,7 @@ const SpecialistServices: React.FC = () => {
       descriptionRu: '',
       category: '',
       price: '',
+      currency: 'UAH', // Default to UAH
       duration: '',
       isActive: true,
       availability: {
@@ -178,6 +180,7 @@ const SpecialistServices: React.FC = () => {
       description: service.description,
       category: existingCategory ? existingCategory.id : '',
       price: service.basePrice?.toString() || service.price?.toString() || '',
+      currency: service.currency || 'UAH',
       duration: service.duration.toString(),
       isActive: service.isActive
     });
@@ -255,7 +258,7 @@ const SpecialistServices: React.FC = () => {
       description: formData.description,
       category: finalCategory,
       basePrice: parseFloat(formData.price),
-      currency: currency,
+      currency: formData.currency,
       duration: parseInt(formData.duration),
       isActive: formData.isActive,
       requirements: [], // Empty for now, can be extended later
@@ -879,16 +882,27 @@ const SpecialistServices: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('serviceForm.price')} ({currency}) *
+                      {t('serviceForm.price')} *
                     </label>
-                    <input
-                      type="number"
-                      value={formData.price}
-                      onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                      min="0"
-                      step="0.01"
-                      className={`w-full px-4 py-3 rounded-xl border ${formErrors.price ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        value={formData.price}
+                        onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                        min="0"
+                        step="0.01"
+                        className={`flex-1 px-4 py-3 rounded-xl border ${formErrors.price ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
+                      />
+                      <select
+                        value={formData.currency}
+                        onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
+                        className="px-3 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                      >
+                        <option value="UAH">₴ UAH</option>
+                        <option value="USD">$ USD</option>
+                        <option value="EUR">€ EUR</option>
+                      </select>
+                    </div>
                     {formErrors.price && <p className="mt-1 text-sm text-red-500">{formErrors.price}</p>}
                   </div>
                   <div>
