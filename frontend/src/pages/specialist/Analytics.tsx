@@ -91,8 +91,8 @@ interface ChartProps {
   height?: string;
 }
 
-// Simple CSS-based chart components
-const SimpleLineChart: React.FC<ChartProps> = ({ data, labels, height = '200px' }) => {
+// Simple CSS-based chart components  
+const SimpleLineChart: React.FC<ChartProps & { color?: string }> = ({ data, labels, height = '200px', color = '#2563eb' }) => {
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
@@ -111,23 +111,25 @@ const SimpleLineChart: React.FC<ChartProps> = ({ data, labels, height = '200px' 
     return `${x},${y}`;
   }).join(' ');
   
+  const gradientId = `lineGradient-${Math.random().toString(36).substr(2, 9)}`;
+  
   return (
     <div className="relative" style={{ height }}>
       <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
         <defs>
-          <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#3b97f2" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#3b97f2" stopOpacity="0.1" />
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={color} stopOpacity="0.4" />
+            <stop offset="100%" stopColor={color} stopOpacity="0.05" />
           </linearGradient>
         </defs>
         <polyline
           fill="none"
-          stroke="#3b97f2"
-          strokeWidth="0.5"
+          stroke={color}
+          strokeWidth="1.2"
           points={points}
         />
         <polygon
-          fill="url(#lineGradient)"
+          fill={`url(#${gradientId})`}
           points={`0,100 ${points} 100,100`}
         />
       </svg>
@@ -140,7 +142,7 @@ const SimpleLineChart: React.FC<ChartProps> = ({ data, labels, height = '200px' 
   );
 };
 
-const SimpleBarChart: React.FC<ChartProps> = ({ data, labels, color = '#3b97f2', height = '200px' }) => {
+const SimpleBarChart: React.FC<ChartProps> = ({ data, labels, color = '#2563eb', height = '200px' }) => {
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
@@ -889,8 +891,15 @@ const SpecialistAnalytics: React.FC = () => {
             </div>
             {!loading && (currentPeriodData.revenue.length > 0 || currentPeriodData.bookings.length > 0) ? (
               <SimpleLineChart
-                data={selectedView === 'revenue' ? currentPeriodData.revenue : currentPeriodData.bookings}
+                data={(() => {
+                  const data = selectedView === 'revenue' ? currentPeriodData.revenue : currentPeriodData.bookings;
+                  console.log(`📊 Chart data for ${selectedView}:`, data);
+                  console.log(`📊 Revenue data:`, currentPeriodData.revenue);
+                  console.log(`📊 Bookings data:`, currentPeriodData.bookings);
+                  return data;
+                })()}
                 labels={translateChartLabels(currentPeriodData.labels, selectedPeriod)}
+                color={selectedView === 'revenue' ? '#059669' : '#2563eb'} // Green for revenue, blue for bookings
                 type="line"
                 height="300px"
               />
