@@ -12,6 +12,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { specialistService } from '../../services/specialist.service';
+import { bookingService } from '../../services/booking.service';
 import { isFeatureEnabled } from '../../config/features';
 import { retryRequest } from '../../services/api';
 
@@ -391,6 +392,54 @@ const SpecialistSchedule: React.FC = () => {
           console.log('📅 Schedule: Generated default slots:', formattedSlots.length);
         }
         
+        // Fetch existing bookings to block occupied time slots
+        try {
+          console.log('📅 Fetching existing bookings to block occupied slots...');
+          const existingBookings = await retryRequest(
+            () => bookingService.getBookings({ 
+              limit: 100, 
+              startDate: startDate, 
+              endDate: endDate 
+            }, 'specialist'),
+            2, // max retries
+            1000 // initial delay
+          );
+          
+          const bookingsData = existingBookings?.data || existingBookings || [];
+          console.log(`📅 Found ${bookingsData.length} existing bookings to check for conflicts`);
+          
+          // Block time slots that conflict with existing bookings
+          if (Array.isArray(bookingsData) && bookingsData.length > 0) {
+            formattedSlots = formattedSlots.map(slot => {
+              const slotStart = new Date(`${slot.date}T${slot.startTime}`);
+              const slotEnd = new Date(`${slot.date}T${slot.endTime}`);
+              
+              const hasConflict = bookingsData.some(booking => {
+                if (booking.status === 'CANCELLED') return false; // Skip cancelled bookings
+                
+                const bookingStart = new Date(booking.scheduledAt);
+                const bookingEnd = new Date(bookingStart.getTime() + (booking.duration || 60) * 60 * 1000);
+                
+                // Check if slot overlaps with booking
+                return slotStart < bookingEnd && slotEnd > bookingStart;
+              });
+              
+              if (hasConflict) {
+                return {
+                  ...slot,
+                  isAvailable: false,
+                  reason: 'Booked'
+                };
+              }
+              
+              return slot;
+            });
+            console.log('📅 Applied booking conflicts to time slots');
+          }
+        } catch (bookingError) {
+          console.warn('⚠️ Failed to fetch existing bookings for conflict detection:', bookingError);
+        }
+
         setTimeSlots(formattedSlots);
         setIsOfflineMode(false); // Reset offline mode when API succeeds
       } catch (err: any) {

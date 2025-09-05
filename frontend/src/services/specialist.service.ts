@@ -353,34 +353,19 @@ export class SpecialistService {
     if (endDate) params.append('endDate', endDate);
 
     try {
-      // Try the new availability blocks endpoint first
-      const response = await apiClient.get<{ blocks: BlockedSlot[] }>(`/specialists/blocks?${params}`);
+      // Use the existing blocked slots endpoint directly (skip the non-existent /specialists/blocks)
+      console.log('📦 Fetching availability blocks from blocked slots endpoint...');
+      const response = await apiClient.get<{ blockedSlots: BlockedSlot[] }>(`/specialists/availability/blocked?${params}`);
       if (response.success && response.data) {
-        // Handle different response structures - the API returns data.blocks or data.data.blocks
-        const blocks = response.data.blocks || response.data.data?.blocks || [];
-        console.log('📦 getAvailabilityBlocks response (new endpoint):', { response: response.data, extractedBlocks: blocks });
+        const blocks = response.data.blockedSlots || response.data.data?.blockedSlots || [];
+        console.log('📦 getAvailabilityBlocks response:', { response: response.data, extractedBlocks: blocks });
         return Array.isArray(blocks) ? blocks : [];
       }
-      throw new Error(response.error?.message || 'Failed to get availability blocks from new endpoint');
     } catch (error: any) {
-      // If the new endpoint fails with 404, fall back to the blocked slots endpoint
-      if (error.response?.status === 404 || error.status === 404) {
-        console.log('📦 New blocks endpoint not found, falling back to blocked slots endpoint');
-        try {
-          const fallbackResponse = await apiClient.get<{ blockedSlots: BlockedSlot[] }>(`/specialists/availability/blocked?${params}`);
-          if (fallbackResponse.success && fallbackResponse.data) {
-            const blocks = fallbackResponse.data.blockedSlots || [];
-            console.log('📦 getAvailabilityBlocks response (fallback endpoint):', { response: fallbackResponse.data, extractedBlocks: blocks });
-            return Array.isArray(blocks) ? blocks : [];
-          }
-        } catch (fallbackError) {
-          console.warn('📦 Fallback endpoint also failed:', fallbackError);
-        }
-      }
-      
-      // Re-throw the original error if fallback didn't work
-      throw error;
+      console.warn('📦 Failed to fetch availability blocks:', error);
     }
+    
+    return [];
   }
 
   // Create availability block (available or blocked)
