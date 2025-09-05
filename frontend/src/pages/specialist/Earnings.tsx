@@ -134,9 +134,9 @@ const SpecialistEarnings: React.FC = () => {
         console.log('🔍 Auth token preview:', localStorage.getItem('auth_token')?.substring(0, 20) + '...' || 'None');
         console.log('🔍 User from Redux:', user);
         
-        // Load data from backend endpoints with retry logic and proper specialist-specific APIs
-        const [revenueData, analyticsOverview, bookingAnalytics, servicesData, performanceData] = await Promise.allSettled([
-          retryRequest(() => paymentService.getSpecialistEarnings({ limit: 100, status: 'succeeded' }), 2, 1000),
+        // Load data from backend endpoints - prioritize bookings API over payments API for accurate amounts
+        const [bookingsData, analyticsOverview, bookingAnalytics, servicesData, performanceData] = await Promise.allSettled([
+          retryRequest(() => bookingService.getBookings({ limit: 100, status: 'COMPLETED' }, 'specialist'), 2, 1000),
           retryRequest(() => analyticsService.getOverview(), 2, 1000),
           retryRequest(() => analyticsService.getBookingAnalytics(), 2, 1000),
           retryRequest(() => analyticsService.getServiceAnalytics(), 2, 1000),
@@ -144,62 +144,63 @@ const SpecialistEarnings: React.FC = () => {
         ]);
 
         console.log('🔍 Earnings API results:', {
-          revenue: revenueData.status,
+          bookings: bookingsData.status,
           analytics: analyticsOverview.status,
-          bookings: bookingAnalytics.status,
+          bookingAnalytics: bookingAnalytics.status,
           services: servicesData.status,
           performance: performanceData.status
         });
         
-        // Process revenue data with better error handling
+        // Process bookings data to calculate accurate earnings
         let totalEarnings = 0;
         let thisMonthEarnings = 0;
         let pendingEarnings = 0;
         let monthlyBreakdown: MonthlyEarning[] = [];
         
-        if (revenueData.status === 'fulfilled' && revenueData.value) {
+        if (bookingsData.status === 'fulfilled' && bookingsData.value) {
           try {
-            const earningsData = revenueData.value;
-            console.log('📊 Processing specialist earnings data:', earningsData);
+            const bookingResponse = bookingsData.value;
+            console.log('📊 Processing completed bookings data:', bookingResponse);
             
-            // Handle nested earnings structure from specialist API
-            const earnings = earningsData.earnings || earningsData;
-            totalEarnings = earnings.totalEarnings || 0;
-            pendingEarnings = earnings.pendingEarnings || 0;
+            const completedBookings = Array.isArray(bookingResponse.bookings) ? bookingResponse.bookings : [];
+            console.log('📊 Completed bookings:', completedBookings.length, 'bookings');
             
-            const payments = Array.isArray(earnings.payments) ? earnings.payments : [];
-            console.log('📊 Specialist payments:', payments.length, 'payments');
-            console.log('📊 Total earnings from API:', totalEarnings);
-            console.log('📊 Pending earnings from API:', pendingEarnings);
+            // Calculate total earnings from completed bookings (accurate amounts)
+            totalEarnings = completedBookings.reduce((sum, booking) => {
+              return sum + (booking.totalAmount || 0);
+            }, 0);
             
-            // Calculate this month's earnings from individual payments
+            console.log('📊 Total earnings calculated from bookings:', totalEarnings);
+            console.log('📊 No pending earnings (all completed):', pendingEarnings);
+            
+            // Calculate this month's earnings from completed bookings
             const currentMonth = new Date().getMonth();
             const currentYear = new Date().getFullYear();
-            thisMonthEarnings = payments
-              .filter(payment => {
+            thisMonthEarnings = completedBookings
+              .filter(booking => {
                 try {
-                  const paymentDate = new Date(payment.createdAt || payment.updatedAt);
-                  return paymentDate.getMonth() === currentMonth && paymentDate.getFullYear() === currentYear;
+                  const bookingDate = new Date(booking.completedAt || booking.createdAt);
+                  return bookingDate.getMonth() === currentMonth && bookingDate.getFullYear() === currentYear;
                 } catch (e) {
-                  console.warn('Invalid payment date:', payment);
+                  console.warn('Invalid booking date:', booking);
                   return false;
                 }
               })
-              .reduce((sum, payment) => sum + payment.amount, 0);
+              .reduce((sum, booking) => sum + (booking.totalAmount || 0), 0);
             
-            // Create monthly breakdown with better date handling
+            // Create monthly breakdown from completed bookings
             const monthlyData = new Map<string, { earnings: number; bookings: number }>();
-            payments.forEach(payment => {
+            completedBookings.forEach(booking => {
               try {
-                const date = new Date(payment.createdAt || payment.updatedAt);
+                const date = new Date(booking.completedAt || booking.createdAt);
                 const monthKey = date.toLocaleDateString('en', { month: 'short', year: 'numeric' });
                 const existing = monthlyData.get(monthKey) || { earnings: 0, bookings: 0 };
                 monthlyData.set(monthKey, {
-                  earnings: existing.earnings + payment.amount,
+                  earnings: existing.earnings + (booking.totalAmount || 0),
                   bookings: existing.bookings + 1
                 });
               } catch (e) {
-                console.warn('Error processing payment date:', payment, e);
+                console.warn('Error processing booking date:', booking, e);
               }
             });
             
@@ -211,12 +212,12 @@ const SpecialistEarnings: React.FC = () => {
               }))
               .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
               
-            console.log('📊 Monthly breakdown:', monthlyBreakdown);
+            console.log('📊 Monthly breakdown from bookings:', monthlyBreakdown);
           } catch (err) {
-            console.error('Error processing revenue data:', err);
+            console.error('Error processing bookings data:', err);
           }
-        } else if (revenueData.status === 'rejected') {
-          console.warn('Revenue data failed to load:', revenueData.reason);
+        } else if (bookingsData.status === 'rejected') {
+          console.warn('Bookings data failed to load:', bookingsData.reason);
         }
         
         // Calculate analytics data from actual payment/booking data since analytics APIs are unreliable
