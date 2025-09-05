@@ -217,28 +217,40 @@ const SpecialistDashboard: React.FC = () => {
           }
         }
 
-        // Process upcoming bookings data for recent bookings and appointments
+        // Process bookings data correctly: completed for recent, upcoming for appointments
         let recentBookings = [];
         let upcomingAppointments = [];
 
-        if (upcomingBookingsData.status === 'fulfilled' && upcomingBookingsData.value) {
+        // Recent Bookings should show recently completed bookings (Sep 2, Sep 4, etc.)
+        if (completedBookingsData.status === 'fulfilled' && completedBookingsData.value) {
           try {
-            const bookings = Array.isArray(upcomingBookingsData.value.bookings) ? upcomingBookingsData.value.bookings : [];
-            console.log('📊 Dashboard upcoming bookings:', bookings);
+            const completedBookings = Array.isArray(completedBookingsData.value.bookings) ? completedBookingsData.value.bookings : [];
+            console.log('📊 Dashboard recent completed bookings:', completedBookings);
 
-            recentBookings = bookings
+            recentBookings = completedBookings
               .filter(booking => booking && booking.id)
+              .sort((a, b) => new Date(b.completedAt || b.updatedAt).getTime() - new Date(a.completedAt || a.updatedAt).getTime()) // Most recent first
               .slice(0, 5)
               .map(booking => ({
                 id: booking.id,
                 customerName: booking.customer?.firstName + ' ' + (booking.customer?.lastName || ''),
                 serviceName: booking.service?.name || 'Service',
-                date: booking.scheduledAt || booking.createdAt,
-                status: booking.status || 'pending',
+                date: booking.completedAt || booking.scheduledAt || booking.createdAt,
+                status: 'completed',
                 amount: booking.totalAmount || 0
               }));
+          } catch (err) {
+            console.warn('Error processing completed bookings for recent list:', err);
+          }
+        }
 
-            upcomingAppointments = bookings
+        // Today's appointments should show upcoming bookings scheduled for today
+        if (upcomingBookingsData.status === 'fulfilled' && upcomingBookingsData.value) {
+          try {
+            const upcomingBookings = Array.isArray(upcomingBookingsData.value.bookings) ? upcomingBookingsData.value.bookings : [];
+            console.log('📊 Dashboard upcoming bookings for today:', upcomingBookings);
+
+            upcomingAppointments = upcomingBookings
               .filter(booking => {
                 if (!booking || !booking.scheduledAt) return false;
                 const bookingDate = new Date(booking.scheduledAt);
