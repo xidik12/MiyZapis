@@ -426,6 +426,11 @@ export class ServiceService {
               },
             },
           },
+          _count: {
+            select: {
+              bookings: true,
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
       });
@@ -486,6 +491,11 @@ export class ServiceService {
                   updatedAt: true,
                 },
               },
+            },
+          },
+          _count: {
+            select: {
+              bookings: true,
             },
           },
         },
