@@ -79,14 +79,14 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   };
   
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h3 className="text-xl font-semibold text-gray-900">{t('bookingDetails.title')}</h3>
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{t('bookingDetails.title')}</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100 transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -97,12 +97,12 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Customer Info */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-900 mb-3">{t('bookingDetails.customerInfo')}</h4>
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.customerInfo')}</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm text-gray-600">{t('bookingDetails.name')}</label>
-                <p className="font-medium text-gray-900">
+                <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.name')}</label>
+                <p className="font-medium text-gray-900 dark:text-white">
                   {booking.customer 
                     ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
                     : (booking.customerName || 'Unknown Customer')
@@ -110,8 +110,8 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 </p>
               </div>
               <div>
-                <label className="text-sm text-gray-600">{t('bookingDetails.contact')}</label>
-                <p className="font-medium text-gray-900">
+                <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.contact')}</label>
+                <p className="font-medium text-gray-900 dark:text-white">
                   {booking.customer?.phoneNumber || booking.customer?.email || booking.customerEmail || booking.customerPhone || t('bookingDetails.contactNotAvailable')}
                 </p>
               </div>
@@ -119,25 +119,25 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           </div>
           
           {/* Service Info */}
-          <div className="bg-blue-50 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-900 mb-3">{t('bookingDetails.serviceInfo')}</h4>
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.serviceInfo')}</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm text-gray-600">{t('bookings.service')}</label>
-                <p className="font-medium text-gray-900">
+                <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.service')}</label>
+                <p className="font-medium text-gray-900 dark:text-white">
                   {booking.service?.name || getTranslatedServiceName(booking.serviceName || 'Unknown Service')}
                 </p>
               </div>
               <div>
-                <label className="text-sm text-gray-600">{t('bookingDetails.duration')}</label>
-                <p className="font-medium text-gray-900">{booking.duration} {t('time.minutes')}</p>
+                <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.duration')}</label>
+                <p className="font-medium text-gray-900 dark:text-white">{booking.duration} {t('time.minutes')}</p>
               </div>
               <div>
-                <label className="text-sm text-gray-600">{t('bookings.amount')}</label>
-                <p className="font-medium text-gray-900">{formatPrice(booking.totalAmount, getBookingCurrency(booking))}</p>
+                <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.amount')}</label>
+                <p className="font-medium text-gray-900 dark:text-white">{formatPrice(booking.totalAmount, getBookingCurrency(booking))}</p>
               </div>
               <div>
-                <label className="text-sm text-gray-600">{t('bookings.type')}</label>
+                <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.type')}</label>
                 <div className="flex items-center">
                   <span className={`px-2 py-1 rounded text-xs font-medium ${
                     booking.meetingLink 
@@ -152,23 +152,23 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           </div>
           
           {/* Appointment Details */}
-          <div className="bg-yellow-50 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-900 mb-3">{t('bookingDetails.appointmentDetails')}</h4>
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.appointmentDetails')}</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm text-gray-600">{t('bookings.date')}</label>
-                <p className="font-medium text-gray-900">
+                <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.date')}</label>
+                <p className="font-medium text-gray-900 dark:text-white">
                   {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleDateString('uk-UA') : booking.date}
                 </p>
               </div>
               <div>
-                <label className="text-sm text-gray-600">{t('bookingDetails.time')}</label>
-                <p className="font-medium text-gray-900">{new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}</p>
+                <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.time')}</label>
+                <p className="font-medium text-gray-900 dark:text-white">{new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}</p>
               </div>
             </div>
             {booking.meetingLink && (
               <div className="mt-4">
-                <label className="text-sm text-gray-600">{t('bookingDetails.meetingLink')}</label>
+                <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.meetingLink')}</label>
                 <p className="font-medium text-blue-600 hover:text-blue-800">
                   <a href={booking.meetingLink} target="_blank" rel="noopener noreferrer" className="underline">
                     {t('bookingDetails.joinMeeting')}
@@ -178,15 +178,15 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             )}
             {booking.notes && (
               <div className="mt-4">
-                <label className="text-sm text-gray-600">{t('bookingDetails.notes')}</label>
-                <p className="font-medium text-gray-700">{booking.notes}</p>
+                <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.notes')}</label>
+                <p className="font-medium text-gray-700 dark:text-gray-300">{booking.notes}</p>
               </div>
             )}
           </div>
           
           {/* Status Management */}
-          <div className="bg-purple-50 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-900 mb-3">{t('bookingDetails.statusManagement')}</h4>
+          <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.statusManagement')}</h4>
             <div className="flex flex-wrap gap-2 mb-4">
               {['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'IN_PROGRESS', 'NO_SHOW'].map((status) => (
                 <label key={status} className="flex items-center cursor-pointer">
@@ -201,7 +201,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   <span className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                     selectedStatus === status
                       ? 'bg-blue-600 text-white'
-                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                      : 'bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                   }`}>
                     {t(`dashboard.booking.status.${status}`)}
                   </span>
@@ -210,31 +210,31 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             </div>
             <button
               onClick={handleStatusChange}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg transition-colors"
+              className="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors"
             >
               {t('bookingDetails.updateStatus')}
             </button>
           </div>
           
           {/* Quick Message */}
-          <div className="bg-green-50 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-900 mb-3">{t('bookingDetails.sendMessage')}</h4>
+          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.sendMessage')}</h4>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder={t('bookingDetails.messagePlaceholder')}
-              className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white"
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
               rows={3}
             />
             <div className="flex space-x-2 mt-3">
               <button
                 onClick={handleSendMessage}
                 disabled={!message.trim()}
-                className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white py-2 px-4 rounded-lg transition-colors"
+                className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors"
               >
                 {t('bookingDetails.sendMessageButton')}
               </button>
-              <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+              <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
                 {t('bookingDetails.template')}
               </button>
             </div>
@@ -277,14 +277,14 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h3 className="text-xl font-semibold text-gray-900">Payment Confirmation</h3>
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Payment Confirmation</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100 transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -295,28 +295,28 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
         {/* Content */}
         <div className="p-6">
           <div className="mb-6">
-            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-yellow-100 rounded-full mb-4">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-yellow-100 dark:bg-yellow-900/20 rounded-full mb-4">
               <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h4 className="text-lg font-medium text-gray-900 text-center mb-2">
+            <h4 className="text-lg font-medium text-gray-900 dark:text-white text-center mb-2">
               Complete Booking
             </h4>
-            <p className="text-gray-600 text-center">
+            <p className="text-gray-600 dark:text-gray-300 text-center">
               Has the customer paid for this service?
             </p>
           </div>
 
           {/* Booking Details */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-600">Service:</span>
-              <span className="font-medium">{booking.service?.name || booking.serviceName}</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Service:</span>
+              <span className="font-medium dark:text-white">{booking.service?.name || booking.serviceName}</span>
             </div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-600">Customer:</span>
-              <span className="font-medium">
+              <span className="text-sm text-gray-600 dark:text-gray-300">Customer:</span>
+              <span className="font-medium dark:text-white">
                 {booking.customer 
                   ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
                   : (booking.customerName || 'Unknown Customer')
@@ -324,21 +324,21 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Amount:</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Amount:</span>
               <span className="font-bold text-green-600">{formatPrice(booking.totalAmount, getBookingCurrency(booking))}</span>
             </div>
           </div>
 
           {/* Completion Notes */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Completion Notes (Optional)
             </label>
             <textarea
               value={completionNotes}
               onChange={(e) => setCompletionNotes(e.target.value)}
               placeholder="Add any notes about the completed service..."
-              className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
               rows={3}
             />
           </div>
@@ -348,7 +348,7 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
             <button
               onClick={handleConfirmPayment}
               disabled={isSubmitting}
-              className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+              className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
             >
               {isSubmitting ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
@@ -362,13 +362,13 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
             <button
               onClick={handleDeclinePayment}
               disabled={isSubmitting}
-              className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+              className="flex-1 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-3 px-4 rounded-lg font-medium transition-colors"
             >
               No, Not Paid Yet
             </button>
           </div>
 
-          <p className="text-xs text-gray-500 text-center mt-4">
+          <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
             Only complete the booking if payment has been received from the customer.
           </p>
         </div>
@@ -641,39 +641,39 @@ const SpecialistBookings: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               {t('dashboard.nav.bookings')}
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               {t('bookings.subtitle')}
             </p>
           </div>
           
           {/* Quick Stats */}
           <div className="mt-4 lg:mt-0 grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg p-3 shadow-sm border">
-              <p className="text-sm text-gray-600">{t('bookings.total')}</p>
-              <p className="text-xl font-bold text-gray-900">{filteredAndSortedBookings.length}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border dark:border-gray-700">
+              <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.total')}</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{filteredAndSortedBookings.length}</p>
             </div>
-            <div className="bg-white rounded-lg p-3 shadow-sm border">
-              <p className="text-sm text-gray-600">{t('bookings.confirmed')}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border dark:border-gray-700">
+              <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.confirmed')}</p>
               <p className="text-xl font-bold text-green-600">
                 {filteredAndSortedBookings.filter(b => b.status === 'CONFIRMED' || b.status === 'confirmed').length}
               </p>
             </div>
-            <div className="bg-white rounded-lg p-3 shadow-sm border">
-              <p className="text-sm text-gray-600">{t('bookings.pending')}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border dark:border-gray-700">
+              <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.pending')}</p>
               <p className="text-xl font-bold text-yellow-600">
                 {filteredAndSortedBookings.filter(b => b.status === 'PENDING' || b.status === 'pending').length}
               </p>
             </div>
-            <div className="bg-white rounded-lg p-3 shadow-sm border">
-              <p className="text-sm text-gray-600">{t('bookings.completed')}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border dark:border-gray-700">
+              <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.completed')}</p>
               <p className="text-xl font-bold text-blue-600">
                 {filteredAndSortedBookings.filter(b => b.status === 'COMPLETED' || b.status === 'completed').length}
               </p>
@@ -682,20 +682,20 @@ const SpecialistBookings: React.FC = () => {
         </div>
         
         {/* Filters and Search */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Search */}
             <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('bookings.search')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('bookings.search')}</label>
               <div className="relative">
                 <input
                   type="text"
                   placeholder={t('bookings.searchPlaceholder')}
                   value={filters.searchTerm}
                   onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                 />
-                <svg className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
@@ -703,11 +703,11 @@ const SpecialistBookings: React.FC = () => {
             
             {/* Status Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('bookings.status')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('bookings.status')}</label>
               <select
                 value={filters.status}
                 onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="all">{t('bookings.allStatus')}</option>
                 <option value="PENDING">{t('bookings.pending')}</option>
@@ -721,11 +721,11 @@ const SpecialistBookings: React.FC = () => {
             
             {/* Date Range Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('bookings.dateRange')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('bookings.dateRange')}</label>
               <select
                 value={filters.dateRange}
                 onChange={(e) => setFilters(prev => ({ ...prev, dateRange: e.target.value }))}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="all">{t('bookings.allDates')}</option>
                 <option value="today">{t('bookings.today')}</option>
@@ -736,12 +736,12 @@ const SpecialistBookings: React.FC = () => {
             
             {/* Sort */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('bookings.sortBy')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('bookings.sortBy')}</label>
               <div className="flex space-x-1">
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as 'date' | 'amount' | 'status')}
-                  className="flex-1 p-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="date">{t('bookings.date')}</option>
                   <option value="amount">{t('bookings.amount')}</option>
@@ -749,7 +749,7 @@ const SpecialistBookings: React.FC = () => {
                 </select>
                 <button
                   onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                  className="px-3 py-2 border border-l-0 border-gray-300 rounded-r-lg hover:bg-gray-50 transition-colors"
+                  className="px-3 py-2 border border-l-0 border-gray-300 dark:border-gray-600 rounded-r-lg hover:bg-gray-50 dark:hover:bg-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                 >
                   {sortOrder === 'asc' ? '↑' : '↓'}
                 </button>
@@ -760,9 +760,9 @@ const SpecialistBookings: React.FC = () => {
         
         {/* Bulk Actions */}
         {selectedBookings.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-blue-800">
+              <p className="text-sm text-blue-800 dark:text-blue-300">
                 {selectedBookings.length} {t('bookings.selected')}
               </p>
               <div className="flex space-x-2">
@@ -790,10 +790,10 @@ const SpecialistBookings: React.FC = () => {
         )}
         
         {/* Bookings Table */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
                   <th className="px-6 py-3 text-left">
                     <input
@@ -803,32 +803,32 @@ const SpecialistBookings: React.FC = () => {
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     {t('bookings.customer')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     {t('bookings.service')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     {t('bookings.dateTime')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     {t('bookings.status')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     {t('bookings.amount')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     {t('bookings.type')}
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     {t('bookings.actions')}
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {paginatedBookings.map((booking) => (
-                  <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={booking.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <td className="px-6 py-4">
                       <input
                         type="checkbox"
@@ -850,34 +850,34 @@ const SpecialistBookings: React.FC = () => {
                           </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
                             {booking.customer 
                               ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
                               : (booking.customerName || 'Unknown Customer')
                             }
                           </div>
-                          <div className="text-sm text-gray-500">ID: #{booking.id}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">ID: #{booking.id}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 dark:text-white">
                         {booking.service?.name || getTranslatedServiceName(booking.serviceName || 'Unknown Service')}
                       </div>
-                      <div className="text-sm text-gray-500">{getTranslatedDuration(booking.duration)}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{getTranslatedDuration(booking.duration)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 dark:text-white">
                         {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleDateString('uk-UA') : booking.date}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }) : booking.time}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getStatusBadge(booking.status)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {formatPrice(booking.totalAmount, getBookingCurrency(booking))}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -928,27 +928,27 @@ const SpecialistBookings: React.FC = () => {
           
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+            <div className="bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-200 dark:border-gray-700 sm:px-6">
               <div className="flex items-center justify-between">
                 <div className="flex justify-between flex-1 sm:hidden">
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                    className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
                   >
                     {t('bookings.previous')}
                   </button>
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                     disabled={currentPage === totalPages}
-                    className="relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                    className="relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
                   >
                     {t('bookings.next')}
                   </button>
                 </div>
                 <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
                       {t('bookings.showing')} <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> {t('bookings.to')}{' '}
                       <span className="font-medium">
                         {Math.min(currentPage * itemsPerPage, filteredAndSortedBookings.length)}
@@ -961,7 +961,7 @@ const SpecialistBookings: React.FC = () => {
                       <button
                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                         disabled={currentPage === 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
                       >
                         ←
                       </button>
@@ -971,8 +971,8 @@ const SpecialistBookings: React.FC = () => {
                           onClick={() => setCurrentPage(page)}
                           className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                             currentPage === page
-                              ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                              : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                              ? 'z-10 bg-blue-50 dark:bg-blue-900/20 border-blue-500 text-blue-600 dark:text-blue-400'
+                              : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600'
                           }`}
                         >
                           {page}
@@ -981,7 +981,7 @@ const SpecialistBookings: React.FC = () => {
                       <button
                         onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                         disabled={currentPage === totalPages}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
                       >
                         →
                       </button>
