@@ -151,10 +151,36 @@ const SpecialistDashboard: React.FC = () => {
               }
             }
             
+            // Calculate response time from actual booking data
+            let totalResponseTimeMinutes = 0;
+            let responsiveBookings = 0;
+            
+            completedBookings.forEach(booking => {
+              if (booking.createdAt && booking.updatedAt) {
+                try {
+                  const created = new Date(booking.createdAt);
+                  const responded = new Date(booking.updatedAt);
+                  const responseTimeMs = responded.getTime() - created.getTime();
+                  
+                  // Only count positive response times (responded after created)
+                  if (responseTimeMs > 0) {
+                    totalResponseTimeMinutes += responseTimeMs / (1000 * 60); // Convert to minutes
+                    responsiveBookings++;
+                  }
+                } catch (e) {
+                  console.warn('Invalid booking dates:', booking);
+                }
+              }
+            });
+            
+            if (responsiveBookings > 0) {
+              stats.responseTime = Math.round(totalResponseTimeMinutes / responsiveBookings);
+              console.log('📊 Calculated response time:', stats.responseTime, 'minutes from', responsiveBookings, 'bookings');
+            }
+            
             // Only use real data - no estimates or defaults
             // rating: 0 (no real rating data available)
-            // reviewCount: 0 (no real review data available) 
-            // responseTime: 0 (no real response time data available)
+            // reviewCount: 0 (no real review data available)
             
             // Calculate repeat clients from actual customer booking frequency (real data only)
             const customerCounts = new Map();
