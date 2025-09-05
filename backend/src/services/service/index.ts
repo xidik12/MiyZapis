@@ -396,6 +396,7 @@ export class ServiceService {
       }
 
       if (!includeDeleted) {
+        where.isDeleted = false;
       }
 
       const services = await prisma.service.findMany({
@@ -453,6 +454,7 @@ export class ServiceService {
 
       const where: any = {
         specialistId: specialistId,
+        isDeleted: false, // Never include deleted services in public views
       };
 
       if (!includeInactive) {
@@ -517,6 +519,7 @@ export class ServiceService {
 
       const where: any = {
         isActive: true,
+        isDeleted: false,
         specialist: {
           user: {
             isActive: true,
@@ -620,6 +623,7 @@ export class ServiceService {
         by: ['category'],
         where: {
           isActive: true,
+          isDeleted: false,
           specialist: {
             user: {
               isActive: true,
@@ -749,6 +753,7 @@ export class ServiceService {
       const services = await prisma.service.findMany({
         where: {
           isActive: true,
+          isDeleted: false,
           specialist: {
             user: {
               isActive: true,

@@ -357,7 +357,16 @@ const SpecialistServices: React.FC = () => {
         status: err.response?.status
       });
       
-      // More user-friendly error messages
+      // Handle 404 error - service already deleted
+      if (err.response?.status === 404) {
+        console.log('🔄 Service already deleted (404), removing from local state');
+        // Remove the service from local state since it's already deleted on backend
+        setServices(prevServices => prevServices.filter(s => s.id !== serviceId));
+        alert('Service was already deleted. Refreshing the list.');
+        return; // Exit early, don't show error
+      }
+      
+      // More user-friendly error messages for other errors
       let errorMessage = err.message || 'Failed to delete service';
       
       // Check for specific backend error details
