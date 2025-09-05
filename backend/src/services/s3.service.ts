@@ -109,7 +109,7 @@ export class S3Service {
         Key: key,
         Body: processedBuffer,
         ContentType: finalMimeType,
-        ACL: 'public-read',
+        // ACL: 'public-read', // Removed - using bucket policy instead
         Metadata: {
           originalName: originalName,
           purpose: options.purpose || 'general',
@@ -181,7 +181,7 @@ export class S3Service {
         Bucket: this.bucketName,
         Key: key,
         ContentType: contentType,
-        ACL: 'public-read',
+        // ACL: 'public-read', // Removed - using bucket policy instead
         Metadata: {
           originalName: originalName,
           purpose: options.purpose || 'general',

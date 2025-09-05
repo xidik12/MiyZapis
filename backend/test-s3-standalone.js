@@ -43,8 +43,8 @@ async function testS3Standalone() {
       Bucket: process.env.AWS_S3_BUCKET,
       Key: testKey,
       Body: testContent,
-      ContentType: 'text/plain',
-      ACL: 'public-read'
+      ContentType: 'text/plain'
+      // ACL: 'public-read' // Removed - using bucket policy instead
     });
 
     await s3Client.send(uploadCommand);
