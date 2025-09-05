@@ -110,23 +110,6 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     }
   };
 
-  // Create test notification
-  const createTestNotification = async () => {
-    const types: NotificationType[] = ['booking', 'payment', 'review', 'system'];
-    const type = types[Math.floor(Math.random() * types.length)];
-    
-    try {
-      await notificationService.createNotification({
-        type,
-        title: `Test ${type} notification`,
-        message: `This is a test ${type} notification created at ${new Date().toLocaleTimeString()}`,
-        actionUrl: `/test/${type}`
-      });
-      await loadNotifications();
-    } catch (error) {
-      console.error('Error creating test notification:', error);
-    }
-  };
 
   // Get notification type icon
   const getNotificationIcon = (type: NotificationType) => {
@@ -264,22 +247,6 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                   Clear all
                 </button>
               )}
-            </div>
-            
-            {/* Test/Debug Controls */}
-            <div className="flex gap-1">
-              <button
-                onClick={createTestNotification}
-                className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 border rounded"
-              >
-                + Test
-              </button>
-              <button
-                onClick={() => notificationService.forceLocalMode()}
-                className="text-xs text-orange-500 hover:text-orange-700 px-2 py-1 border rounded"
-              >
-                Local
-              </button>
             </div>
           </div>
         </div>

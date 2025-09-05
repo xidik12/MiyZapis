@@ -191,6 +191,10 @@ const translations: Translations = {
   'search.results.loadMore': { en: 'Load More', uk: 'Завантажити більше', ru: 'Загрузить больше' },
   'search.results.endOfResults': { en: 'You\'ve reached the end of results', uk: 'Ви досягли кінця результатів', ru: 'Вы достигли конца результатов' },
   
+  // Search Controls
+  'search.favorites': { en: 'Favorites', uk: 'Улюблені', ru: 'Избранное' },
+  'search.showAll': { en: 'Show All', uk: 'Показати все', ru: 'Показать все' },
+  
   // Sort Options
   'search.sort.title': { en: 'Sort by', uk: 'Сортувати за', ru: 'Сортировать по' },
   'search.sort.relevance': { en: 'Relevance', uk: 'Релевантністю', ru: 'Релевантности' },
@@ -209,7 +213,7 @@ const translations: Translations = {
   'search.specialist.verified': { en: 'Verified', uk: 'Підтверджено', ru: 'Подтверждено' },
   'search.specialist.online': { en: 'Online', uk: 'Онлайн', ru: 'Онлайн' },
   'search.specialist.responseTime': { en: 'Response time', uk: 'Час відповіді', ru: 'Время отклика' },
-  'search.specialist.completedJobs': { en: 'completed jobs', uk: 'виконаних робіт', ru: 'выполненных работ' },
+  'search.specialist.completedJobs': { en: 'Completed jobs', uk: 'Виконаних робіт', ru: 'Выполненных работ' },
   'search.specialist.reviews': { en: 'reviews', uk: 'відгуків', ru: 'отзывов' },
   'search.specialist.yearsExperience': { en: 'years experience', uk: 'років досвіду', ru: 'лет опыта' },
   
@@ -357,7 +361,7 @@ const translations: Translations = {
 
   // Specialist Card Text
   'specialist.responseTime': { en: 'Response time', uk: 'Час відповіді', ru: 'Время отклика' },
-  'specialist.completedJobs': { en: 'completed jobs', uk: 'виконаних робіт', ru: 'выполненных работ' },
+  'specialist.completedJobs': { en: 'Completed jobs', uk: 'Виконаних робіт', ru: 'Выполненных работ' },
   'specialist.yearsExperience': { en: 'years experience', uk: 'років досвіду', ru: 'лет опыта' },
   'specialist.reviews': { en: 'reviews', uk: 'відгуків', ru: 'отзывов' },
   'specialist.verified': { en: 'Verified', uk: 'Підтверджено', ru: 'Подтверждено' },

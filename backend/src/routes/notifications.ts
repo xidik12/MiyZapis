@@ -43,6 +43,9 @@ router.delete('/:id', [
   authenticateToken
 ], NotificationController.deleteNotification);
 
+// Delete all notifications
+router.delete('/all', authenticateToken, NotificationController.deleteAllNotifications);
+
 // Get notification preferences
 router.get('/settings', authenticateToken, NotificationController.getPreferences);
 

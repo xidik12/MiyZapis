@@ -422,7 +422,7 @@ const SpecialistDashboard: React.FC = () => {
         />
         <StatCard
           title={t('dashboard.specialist.monthlyRevenue')}
-          value={formatPrice(dashboardData.stats.monthlyRevenue, 'UAH')}
+          value={formatPrice(dashboardData.stats.monthlyRevenue)}
           change={dashboardData.stats.monthlyRevenue > 0 ? `+8% ${t('dashboard.specialist.improvement')}` : ''}
           changeType="positive"
           icon={CurrencyDollarIcon}
@@ -552,7 +552,7 @@ const SpecialistDashboard: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-gray-900 dark:text-white">
-                    {formatPrice(booking.amount, booking.currency)}
+                    {formatPrice(booking.amount)}
                   </p>
                   <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
                     {getStatusText(booking.status)}

@@ -231,6 +231,46 @@ export class NotificationController {
   }
 
   /**
+   * Delete all user notifications
+   * DELETE /notifications/all
+   */
+  static async deleteAllNotifications(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Delete all notifications for the user
+      const result = await prisma.notification.deleteMany({
+        where: { userId: req.user.id }
+      });
+
+      res.json(
+        createSuccessResponse({
+          message: `Deleted ${result.count} notifications`,
+          deletedCount: result.count
+        })
+      );
+    } catch (error: any) {
+      logger.error('Error deleting all notifications:', error);
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to delete all notifications',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  /**
    * Update notification preferences
    * PUT /notifications/settings
    */

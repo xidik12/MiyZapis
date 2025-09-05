@@ -466,7 +466,7 @@ const SpecialistProfilePage: React.FC = () => {
                         </div>
                         <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start mt-3 sm:mt-0 sm:ml-4 sm:text-right">
                           <p className="text-lg font-bold text-gray-900 dark:text-white">
-                            {formatPrice(service.price || service.basePrice || 0, service.currency)}
+                            {formatPrice(service.price || service.basePrice || 0)}
                           </p>
                           <Link
                             to={`/book/${service.id}`}

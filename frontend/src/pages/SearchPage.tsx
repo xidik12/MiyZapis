@@ -148,8 +148,8 @@ const SearchPage: React.FC = () => {
             businessName: service.specialist?.businessName || '',
             location: '', // Backend doesn't seem to have location info yet
             isOnline: true, // Assume online for now
-            responseTime: '', // Not available in backend response
-            completedBookings: 0, // Not available in backend response
+            responseTime: service.specialist?.responseTime || '', // Use response time if available
+            completedBookings: service.specialist?.completedBookings || service.specialist?.totalBookings || 0, // Use actual completed bookings count
             experience: '', // Not available in backend response
             rating: service.specialist?.rating || 0
           },
@@ -292,7 +292,7 @@ const SearchPage: React.FC = () => {
                 {service.isAvailable ? t('service.available') : t('service.unavailable')}
               </div>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatPrice(service.price, 'UAH')}
+                {formatPrice(service.price)}
               </p>
             </div>
           </div>

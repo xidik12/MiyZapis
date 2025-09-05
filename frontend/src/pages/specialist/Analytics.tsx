@@ -58,11 +58,16 @@ const formatChartLabels = (period: 'daily' | 'weekly' | 'monthly' | 'yearly', da
         return `${date.getDate()}/${date.getMonth() + 1}`;
       });
     case 'weekly':
-      return data.map((_, index) => `Week ${index + 1}`);
+      return data.map(item => {
+        const date = new Date(item.date);
+        const weekNum = Math.ceil(date.getDate() / 7);
+        return `W${weekNum}/${date.getMonth() + 1}`;
+      });
     case 'monthly':
       return data.map(item => {
         const date = new Date(item.date);
-        return `${date.getMonth() + 1}/${date.getFullYear().toString().slice(2)}`;
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${monthNames[date.getMonth()]} ${date.getFullYear().toString().slice(2)}`;
       });
     case 'yearly':
       return data.map(item => new Date(item.date).getFullYear().toString());
@@ -457,62 +462,83 @@ const SpecialistAnalytics: React.FC = () => {
           services
         });
         
-        // Generate chart data from actual booking data
-        const chartDataByDay = new Map();
-        const chartDataByMonth = new Map();
-        
-        // Group bookings by date for chart data
-        completedBookings.forEach(booking => {
-          const bookingDate = new Date(booking.createdAt);
-          const dayKey = bookingDate.toISOString().split('T')[0]; // YYYY-MM-DD
-          const monthKey = `${bookingDate.getFullYear()}-${String(bookingDate.getMonth() + 1).padStart(2, '0')}`; // YYYY-MM
+        // Generate chart data from actual booking data based on selected period
+        const generateChartDataForPeriod = (period: 'daily' | 'weekly' | 'monthly' | 'yearly') => {
+          const chartDataMap = new Map();
+          const now = new Date();
           
-          // Daily data
-          if (!chartDataByDay.has(dayKey)) {
-            chartDataByDay.set(dayKey, { revenue: 0, bookings: 0, date: bookingDate });
-          }
-          const dayData = chartDataByDay.get(dayKey);
-          dayData.revenue += booking.totalAmount || 0;
-          dayData.bookings += 1;
+          completedBookings.forEach(booking => {
+            const bookingDate = new Date(booking.createdAt);
+            let groupKey: string;
+            let displayDate: Date;
+            
+            switch (period) {
+              case 'daily':
+                // Group by day - last 30 days
+                groupKey = bookingDate.toISOString().split('T')[0]; // YYYY-MM-DD
+                displayDate = bookingDate;
+                break;
+              case 'weekly':
+                // Group by week - last 12 weeks
+                const weekStart = new Date(bookingDate);
+                weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // Start of week (Sunday)
+                groupKey = weekStart.toISOString().split('T')[0];
+                displayDate = weekStart;
+                break;
+              case 'monthly':
+                // Group by month - last 12 months
+                groupKey = `${bookingDate.getFullYear()}-${String(bookingDate.getMonth() + 1).padStart(2, '0')}`;
+                displayDate = new Date(bookingDate.getFullYear(), bookingDate.getMonth(), 1);
+                break;
+              case 'yearly':
+                // Group by year - last 5 years
+                groupKey = bookingDate.getFullYear().toString();
+                displayDate = new Date(bookingDate.getFullYear(), 0, 1);
+                break;
+              default:
+                return;
+            }
+            
+            if (!chartDataMap.has(groupKey)) {
+              chartDataMap.set(groupKey, { revenue: 0, bookings: 0, date: displayDate });
+            }
+            const data = chartDataMap.get(groupKey);
+            data.revenue += booking.totalAmount || 0;
+            data.bookings += 1;
+          });
           
-          // Monthly data  
-          if (!chartDataByMonth.has(monthKey)) {
-            chartDataByMonth.set(monthKey, { revenue: 0, bookings: 0, date: bookingDate });
+          // Convert to array and sort by date
+          const chartDataArray = Array.from(chartDataMap.values()).sort((a, b) => a.date.getTime() - b.date.getTime());
+          
+          // Limit data points based on period
+          let limitedData = chartDataArray;
+          switch (period) {
+            case 'daily':
+              limitedData = chartDataArray.slice(-30); // Last 30 days
+              break;
+            case 'weekly':
+              limitedData = chartDataArray.slice(-12); // Last 12 weeks
+              break;
+            case 'monthly':
+              limitedData = chartDataArray.slice(-12); // Last 12 months
+              break;
+            case 'yearly':
+              limitedData = chartDataArray.slice(-5); // Last 5 years
+              break;
           }
-          const monthData = chartDataByMonth.get(monthKey);
-          monthData.revenue += booking.totalAmount || 0;
-          monthData.bookings += 1;
-        });
-        
-        // Convert to arrays and sort by date
-        const dailyChartData = Array.from(chartDataByDay.values()).sort((a, b) => a.date.getTime() - b.date.getTime());
-        const monthlyChartData = Array.from(chartDataByMonth.values()).sort((a, b) => a.date.getTime() - b.date.getTime());
-        
-        console.log('📊 Chart Data Debug:');
-        console.log('Daily chart data points:', dailyChartData.length, dailyChartData);
-        console.log('Monthly chart data points:', monthlyChartData.length, monthlyChartData);
+          
+          return {
+            revenue: limitedData.map(d => d.revenue),
+            bookings: limitedData.map(d => d.bookings),
+            labels: formatChartLabels(period, limitedData)
+          };
+        };
         
         const newChartData = {
-          daily: {
-            revenue: dailyChartData.map(d => d.revenue),
-            bookings: dailyChartData.map(d => d.bookings),
-            labels: formatChartLabels('daily', dailyChartData)
-          },
-          weekly: {
-            revenue: dailyChartData.map(d => d.revenue), // Use daily data for weekly for now
-            bookings: dailyChartData.map(d => d.bookings),
-            labels: formatChartLabels('daily', dailyChartData)
-          },
-          monthly: {
-            revenue: monthlyChartData.map(d => d.revenue),
-            bookings: monthlyChartData.map(d => d.bookings), 
-            labels: formatChartLabels('monthly', monthlyChartData)
-          },
-          yearly: {
-            revenue: [totalRevenue], // Single data point for yearly
-            bookings: [totalBookings],
-            labels: ['2024'] // Current year
-          }
+          daily: generateChartDataForPeriod('daily'),
+          weekly: generateChartDataForPeriod('weekly'),
+          monthly: generateChartDataForPeriod('monthly'),
+          yearly: generateChartDataForPeriod('yearly')
         };
         
         console.log('📈 Generated chart data:', newChartData);
@@ -773,7 +799,7 @@ const SpecialistAnalytics: React.FC = () => {
                   {selectedPeriod === 'yearly' ? t('analytics.total') : t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.revenue')}
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatPrice(selectedPeriod === 'yearly' ? (analyticsData.overview?.totalRevenue || 0) : (periodStats?.currentRevenue || 0), 'UAH')}
+                  {formatPrice(selectedPeriod === 'yearly' ? (analyticsData.overview?.totalRevenue || 0) : (periodStats?.currentRevenue || 0))}
                 </p>
                 <div className="flex items-center mt-2">
                   <div className={`flex items-center ${
@@ -807,10 +833,10 @@ const SpecialistAnalytics: React.FC = () => {
                   {t('analytics.average')} {t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.revenue')}
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatPrice(periodStats.avgRevenue, 'UAH')}
+                  {formatPrice(periodStats.avgRevenue)}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                  {t('analytics.total')}: {formatPrice(periodStats.currentRevenue, 'UAH')}
+                  {t('analytics.total')}: {formatPrice(periodStats.currentRevenue)}
                 </p>
               </div>
               <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
@@ -939,15 +965,18 @@ const SpecialistAnalytics: React.FC = () => {
                   <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300">
                     <div className="flex items-center">
                       <div className="w-3 h-3 rounded-full bg-green-600 mr-2"></div>
-                      <span>Revenue: {formatPrice(currentPeriodData.revenue.reduce((sum, val) => sum + val, 0), 'UAH')}</span>
+                      <span>Revenue: {formatPrice(currentPeriodData.revenue.reduce((sum, val) => sum + val, 0))}</span>
                     </div>
                     <div className="flex items-center">
                       <div className="w-3 h-3 rounded-full bg-blue-600 mr-2"></div>
                       <span>Bookings: {currentPeriodData.bookings.reduce((sum, val) => sum + val, 0)}</span>
                     </div>
-                    {currentPeriodData.revenue.length === 1 && selectedPeriod === 'monthly' && (
+                    {currentPeriodData.revenue.length <= 1 && (
                       <div className="text-gray-500 dark:text-gray-400 italic">
-                        Switch to "daily" for detailed trends
+                        {selectedPeriod === 'yearly' ? 'Switch to "monthly" for detailed trends' :
+                         selectedPeriod === 'monthly' ? 'Switch to "daily" for detailed trends' :
+                         selectedPeriod === 'weekly' ? 'Switch to "daily" for detailed trends' :
+                         'Not enough data for trend analysis'}
                       </div>
                     )}
                   </div>

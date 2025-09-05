@@ -561,7 +561,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatPrice(earningsData.totalEarnings || 0, 'UAH')}
+                  {formatPrice(earningsData.totalEarnings || 0)}
                 </p>
               )}
             </div>
@@ -579,7 +579,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatPrice(earningsData.thisMonth || 0, 'UAH')}
+                  {formatPrice(earningsData.thisMonth || 0)}
                 </p>
               )}
             </div>
@@ -597,7 +597,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-orange-600">
-                  {formatPrice(earningsData.pending || 0, 'UAH')}
+                  {formatPrice(earningsData.pending || 0)}
                 </p>
               )}
             </div>
@@ -615,7 +615,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatPrice(earningsData.lastPayout || 0, 'UAH')}
+                  {formatPrice(earningsData.lastPayout || 0)}
                 </p>
               )}
             </div>
@@ -672,7 +672,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatPrice(earningsData.averageBookingValue || 0, 'UAH')}
+                  {formatPrice(earningsData.averageBookingValue || 0)}
                 </p>
               )}
             </div>
@@ -756,7 +756,7 @@ const SpecialistEarnings: React.FC = () => {
                           className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-full rounded-lg flex items-center justify-end pr-3 transition-all duration-500 ease-out"
                           style={{ width: `${Math.max(5, widthPercentage)}%` }}
                         >
-                          <span className="text-white text-sm font-semibold shadow-sm">{formatPrice(item.earnings || 0, 'UAH')}</span>
+                          <span className="text-white text-sm font-semibold shadow-sm">{formatPrice(item.earnings || 0)}</span>
                         </div>
                       </div>
                     </div>
@@ -796,7 +796,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div key={payout.id || Math.random()} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div>
                     <div className="font-medium text-gray-900 dark:text-white">
-                      {formatPrice(payout.amount || 0, 'UAH')}
+                      {formatPrice(payout.amount || 0)}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       {payout.date ? new Date(payout.date).toLocaleDateString() : 'N/A'} • {payout.method || 'Service'}
@@ -853,7 +853,7 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white">{formatPrice(earningsData.avgSessionValue || 0, 'UAH')}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formatPrice(earningsData.avgSessionValue || 0)}</span>
                 )}
               </div>
             </div>
