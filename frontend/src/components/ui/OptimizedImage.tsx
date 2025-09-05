@@ -95,12 +95,19 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
             setIsLoading(false);
             return;
           }
-          // File exists, proceed with normal image loading with shorter timeout
+          // File exists, proceed with normal image loading with appropriate timeout
+          // Use longer timeout for S3 proxy URLs
+          const timeoutDuration = src.includes('/s3-proxy/') ? 10000 : 2000;
           const timeout = setTimeout(() => {
-            console.log('⏰ Backend file loading timeout after HEAD success:', src);
+            if (src.includes('/s3-proxy/')) {
+              console.log('⏰ S3 proxy image loading timeout after HEAD success:', src);
+              console.log('💡 S3 proxy image may be large or have slow network connection.');
+            } else {
+              console.log('⏰ Backend file loading timeout after HEAD success:', src);
+            }
             setHasError(true);
             setIsLoading(false);
-          }, 2000);
+          }, timeoutDuration);
           setTimeoutId(timeout);
         })
         .catch((fetchError) => {

@@ -41,6 +41,17 @@ export const AutoMigrateAvatar: React.FC<AutoMigrateAvatarProps> = ({
       const needsMigration = AvatarMigrationUtil.needsMigration(user.avatar);
       if (!needsMigration) return;
 
+      // Check if we recently completed a migration for this URL to prevent loops
+      const lastMigrationKey = `avatar_migration_${user.avatar}`;
+      const lastMigration = localStorage.getItem(lastMigrationKey);
+      if (lastMigration) {
+        const timeSinceLastMigration = Date.now() - parseInt(lastMigration);
+        if (timeSinceLastMigration < 30000) { // 30 seconds cooldown
+          console.log('🔄 Auto-migration: Cooldown period active, skipping migration');
+          return;
+        }
+      }
+
       console.log('🔄 Auto-migration: Google avatar detected, starting migration...');
       
       setMigrationStatus(prev => ({ ...prev, isChecking: true }));
@@ -58,6 +69,10 @@ export const AutoMigrateAvatar: React.FC<AutoMigrateAvatarProps> = ({
         const newAvatarUrl = await AvatarMigrationUtil.migrateAvatar(user.avatar);
         
         if (newAvatarUrl) {
+          // Record successful migration to prevent loops
+          const lastMigrationKey = `avatar_migration_${user.avatar}`;
+          localStorage.setItem(lastMigrationKey, Date.now().toString());
+          
           // Update user in Redux store
           dispatch(updateUserProfile({ 
             avatar: newAvatarUrl 

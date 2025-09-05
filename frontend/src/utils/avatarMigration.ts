@@ -18,8 +18,10 @@ export class AvatarMigrationUtil {
       return true;
     }
     
-    // Check for other external services
-    if (avatarUrl.startsWith('http') && !avatarUrl.includes('miyzapis-backend-production.up.railway.app')) {
+    // Check for other external services, but exclude S3 URLs which are already migrated
+    if (avatarUrl.startsWith('http') && 
+        !avatarUrl.includes('miyzapis-backend-production.up.railway.app') &&
+        !avatarUrl.includes('miyzapis-storage.s3.ap-southeast-2.amazonaws.com')) {
       return true;
     }
     
