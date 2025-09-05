@@ -193,7 +193,7 @@ const SimplePieChart: React.FC<{ data: { label: string; value: number; color: st
               style={{ backgroundColor: item.color }}
             />
             <span className="text-sm text-gray-600">{item.label}</span>
-            <span className="text-sm font-semibold ml-2">{((item.value / total) * 100).toFixed(1)}%</span>
+            <span className="text-sm font-semibold text-gray-800 ml-2">{((item.value / total) * 100).toFixed(1)}%</span>
           </div>
         ))}
       </div>
@@ -404,27 +404,57 @@ const SpecialistAnalytics: React.FC = () => {
           services
         });
         
-        // Process chart data
+        // Generate chart data from actual booking data
+        const chartDataByDay = new Map();
+        const chartDataByMonth = new Map();
+        
+        // Group bookings by date for chart data
+        completedBookings.forEach(booking => {
+          const bookingDate = new Date(booking.createdAt);
+          const dayKey = bookingDate.toISOString().split('T')[0]; // YYYY-MM-DD
+          const monthKey = `${bookingDate.getFullYear()}-${String(bookingDate.getMonth() + 1).padStart(2, '0')}`; // YYYY-MM
+          
+          // Daily data
+          if (!chartDataByDay.has(dayKey)) {
+            chartDataByDay.set(dayKey, { revenue: 0, bookings: 0, date: bookingDate });
+          }
+          const dayData = chartDataByDay.get(dayKey);
+          dayData.revenue += booking.totalAmount || 0;
+          dayData.bookings += 1;
+          
+          // Monthly data  
+          if (!chartDataByMonth.has(monthKey)) {
+            chartDataByMonth.set(monthKey, { revenue: 0, bookings: 0, date: bookingDate });
+          }
+          const monthData = chartDataByMonth.get(monthKey);
+          monthData.revenue += booking.totalAmount || 0;
+          monthData.bookings += 1;
+        });
+        
+        // Convert to arrays and sort by date
+        const dailyChartData = Array.from(chartDataByDay.values()).sort((a, b) => a.date.getTime() - b.date.getTime());
+        const monthlyChartData = Array.from(chartDataByMonth.values()).sort((a, b) => a.date.getTime() - b.date.getTime());
+        
         const newChartData = {
           daily: {
-            revenue: revenue.revenueByDay?.map(d => d.revenue) || [],
-            bookings: revenue.revenueByDay?.map(d => d.bookings) || [],
-            labels: formatChartLabels('daily', revenue.revenueByDay || [])
+            revenue: dailyChartData.map(d => d.revenue),
+            bookings: dailyChartData.map(d => d.bookings),
+            labels: formatChartLabels('daily', dailyChartData)
           },
           weekly: {
-            revenue: [], // Backend should provide weekly data
-            bookings: [],
-            labels: []
+            revenue: dailyChartData.map(d => d.revenue), // Use daily data for weekly for now
+            bookings: dailyChartData.map(d => d.bookings),
+            labels: formatChartLabels('daily', dailyChartData)
           },
           monthly: {
-            revenue: revenue.revenueByMonth?.map(d => d.revenue) || [],
-            bookings: revenue.revenueByMonth?.map(d => d.bookings) || [],
-            labels: formatChartLabels('monthly', revenue.revenueByMonth || [])
+            revenue: monthlyChartData.map(d => d.revenue),
+            bookings: monthlyChartData.map(d => d.bookings), 
+            labels: formatChartLabels('monthly', monthlyChartData)
           },
           yearly: {
-            revenue: [], // Backend should provide yearly data
-            bookings: [],
-            labels: []
+            revenue: [totalRevenue], // Single data point for yearly
+            bookings: [totalBookings],
+            labels: ['2024'] // Current year
           }
         };
         
@@ -487,11 +517,12 @@ const SpecialistAnalytics: React.FC = () => {
           }
         });
         
+        // Provide default chart data with at least some fallback data
         setChartData({
-          daily: { revenue: [], bookings: [], labels: [] },
-          weekly: { revenue: [], bookings: [], labels: [] },
-          monthly: { revenue: [], bookings: [], labels: [] },
-          yearly: { revenue: [], bookings: [], labels: [] }
+          daily: { revenue: [0], bookings: [0], labels: ['Today'] },
+          weekly: { revenue: [0], bookings: [0], labels: ['This Week'] },
+          monthly: { revenue: [0], bookings: [0], labels: ['This Month'] },
+          yearly: { revenue: [0], bookings: [0], labels: ['2024'] }
         });
       } finally {
         setLoading(false);
@@ -703,7 +734,7 @@ const SpecialistAnalytics: React.FC = () => {
                   {selectedPeriod === 'yearly' ? t('analytics.total') : t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.revenue')}
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {formatPrice(selectedPeriod === 'yearly' ? (analyticsData.overview?.totalRevenue || 0) : (periodStats?.currentRevenue || 0))}
+                  {formatPrice(selectedPeriod === 'yearly' ? (analyticsData.overview?.totalRevenue || 0) : (periodStats?.currentRevenue || 0), 'USD')}
                 </p>
                 <div className="flex items-center mt-2">
                   <div className={`flex items-center ${
@@ -737,10 +768,10 @@ const SpecialistAnalytics: React.FC = () => {
                   {t('analytics.average')} {t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.revenue')}
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {formatPrice(periodStats.avgRevenue)}
+                  {formatPrice(periodStats.avgRevenue, 'USD')}
                 </p>
                 <p className="text-sm text-gray-500 mt-2">
-                  {t('analytics.total')}: {formatPrice(periodStats.currentRevenue)}
+                  {t('analytics.total')}: {formatPrice(periodStats.currentRevenue, 'USD')}
                 </p>
               </div>
               <div className="p-3 bg-green-100 rounded-lg">
