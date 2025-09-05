@@ -870,7 +870,7 @@ const SpecialistBookings: React.FC = () => {
               {/* Actions */}
               <div className="flex space-x-2">
                 <button
-                  onClick={() => setSelectedBooking(booking)}
+                  onClick={() => openBookingDetails(booking)}
                   className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
                 >
                   {t('bookings.view')}
