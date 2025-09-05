@@ -3,6 +3,7 @@ import { param, query } from 'express-validator';
 import { authenticateToken as authMiddleware, optionalAuth as optionalAuthMiddleware } from '@/middleware/auth/jwt';
 import { validateRequest } from '@/middleware/validation';
 import { fileController } from '@/controllers/files';
+import * as s3UploadController from '@/controllers/files/s3-upload.controller';
 import path from 'path';
 
 const router = Router();
@@ -670,8 +671,26 @@ router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, a
   }
 });
 
-// Main upload endpoint using proper FileController
-router.post('/upload', authMiddleware, fileController.uploadMiddleware, fileController.uploadFiles);
+// S3 Cloud Storage endpoints (when enabled)
+if (process.env.ENABLE_S3_STORAGE === 'true') {
+  console.log('🌅 S3 storage enabled - adding S3 upload routes');
+  
+  // S3 file upload endpoint
+  router.post('/upload-s3', authMiddleware, s3UploadController.uploadMiddleware, s3UploadController.uploadFiles);
+  
+  // S3 presigned URL endpoint
+  router.post('/presigned-upload', authMiddleware, s3UploadController.getPresignedUploadUrl);
+  
+  // S3 file deletion endpoint
+  router.delete('/s3/:id', authMiddleware, s3UploadController.deleteFile);
+  
+  // Use S3 upload as the main upload endpoint when S3 is enabled
+  router.post('/upload', authMiddleware, s3UploadController.uploadMiddleware, s3UploadController.uploadFiles);
+} else {
+  console.log('📁 Using local file storage');
+  // Main upload endpoint using proper FileController (local storage)
+  router.post('/upload', authMiddleware, fileController.uploadMiddleware, fileController.uploadFiles);
+}
 
 // Serve static uploaded files
 router.get('/uploads/:filename', (req, res) => {

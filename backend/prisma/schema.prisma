@@ -629,6 +629,11 @@ model File {
   isProcessed Boolean @default(false)
   isPublic    Boolean @default(false)
   
+  // Cloud storage fields
+  cloudProvider String? // 'S3', 'CLOUDINARY', 'LOCAL', etc.
+  cloudKey      String? // Key/path in cloud storage
+  cloudBucket   String? // Bucket name for cloud storage
+  
   // Timestamps
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
