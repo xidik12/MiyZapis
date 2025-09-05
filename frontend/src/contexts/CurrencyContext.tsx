@@ -9,6 +9,7 @@ interface CurrencyContextType {
   formatPrice: (price: number | undefined | null, fromCurrency?: Currency) => string;
   getCurrencySymbol: (currency?: Currency) => string;
   getCurrencyCode: (currency?: Currency) => string;
+  normalizeMixedCurrencyAmount: (amount: number, assumedMixedCurrencies?: { 'UAH': number, 'USD': number, 'EUR': number }) => number;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
@@ -57,7 +58,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   // Format price with currency symbol
-  const formatPrice = (price: number | undefined | null, fromCurrency: Currency = 'USD'): string => {
+  const formatPrice = (price: number | undefined | null, fromCurrency: Currency = 'UAH'): string => {
     // Handle undefined/null prices
     if (price == null || isNaN(price)) {
       return `${getCurrencySymbol(currency)}0`;
@@ -88,6 +89,20 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
     return CURRENCY_CODES[targetCurrency || currency];
   };
 
+  // Helper function to normalize mixed currency amounts (when backend doesn't convert)
+  const normalizeMixedCurrencyAmount = (amount: number, assumedMixedCurrencies: { 'UAH': number, 'USD': number, 'EUR': number } = { UAH: 0.8, USD: 0.15, EUR: 0.05 }): number => {
+    // This is a heuristic for mixed currency data from backend
+    // Assumes percentage breakdown based on your typical service distribution
+    const uahPortion = amount * assumedMixedCurrencies.UAH;
+    const usdPortion = amount * assumedMixedCurrencies.USD;
+    const eurPortion = amount * assumedMixedCurrencies.EUR;
+    
+    // Convert all to user's preferred currency
+    return convertPrice(uahPortion, 'UAH') + 
+           convertPrice(usdPortion, 'USD') + 
+           convertPrice(eurPortion, 'EUR');
+  };
+
   return (
     <CurrencyContext.Provider 
       value={{ 
@@ -96,7 +111,8 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
         convertPrice, 
         formatPrice,
         getCurrencySymbol,
-        getCurrencyCode
+        getCurrencyCode,
+        normalizeMixedCurrencyAmount
       }}
     >
       {children}

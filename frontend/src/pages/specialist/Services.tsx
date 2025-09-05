@@ -36,6 +36,12 @@ const sampleServices: Service[] = [
   // No mock services - will load from backend API
 ];
 
+// Helper function to get the service currency
+const getServiceCurrency = (service: Service): 'USD' | 'EUR' | 'UAH' => {
+  // Use the service's stored currency, defaulting to UAH if not specified
+  return (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+};
+
 const SpecialistServices: React.FC = () => {
   const { t, language } = useLanguage();
   const { formatPrice, currency } = useCurrency();
@@ -475,7 +481,7 @@ const SpecialistServices: React.FC = () => {
         </div>
         <div className="text-right ml-4">
           <div className="text-2xl font-bold text-primary-600 mb-2">
-            {service.basePrice && !isNaN(service.basePrice) ? formatPrice(service.basePrice) : 'N/A'}
+            {service.basePrice && !isNaN(service.basePrice) ? formatPrice(service.basePrice, getServiceCurrency(service)) : 'N/A'}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">
             {getLocalizedText(service, 'category')}
@@ -659,7 +665,7 @@ const SpecialistServices: React.FC = () => {
                           });
                           return validPrices.length === 0 
                             ? t('services.noDataYet') || 'No data yet'
-                            : formatPrice(validPrices.reduce((sum, s) => sum + (s.basePrice || s.price), 0) / validPrices.length);
+                            : formatPrice(validPrices.reduce((sum, s) => sum + (s.basePrice || s.price), 0) / validPrices.length, validPrices[0]?.currency as 'USD' | 'EUR' | 'UAH' || 'UAH');
                         })()
                     }
                   </p>

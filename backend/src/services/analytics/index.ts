@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { logger } from '@/utils/logger';
+import { convertCurrency } from '@/utils/currency';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from 'date-fns';
 
 export class AnalyticsService {
@@ -401,7 +402,12 @@ export class AnalyticsService {
         },
         select: {
           totalAmount: true,
-          completedAt: true
+          completedAt: true,
+          service: {
+            select: {
+              currency: true
+            }
+          }
         }
       });
 
@@ -410,11 +416,22 @@ export class AnalyticsService {
       return {
         earnings,
         summary: {
-          totalEarnings: completedBookings.reduce((sum, booking) => sum + booking.totalAmount, 0),
+          totalEarnings: completedBookings.reduce((sum, booking) => {
+            // Convert booking amount to UAH base currency before summing
+            const serviceCurrency = booking.service?.currency || 'UAH';
+            const convertedAmount = convertCurrency(booking.totalAmount, serviceCurrency, 'UAH');
+            return sum + convertedAmount;
+          }, 0),
           averageEarningsPerBooking: completedBookings.length > 0 
-            ? completedBookings.reduce((sum, booking) => sum + booking.totalAmount, 0) / completedBookings.length 
+            ? completedBookings.reduce((sum, booking) => {
+                // Convert booking amount to UAH base currency before summing
+                const serviceCurrency = booking.service?.currency || 'UAH';
+                const convertedAmount = convertCurrency(booking.totalAmount, serviceCurrency, 'UAH');
+                return sum + convertedAmount;
+              }, 0) / completedBookings.length 
             : 0,
-          totalCompletedBookings: completedBookings.length
+          totalCompletedBookings: completedBookings.length,
+          currency: 'UAH' // All aggregated amounts are in UAH base currency
         }
       };
     } catch (error) {

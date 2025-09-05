@@ -1,6 +1,7 @@
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
 import { Specialist, User, Service } from '@prisma/client';
+import { convertCurrency } from '@/utils/currency';
 
 interface CreateSpecialistData {
   businessName?: string;
@@ -678,6 +679,11 @@ export class SpecialistService {
             scheduledAt: true,
             completedAt: true,
             customerId: true,
+            service: {
+              select: {
+                currency: true,
+              },
+            },
           },
         }),
         // Recent bookings for display
@@ -714,6 +720,11 @@ export class SpecialistService {
             completedAt: true,
             customerId: true,
             serviceId: true,
+            service: {
+              select: {
+                currency: true,
+              },
+            },
           },
         }),
         // Reviews for rating analysis
@@ -771,7 +782,12 @@ export class SpecialistService {
       const cancelledBookings = bookings.filter(b => b.status === 'CANCELLED').length;
       const totalRevenue = bookings
         .filter(b => revenueGeneratingStatuses.includes(b.status))
-        .reduce((sum, b) => sum + b.totalAmount, 0);
+        .reduce((sum, b) => {
+          // Convert booking amount to UAH base currency before summing
+          const serviceCurrency = b.service?.currency || 'UAH';
+          const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+          return sum + convertedAmount;
+        }, 0);
 
       // Enhanced analytics calculations
       const allTimeCompleted = allTimeBookings.filter(b => revenueGeneratingStatuses.includes(b.status));
@@ -779,9 +795,17 @@ export class SpecialistService {
         (new Date().getTime() - new Date(specialist.createdAt).getTime()) / (1000 * 60 * 60 * 24 * 30)
       ));
       
-      const averageMonthlyRevenue = allTimeCompleted.reduce((sum, b) => sum + b.totalAmount, 0) / monthsInOperation;
+      const averageMonthlyRevenue = allTimeCompleted.reduce((sum, b) => {
+        const serviceCurrency = b.service?.currency || 'UAH';
+        const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+        return sum + convertedAmount;
+      }, 0) / monthsInOperation;
       const averageBookingValue = allTimeCompleted.length > 0 
-        ? allTimeCompleted.reduce((sum, b) => sum + b.totalAmount, 0) / allTimeCompleted.length 
+        ? allTimeCompleted.reduce((sum, b) => {
+            const serviceCurrency = b.service?.currency || 'UAH';
+            const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+            return sum + convertedAmount;
+          }, 0) / allTimeCompleted.length 
         : 0;
       
       // Current month calculations
@@ -818,14 +842,22 @@ export class SpecialistService {
           const date = new Date(b.createdAt);
           return date >= monthStart && date <= monthEnd && revenueGeneratingStatuses.includes(b.status);
         })
-        .reduce((sum, b) => sum + b.totalAmount, 0);
+        .reduce((sum, b) => {
+          const serviceCurrency = b.service?.currency || 'UAH';
+          const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+          return sum + convertedAmount;
+        }, 0);
       
       const previousMonthRevenue = allTimeBookings
         .filter(b => {
           const date = new Date(b.createdAt);
           return date >= previousMonth && date <= previousMonthEnd && revenueGeneratingStatuses.includes(b.status);
         })
-        .reduce((sum, b) => sum + b.totalAmount, 0);
+        .reduce((sum, b) => {
+          const serviceCurrency = b.service?.currency || 'UAH';
+          const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+          return sum + convertedAmount;
+        }, 0);
       
       const monthlyGrowth = previousMonthRevenue > 0 
         ? ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100 
@@ -844,7 +876,11 @@ export class SpecialistService {
             const bookingDate = new Date(b.createdAt);
             return bookingDate >= monthStart && bookingDate <= monthEnd && revenueGeneratingStatuses.includes(b.status);
           })
-          .reduce((sum, b) => sum + b.totalAmount, 0);
+          .reduce((sum, b) => {
+            const serviceCurrency = b.service?.currency || 'UAH';
+            const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+            return sum + convertedAmount;
+          }, 0);
         
         const monthBookings = allTimeBookings
           .filter(b => {
@@ -869,11 +905,20 @@ export class SpecialistService {
             select: {
               status: true,
               totalAmount: true,
+              service: {
+                select: {
+                  currency: true,
+                },
+              },
             },
           });
           
           const completed = serviceBookings.filter(b => revenueGeneratingStatuses.includes(b.status));
-          const revenue = completed.reduce((sum, b) => sum + b.totalAmount, 0);
+          const revenue = completed.reduce((sum, b) => {
+            const serviceCurrency = b.service?.currency || 'UAH';
+            const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+            return sum + convertedAmount;
+          }, 0);
           
           return {
             serviceName: service.name,

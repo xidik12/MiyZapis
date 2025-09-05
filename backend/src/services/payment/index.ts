@@ -2,6 +2,7 @@ import { Payment, Booking, PaymentMethod } from '@prisma/client';
 import { logger } from '@/utils/logger';
 import { config } from '@/config';
 import { prisma } from '@/config/database';
+import { convertCurrency } from '@/utils/currency';
 
 interface PaymentIntentData {
   bookingId: string;
@@ -973,12 +974,26 @@ export class PaymentService {
         if (toDate) where.createdAt.lte = toDate;
       }
 
-      // Get total earnings
-      const totalEarnings = await prisma.payment.aggregate({
+      // Get all payments with currency info to properly convert before summing
+      const allPayments = await prisma.payment.findMany({
         where,
-        _sum: { amount: true },
-        _count: true,
+        select: {
+          amount: true,
+          currency: true,
+        },
       });
+
+      // Convert all payments to UAH (base currency) and sum
+      let totalEarningsInUAH = 0;
+      for (const payment of allPayments) {
+        const convertedAmount = convertCurrency(payment.amount, payment.currency, 'UAH');
+        totalEarningsInUAH += convertedAmount;
+      }
+
+      const totalEarnings = {
+        _sum: { amount: totalEarningsInUAH },
+        _count: allPayments.length,
+      };
 
       // Get recent payments
       const payments = await prisma.payment.findMany({
@@ -1004,21 +1019,35 @@ export class PaymentService {
         take: 20,
       });
 
-      // Get pending earnings (payments that are processing or pending)
-      const pendingEarnings = await prisma.payment.aggregate({
+      // Get pending earnings with currency conversion
+      const pendingPayments = await prisma.payment.findMany({
         where: {
           ...where,
           status: { in: ['PENDING', 'PROCESSING'] },
         },
-        _sum: { amount: true },
+        select: {
+          amount: true,
+          currency: true,
+        },
       });
+
+      // Convert all pending payments to UAH and sum
+      let pendingEarningsInUAH = 0;
+      for (const payment of pendingPayments) {
+        const convertedAmount = convertCurrency(payment.amount, payment.currency, 'UAH');
+        pendingEarningsInUAH += convertedAmount;
+      }
+
+      const pendingEarnings = {
+        _sum: { amount: pendingEarningsInUAH },
+      };
 
       return {
         totalEarnings: totalEarnings._sum.amount || 0,
         pendingEarnings: pendingEarnings._sum.amount || 0,
         totalTransactions: totalEarnings._count,
         payments,
-        currency: payments[0]?.currency || 'USD',
+        currency: 'UAH', // All aggregated amounts are converted to UAH base currency
       };
     } catch (error) {
       logger.error('Error getting specialist earnings:', error);
