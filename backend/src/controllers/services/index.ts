@@ -432,7 +432,6 @@ export class ServiceController {
               rating: service.specialist.rating,
               reviewCount: service.specialist.reviewCount,
               isVerified: service.specialist.isVerified,
-              completedBookings: service.specialist._count?.bookings || 0,
               user: {
                 firstName: service.specialist.user.firstName,
                 lastName: service.specialist.user.lastName,

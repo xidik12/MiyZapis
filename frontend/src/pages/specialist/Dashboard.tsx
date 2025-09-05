@@ -37,16 +37,10 @@ import {
   StarIcon as StarIconSolid,
 } from '@heroicons/react/24/solid';
 
-// Helper function to get the booking currency (same as Bookings page)
-const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
-  // Use the service's stored currency, defaulting to UAH if not specified
-  return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
-};
-
 
 const SpecialistDashboard: React.FC = () => {
   const user = useAppSelector(selectUser);
-  const { formatPrice, convertPrice } = useCurrency();
+  const { formatPrice } = useCurrency();
   const { t, language } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [dashboardData, setDashboardData] = useState<any>({
@@ -134,11 +128,9 @@ const SpecialistDashboard: React.FC = () => {
             // Calculate total bookings and monthly revenue from actual completed bookings
             stats.totalBookings = completedBookings.length;
             
-            // Calculate total revenue from completed bookings with proper currency conversion
+            // Calculate total revenue from completed bookings (accurate amounts)
             const totalRevenue = completedBookings.reduce((sum, booking) => {
-              const bookingCurrency = getBookingCurrency(booking);
-              const convertedAmount = convertPrice(booking.totalAmount || 0, bookingCurrency);
-              return sum + convertedAmount;
+              return sum + (booking.totalAmount || 0);
             }, 0);
             
             // For now, use total revenue as monthly revenue (can be refined later)

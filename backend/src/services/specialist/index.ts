@@ -447,56 +447,10 @@ export class SpecialistService {
           _count: {
             select: {
               services: true,
-              bookings: {
-                where: {
-                  status: 'COMPLETED'
-                }
-              }
             },
           },
         },
       });
-
-      if (!specialist) {
-        throw new Error('SPECIALIST_NOT_FOUND');
-      }
-
-      // Calculate response time from booking data
-      const bookings = await prisma.booking.findMany({
-        where: {
-          specialistId,
-          status: 'COMPLETED',
-          createdAt: {
-            gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) // Last 90 days
-          }
-        },
-        select: {
-          createdAt: true,
-          updatedAt: true,
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 50 // Last 50 bookings for response time calculation
-      });
-
-      let averageResponseTime = 0;
-      if (bookings.length > 0) {
-        let totalResponseTimeMinutes = 0;
-        let validBookings = 0;
-
-        bookings.forEach(booking => {
-          if (booking.createdAt && booking.updatedAt) {
-            const responseTimeMs = booking.updatedAt.getTime() - booking.createdAt.getTime();
-            if (responseTimeMs > 0) {
-              totalResponseTimeMinutes += responseTimeMs / (1000 * 60); // Convert to minutes
-              validBookings++;
-            }
-          }
-        });
-
-        if (validBookings > 0) {
-          averageResponseTime = Math.round(totalResponseTimeMinutes / validBookings);
-        }
-      }
 
       if (!specialist) {
         throw new Error('SPECIALIST_NOT_FOUND');
@@ -515,8 +469,6 @@ export class SpecialistService {
         socialMedia: SpecialistService.parseJsonField(specialist.socialMedia, {}),
         portfolioImages: SpecialistService.parseJsonField(specialist.portfolioImages, []),
         certifications: SpecialistService.parseJsonField(specialist.certifications, []),
-        completedBookings: specialist._count.bookings,
-        responseTime: averageResponseTime,
       };
 
       return parsedSpecialist as SpecialistWithUser;

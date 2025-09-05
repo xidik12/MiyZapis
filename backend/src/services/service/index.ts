@@ -596,15 +596,6 @@ export class ServiceService {
                     updatedAt: true,
                   },
                 },
-                _count: {
-                  select: {
-                    bookings: {
-                      where: {
-                        status: 'COMPLETED'
-                      }
-                    }
-                  }
-                }
               },
             },
           },
