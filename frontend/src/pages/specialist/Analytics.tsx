@@ -95,7 +95,7 @@ interface ChartProps {
 const SimpleLineChart: React.FC<ChartProps & { color?: string }> = ({ data, labels, height = '200px', color = '#2563eb' }) => {
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
+      <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
         No data available
       </div>
     );
@@ -163,7 +163,7 @@ const SimpleLineChart: React.FC<ChartProps & { color?: string }> = ({ data, labe
           );
         })}
       </svg>
-      <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-gray-500 px-1">
+      <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-gray-500 dark:text-gray-400 px-1">
         {labels.map((label, index) => (
           <span key={index} className="text-center">{label}</span>
         ))}
@@ -175,7 +175,7 @@ const SimpleLineChart: React.FC<ChartProps & { color?: string }> = ({ data, labe
 const SimpleBarChart: React.FC<ChartProps> = ({ data, labels, color = '#2563eb', height = '200px' }) => {
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
+      <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
         No data available
       </div>
     );
@@ -198,7 +198,7 @@ const SimpleBarChart: React.FC<ChartProps> = ({ data, labels, color = '#2563eb',
                 minHeight: '4px'
               }}
             />
-            <div className="text-xs text-gray-500 mt-1 transform rotate-45 origin-left">
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 transform rotate-45 origin-left">
               {labels[index]}
             </div>
           </div>
@@ -747,7 +747,7 @@ const SpecialistAnalytics: React.FC = () => {
           </div>
           
           {/* Period Selector */}
-          <div className="mt-4 lg:mt-0 flex space-x-2">
+          <div className="mt-4 lg:mt-0 flex flex-wrap gap-2">
             {(['daily', 'weekly', 'monthly', 'yearly'] as const).map((period) => (
               <button
                 key={period}
@@ -755,7 +755,7 @@ const SpecialistAnalytics: React.FC = () => {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   selectedPeriod === period
                     ? 'bg-primary-600 text-white shadow-lg'
-                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 {t(`analytics.${period}`)}
@@ -767,14 +767,14 @@ const SpecialistAnalytics: React.FC = () => {
         {/* Key Metrics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Total Revenue */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                   {selectedPeriod === 'yearly' ? t('analytics.total') : t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.revenue')}
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatPrice(selectedPeriod === 'yearly' ? (analyticsData.overview?.totalRevenue || 0) : (periodStats?.currentRevenue || 0), 'USD')}
+                <p className="text-2xl font-bold text-gray-900 dark:text-white dark:text-white">
+                  {formatPrice(selectedPeriod === 'yearly' ? (analyticsData.overview?.totalRevenue || 0) : (periodStats?.currentRevenue || 0), 'UAH')}
                 </p>
                 <div className="flex items-center mt-2">
                   <div className={`flex items-center ${
@@ -789,11 +789,11 @@ const SpecialistAnalytics: React.FC = () => {
                       {Math.abs(periodStats.revenueGrowth).toFixed(1)}%
                     </span>
                   </div>
-                  <span className="text-xs text-gray-500 ml-2">{t('analytics.vsAverage')}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 ml-2">{t('analytics.vsAverage')}</span>
                 </div>
               </div>
-              <div className="p-3 bg-primary-100 rounded-lg">
-                <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-3 bg-primary-100 dark:bg-primary-900/20 dark:bg-primary-900/20 rounded-lg">
+                <svg className="w-6 h-6 text-primary-600 dark:text-primary-400 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                 </svg>
               </div>
@@ -801,17 +801,17 @@ const SpecialistAnalytics: React.FC = () => {
           </div>
           
           {/* Monthly Revenue */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                   {t('analytics.average')} {t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.revenue')}
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatPrice(periodStats.avgRevenue, 'USD')}
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {formatPrice(periodStats.avgRevenue, 'UAH')}
                 </p>
-                <p className="text-sm text-gray-500 mt-2">
-                  {t('analytics.total')}: {formatPrice(periodStats.currentRevenue, 'USD')}
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  {t('analytics.total')}: {formatPrice(periodStats.currentRevenue, 'UAH')}
                 </p>
               </div>
               <div className="p-3 bg-green-100 rounded-lg">
@@ -823,13 +823,13 @@ const SpecialistAnalytics: React.FC = () => {
           </div>
           
           {/* Total Bookings */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                   {selectedPeriod === 'yearly' ? t('analytics.total') : t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.bookings')}
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {(selectedPeriod === 'yearly' ? (analyticsData.overview?.totalBookings || 0) : (periodStats?.currentBookings || 0)).toLocaleString()}
                 </p>
                 <div className="flex items-center mt-2">
@@ -845,7 +845,7 @@ const SpecialistAnalytics: React.FC = () => {
                       {Math.abs(periodStats.bookingGrowth).toFixed(1)}%
                     </span>
                   </div>
-                  <span className="text-xs text-gray-500 ml-2">{t('analytics.vsAverage')}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">{t('analytics.vsAverage')}</span>
                 </div>
               </div>
               <div className="p-3 bg-purple-100 rounded-lg">
@@ -857,13 +857,13 @@ const SpecialistAnalytics: React.FC = () => {
           </div>
           
           {/* Average Rating */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                   {t('dashboard.specialist.averageRating')}
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {(analyticsData.performance?.averageRating || 0).toFixed(1)}
                 </p>
                 <div className="flex items-center mt-2">
@@ -881,7 +881,7 @@ const SpecialistAnalytics: React.FC = () => {
                       </svg>
                     ))}
                   </div>
-                  <span className="text-xs text-gray-500 ml-2">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
                     {analyticsData.performance?.totalReviews || 0} {t('rating.reviews')}
                   </span>
                 </div>
@@ -900,18 +900,18 @@ const SpecialistAnalytics: React.FC = () => {
           {/* Revenue Trend Chart */}
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                 {selectedView === 'revenue' ? t('analytics.revenueTrend') : t('analytics.bookingsTrend')} ({t(`analytics.${selectedPeriod}`)})
               </h2>
-              <div className="flex space-x-2">
+              <div className="flex flex-wrap gap-2">
                 {(['revenue', 'bookings'] as const).map((view) => (
                   <button
                     key={view}
                     onClick={() => setSelectedView(view)}
                     className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${
                       selectedView === view
-                        ? 'bg-primary-100 text-primary-600'
-                        : 'text-gray-600 hover:text-gray-900'
+                        ? 'bg-primary-100 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                     }`}
                   >
                     {t(`dashboard.analytics.${view}`)}
@@ -936,18 +936,18 @@ const SpecialistAnalytics: React.FC = () => {
                   height="300px"
                 />
                 {/* Show data summary for better understanding */}
-                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                  <div className="flex justify-between text-sm">
+                <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300">
                     <div className="flex items-center">
                       <div className="w-3 h-3 rounded-full bg-green-600 mr-2"></div>
-                      <span>Revenue: {formatPrice(currentPeriodData.revenue.reduce((sum, val) => sum + val, 0), 'USD')}</span>
+                      <span>Revenue: {formatPrice(currentPeriodData.revenue.reduce((sum, val) => sum + val, 0), 'UAH')}</span>
                     </div>
                     <div className="flex items-center">
                       <div className="w-3 h-3 rounded-full bg-blue-600 mr-2"></div>
                       <span>Bookings: {currentPeriodData.bookings.reduce((sum, val) => sum + val, 0)}</span>
                     </div>
                     {currentPeriodData.revenue.length === 1 && selectedPeriod === 'monthly' && (
-                      <div className="text-gray-500 italic">
+                      <div className="text-gray-500 dark:text-gray-400 italic">
                         Switch to "daily" for detailed trends
                       </div>
                     )}
@@ -955,7 +955,7 @@ const SpecialistAnalytics: React.FC = () => {
                 </div>
               </>
             ) : (
-              <div className="flex items-center justify-center h-64 text-gray-500">
+              <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
                 <div className="text-center">
                   <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
@@ -968,11 +968,11 @@ const SpecialistAnalytics: React.FC = () => {
           
           {/* Service Performance Pie Chart */}
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('analytics.servicePerformance')}</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{t('analytics.servicePerformance')}</h2>
             {serviceData.length > 0 ? (
               <SimplePieChart data={serviceData} height="300px" />
             ) : (
-              <div className="flex items-center justify-center h-64 text-gray-500">
+              <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
                 <div className="text-center">
                   <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
@@ -987,7 +987,7 @@ const SpecialistAnalytics: React.FC = () => {
         
         {/* Service Revenue Analysis */}
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('analytics.revenueByService')}</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{t('analytics.revenueByService')}</h2>
           {serviceRevenue.length > 0 ? (
             <SimpleBarChart
               data={serviceRevenue}
@@ -996,7 +996,7 @@ const SpecialistAnalytics: React.FC = () => {
               height="300px"
             />
           ) : (
-            <div className="flex items-center justify-center h-64 text-gray-500">
+            <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
               <div className="text-center">
                 <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -1012,7 +1012,7 @@ const SpecialistAnalytics: React.FC = () => {
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                   {t('analytics.responseTime')}
                 </p>
                 <p className="text-xl font-bold text-gray-900">
@@ -1033,7 +1033,7 @@ const SpecialistAnalytics: React.FC = () => {
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                   {t('analytics.completionRate')}
                 </p>
                 <p className="text-xl font-bold text-gray-900">
@@ -1054,7 +1054,7 @@ const SpecialistAnalytics: React.FC = () => {
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                   {t('analytics.profileViews')}
                 </p>
                 <p className="text-xl font-bold text-gray-900">
@@ -1078,7 +1078,7 @@ const SpecialistAnalytics: React.FC = () => {
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                   {t('analytics.conversionRate')}
                 </p>
                 <p className="text-xl font-bold text-gray-900">
@@ -1088,7 +1088,7 @@ const SpecialistAnalytics: React.FC = () => {
                   <p className={`text-xs ${conversionRateStatus.color}`}>
                     {conversionRateStatus.status}
                   </p>
-                  <span className="text-xs text-gray-500 ml-2">Industry avg: 18%</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">Industry avg: 18%</span>
                 </div>
               </div>
               <div className="p-2 bg-orange-100 rounded-lg">

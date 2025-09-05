@@ -422,7 +422,7 @@ const SpecialistDashboard: React.FC = () => {
         />
         <StatCard
           title={t('dashboard.specialist.monthlyRevenue')}
-          value={formatPrice(dashboardData.stats.monthlyRevenue, 'USD')}
+          value={formatPrice(dashboardData.stats.monthlyRevenue, 'UAH')}
           change={dashboardData.stats.monthlyRevenue > 0 ? `+8% ${t('dashboard.specialist.improvement')}` : ''}
           changeType="positive"
           icon={CurrencyDollarIcon}

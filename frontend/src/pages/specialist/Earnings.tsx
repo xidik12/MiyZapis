@@ -5,7 +5,6 @@ import {
   DocumentArrowDownIcon, 
   ClockIcon,
   ChartBarIcon,
-  CalendarIcon,
   UserGroupIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon
@@ -14,8 +13,6 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
-import { specialistService } from '../../services/specialist.service';
-import { paymentService } from '../../services/payment.service';
 import { analyticsService } from '../../services/analytics.service';
 import { bookingService } from '../../services/booking.service';
 import { retryRequest } from '../../services/api';
@@ -90,16 +87,6 @@ const SpecialistEarnings: React.FC = () => {
     return monthMapping[monthAbbr] ? t(monthMapping[monthAbbr]) : monthAbbr;
   };
 
-  // Translate payment methods
-  const getTranslatedPaymentMethod = (method: string): string => {
-    const methodMapping: { [key: string]: string } = {
-      'Bank Transfer': 'earnings.paymentMethod.bankTransfer',
-      'PayPal': 'earnings.paymentMethod.paypal',
-      'Stripe': 'earnings.paymentMethod.stripe',
-      'card': 'earnings.paymentMethod.card'
-    };
-    return methodMapping[method] ? t(methodMapping[method]) : method;
-  };
 
   // Initialize with empty data for new accounts
   const [earningsData, setEarningsData] = useState<EarningsData>({
@@ -190,7 +177,7 @@ const SpecialistEarnings: React.FC = () => {
             thisMonthEarnings = completedBookings
               .filter(booking => {
                 try {
-                  const bookingDate = new Date(booking.completedAt || booking.createdAt);
+                  const bookingDate = new Date(booking.updatedAt || booking.createdAt);
                   return bookingDate.getMonth() === currentMonth && bookingDate.getFullYear() === currentYear;
                 } catch (e) {
                   console.warn('Invalid booking date:', booking);
@@ -203,7 +190,7 @@ const SpecialistEarnings: React.FC = () => {
             const monthlyData = new Map<string, { earnings: number; bookings: number }>();
             completedBookings.forEach(booking => {
               try {
-                const date = new Date(booking.completedAt || booking.createdAt);
+                const date = new Date(booking.updatedAt || booking.createdAt);
                 const monthKey = date.toLocaleDateString('en', { month: 'short', year: 'numeric' });
                 const existing = monthlyData.get(monthKey) || { earnings: 0, bookings: 0 };
                 monthlyData.set(monthKey, {
@@ -371,9 +358,7 @@ const SpecialistEarnings: React.FC = () => {
         const bookingData = await retryRequest(
           () => bookingService.getBookings({
             limit: 10,
-            status: 'COMPLETED', // Only completed bookings for earnings
-            sortBy: 'completedAt',
-            sortOrder: 'desc'
+            status: 'COMPLETED' // Only completed bookings for earnings
           }, 'specialist'),
           2, 1000
         );
@@ -467,16 +452,6 @@ const SpecialistEarnings: React.FC = () => {
     }
   };
 
-  const formatDateToMonth = (dateString: string) => {
-    try {
-      if (!dateString) return 'N/A';
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en', { month: 'short' });
-    } catch (error) {
-      console.error('Error formatting date:', error);
-      return 'N/A';
-    }
-  };
 
   const handleExportReport = async () => {
     setIsExporting(true);
@@ -586,7 +561,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  ${(earningsData.totalEarnings || 0).toFixed(2)}
+                  {formatPrice(earningsData.totalEarnings || 0, 'UAH')}
                 </p>
               )}
             </div>
@@ -604,7 +579,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  ${(earningsData.thisMonth || 0).toFixed(2)}
+                  {formatPrice(earningsData.thisMonth || 0, 'UAH')}
                 </p>
               )}
             </div>
@@ -622,7 +597,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-orange-600">
-                  ${(earningsData.pending || 0).toFixed(2)}
+                  {formatPrice(earningsData.pending || 0, 'UAH')}
                 </p>
               )}
             </div>
@@ -640,7 +615,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  ${(earningsData.lastPayout || 0).toFixed(2)}
+                  {formatPrice(earningsData.lastPayout || 0, 'UAH')}
                 </p>
               )}
             </div>
@@ -697,7 +672,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  ${(earningsData.averageBookingValue || 0).toFixed(2)}
+                  {formatPrice(earningsData.averageBookingValue || 0, 'UAH')}
                 </p>
               )}
             </div>
@@ -781,7 +756,7 @@ const SpecialistEarnings: React.FC = () => {
                           className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-full rounded-lg flex items-center justify-end pr-3 transition-all duration-500 ease-out"
                           style={{ width: `${Math.max(5, widthPercentage)}%` }}
                         >
-                          <span className="text-white text-sm font-semibold shadow-sm">${(item.earnings || 0).toFixed(2)}</span>
+                          <span className="text-white text-sm font-semibold shadow-sm">{formatPrice(item.earnings || 0, 'UAH')}</span>
                         </div>
                       </div>
                     </div>
@@ -821,7 +796,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div key={payout.id || Math.random()} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div>
                     <div className="font-medium text-gray-900 dark:text-white">
-                      ${(payout.amount || 0).toFixed(2)}
+                      {formatPrice(payout.amount || 0, 'UAH')}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       {payout.date ? new Date(payout.date).toLocaleDateString() : 'N/A'} • {payout.method || 'Service'}
@@ -878,7 +853,7 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white">${(earningsData.avgSessionValue || 0).toFixed(2)}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formatPrice(earningsData.avgSessionValue || 0, 'UAH')}</span>
                 )}
               </div>
             </div>

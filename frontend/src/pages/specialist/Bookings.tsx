@@ -641,8 +641,8 @@ const SpecialistBookings: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div>
@@ -789,8 +789,110 @@ const SpecialistBookings: React.FC = () => {
           </div>
         )}
         
-        {/* Bookings Table */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+        {/* Mobile Bookings Cards */}
+        <div className="lg:hidden space-y-4">
+          {paginatedBookings.map((booking) => (
+            <div key={booking.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4">
+              {/* Header with checkbox and customer */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedBookings.includes(booking.id)}
+                    onChange={(e) => handleSelectBooking(booking.id, e.target.checked)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold mr-3">
+                      {booking.customer 
+                        ? `${booking.customer.firstName?.[0] || ''}${booking.customer.lastName?.[0] || ''}`
+                        : (booking.customerName?.split(' ').map(n => n[0]).join('') || 'U')
+                      }
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        {booking.customer 
+                          ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
+                          : (booking.customerName || 'Unknown Customer')
+                        }
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        ID: #{booking.id}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                {getStatusBadge(booking.status)}
+              </div>
+
+              {/* Service and details */}
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('bookings.service')}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">
+                    {booking.service?.name || getTranslatedServiceName(booking.serviceName || 'Unknown Service')}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {booking.duration} {t('time.minutes')}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('bookings.amount')}</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    {formatPrice(booking.totalAmount, getBookingCurrency(booking))}
+                  </p>
+                </div>
+              </div>
+
+              {/* Date and type */}
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('bookings.dateTime')}</p>
+                  <div className="text-sm font-medium text-gray-900 dark:text-white">
+                    {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleDateString('uk-UA') : booking.date}
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }) : booking.time}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('bookings.type')}</p>
+                  <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                    booking.meetingLink 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+                  }`}>
+                    {booking.meetingLink ? t('bookings.online') : t('bookings.inPerson')}
+                  </span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setSelectedBooking(booking)}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
+                >
+                  {t('bookings.view')}
+                </button>
+                {booking.status === 'CONFIRMED' && (
+                  <button
+                    onClick={() => {
+                      setBookingToComplete(booking);
+                      setShowPaymentModal(true);
+                    }}
+                    className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
+                  >
+                    {t('bookings.complete')}
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop Bookings Table */}
+        <div className="hidden lg:block bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50 dark:bg-gray-700">
@@ -925,10 +1027,12 @@ const SpecialistBookings: React.FC = () => {
               </tbody>
             </table>
           </div>
-          
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-200 dark:border-gray-700 sm:px-6">
+        </div>
+        
+        {/* Pagination */}
+        {totalPages > 1 && filteredAndSortedBookings.length > 0 && (
+          <div className="mt-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 px-4 py-3 sm:px-6">
               <div className="flex items-center justify-between">
                 <div className="flex justify-between flex-1 sm:hidden">
                   <button
@@ -990,8 +1094,8 @@ const SpecialistBookings: React.FC = () => {
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
         
         {/* No Results */}
         {filteredAndSortedBookings.length === 0 && (

@@ -572,15 +572,6 @@ const SpecialistProfilePage: React.FC = () => {
                     {formatExperience(specialist.experience)}
                   </span>
                 </div>
-                
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('specialist.verified')}</span>
-                  <span className={`font-semibold ${
-                    specialist.user?.isVerified ? 'text-green-600' : 'text-gray-500'
-                  }`}>
-                    {specialist.user?.isVerified ? t('common.yes') : t('common.no')}
-                  </span>
-                </div>
               </div>
             </div>
           </div>
