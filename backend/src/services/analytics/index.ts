@@ -673,9 +673,12 @@ export class AnalyticsService {
         }
       });
 
+      // Consider bookings that should count as "completed" for revenue purposes
+      const revenueGeneratingStatuses = ['COMPLETED', 'CONFIRMED', 'IN_PROGRESS'];
+
       const serviceAnalytics = services.map(service => {
         const bookings = service.bookings;
-        const completedBookings = bookings.filter(b => b.status === 'COMPLETED');
+        const completedBookings = bookings.filter(b => revenueGeneratingStatuses.includes(b.status));
         const totalRevenue = completedBookings.reduce((sum, b) => sum + b.totalAmount, 0);
         const ratings = bookings
           .filter(b => b.review)
@@ -766,7 +769,7 @@ export class AnalyticsService {
         }
       });
 
-      const completedBookings = bookings.filter(b => b.status === 'COMPLETED');
+      const completedBookings = bookings.filter(b => revenueGeneratingStatuses.includes(b.status));
       const cancelledBookings = bookings.filter(b => b.status === 'CANCELLED');
       
       // Calculate key performance metrics
@@ -807,8 +810,8 @@ export class AnalyticsService {
       const performanceTrend = this.groupDataByPeriod(bookings, 'week', 'createdAt').map(group => ({
         period: group.period,
         bookings: group.count,
-        completedBookings: group.items.filter(b => b.status === 'COMPLETED').length,
-        revenue: group.items.filter(b => b.status === 'COMPLETED').reduce((sum, b) => sum + b.totalAmount, 0),
+        completedBookings: group.items.filter(b => revenueGeneratingStatuses.includes(b.status)).length,
+        revenue: group.items.filter(b => revenueGeneratingStatuses.includes(b.status)).reduce((sum, b) => sum + b.totalAmount, 0),
         averageRating: group.items.filter(b => b.review).length > 0 ?
           group.items.filter(b => b.review).reduce((sum, b) => sum + b.review!.rating, 0) / group.items.filter(b => b.review).length : 0
       }));

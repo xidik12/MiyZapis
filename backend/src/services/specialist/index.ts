@@ -765,14 +765,16 @@ export class SpecialistService {
 
       // Basic calculations
       const totalBookings = bookings.length;
-      const completedBookings = bookings.filter(b => b.status === 'COMPLETED').length;
+      // Consider bookings that should count as "completed" for revenue purposes
+      const revenueGeneratingStatuses = ['COMPLETED', 'CONFIRMED', 'IN_PROGRESS'];
+      const completedBookings = bookings.filter(b => revenueGeneratingStatuses.includes(b.status)).length;
       const cancelledBookings = bookings.filter(b => b.status === 'CANCELLED').length;
       const totalRevenue = bookings
-        .filter(b => b.status === 'COMPLETED')
+        .filter(b => revenueGeneratingStatuses.includes(b.status))
         .reduce((sum, b) => sum + b.totalAmount, 0);
 
       // Enhanced analytics calculations
-      const allTimeCompleted = allTimeBookings.filter(b => b.status === 'COMPLETED');
+      const allTimeCompleted = allTimeBookings.filter(b => revenueGeneratingStatuses.includes(b.status));
       const monthsInOperation = Math.max(1, Math.floor(
         (new Date().getTime() - new Date(specialist.createdAt).getTime()) / (1000 * 60 * 60 * 24 * 30)
       ));
@@ -814,14 +816,14 @@ export class SpecialistService {
       const currentMonthRevenue = bookings
         .filter(b => {
           const date = new Date(b.createdAt);
-          return date >= monthStart && date <= monthEnd && b.status === 'COMPLETED';
+          return date >= monthStart && date <= monthEnd && revenueGeneratingStatuses.includes(b.status);
         })
         .reduce((sum, b) => sum + b.totalAmount, 0);
       
       const previousMonthRevenue = allTimeBookings
         .filter(b => {
           const date = new Date(b.createdAt);
-          return date >= previousMonth && date <= previousMonthEnd && b.status === 'COMPLETED';
+          return date >= previousMonth && date <= previousMonthEnd && revenueGeneratingStatuses.includes(b.status);
         })
         .reduce((sum, b) => sum + b.totalAmount, 0);
       
@@ -840,7 +842,7 @@ export class SpecialistService {
         const monthRevenue = allTimeBookings
           .filter(b => {
             const bookingDate = new Date(b.createdAt);
-            return bookingDate >= monthStart && bookingDate <= monthEnd && b.status === 'COMPLETED';
+            return bookingDate >= monthStart && bookingDate <= monthEnd && revenueGeneratingStatuses.includes(b.status);
           })
           .reduce((sum, b) => sum + b.totalAmount, 0);
         
@@ -870,7 +872,7 @@ export class SpecialistService {
             },
           });
           
-          const completed = serviceBookings.filter(b => b.status === 'COMPLETED');
+          const completed = serviceBookings.filter(b => revenueGeneratingStatuses.includes(b.status));
           const revenue = completed.reduce((sum, b) => sum + b.totalAmount, 0);
           
           return {
