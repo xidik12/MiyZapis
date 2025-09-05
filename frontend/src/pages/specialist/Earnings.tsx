@@ -17,6 +17,7 @@ import { selectUser } from '../../store/slices/authSlice';
 import { specialistService } from '../../services/specialist.service';
 import { paymentService } from '../../services/payment.service';
 import { analyticsService } from '../../services/analytics.service';
+import { bookingService } from '../../services/booking.service';
 import { retryRequest } from '../../services/api';
 
 interface EarningsData {
@@ -339,49 +340,50 @@ const SpecialistEarnings: React.FC = () => {
       }
     };
 
-    const loadPaymentHistory = async () => {
+    const loadRecentEarnings = async () => {
       try {
         setLoading(prev => ({ ...prev, payments: true }));
         setErrors(prev => ({ ...prev, payments: null }));
         
-        // Use the correct API endpoint for payment history with retry logic
-        const paymentHistoryData = await retryRequest(
-          () => paymentService.getPaymentHistory({
+        // Load recent completed bookings that represent actual earnings
+        const bookingData = await retryRequest(
+          () => bookingService.getBookings({
             limit: 10,
-            status: 'SUCCEEDED' as any // Use backend status format
-          }),
+            status: ['COMPLETED', 'CONFIRMED', 'IN_PROGRESS'].join(',') // Use the same revenue-generating statuses
+          }, 'specialist'),
           2, // max retries
           1000 // delay
         );
         
-        // Transform payment data to match our interface with validation
-        const payments = Array.isArray(paymentHistoryData.payments) ? paymentHistoryData.payments : [];
-        const transformedHistory: PayoutHistory[] = payments
-          .filter(payment => payment && payment.id && payment.amount) // Filter out invalid payments
-          .map(payment => ({
-            id: payment.id,
-            date: payment.createdAt || payment.updatedAt || new Date().toISOString(),
-            amount: Math.round(payment.amount * 100) / 100, // Round to 2 decimal places
-            status: payment.status === 'SUCCEEDED' ? 'completed' as const : 
-                   payment.status === 'PENDING' ? 'pending' as const : 
-                   'processing' as const,
-            method: payment.paymentMethod?.type || payment.paymentMethodType || 'card'
+        // Transform booking data to match our payout interface with validation
+        const bookings = Array.isArray(bookingData.bookings) ? bookingData.bookings : [];
+        const transformedHistory: PayoutHistory[] = bookings
+          .filter(booking => booking && booking.id && booking.totalAmount) // Filter out invalid bookings
+          .map(booking => ({
+            id: booking.id,
+            date: booking.completedAt || booking.scheduledAt || booking.createdAt || new Date().toISOString(),
+            amount: Math.round(booking.totalAmount * 100) / 100, // Round to 2 decimal places
+            status: booking.status === 'COMPLETED' ? 'completed' as const :
+                   booking.status === 'CONFIRMED' ? 'completed' as const :
+                   booking.status === 'IN_PROGRESS' ? 'processing' as const :
+                   'pending' as const,
+            method: booking.service?.name || 'Service' // Show service name instead of payment method
           }))
           .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Sort by date desc
         
-        console.log('📊 Transformed payment history:', transformedHistory);
+        console.log('📊 Transformed recent earnings (bookings):', transformedHistory);
         
         setPayoutHistory(transformedHistory);
         setLoading(prev => ({ ...prev, payments: false }));
       } catch (err: any) {
-        console.error('Error loading payment history:', err);
+        console.error('Error loading recent earnings:', err);
         
         // Set empty history instead of error for better UX
         setPayoutHistory([]);
         
         // Only show error if it's not a network/auth issue
         if (!err.message?.includes('Network') && !err.message?.includes('401') && !err.message?.includes('Authentication')) {
-          setErrors(prev => ({ ...prev, payments: 'Payment history temporarily unavailable.' }));
+          setErrors(prev => ({ ...prev, payments: 'Recent earnings temporarily unavailable.' }));
         }
         
         setLoading(prev => ({ ...prev, payments: false }));
@@ -389,7 +391,7 @@ const SpecialistEarnings: React.FC = () => {
     };
 
     loadEarningsData();
-    loadPaymentHistory();
+    loadRecentEarnings();
   }, [selectedPeriod]);
 
   // Helper functions
@@ -777,9 +779,9 @@ const SpecialistEarnings: React.FC = () => {
           </div>
         </div>
 
-        {/* Payout History */}
+        {/* Recent Earnings */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{t('earnings.recentPayouts')}</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Recent Completed Services</h3>
           <div className="space-y-4">
             {loading.payments ? (
               Array.from({ length: 5 }, (_, index) => (
@@ -799,7 +801,7 @@ const SpecialistEarnings: React.FC = () => {
                       ${(payout.amount || 0).toFixed(2)}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                      {payout.date ? new Date(payout.date).toLocaleDateString() : 'N/A'} • {getTranslatedPaymentMethod(payout.method || 'card')}
+                      {payout.date ? new Date(payout.date).toLocaleDateString() : 'N/A'} • {payout.method || 'Service'}
                     </div>
                   </div>
                   <div className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -816,7 +818,7 @@ const SpecialistEarnings: React.FC = () => {
             ) : (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <CurrencyDollarIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>{t('earnings.noPayoutHistory')}</p>
+                <p>No recent completed services</p>
               </div>
             )}
           </div>
