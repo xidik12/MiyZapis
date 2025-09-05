@@ -235,6 +235,24 @@ const SpecialistServices: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
+  const handleMigrateCurrency = async () => {
+    try {
+      setLoading(true);
+      const result = await specialistService.migrateCurrencyData();
+      
+      // Show success message with details
+      alert(`Currency migration completed!\n\nTotal services: ${result.totalServices}\nUpdated services: ${result.updatedServices}\n\nDetails:\n${result.updates.map(u => `- ${u.serviceName}: ${u.oldPrice} ${u.oldCurrency} → ${u.newPrice} ${u.newCurrency}`).join('\n')}`);
+      
+      // Reload services to show updated data
+      loadServices();
+    } catch (error: any) {
+      console.error('Currency migration error:', error);
+      setError(error.message || 'Failed to migrate currency data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -564,15 +582,27 @@ const SpecialistServices: React.FC = () => {
                   {t('services.subtitle')}
                 </p>
               </div>
-              <button
-                onClick={openAddModal}
-                className="mt-4 lg:mt-0 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                {t('services.addService')}
-              </button>
+              <div className="flex gap-3 mt-4 lg:mt-0">
+                <button
+                  onClick={handleMigrateCurrency}
+                  className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white px-4 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+                  title="Fix currency data for existing services"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  </svg>
+                  Fix Prices
+                </button>
+                <button
+                  onClick={openAddModal}
+                  className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  {t('services.addService')}
+                </button>
+              </div>
             </div>
             
             <UkrainianOrnament className="mb-6" />

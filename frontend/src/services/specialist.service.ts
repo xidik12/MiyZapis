@@ -260,6 +260,15 @@ export class SpecialistService {
     }
   }
 
+  // Migrate currency data for existing services
+  async migrateCurrencyData(): Promise<{ totalServices: number; updatedServices: number; updates: any[] }> {
+    const response = await apiClient.post<{ totalServices: number; updatedServices: number; updates: any[] }>('/services/migrate-currency');
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to migrate currency data');
+    }
+    return response.data;
+  }
+
   // Toggle service active status
   async toggleServiceStatus(serviceId: string, isActive: boolean): Promise<Service> {
     console.log('🔄 API: Toggling service status:', { serviceId, isActive });

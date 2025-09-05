@@ -535,4 +535,50 @@ export class ServiceController {
       );
     }
   }
+
+  // Migration endpoint to fix service currency data
+  static async migrateCurrencyData(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (req.user.userType !== 'SPECIALIST') {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.ACCESS_DENIED,
+            'Only specialists can migrate their service data',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const result = await ServiceService.migrateCurrencyData(req.user.id);
+
+      res.status(200).json(
+        createSuccessResponse(
+          result,
+          'Service currency data migrated successfully',
+          req.headers['x-request-id'] as string
+        )
+      );
+    } catch (error: any) {
+      logger.error('Error migrating service currency data:', error);
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to migrate service currency data',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
 }

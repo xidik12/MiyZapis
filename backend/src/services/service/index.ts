@@ -815,4 +815,96 @@ export class ServiceService {
       throw error;
     }
   }
+
+  // Migration method to fix currency data for existing services
+  static async migrateCurrencyData(specialistUserId: string) {
+    try {
+      // Get specialist
+      const specialist = await prisma.specialist.findUnique({
+        where: { userId: specialistUserId },
+      });
+
+      if (!specialist) {
+        throw new Error('SPECIALIST_NOT_FOUND');
+      }
+
+      // Get all services for this specialist
+      const services = await prisma.service.findMany({
+        where: { 
+          specialistId: specialist.id,
+          isDeleted: false,
+        },
+      });
+
+      const updates = [];
+      
+      for (const service of services) {
+        let newCurrency = service.currency;
+        let newPrice = service.basePrice;
+        
+        // Smart detection based on service name and price patterns
+        if (service.name.toLowerCase().includes('barber')) {
+          // Barber services are typically in USD
+          if (service.basePrice >= 1000) {
+            // This is likely UAH stored as USD, convert it
+            newPrice = service.basePrice / 37; // Convert UAH to USD
+            newCurrency = 'USD';
+            logger.info(`Migrating barber service ${service.id}: ${service.basePrice} UAH -> ${newPrice} USD`);
+          } else if (service.basePrice <= 100) {
+            // This is likely correct USD pricing
+            newCurrency = 'USD';
+          }
+        } else if (service.name.toLowerCase().includes('beard')) {
+          // Beard trim services are typically in UAH
+          if (service.basePrice <= 100) {
+            // This is likely USD stored as UAH, convert it
+            newPrice = service.basePrice * 37; // Convert USD to UAH
+            newCurrency = 'UAH';
+            logger.info(`Migrating beard service ${service.id}: ${service.basePrice} USD -> ${newPrice} UAH`);
+          } else if (service.basePrice >= 1000) {
+            // This is likely correct UAH pricing
+            newCurrency = 'UAH';
+          }
+        } else {
+          // For other services, use heuristics based on price
+          if (service.basePrice >= 1000) {
+            newCurrency = 'UAH';
+          } else if (service.basePrice <= 100) {
+            newCurrency = 'USD';
+          }
+        }
+
+        // Update if currency or price changed
+        if (newCurrency !== service.currency || newPrice !== service.basePrice) {
+          await prisma.service.update({
+            where: { id: service.id },
+            data: {
+              currency: newCurrency,
+              basePrice: newPrice,
+            },
+          });
+          
+          updates.push({
+            serviceId: service.id,
+            serviceName: service.name,
+            oldPrice: service.basePrice,
+            oldCurrency: service.currency,
+            newPrice: newPrice,
+            newCurrency: newCurrency,
+          });
+        }
+      }
+
+      logger.info(`Currency migration completed for specialist ${specialistUserId}: ${updates.length} services updated`);
+      
+      return {
+        totalServices: services.length,
+        updatedServices: updates.length,
+        updates: updates,
+      };
+    } catch (error) {
+      logger.error('Error migrating currency data:', error);
+      throw error;
+    }
+  }
 }
