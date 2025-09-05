@@ -231,14 +231,35 @@ const SpecialistDashboard: React.FC = () => {
               .filter(booking => booking && booking.id)
               .sort((a, b) => new Date(b.completedAt || b.updatedAt).getTime() - new Date(a.completedAt || a.updatedAt).getTime()) // Most recent first
               .slice(0, 5)
-              .map(booking => ({
-                id: booking.id,
-                customerName: booking.customer?.firstName + ' ' + (booking.customer?.lastName || ''),
-                serviceName: booking.service?.name || 'Service',
-                date: booking.completedAt || booking.scheduledAt || booking.createdAt,
-                status: 'completed',
-                amount: booking.totalAmount || 0
-              }));
+              .map(booking => {
+                // Format date nicely instead of raw ISO format
+                const rawDate = booking.completedAt || booking.scheduledAt || booking.createdAt;
+                let formattedDate = 'N/A';
+                try {
+                  if (rawDate) {
+                    const date = new Date(rawDate);
+                    formattedDate = date.toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'short', 
+                      day: 'numeric' 
+                    }) + ' at ' + date.toLocaleTimeString('en-US', { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    });
+                  }
+                } catch (e) {
+                  console.warn('Invalid date format:', rawDate);
+                }
+                
+                return {
+                  id: booking.id,
+                  customerName: booking.customer?.firstName + ' ' + (booking.customer?.lastName || ''),
+                  serviceName: booking.service?.name || 'Service',
+                  date: formattedDate, // Now properly formatted
+                  status: 'completed',
+                  amount: booking.totalAmount || 0
+                };
+              });
           } catch (err) {
             console.warn('Error processing completed bookings for recent list:', err);
           }
