@@ -44,6 +44,7 @@ interface BookingDetailModalProps {
   onStatusChange: (bookingId: string, newStatus: keyof typeof statusColors) => void;
   getTranslatedServiceName: (serviceName: string) => string;
   getTranslatedDuration: (duration: string | number) => string;
+  activeTab: 'provider' | 'customer';
 }
 
 interface PaymentConfirmationModalProps {
@@ -59,7 +60,8 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   onClose, 
   onStatusChange,
   getTranslatedServiceName,
-  getTranslatedDuration
+  getTranslatedDuration,
+  activeTab
 }) => {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
@@ -97,23 +99,34 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         
         {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Customer Info */}
+          {/* Customer Info (for provider view) or Specialist Info (for customer view) */}
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.customerInfo')}</h4>
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
+              {activeTab === 'provider' ? t('bookingDetails.customerInfo') : t('bookingDetails.specialistInfo')}
+            </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.name')}</label>
                 <p className="font-medium text-gray-900 dark:text-white">
-                  {booking.customer 
-                    ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
-                    : (booking.customerName || 'Unknown Customer')
+                  {activeTab === 'provider' 
+                    ? (booking.customer 
+                        ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
+                        : (booking.customerName || 'Unknown Customer')
+                      )
+                    : (booking.specialist
+                        ? `${booking.specialist.firstName || ''} ${booking.specialist.lastName || ''}`.trim()
+                        : (booking.specialistName || 'Unknown Specialist')
+                      )
                   }
                 </p>
               </div>
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.contact')}</label>
                 <p className="font-medium text-gray-900 dark:text-white">
-                  {booking.customer?.phoneNumber || booking.customer?.email || booking.customerEmail || booking.customerPhone || t('bookingDetails.contactNotAvailable')}
+                  {activeTab === 'provider'
+                    ? (booking.customer?.phoneNumber || booking.customer?.email || booking.customerEmail || booking.customerPhone || t('bookingDetails.contactNotAvailable'))
+                    : (booking.specialist?.phoneNumber || booking.specialist?.email || t('bookingDetails.contactNotAvailable'))
+                  }
                 </p>
               </div>
             </div>
@@ -185,61 +198,113 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             )}
           </div>
           
-          {/* Status Management */}
-          <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.statusManagement')}</h4>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'IN_PROGRESS', 'NO_SHOW'].map((status) => (
-                <label key={status} className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    name="status"
-                    value={status}
-                    checked={selectedStatus === status}
-                    onChange={(e) => setSelectedStatus(e.target.value as BookingStatus)}
-                    className="sr-only"
-                  />
-                  <span className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                    selectedStatus === status
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
-                  }`}>
-                    {t(`dashboard.booking.status.${status}`)}
-                  </span>
-                </label>
-              ))}
+          {/* Status Management and Quick Message - Only show for provider view */}
+          {activeTab === 'provider' && (
+            <>
+              {/* Status Management */}
+              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.statusManagement')}</h4>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'IN_PROGRESS', 'NO_SHOW'].map((status) => (
+                    <label key={status} className="flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="status"
+                        value={status}
+                        checked={selectedStatus === status}
+                        onChange={(e) => setSelectedStatus(e.target.value as BookingStatus)}
+                        className="sr-only"
+                      />
+                      <span className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                        selectedStatus === status
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                      }`}>
+                        {t(`dashboard.booking.status.${status}`)}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <button
+                  onClick={handleStatusChange}
+                  className="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors"
+                >
+                  {t('bookingDetails.updateStatus')}
+                </button>
+              </div>
+              
+              {/* Quick Message */}
+              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.sendMessage')}</h4>
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder={t('bookingDetails.messagePlaceholder')}
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
+                  rows={3}
+                />
+                <div className="flex space-x-2 mt-3">
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!message.trim()}
+                    className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors"
+                  >
+                    {t('bookingDetails.sendMessageButton')}
+                  </button>
+                  <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                    {t('bookingDetails.template')}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Customer Actions - Only show for customer view */}
+          {activeTab === 'customer' && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.customerActions')}</h4>
+              <div className="flex flex-col sm:flex-row gap-3">
+                {/* Cancel booking if allowed */}
+                {(booking.status === 'PENDING' || booking.status === 'CONFIRMED') && (
+                  <button
+                    onClick={() => {
+                      if (confirm(t('bookings.confirmCancel'))) {
+                        // Handle cancellation
+                        onClose();
+                      }
+                    }}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                  >
+                    {t('bookings.cancelBooking')}
+                  </button>
+                )}
+                
+                {/* Leave review if completed */}
+                {booking.status === 'COMPLETED' && (
+                  <button
+                    onClick={() => {
+                      // Handle review
+                      onClose();
+                    }}
+                    className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors"
+                  >
+                    {t('customer.bookings.leaveReview')}
+                  </button>
+                )}
+                
+                {/* Book again */}
+                <button
+                  onClick={() => {
+                    // Handle book again
+                    onClose();
+                  }}
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                >
+                  {t('customer.bookings.bookAgain')}
+                </button>
+              </div>
             </div>
-            <button
-              onClick={handleStatusChange}
-              className="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors"
-            >
-              {t('bookingDetails.updateStatus')}
-            </button>
-          </div>
-          
-          {/* Quick Message */}
-          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.sendMessage')}</h4>
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder={t('bookingDetails.messagePlaceholder')}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
-              rows={3}
-            />
-            <div className="flex space-x-2 mt-3">
-              <button
-                onClick={handleSendMessage}
-                disabled={!message.trim()}
-                className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors"
-              >
-                {t('bookingDetails.sendMessageButton')}
-              </button>
-              <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
-                {t('bookingDetails.template')}
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
@@ -1224,6 +1289,7 @@ const SpecialistBookings: React.FC = () => {
         onStatusChange={handleStatusChange}
         getTranslatedServiceName={getTranslatedServiceName}
         getTranslatedDuration={getTranslatedDuration}
+        activeTab={activeTab}
       />
 
       {/* Payment Confirmation Modal */}

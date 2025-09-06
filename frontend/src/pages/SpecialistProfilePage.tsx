@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { specialistService, reviewService } from '../services';
+import { profileViewService } from '../services/profileView.service';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { 
   selectIsSpecialistFavorited, 
@@ -192,6 +193,22 @@ const SpecialistProfilePage: React.FC = () => {
       dispatch(checkSpecialistFavoriteStatus(specialistId));
     }
   }, [dispatch, user, specialistId]);
+
+  // Track profile view when page loads
+  useEffect(() => {
+    const trackView = async () => {
+      if (specialistId && specialist) {
+        try {
+          await profileViewService.trackProfileView(specialistId);
+          console.log('✅ Profile view tracked for specialist:', specialistId);
+        } catch (error) {
+          console.warn('Failed to track profile view:', error);
+        }
+      }
+    };
+
+    trackView();
+  }, [specialistId, specialist]);
 
   if (loading) {
     return (

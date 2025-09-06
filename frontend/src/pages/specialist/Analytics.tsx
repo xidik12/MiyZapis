@@ -12,6 +12,7 @@ const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
 import { RootState, AppDispatch } from '../../store';
 import { analyticsService, AnalyticsOverview, PerformanceAnalytics, BookingAnalytics, RevenueAnalytics, ServiceAnalytics } from '../../services/analytics.service';
 import { bookingService } from '../../services/booking.service';
+import { profileViewService, ProfileViewStats } from '../../services/profileView.service';
 import { retryRequest } from '../../services/api';
 
 // Combined analytics data structure
@@ -285,6 +286,7 @@ const SpecialistAnalytics: React.FC = () => {
   const [selectedView, setSelectedView] = useState<'revenue' | 'bookings' | 'customers'>('revenue');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [profileViewStats, setProfileViewStats] = useState<ProfileViewStats | null>(null);
 
   // Load analytics data from API
   useEffect(() => {
@@ -571,6 +573,22 @@ const SpecialistAnalytics: React.FC = () => {
         console.log('📈 Generated chart data:', newChartData);
         
         setChartData(newChartData);
+
+        // Load profile view statistics
+        try {
+          const profileStats = await profileViewService.getProfileViewStats('month');
+          setProfileViewStats(profileStats);
+          console.log('👁️ Profile view stats loaded:', profileStats);
+        } catch (profileError) {
+          console.warn('Failed to load profile view stats:', profileError);
+          setProfileViewStats({
+            totalViews: 0,
+            uniqueViewers: 0,
+            growth: 0,
+            viewsByDay: [],
+            period: 'month'
+          });
+        }
         
       } catch (err: any) {
         console.error('Error loading analytics:', err);
@@ -635,6 +653,15 @@ const SpecialistAnalytics: React.FC = () => {
           weekly: { revenue: [0], bookings: [0], labels: ['This Week'] },
           monthly: { revenue: [0], bookings: [0], labels: ['This Month'] },
           yearly: { revenue: [0], bookings: [0], labels: ['2024'] }
+        });
+
+        // Set fallback profile view stats
+        setProfileViewStats({
+          totalViews: 0,
+          uniqueViewers: 0,
+          growth: 0,
+          viewsByDay: [],
+          period: 'month'
         });
       } finally {
         setLoading(false);
@@ -702,8 +729,8 @@ const SpecialistAnalytics: React.FC = () => {
   
   const periodStats = getCurrentPeriodStats();
   
-  // No real profile view tracking implemented yet - show 0%
-  const profileViewGrowth = 0;
+  // Get profile view data from state
+  const profileViewGrowth = profileViewStats?.growth || 0;
   
   // Get performance statuses
   const responseTimeStatus = calculatePerformanceStatus(
@@ -1112,7 +1139,7 @@ const SpecialistAnalytics: React.FC = () => {
                   {t('analytics.profileViews')}
                 </p>
                 <p className="text-xl font-bold text-gray-900 dark:text-white">
-                  0 {/* No real profile view tracking implemented yet */}
+                  {profileViewStats?.totalViews || 0}
                 </p>
                 <p className={`text-xs mt-1 ${
                   profileViewGrowth >= 0 ? 'text-green-600' : 'text-red-600'

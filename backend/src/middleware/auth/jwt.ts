@@ -293,3 +293,63 @@ export const requireOwnership = (resourceIdParam: string) => {
     }
   };
 };
+
+// Optional authentication - doesn't fail if no token provided
+export const authenticateTokenOptional = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+    if (!token) {
+      // No token provided, continue without authentication
+      req.user = null;
+      next();
+      return;
+    }
+
+    // Verify JWT token
+    const decoded = jwt.verify(token, config.jwt.secret) as JwtPayload;
+    
+    // Get user from database
+    const user = await prisma.user.findUnique({
+      where: { 
+        id: decoded.userId,
+        isActive: true
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        userType: true,
+        isActive: true,
+        lastLoginAt: true
+      }
+    });
+
+    if (!user) {
+      // Invalid user, continue without authentication
+      req.user = null;
+      next();
+      return;
+    }
+
+    // Update last login time
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() }
+    });
+
+    req.user = user;
+    next();
+  } catch (error) {
+    // Token invalid or expired, continue without authentication
+    logger.warn('Optional authentication failed:', error);
+    req.user = null;
+    next();
+  }
+};

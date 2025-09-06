@@ -141,8 +141,8 @@ export class BookingService {
 
   // Cancel booking
   async cancelBooking(bookingId: string, reason?: string): Promise<{ booking: Booking; refundAmount?: number }> {
-    const response = await apiClient.delete<{ booking: Booking; refundAmount?: number }>(`/bookings/${bookingId}`, {
-      data: { reason }
+    const response = await apiClient.put<{ booking: Booking; refundAmount?: number }>(`/bookings/${bookingId}/cancel`, {
+      reason
     });
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to cancel booking');

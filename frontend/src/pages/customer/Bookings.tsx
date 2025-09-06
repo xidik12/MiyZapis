@@ -17,6 +17,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { Avatar } from '../../components/ui/Avatar';
+import ReviewModal from '../../components/modals/ReviewModal';
+import { ReviewsService, CreateReviewData } from '../../services/reviews.service';
 
 // Use the API booking type and extend it for UI needs
 interface Booking extends Omit<ApiBooking, 'status'> {
@@ -65,6 +67,11 @@ const CustomerBookings: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [bookingToReview, setBookingToReview] = useState<Booking | null>(null);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  
+  const reviewsService = new ReviewsService();
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -136,8 +143,53 @@ const CustomerBookings: React.FC = () => {
   };
 
   const handleLeaveReview = (bookingId: string) => {
-    // In a real app, this would open a review modal
-    alert(t('booking.reviewAlert'));
+    const booking = bookings.find(b => b.id === bookingId);
+    if (booking) {
+      setBookingToReview(booking);
+      setReviewModalOpen(true);
+    }
+  };
+
+  const handleSubmitReview = async (reviewData: {
+    rating: number;
+    comment: string;
+    tags: string[];
+  }) => {
+    if (!bookingToReview) return;
+
+    setReviewLoading(true);
+    try {
+      const createData: CreateReviewData = {
+        bookingId: bookingToReview.id,
+        specialistId: bookingToReview.specialist?.id || bookingToReview.specialistId || '',
+        serviceId: bookingToReview.service?.id || bookingToReview.serviceId || undefined,
+        rating: reviewData.rating,
+        comment: reviewData.comment || undefined,
+        tags: reviewData.tags.length > 0 ? reviewData.tags : undefined,
+        isRecommended: reviewData.rating >= 4
+      };
+
+      await reviewsService.createReview(createData);
+      
+      // Update the booking to mark it as reviewed
+      setBookings(prev => 
+        prev.map(booking => 
+          booking.id === bookingToReview.id 
+            ? { ...booking, hasReview: true }
+            : booking
+        )
+      );
+      
+      setReviewModalOpen(false);
+      setBookingToReview(null);
+      
+      alert(t('reviews.reviewSubmitted'));
+    } catch (error) {
+      console.error('Failed to submit review:', error);
+      alert(t('reviews.submitError'));
+    } finally {
+      setReviewLoading(false);
+    }
   };
 
   const handleBookAgain = (booking: Booking) => {
@@ -323,8 +375,8 @@ const CustomerBookings: React.FC = () => {
                   
                   {/* Action Buttons */}
                   <div className="mt-4 pt-4 border-t border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex items-center flex-wrap gap-3">
                         <button
                           onClick={() => setSelectedBooking(booking)}
                           className="text-sm text-blue-600 hover:text-blue-800 font-medium"
@@ -332,27 +384,27 @@ const CustomerBookings: React.FC = () => {
                           {t('customer.bookings.viewDetails')}
                         </button>
                         
-                        {booking.location.type !== 'online' && (
+                        {booking.locationType !== 'online' && (
                           <button className="text-sm text-gray-600 hover:text-gray-800 font-medium flex items-center">
                             <PhoneIcon className="h-4 w-4 mr-1" />
-                            {t('common.call')}
+                            <span className="hidden sm:inline">{t('common.call')}</span>
                           </button>
                         )}
                         
                         <button className="text-sm text-gray-600 hover:text-gray-800 font-medium flex items-center">
                           <ChatBubbleLeftRightIcon className="h-4 w-4 mr-1" />
-                          {t('common.message')}
+                          <span className="hidden sm:inline">{t('common.message')}</span>
                         </button>
                       </div>
                       
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center flex-wrap gap-2">
                         {booking.canReschedule && (
                           <button
                             onClick={() => handleRescheduleBooking(booking.id)}
                             className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                           >
                             <ArrowPathIcon className="h-4 w-4 mr-1" />
-                            {t('customer.bookings.reschedule')}
+                            <span className="hidden sm:inline">{t('customer.bookings.reschedule')}</span>
                           </button>
                         )}
                         
@@ -362,7 +414,7 @@ const CustomerBookings: React.FC = () => {
                             className="inline-flex items-center px-3 py-1.5 border border-red-300 shadow-sm text-xs font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
                           >
                             <XMarkIcon className="h-4 w-4 mr-1" />
-                            {t('customer.bookings.cancel')}
+                            <span className="hidden sm:inline">{t('customer.bookings.cancel')}</span>
                           </button>
                         )}
                         
@@ -372,7 +424,7 @@ const CustomerBookings: React.FC = () => {
                             className="inline-flex items-center px-3 py-1.5 border border-yellow-300 shadow-sm text-xs font-medium rounded-md text-yellow-700 bg-white hover:bg-yellow-50"
                           >
                             <StarIcon className="h-4 w-4 mr-1" />
-                            {t('customer.bookings.leaveReview')}
+                            <span>{t('customer.bookings.leaveReview')}</span>
                           </button>
                         )}
                         
@@ -474,6 +526,20 @@ const CustomerBookings: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+      
+      {/* Review Modal */}
+      {reviewModalOpen && bookingToReview && (
+        <ReviewModal
+          isOpen={reviewModalOpen}
+          onClose={() => {
+            setReviewModalOpen(false);
+            setBookingToReview(null);
+          }}
+          onSubmit={handleSubmitReview}
+          booking={bookingToReview}
+          loading={reviewLoading}
+        />
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { query } from 'express-validator';
-import { authenticateToken as authMiddleware } from '@/middleware/auth/jwt';
+import { authenticateToken as authMiddleware, authenticateTokenOptional } from '@/middleware/auth/jwt';
 import { validateRequest } from '@/middleware/validation';
 import { AnalyticsController } from '@/controllers/analytics';
 
@@ -142,6 +142,23 @@ router.get(
   ],
   validateRequest,
   analyticsController.getPerformanceAnalytics
+);
+
+// Track profile view (can be accessed by anonymous users)
+router.post(
+  '/profile-views/:specialistId',
+  authenticateTokenOptional,
+  analyticsController.trackProfileView
+);
+
+// Get profile view statistics (authenticated specialists only)
+router.get(
+  '/profile-views',
+  [
+    query('period').optional().isIn(['week', 'month', 'year'])
+  ],
+  validateRequest,
+  analyticsController.getProfileViewStats
 );
 
 export default router;

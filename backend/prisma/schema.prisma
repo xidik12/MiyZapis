@@ -67,6 +67,8 @@ model User {
   reportsReceived      Report[]                @relation("ReportsReceived")
   favoriteSpecialists  FavoriteSpecialist[]    @relation("UserFavoriteSpecialists")
   favoriteServices     FavoriteService[]       @relation("UserFavoriteServices")
+  profileViews         ProfileView[]           @relation("ProfileViewer")
+  profileViewsReceived ProfileView[]           @relation("ProfileViewed")
 
   // Indexes for performance
   @@index([email])
@@ -852,4 +854,31 @@ model FavoriteService {
   @@index([userId])
   @@index([serviceId])
   @@map("favorite_services")
+}
+
+model ProfileView {
+  id          String @id @default(cuid())
+  viewerId    String?  // null for anonymous views
+  specialistId String  // whose profile was viewed
+  
+  // View details
+  ipAddress   String?
+  userAgent   String?
+  referrer    String?
+  
+  // Session tracking (to avoid counting same user multiple times in short period)
+  sessionId   String?
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  viewer      User? @relation("ProfileViewer", fields: [viewerId], references: [id], onDelete: SetNull)
+  specialist  User @relation("ProfileViewed", fields: [specialistId], references: [id], onDelete: Cascade)
+  
+  // Indexes
+  @@index([specialistId, createdAt])
+  @@index([viewerId])
+  @@index([ipAddress, createdAt])
+  @@map("profile_views")
 }
