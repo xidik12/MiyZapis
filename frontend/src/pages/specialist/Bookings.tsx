@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { RootState, AppDispatch } from '../../store';
-import { fetchBookings, updateBookingStatus } from '../../store/slices/bookingSlice';
+import { fetchBookings, updateBookingStatus, cancelBooking } from '../../store/slices/bookingSlice';
 import { Booking, BookingStatus } from '../../types';
 import { 
   EyeIcon, 
@@ -598,6 +598,25 @@ const SpecialistBookings: React.FC = () => {
     setSelectedBooking(booking);
     setShowReviewModal(true);
   };
+
+  const handleCancelBooking = async (booking: Booking) => {
+    if (!window.confirm(`Are you sure you want to cancel this booking for ${booking.service?.name}?`)) {
+      return;
+    }
+    
+    try {
+      const result = await dispatch(cancelBooking({ bookingId: booking.id, reason: 'Customer cancellation' }));
+      
+      if (cancelBooking.fulfilled.match(result)) {
+        // Refresh bookings after cancellation
+        const userType = activeTab === 'provider' ? 'specialist' : 'customer';
+        dispatch(fetchBookings({ filters: {}, userType }));
+      }
+    } catch (error: any) {
+      console.error('❌ Failed to cancel booking:', error);
+      alert('Failed to cancel booking. Please try again.');
+    }
+  };
   
   const getStatusBadge = (status: BookingStatus) => {
     const colorClass = statusColors[status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800 border-gray-200';
@@ -1079,17 +1098,32 @@ const SpecialistBookings: React.FC = () => {
                             </button>
                           ) : null
                         ) : (
-                          // Customer actions: leave review for completed bookings
-                          (booking.status === 'COMPLETED' || booking.status === 'completed') && (
-                            <button
-                              onClick={() => handleLeaveReview(booking)}
-                              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
-                              title={t('bookings.leaveReview')}
-                            >
-                              <StarIcon className="w-4 h-4 mr-1" />
-                              {t('bookings.leaveReview')}
-                            </button>
-                          )
+                          // Customer actions: cancel pending/confirmed bookings, leave review for completed bookings
+                          <>
+                            {(booking.status === 'PENDING' || booking.status === 'pending' || booking.status === 'CONFIRMED' || booking.status === 'confirmed') && (
+                              <button
+                                onClick={() => handleCancelBooking(booking)}
+                                className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                                title={t('bookings.cancel')}
+                              >
+                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                {t('bookings.cancel')}
+                              </button>
+                            )}
+                            {(booking.status === 'COMPLETED' || booking.status === 'completed') && (
+                              <button
+                                onClick={() => handleLeaveReview(booking)}
+                                className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors sm:px-3 sm:py-1.5"
+                                title={t('bookings.leaveReview')}
+                              >
+                                <StarIcon className="w-4 h-4 mr-1" />
+                                <span className="hidden sm:inline">{t('bookings.leaveReview')}</span>
+                                <span className="sm:hidden">Review</span>
+                              </button>
+                            )}
+                          </>
                         )}
                       </div>
                     </td>
@@ -1217,7 +1251,7 @@ const SpecialistBookings: React.FC = () => {
                 </h3>
                 <div className="mt-2">
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Service: {getTranslatedServiceName(selectedBooking.service)}
+                    Service: {getTranslatedServiceName(selectedBooking.service?.name || 'Unknown Service')}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     Specialist: {selectedBooking.specialist
