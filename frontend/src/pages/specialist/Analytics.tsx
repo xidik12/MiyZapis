@@ -702,9 +702,8 @@ const SpecialistAnalytics: React.FC = () => {
   
   const periodStats = getCurrentPeriodStats();
   
-  // Calculate profile view growth (mock calculation based on total views)
-  const profileViewGrowth = analyticsData.overview ? 
-    Math.min(Math.max((analyticsData.overview.totalBookings * 0.3), -50), 50) : 12;
+  // No real profile view tracking implemented yet - show 0%
+  const profileViewGrowth = 0;
   
   // Get performance statuses
   const responseTimeStatus = calculatePerformanceStatus(
@@ -1113,7 +1112,7 @@ const SpecialistAnalytics: React.FC = () => {
                   {t('analytics.profileViews')}
                 </p>
                 <p className="text-xl font-bold text-gray-900 dark:text-white">
-                  {((analyticsData.overview?.totalBookings || 0) * 4.2).toLocaleString()} {/* Estimate based on bookings */}
+                  0 {/* No real profile view tracking implemented yet */}
                 </p>
                 <p className={`text-xs mt-1 ${
                   profileViewGrowth >= 0 ? 'text-green-600' : 'text-red-600'
