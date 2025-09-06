@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import ReviewModal from '../../components/modals/ReviewModal';
 import { reviewsService } from '../../services/reviews.service';
+import { validateReviewTags } from '../../constants/reviewTags';
 
 // Status colors for bookings (matching backend status values)
 const statusColors = {
@@ -708,11 +709,14 @@ const SpecialistBookings: React.FC = () => {
 
     try {
       setReviewLoading(true);
+      // Validate and filter tags to only include valid ones
+      const validTags = validateReviewTags(reviewData.tags);
+
       await reviewsService.createReview({
         bookingId: selectedBooking.id,
         rating: reviewData.rating,
         comment: reviewData.comment,
-        tags: reviewData.tags.map(tag => tag.toLowerCase().replace(/\s+/g, ''))
+        tags: validTags
       });
 
       setShowReviewModal(false);
@@ -721,9 +725,14 @@ const SpecialistBookings: React.FC = () => {
       // Optional: Show success message or refresh bookings
       // You could also dispatch a success notification here
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to submit review:', error);
-      // Handle error - could show error message
+      
+      // Show user-friendly error message
+      const errorMessage = error?.message || 'Failed to submit review. Please try again.';
+      alert(`Review submission failed: ${errorMessage}`);
+      
+      // Keep the modal open so user can try again
     } finally {
       setReviewLoading(false);
     }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { bookingService } from '../../services/booking.service';
@@ -17,6 +18,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { Avatar } from '../../components/ui/Avatar';
+import { validateReviewTags } from '../../constants/reviewTags';
 import ReviewModal from '../../components/modals/ReviewModal';
 import { ReviewsService, CreateReviewData } from '../../services/reviews.service';
 
@@ -62,6 +64,7 @@ const mapApiStatusToUIStatus = (apiStatus: string): 'upcoming' | 'completed' | '
 
 const CustomerBookings: React.FC = () => {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const { formatPrice } = useCurrency();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -159,13 +162,16 @@ const CustomerBookings: React.FC = () => {
 
     setReviewLoading(true);
     try {
+      // Validate and filter tags to only include valid ones
+      const validTags = validateReviewTags(reviewData.tags);
+
       const createData: CreateReviewData = {
         bookingId: bookingToReview.id,
         specialistId: bookingToReview.specialist?.id || bookingToReview.specialistId || '',
         serviceId: bookingToReview.service?.id || bookingToReview.serviceId || undefined,
         rating: reviewData.rating,
         comment: reviewData.comment || undefined,
-        tags: reviewData.tags.length > 0 ? reviewData.tags : undefined,
+        tags: validTags.length > 0 ? validTags : undefined,
         isRecommended: reviewData.rating >= 4
       };
 
