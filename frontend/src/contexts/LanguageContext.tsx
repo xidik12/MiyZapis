@@ -577,6 +577,7 @@ const translations: Translations = {
   'bookings.cancel': { en: 'Cancel', uk: 'Скасувати', ru: 'Отменить' },
   'bookings.clear': { en: 'Clear', uk: 'Очистити', ru: 'Очистить' },
   'bookings.customer': { en: 'Customer', uk: 'Клієнт', ru: 'Клиент' },
+  'bookings.specialist': { en: 'Specialist', uk: 'Спеціаліст', ru: 'Специалист' },
   'bookings.service': { en: 'Service', uk: 'Послуга', ru: 'Услуга' },
   'bookings.dateTime': { en: 'Date & Time', uk: 'Дата і час', ru: 'Дата и время' },
   'bookings.type': { en: 'Type', uk: 'Тип', ru: 'Тип' },
@@ -593,6 +594,9 @@ const translations: Translations = {
   'bookings.results': { en: 'results', uk: 'результатів', ru: 'результатов' },
   'bookings.noBookingsFound': { en: 'No bookings found', uk: 'Бронювань не знайдено', ru: 'Бронирований не найдено' },
   'bookings.noBookingsDescription': { en: 'No bookings match your current filters. Try adjusting your search criteria.', uk: 'Жодне бронювання не відповідає вашим поточним фільтрам. Спробуйте налаштувати критерії пошуку.', ru: 'Ни одно бронирование не соответствует вашим текущим фильтрам. Попробуйте настроить критерии поиска.' },
+  'bookings.myServices': { en: 'My Services', uk: 'Мої послуги', ru: 'Мои услуги' },
+  'bookings.myBookings': { en: 'My Bookings', uk: 'Мої бронювання', ru: 'Мои бронирования' },
+  'bookings.leaveReview': { en: 'Leave Review', uk: 'Залишити відгук', ru: 'Оставить отзыв' },
   
   // Booking Details Modal
   'bookingDetails.title': { en: 'Booking Details', uk: 'Деталі бронювання', ru: 'Детали бронирования' },

@@ -8,7 +8,8 @@ import { Booking, BookingStatus } from '../../types';
 import { 
   EyeIcon, 
   CheckCircleIcon, 
-  CheckIcon
+  CheckIcon,
+  StarIcon
 } from '@heroicons/react/24/outline';
 
 // Status colors for bookings (matching backend status values)
@@ -388,13 +389,17 @@ const SpecialistBookings: React.FC = () => {
   const { formatPrice } = useCurrency();
   const dispatch = useDispatch<AppDispatch>();
   
+  // Tab state for switching between provider/customer views
+  const [activeTab, setActiveTab] = useState<'provider' | 'customer'>('provider');
+  
   // Redux state
   const { bookings, isLoading, error } = useSelector((state: RootState) => state.booking);
   
-  // Load bookings on component mount
+  // Load bookings based on active tab
   useEffect(() => {
-    dispatch(fetchBookings({ filters: {}, userType: 'specialist' }));
-  }, [dispatch]);
+    const userType = activeTab === 'provider' ? 'specialist' : 'customer';
+    dispatch(fetchBookings({ filters: {}, userType }));
+  }, [dispatch, activeTab]);
   
   // Simple service name translation
   const getTranslatedServiceName = (serviceName: string): string => {
@@ -435,6 +440,7 @@ const SpecialistBookings: React.FC = () => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const [bookingToComplete, setBookingToComplete] = useState<Booking | null>(null);
   const itemsPerPage = 10;
   
@@ -547,7 +553,8 @@ const SpecialistBookings: React.FC = () => {
       console.log('✅ Booking completed with payment confirmation:', result);
 
       // Refresh bookings to show updated status
-      dispatch(fetchBookings({ filters: {}, userType: 'specialist' }));
+      const userType = activeTab === 'provider' ? 'specialist' : 'customer';
+      dispatch(fetchBookings({ filters: {}, userType }));
       
     } catch (error: any) {
       console.error('❌ Failed to complete booking with payment confirmation:', error);
@@ -585,6 +592,11 @@ const SpecialistBookings: React.FC = () => {
   const openBookingDetails = (booking: Booking) => {
     setSelectedBooking(booking);
     setShowDetailModal(true);
+  };
+
+  const handleLeaveReview = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setShowReviewModal(true);
   };
   
   const getStatusBadge = (status: BookingStatus) => {
@@ -629,7 +641,10 @@ const SpecialistBookings: React.FC = () => {
             </div>
             <div className="mt-4">
               <button
-                onClick={() => dispatch(fetchBookings({ filters: {}, userType: 'specialist' }))}
+                onClick={() => {
+                  const userType = activeTab === 'provider' ? 'specialist' : 'customer';
+                  dispatch(fetchBookings({ filters: {}, userType }));
+                }}
                 className="bg-red-100 hover:bg-red-200 text-red-800 font-medium py-2 px-4 rounded-lg transition-colors"
               >
                 {t('common.retry')}
@@ -654,7 +669,35 @@ const SpecialistBookings: React.FC = () => {
               {t('bookings.subtitle')}
             </p>
           </div>
-          
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="mb-6">
+          <nav className="flex space-x-8" aria-label="Tabs">
+            <button
+              onClick={() => setActiveTab('provider')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'provider'
+                  ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+              }`}
+            >
+              {t('bookings.myServices')}
+            </button>
+            <button
+              onClick={() => setActiveTab('customer')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'customer'
+                  ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+              }`}
+            >
+              {t('bookings.myBookings')}
+            </button>
+          </nav>
+        </div>
+
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           {/* Quick Stats */}
           <div className="mt-4 lg:mt-0 grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border dark:border-gray-700">
@@ -907,7 +950,7 @@ const SpecialistBookings: React.FC = () => {
                     />
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    {t('bookings.customer')}
+                    {activeTab === 'provider' ? t('bookings.customer') : t('bookings.specialist')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     {t('bookings.service')}
@@ -945,18 +988,30 @@ const SpecialistBookings: React.FC = () => {
                         <div className="flex-shrink-0 h-10 w-10">
                           <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
                             <span className="text-white font-medium text-sm">
-                              {booking.customer 
-                                ? `${booking.customer.firstName?.[0] || ''}${booking.customer.lastName?.[0] || ''}` 
-                                : (booking.customerName ? booking.customerName.split(' ').map(n => n[0]).join('') : 'UC')
+                              {activeTab === 'provider' 
+                                ? (booking.customer 
+                                  ? `${booking.customer.firstName?.[0] || ''}${booking.customer.lastName?.[0] || ''}` 
+                                  : (booking.customerName ? booking.customerName.split(' ').map(n => n[0]).join('') : 'UC')
+                                )
+                                : (booking.specialist
+                                  ? `${booking.specialist.firstName?.[0] || ''}${booking.specialist.lastName?.[0] || ''}`
+                                  : 'US'
+                                )
                               }
                             </span>
                           </div>
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {booking.customer 
-                              ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
-                              : (booking.customerName || 'Unknown Customer')
+                            {activeTab === 'provider'
+                              ? (booking.customer 
+                                ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
+                                : (booking.customerName || 'Unknown Customer')
+                              )
+                              : (booking.specialist
+                                ? `${booking.specialist.firstName || ''} ${booking.specialist.lastName || ''}`.trim()
+                                : 'Unknown Specialist'
+                              )
                             }
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">ID: #{booking.id}</div>
@@ -1002,25 +1057,40 @@ const SpecialistBookings: React.FC = () => {
                           <EyeIcon className="w-4 h-4 mr-1" />
                           {t('bookings.view')}
                         </button>
-                        {(booking.status === 'PENDING' || booking.status === 'pending') ? (
-                          <button
-                            onClick={() => handleStatusChange(booking.id, 'CONFIRMED')}
-                            className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
-                            title={t('bookings.confirm')}
-                          >
-                            <CheckIcon className="w-4 h-4 mr-1" />
-                            {t('bookings.confirm')}
-                          </button>
-                        ) : (booking.status === 'CONFIRMED' || booking.status === 'confirmed') ? (
-                          <button
-                            onClick={() => handleStatusChange(booking.id, 'COMPLETED')}
-                            className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                            title={t('bookings.complete')}
-                          >
-                            <CheckCircleIcon className="w-4 h-4 mr-1" />
-                            {t('bookings.complete')}
-                          </button>
-                        ) : null}
+                        {activeTab === 'provider' ? (
+                          // Provider actions: confirm/complete
+                          (booking.status === 'PENDING' || booking.status === 'pending') ? (
+                            <button
+                              onClick={() => handleStatusChange(booking.id, 'CONFIRMED')}
+                              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                              title={t('bookings.confirm')}
+                            >
+                              <CheckIcon className="w-4 h-4 mr-1" />
+                              {t('bookings.confirm')}
+                            </button>
+                          ) : (booking.status === 'CONFIRMED' || booking.status === 'confirmed') ? (
+                            <button
+                              onClick={() => handleStatusChange(booking.id, 'COMPLETED')}
+                              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                              title={t('bookings.complete')}
+                            >
+                              <CheckCircleIcon className="w-4 h-4 mr-1" />
+                              {t('bookings.complete')}
+                            </button>
+                          ) : null
+                        ) : (
+                          // Customer actions: leave review for completed bookings
+                          (booking.status === 'COMPLETED' || booking.status === 'completed') && (
+                            <button
+                              onClick={() => handleLeaveReview(booking)}
+                              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
+                              title={t('bookings.leaveReview')}
+                            >
+                              <StarIcon className="w-4 h-4 mr-1" />
+                              {t('bookings.leaveReview')}
+                            </button>
+                          )
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -1132,6 +1202,47 @@ const SpecialistBookings: React.FC = () => {
         }}
         onConfirm={handlePaymentConfirmation}
       />
+
+      {/* Review Modal */}
+      {showReviewModal && selectedBooking && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div className="mt-3">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100">
+                <StarIcon className="h-6 w-6 text-yellow-600" />
+              </div>
+              <div className="mt-5 text-center">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+                  {t('bookings.leaveReview')}
+                </h3>
+                <div className="mt-2">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Service: {getTranslatedServiceName(selectedBooking.service)}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Specialist: {selectedBooking.specialist
+                      ? `${selectedBooking.specialist.firstName || ''} ${selectedBooking.specialist.lastName || ''}`.trim()
+                      : 'Unknown Specialist'}
+                  </p>
+                </div>
+                <div className="mt-4">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    This feature will be available soon. You'll be able to rate and review the specialist's service.
+                  </p>
+                </div>
+                <div className="items-center px-4 py-3">
+                  <button
+                    className="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    onClick={() => setShowReviewModal(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
   );
 };
