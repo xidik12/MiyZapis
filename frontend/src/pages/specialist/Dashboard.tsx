@@ -39,8 +39,17 @@ import {
 
 // Helper function to get the booking currency
 const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
+  // Debug logging to see what currency is stored
+  console.log(`🔍 getBookingCurrency for booking ${booking.id}:`, {
+    serviceName: booking.service?.name,
+    storedCurrency: booking.service?.currency,
+    totalAmount: booking.totalAmount
+  });
+  
   // Use the service's stored currency, defaulting to UAH if not specified
-  return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+  const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+  console.log(`💱 Final currency for ${booking.service?.name}: ${currency}`);
+  return currency;
 };
 
 const SpecialistDashboard: React.FC = () => {
@@ -573,7 +582,12 @@ const SpecialistDashboard: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-gray-900 dark:text-white">
-                    {formatPrice(booking.totalAmount, getBookingCurrency(booking))}
+                    {(() => {
+                      const currency = getBookingCurrency(booking);
+                      const formatted = formatPrice(booking.totalAmount, currency);
+                      console.log(`💰 Displaying price for ${booking.service?.name}: ${booking.totalAmount} ${currency} → ${formatted}`);
+                      return formatted;
+                    })()}
                   </p>
                   <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
                     {getStatusText(booking.status)}
