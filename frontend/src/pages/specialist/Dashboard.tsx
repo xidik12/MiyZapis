@@ -46,30 +46,8 @@ const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
     totalAmount: booking.totalAmount
   });
   
-  // Use the service's stored currency if available
-  let currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH');
-  
-  // If no currency is stored, make an educated guess based on the service name and amount
-  if (!currency) {
-    const serviceName = booking.service?.name || booking.serviceName || '';
-    const amount = booking.totalAmount || 0;
-    
-    // If it's a Barber service with small amount (20), it's likely $20 USD
-    if (serviceName.toLowerCase().includes('barber') && amount <= 50) {
-      currency = 'USD';
-      console.log(`💡 Detected Barber service with amount ${amount}, assuming USD`);
-    }
-    // If it's a larger amount (>1000), it's likely UAH
-    else if (amount >= 1000) {
-      currency = 'UAH';
-      console.log(`💡 Large amount ${amount}, assuming UAH`);
-    }
-    // Default to UAH
-    else {
-      currency = 'UAH';
-    }
-  }
-  
+  // Use the service's stored currency, defaulting to UAH if not specified
+  const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
   console.log(`💱 Final currency for ${booking.service?.name || booking.serviceName}: ${currency}`);
   return currency;
 };

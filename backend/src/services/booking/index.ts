@@ -249,7 +249,18 @@ export class BookingService {
             },
           },
           service: {
-            include: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              basePrice: true,
+              price: true,
+              currency: true,
+              duration: true,
+              isActive: true,
+              categoryId: true,
+              createdAt: true,
+              updatedAt: true,
               specialist: true,
             },
           },
@@ -423,7 +434,18 @@ export class BookingService {
             },
           },
           service: {
-            include: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              basePrice: true,
+              price: true,
+              currency: true,
+              duration: true,
+              isActive: true,
+              categoryId: true,
+              createdAt: true,
+              updatedAt: true,
               specialist: true,
             },
           },
@@ -552,7 +574,18 @@ export class BookingService {
             },
           },
           service: {
-            include: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              basePrice: true,
+              price: true,
+              currency: true,
+              duration: true,
+              isActive: true,
+              categoryId: true,
+              createdAt: true,
+              updatedAt: true,
               specialist: true,
             },
           },
@@ -732,7 +765,18 @@ export class BookingService {
             },
           },
           service: {
-            include: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              basePrice: true,
+              price: true,
+              currency: true,
+              duration: true,
+              isActive: true,
+              categoryId: true,
+              createdAt: true,
+              updatedAt: true,
               specialist: true,
             },
           },
@@ -849,7 +893,18 @@ export class BookingService {
               },
             },
             service: {
-              include: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                basePrice: true,
+                price: true,
+                currency: true,
+                duration: true,
+                isActive: true,
+                categoryId: true,
+                createdAt: true,
+                updatedAt: true,
                 specialist: true,
               },
             },
