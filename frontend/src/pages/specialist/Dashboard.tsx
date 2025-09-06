@@ -134,9 +134,21 @@ const SpecialistDashboard: React.FC = () => {
             stats.totalBookings = completedBookings.length;
             
             // Calculate total revenue from completed bookings (accurate amounts)
+            console.log('🔍 Dashboard: Raw completed bookings data:', completedBookings.map(b => ({ 
+              id: b.id, 
+              service: b.service?.name, 
+              totalAmount: b.totalAmount,
+              amount: b.amount,
+              currency: b.service?.currency
+            })));
+            
             const totalRevenue = completedBookings.reduce((sum, booking) => {
-              return sum + (booking.totalAmount || 0);
+              const amount = booking.totalAmount || 0;
+              console.log(`🔍 Adding booking ${booking.id} (${booking.service?.name}): ${amount}`);
+              return sum + amount;
             }, 0);
+            
+            console.log('🔍 Dashboard: Calculated total revenue:', totalRevenue);
             
             // For now, use total revenue as monthly revenue (can be refined later)
             stats.monthlyRevenue = totalRevenue;
@@ -256,7 +268,7 @@ const SpecialistDashboard: React.FC = () => {
                   console.warn('Invalid date format:', rawDate);
                 }
                 
-                return {
+                const processedBooking = {
                   id: booking.id,
                   customerName: booking.customer?.firstName + ' ' + (booking.customer?.lastName || ''),
                   serviceName: booking.service?.name || 'Service',
@@ -264,6 +276,10 @@ const SpecialistDashboard: React.FC = () => {
                   status: 'completed',
                   amount: booking.totalAmount || 0
                 };
+                
+                console.log(`🔍 Dashboard recent booking ${booking.id}: totalAmount=${booking.totalAmount}, processed amount=${processedBooking.amount}`);
+                
+                return processedBooking;
               });
           } catch (err) {
             console.warn('Error processing completed bookings for recent list:', err);
