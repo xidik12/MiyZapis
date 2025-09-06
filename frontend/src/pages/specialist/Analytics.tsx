@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
+
+// Helper function to get the booking currency (same as Dashboard)
+const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
+  // Use the service's stored currency, defaulting to UAH if not specified
+  const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+  return currency;
+};
 import { RootState, AppDispatch } from '../../store';
 import { analyticsService, AnalyticsOverview, PerformanceAnalytics, BookingAnalytics, RevenueAnalytics, ServiceAnalytics } from '../../services/analytics.service';
 import { bookingService } from '../../services/booking.service';
@@ -261,7 +268,7 @@ const SimplePieChart: React.FC<{ data: { label: string; value: number; color: st
 
 const SpecialistAnalytics: React.FC = () => {
   const { t } = useLanguage();
-  const { formatPrice } = useCurrency();
+  const { formatPrice, convertPrice } = useCurrency();
   const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({});
   const [chartData, setChartData] = useState<{
@@ -323,8 +330,22 @@ const SpecialistAnalytics: React.FC = () => {
         const completedBookings = Array.isArray(completedBookingsResult.bookings) ? completedBookingsResult.bookings : [];
         console.log('📊 Analytics: Processing', completedBookings.length, 'completed bookings');
         
-        // Calculate real metrics from booking data
-        const totalRevenue = completedBookings.reduce((sum, booking) => sum + (booking.totalAmount || 0), 0);
+        // Calculate real metrics from booking data with proper currency conversion
+        const totalRevenue = completedBookings.reduce((sum, booking) => {
+          const amount = booking.totalAmount || 0;
+          const bookingCurrency = getBookingCurrency(booking);
+          
+          console.log(`📊 Analytics: Adding booking ${booking.id} (${booking.service?.name}): ${amount} ${bookingCurrency}`);
+          
+          // Convert to user's preferred currency for consistent total
+          const convertedAmount = convertPrice(amount, bookingCurrency);
+          
+          console.log(`💱 Analytics: Converted ${amount} ${bookingCurrency} → ${convertedAmount} (user currency)`);
+          
+          return sum + convertedAmount;
+        }, 0);
+        
+        console.log('📊 Analytics: Calculated total revenue:', totalRevenue);
         const totalBookings = completedBookings.length;
         
         // Count unique customers

@@ -67,7 +67,7 @@ const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
 
 const SpecialistEarnings: React.FC = () => {
   const { t } = useLanguage();
-  const { formatPrice } = useCurrency();
+  const { formatPrice, convertPrice } = useCurrency();
   const user = useAppSelector(selectUser);
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('month');
   const [isExporting, setIsExporting] = useState(false);
@@ -169,9 +169,19 @@ const SpecialistEarnings: React.FC = () => {
             uniqueCustomers = uniqueCustomerIds.size;
             console.log('📊 Unique customers calculated from bookings:', uniqueCustomers);
             
-            // Calculate total earnings from completed bookings (accurate amounts)
+            // Calculate total earnings from completed bookings (accurate amounts with currency conversion)
             totalEarnings = completedBookings.reduce((sum, booking) => {
-              return sum + (booking.totalAmount || 0);
+              const amount = booking.totalAmount || 0;
+              const bookingCurrency = getBookingCurrency(booking);
+              
+              console.log(`📊 Earnings: Adding booking ${booking.id} (${booking.service?.name}): ${amount} ${bookingCurrency}`);
+              
+              // Convert to user's preferred currency for consistent total
+              const convertedAmount = convertPrice(amount, bookingCurrency);
+              
+              console.log(`💱 Earnings: Converted ${amount} ${bookingCurrency} → ${convertedAmount} (user currency)`);
+              
+              return sum + convertedAmount;
             }, 0);
             
             console.log('📊 Total earnings calculated from bookings:', totalEarnings);
@@ -190,7 +200,12 @@ const SpecialistEarnings: React.FC = () => {
                   return false;
                 }
               })
-              .reduce((sum, booking) => sum + (booking.totalAmount || 0), 0);
+              .reduce((sum, booking) => {
+                const amount = booking.totalAmount || 0;
+                const bookingCurrency = getBookingCurrency(booking);
+                const convertedAmount = convertPrice(amount, bookingCurrency);
+                return sum + convertedAmount;
+              }, 0);
             
             // Create monthly breakdown from completed bookings
             const monthlyData = new Map<string, { earnings: number; bookings: number }>();
