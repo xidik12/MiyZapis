@@ -37,6 +37,11 @@ import {
   StarIcon as StarIconSolid,
 } from '@heroicons/react/24/solid';
 
+// Helper function to get the booking currency
+const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
+  // Use the service's stored currency, defaulting to UAH if not specified
+  return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+};
 
 const SpecialistDashboard: React.FC = () => {
   const user = useAppSelector(selectUser);
@@ -552,7 +557,7 @@ const SpecialistDashboard: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-gray-900 dark:text-white">
-                    {formatPrice(booking.amount)}
+                    {formatPrice(booking.totalAmount, getBookingCurrency(booking))}
                   </p>
                   <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
                     {getStatusText(booking.status)}

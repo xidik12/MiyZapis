@@ -59,6 +59,12 @@ interface ErrorState {
   analytics: string | null;
 }
 
+// Helper function to get the booking currency
+const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
+  // Use the service's stored currency, defaulting to UAH if not specified
+  return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+};
+
 const SpecialistEarnings: React.FC = () => {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
@@ -382,7 +388,8 @@ const SpecialistEarnings: React.FC = () => {
               date: booking.completedAt || booking.updatedAt || new Date().toISOString(),
               amount: booking.totalAmount, // Use the same field as Bookings page
               status: 'completed' as const,
-              method: booking.service?.name || 'Service'
+              method: booking.service?.name || 'Service',
+              currency: getBookingCurrency(booking) // Add currency information
             };
           });
         
@@ -796,7 +803,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div key={payout.id || Math.random()} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div>
                     <div className="font-medium text-gray-900 dark:text-white">
-                      {formatPrice(payout.amount || 0)}
+                      {formatPrice(payout.amount || 0, payout.currency || 'UAH')}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       {payout.date ? new Date(payout.date).toLocaleDateString() : 'N/A'} • {payout.method || 'Service'}
