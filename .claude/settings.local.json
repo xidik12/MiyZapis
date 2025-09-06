@@ -110,7 +110,10 @@
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" PORT=3000 npm start)",
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" node debug-bookings.js)",
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma studio --browser=none --port=5559)",
-      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npm start)"
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npm start)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx tsx src/scripts/fix-booking-currency.ts)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx tsx src/scripts/fix-booking-currency.ts)",
+      "Bash(PGPASSWORD:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
