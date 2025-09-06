@@ -162,7 +162,7 @@ const SpecialistDashboard: React.FC = () => {
               
               console.log(`💱 Converted ${amount} ${bookingCurrency} → ${convertedAmount} (user currency)`);
               
-              return sum + convertedAmount;
+              return sum + Math.round(convertedAmount * 100) / 100;
             }, 0);
             
             console.log('🔍 Dashboard: Calculated total revenue:', totalRevenue);

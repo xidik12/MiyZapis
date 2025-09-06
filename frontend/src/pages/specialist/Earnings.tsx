@@ -181,7 +181,7 @@ const SpecialistEarnings: React.FC = () => {
               
               console.log(`💱 Earnings: Converted ${amount} ${bookingCurrency} → ${convertedAmount} (user currency)`);
               
-              return sum + convertedAmount;
+              return sum + Math.round(convertedAmount * 100) / 100;
             }, 0);
             
             console.log('📊 Total earnings calculated from bookings:', totalEarnings);
@@ -204,7 +204,7 @@ const SpecialistEarnings: React.FC = () => {
                 const amount = booking.totalAmount || 0;
                 const bookingCurrency = getBookingCurrency(booking);
                 const convertedAmount = convertPrice(amount, bookingCurrency);
-                return sum + convertedAmount;
+                return sum + Math.round(convertedAmount * 100) / 100;
               }, 0);
             
             // Create monthly breakdown from completed bookings

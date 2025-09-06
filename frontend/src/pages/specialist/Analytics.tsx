@@ -342,7 +342,7 @@ const SpecialistAnalytics: React.FC = () => {
           
           console.log(`💱 Analytics: Converted ${amount} ${bookingCurrency} → ${convertedAmount} (user currency)`);
           
-          return sum + convertedAmount;
+          return sum + Math.round(convertedAmount * 100) / 100;
         }, 0);
         
         console.log('📊 Analytics: Calculated total revenue:', totalRevenue);
@@ -530,7 +530,7 @@ const SpecialistAnalytics: React.FC = () => {
             const bookingCurrency = getBookingCurrency(booking);
             const convertedAmount = convertPrice(amount, bookingCurrency);
             
-            data.revenue += convertedAmount;
+            data.revenue += Math.round(convertedAmount * 100) / 100;
             data.bookings += 1;
           });
           
