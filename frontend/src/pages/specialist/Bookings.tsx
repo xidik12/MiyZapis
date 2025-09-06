@@ -9,8 +9,11 @@ import {
   EyeIcon, 
   CheckCircleIcon, 
   CheckIcon,
-  StarIcon
+  StarIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
+import { ReviewModal } from '../../components/modals/ReviewModal';
+import { reviewsService } from '../../services/reviews.service';
 
 // Status colors for bookings (matching backend status values)
 const statusColors = {
@@ -68,6 +71,26 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const [selectedStatus, setSelectedStatus] = useState(booking?.status || 'PENDING');
   const [message, setMessage] = useState('');
   
+  // Handle Escape key to close modal
+  React.useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, onClose]);
+  
   if (!isOpen || !booking) return null;
   
   const handleStatusChange = () => {
@@ -82,18 +105,29 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   };
   
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-4"
+      onClick={(e) => {
+        // Close modal when clicking on overlay
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div 
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{t('bookingDetails.title')}</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100 transition-colors"
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            aria-label="Close modal"
+            type="button"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <XMarkIcon className="w-5 h-5" />
           </button>
         </div>
         
@@ -506,6 +540,7 @@ const SpecialistBookings: React.FC = () => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewLoading, setReviewLoading] = useState(false);
   const [bookingToComplete, setBookingToComplete] = useState<Booking | null>(null);
   const itemsPerPage = 10;
   
@@ -662,6 +697,38 @@ const SpecialistBookings: React.FC = () => {
   const handleLeaveReview = (booking: Booking) => {
     setSelectedBooking(booking);
     setShowReviewModal(true);
+  };
+
+  const handleSubmitReview = async (reviewData: {
+    rating: number;
+    comment: string;
+    tags: string[];
+  }) => {
+    if (!selectedBooking) return;
+
+    try {
+      setReviewLoading(true);
+      await reviewsService.createReview({
+        bookingId: selectedBooking.id,
+        specialistId: selectedBooking.specialist?.id || selectedBooking.specialistId || '',
+        serviceId: selectedBooking.service?.id || selectedBooking.serviceId || '',
+        rating: reviewData.rating,
+        comment: reviewData.comment,
+        tags: reviewData.tags
+      });
+
+      setShowReviewModal(false);
+      setSelectedBooking(null);
+      
+      // Optional: Show success message or refresh bookings
+      // You could also dispatch a success notification here
+      
+    } catch (error) {
+      console.error('Failed to submit review:', error);
+      // Handle error - could show error message
+    } finally {
+      setReviewLoading(false);
+    }
   };
 
   const handleCancelBooking = async (booking: Booking) => {
@@ -1304,45 +1371,24 @@ const SpecialistBookings: React.FC = () => {
       />
 
       {/* Review Modal */}
-      {showReviewModal && selectedBooking && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
-            <div className="mt-3">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100">
-                <StarIcon className="h-6 w-6 text-yellow-600" />
-              </div>
-              <div className="mt-5 text-center">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-                  {t('bookings.leaveReview')}
-                </h3>
-                <div className="mt-2">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Service: {getTranslatedServiceName(selectedBooking.service?.name || 'Unknown Service')}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Specialist: {selectedBooking.specialist
-                      ? `${selectedBooking.specialist.firstName || ''} ${selectedBooking.specialist.lastName || ''}`.trim()
-                      : 'Unknown Specialist'}
-                  </p>
-                </div>
-                <div className="mt-4">
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                    This feature will be available soon. You'll be able to rate and review the specialist's service.
-                  </p>
-                </div>
-                <div className="items-center px-4 py-3">
-                  <button
-                    className="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300"
-                    onClick={() => setShowReviewModal(false)}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ReviewModal
+        isOpen={showReviewModal}
+        onClose={() => {
+          setShowReviewModal(false);
+          setSelectedBooking(null);
+        }}
+        onSubmit={handleSubmitReview}
+        booking={{
+          id: selectedBooking?.id || '',
+          service: selectedBooking?.service,
+          serviceName: selectedBooking?.service?.name,
+          specialist: selectedBooking?.specialist,
+          specialistName: selectedBooking?.specialist 
+            ? `${selectedBooking.specialist.firstName || ''} ${selectedBooking.specialist.lastName || ''}`.trim()
+            : undefined
+        }}
+        loading={reviewLoading}
+      />
       </div>
   );
 };

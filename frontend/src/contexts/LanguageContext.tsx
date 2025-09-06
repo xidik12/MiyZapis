@@ -597,10 +597,12 @@ const translations: Translations = {
   'bookings.myServices': { en: 'My Services', uk: 'Мої послуги', ru: 'Мои услуги' },
   'bookings.myBookings': { en: 'My Bookings', uk: 'Мої бронювання', ru: 'Мои бронирования' },
   'bookings.leaveReview': { en: 'Leave Review', uk: 'Залишити відгук', ru: 'Оставить отзыв' },
+  'bookings.cancelBooking': { en: 'Cancel Booking', uk: 'Скасувати бронювання', ru: 'Отменить бронирование' },
   
   // Booking Details Modal
   'bookingDetails.title': { en: 'Booking Details', uk: 'Деталі бронювання', ru: 'Детали бронирования' },
   'bookingDetails.customerInfo': { en: 'Customer Information', uk: 'Інформація про клієнта', ru: 'Информация о клиенте' },
+  'bookingDetails.specialistInfo': { en: 'Specialist Information', uk: 'Інформація про спеціаліста', ru: 'Информация о специалисте' },
   'bookingDetails.name': { en: 'Name', uk: 'Ім\'я', ru: 'Имя' },
   'bookingDetails.contact': { en: 'Contact', uk: 'Контакт', ru: 'Контакт' },
   'bookingDetails.serviceInfo': { en: 'Service Information', uk: 'Інформація про послугу', ru: 'Информация об услуге' },
@@ -615,6 +617,7 @@ const translations: Translations = {
   'bookingDetails.messagePlaceholder': { en: 'Type your message here...', uk: 'Введіть ваше повідомлення тут...', ru: 'Введите ваше сообщение здесь...' },
   'bookingDetails.sendMessageButton': { en: 'Send Message', uk: 'Надіслати повідомлення', ru: 'Отправить сообщение' },
   'bookingDetails.template': { en: 'Template', uk: 'Шаблон', ru: 'Шаблон' },
+  'bookingDetails.customerActions': { en: 'Customer Actions', uk: 'Дії клієнта', ru: 'Действия клиента' },
 
   // Service Names Translations
   'service.consultation': { en: 'Psychology Consultation', uk: 'Консультація з психології', ru: 'Консультация по психологии' },
