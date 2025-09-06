@@ -12,7 +12,7 @@ import {
   StarIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
-import { ReviewModal } from '../../components/modals/ReviewModal';
+import ReviewModal from '../../components/modals/ReviewModal';
 import { reviewsService } from '../../services/reviews.service';
 
 // Status colors for bookings (matching backend status values)
