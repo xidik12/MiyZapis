@@ -282,33 +282,33 @@ const SpecialistAnalytics: React.FC = () => {
   // Load analytics data from API
   useEffect(() => {
     const loadAnalyticsData = async () => {
+      // Calculate date ranges based on selected period - move outside try block
+      const endDate = new Date();
+      const startDate = new Date();
+      
+      switch (selectedPeriod) {
+        case 'daily':
+          startDate.setDate(endDate.getDate() - 7); // Last 7 days
+          break;
+        case 'weekly':
+          startDate.setDate(endDate.getDate() - 28); // Last 4 weeks
+          break;
+        case 'monthly':
+          startDate.setMonth(endDate.getMonth() - 12); // Last 12 months
+          break;
+        case 'yearly':
+          startDate.setFullYear(endDate.getFullYear() - 5); // Last 5 years
+          break;
+      }
+      
+      const filters = {
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0]
+      };
+
       try {
         setLoading(true);
         setError(null);
-        
-        // Calculate date ranges based on selected period
-        const endDate = new Date();
-        const startDate = new Date();
-        
-        switch (selectedPeriod) {
-          case 'daily':
-            startDate.setDate(endDate.getDate() - 7); // Last 7 days
-            break;
-          case 'weekly':
-            startDate.setDate(endDate.getDate() - 28); // Last 4 weeks
-            break;
-          case 'monthly':
-            startDate.setMonth(endDate.getMonth() - 12); // Last 12 months
-            break;
-          case 'yearly':
-            startDate.setFullYear(endDate.getFullYear() - 5); // Last 5 years
-            break;
-        }
-        
-        const filters = {
-          startDate: startDate.toISOString().split('T')[0],
-          endDate: endDate.toISOString().split('T')[0]
-        };
         
         // Load booking data instead of broken analytics APIs
         console.log('📊 Analytics: Loading completed bookings for real data...');

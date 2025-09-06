@@ -854,7 +854,6 @@ export class BookingService {
                 name: true,
                 description: true,
                 basePrice: true,
-                price: true,
                 currency: true,
                 duration: true,
                 isActive: true,
