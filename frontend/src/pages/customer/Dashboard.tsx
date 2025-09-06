@@ -4,6 +4,7 @@ import { useAppSelector } from '@/hooks/redux';
 import { selectUser } from '@/store/slices/authSlice';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 // Status colors for bookings
 const statusColors = {
   confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -90,6 +91,7 @@ const CustomerDashboard: React.FC = () => {
   const user = useAppSelector(selectUser);
   const { formatPrice } = useCurrency();
   const { t, language } = useLanguage();
+  const { theme } = useTheme();
   const [currentTime, setCurrentTime] = useState(new Date());
   
   // State management for dashboard data
