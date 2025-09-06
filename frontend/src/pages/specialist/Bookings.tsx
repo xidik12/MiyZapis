@@ -710,11 +710,9 @@ const SpecialistBookings: React.FC = () => {
       setReviewLoading(true);
       await reviewsService.createReview({
         bookingId: selectedBooking.id,
-        specialistId: selectedBooking.specialist?.id || selectedBooking.specialistId || '',
-        serviceId: selectedBooking.service?.id || selectedBooking.serviceId || '',
         rating: reviewData.rating,
         comment: reviewData.comment,
-        tags: reviewData.tags
+        tags: reviewData.tags.map(tag => tag.toLowerCase().replace(/\s+/g, ''))
       });
 
       setShowReviewModal(false);

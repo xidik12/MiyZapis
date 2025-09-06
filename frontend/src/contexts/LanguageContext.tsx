@@ -1285,6 +1285,14 @@ const translations: Translations = {
   'reviews.submitResponse': { en: 'Submit Response', uk: 'Відправити відповідь', ru: 'Отправить ответ' },
   'reviews.submitting': { en: 'Submitting...', uk: 'Відправка...', ru: 'Отправка...' },
   'reviews.loadMore': { en: 'Load More Reviews', uk: 'Завантажити більше відгуків', ru: 'Загрузить больше отзывов' },
+  'reviews.leaveReview': { en: 'Leave Review', uk: 'Залишити відгук', ru: 'Оставить отзыв' },
+  'reviews.rating': { en: 'Rating', uk: 'Рейтинг', ru: 'Рейтинг' },
+  'reviews.comment': { en: 'Comment', uk: 'Коментар', ru: 'Комментарий' },
+  'reviews.commentPlaceholder': { en: 'Share your experience...', uk: 'Поділіться своїм досвідом...', ru: 'Поделитесь вашим опытом...' },
+  'reviews.tags': { en: 'Tags', uk: 'Теги', ru: 'Теги' },
+  'reviews.submitReview': { en: 'Submit Review', uk: 'Відправити відгук', ru: 'Отправить отзыв' },
+  'reviews.pleaseSelectRating': { en: 'Please select a rating', uk: 'Будь ласка, оберіть рейтинг', ru: 'Пожалуйста, выберите рейтинг' },
+  'reviews.submitError': { en: 'Error submitting review', uk: 'Помилка відправки відгуку', ru: 'Ошибка отправки отзыва' },
   
   // Portfolio section
   'portfolio.title': { en: 'Portfolio', uk: 'Портфоліо', ru: 'Портфолио' },

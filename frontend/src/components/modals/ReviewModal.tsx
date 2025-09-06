@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { XMarkIcon, StarIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 
 interface ReviewModalProps {
@@ -30,6 +31,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
   loading = false
 }) => {
   const { t } = useLanguage();
+  const { theme } = useTheme();
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -37,13 +39,15 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
 
   const availableTags = [
     'Professional',
-    'On Time',
-    'Great Communication',
-    'High Quality',
+    'Punctual',
     'Friendly',
-    'Would Recommend',
-    'Clean Workspace',
-    'Fair Price'
+    'Skilled',
+    'Clean',
+    'Affordable',
+    'Quick',
+    'Thorough',
+    'Communicative',
+    'Reliable'
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,15 +93,25 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 max-w-lg shadow-lg rounded-md bg-white">
+      <div className={`relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 max-w-lg shadow-lg rounded-md ${
+        theme === 'dark' 
+          ? 'bg-gray-800 border-gray-600' 
+          : 'bg-white border-gray-300'
+      }`}>
         <div className="mt-3">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900">
+            <h3 className={`text-lg font-medium ${
+              theme === 'dark' ? 'text-gray-100' : 'text-gray-900'
+            }`}>
               {t('reviews.leaveReview')}
             </h3>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className={`${
+                theme === 'dark' 
+                  ? 'text-gray-400 hover:text-gray-200' 
+                  : 'text-gray-400 hover:text-gray-600'
+              }`}
               disabled={loading}
             >
               <XMarkIcon className="h-6 w-6" />
@@ -106,14 +120,18 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
           
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Service Info */}
-            <div className="text-sm text-gray-600">
+            <div className={`text-sm ${
+              theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+            }`}>
               <p><span className="font-medium">{t('booking.service')}:</span> {serviceName}</p>
               <p><span className="font-medium">{t('booking.specialist')}:</span> {specialistName}</p>
             </div>
             
             {/* Rating */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className={`block text-sm font-medium mb-2 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 {t('reviews.rating')} <span className="text-red-500">*</span>
               </label>
               <div className="flex items-center space-x-1">
@@ -134,7 +152,9 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                     )}
                   </button>
                 ))}
-                <span className="ml-2 text-sm text-gray-600">
+                <span className={`ml-2 text-sm ${
+                  theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                }`}>
                   {rating > 0 && `${rating}/5`}
                 </span>
               </div>
@@ -142,14 +162,20 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
             
             {/* Comment */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className={`block text-sm font-medium mb-2 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 {t('reviews.comment')}
               </label>
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 rows={4}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-2"
+                className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
                 placeholder={t('reviews.commentPlaceholder')}
                 disabled={loading}
               />
@@ -157,7 +183,9 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
             
             {/* Tags */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className={`block text-sm font-medium mb-2 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 {t('reviews.tags')}
               </label>
               <div className="flex flex-wrap gap-2">
@@ -170,7 +198,9 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                     className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                       selectedTags.includes(tag)
                         ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                        : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
+                        : theme === 'dark'
+                          ? 'bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600'
+                          : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
                     }`}
                   >
                     {tag}
@@ -185,7 +215,11 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                 type="button"
                 onClick={onClose}
                 disabled={loading}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50"
+                className={`px-4 py-2 border rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 ${
+                  theme === 'dark'
+                    ? 'border-gray-600 text-gray-300 bg-gray-700 hover:bg-gray-600'
+                    : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                }`}
               >
                 {t('common.cancel')}
               </button>
