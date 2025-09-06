@@ -54,7 +54,7 @@ const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
 
 const SpecialistDashboard: React.FC = () => {
   const user = useAppSelector(selectUser);
-  const { formatPrice, convertPrice } = useCurrency();
+  const { formatPrice, convertPrice, currency } = useCurrency();
   const { t, language } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [dashboardData, setDashboardData] = useState<any>({
@@ -462,7 +462,7 @@ const SpecialistDashboard: React.FC = () => {
         />
         <StatCard
           title={t('dashboard.specialist.monthlyRevenue')}
-          value={formatPrice(dashboardData.stats.monthlyRevenue)}
+          value={formatPrice(dashboardData.stats.monthlyRevenue, currency)}
           change={dashboardData.stats.monthlyRevenue > 0 ? `+8% ${t('dashboard.specialist.improvement')}` : ''}
           changeType="positive"
           icon={CurrencyDollarIcon}

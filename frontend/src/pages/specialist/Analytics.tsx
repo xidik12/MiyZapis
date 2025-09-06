@@ -268,7 +268,7 @@ const SimplePieChart: React.FC<{ data: { label: string; value: number; color: st
 
 const SpecialistAnalytics: React.FC = () => {
   const { t } = useLanguage();
-  const { formatPrice, convertPrice } = useCurrency();
+  const { formatPrice, convertPrice, currency } = useCurrency();
   const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({});
   const [chartData, setChartData] = useState<{
@@ -820,7 +820,7 @@ const SpecialistAnalytics: React.FC = () => {
                   {selectedPeriod === 'yearly' ? t('analytics.total') : t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.revenue')}
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatPrice(selectedPeriod === 'yearly' ? (analyticsData.overview?.totalRevenue || 0) : (periodStats?.currentRevenue || 0))}
+                  {formatPrice(selectedPeriod === 'yearly' ? (analyticsData.overview?.totalRevenue || 0) : (periodStats?.currentRevenue || 0), currency)}
                 </p>
                 <div className="flex items-center mt-2">
                   <div className={`flex items-center ${

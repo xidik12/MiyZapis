@@ -67,7 +67,7 @@ const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
 
 const SpecialistEarnings: React.FC = () => {
   const { t } = useLanguage();
-  const { formatPrice, convertPrice } = useCurrency();
+  const { formatPrice, convertPrice, currency } = useCurrency();
   const user = useAppSelector(selectUser);
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('month');
   const [isExporting, setIsExporting] = useState(false);
@@ -583,7 +583,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatPrice(earningsData.totalEarnings || 0)}
+                  {formatPrice(earningsData.totalEarnings || 0, currency)}
                 </p>
               )}
             </div>
@@ -601,7 +601,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatPrice(earningsData.thisMonth || 0)}
+                  {formatPrice(earningsData.thisMonth || 0, currency)}
                 </p>
               )}
             </div>
@@ -619,7 +619,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-orange-600">
-                  {formatPrice(earningsData.pending || 0)}
+                  {formatPrice(earningsData.pending || 0, currency)}
                 </p>
               )}
             </div>
@@ -637,7 +637,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatPrice(earningsData.lastPayout || 0)}
+                  {formatPrice(earningsData.lastPayout || 0, currency)}
                 </p>
               )}
             </div>
@@ -694,7 +694,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatPrice(earningsData.averageBookingValue || 0)}
+                  {formatPrice(earningsData.averageBookingValue || 0, currency)}
                 </p>
               )}
             </div>
@@ -875,7 +875,7 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className="font-medium text-gray-900 dark:text-white">{formatPrice(earningsData.avgSessionValue || 0)}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formatPrice(earningsData.avgSessionValue || 0, currency)}</span>
                 )}
               </div>
             </div>
