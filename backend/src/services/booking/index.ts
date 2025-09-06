@@ -249,18 +249,7 @@ export class BookingService {
             },
           },
           service: {
-            select: {
-              id: true,
-              name: true,
-              description: true,
-              basePrice: true,
-              price: true,
-              currency: true,
-              duration: true,
-              isActive: true,
-              categoryId: true,
-              createdAt: true,
-              updatedAt: true,
+            include: {
               specialist: true,
             },
           },
@@ -434,18 +423,7 @@ export class BookingService {
             },
           },
           service: {
-            select: {
-              id: true,
-              name: true,
-              description: true,
-              basePrice: true,
-              price: true,
-              currency: true,
-              duration: true,
-              isActive: true,
-              categoryId: true,
-              createdAt: true,
-              updatedAt: true,
+            include: {
               specialist: true,
             },
           },
@@ -574,18 +552,7 @@ export class BookingService {
             },
           },
           service: {
-            select: {
-              id: true,
-              name: true,
-              description: true,
-              basePrice: true,
-              price: true,
-              currency: true,
-              duration: true,
-              isActive: true,
-              categoryId: true,
-              createdAt: true,
-              updatedAt: true,
+            include: {
               specialist: true,
             },
           },
@@ -765,18 +732,7 @@ export class BookingService {
             },
           },
           service: {
-            select: {
-              id: true,
-              name: true,
-              description: true,
-              basePrice: true,
-              price: true,
-              currency: true,
-              duration: true,
-              isActive: true,
-              categoryId: true,
-              createdAt: true,
-              updatedAt: true,
+            include: {
               specialist: true,
             },
           },
