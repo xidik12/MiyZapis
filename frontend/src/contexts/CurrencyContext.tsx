@@ -15,10 +15,10 @@ interface CurrencyContextType {
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
 // Exchange rates relative to UAH (Ukrainian Hryvnia)
-// 1 USD = 37 UAH, 1 EUR = 40 UAH (approximate realistic rates)
+// 1 USD = 41 UAH, 1 EUR = 40 UAH (current realistic rates)
 const EXCHANGE_RATES: Record<Currency, number> = {
   UAH: 1,      // Base currency
-  USD: 37,     // 1 USD = 37 UAH
+  USD: 41,     // 1 USD = 41 UAH
   EUR: 40,     // 1 EUR = 40 UAH
 };
 
