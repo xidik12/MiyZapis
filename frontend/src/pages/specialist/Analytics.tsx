@@ -524,7 +524,13 @@ const SpecialistAnalytics: React.FC = () => {
               chartDataMap.set(groupKey, { revenue: 0, bookings: 0, date: displayDate });
             }
             const data = chartDataMap.get(groupKey);
-            data.revenue += booking.totalAmount || 0;
+            
+            // Apply same currency conversion as main calculation
+            const amount = booking.totalAmount || 0;
+            const bookingCurrency = getBookingCurrency(booking);
+            const convertedAmount = convertPrice(amount, bookingCurrency);
+            
+            data.revenue += convertedAmount;
             data.bookings += 1;
           });
           
@@ -854,10 +860,10 @@ const SpecialistAnalytics: React.FC = () => {
                   {t('analytics.average')} {t(`analytics.${selectedPeriod}`)} {t('dashboard.analytics.revenue')}
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatPrice(periodStats.avgRevenue)}
+                  {formatPrice(periodStats.avgRevenue, currency)}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                  {t('analytics.total')}: {formatPrice(periodStats.currentRevenue)}
+                  {t('analytics.total')}: {formatPrice(periodStats.currentRevenue, currency)}
                 </p>
               </div>
               <div className="p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
@@ -986,7 +992,7 @@ const SpecialistAnalytics: React.FC = () => {
                   <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300">
                     <div className="flex items-center">
                       <div className="w-3 h-3 rounded-full bg-green-600 mr-2"></div>
-                      <span>Revenue: {formatPrice(currentPeriodData.revenue.reduce((sum, val) => sum + val, 0))}</span>
+                      <span>Revenue: {formatPrice(currentPeriodData.revenue.reduce((sum, val) => sum + val, 0), currency)}</span>
                     </div>
                     <div className="flex items-center">
                       <div className="w-3 h-3 rounded-full bg-blue-600 mr-2"></div>
