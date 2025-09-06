@@ -242,28 +242,28 @@ const CustomerBookings: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <LoadingSpinner />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             {t('customer.bookings.title')}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             {t('customer.bookings.subtitle')}
           </p>
         </div>
 
         {/* Tabs */}
         <div className="mb-6">
-          <div className="border-b border-gray-200">
+          <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="-mb-px flex space-x-8">
               {[
                 { key: 'upcoming', label: t('customer.bookings.upcoming') },
@@ -275,12 +275,12 @@ const CustomerBookings: React.FC = () => {
                   onClick={() => setActiveTab(tab.key as any)}
                   className={`py-2 px-1 border-b-2 font-medium text-sm ${
                     activeTab === tab.key
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
                   }`}
                 >
                   {tab.label}
-                  <span className="ml-2 bg-gray-100 text-gray-600 py-0.5 px-2.5 rounded-full text-xs">
+                  <span className="ml-2 bg-gray-100 text-gray-600 py-0.5 px-2.5 rounded-full text-xs dark:bg-gray-700 dark:text-gray-300">
                     {bookings.filter(b => {
                       if (tab.key === 'upcoming') return b.status === 'upcoming' || b.status === 'in_progress';
                       if (tab.key === 'past') return b.status === 'completed';
@@ -296,14 +296,14 @@ const CustomerBookings: React.FC = () => {
 
         {/* Bookings List */}
         {filteredBookings.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <CalendarIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+            <CalendarIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               {activeTab === 'upcoming' && t('customer.bookings.noUpcoming')}
               {activeTab === 'past' && t('customer.bookings.noPast')}
               {activeTab === 'cancelled' && t('empty.noCancelledBookings')}
             </h3>
-            <p className="text-gray-500">
+            <p className="text-gray-500 dark:text-gray-400">
               {activeTab === 'upcoming' && t('empty.bookFirstService')}
               {activeTab === 'past' && t('empty.completedBookingsHere')}
               {activeTab === 'cancelled' && t('empty.cancelledBookingsHere')}
@@ -312,7 +312,7 @@ const CustomerBookings: React.FC = () => {
         ) : (
           <div className="space-y-4">
             {filteredBookings.map((booking) => (
-              <div key={booking.id} className="bg-white rounded-lg shadow hover:shadow-md transition-shadow">
+              <div key={booking.id} className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow">
                 <div className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-4 flex-1">
@@ -327,7 +327,7 @@ const CustomerBookings: React.FC = () => {
                       {/* Booking Details */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900 truncate">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
                             {booking.service?.name || booking.serviceName || 'Unknown Service'}
                           </h3>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
@@ -335,7 +335,7 @@ const CustomerBookings: React.FC = () => {
                           </span>
                         </div>
                         
-                        <div className="flex items-center text-sm text-gray-600 mb-1">
+                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-1">
                           <UserIcon className="h-4 w-4 mr-1" />
                           <span className="mr-4">
                             {booking.specialist?.firstName && booking.specialist?.lastName 
@@ -351,14 +351,14 @@ const CustomerBookings: React.FC = () => {
                           )}
                         </div>
                         
-                        <div className="flex items-center text-sm text-gray-600 mb-1">
+                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-1">
                           <CalendarIcon className="h-4 w-4 mr-1" />
                           <span className="mr-4">{formatDate(booking.date)}</span>
                           <ClockIcon className="h-4 w-4 mr-1" />
                           <span>{formatTime(booking.time)} ({booking.duration} min)</span>
                         </div>
                         
-                        <div className="flex items-center text-sm text-gray-600 mb-2">
+                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
                           <MapPinIcon className="h-4 w-4 mr-1" />
                           <span>
                             {booking.locationType === 'online' ? t('booking.onlineSession') : 
@@ -367,12 +367,12 @@ const CustomerBookings: React.FC = () => {
                         </div>
                         
                         {booking.customerNotes && (
-                          <div className="text-sm text-gray-600 mb-2">
+                          <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">
                             <span className="font-medium">{t('booking.notes')}:</span> {booking.customerNotes}
                           </div>
                         )}
                         
-                        <div className="text-lg font-semibold text-gray-900">
+                        <div className="text-lg font-semibold text-gray-900 dark:text-white">
                           {formatPrice(booking.totalPrice || booking.price || booking.service?.price || 0)}
                         </div>
                       </div>
@@ -380,24 +380,24 @@ const CustomerBookings: React.FC = () => {
                   </div>
                   
                   {/* Action Buttons */}
-                  <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div className="flex items-center flex-wrap gap-3">
                         <button
                           onClick={() => setSelectedBooking(booking)}
-                          className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                          className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                         >
                           {t('customer.bookings.viewDetails')}
                         </button>
                         
                         {booking.locationType !== 'online' && (
-                          <button className="text-sm text-gray-600 hover:text-gray-800 font-medium flex items-center">
+                          <button className="text-sm text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100 font-medium flex items-center">
                             <PhoneIcon className="h-4 w-4 mr-1" />
                             <span className="hidden sm:inline">{t('common.call')}</span>
                           </button>
                         )}
                         
-                        <button className="text-sm text-gray-600 hover:text-gray-800 font-medium flex items-center">
+                        <button className="text-sm text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100 font-medium flex items-center">
                           <ChatBubbleLeftRightIcon className="h-4 w-4 mr-1" />
                           <span className="hidden sm:inline">{t('common.message')}</span>
                         </button>
@@ -407,7 +407,7 @@ const CustomerBookings: React.FC = () => {
                         {booking.canReschedule && (
                           <button
                             onClick={() => handleRescheduleBooking(booking.id)}
-                            className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                            className="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 shadow-sm text-xs font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                           >
                             <ArrowPathIcon className="h-4 w-4 mr-1" />
                             <span className="hidden sm:inline">{t('customer.bookings.reschedule')}</span>
@@ -417,7 +417,7 @@ const CustomerBookings: React.FC = () => {
                         {booking.canCancel && (
                           <button
                             onClick={() => handleCancelBooking(booking.id)}
-                            className="inline-flex items-center px-3 py-1.5 border border-red-300 shadow-sm text-xs font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
+                            className="inline-flex items-center px-3 py-1.5 border border-red-300 dark:border-red-600 shadow-sm text-xs font-medium rounded-md text-red-700 dark:text-red-400 bg-white dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                           >
                             <XMarkIcon className="h-4 w-4 mr-1" />
                             <span className="hidden sm:inline">{t('customer.bookings.cancel')}</span>
@@ -427,7 +427,7 @@ const CustomerBookings: React.FC = () => {
                         {booking.status === 'completed' && !booking.hasReview && (
                           <button
                             onClick={() => handleLeaveReview(booking.id)}
-                            className="inline-flex items-center px-3 py-1.5 border border-yellow-300 shadow-sm text-xs font-medium rounded-md text-yellow-700 bg-white hover:bg-yellow-50"
+                            className="inline-flex items-center px-3 py-1.5 border border-yellow-300 dark:border-yellow-600 shadow-sm text-xs font-medium rounded-md text-yellow-700 dark:text-yellow-400 bg-white dark:bg-gray-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
                           >
                             <StarIcon className="h-4 w-4 mr-1" />
                             <span>{t('customer.bookings.leaveReview')}</span>
@@ -454,14 +454,14 @@ const CustomerBookings: React.FC = () => {
       
       {/* Booking Details Modal */}
       {selectedBooking && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-black dark:bg-opacity-70 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800 dark:border-gray-700">
             <div className="mt-3">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">{t('booking.details')}</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('booking.details')}</h3>
                 <button
                   onClick={() => setSelectedBooking(null)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100"
                 >
                   <XMarkIcon className="h-6 w-6" />
                 </button>
@@ -469,15 +469,15 @@ const CustomerBookings: React.FC = () => {
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('booking.service')}</label>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('booking.service')}</label>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                     {selectedBooking.service?.name || selectedBooking.serviceName || 'Unknown Service'}
                   </p>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('booking.specialist')}</label>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('booking.specialist')}</label>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                     {selectedBooking.specialist?.firstName && selectedBooking.specialist?.lastName 
                       ? `${selectedBooking.specialist.firstName} ${selectedBooking.specialist.lastName}`
                       : selectedBooking.specialistName || 'Unknown Specialist'
@@ -487,18 +487,18 @@ const CustomerBookings: React.FC = () => {
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">{t('booking.date')}</label>
-                    <p className="mt-1 text-sm text-gray-900">{formatDate(selectedBooking.date)}</p>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('booking.date')}</label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{formatDate(selectedBooking.date)}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">{t('booking.time')}</label>
-                    <p className="mt-1 text-sm text-gray-900">{formatTime(selectedBooking.time)}</p>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('booking.time')}</label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{formatTime(selectedBooking.time)}</p>
                   </div>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('booking.location')}</label>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('booking.location')}</label>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                     {selectedBooking.locationType === 'online' 
                       ? t('booking.onlineSession')
                       : selectedBooking.location || selectedBooking.specialist?.businessAddress || 'Location TBD'
@@ -507,16 +507,16 @@ const CustomerBookings: React.FC = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('booking.price')}</label>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('booking.price')}</label>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
                     {formatPrice(selectedBooking.totalPrice || selectedBooking.price || selectedBooking.service?.price || 0)}
                   </p>
                 </div>
                 
                 {selectedBooking.customerNotes && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">{t('booking.notes')}</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedBooking.customerNotes}</p>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('booking.notes')}</label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">{selectedBooking.customerNotes}</p>
                   </div>
                 )}
               </div>
@@ -524,7 +524,7 @@ const CustomerBookings: React.FC = () => {
               <div className="mt-6 flex justify-end">
                 <button
                   onClick={() => setSelectedBooking(null)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
                 >
                   {t('common.close')}
                 </button>
