@@ -41,20 +41,42 @@ import {
 const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
   // Debug logging to see what currency is stored
   console.log(`🔍 getBookingCurrency for booking ${booking.id}:`, {
-    serviceName: booking.service?.name,
+    serviceName: booking.service?.name || booking.serviceName,
     storedCurrency: booking.service?.currency,
     totalAmount: booking.totalAmount
   });
   
-  // Use the service's stored currency, defaulting to UAH if not specified
-  const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
-  console.log(`💱 Final currency for ${booking.service?.name}: ${currency}`);
+  // Use the service's stored currency if available
+  let currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH');
+  
+  // If no currency is stored, make an educated guess based on the service name and amount
+  if (!currency) {
+    const serviceName = booking.service?.name || booking.serviceName || '';
+    const amount = booking.totalAmount || 0;
+    
+    // If it's a Barber service with small amount (20), it's likely $20 USD
+    if (serviceName.toLowerCase().includes('barber') && amount <= 50) {
+      currency = 'USD';
+      console.log(`💡 Detected Barber service with amount ${amount}, assuming USD`);
+    }
+    // If it's a larger amount (>1000), it's likely UAH
+    else if (amount >= 1000) {
+      currency = 'UAH';
+      console.log(`💡 Large amount ${amount}, assuming UAH`);
+    }
+    // Default to UAH
+    else {
+      currency = 'UAH';
+    }
+  }
+  
+  console.log(`💱 Final currency for ${booking.service?.name || booking.serviceName}: ${currency}`);
   return currency;
 };
 
 const SpecialistDashboard: React.FC = () => {
   const user = useAppSelector(selectUser);
-  const { formatPrice } = useCurrency();
+  const { formatPrice, convertPrice } = useCurrency();
   const { t, language } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [dashboardData, setDashboardData] = useState<any>({
@@ -153,8 +175,16 @@ const SpecialistDashboard: React.FC = () => {
             
             const totalRevenue = completedBookings.reduce((sum, booking) => {
               const amount = booking.totalAmount || 0;
-              console.log(`🔍 Adding booking ${booking.id} (${booking.service?.name}): ${amount}`);
-              return sum + amount;
+              const bookingCurrency = getBookingCurrency(booking);
+              
+              console.log(`🔍 Adding booking ${booking.id} (${booking.service?.name}): ${amount} ${bookingCurrency}`);
+              
+              // Convert to user's preferred currency for consistent total
+              const convertedAmount = convertPrice(amount, bookingCurrency);
+              
+              console.log(`💱 Converted ${amount} ${bookingCurrency} → ${convertedAmount} (user currency)`);
+              
+              return sum + convertedAmount;
             }, 0);
             
             console.log('🔍 Dashboard: Calculated total revenue:', totalRevenue);
@@ -283,7 +313,9 @@ const SpecialistDashboard: React.FC = () => {
                   serviceName: booking.service?.name || 'Service',
                   date: formattedDate, // Now properly formatted
                   status: 'completed',
-                  amount: booking.totalAmount || 0
+                  amount: booking.totalAmount || 0,
+                  totalAmount: booking.totalAmount || 0, // Keep both for compatibility
+                  service: booking.service // Preserve service object for currency detection
                 };
                 
                 console.log(`🔍 Dashboard recent booking ${booking.id}: totalAmount=${booking.totalAmount}, processed amount=${processedBooking.amount}`);
