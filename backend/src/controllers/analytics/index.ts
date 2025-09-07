@@ -456,54 +456,79 @@ export class AnalyticsController {
           startDate = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
       }
 
-      // Get total views
-      const totalViews = await prisma.profileView.count({
-        where: {
-          specialistId: userId,
-          createdAt: { gte: startDate }
+      try {
+        // Check if ProfileView model/table exists by trying to count
+        await prisma.profileView.count({ take: 1 });
+
+        // Get total views
+        const totalViews = await prisma.profileView.count({
+          where: {
+            specialistId: userId,
+            createdAt: { gte: startDate }
+          }
+        });
+
+        // Get unique viewers
+        const uniqueViewers = await prisma.profileView.findMany({
+          where: {
+            specialistId: userId,
+            createdAt: { gte: startDate }
+          },
+          distinct: ['viewerId'],
+          select: { viewerId: true }
+        });
+
+        // Get views by day for trend data using safe query
+        const viewsByDay = await prisma.$queryRaw`
+          SELECT DATE(created_at) as date, COUNT(*) as count
+          FROM profile_views 
+          WHERE specialist_id = ${userId} 
+          AND created_at >= ${startDate}
+          GROUP BY DATE(created_at)
+          ORDER BY DATE(created_at)
+        `;
+
+        // Calculate growth compared to previous period
+        const previousStartDate = new Date(startDate.getTime() - (endDate.getTime() - startDate.getTime()));
+        const previousViews = await prisma.profileView.count({
+          where: {
+            specialistId: userId,
+            createdAt: { gte: previousStartDate, lt: startDate }
+          }
+        });
+
+        const growth = previousViews === 0 ? 0 : ((totalViews - previousViews) / previousViews) * 100;
+
+        const stats = {
+          totalViews,
+          uniqueViewers: uniqueViewers.length,
+          growth: Math.round(growth * 10) / 10, // Round to 1 decimal
+          viewsByDay,
+          period
+        };
+
+        return successResponse(res, stats, 'Profile view statistics retrieved successfully');
+      } catch (dbError: any) {
+        // If ProfileView table doesn't exist yet, return default stats
+        if (dbError.code === 'P2021' || dbError.message?.includes('does not exist') || 
+            dbError.message?.includes('ProfileView') || dbError.message?.includes('profile_views')) {
+          logger.warn('ProfileView table not found, returning default stats');
+          
+          const defaultStats = {
+            totalViews: 0,
+            uniqueViewers: 0,
+            growth: 0,
+            viewsByDay: [],
+            period,
+            message: 'Profile view tracking is being set up. Data will be available soon.'
+          };
+
+          return successResponse(res, defaultStats, 'Profile view statistics (default - tracking not yet active)');
         }
-      });
-
-      // Get unique viewers
-      const uniqueViewers = await prisma.profileView.findMany({
-        where: {
-          specialistId: userId,
-          createdAt: { gte: startDate }
-        },
-        distinct: ['viewerId'],
-        select: { viewerId: true }
-      });
-
-      // Get views by day for trend data
-      const viewsByDay = await prisma.$queryRaw`
-        SELECT DATE(created_at) as date, COUNT(*) as count
-        FROM profile_views 
-        WHERE specialist_id = ${userId} 
-        AND created_at >= ${startDate}
-        GROUP BY DATE(created_at)
-        ORDER BY DATE(created_at)
-      `;
-
-      // Calculate growth compared to previous period
-      const previousStartDate = new Date(startDate.getTime() - (endDate.getTime() - startDate.getTime()));
-      const previousViews = await prisma.profileView.count({
-        where: {
-          specialistId: userId,
-          createdAt: { gte: previousStartDate, lt: startDate }
-        }
-      });
-
-      const growth = previousViews === 0 ? 0 : ((totalViews - previousViews) / previousViews) * 100;
-
-      const stats = {
-        totalViews,
-        uniqueViewers: uniqueViewers.length,
-        growth: Math.round(growth * 10) / 10, // Round to 1 decimal
-        viewsByDay,
-        period
-      };
-
-      return successResponse(res, stats, 'Profile view statistics retrieved successfully');
+        
+        // Re-throw other database errors
+        throw dbError;
+      }
     } catch (error) {
       logger.error('Error getting profile view stats:', error);
       return errorResponse(res, 'Failed to retrieve profile view statistics', 500);

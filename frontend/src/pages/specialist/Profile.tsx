@@ -1391,9 +1391,12 @@ const SpecialistProfile: React.FC = () => {
                         type="number"
                         min="0"
                         max="50"
-                        value={profile.experience || 0}
+                        value={profile.experience === 0 ? '' : profile.experience || ''}
                         disabled={!isEditing}
-                        onChange={(e) => handleProfileChange('experience', parseInt(e.target.value) || 0)}
+                        onChange={(e) => {
+                          const value = e.target.value === '' ? 0 : parseInt(e.target.value) || 0;
+                          handleProfileChange('experience', value);
+                        }}
                         className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
                           !isEditing 
                             ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
@@ -1563,8 +1566,8 @@ const SpecialistProfile: React.FC = () => {
                       </h3>
                       <div className="space-y-3">
                         {profile.businessHours && Object.entries(profile.businessHours).map(([day, hours]) => (
-                          <div key={day} className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                            <div className="w-24">
+                          <div key={day} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                            <div className="w-full sm:w-24">
                               <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
                                 {language === 'uk' 
                                   ? day === 'monday' ? 'Понеділок' 
@@ -1711,13 +1714,14 @@ const SpecialistProfile: React.FC = () => {
                             type="number"
                             min="0"
                             max="100"
-                            value={profile.serviceArea?.radius || 0}
+                            value={profile.serviceArea?.radius === 0 ? '' : profile.serviceArea?.radius || ''}
                             disabled={!isEditing}
                             onChange={(e) => {
                               if (isEditing) {
+                                const radius = e.target.value === '' ? 0 : parseInt(e.target.value) || 0;
                                 const newServiceArea = {
                                   ...(profile.serviceArea || { radius: 0, cities: [] }),
-                                  radius: parseInt(e.target.value) || 0
+                                  radius: radius
                                 };
                                 handleProfileChange('serviceArea', newServiceArea);
                               }
