@@ -376,6 +376,66 @@ const SpecialistDashboard: React.FC = () => {
     return t(`dashboard.booking.status.${status}` as any) || status;
   };
 
+  // Export handler for dashboard report
+  const handleExportReport = async () => {
+    try {
+      // Create a comprehensive dashboard report
+      const reportData = {
+        specialist: user?.firstName + ' ' + user?.lastName,
+        currency: currency,
+        stats: dashboardData.stats,
+        generatedAt: new Date().toISOString(),
+      };
+
+      const content = `
+Dashboard Report - Generated ${new Date().toLocaleDateString()}
+
+Specialist: ${user?.firstName} ${user?.lastName}
+Generated: ${new Date().toLocaleString()}
+Currency: ${currency}
+
+STATISTICS
+==========
+Total Bookings: ${dashboardData.stats.totalBookings || 0}
+Monthly Revenue: ${formatPrice(dashboardData.stats.monthlyRevenue || 0)}
+Average Rating: ${dashboardData.stats.rating || 'N/A'}
+Review Count: ${dashboardData.stats.reviewCount || 0}
+Response Time: ${dashboardData.stats.responseTime || 'N/A'} minutes
+Profile Views: ${dashboardData.stats.profileViews || 0}
+Favorite Count: ${dashboardData.stats.favoriteCount || 0}
+Conversion Rate: ${dashboardData.stats.conversionRate || 'N/A'}%
+Completion Rate: ${dashboardData.stats.completionRate || 'N/A'}%
+Repeat Clients: ${dashboardData.stats.repeatClients || 0}
+
+RECENT BOOKINGS
+===============
+${dashboardData.recentBookings?.length ? dashboardData.recentBookings.map((booking: any) => 
+  `- ${booking.service?.name || 'Service'}: ${booking.customer?.firstName} ${booking.customer?.lastName} (${booking.date})`
+).join('\n') : 'No recent bookings'}
+
+UPCOMING APPOINTMENTS
+====================
+${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointments.map((booking: any) => 
+  `- ${booking.service?.name || 'Service'}: ${booking.customer?.firstName} ${booking.customer?.lastName} (${booking.date})`
+).join('\n') : 'No upcoming appointments'}
+      `;
+
+      // Create and download the file
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `dashboard-report-${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting dashboard report:', error);
+      alert('Failed to export dashboard report. Please try again.');
+    }
+  };
+
   const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description }: any) => (
     <div className="bg-surface rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
       <div className="flex items-center justify-between">
@@ -442,7 +502,10 @@ const SpecialistDashboard: React.FC = () => {
             <PlusIcon className="w-5 h-5 mr-2" />
             {t('dashboard.specialist.addService')}
           </Link>
-          <button className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium">
+          <button 
+            onClick={handleExportReport}
+            className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
+          >
             <ArrowDownTrayIcon className="w-5 h-5 mr-2" />
             {t('dashboard.specialist.exportReport')}
           </button>

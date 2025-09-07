@@ -753,9 +753,11 @@ const translations: Translations = {
   'notifications.unread': { en: 'unread', uk: 'непрочитано', ru: 'непрочитано' },
   'notifications.markAllRead': { en: 'Mark All Read', uk: 'Позначити всі як прочитані', ru: 'Отметить все как прочитанные' },
   'notifications.markAsRead': { en: 'Mark as read', uk: 'Позначити як прочитане', ru: 'Отметить как прочитанное' },
+  'notifications.markRead': { en: 'Mark Read', uk: 'Позначити прочитаним', ru: 'Отметить прочитанным' },
   'notifications.delete': { en: 'Delete', uk: 'Видалити', ru: 'Удалить' },
   'notifications.noNotifications': { en: 'No notifications', uk: 'Немає сповіщень', ru: 'Нет уведомлений' },
   'notifications.noNotificationsDescription': { en: 'You are all caught up! Check back later for new updates.', uk: 'Ви прочитали все! Перевірте пізніше для нових оновлень.', ru: 'Вы все прочитали! Проверьте позже для новых обновлений.' },
+  'notifications.error.title': { en: 'Error Loading Notifications', uk: 'Помилка завантаження сповіщень', ru: 'Ошибка загрузки уведомлений' },
 
   // Notification Types
   'notifications.newBooking': { en: 'New Booking', uk: 'Нове бронювання', ru: 'Новое бронирование' },

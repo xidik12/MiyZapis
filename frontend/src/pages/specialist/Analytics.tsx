@@ -288,6 +288,115 @@ const SpecialistAnalytics: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [profileViewStats, setProfileViewStats] = useState<ProfileViewStats | null>(null);
 
+  // Export handlers
+  const handleExportPDF = async () => {
+    console.log('Export PDF clicked!', analyticsData);
+    try {
+      // Create a simplified analytics report
+      const reportData = {
+        overview: analyticsData.overview,
+        performance: analyticsData.performance,
+        period: selectedPeriod,
+        generatedAt: new Date().toISOString(),
+      };
+
+      // Create a data URL for the PDF content
+      const content = `
+Analytics Report - Generated ${new Date().toLocaleDateString()}
+
+Overview:
+- Total Revenue: ${analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue) : 'N/A'}
+- Total Bookings: ${analyticsData.overview?.totalBookings || 0}
+- Active Services: ${analyticsData.overview?.activeServices || 0}
+- Avg Rating: ${analyticsData.overview?.averageRating || 'N/A'}
+
+Performance:
+- Response Time: ${analyticsData.performance?.averageResponseTime || 'N/A'} minutes
+- Completion Rate: ${analyticsData.performance?.completionRate || 'N/A'}%
+- Conversion Rate: ${analyticsData.performance?.conversionRate || 'N/A'}%
+      `;
+
+      // Create and download the file
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `analytics-report-${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      alert('Failed to export PDF report. Please try again.');
+    }
+  };
+
+  const handleExportCSV = async () => {
+    try {
+      // Create CSV data
+      const csvData = [
+        ['Metric', 'Value'],
+        ['Total Revenue', analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue) : 'N/A'],
+        ['Total Bookings', analyticsData.overview?.totalBookings || 0],
+        ['Active Services', analyticsData.overview?.activeServices || 0],
+        ['Average Rating', analyticsData.overview?.averageRating || 'N/A'],
+        ['Response Time (min)', analyticsData.performance?.averageResponseTime || 'N/A'],
+        ['Completion Rate (%)', analyticsData.performance?.completionRate || 'N/A'],
+        ['Conversion Rate (%)', analyticsData.performance?.conversionRate || 'N/A'],
+        ['Generated At', new Date().toISOString()],
+      ];
+
+      const csvContent = csvData.map(row => row.join(',')).join('\n');
+      
+      // Create and download the CSV
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `analytics-data-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting CSV:', error);
+      alert('Failed to export CSV data. Please try again.');
+    }
+  };
+
+  const handleShareAnalytics = async () => {
+    try {
+      const shareText = `My Analytics Summary:
+📊 Total Revenue: ${analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue) : 'N/A'}
+🗓️ Total Bookings: ${analyticsData.overview?.totalBookings || 0}
+⭐ Average Rating: ${analyticsData.overview?.averageRating || 'N/A'}
+📈 Completion Rate: ${analyticsData.performance?.completionRate || 'N/A'}%`;
+
+      if (navigator.share) {
+        // Use native sharing API if available (mobile devices)
+        await navigator.share({
+          title: 'Analytics Report',
+          text: shareText,
+        });
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(shareText);
+        alert('Analytics summary copied to clipboard!');
+      }
+    } catch (error) {
+      console.error('Error sharing analytics:', error);
+      // Fallback: try copying to clipboard
+      try {
+        const shareText = `Analytics Summary - Revenue: ${analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue) : 'N/A'}, Bookings: ${analyticsData.overview?.totalBookings || 0}`;
+        await navigator.clipboard.writeText(shareText);
+        alert('Analytics summary copied to clipboard!');
+      } catch (clipboardError) {
+        alert('Unable to share analytics. Please try again.');
+      }
+    }
+  };
+
   // Load analytics data from API
   useEffect(() => {
     const loadAnalyticsData = async () => {
@@ -1183,19 +1292,28 @@ const SpecialistAnalytics: React.FC = () => {
         
         {/* Export & Actions */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button className="bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center">
+          <button 
+            onClick={handleExportPDF}
+            className="bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center"
+          >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             {t('analytics.exportPdfReport')}
           </button>
-          <button className="bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center">
+          <button 
+            onClick={handleExportCSV}
+            className="bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center"
+          >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             {t('analytics.exportCsvData')}
           </button>
-          <button className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center">
+          <button 
+            onClick={handleShareAnalytics}
+            className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center"
+          >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
             </svg>

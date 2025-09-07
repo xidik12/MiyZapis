@@ -9,18 +9,18 @@ const PrivacyPage: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-800">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Privacy Policy</h1>
-          <p className="text-lg text-gray-600">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">Privacy Policy</h1>
+          <p className="text-lg text-gray-600 dark:text-gray-400">
             Last updated: {lastUpdated}
           </p>
         </div>
 
-        <div className="prose prose-lg max-w-none">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-            <p className="text-blue-800 mb-0">
+        <div className="prose prose-lg dark:prose-invert max-w-none">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-8">
+            <p className="text-blue-800 dark:text-blue-200 mb-0">
               This Privacy Policy describes how {environment.APP_NAME} ("we", "our", or "us") 
               collects, uses, and protects your personal information when you use our service booking platform.
             </p>
@@ -138,15 +138,15 @@ const PrivacyPage: React.FC = () => {
             If you have questions about this Privacy Policy or our data practices, 
             please contact us at:
           </p>
-          <div className="bg-gray-50 rounded-lg p-6 mt-6">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 mt-6">
             <p className="mb-2"><strong>Email:</strong> privacy@{environment.APP_NAME.toLowerCase()}.com</p>
             <p className="mb-2"><strong>Address:</strong> 123 Privacy Street, Data City, DC 12345</p>
             <p className="mb-0"><strong>Phone:</strong> +1 (555) 123-4567</p>
           </div>
 
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mt-8">
-            <h3 className="text-yellow-800 font-semibold mb-2">Important Note</h3>
-            <p className="text-yellow-700 mb-0">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 mt-8">
+            <h3 className="text-yellow-800 dark:text-yellow-200 font-semibold mb-2">Important Note</h3>
+            <p className="text-yellow-700 dark:text-yellow-300 mb-0">
               By using {environment.APP_NAME}, you consent to the collection and use of 
               your information as described in this Privacy Policy. If you do not agree 
               with this policy, please do not use our services.
