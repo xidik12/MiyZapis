@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -63,6 +64,7 @@ const mapApiStatusToUIStatus = (apiStatus: string): 'upcoming' | 'completed' | '
 };
 
 const CustomerBookings: React.FC = () => {
+  const navigate = useNavigate();
   const { t } = useLanguage();
   const { theme } = useTheme();
   const { formatPrice } = useCurrency();
@@ -199,8 +201,32 @@ const CustomerBookings: React.FC = () => {
   };
 
   const handleBookAgain = (booking: Booking) => {
-    // In a real app, this would redirect to the service booking page
-    alert(`${t('common.book')} ${t('common.again')}: ${booking.serviceName}`);
+    const serviceName = booking.service?.name || booking.serviceName || 'this service';
+    const specialistName = booking.specialist?.firstName && booking.specialist?.lastName 
+      ? `${booking.specialist.firstName} ${booking.specialist.lastName}`
+      : booking.specialistName || 'the specialist';
+    
+    const confirmed = window.confirm(
+      `Would you like to book ${serviceName} with ${specialistName} again?`
+    );
+    
+    if (confirmed) {
+      // Get the service ID from the booking
+      const serviceId = booking.service?.id || booking.serviceId;
+      
+      if (serviceId) {
+        // Navigate to the booking flow with the service ID
+        navigate(`/booking/${serviceId}`);
+      } else {
+        // If no service ID, try to navigate using specialist ID
+        const specialistId = booking.specialist?.id || booking.specialistId;
+        if (specialistId) {
+          navigate(`/specialist/${specialistId}`);
+        } else {
+          alert(t('errors.serviceNotFound'));
+        }
+      }
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -430,7 +456,7 @@ const CustomerBookings: React.FC = () => {
                             className="inline-flex items-center px-3 py-1.5 border border-yellow-300 dark:border-yellow-600 shadow-sm text-xs font-medium rounded-md text-yellow-700 dark:text-yellow-400 bg-white dark:bg-gray-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
                           >
                             <StarIcon className="h-4 w-4 mr-1" />
-                            <span>{t('customer.bookings.leaveReview')}</span>
+                            <span className="hidden sm:inline">{t('customer.bookings.leaveReview')}</span>
                           </button>
                         )}
                         

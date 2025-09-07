@@ -100,14 +100,7 @@ export class BookingService {
         throw new Error('INVALID_DURATION');
       }
 
-      // Ensure duration is a multiple of 15 minutes for slot-based scheduling
-      if (bookingDuration % 15 !== 0) {
-        logger.warn('Booking duration not multiple of 15 minutes, rounding up', {
-          serviceId: data.serviceId,
-          originalDuration: bookingDuration,
-          roundedDuration: Math.ceil(bookingDuration / 15) * 15
-        });
-      }
+      // Duration can be any positive number of minutes
 
       // Validate customer exists
       const customer = await prisma.user.findUnique({

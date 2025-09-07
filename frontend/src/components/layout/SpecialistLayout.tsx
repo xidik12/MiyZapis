@@ -334,15 +334,15 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
           <button
             onClick={toggleTheme}
             className={`
-              flex items-center w-full px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200
+              flex items-center w-full px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
               text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700
               ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
             `}
           >
             {theme === 'dark' ? (
-              <SunIcon className="w-5 h-5" />
+              <SunIcon className="w-6 h-6 sm:w-5 sm:h-5" />
             ) : (
-              <MoonIcon className="w-5 h-5" />
+              <MoonIcon className="w-6 h-6 sm:w-5 sm:h-5" />
             )}
             {!isCollapsed && (
               <span>{theme === 'dark' ? t('theme.light') : t('theme.dark')}</span>
@@ -371,12 +371,12 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
           <button
             onClick={handleLogout}
             className={`
-              flex items-center w-full px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200
+              flex items-center w-full px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
               text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20
               ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
             `}
           >
-            <ArrowRightOnRectangleIcon className="w-5 h-5" />
+            <ArrowRightOnRectangleIcon className="w-6 h-6 sm:w-5 sm:h-5" />
             {!isCollapsed && <span>{t('auth.logout')}</span>}
           </button>
         </div>
@@ -388,7 +388,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
         <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 lg:px-6">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="lg:hidden p-3 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <Bars3Icon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
           </button>
@@ -400,7 +400,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
             {/* Settings */}
             <Link 
               to="/specialist/settings"
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="p-3 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <Cog6ToothIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
             </Link>
