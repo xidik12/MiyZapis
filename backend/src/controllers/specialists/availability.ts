@@ -875,7 +875,9 @@ export class AvailabilityController {
             end: endTime,
             dayName
           },
-          bookingsCount: existingBookings.length
+          bookingsCount: existingBookings.length,
+          lastUpdated: new Date().toISOString(), // Add timestamp for cache busting
+          cacheMaxAge: 30 // Suggest 30 second cache only
         })
       );
     } catch (error: any) {

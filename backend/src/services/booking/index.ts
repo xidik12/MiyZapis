@@ -133,80 +133,88 @@ export class BookingService {
         duration: bookingDuration
       });
 
-      // Find any existing bookings that overlap with the requested time slot
-      const existingBookings = await prisma.booking.findMany({
-        where: {
-          specialistId: service.specialist.userId, // Use User ID, not Specialist ID
-          status: {
-            in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'],
+      // Use a database transaction to prevent race conditions
+      const booking = await prisma.$transaction(async (tx) => {
+        // Find any existing bookings that overlap with the requested time slot
+        // Use FOR UPDATE to lock the rows and prevent concurrent modifications
+        const existingBookings = await tx.booking.findMany({
+          where: {
+            specialistId: service.specialist.userId, // Use User ID, not Specialist ID
+            status: {
+              in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'],
+            },
+            // Add time range filter to reduce the dataset
+            scheduledAt: {
+              gte: new Date(bookingStartTime.getTime() - (24 * 60 * 60 * 1000)), // 24 hours before
+              lte: new Date(bookingEndTime.getTime() + (24 * 60 * 60 * 1000)), // 24 hours after
+            }
           },
-        },
-        select: {
-          id: true,
-          scheduledAt: true,
-          duration: true,
-          status: true
+          select: {
+            id: true,
+            scheduledAt: true,
+            duration: true,
+            status: true
+          }
+        });
+
+        // Check for time overlap with any existing booking
+        const conflictingBooking = existingBookings.find(booking => {
+          const existingStart = new Date(booking.scheduledAt);
+          const existingEnd = new Date(existingStart.getTime() + (booking.duration * 60 * 1000));
+          
+          // Two time ranges overlap if: start1 < end2 && start2 < end1
+          const hasOverlap = bookingStartTime < existingEnd && existingStart < bookingEndTime;
+          
+          if (hasOverlap) {
+            logger.warn('Booking conflict detected', {
+              existingBookingId: booking.id,
+              existingStart: existingStart.toISOString(),
+              existingEnd: existingEnd.toISOString(),
+              requestedStart: bookingStartTime.toISOString(),
+              requestedEnd: bookingEndTime.toISOString()
+            });
+          }
+          
+          return hasOverlap;
+        });
+
+        if (conflictingBooking) {
+          throw new Error('TIME_SLOT_NOT_AVAILABLE');
         }
-      });
 
-      // Check for time overlap with any existing booking
-      const conflictingBooking = existingBookings.find(booking => {
-        const existingStart = new Date(booking.scheduledAt);
-        const existingEnd = new Date(existingStart.getTime() + (booking.duration * 60 * 1000));
-        
-        // Two time ranges overlap if: start1 < end2 && start2 < end1
-        const hasOverlap = bookingStartTime < existingEnd && existingStart < bookingEndTime;
-        
-        if (hasOverlap) {
-          logger.warn('Booking conflict detected', {
-            existingBookingId: booking.id,
-            existingStart: existingStart.toISOString(),
-            existingEnd: existingEnd.toISOString(),
-            requestedStart: bookingStartTime.toISOString(),
-            requestedEnd: bookingEndTime.toISOString()
-          });
+        // Calculate pricing
+        const baseAmount = service.basePrice;
+        const loyaltyPointsUsed = data.loyaltyPointsUsed || 0;
+        const loyaltyDiscount = loyaltyPointsUsed * 0.01; // 1 point = $0.01
+        const totalAmount = Math.max(0, baseAmount - loyaltyDiscount);
+        const depositAmount = totalAmount * 0.2; // 20% deposit
+        const remainingAmount = totalAmount - depositAmount;
+
+        // Check if customer has enough loyalty points
+        if (loyaltyPointsUsed > 0 && customer.loyaltyPoints < loyaltyPointsUsed) {
+          throw new Error('INSUFFICIENT_LOYALTY_POINTS');
         }
+
+        // Determine initial booking status based on specialist's auto-booking setting
+        const initialStatus = service.specialist.autoBooking ? 'CONFIRMED' : 'PENDING';
         
-        return hasOverlap;
-      });
-
-      if (conflictingBooking) {
-        throw new Error('TIME_SLOT_NOT_AVAILABLE');
-      }
-
-      // Calculate pricing
-      const baseAmount = service.basePrice;
-      const loyaltyPointsUsed = data.loyaltyPointsUsed || 0;
-      const loyaltyDiscount = loyaltyPointsUsed * 0.01; // 1 point = $0.01
-      const totalAmount = Math.max(0, baseAmount - loyaltyDiscount);
-      const depositAmount = totalAmount * 0.2; // 20% deposit
-      const remainingAmount = totalAmount - depositAmount;
-
-      // Check if customer has enough loyalty points
-      if (loyaltyPointsUsed > 0 && customer.loyaltyPoints < loyaltyPointsUsed) {
-        throw new Error('INSUFFICIENT_LOYALTY_POINTS');
-      }
-
-      // Determine initial booking status based on specialist's auto-booking setting
-      const initialStatus = service.specialist.autoBooking ? 'CONFIRMED' : 'PENDING';
-      
-      // Create booking
-      const booking = await prisma.booking.create({
-        data: {
-          customerId: data.customerId,
-          specialistId: service.specialist.userId, // Use the User ID, not the Specialist ID
-          serviceId: data.serviceId,
-          scheduledAt: data.scheduledAt,
-          duration: bookingDuration,
-          totalAmount,
-          depositAmount,
-          remainingAmount,
-          loyaltyPointsUsed,
-          customerNotes: data.customerNotes,
-          deliverables: JSON.stringify([]), // Empty deliverables initially
-          status: initialStatus, // Auto-booking: CONFIRMED if autoBooking enabled, otherwise PENDING
-          confirmedAt: service.specialist.autoBooking ? new Date() : null, // Auto-confirm if auto-booking
-        },
+        // Create booking within the transaction
+        const createdBooking = await tx.booking.create({
+          data: {
+            customerId: data.customerId,
+            specialistId: service.specialist.userId, // Use the User ID, not the Specialist ID
+            serviceId: data.serviceId,
+            scheduledAt: data.scheduledAt,
+            duration: bookingDuration,
+            totalAmount,
+            depositAmount,
+            remainingAmount,
+            loyaltyPointsUsed,
+            customerNotes: data.customerNotes,
+            deliverables: JSON.stringify([]), // Empty deliverables initially
+            status: initialStatus, // Auto-booking: CONFIRMED if autoBooking enabled, otherwise PENDING
+            confirmedAt: service.specialist.autoBooking ? new Date() : null, // Auto-confirm if auto-booking
+          },
         include: {
           customer: {
             select: {
@@ -254,31 +262,34 @@ export class BookingService {
             },
           },
         },
-      });
+        });
 
-      // Deduct loyalty points if used
-      if (loyaltyPointsUsed > 0) {
-        await prisma.user.update({
-          where: { id: data.customerId },
-          data: {
-            loyaltyPoints: {
-              decrement: loyaltyPointsUsed,
+        // Deduct loyalty points if used - within transaction
+        if (loyaltyPointsUsed > 0) {
+          await tx.user.update({
+            where: { id: data.customerId },
+            data: {
+              loyaltyPoints: {
+                decrement: loyaltyPointsUsed,
+              },
             },
-          },
-        });
+          });
 
-        // Create loyalty transaction record
-        await prisma.loyaltyTransaction.create({
-          data: {
-            userId: data.customerId,
-            type: 'REDEEMED',
-            points: -loyaltyPointsUsed,
-            reason: 'Booking payment',
-            description: `Redeemed ${loyaltyPointsUsed} points for booking ${booking.id}`,
-            referenceId: booking.id,
-          },
-        });
-      }
+          // Create loyalty transaction record
+          await tx.loyaltyTransaction.create({
+            data: {
+              userId: data.customerId,
+              type: 'REDEEMED',
+              points: -loyaltyPointsUsed,
+              reason: 'Booking payment',
+              description: `Redeemed ${loyaltyPointsUsed} points for booking`,
+              referenceId: createdBooking.id,
+            },
+          });
+        }
+
+        return createdBooking;
+      });
 
       // Send appropriate notifications based on auto-booking setting
       try {
