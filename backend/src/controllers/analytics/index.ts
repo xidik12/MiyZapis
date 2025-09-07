@@ -480,12 +480,12 @@ export class AnalyticsController {
 
         // Get views by day for trend data using safe query
         const viewsByDay = await prisma.$queryRaw`
-          SELECT DATE(created_at) as date, COUNT(*) as count
-          FROM profile_views 
-          WHERE specialist_id = ${userId} 
-          AND created_at >= ${startDate}
-          GROUP BY DATE(created_at)
-          ORDER BY DATE(created_at)
+          SELECT DATE("createdAt") as date, COUNT(*) as count
+          FROM "ProfileView" 
+          WHERE "specialistId" = ${userId} 
+          AND "createdAt" >= ${startDate}
+          GROUP BY DATE("createdAt")
+          ORDER BY DATE("createdAt")
         `;
 
         // Calculate growth compared to previous period
@@ -510,9 +510,17 @@ export class AnalyticsController {
         return successResponse(res, stats, 'Profile view statistics retrieved successfully');
       } catch (dbError: any) {
         // If ProfileView table doesn't exist yet, return default stats
-        if (dbError.code === 'P2021' || dbError.message?.includes('does not exist') || 
-            dbError.message?.includes('ProfileView') || dbError.message?.includes('profile_views')) {
-          logger.warn('ProfileView table not found, returning default stats');
+        if (dbError.code === 'P2021' || dbError.code === 'P2010' || 
+            dbError.message?.includes('does not exist') || 
+            dbError.message?.includes('ProfileView') || 
+            dbError.message?.includes('profile_views') ||
+            dbError.message?.includes('column') ||
+            dbError.meta?.code === '42703') {
+          logger.warn('ProfileView table or columns not found, returning default stats', { 
+            error: dbError.message, 
+            code: dbError.code,
+            meta: dbError.meta 
+          });
           
           const defaultStats = {
             totalViews: 0,
