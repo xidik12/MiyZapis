@@ -38,6 +38,19 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
   const [hoverRating, setHoverRating] = useState(0);
 
   const availableTags = [
+    'professional',
+    'punctual', 
+    'friendly',
+    'skilled',
+    'clean',
+    'affordable',
+    'quick',
+    'thorough',
+    'communicative',
+    'reliable'
+  ];
+
+  const displayTags = [
     'Professional',
     'Punctual',
     'Friendly',
@@ -76,7 +89,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
     }
   };
 
-  const toggleTag = (tag: string) => {
+  const toggleTag = (tag: string, displayTag: string) => {
     setSelectedTags(prev =>
       prev.includes(tag)
         ? prev.filter(t => t !== tag)
@@ -92,13 +105,13 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className={`relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 max-w-lg shadow-lg rounded-md ${
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-start justify-center p-4">
+      <div className={`relative w-full max-w-lg shadow-lg rounded-md ${
         theme === 'dark' 
           ? 'bg-gray-800 border-gray-600' 
           : 'bg-white border-gray-300'
-      }`}>
-        <div className="mt-3">
+      } my-8 mx-auto`} style={{ marginTop: 'max(2rem, 5vh)' }}>
+        <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className={`text-lg font-medium ${
               theme === 'dark' ? 'text-gray-100' : 'text-gray-900'
@@ -189,11 +202,11 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                 {t('reviews.tags')}
               </label>
               <div className="flex flex-wrap gap-2">
-                {availableTags.map((tag) => (
+                {availableTags.map((tag, index) => (
                   <button
                     key={tag}
                     type="button"
-                    onClick={() => toggleTag(tag)}
+                    onClick={() => toggleTag(tag, displayTags[index])}
                     disabled={loading}
                     className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                       selectedTags.includes(tag)
@@ -203,7 +216,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                           : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
                     }`}
                   >
-                    {tag}
+                    {displayTags[index]}
                   </button>
                 ))}
               </div>
