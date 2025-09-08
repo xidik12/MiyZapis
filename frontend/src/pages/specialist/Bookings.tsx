@@ -625,6 +625,9 @@ const SpecialistBookings: React.FC = () => {
       
       if (updateBookingStatus.fulfilled.match(result)) {
         console.log('✅ Booking status updated successfully');
+        // Refresh bookings so the item moves between status groups without manual reload
+        const userType = activeTab === 'provider' ? 'specialist' : 'customer';
+        dispatch(fetchBookings({ filters: {}, userType }));
         // Optionally show a success toast here
       } else {
         console.error('❌ Failed to update booking status:', result.payload);
