@@ -1,5 +1,4 @@
 import React from 'react';
-import { useTheme } from '@/contexts/ThemeContext';
 
 interface FullScreenHandshakeLoaderProps {
   title?: string;
@@ -15,9 +14,19 @@ export const FullScreenHandshakeLoader: React.FC<FullScreenHandshakeLoaderProps>
   lightGifSrc,
   darkGifSrc,
 }) => {
-  const { theme } = useTheme();
   const [imgFailed, setImgFailed] = React.useState(false);
-  const gifSrc = theme === 'dark' ? darkGifSrc : lightGifSrc;
+  // Safe theme detection without requiring ThemeProvider
+  const isDark = (() => {
+    try {
+      const root = document.documentElement;
+      if (root.classList.contains('dark')) return true;
+      // fallback to system preference
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    } catch {
+      return false;
+    }
+  })();
+  const gifSrc = isDark ? darkGifSrc : lightGifSrc;
   return (
     <div
       className="fixed inset-0 z-40 flex items-center justify-center overflow-hidden"
