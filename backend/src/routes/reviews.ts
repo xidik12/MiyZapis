@@ -188,6 +188,11 @@ router.post('/', authenticateToken, validateCreateReview, async (req: Request, r
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      logger.error('Review validation failed:', {
+        errors: errors.array(),
+        body: req.body,
+        userId: (req as AuthenticatedRequest).user?.id
+      });
       return res.status(400).json(
         createErrorResponse(
           ErrorCodes.VALIDATION_ERROR,
