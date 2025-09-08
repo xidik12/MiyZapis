@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
@@ -878,16 +879,8 @@ const SpecialistProfile: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">
-            {language === 'uk' ? 'Завантаження профілю...' : language === 'ru' ? 'Загрузка профиля...' : 'Loading profile...'}
-          </p>
-        </div>
-      </div>
-    );
+    const subtitle = language === 'uk' ? 'Завантаження профілю' : language === 'ru' ? 'Загрузка профиля' : 'Fetching your profile';
+    return <FullScreenHandshakeLoader title={t('common.loading')} subtitle={subtitle} />;
   }
 
   const completionPercentage = getProfileCompletion();

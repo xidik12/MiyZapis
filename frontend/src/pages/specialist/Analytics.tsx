@@ -16,6 +16,7 @@ import { specialistService } from '../../services/specialist.service';
 import { reviewsService } from '../../services/reviews.service';
 import { profileViewService, ProfileViewStats } from '../../services/profileView.service';
 import { retryRequest } from '../../services/api';
+import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 
 // Combined analytics data structure
 interface AnalyticsData {
@@ -893,19 +894,7 @@ Performance:
   
   // Loading component
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center min-h-96">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Loading Analytics</h3>
-              <p className="text-gray-600 dark:text-gray-300">Please wait while we fetch your performance data...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <FullScreenHandshakeLoader title={t('common.loading')} subtitle={t('dashboard.specialist.analytics')} />;
   }
   
   // Error component

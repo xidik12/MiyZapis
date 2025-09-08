@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { messagesService, Conversation, Message } from '../../services/messages.service';
 import { 
@@ -188,13 +189,7 @@ const SpecialistMessages: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="p-6 max-w-7xl mx-auto">
-        <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent"></div>
-        </div>
-      </div>
-    );
+    return <FullScreenHandshakeLoader title={t('common.loading')} subtitle={t('dashboard.nav.messages')} />;
   }
 
   return (
