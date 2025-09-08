@@ -15,6 +15,7 @@ export const FullScreenHandshakeLoader: React.FC<FullScreenHandshakeLoaderProps>
   darkGifSrc,
 }) => {
   const [imgFailed, setImgFailed] = React.useState(false);
+  const [candidateIndex, setCandidateIndex] = React.useState(0);
   // Safe theme detection without requiring ThemeProvider
   const isDark = (() => {
     try {
@@ -26,7 +27,10 @@ export const FullScreenHandshakeLoader: React.FC<FullScreenHandshakeLoaderProps>
       return false;
     }
   })();
-  const gifSrc = isDark ? darkGifSrc : lightGifSrc;
+  const candidates = isDark
+    ? [darkGifSrc, '/assets/loader/handshake-dark.gif', '/handshake-dark.gif']
+    : [lightGifSrc, '/assets/loader/handshake-light.gif', '/handshake-light.gif'];
+  const gifSrc = candidates[candidateIndex];
   return (
     <div
       className="fixed inset-0 z-40 flex items-center justify-center overflow-hidden"
@@ -46,7 +50,14 @@ export const FullScreenHandshakeLoader: React.FC<FullScreenHandshakeLoaderProps>
             src={gifSrc}
             alt="Connecting"
             className="mb-6 w-28 h-28 sm:w-36 sm:h-36 object-contain animate-fade-in"
-            onError={() => setImgFailed(true)}
+            onError={() => {
+              // Try next candidate path; if none left, fall back to circles
+              if (candidateIndex < candidates.length - 1) {
+                setCandidateIndex(i => i + 1);
+              } else {
+                setImgFailed(true);
+              }
+            }}
           />
         ) : (
           <div className="relative flex items-center justify-center mb-6">
@@ -69,9 +80,12 @@ export const FullScreenHandshakeLoader: React.FC<FullScreenHandshakeLoaderProps>
         <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100 animate-fade-in">
           {title}
         </h2>
-        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 animate-fade-in" style={{ animationDelay: '80ms' }}>
-          {subtitle}
-        </p>
+        {subtitle && (
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 animate-fade-in" style={{ animationDelay: '80ms' }}>
+            {/* Hide raw i18n keys (when provider not ready) and show friendly fallback */}
+            {subtitle.includes('.') ? 'Please wait…' : subtitle}
+          </p>
+        )}
       </div>
     </div>
   );

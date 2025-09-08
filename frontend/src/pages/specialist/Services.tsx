@@ -127,7 +127,7 @@ const SpecialistServices: React.FC = () => {
         if (!specialistId) return;
 
         // Load up to 200 recent reviews and compute per-service averages
-        const { reviews } = await reviewsService.getSpecialistReviews(specialistId, 1, 200);
+        const { reviews } = await reviewsService.getSpecialistReviews(specialistId, 1, 100);
         if (!reviews || reviews.length === 0) return;
 
         const perService: Record<string, { sum: number; count: number }> = {};
