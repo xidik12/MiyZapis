@@ -26,14 +26,23 @@ export const validateCreateReview = [
     .withMessage('Valid booking ID is required'),
   
   body('rating')
+    .isNumeric()
+    .toInt()
     .isInt({ min: 1, max: 5 })
     .withMessage('Rating must be between 1 and 5'),
   
   body('comment')
-    .optional()
+    .optional({ nullable: true })
     .trim()
-    .isLength({ min: 1, max: 1000 })
-    .withMessage('Comment must be between 1 and 1000 characters'),
+    .custom((value) => {
+      if (value === null || value === undefined || value === '') {
+        return true; // Allow empty/null comments
+      }
+      if (value.length < 1 || value.length > 1000) {
+        throw new Error('Comment must be between 1 and 1000 characters');
+      }
+      return true;
+    }),
   
   body('tags')
     .optional()
@@ -41,7 +50,7 @@ export const validateCreateReview = [
     .withMessage('Tags must be an array')
     .custom((value) => {
       if (Array.isArray(value)) {
-        const validTags = value.every(tag => (REVIEW_TAGS as readonly string[]).includes(tag));
+        const validTags = value.every(tag => (REVIEW_TAGS as readonly string[]).includes(tag.toLowerCase()));
         if (!validTags) {
           throw new Error(`Tags must be valid options: ${REVIEW_TAGS.join(', ')}`);
         }
@@ -75,10 +84,17 @@ export const validateUpdateReview = [
     .withMessage('Rating must be between 1 and 5'),
   
   body('comment')
-    .optional()
+    .optional({ nullable: true })
     .trim()
-    .isLength({ min: 1, max: 1000 })
-    .withMessage('Comment must be between 1 and 1000 characters'),
+    .custom((value) => {
+      if (value === null || value === undefined || value === '') {
+        return true; // Allow empty/null comments
+      }
+      if (value.length < 1 || value.length > 1000) {
+        throw new Error('Comment must be between 1 and 1000 characters');
+      }
+      return true;
+    }),
   
   body('tags')
     .optional()
@@ -86,7 +102,7 @@ export const validateUpdateReview = [
     .withMessage('Tags must be an array')
     .custom((value) => {
       if (Array.isArray(value)) {
-        const validTags = value.every(tag => (REVIEW_TAGS as readonly string[]).includes(tag));
+        const validTags = value.every(tag => (REVIEW_TAGS as readonly string[]).includes(tag.toLowerCase()));
         if (!validTags) {
           throw new Error(`Tags must be valid options: ${REVIEW_TAGS.join(', ')}`);
         }
