@@ -191,7 +191,8 @@ router.post('/', authenticateToken, validateCreateReview, async (req: Request, r
       logger.error('Review validation failed:', {
         errors: errors.array(),
         body: req.body,
-        userId: (req as AuthenticatedRequest).user?.id
+        userId: (req as AuthenticatedRequest).user?.id,
+        headers: req.headers
       });
       return res.status(400).json(
         createErrorResponse(
@@ -202,6 +203,12 @@ router.post('/', authenticateToken, validateCreateReview, async (req: Request, r
         )
       );
     }
+
+    // Add debug logging for successful validation  
+    logger.info('Review validation passed:', {
+      body: req.body,
+      userId: (req as AuthenticatedRequest).user?.id
+    });
 
     const userId = (req as AuthenticatedRequest).user?.id;
     const {

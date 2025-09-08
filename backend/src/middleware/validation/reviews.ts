@@ -1,5 +1,10 @@
 import { body, param, query } from 'express-validator';
 
+// CUID validation helper
+const isCUID = (value: string) => {
+  return /^c[a-z0-9]{24}$/.test(value);
+};
+
 // Review tags that are commonly used
 const REVIEW_TAGS = [
   'professional',
@@ -22,7 +27,13 @@ const REVIEW_TAGS = [
 // Create review validation
 export const validateCreateReview = [
   body('bookingId')
-    .isUUID()
+    .custom((value) => {
+      // CUID format validation: starts with 'c' and contains alphanumeric characters
+      if (!/^c[a-z0-9]{24}$/.test(value)) {
+        throw new Error('Valid booking ID is required');
+      }
+      return true;
+    })
     .withMessage('Valid booking ID is required'),
   
   body('rating')
@@ -75,7 +86,12 @@ export const validateCreateReview = [
 // Update review validation
 export const validateUpdateReview = [
   param('id')
-    .isUUID()
+    .custom((value) => {
+      if (!isCUID(value)) {
+        throw new Error('Valid review ID is required');
+      }
+      return true;
+    })
     .withMessage('Valid review ID is required'),
   
   body('rating')
@@ -127,7 +143,12 @@ export const validateUpdateReview = [
 // Get service reviews validation
 export const validateGetServiceReviews = [
   param('id')
-    .isUUID()
+    .custom((value) => {
+      if (!isCUID(value)) {
+        throw new Error('Valid service ID is required');
+      }
+      return true;
+    })
     .withMessage('Valid service ID is required'),
   
   query('page')
@@ -224,21 +245,36 @@ export const validateGetSpecialistReviews = [
   
   query('serviceId')
     .optional()
-    .isUUID()
+    .custom((value) => {
+      if (value && !isCUID(value)) {
+        throw new Error('Valid service ID is required');
+      }
+      return true;
+    })
     .withMessage('Valid service ID is required'),
 ];
 
 // Review ID param validation
 export const validateReviewId = [
   param('id')
-    .isUUID()
+    .custom((value) => {
+      if (!isCUID(value)) {
+        throw new Error('Valid review ID is required');
+      }
+      return true;
+    })
     .withMessage('Valid review ID is required'),
 ];
 
 // Mark review as helpful validation
 export const validateMarkReviewHelpful = [
   param('id')
-    .isUUID()
+    .custom((value) => {
+      if (!isCUID(value)) {
+        throw new Error('Valid review ID is required');
+      }
+      return true;
+    })
     .withMessage('Valid review ID is required'),
   
   body('helpful')
@@ -249,7 +285,12 @@ export const validateMarkReviewHelpful = [
 // Report review validation
 export const validateReportReview = [
   param('id')
-    .isUUID()
+    .custom((value) => {
+      if (!isCUID(value)) {
+        throw new Error('Valid review ID is required');
+      }
+      return true;
+    })
     .withMessage('Valid review ID is required'),
   
   body('reason')
@@ -266,7 +307,12 @@ export const validateReportReview = [
 // Respond to review validation (specialist response)
 export const validateRespondToReview = [
   param('id')
-    .isUUID()
+    .custom((value) => {
+      if (!isCUID(value)) {
+        throw new Error('Valid review ID is required');
+      }
+      return true;
+    })
     .withMessage('Valid review ID is required'),
   
   body('response')
@@ -282,9 +328,9 @@ export const validateGetBulkReviews = [
     .custom((value) => {
       if (typeof value === 'string') {
         const ids = value.split(',');
-        const validIds = ids.every(id => id.match(/^[a-f\d]{8}-[a-f\d]{4}-4[a-f\d]{3}-[89aAbB][a-f\d]{3}-[a-f\d]{12}$/));
+        const validIds = ids.every(id => isCUID(id.trim()));
         if (!validIds) {
-          throw new Error('All specialist IDs must be valid UUIDs');
+          throw new Error('All specialist IDs must be valid CUIDs');
         }
         if (ids.length > 100) {
           throw new Error('Maximum 100 specialist IDs allowed');
@@ -298,9 +344,9 @@ export const validateGetBulkReviews = [
     .custom((value) => {
       if (typeof value === 'string') {
         const ids = value.split(',');
-        const validIds = ids.every(id => id.match(/^[a-f\d]{8}-[a-f\d]{4}-4[a-f\d]{3}-[89aAbB][a-f\d]{3}-[a-f\d]{12}$/));
+        const validIds = ids.every(id => isCUID(id.trim()));
         if (!validIds) {
-          throw new Error('All service IDs must be valid UUIDs');
+          throw new Error('All service IDs must be valid CUIDs');
         }
         if (ids.length > 100) {
           throw new Error('Maximum 100 service IDs allowed');
