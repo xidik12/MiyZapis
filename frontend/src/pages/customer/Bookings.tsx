@@ -169,12 +169,11 @@ const CustomerBookings: React.FC = () => {
 
       const createData: CreateReviewData = {
         bookingId: bookingToReview.id,
-        specialistId: bookingToReview.specialist?.id || bookingToReview.specialistId || '',
-        serviceId: bookingToReview.service?.id || bookingToReview.serviceId || undefined,
         rating: reviewData.rating,
         comment: reviewData.comment || undefined,
         tags: validTags.length > 0 ? validTags : undefined,
-        isRecommended: reviewData.rating >= 4
+        isPublic: true,
+        wouldRecommend: reviewData.rating >= 4
       };
 
       await reviewsService.createReview(createData);
@@ -456,6 +455,7 @@ const CustomerBookings: React.FC = () => {
                             className="inline-flex items-center px-3 py-1.5 border border-yellow-300 dark:border-yellow-600 shadow-sm text-xs font-medium rounded-md text-yellow-700 dark:text-yellow-400 bg-white dark:bg-gray-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
                           >
                             <StarIcon className="h-4 w-4 mr-1" />
+                            <span className="sm:hidden">Review</span>
                             <span className="hidden sm:inline">{t('customer.bookings.leaveReview')}</span>
                           </button>
                         )}

@@ -53,13 +53,12 @@ export interface ReviewStats {
 }
 
 export interface CreateReviewData {
-  serviceId?: string;
-  specialistId: string;
   bookingId: string;
   rating: number;
   comment?: string;
   tags?: string[];
-  isRecommended?: boolean;
+  isPublic?: boolean;
+  wouldRecommend?: boolean;
 }
 
 export interface UpdateReviewData {

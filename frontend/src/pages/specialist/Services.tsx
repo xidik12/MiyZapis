@@ -178,10 +178,13 @@ const SpecialistServices: React.FC = () => {
   };
 
   const openEditModal = (service: Service) => {
+    console.log('🔧 Opening edit modal for service:', service);
+    console.log('⏰ Service duration value:', service.duration);
+    
     // Check if the service category exists in our loaded categories
     const existingCategory = categories.find(cat => cat.id === service.category || cat.name === service.category);
     
-    setFormData({
+    const formDataToSet = {
       name: service.name,
       description: service.description,
       category: existingCategory ? existingCategory.id : '',
@@ -189,7 +192,12 @@ const SpecialistServices: React.FC = () => {
       currency: service.currency || 'UAH',
       duration: service.duration.toString(),
       isActive: service.isActive
-    });
+    };
+    
+    console.log('📝 Form data being set:', formDataToSet);
+    console.log('⏰ Duration in form data:', formDataToSet.duration);
+    
+    setFormData(formDataToSet);
     
     // If category doesn't exist in our list, show it as custom
     if (!existingCategory) {
@@ -260,6 +268,10 @@ const SpecialistServices: React.FC = () => {
       ? customCategory.trim()
       : formData.category;
 
+    console.log('📋 Form data before submission:', formData);
+    console.log('⏰ Duration from form:', formData.duration, typeof formData.duration);
+    console.log('⏰ Duration parsed as int:', parseInt(formData.duration));
+    
     const serviceData = {
       name: formData.name,
       description: formData.description,
@@ -276,15 +288,24 @@ const SpecialistServices: React.FC = () => {
       minAdvanceBooking: 1
     };
     
+    console.log('🚀 Service data being sent to backend:', serviceData);
+    console.log('⏰ Duration in service data:', serviceData.duration);
+    
     try {
       let updatedService;
       if (editingService) {
+        console.log('📝 Updating existing service:', editingService.id);
         updatedService = await specialistService.updateService(editingService.id, serviceData);
+        console.log('✅ Service updated, response from backend:', updatedService);
+        console.log('⏰ Duration in updated service:', updatedService.duration);
         setServices(prev => prev.map(service => 
           service.id === editingService.id ? updatedService : service
         ));
       } else {
+        console.log('🆕 Creating new service');
         updatedService = await specialistService.createService(serviceData);
+        console.log('✅ Service created, response from backend:', updatedService);
+        console.log('⏰ Duration in created service:', updatedService.duration);
         setServices(prev => [updatedService, ...prev]);
       }
       closeModal();
