@@ -27,6 +27,8 @@ import {
   ChatBubbleLeftRightIcon,
   MagnifyingGlassIcon,
   ArrowRightOnRectangleIcon,
+  HomeIcon,
+  PresentationChartLineIcon,
 } from '@heroicons/react/24/outline';
 import { ChartBarIcon as ChartBarIconSolid } from '@heroicons/react/24/solid';
 
@@ -49,8 +51,8 @@ const navigation: SidebarNavItem[] = [
     name: 'Dashboard',
     nameUk: 'Панель керування',
     href: '/specialist/dashboard',
-    icon: ChartBarIcon,
-    iconActive: ChartBarIconSolid,
+    icon: HomeIcon,
+    iconActive: HomeIcon,
   },
   {
     name: 'Find Services',
@@ -84,8 +86,8 @@ const navigation: SidebarNavItem[] = [
     name: 'Analytics',
     nameUk: 'Аналітика',
     href: '/specialist/analytics',
-    icon: ChartBarIcon,
-    iconActive: ChartBarIcon,
+    icon: PresentationChartLineIcon,
+    iconActive: PresentationChartLineIcon,
   },
   {
     name: 'Earnings',
@@ -330,19 +332,20 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
 
         {/* Bottom controls */}
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
-          {/* Theme toggle */}
+          {/* Theme toggle (larger touch target on mobile) */}
           <button
             onClick={toggleTheme}
             className={`
               flex items-center w-full px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
-              text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700
+              text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 mobile-touch-target
               ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
             `}
+            aria-label={theme === 'dark' ? t('theme.light') : t('theme.dark')}
           >
             {theme === 'dark' ? (
-              <SunIcon className="w-6 h-6 sm:w-5 sm:h-5" />
+              <SunIcon className="w-7 h-7 sm:w-6 sm:h-6" />
             ) : (
-              <MoonIcon className="w-6 h-6 sm:w-5 sm:h-5" />
+              <MoonIcon className="w-7 h-7 sm:w-6 sm:h-6" />
             )}
             {!isCollapsed && (
               <span>{theme === 'dark' ? t('theme.light') : t('theme.dark')}</span>
@@ -367,16 +370,16 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
             </div>
           )}
 
-          {/* Logout button */}
+          {/* Logout button (larger touch target on mobile) */}
           <button
             onClick={handleLogout}
             className={`
               flex items-center w-full px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
-              text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20
+              text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 mobile-touch-target
               ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
             `}
           >
-            <ArrowRightOnRectangleIcon className="w-6 h-6 sm:w-5 sm:h-5" />
+            <ArrowRightOnRectangleIcon className="w-7 h-7 sm:w-6 sm:h-6" />
             {!isCollapsed && <span>{t('auth.logout')}</span>}
           </button>
         </div>
