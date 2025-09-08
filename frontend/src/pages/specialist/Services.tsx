@@ -9,6 +9,8 @@ import { isFeatureEnabled } from '../../config/features';
 import { FloatingElements, UkrainianOrnament } from '../../components/ui/UkrainianElements';
 import { CategoryDropdown } from '../../components/ui/CategoryDropdown';
 import { ServiceCategory } from '../../types';
+import { specialistService } from '../../services/specialist.service';
+import { reviewsService } from '../../services/reviews.service';
 
 interface Service {
   id: string;
@@ -113,6 +115,47 @@ const SpecialistServices: React.FC = () => {
 
     loadCategories();
   }, []);
+
+  // Enhance services with real ratings from reviews (specialist-wide), then map to services
+  useEffect(() => {
+    const enhanceRatings = async () => {
+      if (!services || services.length === 0) return;
+      try {
+        // Get current specialist ID
+        const profile = await specialistService.getProfile();
+        const specialistId = (profile as any)?.id || (profile as any)?.specialist?.id;
+        if (!specialistId) return;
+
+        // Load up to 200 recent reviews and compute per-service averages
+        const { reviews } = await reviewsService.getSpecialistReviews(specialistId, 1, 200);
+        if (!reviews || reviews.length === 0) return;
+
+        const perService: Record<string, { sum: number; count: number }> = {};
+        reviews.forEach(r => {
+          const sid = r.booking?.service?.id || r.service?.id || r.service?.name || r.booking?.service?.name;
+          if (!sid || typeof r.rating !== 'number') return;
+          if (!perService[sid]) perService[sid] = { sum: 0, count: 0 };
+          perService[sid].sum += r.rating;
+          perService[sid].count += 1;
+        });
+
+        // Apply to services by matching id first, then name
+        setServices(prev => prev.map(s => {
+          const keyById = perService[s.id];
+          const keyByName = perService[s.name];
+          const entry = keyById || keyByName;
+          if (entry && entry.count > 0) {
+            return { ...s, rating: +(entry.sum / entry.count).toFixed(1) } as any;
+          }
+          return s;
+        }));
+      } catch (e) {
+        console.warn('Unable to enhance service ratings from reviews:', e);
+      }
+    };
+
+    enhanceRatings();
+  }, [services.length]);
   
   // Form state
   const [formData, setFormData] = useState({
