@@ -174,27 +174,39 @@ export class ReviewsService {
     pagination: Pagination;
     stats: ReviewStats;
   }> {
-    // Note: This endpoint doesn't exist in backend, so we'll return empty data
-    // The specialist needs to use getSpecialistReviews with their own specialistId
-    // For now, return empty data to prevent 404 errors
-    return {
-      reviews: [],
-      pagination: {
-        currentPage: page,
-        totalPages: 0,
-        totalItems: 0,
-        itemsPerPage: limit,
-        hasNextPage: false,
-        hasPreviousPage: false,
-      },
-      stats: {
-        totalReviews: 0,
-        averageRating: 0,
-        ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
-        verifiedReviewsCount: 0,
-        recommendationRate: 0,
+    try {
+      // Get current specialist profile first
+      const profileResponse = await apiClient.get<any>('/specialists/profile');
+      if (!profileResponse.success || !profileResponse.data) {
+        throw new Error('Failed to get specialist profile');
       }
-    };
+      
+      const specialistId = profileResponse.data.id;
+      
+      // Now get reviews using the specialist ID
+      return await this.getSpecialistReviews(specialistId, page, limit);
+    } catch (error) {
+      console.error('Error getting received reviews:', error);
+      // Return empty data if there's an error
+      return {
+        reviews: [],
+        pagination: {
+          currentPage: page,
+          totalPages: 0,
+          totalItems: 0,
+          itemsPerPage: limit,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+        stats: {
+          totalReviews: 0,
+          averageRating: 0,
+          ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+          verifiedReviewsCount: 0,
+          recommendationRate: 0,
+        }
+      };
+    }
   }
 
   // Create a new review

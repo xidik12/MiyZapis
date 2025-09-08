@@ -3,6 +3,7 @@ import { StarIcon, ChatBubbleLeftIcon, UserIcon, HeartIcon, FlagIcon, Exclamatio
 import { StarIcon as StarIconSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { reviewsService, Review, ReviewStats } from '../../services/reviews.service';
+import { specialistService } from '../../services/specialist.service';
 
 const SpecialistReviews: React.FC = () => {
   const { t, language } = useLanguage();
@@ -10,6 +11,7 @@ const SpecialistReviews: React.FC = () => {
   const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [specialistId, setSpecialistId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [filters, setFilters] = useState({
@@ -23,14 +25,56 @@ const SpecialistReviews: React.FC = () => {
   const [responseText, setResponseText] = useState('');
   const [submittingResponse, setSubmittingResponse] = useState(false);
 
+  // Load specialist profile to get specialist ID
+  useEffect(() => {
+    const loadSpecialistProfile = async () => {
+      try {
+        console.log('🔍 [Reviews] Loading specialist profile...');
+        const profile = await specialistService.getProfile();
+        console.log('✅ [Reviews] Specialist profile loaded:', profile);
+        console.log('🆔 [Reviews] Specialist ID:', profile.id);
+        setSpecialistId(profile.id);
+      } catch (err: any) {
+        console.error('❌ [Reviews] Error loading specialist profile:', err);
+        setError(err.message || 'Failed to load specialist profile');
+      }
+    };
+
+    loadSpecialistProfile();
+  }, []);
+
   // Load reviews
   useEffect(() => {
     const loadReviews = async () => {
+      // Don't load reviews until we have the specialist ID
+      if (!specialistId) {
+        console.log('⏳ [Reviews] Waiting for specialist ID...');
+        return;
+      }
+      
       try {
+        console.log('📊 [Reviews] Loading reviews for specialist:', specialistId);
+        console.log('📄 [Reviews] Parameters:', { page, filters });
         setLoading(true);
         setError(null);
         
-        const response = await reviewsService.getReceivedReviews(page, 20);
+        const response = await reviewsService.getSpecialistReviews(
+          specialistId, 
+          page, 
+          20, 
+          {
+            rating: filters.rating,
+            sortBy: filters.sortBy,
+            sortOrder: filters.sortOrder,
+            withComment: filters.withComment,
+            verified: filters.verified
+          }
+        );
+        
+        console.log('✅ [Reviews] Reviews loaded successfully:', response);
+        console.log('📊 [Reviews] Review count:', response.reviews.length);
+        console.log('📈 [Reviews] Stats:', response.stats);
+        console.log('📄 [Reviews] Pagination:', response.pagination);
         
         if (page === 1) {
           setReviews(response.reviews);
@@ -42,7 +86,7 @@ const SpecialistReviews: React.FC = () => {
         setHasMore(response.pagination.hasNextPage);
         
       } catch (err: any) {
-        console.error('Error loading reviews:', err);
+        console.error('❌ [Reviews] Error loading reviews:', err);
         setError(err.message || 'Failed to load reviews');
       } finally {
         setLoading(false);
@@ -50,7 +94,7 @@ const SpecialistReviews: React.FC = () => {
     };
 
     loadReviews();
-  }, [page, filters]);
+  }, [specialistId, page, filters]);
 
   const handleLoadMore = () => {
     if (hasMore && !loading) {
