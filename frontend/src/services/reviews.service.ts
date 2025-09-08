@@ -84,8 +84,8 @@ export class ReviewsService {
     } = {}
   ): Promise<{
     reviews: Review[];
-    pagination: Pagination;
-    stats: ReviewStats;
+    pagination: Pagination & { hasNextPage?: boolean; hasPreviousPage?: boolean; page?: number; total?: number };
+    stats: ReviewStats | null;
   }> {
     const params = new URLSearchParams();
     params.append('page', page.toString());
@@ -99,17 +99,33 @@ export class ReviewsService {
     if (filters.withComment !== undefined) params.append('withComment', filters.withComment.toString());
     if (filters.tags && filters.tags.length > 0) params.append('tags', filters.tags.join(','));
 
-    const response = await apiClient.get<{
-      reviews: Review[];
-      pagination: Pagination;
-      stats: ReviewStats;
-    }>(`/reviews/service/${serviceId}?${params}`);
-    
-    if (!response.success || !response.data) {
+    const response = await apiClient.get<any>(`/reviews/service/${serviceId}?${params}`);
+
+    if (!response.success) {
       throw new Error(response.error?.message || 'Failed to get service reviews');
     }
-    
-    return response.data;
+
+    const rawReviews: Review[] = Array.isArray(response.data) ? response.data : (response.data?.reviews || []);
+    const meta = response.meta || {};
+    const p = meta.pagination || {};
+
+    const pagination: Pagination & { hasNextPage?: boolean; hasPreviousPage?: boolean; page?: number; total?: number } = {
+      currentPage: p.currentPage ?? p.page ?? page,
+      totalPages: p.totalPages ?? 0,
+      totalItems: p.totalItems ?? meta.total ?? 0,
+      limit: p.itemsPerPage ?? limit,
+      hasNext: p.hasNext ?? p.hasNextPage ?? false,
+      hasPrev: p.hasPrev ?? p.hasPreviousPage ?? false,
+      // compatibility aliases used by some screens
+      hasNextPage: p.hasNext ?? p.hasNextPage ?? false,
+      hasPreviousPage: p.hasPrev ?? p.hasPreviousPage ?? false,
+      page: p.currentPage ?? p.page ?? page,
+      total: p.totalItems ?? meta.total ?? 0,
+    };
+
+    const stats: ReviewStats | null = meta.stats ?? response.data?.stats ?? null;
+
+    return { reviews: rawReviews, pagination, stats };
   }
 
   // Get reviews for a specialist
@@ -127,8 +143,8 @@ export class ReviewsService {
     } = {}
   ): Promise<{
     reviews: Review[];
-    pagination: Pagination;
-    stats: ReviewStats;
+    pagination: Pagination & { hasNextPage?: boolean; hasPreviousPage?: boolean; page?: number; total?: number };
+    stats: ReviewStats | null;
   }> {
     const params = new URLSearchParams();
     params.append('page', page.toString());
@@ -142,17 +158,33 @@ export class ReviewsService {
     if (filters.withComment !== undefined) params.append('withComment', filters.withComment.toString());
     if (filters.tags && filters.tags.length > 0) params.append('tags', filters.tags.join(','));
 
-    const response = await apiClient.get<{
-      reviews: Review[];
-      pagination: Pagination;
-      stats: ReviewStats;
-    }>(`/reviews/specialist/${specialistId}?${params}`);
-    
-    if (!response.success || !response.data) {
+    const response = await apiClient.get<any>(`/reviews/specialist/${specialistId}?${params}`);
+
+    if (!response.success) {
       throw new Error(response.error?.message || 'Failed to get specialist reviews');
     }
-    
-    return response.data;
+
+    const rawReviews: Review[] = Array.isArray(response.data) ? response.data : (response.data?.reviews || []);
+    const meta = response.meta || {};
+    const p = meta.pagination || {};
+
+    const pagination: Pagination & { hasNextPage?: boolean; hasPreviousPage?: boolean; page?: number; total?: number } = {
+      currentPage: p.currentPage ?? p.page ?? page,
+      totalPages: p.totalPages ?? 0,
+      totalItems: p.totalItems ?? meta.total ?? 0,
+      limit: p.itemsPerPage ?? limit,
+      hasNext: p.hasNext ?? p.hasNextPage ?? false,
+      hasPrev: p.hasPrev ?? p.hasPreviousPage ?? false,
+      // compatibility aliases used by some screens
+      hasNextPage: p.hasNext ?? p.hasNextPage ?? false,
+      hasPreviousPage: p.hasPrev ?? p.hasPreviousPage ?? false,
+      page: p.currentPage ?? p.page ?? page,
+      total: p.totalItems ?? meta.total ?? 0,
+    };
+
+    const stats: ReviewStats | null = meta.stats ?? response.data?.stats ?? null;
+
+    return { reviews: rawReviews, pagination, stats };
   }
 
   // Get user's own reviews (as a customer)
@@ -181,7 +213,7 @@ export class ReviewsService {
     limit: number = 20
   ): Promise<{
     reviews: Review[];
-    pagination: Pagination;
+    pagination: Pagination & { hasNextPage?: boolean; hasPreviousPage?: boolean; page?: number; total?: number };
     stats: ReviewStats;
   }> {
     try {
@@ -204,9 +236,14 @@ export class ReviewsService {
           currentPage: page,
           totalPages: 0,
           totalItems: 0,
-          itemsPerPage: limit,
+          limit: limit,
+          hasNext: false,
+          hasPrev: false,
+          // compatibility aliases
           hasNextPage: false,
           hasPreviousPage: false,
+          page,
+          total: 0,
         },
         stats: {
           totalReviews: 0,

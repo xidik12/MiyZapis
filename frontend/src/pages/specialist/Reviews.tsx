@@ -83,9 +83,9 @@ const SpecialistReviews: React.FC = () => {
         console.log('  - response.pagination:', response.pagination);
         
         // Handle different possible response structures
-        const reviewsData = response.reviews || response.data?.reviews || [];
-        const statsData = response.stats || response.data?.stats || null;
-        const paginationData = response.pagination || response.data?.pagination || null;
+        const reviewsData = response.reviews || [];
+        const statsData = response.stats || null;
+        const paginationData = response.pagination || null;
         
         console.log('📊 [Reviews] Processed review count:', reviewsData.length);
         console.log('📈 [Reviews] Processed stats:', statsData);
@@ -98,7 +98,7 @@ const SpecialistReviews: React.FC = () => {
         }
         
         setReviewStats(statsData);
-        setHasMore(paginationData?.hasNextPage || false);
+        setHasMore(paginationData?.hasNext || false);
         
       } catch (err: any) {
         console.error('❌ [Reviews] Error loading reviews:', err);
