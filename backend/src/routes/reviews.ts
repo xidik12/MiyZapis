@@ -198,7 +198,7 @@ router.post('/', authenticateToken, validateCreateReview, async (req: Request, r
       );
     }
 
-    const { userId } = (req as any);
+    const userId = (req as AuthenticatedRequest).user?.id;
     const {
       bookingId,
       rating,
@@ -742,7 +742,7 @@ router.post('/:id/report', authenticateToken, validateReportReview, async (req: 
       );
     }
 
-    const { userId } = (req as any);
+    const userId = (req as AuthenticatedRequest).user?.id;
     const { id } = req.params;
     const { reason, description } = req.body;
 
