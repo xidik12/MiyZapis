@@ -87,12 +87,17 @@ export class ReviewsService {
     pagination: Pagination;
     stats: ReviewStats;
   }> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-      ...filters,
-      ...(filters.tags && { tags: filters.tags.join(',') })
-    });
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+    
+    // Only add filter parameters if they have actual values (not undefined)
+    if (filters.rating !== undefined) params.append('rating', filters.rating.toString());
+    if (filters.sortBy !== undefined) params.append('sortBy', filters.sortBy);
+    if (filters.sortOrder !== undefined) params.append('sortOrder', filters.sortOrder);
+    if (filters.verified !== undefined) params.append('verified', filters.verified.toString());
+    if (filters.withComment !== undefined) params.append('withComment', filters.withComment.toString());
+    if (filters.tags && filters.tags.length > 0) params.append('tags', filters.tags.join(','));
 
     const response = await apiClient.get<{
       reviews: Review[];
@@ -125,12 +130,17 @@ export class ReviewsService {
     pagination: Pagination;
     stats: ReviewStats;
   }> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-      ...filters,
-      ...(filters.tags && { tags: filters.tags.join(',') })
-    });
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+    
+    // Only add filter parameters if they have actual values (not undefined)
+    if (filters.rating !== undefined) params.append('rating', filters.rating.toString());
+    if (filters.sortBy !== undefined) params.append('sortBy', filters.sortBy);
+    if (filters.sortOrder !== undefined) params.append('sortOrder', filters.sortOrder);
+    if (filters.verified !== undefined) params.append('verified', filters.verified.toString());
+    if (filters.withComment !== undefined) params.append('withComment', filters.withComment.toString());
+    if (filters.tags && filters.tags.length > 0) params.append('tags', filters.tags.join(','));
 
     const response = await apiClient.get<{
       reviews: Review[];
