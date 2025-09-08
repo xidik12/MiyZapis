@@ -32,8 +32,12 @@ const SpecialistReviews: React.FC = () => {
         console.log('🔍 [Reviews] Loading specialist profile...');
         const profile = await specialistService.getProfile();
         console.log('✅ [Reviews] Specialist profile loaded:', profile);
-        console.log('🆔 [Reviews] Specialist ID:', profile.id);
-        setSpecialistId(profile.id);
+        
+        // The API returns { specialist: { id: ... } }, so we need to extract the specialist object
+        const specialistData = profile.specialist || profile;
+        console.log('🔧 [Reviews] Extracted specialist data:', specialistData);
+        console.log('🆔 [Reviews] Specialist ID:', specialistData.id);
+        setSpecialistId(specialistData.id);
       } catch (err: any) {
         console.error('❌ [Reviews] Error loading specialist profile:', err);
         setError(err.message || 'Failed to load specialist profile');
