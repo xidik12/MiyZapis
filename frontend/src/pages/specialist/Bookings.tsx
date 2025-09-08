@@ -772,7 +772,14 @@ const SpecialistBookings: React.FC = () => {
   
   // Show loading state
   if (isLoading) {
-    return <FullScreenHandshakeLoader title={t('common.loading')} subtitle={t('bookings.subtitle')} />;
+    return (
+      <FullScreenHandshakeLoader 
+        title={t('common.loading')} 
+        subtitle={t('bookings.subtitle')}
+        lightGifSrc="/assets/loader/handshake-light.gif"
+        darkGifSrc="/assets/loader/handshake-dark.gif"
+      />
+    );
   }
 
   // Show error state

@@ -880,7 +880,7 @@ const SpecialistProfile: React.FC = () => {
 
   if (loading) {
     const subtitle = language === 'uk' ? 'Завантаження профілю' : language === 'ru' ? 'Загрузка профиля' : 'Fetching your profile';
-    return <FullScreenHandshakeLoader title={t('common.loading')} subtitle={subtitle} />;
+    return (<FullScreenHandshakeLoader title={t('common.loading')} subtitle={subtitle} lightGifSrc="/assets/loader/handshake-light.gif" darkGifSrc="/assets/loader/handshake-dark.gif" />);
   }
 
   const completionPercentage = getProfileCompletion();

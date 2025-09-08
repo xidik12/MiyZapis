@@ -254,7 +254,14 @@ const SpecialistReviews: React.FC = () => {
   };
 
   if (loading && page === 1) {
-    return <FullScreenHandshakeLoader title={t('common.loading')} subtitle={t('reviews.subtitle')} />;
+    return (
+      <FullScreenHandshakeLoader 
+        title={t('common.loading')} 
+        subtitle={t('reviews.subtitle')} 
+        lightGifSrc="/assets/loader/handshake-light.gif"
+        darkGifSrc="/assets/loader/handshake-dark.gif"
+      />
+    );
   }
 
   return (
