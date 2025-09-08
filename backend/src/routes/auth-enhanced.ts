@@ -86,8 +86,8 @@ router.post('/register', validateRegistration, async (req, res) => {
           'Validation failed',
           req.id,
           errors.array().map(error => ({
-            field: error.param,
-            message: error.msg,
+            field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+            message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
           }))
         )
       );
@@ -125,8 +125,8 @@ router.post('/login', validateLogin, async (req, res) => {
           'Validation failed',
           req.id,
           errors.array().map(error => ({
-            field: error.param,
-            message: error.msg,
+            field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+            message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
           }))
         )
       );
@@ -167,8 +167,8 @@ router.post('/verify-email', validateEmailVerification, async (req, res) => {
           'Validation failed',
           req.id,
           errors.array().map(error => ({
-            field: error.param,
-            message: error.msg,
+            field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+            message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
           }))
         )
       );
@@ -235,8 +235,8 @@ router.post('/google', validateGoogleAuth, async (req, res) => {
           'Validation failed',
           req.id,
           errors.array().map(error => ({
-            field: error.param,
-            message: error.msg,
+            field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+            message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
           }))
         )
       );
@@ -290,8 +290,8 @@ router.post('/telegram', validateTelegramAuth, async (req, res) => {
           'Validation failed',
           req.id,
           errors.array().map(error => ({
-            field: error.param,
-            message: error.msg,
+            field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+            message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
           }))
         )
       );

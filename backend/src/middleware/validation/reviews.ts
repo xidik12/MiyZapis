@@ -41,7 +41,7 @@ export const validateCreateReview = [
     .withMessage('Tags must be an array')
     .custom((value) => {
       if (Array.isArray(value)) {
-        const validTags = value.every(tag => REVIEW_TAGS.includes(tag));
+        const validTags = value.every(tag => (REVIEW_TAGS as readonly string[]).includes(tag));
         if (!validTags) {
           throw new Error(`Tags must be valid options: ${REVIEW_TAGS.join(', ')}`);
         }
@@ -86,7 +86,7 @@ export const validateUpdateReview = [
     .withMessage('Tags must be an array')
     .custom((value) => {
       if (Array.isArray(value)) {
-        const validTags = value.every(tag => REVIEW_TAGS.includes(tag));
+        const validTags = value.every(tag => (REVIEW_TAGS as readonly string[]).includes(tag));
         if (!validTags) {
           throw new Error(`Tags must be valid options: ${REVIEW_TAGS.join(', ')}`);
         }
@@ -154,7 +154,7 @@ export const validateGetServiceReviews = [
     .custom((value) => {
       if (typeof value === 'string') {
         const tags = value.split(',');
-        const validTags = tags.every(tag => REVIEW_TAGS.includes(tag.trim()));
+        const validTags = tags.every(tag => (REVIEW_TAGS as readonly string[]).includes(tag.trim()));
         if (!validTags) {
           throw new Error(`Tags must be valid options: ${REVIEW_TAGS.join(', ')}`);
         }

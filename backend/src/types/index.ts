@@ -34,6 +34,9 @@ export interface ResponseMeta {
   pagination?: PaginationMeta;
   total?: number;
   count?: number;
+  message?: string;
+  filters?: any;
+  stats?: any;
 }
 
 export interface PaginationMeta {
@@ -205,6 +208,7 @@ export const ErrorCodes = {
   BOOKING_CONFLICT: 'BOOKING_CONFLICT',
   CANCELLATION_NOT_ALLOWED: 'CANCELLATION_NOT_ALLOWED',
   INSUFFICIENT_BALANCE: 'INSUFFICIENT_BALANCE',
+  INVALID_OPERATION: 'INVALID_OPERATION',
   
   // External Services
   PAYMENT_FAILED: 'PAYMENT_FAILED',
@@ -213,6 +217,7 @@ export const ErrorCodes = {
   
   // System
   INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
+  INTERNAL_ERROR: 'INTERNAL_ERROR',
   SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
   RATE_LIMIT_EXCEEDED: 'RATE_LIMIT_EXCEEDED',
   DATABASE_ERROR: 'DATABASE_ERROR',

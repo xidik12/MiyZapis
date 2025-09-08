@@ -234,7 +234,7 @@ export const reviewSchemas = {
 };
 
 // Validation error formatter
-export class ValidationError extends Error {
+export class CustomValidationError extends Error {
   public statusCode: number = 400;
   public code: string = 'VALIDATION_ERROR';
   public details: any[];
@@ -291,7 +291,7 @@ export function validateRequest(schemaName: string, location: 'body' | 'query' |
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const validationError = new ValidationError(error);
+        const validationError = new CustomValidationError(error);
         
         logger.warn('Validation error', {
           schema: schemaName,
@@ -461,5 +461,5 @@ export function requireFeature(feature: string) {
 export {
   commonSchemas,
   platformSchemas,
-  ValidationError
+  CustomValidationError as ValidationError
 };

@@ -344,7 +344,7 @@ export const authenticateTokenOptional = async (
       data: { lastLoginAt: new Date() }
     });
 
-    req.user = user;
+    req.user = user as any; // Type assertion for compatibility
     next();
   } catch (error) {
     // Token invalid or expired, continue without authentication

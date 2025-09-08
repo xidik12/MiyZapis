@@ -3,6 +3,9 @@ import { logger } from '@/utils/logger';
 import { convertCurrency } from '@/utils/currency';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from 'date-fns';
 
+// Booking statuses that generate revenue
+const revenueGeneratingStatuses = ['COMPLETED', 'IN_PROGRESS'] as const;
+
 export class AnalyticsService {
   private prisma: PrismaClient;
 
@@ -269,7 +272,7 @@ export class AnalyticsService {
       }, {} as Record<string, number>);
 
       const topTags = Object.entries(tagCounts)
-        .sort(([, a], [, b]) => b - a)
+        .sort(([, a], [, b]) => (b as number) - (a as number))
         .slice(0, 10)
         .map(([tag, count]) => ({ tag, count }));
 
@@ -695,7 +698,7 @@ export class AnalyticsService {
 
       const serviceAnalytics = services.map(service => {
         const bookings = service.bookings;
-        const completedBookings = bookings.filter(b => revenueGeneratingStatuses.includes(b.status));
+        const completedBookings = bookings.filter(b => (revenueGeneratingStatuses as readonly string[]).includes(b.status));
         const totalRevenue = completedBookings.reduce((sum, b) => sum + b.totalAmount, 0);
         const ratings = bookings
           .filter(b => b.review)
@@ -786,7 +789,7 @@ export class AnalyticsService {
         }
       });
 
-      const completedBookings = bookings.filter(b => revenueGeneratingStatuses.includes(b.status));
+      const completedBookings = bookings.filter(b => (revenueGeneratingStatuses as readonly string[]).includes(b.status));
       const cancelledBookings = bookings.filter(b => b.status === 'CANCELLED');
       
       // Calculate key performance metrics
@@ -941,8 +944,8 @@ export class AnalyticsService {
 
     return Object.entries(categoryGroups).map(([category, data]) => ({
       category,
-      revenue: data?.revenue || 0,
-      count: data?.count || 0
+      revenue: (data as { revenue: number; count: number }).revenue || 0,
+      count: (data as { revenue: number; count: number }).count || 0
     }));
   }
 

@@ -41,18 +41,18 @@ export class EnhancedEmailService {
    */
   private initializeTransporter() {
     try {
-      if (!config.email.smtp.host || !config.email.smtp.user) {
+      if (!config.email.smtp.host || !config.email.smtp.auth.user) {
         logger.warn('Email service not configured - emails will be logged instead of sent');
         return;
       }
 
-      this.transporter = nodemailer.createTransporter({
+      this.transporter = nodemailer.createTransport({
         host: config.email.smtp.host,
         port: config.email.smtp.port,
         secure: config.email.smtp.secure,
         auth: {
-          user: config.email.smtp.user,
-          pass: config.email.smtp.pass,
+          user: config.email.smtp.auth.user,
+          pass: config.email.smtp.auth.pass,
         },
         tls: {
           rejectUnauthorized: false, // For development

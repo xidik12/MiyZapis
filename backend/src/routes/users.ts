@@ -624,7 +624,7 @@ router.post('/export', authenticateToken, validateExportUserData, async (req: Au
           customerBookings: {
             include: {
               service: true,
-              specialist: { select: { user: { select: { firstName: true, lastName: true } } } }
+              specialist: { select: { firstName: true, lastName: true } }
             }
           },
           specialistBookings: {

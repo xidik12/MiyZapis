@@ -12,7 +12,7 @@ export const validateRequest = (req: Request, res: Response, next: NextFunction)
       message: error.msg
     }));
     
-    return errorResponse(res, 'Validation failed', 400, formattedErrors);
+    return errorResponse(res, `Validation failed: ${formattedErrors.map(e => e.message).join(', ')}`, 400, 'VALIDATION_ERROR');
   }
   
   next();

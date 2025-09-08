@@ -18,8 +18,8 @@ export class ServiceController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: error.param,
-              message: error.msg,
+              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -92,8 +92,8 @@ export class ServiceController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: error.param,
-              message: error.msg,
+              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -566,8 +566,7 @@ export class ServiceController {
       res.status(200).json(
         createSuccessResponse(
           result,
-          'Service currency data migrated successfully',
-          req.headers['x-request-id'] as string
+          { message: 'Service currency data migrated successfully' }
         )
       );
     } catch (error: any) {

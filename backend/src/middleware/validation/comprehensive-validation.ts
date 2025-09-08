@@ -565,10 +565,10 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
   
   if (!errors.isEmpty()) {
     const formattedErrors = errors.array().map(error => ({
-      field: error.param,
-      message: error.msg,
+      field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+      message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
       code: 'INVALID_VALUE',
-      value: error.value
+      value: 'value' in error ? error.value : undefined
     }));
 
     return res.status(400).json(

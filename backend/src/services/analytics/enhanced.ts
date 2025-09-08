@@ -14,11 +14,26 @@ export interface SpecialistAnalyticsData {
   totalBookings: number;
   completedBookings: number;
   cancelledBookings: number;
+  pendingBookings: number;
   totalRevenue: number;
   averageRating: number;
+  totalReviews: number;
   responseTimeAvg: number;
   conversionRate: number;
   repeatCustomerRate: number;
+  revenueGrowth: number;
+  bookingGrowth: number;
+  topServices: Array<{
+    serviceId: string;
+    serviceName: string;
+    bookingCount: number;
+    revenue: number;
+  }>;
+  revenueByMonth: Array<any>;
+  bookingsByStatus: Record<string, number>;
+  bookingsByCategory: Array<any>;
+  recentBookings: Array<any>;
+  upcomingBookings: Array<any>;
   popularServices: Array<{
     serviceId: string;
     serviceName: string;
@@ -108,6 +123,9 @@ export class EnhancedAnalyticsService {
           pendingBookings: 0,
           averageRating: 0,
           totalReviews: 0,
+          responseTimeAvg: 0,
+          conversionRate: 0,
+          repeatCustomerRate: 0,
           revenueGrowth: 0,
           bookingGrowth: 0,
           topServices: [],
@@ -115,7 +133,10 @@ export class EnhancedAnalyticsService {
           bookingsByStatus: {},
           bookingsByCategory: [],
           recentBookings: [],
-          upcomingBookings: []
+          upcomingBookings: [],
+          popularServices: [],
+          recentReviews: [],
+          monthlyTrends: []
         };
       }
 
@@ -204,15 +225,27 @@ export class EnhancedAnalyticsService {
       // Get monthly trends
       const monthlyTrends = await this.getMonthlyTrends(specialist.userId, filters);
 
+      const pendingBookings = totalBookings - completedBookings - cancelledBookings;
+      
       return {
         totalBookings,
         completedBookings,
         cancelledBookings,
+        pendingBookings,
         totalRevenue,
         averageRating: Math.round(averageRating * 10) / 10,
+        totalReviews: reviews.length,
         responseTimeAvg: specialist.responseTime,
         conversionRate: Math.round(conversionRate * 10) / 10,
         repeatCustomerRate: Math.round(repeatCustomerRate * 10) / 10,
+        revenueGrowth: 0, // TODO: Calculate revenue growth
+        bookingGrowth: 0, // TODO: Calculate booking growth
+        topServices: popularServices, // Use popularServices for topServices
+        revenueByMonth: monthlyTrends,
+        bookingsByStatus: { completed: completedBookings, cancelled: cancelledBookings, pending: pendingBookings },
+        bookingsByCategory: [],
+        recentBookings: [],
+        upcomingBookings: [],
         popularServices,
         recentReviews: reviews.map(r => ({
           id: r.id,

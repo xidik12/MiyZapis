@@ -69,6 +69,7 @@ model User {
   favoriteServices     FavoriteService[]       @relation("UserFavoriteServices")
   profileViews         ProfileView[]           @relation("ProfileViewer")
   profileViewsReceived ProfileView[]           @relation("ProfileViewed")
+  telegramSessions     TelegramSession[]
 
   // Indexes for performance
   @@index([email])
@@ -881,4 +882,47 @@ model ProfileView {
   @@index([viewerId])
   @@index([ipAddress, createdAt])
   @@map("profile_views")
+}
+
+model TelegramSession {
+  id           String @id @default(cuid())
+  userId       String
+  telegramId   String @unique
+  chatId       String?
+  platform     String // 'bot' or 'miniapp'
+  
+  // Session status
+  isActive     Boolean @default(true)
+  lastActivity DateTime @default(now())
+  
+  // Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([telegramId])
+  @@index([platform])
+  @@map("telegram_sessions")
+}
+
+model PlatformAnalytics {
+  id          String @id @default(cuid())
+  date        DateTime
+  platform    String
+  
+  // Metrics
+  activeUsers Int @default(0)
+  newUsers    Int @default(0)
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([date, platform])
+  @@index([date])
+  @@index([platform])
+  @@map("platform_analytics")
 }

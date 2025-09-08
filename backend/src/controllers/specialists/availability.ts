@@ -18,7 +18,12 @@ export class AvailabilityController {
    */
   static async generateFromWorkingHours(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const specialistId = req.user?.specialistProfile?.id;
+      // Find specialist profile for this user
+      const specialist = await prisma.specialist.findUnique({
+        where: { userId: req.user.id }
+      });
+      
+      const specialistId = specialist?.id;
       
       if (!specialistId) {
         res.status(400).json(
@@ -38,8 +43,7 @@ export class AvailabilityController {
       res.status(200).json(
         createSuccessResponse(
           result,
-          'Availability blocks generated successfully',
-          req.headers['x-request-id'] as string
+          { message: 'Availability blocks generated successfully' }
         )
       );
     } catch (error) {
@@ -67,8 +71,7 @@ export class AvailabilityController {
       res.status(200).json(
         createSuccessResponse(
           result,
-          `Fixed ${result.updated} specialists and generated ${result.generated} availability blocks`,
-          req.headers['x-request-id'] as string
+          { message: `Fixed ${result.updated} specialists and generated ${result.generated} availability blocks` }
         )
       );
     } catch (error) {
@@ -196,8 +199,8 @@ export class AvailabilityController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: error.param,
-              message: error.msg,
+              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -324,8 +327,8 @@ export class AvailabilityController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: error.param,
-              message: error.msg,
+              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )

@@ -119,11 +119,6 @@ export class EnhancedTelegramBot {
       bookingUpdated: '📋 Booking status updated',
       paymentReceived: '💰 Payment received',
       reviewReceived: '⭐ New review received',
-      
-      // Errors
-      invalidInput: '❌ Invalid input. Please try again.',
-      accessDenied: '🚫 Access denied.',
-      loginRequired: '🔐 Please log in first.',
       profileIncomplete: '📝 Please complete your profile first.',
       
       // Profile Setup
@@ -138,7 +133,6 @@ export class EnhancedTelegramBot {
       specialties: 'Enter your specialties (comma-separated):',
       
       // Search & Filters
-      enterSearchTerm: 'Enter what you\'re looking for:',
       selectCategory: 'Select category:',
       selectLocation: 'Select location:',
       priceRange: 'Select price range:',
@@ -156,6 +150,23 @@ export class EnhancedTelegramBot {
       paymentSuccess: '✅ Payment completed successfully!',
       paymentFailed: '❌ Payment failed. Please try again.',
       refundProcessed: '💸 Refund processed successfully.',
+      
+      // Missing buttons
+      searchServices: '🔍 Search Services',
+      myBookings: '📅 My Bookings',
+      bookingHistory: '📋 Booking History', 
+      favorites: '⭐ Favorites',
+      loyaltyPoints: '🎁 Loyalty Points',
+      paymentMethods: '💳 Payment Methods',
+      customerProfile: '👤 Profile',
+      settings: '⚙️ Settings',
+      help: '❓ Help',
+      myServices: '🛠️ My Services',
+      specialistBookings: '📅 Specialist Bookings',
+      addService: '➕ Add Service',
+      manageSchedule: '📅 Manage Schedule',
+      earnings: '💰 Earnings',
+      analytics: '📊 Analytics',
     },
     uk: {
       // Authentication & Setup
@@ -204,6 +215,23 @@ export class EnhancedTelegramBot {
       notAuthorized: '🚫 Ви не маєте дозволу на виконання цієї дії.',
       invalidInput: '❌ Неправильний ввід. Спробуйте ще раз.',
       enterSearchTerm: '🔍 Введіть пошуковий запит:',
+      
+      // Missing buttons
+      searchServices: '🔍 Пошук послуг',
+      myBookings: '📅 Мої бронювання',
+      bookingHistory: '📋 Історія бронювань',
+      favorites: '⭐ Обране',
+      loyaltyPoints: '🎁 Бонусні бали',
+      paymentMethods: '💳 Способи оплати',
+      customerProfile: '👤 Профіль',
+      settings: '⚙️ Налаштування',
+      help: '❓ Допомога',
+      myServices: '🛠️ Мої послуги',
+      specialistBookings: '📅 Бронювання спеціаліста',
+      addService: '➕ Додати послугу',
+      manageSchedule: '📅 Керувати розкладом',
+      earnings: '💰 Заробітки',
+      analytics: '📊 Аналітика',
     },
     ru: {
       // Similar structure in Russian
@@ -232,6 +260,23 @@ export class EnhancedTelegramBot {
       notAuthorized: '🚫 Вы не авторизованы для выполнения этого действия.',
       invalidInput: '❌ Неверный ввод. Попробуйте снова.',
       enterSearchTerm: '🔍 Введите поисковый запрос:',
+      
+      // Missing buttons
+      searchServices: '🔍 Поиск услуг',
+      myBookings: '📅 Мои брони',
+      bookingHistory: '📋 История бронирований',
+      favorites: '⭐ Избранное',
+      loyaltyPoints: '🎁 Бонусные баллы',
+      paymentMethods: '💳 Способы оплаты',
+      customerProfile: '👤 Профиль',
+      settings: '⚙️ Настройки',
+      help: '❓ Помощь',
+      myServices: '🛠️ Мои услуги',
+      specialistBookings: '📅 Записи специалиста',
+      addService: '➕ Добавить услугу',
+      manageSchedule: '📅 Управлять расписанием',
+      earnings: '💰 Заработок',
+      analytics: '📊 Аналитика',
     }
   };
 

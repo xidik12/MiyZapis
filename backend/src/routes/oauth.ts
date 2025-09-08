@@ -61,8 +61,17 @@ router.get('/google', async (req, res) => {
 
     logger.info(`Google OAuth callback: Authentication successful for ${payload.email}`);
 
-    // Redirect to frontend with tokens
     const frontendUrl = process.env.FRONTEND_URL || 'https://miyzapis.com';
+
+    // Check if user type selection is required
+    if ('requiresUserTypeSelection' in result) {
+      // Store the google data in session/temporary storage for user type selection
+      const redirectUrl = `${frontendUrl}/auth/select-user-type?email=${encodeURIComponent(payload.email)}`;
+      res.redirect(redirectUrl);
+      return;
+    }
+
+    // Redirect to frontend with tokens
     const redirectUrl = `${frontendUrl}/auth/callback?token=${result.tokens.accessToken}&refreshToken=${result.tokens.refreshToken}`;
     
     res.redirect(redirectUrl);

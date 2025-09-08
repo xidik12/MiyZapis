@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { AuthController } from '@/controllers/auth';
 import { authenticateToken } from '@/middleware/auth/jwt';
 import { logger } from '@/utils/logger';
+import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import {
   validateRegister,
   validateLogin,
@@ -20,8 +21,6 @@ router.post('/register', async (req, res) => {
   try {
     // Import enhanced auth service to handle registration
     const { EnhancedAuthService } = await import('@/services/auth/enhanced');
-    const { createSuccessResponse, createErrorResponse } = await import('@/utils/response');
-    const { body, validationResult } = await import('express-validator');
     
     // Simple validation for the proxy
     if (!req.body.email || !req.body.password || !req.body.firstName || !req.body.lastName || !req.body.userType) {

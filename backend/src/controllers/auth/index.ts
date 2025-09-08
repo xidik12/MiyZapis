@@ -635,7 +635,7 @@ export class AuthController {
         const emailService = new EmailService();
         await emailService.sendPasswordResetEmail(user.email, {
           firstName: user.firstName,
-          resetUrl
+          resetLink: resetUrl
         });
       } catch (emailError) {
         logger.error('Failed to send password reset email:', emailError);

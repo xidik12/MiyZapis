@@ -43,18 +43,12 @@ const upload = multer({
 
 export const uploadMiddleware = upload.array('files', 10);
 
-interface FileUploadRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    userType: string;
-  };
-}
+// Using global Request extension from types/global.d.ts
 
 /**
  * Upload files to S3 with proper validation and database storage
  */
-export const uploadFiles = async (req: FileUploadRequest, res: Response): Promise<void> => {
+export const uploadFiles = async (req: Request, res: Response): Promise<void> => {
   try {
     console.log('🚀 S3 Upload request:', {
       userId: req.user?.id,
@@ -213,7 +207,7 @@ export const uploadFiles = async (req: FileUploadRequest, res: Response): Promis
 /**
  * Generate presigned URL for direct S3 upload
  */
-export const getPresignedUploadUrl = async (req: FileUploadRequest, res: Response): Promise<void> => {
+export const getPresignedUploadUrl = async (req: Request, res: Response): Promise<void> => {
   try {
     console.log('🔗 Presigned URL request:', {
       userId: req.user?.id,
@@ -279,7 +273,7 @@ export const getPresignedUploadUrl = async (req: FileUploadRequest, res: Respons
 /**
  * Delete file from S3 and database
  */
-export const deleteFile = async (req: FileUploadRequest, res: Response): Promise<void> => {
+export const deleteFile = async (req: Request, res: Response): Promise<void> => {
   try {
     console.log('🗑️ Delete file request:', {
       userId: req.user?.id,

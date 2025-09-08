@@ -56,6 +56,9 @@ export class ServiceService {
         throw new Error('SPECIALIST_NOT_FOUND');
       }
 
+      console.log('🏗️ Creating service with data:', data);
+      console.log('⏰ Duration value before DB save:', data.duration, typeof data.duration);
+      
       // Create service
       const service = await prisma.service.create({
         data: {
@@ -102,10 +105,14 @@ export class ServiceService {
         },
       });
 
+      console.log('✅ Service created in DB:', service);
+      console.log('⏰ Duration in created service:', service.duration, typeof service.duration);
+      
       logger.info('Service created successfully', {
         serviceId: service.id,
         specialistId: specialist.id,
         serviceName: service.name,
+        duration: service.duration,
       });
 
       return service as ServiceWithDetails;
@@ -138,6 +145,9 @@ export class ServiceService {
         throw new Error('UNAUTHORIZED_ACCESS');
       }
 
+      console.log('🔄 Updating service with data:', data);
+      console.log('⏰ Duration value from frontend:', data.duration, typeof data.duration);
+      
       // Update service
       const updateData: any = {
         updatedAt: new Date(),
@@ -148,7 +158,10 @@ export class ServiceService {
       if (data.category !== undefined) updateData.category = data.category;
       if (data.basePrice !== undefined) updateData.basePrice = data.basePrice;
       if (data.currency !== undefined) updateData.currency = data.currency;
-      if (data.duration !== undefined) updateData.duration = data.duration;
+      if (data.duration !== undefined) {
+        console.log('⏰ Setting duration in updateData:', data.duration);
+        updateData.duration = data.duration;
+      }
       if (data.requirements !== undefined) updateData.requirements = JSON.stringify(data.requirements);
       if (data.deliverables !== undefined) updateData.deliverables = JSON.stringify(data.deliverables);
       if (data.images !== undefined) updateData.images = JSON.stringify(data.images);
@@ -156,6 +169,9 @@ export class ServiceService {
       if (data.requiresApproval !== undefined) updateData.requiresApproval = data.requiresApproval;
       if (data.maxAdvanceBooking !== undefined) updateData.maxAdvanceBooking = data.maxAdvanceBooking;
       if (data.minAdvanceBooking !== undefined) updateData.minAdvanceBooking = data.minAdvanceBooking;
+
+      console.log('📤 Final updateData being sent to DB:', updateData);
+      console.log('⏰ Duration in updateData:', updateData.duration);
 
       const service = await prisma.service.update({
         where: { id: serviceId },
@@ -188,9 +204,13 @@ export class ServiceService {
         },
       });
 
+      console.log('✅ Service updated in DB:', service);
+      console.log('⏰ Duration in updated service:', service.duration, typeof service.duration);
+      
       logger.info('Service updated successfully', {
         serviceId: service.id,
         specialistId: existingService.specialist.id,
+        duration: service.duration,
       });
 
       return service as ServiceWithDetails;

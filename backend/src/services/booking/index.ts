@@ -30,8 +30,22 @@ interface BookingWithDetails extends Booking {
   };
 }
 
+interface TransformedBooking extends Booking {
+  customer: Omit<User, 'password'>;
+  specialist: Omit<User, 'password'>;
+  service: Service;
+  customerName: string;
+  customerEmail: string | undefined;
+  customerPhone: string | undefined;
+  serviceName: string;
+  date: string;
+  time: string;
+  amount: number;
+  type: string;
+}
+
 export class BookingService {
-  private static notificationService = new NotificationService();
+  private static notificationService = new NotificationService(prisma);
 
   // Create a new booking
   static async createBooking(data: CreateBookingData): Promise<BookingWithDetails> {
@@ -368,8 +382,8 @@ export class BookingService {
         bookingId: booking.id,
         customerId: data.customerId,
         serviceId: data.serviceId,
-        totalAmount,
-        status: initialStatus,
+        totalAmount: booking.totalAmount,
+        status: booking.status,
         autoBooking: service.specialist.autoBooking,
       });
 
@@ -788,7 +802,7 @@ export class BookingService {
     page: number = 1,
     limit: number = 20
   ): Promise<{
-    bookings: BookingWithDetails[];
+    bookings: TransformedBooking[];
     total: number;
     page: number;
     totalPages: number;
@@ -821,6 +835,7 @@ export class BookingService {
                 avatar: true,
                 userType: true,
                 phoneNumber: true,
+                telegramId: true,
                 isEmailVerified: true,
                 isPhoneVerified: true,
                 isActive: true,
@@ -828,6 +843,10 @@ export class BookingService {
                 language: true,
                 currency: true,
                 timezone: true,
+                lastLoginAt: true,
+                emailNotifications: true,
+                pushNotifications: true,
+                telegramNotifications: true,
                 createdAt: true,
                 updatedAt: true,
               },
@@ -841,6 +860,7 @@ export class BookingService {
                 avatar: true,
                 userType: true,
                 phoneNumber: true,
+                telegramId: true,
                 isEmailVerified: true,
                 isPhoneVerified: true,
                 isActive: true,
@@ -848,6 +868,10 @@ export class BookingService {
                 language: true,
                 currency: true,
                 timezone: true,
+                lastLoginAt: true,
+                emailNotifications: true,
+                pushNotifications: true,
+                telegramNotifications: true,
                 createdAt: true,
                 updatedAt: true,
               },
@@ -897,13 +921,13 @@ export class BookingService {
           // Amount field (frontend expects 'amount' not 'totalAmount')
           amount: booking.totalAmount,
           
-          // Type field (based on meetingLink presence)
-          type: booking.meetingLink ? 'online' : 'in-person',
+          // Type field (defaulting to in-person as meetingLink field doesn't exist)
+          type: 'in-person',
         };
       });
 
       return {
-        bookings: transformedBookings as BookingWithDetails[],
+        bookings: transformedBookings as TransformedBooking[],
         total,
         page,
         totalPages,
@@ -1011,14 +1035,12 @@ export class BookingService {
             data: {
               id: `pay_${bookingId}_${Date.now()}`,
               bookingId: booking.id,
-              customerId: booking.customerId,
-              specialistId: booking.specialistId,
+              userId: booking.customerId,
               amount: booking.totalAmount,
               currency: 'USD',
-              status: 'succeeded',
-              method: 'cash', // Default to cash payment
-              processedAt: new Date(),
-              description: `Payment for ${booking.service.name}`,
+              status: 'SUCCEEDED',
+              type: 'FULL_PAYMENT',
+              paymentMethodType: 'cash',
               metadata: JSON.stringify({
                 confirmedBy: specialistUserId,
                 completedAt: new Date().toISOString(),
