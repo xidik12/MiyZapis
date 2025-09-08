@@ -411,7 +411,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
+        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 animate-fade-in">
           {children}
         </main>
       </div>

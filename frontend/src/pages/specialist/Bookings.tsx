@@ -15,6 +15,7 @@ import {
 import ReviewModal from '../../components/modals/ReviewModal';
 import { reviewsService } from '../../services/reviews.service';
 import { validateReviewTags } from '../../constants/reviewTags';
+import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 
 // Status colors for bookings (matching backend status values)
 const statusColors = {
@@ -771,16 +772,7 @@ const SpecialistBookings: React.FC = () => {
   
   // Show loading state
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <span className="ml-3 text-gray-600">{t('common.loading')}</span>
-          </div>
-        </div>
-      </div>
-    );
+    return <FullScreenHandshakeLoader title={t('common.loading')} subtitle={t('bookings.subtitle')} />;
   }
 
   // Show error state

@@ -3,6 +3,7 @@ import { StarIcon, ChatBubbleLeftIcon, UserIcon, HeartIcon, FlagIcon, Exclamatio
 import { StarIcon as StarIconSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { reviewsService, Review, ReviewStats } from '../../services/reviews.service';
+import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { specialistService } from '../../services/specialist.service';
 
 const SpecialistReviews: React.FC = () => {
@@ -253,13 +254,7 @@ const SpecialistReviews: React.FC = () => {
   };
 
   if (loading && page === 1) {
-    return (
-      <div className="p-6 max-w-7xl mx-auto">
-        <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent"></div>
-        </div>
-      </div>
-    );
+    return <FullScreenHandshakeLoader title={t('common.loading')} subtitle={t('reviews.subtitle')} />;
   }
 
   return (
