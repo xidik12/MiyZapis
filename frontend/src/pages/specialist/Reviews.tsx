@@ -76,18 +76,29 @@ const SpecialistReviews: React.FC = () => {
         );
         
         console.log('✅ [Reviews] Reviews loaded successfully:', response);
-        console.log('📊 [Reviews] Review count:', response.reviews.length);
-        console.log('📈 [Reviews] Stats:', response.stats);
-        console.log('📄 [Reviews] Pagination:', response.pagination);
+        console.log('🔍 [Reviews] Response structure analysis:');
+        console.log('  - response.reviews:', response.reviews);
+        console.log('  - response.data:', response.data);
+        console.log('  - response.stats:', response.stats);
+        console.log('  - response.pagination:', response.pagination);
+        
+        // Handle different possible response structures
+        const reviewsData = response.reviews || response.data?.reviews || [];
+        const statsData = response.stats || response.data?.stats || null;
+        const paginationData = response.pagination || response.data?.pagination || null;
+        
+        console.log('📊 [Reviews] Processed review count:', reviewsData.length);
+        console.log('📈 [Reviews] Processed stats:', statsData);
+        console.log('📄 [Reviews] Processed pagination:', paginationData);
         
         if (page === 1) {
-          setReviews(response.reviews);
+          setReviews(reviewsData);
         } else {
-          setReviews(prev => [...prev, ...response.reviews]);
+          setReviews(prev => [...prev, ...reviewsData]);
         }
         
-        setReviewStats(response.stats);
-        setHasMore(response.pagination.hasNextPage);
+        setReviewStats(statsData);
+        setHasMore(paginationData?.hasNextPage || false);
         
       } catch (err: any) {
         console.error('❌ [Reviews] Error loading reviews:', err);
