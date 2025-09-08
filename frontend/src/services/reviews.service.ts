@@ -333,13 +333,31 @@ export class ReviewsService {
 
   // Get review statistics for a specialist
   async getSpecialistReviewStats(specialistId: string): Promise<ReviewStats> {
-    const response = await apiClient.get<ReviewStats>(`/reviews/specialist/${specialistId}/stats`);
+    const response = await apiClient.get<any>(`/reviews/specialist/${specialistId}/stats`);
     
-    if (!response.success || !response.data) {
+    if (!response.success) {
       throw new Error(response.error?.message || 'Failed to get review statistics');
     }
     
-    return response.data;
+    // Backend returns { totalReviews, averageRating, ratingDistribution }
+    const data = response.data || {};
+    const totalReviews: number = Number(data.totalReviews || 0);
+    const averageRating: number = Number.isFinite(data.averageRating) ? data.averageRating : 0;
+    const ratingDistribution = data.ratingDistribution || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
+    // Derive fields not provided by backend
+    const recommendedCount = (ratingDistribution[4] || 0) + (ratingDistribution[5] || 0);
+    const recommendationRate = totalReviews > 0 ? recommendedCount / totalReviews : 0;
+
+    const normalized: ReviewStats = {
+      totalReviews,
+      averageRating,
+      ratingDistribution,
+      verifiedReviewsCount: Number(data.verifiedReviewsCount || 0),
+      recommendationRate,
+    };
+
+    return normalized;
   }
 
   // Get available review tags

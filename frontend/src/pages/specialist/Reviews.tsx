@@ -86,6 +86,18 @@ const SpecialistReviews: React.FC = () => {
         const reviewsData = response.reviews || [];
         const statsData = response.stats || null;
         const paginationData = response.pagination || null;
+
+        // Normalize stats to avoid NaN/undefined in UI and derive missing fields
+        const totalReviews = statsData?.totalReviews ?? reviewsData.length ?? 0;
+        const averageRating = Number.isFinite(statsData?.averageRating) 
+          ? (statsData!.averageRating as number) 
+          : (reviewsData.length > 0 
+              ? reviewsData.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewsData.length 
+              : 0);
+        const ratingDistribution = statsData?.ratingDistribution ?? { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        const verifiedReviewsCount = (statsData as any)?.verifiedReviewsCount ?? reviewsData.filter(r => r.isVerified).length;
+        const recommendedCount = (ratingDistribution[4] || 0) + (ratingDistribution[5] || 0);
+        const recommendationRate = totalReviews > 0 ? (recommendedCount / totalReviews) : 0;
         
         console.log('📊 [Reviews] Processed review count:', reviewsData.length);
         console.log('📈 [Reviews] Processed stats:', statsData);
@@ -96,8 +108,33 @@ const SpecialistReviews: React.FC = () => {
         } else {
           setReviews(prev => [...prev, ...reviewsData]);
         }
-        
-        setReviewStats(statsData);
+        // Set normalized stats (based on current response/meta)
+        const baseStats: ReviewStats = {
+          totalReviews,
+          averageRating,
+          ratingDistribution,
+          verifiedReviewsCount,
+          recommendationRate,
+        } as any;
+        setReviewStats(baseStats);
+
+        // For page 1, try to enhance stats via dedicated endpoint for accuracy
+        if (page === 1) {
+          try {
+            const fullStats = await reviewsService.getSpecialistReviewStats(specialistId);
+            // Ensure no NaN values
+            const safeFullStats: ReviewStats = {
+              totalReviews: fullStats.totalReviews ?? baseStats.totalReviews,
+              averageRating: Number.isFinite(fullStats.averageRating) ? fullStats.averageRating : baseStats.averageRating,
+              ratingDistribution: fullStats.ratingDistribution || baseStats.ratingDistribution,
+              verifiedReviewsCount: fullStats.verifiedReviewsCount ?? baseStats.verifiedReviewsCount,
+              recommendationRate: Number.isFinite(fullStats.recommendationRate) ? fullStats.recommendationRate : baseStats.recommendationRate,
+            } as any;
+            setReviewStats(safeFullStats);
+          } catch (e) {
+            // Ignore if stats endpoint fails
+          }
+        }
         setHasMore(paginationData?.hasNext || false);
         
       } catch (err: any) {
