@@ -339,8 +339,9 @@ export class ReviewsService {
       throw new Error(response.error?.message || 'Failed to get review statistics');
     }
     
-    // Backend returns { totalReviews, averageRating, ratingDistribution }
-    const data = response.data || {};
+    // Backend returns { stats: { totalReviews, averageRating, ratingDistribution } }
+    const payload = response.data || {};
+    const data = payload.stats || payload;
     const totalReviews: number = Number(data.totalReviews || 0);
     const averageRating: number = Number.isFinite(data.averageRating) ? data.averageRating : 0;
     const ratingDistribution = data.ratingDistribution || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };

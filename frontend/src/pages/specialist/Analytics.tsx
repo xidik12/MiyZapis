@@ -12,6 +12,8 @@ const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
 import { RootState, AppDispatch } from '../../store';
 import { analyticsService, AnalyticsOverview, PerformanceAnalytics, BookingAnalytics, RevenueAnalytics, ServiceAnalytics } from '../../services/analytics.service';
 import { bookingService } from '../../services/booking.service';
+import { specialistService } from '../../services/specialist.service';
+import { reviewsService } from '../../services/reviews.service';
 import { profileViewService, ProfileViewStats } from '../../services/profileView.service';
 import { retryRequest } from '../../services/api';
 
@@ -490,10 +492,10 @@ Performance:
         });
         averageResponseTime = responseCount > 0 ? Math.round(averageResponseTime / responseCount) : 0;
         
-        const overview = {
+        const overview: AnalyticsOverview = {
           totalBookings,
           totalRevenue,
-          averageRating: 4.5, // Default since we don't have real rating data
+          averageRating: 0, // Will enhance via review stats
           completionRate,
           responseTime: averageResponseTime,
           newCustomers: uniqueCustomerIds.size,
@@ -503,7 +505,7 @@ Performance:
         
         console.log('📊 Analytics: Calculated overview:', overview);
 
-        const performance = {
+        const performance: any = {
           averageResponseTime: averageResponseTime,
           completionRate: completionRate,
           customerSatisfaction: 4.5, // Default good rating
@@ -511,6 +513,20 @@ Performance:
           professionalismScore: 4.5, // Default good score
           period: { start: filters.startDate, end: filters.endDate }
         };
+
+        // Enhance with review stats for accurate rating values
+        try {
+          const profile = await specialistService.getProfile();
+          const specialistId = (profile as any)?.id || (profile as any)?.specialist?.id;
+          if (specialistId) {
+            const reviewStats = await reviewsService.getSpecialistReviewStats(specialistId);
+            overview.averageRating = reviewStats.averageRating || 0;
+            performance.averageRating = reviewStats.averageRating || 0;
+            performance.totalReviews = reviewStats.totalReviews || 0;
+          }
+        } catch (e) {
+          console.warn('Analytics: unable to load review stats', e);
+        }
 
         // Group bookings by service for service analytics
         const serviceGroups = new Map();

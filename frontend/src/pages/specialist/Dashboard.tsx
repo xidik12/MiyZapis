@@ -4,7 +4,8 @@ import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { analyticsService, bookingService, paymentService } from '../../services';
+import { analyticsService, bookingService, paymentService, specialistService } from '../../services';
+import { reviewsService } from '../../services/reviews.service';
 import { retryRequest } from '../../services/api';
 // Removed SpecialistSidebar import - layout is handled by SpecialistLayout
 // Status colors for bookings
@@ -249,6 +250,21 @@ const SpecialistDashboard: React.FC = () => {
           if (overview.totalBookings > stats.totalBookings) {
             stats.totalBookings = overview.totalBookings;
           }
+        }
+
+        // Enhance with real review stats (average rating, review count)
+        try {
+          const profile = await specialistService.getProfile();
+          const specialistId = (profile as any)?.id || (profile as any)?.specialist?.id;
+          if (specialistId) {
+            const reviewStats = await reviewsService.getSpecialistReviewStats(specialistId);
+            if (reviewStats.totalReviews > 0) {
+              stats.rating = reviewStats.averageRating;
+              stats.reviewCount = reviewStats.totalReviews;
+            }
+          }
+        } catch (e) {
+          console.warn('Unable to enhance rating from review stats:', e);
         }
 
         // Process bookings data correctly: completed for recent, upcoming for appointments
