@@ -318,17 +318,20 @@ export class ReviewsService {
   }
 
   // Respond to a review (specialist only)
-  async respondToReview(reviewId: string, message: string): Promise<{ message: string; response: any }> {
-    const response = await apiClient.post<{ message: string; response: any }>(
-      `/reviews/${reviewId}/respond`, 
-      { message }
+  async respondToReview(reviewId: string, message: string): Promise<{ message?: string; response: any }> {
+    // Backend expects endpoint '/reviews/:id/response' with body { response: string }
+    const res = await apiClient.post<any>(
+      `/reviews/${reviewId}/response`,
+      { response: message }
     );
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to respond to review');
+
+    if (!res.success) {
+      throw new Error(res.error?.message || 'Failed to respond to review');
     }
-    
-    return response.data;
+
+    // Backend returns { review: { ... , response: { ... } } }
+    const reviewObj = res.data?.review || {};
+    return { message: res.meta?.message, response: reviewObj.response };
   }
 
   // Get review statistics for a specialist
