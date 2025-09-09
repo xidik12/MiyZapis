@@ -94,11 +94,13 @@ export class ReviewService {
         }
       });
 
-      const response = await apiClient.get<{ reviews: Review[]; pagination: Pagination }>(`/reviews/service/${serviceId}?${params}`);
-      if (!response.success || !response.data) {
+      const response = await apiClient.get<any>(`/reviews/service/${serviceId}?${params}`);
+      if (!response.success) {
         throw new Error(response.error?.message || 'Failed to get service reviews');
       }
-      return response.data;
+      const reviews: Review[] = Array.isArray(response.data) ? response.data : (response.data?.reviews || []);
+      const pagination: Pagination = response.meta?.pagination || response.data?.pagination || { currentPage: 1, totalPages: 1, totalItems: reviews.length, itemsPerPage: reviews.length, hasNext: false, hasPrev: false };
+      return { reviews, pagination };
     } catch (error: any) {
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to get service reviews';
       throw new Error(errorMessage);
@@ -120,11 +122,13 @@ export class ReviewService {
         }
       });
 
-      const response = await apiClient.get<{ reviews: Review[]; pagination: Pagination }>(`/reviews/specialist/${specialistId}?${params}`);
-      if (!response.success || !response.data) {
+      const response = await apiClient.get<any>(`/reviews/specialist/${specialistId}?${params}`);
+      if (!response.success) {
         throw new Error(response.error?.message || 'Failed to get specialist reviews');
       }
-      return response.data;
+      const reviews: Review[] = Array.isArray(response.data) ? response.data : (response.data?.reviews || []);
+      const pagination: Pagination = response.meta?.pagination || response.data?.pagination || { currentPage: 1, totalPages: 1, totalItems: reviews.length, itemsPerPage: reviews.length, hasNext: false, hasPrev: false };
+      return { reviews, pagination };
     } catch (error: any) {
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to get specialist reviews';
       throw new Error(errorMessage);

@@ -199,7 +199,9 @@ const SpecialistProfilePage: React.FC = () => {
     const trackView = async () => {
       if (specialistId && specialist) {
         try {
-          await profileViewService.trackProfileView(specialistId);
+          // Backend expects specialist userId; fall back to route param if needed
+          const profileViewId = specialist?.user?.id || specialist?.userId || specialistId;
+          await profileViewService.trackProfileView(profileViewId as string);
           console.log('✅ Profile view tracked for specialist:', specialistId);
         } catch (error) {
           console.warn('Failed to track profile view:', error);
@@ -506,10 +508,10 @@ const SpecialistProfilePage: React.FC = () => {
             {/* Reviews */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                {t('reviews.title')} ({reviews.length})
+                {t('reviews.title')} ({specialist.reviewCount ?? reviews.length})
               </h2>
               
-              {reviews.length > 0 ? (
+              {(specialist.reviewCount ?? reviews.length) > 0 ? (
                 <div className="space-y-6">
                   {reviews.slice(0, 5).map((review: any) => (
                     <div key={review.id} className="border-b border-gray-200 dark:border-gray-700 pb-6 last:border-b-0">
