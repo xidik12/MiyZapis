@@ -113,12 +113,36 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         return;
       }
 
-      // Create or reuse conversation linked to this booking and send initial message
-      await messagesService.createConversation({
-        participantId,
-        bookingId: booking.id,
-        initialMessage: text,
-      });
+      let conversationId: string | null = null;
+
+      try {
+        // Try to create or reuse conversation for this booking
+        const conversation = await messagesService.createConversation({
+          participantId,
+          bookingId: booking.id,
+        });
+        conversationId = conversation.id;
+      } catch (createErr: any) {
+        console.warn('Create conversation failed, attempting to find existing one:', createErr?.response?.data || createErr?.message);
+        // Fallback: fetch conversations and find one matching this booking
+        try {
+          const { conversations } = await messagesService.getConversations(1, 50);
+          const existing = conversations.find((c: any) => c?.booking?.id === booking.id || (
+            (c?.customer?.id === booking.customerId && c?.specialist?.id === booking.specialistId) ||
+            (c?.customer?.id === booking.specialistId && c?.specialist?.id === booking.customerId)
+          ));
+          if (existing) conversationId = existing.id;
+        } catch (listErr) {
+          console.error('Failed to list conversations for fallback:', listErr);
+        }
+      }
+
+      if (!conversationId) {
+        throw new Error('Unable to start or locate conversation for this booking');
+      }
+
+      // Send the message to the conversation
+      await messagesService.sendMessage(conversationId, { content: text });
 
       setMessage('');
       alert('Message sent');
