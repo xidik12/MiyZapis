@@ -602,6 +602,42 @@
     to { opacity: 1; }
   }
 
+  /* Universal loader */
+  .loader,
+  .loader-sm,
+  .loader-md,
+  .loader-lg,
+  .loader-xl {
+    aspect-ratio: 1;
+    box-sizing: border-box;
+    position: relative;
+    /* Create ring with a gap using masks */
+    mask:
+      radial-gradient(#0000 47%, #000 48% 71%, #0000 72%) exclude,
+      conic-gradient(#000 0 0) no-clip;
+    animation: l11 1.5s linear infinite;
+    /* Allow blur to scale with size */
+    --loader-blur: 15px;
+  }
+  .loader { height: 80px; }
+  .loader-xl { height: 80px; }
+  .loader-lg { height: 32px; --loader-blur: 10px; }
+  .loader-md { height: 24px; --loader-blur: 6px; }
+  .loader-sm { height: 16px; --loader-blur: 4px; }
+  .loader::before,
+  .loader-sm::before,
+  .loader-md::before,
+  .loader-lg::before,
+  .loader-xl::before {
+    content: "";
+    position: absolute;
+    inset: 0 35% 70%;
+    border-radius: 50%;
+    background: currentColor;
+    filter: blur(var(--loader-blur));
+  }
+  @keyframes l11 { to { rotate: 1turn } }
+
   /* Handshake loader elements */
   .avatar-circle {
     @apply w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br shadow-lg shadow-primary-500/10 dark:shadow-primary-500/20;

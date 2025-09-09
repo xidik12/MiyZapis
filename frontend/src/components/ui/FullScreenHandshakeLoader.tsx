@@ -3,34 +3,13 @@ import React from 'react';
 interface FullScreenHandshakeLoaderProps {
   title?: string;
   subtitle?: string;
-  lightGifSrc?: string; // Shown in light theme
-  darkGifSrc?: string;  // Shown in dark theme
 }
 
 // A themed, full-screen loader with two avatars subtly moving toward a handshake.
 export const FullScreenHandshakeLoader: React.FC<FullScreenHandshakeLoaderProps> = ({
   title = 'Loading... ',
   subtitle = 'Getting things ready for you',
-  lightGifSrc,
-  darkGifSrc,
 }) => {
-  const [imgFailed, setImgFailed] = React.useState(false);
-  const [candidateIndex, setCandidateIndex] = React.useState(0);
-  // Safe theme detection without requiring ThemeProvider
-  const isDark = (() => {
-    try {
-      const root = document.documentElement;
-      if (root.classList.contains('dark')) return true;
-      // fallback to system preference
-      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    } catch {
-      return false;
-    }
-  })();
-  const candidates = isDark
-    ? [darkGifSrc, '/assets/loader/handshake-dark.gif', '/handshake-dark.gif']
-    : [lightGifSrc, '/assets/loader/handshake-light.gif', '/handshake-light.gif'];
-  const gifSrc = candidates[candidateIndex];
   return (
     <div
       className="fixed inset-0 z-40 flex items-center justify-center overflow-hidden"
@@ -44,37 +23,8 @@ export const FullScreenHandshakeLoader: React.FC<FullScreenHandshakeLoaderProps>
 
       {/* Content */}
       <div className="relative flex flex-col items-center text-center px-6">
-        {/* Animated avatars */}
-        {gifSrc && !imgFailed ? (
-          <img
-            src={gifSrc}
-            alt="Connecting"
-            className="mb-6 w-28 h-28 sm:w-36 sm:h-36 object-contain animate-fade-in"
-            onError={() => {
-              // Try next candidate path; if none left, fall back to circles
-              if (candidateIndex < candidates.length - 1) {
-                setCandidateIndex(i => i + 1);
-              } else {
-                setImgFailed(true);
-              }
-            }}
-          />
-        ) : (
-          <div className="relative flex items-center justify-center mb-6">
-            {/* Left avatar */}
-            <div className="handshake-avatar-left">
-              <div className="avatar-circle from-primary-500 to-indigo-500" />
-            </div>
-            {/* Middle pulse */}
-            <div className="mx-6">
-              <div className="handshake-pulse" />
-            </div>
-            {/* Right avatar */}
-            <div className="handshake-avatar-right">
-              <div className="avatar-circle from-amber-400 to-rose-500" />
-            </div>
-          </div>
-        )}
+        {/* CSS-only loader */}
+        <div className="loader text-primary-600 dark:text-primary-400 mb-6" />
 
         {/* Text */}
         <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100 animate-fade-in">

@@ -258,8 +258,6 @@ const SpecialistReviews: React.FC = () => {
       <FullScreenHandshakeLoader 
         title={t('common.loading')} 
         subtitle={t('reviews.subtitle')} 
-        lightGifSrc="/assets/loader/handshake-light.gif"
-        darkGifSrc="/assets/loader/handshake-dark.gif"
       />
     );
   }

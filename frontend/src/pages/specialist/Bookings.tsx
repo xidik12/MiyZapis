@@ -776,8 +776,6 @@ const SpecialistBookings: React.FC = () => {
       <FullScreenHandshakeLoader 
         title={t('common.loading')} 
         subtitle={t('bookings.subtitle')}
-        lightGifSrc="/assets/loader/handshake-light.gif"
-        darkGifSrc="/assets/loader/handshake-dark.gif"
       />
     );
   }

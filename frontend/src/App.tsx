@@ -72,12 +72,7 @@ const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 
 // Loading component for Suspense
 const SuspenseLoader = () => (
-  <FullScreenHandshakeLoader 
-    title="Loading..." 
-    subtitle="Preparing your workspace"
-    lightGifSrc="/assets/loader/handshake-light.gif"
-    darkGifSrc="/assets/loader/handshake-dark.gif"
-  />
+  <FullScreenHandshakeLoader title="Loading..." subtitle="Preparing your workspace" />
 );
 
 // Component to redirect from /book/:serviceId to /booking/:serviceId

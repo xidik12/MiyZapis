@@ -706,8 +706,6 @@ const SpecialistSchedule: React.FC = () => {
       <FullScreenHandshakeLoader 
         title={t('schedule.loadingTitle') || 'Loading schedule'} 
         subtitle={t('schedule.loadingSubtitle') || 'Preparing your availability'}
-        lightGifSrc="/assets/loader/handshake-light.gif"
-        darkGifSrc="/assets/loader/handshake-dark.gif"
       />
     );
   }

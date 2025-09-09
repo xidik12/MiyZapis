@@ -401,6 +401,9 @@ const translations: Translations = {
   'dashboard.loadMore': { en: 'Load More', uk: 'Завантажити більше', ru: 'Загрузить больше' },
   'dashboard.noData': { en: 'No data available', uk: 'Немає даних', ru: 'Нет данных' },
   'dashboard.loading': { en: 'Loading...', uk: 'Завантаження...', ru: 'Загрузка...' },
+  // Schedule loading
+  'schedule.loadingTitle': { en: 'Loading schedule', uk: 'Завантаження розкладу', ru: 'Загрузка расписания' },
+  'schedule.loadingSubtitle': { en: 'Preparing your availability', uk: 'Підготовка вашої доступності', ru: 'Подготавливаем вашу доступность' },
 
   // Dashboard - Navigation
   'dashboard.nav.dashboard': { en: 'Dashboard', uk: 'Панель керування', ru: 'Панель управления' },

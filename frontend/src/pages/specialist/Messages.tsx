@@ -190,12 +190,7 @@ const SpecialistMessages: React.FC = () => {
 
   if (loading) {
     return (
-      <FullScreenHandshakeLoader 
-        title={t('common.loading')} 
-        subtitle={t('dashboard.nav.messages')}
-        lightGifSrc="/assets/loader/handshake-light.gif"
-        darkGifSrc="/assets/loader/handshake-dark.gif"
-      />
+      <FullScreenHandshakeLoader title={t('common.loading')} subtitle={t('dashboard.nav.messages')} />
     );
   }
 
