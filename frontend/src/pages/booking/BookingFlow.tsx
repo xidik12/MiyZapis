@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -191,6 +192,16 @@ const BookingFlow: React.FC = () => {
     }
   };
 
+  const refreshSlots = async () => {
+    try {
+      const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
+      if (!currentSpecialistId || !selectedDate) return;
+      const dateStr = selectedDate.toISOString().split('T')[0];
+      const slots = await specialistService.getAvailableSlots(currentSpecialistId, dateStr);
+      setAvailableSlots(slots || []);
+    } catch (e) {}
+  };
+
   const handleBookingSubmit = async () => {
     const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
     
@@ -231,10 +242,17 @@ const BookingFlow: React.FC = () => {
       
       // Navigate to confirmation step
       setCurrentStep(steps.length - 1);
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ BookingFlow: Error creating booking:', error);
-      // Show error to user
-      alert('Failed to create booking. Please try again.');
+      const code = error?.apiError?.code;
+      const status = error?.response?.status || error?.apiError?.status;
+      if (code === 'BOOKING_CONFLICT' || status === 409 || error?.message?.includes('time slot')) {
+        toast.warning('This time slot was just booked by someone else. Please choose another.');
+        await refreshSlots();
+        setCurrentStep(1); // Ensure user stays on time selection
+      } else {
+        toast.error('Failed to create booking. Please try again.');
+      }
     }
   };
 

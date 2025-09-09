@@ -140,10 +140,28 @@ export class BookingService {
         duration: bookingDuration
       });
 
-      // Use a database transaction to prevent race conditions
+      // Use a database transaction + advisory locks to prevent race conditions
       const booking = await prisma.$transaction(async (tx) => {
+        // Acquire per-minute advisory locks for the requested time range to serialize
+        // concurrent booking attempts for the same specialist and overlapping minutes.
+        // This prevents two parallel transactions from both passing the overlap check.
+        const specialistUserId = service.specialist.userId;
+        const hash32 = (str: string) => {
+          let h = 0;
+          for (let i = 0; i < str.length; i++) {
+            h = (h << 5) - h + str.charCodeAt(i);
+            h |= 0; // 32-bit
+          }
+          return h | 0;
+        };
+        const specialistKey = hash32(specialistUserId);
+        const startMinute = Math.floor(bookingStartTime.getTime() / 60000);
+        const endMinute = Math.floor(bookingEndTime.getTime() / 60000);
+        for (let m = startMinute; m < endMinute; m++) {
+          // Use two-int variant to avoid bigint collisions
+          await tx.$executeRawUnsafe('SELECT pg_advisory_xact_lock($1::int, $2::int)', specialistKey, m);
+        }
         // Find any existing bookings that overlap with the requested time slot
-        // Use FOR UPDATE to lock the rows and prevent concurrent modifications
         const existingBookings = await tx.booking.findMany({
           where: {
             specialistId: service.specialist.userId, // Use User ID, not Specialist ID

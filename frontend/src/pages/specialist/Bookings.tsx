@@ -1,4 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { toast } from 'react-toastify';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -109,7 +111,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       // Determine the other participant based on current tab
       const participantId = activeTab === 'provider' ? booking.customerId : booking.specialistId;
       if (!participantId) {
-        alert('Participant not found for this booking');
+        toast.error('Participant not found for this booking');
         return;
       }
 
@@ -145,10 +147,10 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       await messagesService.sendMessage(conversationId, { content: text });
 
       setMessage('');
-      alert('Message sent');
+      toast.success('Message sent');
     } catch (err: any) {
       console.error('Failed to send booking message:', err);
-      alert(err?.message || 'Failed to send message');
+      toast.error(err?.message || 'Failed to send message');
     }
   };
   
@@ -788,11 +790,14 @@ const SpecialistBookings: React.FC = () => {
     }
   };
 
+  const [cancelTarget, setCancelTarget] = useState<Booking | null>(null);
   const handleCancelBooking = async (booking: Booking) => {
-    if (!window.confirm(`Are you sure you want to cancel this booking for ${booking.service?.name}?`)) {
-      return;
-    }
-    
+    setCancelTarget(booking);
+  };
+
+  const confirmCancel = async () => {
+    const booking = cancelTarget;
+    if (!booking) return;
     try {
       const result = await dispatch(cancelBooking({ bookingId: booking.id, reason: 'Customer cancellation' }));
       
@@ -803,8 +808,9 @@ const SpecialistBookings: React.FC = () => {
       }
     } catch (error: any) {
       console.error('❌ Failed to cancel booking:', error);
-      alert('Failed to cancel booking. Please try again.');
+      toast.error('Failed to cancel booking. Please try again.');
     }
+    setCancelTarget(null);
   };
   
   const getStatusBadge = (status: BookingStatus) => {
@@ -862,6 +868,15 @@ const SpecialistBookings: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-4 sm:py-8">
+      <ConfirmModal
+        open={!!cancelTarget}
+        title={t('bookings.cancelBooking')}
+        message={cancelTarget ? `${t('bookings.confirmCancel')}\n${cancelTarget.service?.name || ''}` : ''}
+        confirmText={t('bookings.cancelBooking')}
+        cancelText={t('navigation.back')}
+        onCancel={() => setCancelTarget(null)}
+        onConfirm={confirmCancel}
+      />
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
