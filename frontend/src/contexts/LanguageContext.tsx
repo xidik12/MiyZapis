@@ -204,6 +204,9 @@ const translations: Translations = {
   'search.sort.distance': { en: 'Distance', uk: 'Відстань', ru: 'Расстояние' },
   'search.sort.newest': { en: 'Newest First', uk: 'Спочатку нові', ru: 'Сначала новые' },
   'search.sort.reviews': { en: 'Most Reviews', uk: 'Найбільше відгуків', ru: 'Больше всего отзывов' },
+  'search.topRated': { en: 'Top Rated', uk: 'Найвищий рейтинг', ru: 'Самый высокий рейтинг' },
+  'search.mostReviewed': { en: 'Most Reviewed', uk: 'Найбільше відгуків', ru: 'Больше всего отзывов' },
+  'search.nearby': { en: 'Nearby', uk: 'Поруч', ru: 'Рядом' },
   
   // Specialist Card
   'search.specialist.from': { en: 'From', uk: 'Від', ru: 'От' },

@@ -122,8 +122,13 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         const conversation = await messagesService.createConversation({
           participantId,
           bookingId: booking.id,
+          initialMessage: text,
         });
         conversationId = conversation.id;
+        // Initial message already sent by backend when initialMessage is provided
+        setMessage('');
+        toast.success('Message sent');
+        return;
       } catch (createErr: any) {
         console.warn('Create conversation failed, attempting to find existing one:', createErr?.response?.data || createErr?.message);
         // Fallback: fetch conversations and find one matching this booking

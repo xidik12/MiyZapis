@@ -213,7 +213,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         role="dialog"
         aria-modal="true"
         aria-label="Notifications"
-        className="absolute right-0 top-0 h-full w-full max-w-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-2xl border-l border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-out translate-x-0 animate-slide-in-right"
+        className="absolute right-0 top-0 h-full w-full max-w-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-2xl border-l border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-out translate-x-0 animate-slide-in-right will-change-transform overscroll-contain"
         style={{ transform: `translateX(${translateX}px)` }}
         onTouchStart={(e) => {
           const t = e.touches[0];
@@ -335,7 +335,13 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
             const rowH = 80;
             const start = Math.floor(el.scrollTop / rowH);
             const end = start + Math.ceil(el.clientHeight / rowH) + 5;
-            setWin({ start, end });
+            // Throttle updates to once per frame for smoother scrolling
+            if (!(window as any)._notifRaf) {
+              (window as any)._notifRaf = requestAnimationFrame(() => {
+                setWin({ start, end });
+                (window as any)._notifRaf = null;
+              });
+            }
           }}
         >
           {loading ? (

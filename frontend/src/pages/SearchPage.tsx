@@ -21,6 +21,7 @@ import {
   StarIcon as StarIconSolid,
 } from '@heroicons/react/24/solid';
 import { Avatar } from '../components/ui/Avatar';
+import Skeleton, { SkeletonText } from '../components/ui/Skeleton';
 
 interface ServiceWithSpecialist {
   id: string;
