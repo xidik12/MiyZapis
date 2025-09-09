@@ -70,33 +70,58 @@ export class MessagingController {
       const userId = req.user.id;
       const { participantId, bookingId, initialMessage } = req.body;
 
-      // Determine customer and specialist roles
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        include: { specialist: true }
-      });
+      // If bookingId is provided, derive roles from the booking to avoid role ambiguity
+      let customerId: string;
+      let specialistId: string;
+      if (bookingId) {
+        const booking = await prisma.booking.findUnique({
+          where: { id: bookingId },
+          select: { id: true, customerId: true, specialistId: true }
+        });
 
-      const participant = await prisma.user.findUnique({
-        where: { id: participantId },
-        include: { specialist: true }
-      });
+        if (!booking) {
+          return errorResponse(res, 'Booking not found', 404);
+        }
 
-      if (!user || !participant) {
-        return errorResponse(res, 'User not found', 404);
-      }
+        // Ensure requester is part of the booking
+        if (booking.customerId !== userId && booking.specialistId !== userId) {
+          return errorResponse(res, 'Access denied for this booking', 403);
+        }
 
-      let customerId, specialistId;
+        customerId = booking.customerId;
+        specialistId = booking.specialistId;
 
-      if (user.specialist && !participant.specialist) {
-        // Current user is specialist, participant is customer
-        specialistId = userId;
-        customerId = participantId;
-      } else if (!user.specialist && participant.specialist) {
-        // Current user is customer, participant is specialist
-        customerId = userId;
-        specialistId = participantId;
+        // If participantId was passed and is not one of the booking participants, normalize it (do not hard error)
+        if (participantId && participantId !== customerId && participantId !== specialistId) {
+          // No-op: we'll still create/reuse conversation using booking roles
+        }
       } else {
-        return errorResponse(res, 'Invalid conversation participants', 400);
+        // Determine roles based on specialist relationship when no booking context is provided
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          include: { specialist: true }
+        });
+
+        const participant = await prisma.user.findUnique({
+          where: { id: participantId },
+          include: { specialist: true }
+        });
+
+        if (!user || !participant) {
+          return errorResponse(res, 'User not found', 404);
+        }
+
+        if (user.specialist && !participant.specialist) {
+          // Current user is specialist, participant is customer
+          specialistId = userId;
+          customerId = participantId;
+        } else if (!user.specialist && participant.specialist) {
+          // Current user is customer, participant is specialist
+          customerId = userId;
+          specialistId = participantId;
+        } else {
+          return errorResponse(res, 'Invalid conversation participants', 400);
+        }
       }
 
       // Create conversation
@@ -108,10 +133,11 @@ export class MessagingController {
 
       // Send initial message if provided
       if (initialMessage) {
+        const receiverId = (userId === customerId) ? specialistId : customerId;
         await this.messagingService.sendMessage({
           conversationId: conversation.id,
           senderId: userId,
-          receiverId: participantId,
+          receiverId,
           content: initialMessage
         });
       }
