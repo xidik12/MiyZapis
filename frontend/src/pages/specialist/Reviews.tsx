@@ -494,10 +494,7 @@ const SpecialistReviews: React.FC = () => {
               {review.service && (
                 <div className="mb-3">
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {t('reviews.forService')}: 
-                    <span className="font-medium text-gray-900 dark:text-white ml-1">
-                      {review.service.name}
-                    </span>
+                    {t('reviews.forService').replace('{service}', review.service.name)}
                   </span>
                 </div>
               )}
