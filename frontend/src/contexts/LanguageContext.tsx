@@ -204,6 +204,11 @@ const translations: Translations = {
   'search.sort.distance': { en: 'Distance', uk: 'Відстань', ru: 'Расстояние' },
   'search.sort.newest': { en: 'Newest First', uk: 'Спочатку нові', ru: 'Сначала новые' },
   'search.sort.reviews': { en: 'Most Reviews', uk: 'Найбільше відгуків', ru: 'Больше всего отзывов' },
+  // Settings (shared)
+  'settings.display': { en: 'Display', uk: 'Відображення', ru: 'Отображение' },
+  'settings.displayDescription': { en: 'Control interface density for faster workflows.', uk: 'Керуйте щільністю інтерфейсу для швидшої роботи.', ru: 'Управляйте плотностью интерфейса для более быстрой работы.' },
+  'settings.comfortable': { en: 'Comfortable', uk: 'Зручно', ru: 'Комфортно' },
+  'settings.compact': { en: 'Compact', uk: 'Компактно', ru: 'Компактно' },
   'search.topRated': { en: 'Top Rated', uk: 'Найвищий рейтинг', ru: 'Самый высокий рейтинг' },
   'search.mostReviewed': { en: 'Most Reviewed', uk: 'Найбільше відгуків', ru: 'Больше всего отзывов' },
   'search.nearby': { en: 'Nearby', uk: 'Поруч', ru: 'Рядом' },

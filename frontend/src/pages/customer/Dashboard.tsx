@@ -5,6 +5,7 @@ import { selectUser } from '@/store/slices/authSlice';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { bookingService } from '@/services/booking.service';
 // Status colors for bookings
 const statusColors = {
   confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -111,38 +112,63 @@ const CustomerDashboard: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch dashboard data
+  // Fetch dashboard data (customer)
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!user) return;
-      
       try {
         setLoading(true);
         setError(null);
-        
-        // TODO: Replace with actual API calls when backend is ready
-        // For now, we'll show empty states for new users
-        
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Set empty initial data for new users
+
+        // Fetch customer's bookings
+        const [upcomingRes, completedRes, allRes] = await Promise.all([
+          bookingService.getBookings({ limit: 10, status: 'confirmed,pending,inProgress' as any }, 'customer'),
+          bookingService.getBookings({ limit: 5, status: 'COMPLETED' as any }, 'customer'),
+          bookingService.getBookings({ limit: 1 }, 'customer'),
+        ]);
+
+        // Next appointment (earliest upcoming)
+        const upcomingSorted = [...upcomingRes.bookings].sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
+        const next = upcomingSorted[0];
+        setNextAppointment(next ? {
+          serviceName: next.service?.name || next.serviceName || 'Service',
+          specialistName: next.specialist ? `${next.specialist.firstName || ''} ${next.specialist.lastName || ''}`.trim() : next.specialistName || 'Specialist',
+          date: new Date(next.scheduledAt).toLocaleDateString(),
+          time: new Date(next.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          type: next.meetingLink ? 'online' : 'offline',
+          location: next.location || undefined,
+        } : null);
+
+        // Recent completed bookings
+        const recent = completedRes.bookings.map((b) => ({
+          id: b.id,
+          specialistName: b.specialist ? `${b.specialist.firstName || ''} ${b.specialist.lastName || ''}`.trim() : b.specialistName || 'Specialist',
+          serviceName: b.service?.name || b.serviceName || 'Service',
+          date: new Date(b.scheduledAt).toLocaleDateString(),
+          status: 'completed' as const,
+          amount: b.totalAmount,
+        }));
+        setRecentBookings(recent);
+
+        // Stats (basic derived)
+        const totalSpent = completedRes.bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+        const servicesUsed = new Set(completedRes.bookings.map((b) => b.service?.id || b.serviceId)).size;
+        const reviewsWritten = completedRes.bookings.filter((b: any) => Boolean((b as any).review)).length;
         setStats({
-          totalSpent: 0,
-          loyaltyPoints: 0,
+          totalSpent,
+          loyaltyPoints: user.loyaltyPoints || 0,
           savedAmount: 0,
-          servicesUsed: 0,
-          completedBookings: 0,
-          totalBookings: 0,
+          servicesUsed,
+          completedBookings: completedRes.bookings.length,
+          totalBookings: allRes.pagination?.total || completedRes.bookings.length + upcomingRes.bookings.length,
           averageRating: 0,
           favoriteSpecialists: 0,
-          reviewsWritten: 0
+          reviewsWritten,
         });
-        setNextAppointment(null);
-        setRecentBookings([]);
+
+        // Leave favorites/special offers empty for now (depends on respective services)
         setFavoriteSpecialists([]);
         setSpecialOffers([]);
-        
       } catch (err) {
         console.error('Failed to fetch dashboard data:', err);
         setError('Failed to load dashboard data');
@@ -150,7 +176,6 @@ const CustomerDashboard: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchDashboardData();
   }, [user]);
 

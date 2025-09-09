@@ -37,8 +37,9 @@ const CustomerProfile = React.lazy(() => import('./pages/customer/Profile'));
 const CustomerLoyalty = React.lazy(() => import('./pages/customer/Loyalty'));
 const CustomerFavorites = React.lazy(() => import('./pages/customer/Favorites'));
 const CustomerSettings = React.lazy(() => import('./pages/customer/Settings'));
-const CustomerHelpSupport = React.lazy(() => import('./pages/customer/HelpSupport'));
-const PaymentMethods = React.lazy(() => import('./pages/customer/PaymentMethods'));
+  const CustomerHelpSupport = React.lazy(() => import('./pages/customer/HelpSupport'));
+  const PaymentMethods = React.lazy(() => import('./pages/customer/PaymentMethods'));
+  const CustomerMessages = React.lazy(() => import('./pages/customer/Messages'));
 
 // Specialist pages
 const SpecialistDashboard = React.lazy(() => import('./pages/specialist/Dashboard'));
@@ -327,6 +328,14 @@ function App() {
                     <CustomerDashboard />
                   </Suspense>
                 </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/messages"
+            element={
+              <ProtectedRoute>
+                <CustomerMessages />
               </ProtectedRoute>
             }
           />
