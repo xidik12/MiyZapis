@@ -16,6 +16,7 @@ import ReviewModal from '../../components/modals/ReviewModal';
 import { reviewsService } from '../../services/reviews.service';
 import { validateReviewTags } from '../../constants/reviewTags';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
+import { messagesService } from '../../services/messages.service';
 
 // Status colors for bookings (matching backend status values)
 const statusColors = {
@@ -100,10 +101,31 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     onClose();
   };
   
-  const handleSendMessage = () => {
-    // In real app, this would send a message to the customer
-    setMessage('');
-    // Show success notification
+  const handleSendMessage = async () => {
+    try {
+      const text = message.trim();
+      if (!booking || !text) return;
+
+      // Determine the other participant based on current tab
+      const participantId = activeTab === 'provider' ? booking.customerId : booking.specialistId;
+      if (!participantId) {
+        alert('Participant not found for this booking');
+        return;
+      }
+
+      // Create or reuse conversation linked to this booking and send initial message
+      await messagesService.createConversation({
+        participantId,
+        bookingId: booking.id,
+        initialMessage: text,
+      });
+
+      setMessage('');
+      alert('Message sent');
+    } catch (err: any) {
+      console.error('Failed to send booking message:', err);
+      alert(err?.message || 'Failed to send message');
+    }
   };
   
   return (
