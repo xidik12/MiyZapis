@@ -351,8 +351,16 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 {/* Cancel booking if allowed */}
                 {(booking.status === 'PENDING' || booking.status === 'CONFIRMED') && (
                   <button
-                    onClick={() => {
-                      if (confirm(t('bookings.confirmCancel'))) {
+                    onClick={async () => {
+                      const { confirm } = await import('../../components/ui/Confirm');
+                      const ok = await confirm({
+                        title: t('bookings.confirmCancelTitle') || 'Cancel booking?',
+                        message: t('bookings.confirmCancel') || 'Are you sure you want to cancel this booking?',
+                        confirmText: t('actions.cancel') || 'Cancel',
+                        cancelText: t('actions.back') || 'Back',
+                        variant: 'destructive'
+                      });
+                      if (ok) {
                         // Handle cancellation
                         onClose();
                       }
@@ -693,7 +701,7 @@ const SpecialistBookings: React.FC = () => {
       
       if (!paymentConfirmed) {
         // Show a message that payment must be received first
-        alert('Please ensure payment is received before completing the booking.');
+        toast.info('Please ensure payment is received before completing the booking.');
         return;
       }
 
@@ -711,7 +719,7 @@ const SpecialistBookings: React.FC = () => {
       
     } catch (error: any) {
       console.error('❌ Failed to complete booking with payment confirmation:', error);
-      alert(`Failed to complete booking: ${error.message}`);
+      toast.error(`Failed to complete booking: ${error.message}`);
     }
   };
   
@@ -782,7 +790,7 @@ const SpecialistBookings: React.FC = () => {
       
       // Show user-friendly error message
       const errorMessage = error?.message || 'Failed to submit review. Please try again.';
-      alert(`Review submission failed: ${errorMessage}`);
+      toast.error(`Review submission failed: ${errorMessage}`);
       
       // Keep the modal open so user can try again
     } finally {

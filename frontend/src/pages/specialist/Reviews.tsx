@@ -343,28 +343,42 @@ const SpecialistReviews: React.FC = () => {
       {/* Rating Distribution */}
       {reviewStats && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('reviews.ratingDistribution')}</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('reviews.ratingDistribution')}</h3>
+            {filters.rating && (
+              <button
+                className="text-sm text-primary-600 hover:text-primary-700"
+                onClick={() => handleFilterChange({ ...filters, rating: undefined })}
+              >
+                {t('common.clear') || 'Clear'}
+              </button>
+            )}
+          </div>
           <div className="space-y-2">
             {[5, 4, 3, 2, 1].map((rating) => {
               const count = reviewStats.ratingDistribution[rating as keyof typeof reviewStats.ratingDistribution];
               const percentage = reviewStats.totalReviews > 0 ? (count / reviewStats.totalReviews) * 100 : 0;
-              
+              const active = filters.rating === rating;
               return (
-                <div key={rating} className="flex items-center space-x-3">
+                <button
+                  key={rating}
+                  onClick={() => handleFilterChange({ ...filters, rating })}
+                  className={`w-full flex items-center space-x-3 text-left rounded-lg px-2 py-1 transition-colors ${active ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
+                >
                   <div className="flex items-center space-x-1 w-16">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{rating}</span>
                     <StarIconSolid className="w-4 h-4 text-yellow-400" />
                   </div>
                   <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div 
-                      className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${active ? 'bg-primary-500' : 'bg-yellow-400'}`}
                       style={{ width: `${percentage}%` }}
                     ></div>
                   </div>
                   <span className="text-sm text-gray-600 dark:text-gray-400 w-16 text-right">
                     {count} ({percentage.toFixed(0)}%)
                   </span>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -459,7 +473,7 @@ const SpecialistReviews: React.FC = () => {
                       </h4>
                       {review.isVerified && (
                         <span className="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 text-xs px-2 py-1 rounded-full">
-                          {t('reviews.verified')}
+                          {t('reviews.verifiedBooking') || t('reviews.verified') || 'Verified booking'}
                         </span>
                       )}
                     </div>

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { toast } from 'react-toastify';
 import { XMarkIcon, StarIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -67,7 +68,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
     e.preventDefault();
     
     if (rating === 0) {
-      alert(t('reviews.pleaseSelectRating'));
+      toast.warning(t('reviews.pleaseSelectRating'));
       return;
     }
 
@@ -85,7 +86,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
       onClose();
     } catch (error) {
       console.error('Error submitting review:', error);
-      alert(t('reviews.submitError'));
+      toast.error(t('reviews.submitError'));
     }
   };
 
@@ -102,21 +103,48 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
     ? `${booking.specialist.firstName} ${booking.specialist.lastName}`
     : booking.specialistName || 'Unknown Specialist';
 
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
+
+  // Focus trap
+  useEffect(() => {
+    if (!isOpen) return;
+    const panel = panelRef.current;
+    if (!panel) return;
+    const getFocusable = () => Array.from(panel.querySelectorAll<HTMLElement>('a,button,input,select,textarea,[tabindex]:not([tabindex="-1"])')).filter(el => !el.hasAttribute('disabled'));
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const items = getFocusable();
+      if (!items.length) return;
+      const first = items[0]; const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    panel.addEventListener('keydown', handleKey as any);
+    setTimeout(() => (getFocusable()[0] || panel).focus(), 0);
+    return () => panel.removeEventListener('keydown', handleKey as any);
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-start justify-center px-4 py-4 sm:p-4">
-      <div className={`relative w-full max-w-lg shadow-lg rounded-md ${
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-start justify-center px-4 py-4 sm:p-4" onClick={onClose}>
+      <div ref={panelRef} className={`relative w-full max-w-lg shadow-lg rounded-md ${
         theme === 'dark' 
           ? 'bg-gray-800 border-gray-600' 
           : 'bg-white border-gray-300'
       } my-4 sm:my-8 mx-auto min-h-fit max-h-full`} style={{ 
         marginTop: 'max(1rem, 2vh)',
         maxHeight: 'calc(100vh - 2rem)'
-      }}>
+      }} role="dialog" aria-modal="true" aria-labelledby="review-title" onClick={(e) => e.stopPropagation()} tabIndex={-1}>
         <div className="p-4 sm:p-6 overflow-y-auto max-h-full">
           <div className="flex items-center justify-between mb-4">
-            <h3 className={`text-lg font-medium ${
+            <h3 id="review-title" className={`text-lg font-medium ${
               theme === 'dark' ? 'text-gray-100' : 'text-gray-900'
             }`}>
               {t('reviews.leaveReview')}
@@ -129,6 +157,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                   : 'text-gray-400 hover:text-gray-600'
               }`}
               disabled={loading}
+              aria-label="Close review dialog"
             >
               <XMarkIcon className="h-6 w-6" />
             </button>
@@ -249,6 +278,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
               </button>
             </div>
           </form>
+          <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">Press Esc or click outside to close</p>
         </div>
       </div>
     </div>

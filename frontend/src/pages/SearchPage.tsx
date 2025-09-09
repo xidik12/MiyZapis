@@ -69,11 +69,13 @@ const SearchPage: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState(searchParams.get('location') || '');
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
   const [selectedRating, setSelectedRating] = useState(0);
+  const [selectedDistance, setSelectedDistance] = useState<number>(0); // km, 0 means ignore
   const [sortBy, setSortBy] = useState('rating');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [isFilterTrayOpen, setIsFilterTrayOpen] = useState(false);
 
   // Fetch categories from API
   useEffect(() => {
@@ -105,6 +107,14 @@ const SearchPage: React.FC = () => {
     fetchCategories();
   }, [t]);
 
+  // Close filter tray on Esc
+  useEffect(() => {
+    if (!isFilterTrayOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setIsFilterTrayOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isFilterTrayOpen]);
+
   // Fetch favorites when component mounts
   useEffect(() => {
     dispatch(fetchFavoriteSpecialists());
@@ -124,6 +134,7 @@ const SearchPage: React.FC = () => {
           rating: selectedRating > 0 ? selectedRating : undefined,
           sortBy: sortBy as 'rating' | 'price' | 'reviews' | 'distance',
           sortOrder: 'desc' as const, // Default to descending (best first)
+          distance: selectedDistance > 0 ? selectedDistance : undefined,
         };
         
         const data = await serviceService.searchServices(filters);
@@ -200,6 +211,7 @@ const SearchPage: React.FC = () => {
     setSelectedLocation('');
     setPriceRange({ min: 0, max: 1000 });
     setSelectedRating(0);
+    setSelectedDistance(0);
     setSortBy('rating');
     setShowFavoritesOnly(false);
   };
@@ -254,7 +266,12 @@ const SearchPage: React.FC = () => {
             <CheckBadgeIcon className="absolute -bottom-1 -right-1 w-6 h-6 text-primary-600 bg-white rounded-full" />
           )}
           {service.specialist.isOnline && (
-            <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+            <>
+              <span className="absolute -top-1 -right-1 inline-flex h-4 w-4">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-4 w-4 bg-green-500 border-2 border-white"></span>
+              </span>
+            </>
           )}
         </div>
 
@@ -298,6 +315,11 @@ const SearchPage: React.FC = () => {
           <div className="flex items-center justify-between mt-4">
             <div className="text-sm text-gray-500 dark:text-gray-400">
               {(service.specialist.completedBookings ?? service._count?.bookings ?? 0)} {t('specialist.completedJobs')} • {service.specialist.experience}
+              {typeof service.specialist.responseTime === 'number' && (
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+                  ~{service.specialist.responseTime} {t('common.minutes') || 'min'}
+                </span>
+              )}
             </div>
             <div className="text-right">
               <div className={`text-xs px-2 py-1 rounded-full mb-1 ${service.isAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
@@ -327,6 +349,37 @@ const SearchPage: React.FC = () => {
             >
               {t('actions.book')}
             </Link>
+            {/* Conditional Call/Directions CTAs when data exists */}
+            {(() => {
+              const phone = (service as any)?.specialist?.user?.phone || (service as any)?.specialist?.phone;
+              const locationStr = service.location;
+              return (
+                <div className="flex gap-2 sm:w-auto w-full">
+                  {phone && (
+                    <a
+                      href={`tel:${phone}`}
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+                      aria-label="Call"
+                    >
+                      <PhoneIcon className="w-4 h-4" />
+                      <span className="hidden sm:inline">{t('actions.call') || 'Call'}</span>
+                    </a>
+                  )}
+                  {locationStr && (
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationStr)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+                      aria-label="Directions"
+                    >
+                      <MapPinIcon className="w-4 h-4" />
+                      <span className="hidden sm:inline">{t('actions.directions') || 'Directions'}</span>
+                    </a>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>
@@ -361,7 +414,55 @@ const SearchPage: React.FC = () => {
         </form>
 
         {/* Filters and Controls */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0 sticky-controls rounded-b-xl">
+          {/* Quick filter chips */}
+          <div className="flex flex-wrap gap-2 mb-2">
+            <button
+              onClick={() => setSortBy('rating')}
+              className={`px-3 py-1.5 rounded-full text-sm border ${sortBy === 'rating' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+            >
+              {t('search.topRated') || 'Top Rated'}
+            </button>
+            <button
+              onClick={() => setSortBy('reviews')}
+              className={`px-3 py-1.5 rounded-full text-sm border ${sortBy === 'reviews' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+            >
+              {t('search.mostReviewed') || 'Most Reviewed'}
+            </button>
+            <button
+              onClick={() => setSortBy('distance')}
+              className={`px-3 py-1.5 rounded-full text-sm border ${sortBy === 'distance' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+            >
+              {t('search.nearby') || 'Nearby'}
+            </button>
+            {/* Rating distribution quick chips */}
+            <button
+              onClick={() => setSelectedRating(5)}
+              className={`px-3 py-1.5 rounded-full text-sm border ${selectedRating === 5 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+            >
+              5★
+            </button>
+            <button
+              onClick={() => setSelectedRating(4)}
+              className={`px-3 py-1.5 rounded-full text-sm border ${selectedRating === 4 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+            >
+              4★+
+            </button>
+            <button
+              onClick={() => setSelectedRating(3)}
+              className={`px-3 py-1.5 rounded-full text-sm border ${selectedRating === 3 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+            >
+              3★+
+            </button>
+            {(selectedCategory || selectedLocation || selectedRating > 0 || showFavoritesOnly) && (
+              <button
+                onClick={clearFilters}
+                className="px-3 py-1.5 rounded-full text-sm border bg-red-50 text-red-700 border-red-200"
+              >
+                {t('search.resetFilters') || 'Reset filters'}
+              </button>
+            )}
+          </div>
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
@@ -406,34 +507,196 @@ const SearchPage: React.FC = () => {
               <span className="hidden sm:inline">{t('search.showing')} </span>{getFilteredServices().length} <span className="hidden sm:inline">{t('search.results')}</span>
             </span>
             <div className="flex items-center space-x-1 order-1 sm:order-2">
+              {/* Mobile filter tray toggle */}
+              <button
+                onClick={() => setIsFilterTrayOpen(true)}
+                className="p-2 rounded sm:hidden bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                aria-label="Open filters"
+              >
+                <FunnelIcon className="w-5 h-5" />
+              </button>
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2 rounded ${
-                  viewMode === 'grid'
-                    ? 'bg-primary-100 text-primary-600'
-                    : 'text-gray-400 hover:text-gray-600'
-                }`}
+                aria-label="Grid view"
+                className={`p-2 rounded ${viewMode === 'grid' ? 'bg-primary-100 text-primary-600' : 'text-gray-400 hover:text-gray-600'} focus-visible-ring`}
               >
                 <Squares2X2Icon className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 rounded ${
-                  viewMode === 'list'
-                    ? 'bg-primary-100 text-primary-600'
-                    : 'text-gray-400 hover:text-gray-600'
-                }`}
+                aria-label="List view"
+                className={`p-2 rounded ${viewMode === 'list' ? 'bg-primary-100 text-primary-600' : 'text-gray-400 hover:text-gray-600'} focus-visible-ring`}
               >
                 <ListBulletIcon className="w-5 h-5" />
               </button>
             </div>
           </div>
+
+          {/* Active filters summary chips (desktop) */}
+          {(selectedCategory || selectedLocation || selectedRating > 0 || showFavoritesOnly) && (
+            <div className="hidden sm:flex flex-wrap gap-2 mt-2">
+              {selectedCategory && (
+                <button
+                  className="px-3 py-1.5 rounded-full text-sm bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                  onClick={() => setSelectedCategory('')}
+                >
+                  {t('search.category')}: {categories.find(c => (c.id === selectedCategory))?.name || selectedCategory} ×
+                </button>
+              )}
+              {selectedLocation && (
+                <button
+                  className="px-3 py-1.5 rounded-full text-sm bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                  onClick={() => setSelectedLocation('')}
+                >
+                  {t('search.location') || 'Location'}: {selectedLocation} ×
+                </button>
+              )}
+              {selectedRating > 0 && (
+                <button
+                  className="px-3 py-1.5 rounded-full text-sm bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                  onClick={() => setSelectedRating(0)}
+                >
+                  {t('search.rating') || 'Rating'}: {selectedRating}★+ ×
+                </button>
+              )}
+              {showFavoritesOnly && (
+                <button
+                  className="px-3 py-1.5 rounded-full text-sm bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                  onClick={() => setShowFavoritesOnly(false)}
+                >
+                  {t('search.favoritesOnly') || 'Favorites only'} ×
+                </button>
+              )}
+              {selectedDistance > 0 && (
+                <button
+                  className="px-3 py-1.5 rounded-full text-sm bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                  onClick={() => setSelectedDistance(0)}
+                >
+                  {t('search.distance') || 'Distance'}: ≤ {selectedDistance} km ×
+                </button>
+              )}
+            </div>
+          )}
         </div>
+
+        {/* Mobile Filter Tray */}
+        {isFilterTrayOpen && (
+          <div className="fixed inset-0 z-50 sm:hidden" role="dialog" aria-modal="true" aria-label="Filters">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsFilterTrayOpen(false)} />
+            <div className="absolute right-0 top-0 h-full w-full max-w-sm bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-2xl animate-slide-in-right p-4 flex flex-col">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('search.filters') || 'Filters'}</h3>
+                <button onClick={() => setIsFilterTrayOpen(false)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 focus-visible-ring" aria-label="Close filters">✕</button>
+              </div>
+              <div className="space-y-4 overflow-y-auto">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.category') || 'Category'}</label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+                  >
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id === 'all' ? '' : category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.location') || 'Location'}</label>
+                  <input
+                    type="text"
+                    value={selectedLocation}
+                    onChange={(e) => setSelectedLocation(e.target.value)}
+                    placeholder={t('search.locationPlaceholder') || 'City or area'}
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.sortBy.title') || 'Sort by'}</label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+                  >
+                    <option value="rating">{t('search.sortBy.rating')}</option>
+                    <option value="price">{t('search.sortBy.price')}</option>
+                    <option value="distance">{t('search.sortBy.distance')}</option>
+                    <option value="reviews">{t('search.sortBy.reviews')}</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.minimumRating') || 'Minimum rating'}</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={0}
+                      max={5}
+                      step={1}
+                      value={selectedRating}
+                      onChange={(e) => setSelectedRating(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300 w-8 text-right">{selectedRating}★</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.distance') || 'Distance (km)'}</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={0}
+                      max={50}
+                      step={5}
+                      value={selectedDistance}
+                      onChange={(e) => setSelectedDistance(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300 w-16 text-right">{selectedDistance > 0 ? `≤ ${selectedDistance} km` : t('common.any') || 'Any'}</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('search.favoritesOnly') || 'Favorites only'}</span>
+                  <button
+                    onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showFavoritesOnly ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showFavoritesOnly ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+              </div>
+              <div className="mt-auto pt-4 flex gap-2">
+                <button className="btn btn-secondary flex-1" onClick={() => setIsFilterTrayOpen(false)}>
+                  {t('actions.close') || 'Close'}
+                </button>
+                <button className="btn btn-primary flex-1" onClick={() => setIsFilterTrayOpen(false)}>
+                  {t('actions.apply') || 'Apply'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Results */}
         {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                <div className="flex items-start space-x-4">
+                  <Skeleton className="w-16 h-16 rounded-full" />
+                  <div className="flex-1">
+                    <Skeleton className="h-5 w-2/3 mb-2" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <SkeletonText lines={3} className="mt-3" />
+                  </div>
+                </div>
+                <div className="mt-4 flex justify-between items-center">
+                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-9 w-24 rounded-md" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : getFilteredServices().length > 0 ? (
           <div className={`grid gap-6 ${
@@ -454,12 +717,17 @@ const SearchPage: React.FC = () => {
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               {t('search.noResultsDescription')}
             </p>
-            <button
-              onClick={clearFilters}
-              className="text-primary-600 hover:text-primary-700 font-medium"
-            >
-              {t('search.clearAll')}
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                onClick={clearFilters}
+                className="btn btn-primary"
+              >
+                {t('search.resetFilters') || 'Reset filters'}
+              </button>
+              <Link to="/" className="btn btn-secondary">
+                {t('actions.goHome') || 'Go Home'}
+              </Link>
+            </div>
           </div>
         )}
       </div>

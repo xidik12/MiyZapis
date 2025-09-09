@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -138,13 +139,13 @@ const CustomerBookings: React.FC = () => {
       );
     } catch (error) {
       console.error('Failed to cancel booking:', error);
-      alert('Failed to cancel booking. Please try again.');
+      toast.error('Failed to cancel booking. Please try again.');
     }
   };
 
   const handleRescheduleBooking = (bookingId: string) => {
     // In a real app, this would open a reschedule modal/flow
-    alert(t('booking.rescheduleAlert'));
+    toast.info(t('booking.rescheduleAlert'));
   };
 
   const handleLeaveReview = (bookingId: string) => {
@@ -190,24 +191,28 @@ const CustomerBookings: React.FC = () => {
       setReviewModalOpen(false);
       setBookingToReview(null);
       
-      alert(t('reviews.reviewSubmitted'));
+      toast.success(t('reviews.reviewSubmitted'));
     } catch (error) {
       console.error('Failed to submit review:', error);
-      alert(t('reviews.submitError'));
+      toast.error(t('reviews.submitError'));
     } finally {
       setReviewLoading(false);
     }
   };
 
-  const handleBookAgain = (booking: Booking) => {
+  const handleBookAgain = async (booking: Booking) => {
     const serviceName = booking.service?.name || booking.serviceName || 'this service';
     const specialistName = booking.specialist?.firstName && booking.specialist?.lastName 
       ? `${booking.specialist.firstName} ${booking.specialist.lastName}`
       : booking.specialistName || 'the specialist';
     
-    const confirmed = window.confirm(
-      `Would you like to book ${serviceName} with ${specialistName} again?`
-    );
+    const { confirm } = await import('../../components/ui/Confirm');
+    const confirmed = await confirm({
+      title: 'Book again?',
+      message: `Would you like to book ${serviceName} with ${specialistName} again?`,
+      confirmText: t('actions.book') || 'Book',
+      cancelText: t('actions.cancel') || 'Cancel'
+    });
     
     if (confirmed) {
       // Get the service ID from the booking
@@ -222,7 +227,7 @@ const CustomerBookings: React.FC = () => {
         if (specialistId) {
           navigate(`/specialist/${specialistId}`);
         } else {
-          alert(t('errors.serviceNotFound'));
+          toast.error(t('errors.serviceNotFound'));
         }
       }
     }

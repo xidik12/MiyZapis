@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { socketService } from '../../services/socket.service';
 import { toast } from 'react-toastify';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -50,6 +51,7 @@ const BookingFlow: React.FC = () => {
   }>>([]);
   const [bookingNotes, setBookingNotes] = useState('');
   const [bookingResult, setBookingResult] = useState<any>(null);
+  const [conflictHint, setConflictHint] = useState<{ active: boolean; lastTried?: string }>({ active: false });
 
   const steps: BookingStep[] = [
     { id: 'service', title: t('booking.selectService'), completed: false },
@@ -147,6 +149,29 @@ const BookingFlow: React.FC = () => {
     };
 
     fetchAvailableDates();
+
+    // Subscribe to availability updates (if backend emits)
+    const sid = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
+    if (sid) {
+      try { socketService.subscribeToAvailability(sid); } catch {}
+    }
+    const onAvail = (data: any) => {
+      const sidData = data?.specialistId || data?.id;
+      if (!sid || sidData !== sid) return;
+      // If current selected date matches update, refresh slots/dates
+      try {
+        if (selectedDate) {
+          refreshSlots();
+        }
+      } catch {}
+    };
+    socketService.on('availability:updated', onAvail as any);
+    return () => {
+      socketService.off('availability:updated', onAvail as any);
+      if (sid) {
+        try { socketService.unsubscribeFromAvailability(sid); } catch {}
+      }
+    };
   }, [specialist, service, specialistId]);
 
   useEffect(() => {
@@ -250,6 +275,7 @@ const BookingFlow: React.FC = () => {
         toast.warning('This time slot was just booked by someone else. Please choose another.');
         await refreshSlots();
         setCurrentStep(1); // Ensure user stays on time selection
+        setConflictHint({ active: true, lastTried: selectedTime });
       } else {
         toast.error('Failed to create booking. Please try again.');
       }
@@ -342,7 +368,7 @@ const BookingFlow: React.FC = () => {
                     <button
                       key={date.toISOString()}
                       onClick={() => setSelectedDate(date)}
-                      className={`p-2 text-sm rounded-lg border transition-colors ${
+                      className={`p-2 text-sm rounded-lg border transition-colors relative ${
                         selectedDate?.toDateString() === date.toDateString()
                           ? 'bg-primary-600 text-white border-primary-600'
                           : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300'
@@ -358,6 +384,9 @@ const BookingFlow: React.FC = () => {
                           {dateInfo.availableSlots} slots
                         </div>
                       </div>
+                      {dateInfo.availableSlots === 1 && (
+                        <span className="absolute -top-2 -right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">Only 1</span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -378,22 +407,47 @@ const BookingFlow: React.FC = () => {
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
                   {t('booking.selectTime')}
                 </h3>
+                {conflictHint.active && (
+                  <div className="flex items-center justify-between bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-2 rounded-lg mb-4">
+                    <div className="text-sm">That time just got booked. Try next available?</div>
+                    <button
+                      onClick={() => {
+                        if (!availableSlots || availableSlots.length === 0) return;
+                        const idx = conflictHint.lastTried ? availableSlots.indexOf(conflictHint.lastTried) : -1;
+                        const next = idx >= 0 && idx < availableSlots.length - 1 ? availableSlots[idx + 1] : availableSlots[0];
+                        setSelectedTime(next);
+                        setConflictHint({ active: false });
+                        setTimeout(() => handleBookingSubmit(), 50);
+                      }}
+                      className="btn btn-error btn-sm text-white"
+                    >
+                      {t('booking.tryNextAvailable') || 'Try next available'}
+                    </button>
+                  </div>
+                )}
                 
                 {availableSlots.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {availableSlots.map((time) => (
-                      <button
-                        key={time}
-                        onClick={() => setSelectedTime(time)}
-                        className={`p-3 text-sm rounded-lg border transition-colors ${
-                          selectedTime === time
-                            ? 'bg-primary-600 text-white border-primary-600'
-                            : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300'
-                        }`}
-                      >
-                        {time}
-                      </button>
-                    ))}
+                  <div className="flex flex-wrap gap-2">
+                    {availableSlots.map((slot: any) => {
+                      const time = typeof slot === 'string' ? slot : slot.time;
+                      const count = typeof slot === 'string' ? undefined : slot.count;
+                      return (
+                        <button
+                          key={time}
+                          onClick={() => setSelectedTime(time)}
+                          className={`relative px-3 py-1.5 text-sm rounded-full border transition-colors ${
+                            selectedTime === time
+                              ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
+                              : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300'
+                          }`}
+                        >
+                          {time}
+                          {count === 1 && (
+                            <span className="absolute -top-2 -right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">1</span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="text-gray-500 dark:text-gray-400 text-center py-8">

@@ -3,7 +3,7 @@
  * Comprehensive notifications UI with full functionality
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { notificationService } from '../../services/notification.service';
 import { Notification, NotificationType } from '../../types';
 import { 
@@ -31,6 +31,11 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   onClose, 
   className = '' 
 }) => {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const swiping = useRef(false);
+  const [translateX, setTranslateX] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -68,6 +73,30 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     }
   }, [isOpen, selectedFilter]);
 
+  // Close on Esc
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
+
+  const LoadingSkeleton = () => (
+    <div className="p-4 space-y-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="flex items-start gap-3">
+          <div className="skeleton w-10 h-10 rounded-full" />
+          <div className="flex-1 space-y-2">
+            <div className="skeleton h-4 w-2/3" />
+            <div className="skeleton h-3 w-1/3" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   // Mark notification as read
   const markAsRead = async (notificationId: string) => {
     try {
@@ -100,13 +129,20 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
   // Delete all notifications
   const deleteAllNotifications = async () => {
-    if (confirm('Are you sure you want to delete all notifications?')) {
-      try {
-        await notificationService.deleteAllNotifications();
-        await loadNotifications();
-      } catch (error) {
-        console.error('Error deleting all notifications:', error);
-      }
+    const { confirm } = await import('../ui/Confirm');
+    const ok = await confirm({
+      title: 'Delete all notifications?',
+      message: 'This cannot be undone.',
+      confirmText: 'Delete all',
+      cancelText: 'Cancel',
+      variant: 'destructive'
+    });
+    if (!ok) return;
+    try {
+      await notificationService.deleteAllNotifications();
+      await loadNotifications();
+    } catch (error) {
+      console.error('Error deleting all notifications:', error);
     }
   };
 
@@ -169,7 +205,42 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       
       {/* Notification Panel */}
-      <div className="absolute right-0 top-0 h-full w-full max-w-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-2xl border-l border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-out translate-x-0 animate-slide-in-right">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Notifications"
+        className="absolute right-0 top-0 h-full w-full max-w-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-2xl border-l border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-out translate-x-0 animate-slide-in-right"
+        style={{ transform: `translateX(${translateX}px)` }}
+        onTouchStart={(e) => {
+          const t = e.touches[0];
+          touchStartX.current = t.clientX;
+          touchStartY.current = t.clientY;
+          swiping.current = true;
+        }}
+        onTouchMove={(e) => {
+          if (!swiping.current) return;
+          const t = e.touches[0];
+          const dx = t.clientX - (touchStartX.current || 0);
+          const dy = t.clientY - (touchStartY.current || 0);
+          // Only treat as horizontal swipe if mostly horizontal and moving right
+          if (Math.abs(dx) > Math.abs(dy) && dx > 0) {
+            setTranslateX(dx);
+          }
+        }}
+        onTouchEnd={() => {
+          if (!swiping.current) return;
+          swiping.current = false;
+          if (translateX > 80) {
+            // Close on sufficient swipe to the right
+            onClose();
+            setTranslateX(0);
+          } else {
+            // Snap back
+            setTranslateX(0);
+          }
+        }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
@@ -184,9 +255,11 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           <button 
             onClick={onClose}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+            aria-label="Close notifications"
           >
             <XMarkIcon className="h-5 w-5" />
           </button>
+          <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">Swipe right or press Esc to close</span>
         </div>
 
         {/* Service Status */}
@@ -252,12 +325,18 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         </div>
 
         {/* Notifications List */}
-        <div className="flex-1 overflow-y-auto">
+        <div
+          className="flex-1 overflow-y-auto"
+          onScroll={(e) => {
+            const el = e.currentTarget as HTMLDivElement;
+            const rowH = 80;
+            const start = Math.floor(el.scrollTop / rowH);
+            const end = start + Math.ceil(el.clientHeight / rowH) + 5;
+            setWin({ start, end });
+          }}
+        >
           {loading ? (
-            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-              Loading notifications...
-            </div>
+            <LoadingSkeleton />
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center text-gray-500 dark:text-gray-400">
               <BellIcon className="h-12 w-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
@@ -265,14 +344,23 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
               <p className="text-sm">You're all caught up!</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
-                    !notification.isRead ? 'bg-blue-50 dark:bg-primary-900/20' : ''
-                  }`}
-                >
+            (() => {
+              const rowH = 80;
+              const start = Math.max(0, win.start);
+              const end = Math.min(notifications.length, win.end || 20);
+              const items = notifications.slice(start, end);
+              const before = start * rowH;
+              const after = (notifications.length - end) * rowH;
+              return (
+                <div className="divide-y divide-gray-200 dark:divide-gray-700 relative">
+                  <div style={{ height: before }} />
+                  {items.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                      !notification.isRead ? 'bg-blue-50 dark:bg-primary-900/20' : ''
+                    }`}
+                  >
                   <div className="flex items-start gap-3">
                     {/* Icon */}
                     <div className={`p-2 rounded-full ${getNotificationColor(notification.type)} dark:bg-opacity-20` }>
@@ -319,9 +407,12 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                   {!notification.isRead && (
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary-500 rounded-r" />
                   )}
+                  </div>
+                  ))}
+                  <div style={{ height: after }} />
                 </div>
-              ))}
-            </div>
+              );
+            })()
           )}
         </div>
       </div>

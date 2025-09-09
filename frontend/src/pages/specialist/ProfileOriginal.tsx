@@ -784,7 +784,14 @@ const SpecialistProfile: React.FC = () => {
                 <button
                   onClick={() => {
                     if (isEditing && hasUnsavedChanges) {
-                      if (window.confirm(language === 'uk' ? 'У вас є незбережені зміни. Скасувати редагування?' : language === 'ru' ? 'У вас есть несохраненные изменения. Отменить редактирование?' : 'You have unsaved changes. Cancel editing?')) {
+                      const { confirm } = await import('../../components/ui/Confirm');
+                      const ok = await confirm({
+                        title: language === 'uk' ? 'Скасувати редагування?' : language === 'ru' ? 'Отменить редактирование?' : 'Cancel editing?',
+                        message: language === 'uk' ? 'У вас є незбережені зміни.' : language === 'ru' ? 'У вас есть несохраненные изменения.' : 'You have unsaved changes.',
+                        confirmText: language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Discard',
+                        cancelText: language === 'uk' ? 'Повернутися' : language === 'ru' ? 'Назад' : 'Go back',
+                      });
+                      if (ok) {
                         setProfile(originalProfile);
                         setHasUnsavedChanges(false);
                         setIsEditing(false);
@@ -1981,7 +1988,14 @@ const SpecialistProfile: React.FC = () => {
                       <button
                         onClick={() => {
                           if (hasUnsavedChanges) {
-                            if (window.confirm(language === 'uk' ? 'У вас є незбережені зміни. Скасувати зміни?' : language === 'ru' ? 'У вас есть несохраненные изменения. Отменить изменения?' : 'You have unsaved changes. Cancel changes?')) {
+                            const { confirm } = await import('../../components/ui/Confirm');
+                            const ok = await confirm({
+                              title: language === 'uk' ? 'Скасувати зміни?' : language === 'ru' ? 'Отменить изменения?' : 'Discard changes?',
+                              message: language === 'uk' ? 'У вас є незбережені зміни.' : language === 'ru' ? 'У вас есть несохраненные изменения.' : 'You have unsaved changes.',
+                              confirmText: language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Discard',
+                              cancelText: language === 'uk' ? 'Повернутися' : language === 'ru' ? 'Назад' : 'Go back',
+                            });
+                            if (ok) {
                               setProfile(originalProfile);
                               setHasUnsavedChanges(false);
                               setIsEditing(false);

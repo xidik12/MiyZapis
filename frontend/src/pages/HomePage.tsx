@@ -325,8 +325,15 @@ const HomePage: React.FC = () => {
                 className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:shadow-lg hover:border-primary-200 dark:hover:border-primary-600 transition-all duration-300"
               >
                 <div className="aspect-w-16 aspect-h-12">
-                  <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                  <div className="relative w-full h-48 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                     <UserGroupIcon className="w-16 h-16 text-gray-400" />
+                    {/* Online indicator if available in data */}
+                    { (specialist as any).isOnline && (
+                      <span className="absolute top-3 right-3 inline-flex h-3.5 w-3.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-green-500 border-2 border-white"></span>
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="p-6">
@@ -340,7 +347,14 @@ const HomePage: React.FC = () => {
                       <span className="font-semibold">{specialist.rating}</span>
                       <span className="text-gray-500 text-sm">({specialist.reviews})</span>
                     </div>
-                    <span className="text-sm text-gray-500">{specialist.location}</span>
+                    <span className="text-sm text-gray-500">
+                      {specialist.location}
+                      { (specialist as any).responseTime && (
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700">
+                          ~{(specialist as any).responseTime} {t('common.minutes') || 'min'}
+                        </span>
+                      )}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-lg font-semibold text-gray-900">

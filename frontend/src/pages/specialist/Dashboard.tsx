@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
@@ -448,7 +449,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting dashboard report:', error);
-      alert('Failed to export dashboard report. Please try again.');
+      toast.error('Failed to export dashboard report. Please try again.');
     }
   };
 

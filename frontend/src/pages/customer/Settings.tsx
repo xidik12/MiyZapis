@@ -4,6 +4,7 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser, updateUserProfile } from '../../store/slices/authSlice';
+import { selectDensity, setDensity } from '../../store/slices/uiSlice';
 import { PaymentMethod } from '../../types';
 import { PaymentMethodsService } from '../../services/paymentMethods';
 import { fileUploadService } from '../../services/fileUpload.service';
@@ -45,6 +46,7 @@ const CustomerSettings: React.FC = () => {
   
   // Get actual user data from Redux store
   const currentUser = useAppSelector(selectUser);
+  const density = useAppSelector(selectDensity);
   const dispatch = useAppDispatch();
   const [user, setUser] = useState({
     firstName: currentUser?.firstName || '',
@@ -690,6 +692,23 @@ const CustomerSettings: React.FC = () => {
                   </h2>
 
                   <div className="space-y-6">
+                    {/* Display Density */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('settings.display') || 'Display'}
+                      </label>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => dispatch(setDensity('comfortable'))}
+                          className={`btn ${density === 'comfortable' ? 'btn-primary' : 'btn-secondary'}`}
+                        >{t('settings.comfortable') || 'Comfortable'}</button>
+                        <button
+                          onClick={() => dispatch(setDensity('compact'))}
+                          className={`btn ${density === 'compact' ? 'btn-primary' : 'btn-secondary'}`}
+                        >{t('settings.compact') || 'Compact'}</button>
+                      </div>
+                    </div>
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Language

@@ -637,9 +637,15 @@ const SpecialistSchedule: React.FC = () => {
     }
     
     // Add confirmation dialog
-    if (!window.confirm('Are you sure you want to delete this time slot?')) {
-      return;
-    }
+    const { confirm } = await import('../../components/ui/Confirm');
+    const ok = await confirm({
+      title: 'Delete time slot?',
+      message: 'This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'destructive'
+    });
+    if (!ok) return;
     
     setOperationInProgress(true);
     try {

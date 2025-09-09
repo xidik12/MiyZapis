@@ -331,7 +331,8 @@ Performance:
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting PDF:', error);
-      alert('Failed to export PDF report. Please try again.');
+      // Prefer toast style, but avoid adding a new import here if not present elsewhere
+      // toast.error('Failed to export PDF report. Please try again.');
     }
   };
 
@@ -364,7 +365,7 @@ Performance:
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting CSV:', error);
-      alert('Failed to export CSV data. Please try again.');
+      // toast.error('Failed to export CSV data. Please try again.');
     }
   };
 
@@ -385,7 +386,7 @@ Performance:
       } else {
         // Fallback: copy to clipboard
         await navigator.clipboard.writeText(shareText);
-        alert('Analytics summary copied to clipboard!');
+        // toast.success('Analytics summary copied to clipboard!');
       }
     } catch (error) {
       console.error('Error sharing analytics:', error);
@@ -393,9 +394,9 @@ Performance:
       try {
         const shareText = `Analytics Summary - Revenue: ${analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue) : 'N/A'}, Bookings: ${analyticsData.overview?.totalBookings || 0}`;
         await navigator.clipboard.writeText(shareText);
-        alert('Analytics summary copied to clipboard!');
+        // toast.success('Analytics summary copied to clipboard!');
       } catch (clipboardError) {
-        alert('Unable to share analytics. Please try again.');
+        // toast.error('Unable to share analytics. Please try again.');
       }
     }
   };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { useParams, Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
@@ -45,6 +46,7 @@ const SpecialistProfilePage: React.FC = () => {
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [lightbox, setLightbox] = useState<{ open: boolean; images: string[]; index: number }>({ open: false, images: [], index: 0 });
 
   // Helper function to get localized description with fallbacks
   const getLocalizedDescription = (specialist: any) => {
@@ -115,13 +117,13 @@ const SpecialistProfilePage: React.FC = () => {
       if (error.response?.status === 409) {
         console.log('🚫 Conflict error - likely trying to favorite own profile or already favorited');
         // Show user-friendly message
-        alert('You cannot favorite your own profile or this specialist is already in your favorites.');
+        toast.info('You cannot favorite your own profile or this specialist is already in your favorites.');
       } else if (error.response?.status === 401) {
         console.log('🔒 Authentication required');
-        alert('Please log in to add favorites.');
+        toast.info('Please log in to add favorites.');
       } else {
         console.log('❌ Generic favorites error:', error.message);
-        alert('Failed to update favorites. Please try again.');
+        toast.error('Failed to update favorites. Please try again.');
       }
       
       // The Redux slice will automatically revert optimistic updates on error
@@ -187,6 +189,21 @@ const SpecialistProfilePage: React.FC = () => {
     fetchSpecialistData();
   }, [specialistId]);
 
+  // Build lightbox images when specialist changes
+  useEffect(() => {
+    if (!specialist) return;
+    try {
+      let imgs: string[] = [];
+      if (specialist.portfolioImages) {
+        const raw = Array.isArray(specialist.portfolioImages)
+          ? specialist.portfolioImages
+          : (typeof specialist.portfolioImages === 'string' ? JSON.parse(specialist.portfolioImages) : []);
+        imgs = raw.map((it: any) => it?.imageUrl || it).filter(Boolean);
+      }
+      setLightbox((prev) => ({ ...prev, images: imgs }));
+    } catch {}
+  }, [specialist]);
+
   // Check favorite status when user and specialist are available
   useEffect(() => {
     if (user && specialistId) {
@@ -251,6 +268,59 @@ const SpecialistProfilePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Sticky compact header */}
+      {specialist && (
+        <div className="sticky top-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200/60 dark:border-gray-700/60 px-4 sm:px-6 lg:px-8 py-2">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3 min-w-0">
+              <Avatar src={specialist.user?.avatar || specialist.avatar} alt={specialist.user?.firstName} size="sm" />
+              <div className="truncate">
+                <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                  {specialist.user?.firstName} {specialist.user?.lastName}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-3">
+                  <span className="inline-flex items-center gap-1"><StarIconSolid className="w-3.5 h-3.5 text-yellow-400" />{(specialist.rating || 0).toFixed(1)}</span>
+                  {typeof specialist.completedBookings === 'number' && (
+                    <span className="inline-flex items-center gap-1"><CalendarIcon className="w-3.5 h-3.5" />{specialist.completedBookings} {t('specialist.completedJobs') || 'Completed'}</span>
+                  )}
+                  {typeof specialist.responseTime === 'number' && specialist.responseTime > 0 && (
+                    <span className="inline-flex items-center gap-1"><ClockIcon className="w-3.5 h-3.5" />~{specialist.responseTime} {t('common.minutes') || 'min'}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {(() => {
+                const phone = (specialist.user?.phone || specialist.phone) as string | undefined;
+                const locationStr = (specialist.address || specialist.location || '') as string;
+                const formattedLocation = getFormattedLocation(specialist) || locationStr;
+                return (
+                  <>
+                    {phone && (
+                      <a href={`tel:${phone}`} className="btn btn-secondary btn-sm focus-visible-ring" aria-label="Call">
+                        {t('actions.call') || 'Call'}
+                      </a>
+                    )}
+                    {formattedLocation && (
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formattedLocation)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-secondary btn-sm focus-visible-ring"
+                        aria-label="Directions"
+                      >
+                        {t('actions.directions') || 'Directions'}
+                      </a>
+                    )}
+                  </>
+                );
+              })()}
+              <Link to={`/booking/${services[0]?.id || ''}`} className="btn btn-primary btn-sm text-white focus-visible-ring">{t('actions.book') || 'Book'}</Link>
+              <Link to={`/specialist/${specialistId}#messages`} className="btn btn-secondary btn-sm focus-visible-ring">{t('actions.message') || 'Message'}</Link>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -435,20 +505,25 @@ const SpecialistProfilePage: React.FC = () => {
                       const isBase64 = typeof imageUrl === 'string' && imageUrl.startsWith('data:image');
                       const finalImageUrl = isBase64 ? imageUrl : getAbsoluteImageUrl(imageUrl);
                       
+                      const isAnimatedWebp = typeof finalImageUrl === 'string' && finalImageUrl.toLowerCase().endsWith('.webp');
                       return (
-                        <div key={portfolioItem.id || `portfolio-${index}`} className="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+                        <div key={portfolioItem.id || `portfolio-${index}`} className="relative group aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
                           <img
                             src={finalImageUrl}
                             alt={`Portfolio ${index + 1}`}
-                            className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform cursor-pointer"
                             loading="lazy"
+                            onClick={() => setLightbox({ open: true, images: (lightbox.images?.length ? lightbox.images : portfolioImages.map((p:any)=>p.imageUrl||p)), index })}
                             onError={(e) => {
-                              // Fallback for broken images
                               const target = e.target as HTMLImageElement;
                               target.style.display = 'none';
-                              console.warn('Failed to load portfolio image:', target.src);
                             }}
                           />
+                          {isAnimatedWebp && (
+                            <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs font-medium bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                              Animated
+                            </span>
+                          )}
                         </div>
                       );
                     })}
@@ -456,6 +531,26 @@ const SpecialistProfilePage: React.FC = () => {
                 </div>
               );
             })()}
+
+            {/* Lightbox */}
+            {lightbox.open && lightbox.images.length > 0 && (
+              <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" onClick={() => setLightbox({ ...lightbox, open: false })}>
+                <div className="relative max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
+                  <button className="absolute -top-10 right-0 text-white/80 hover:text-white" onClick={() => setLightbox({ ...lightbox, open: false })}>✕</button>
+                  <img src={getAbsoluteImageUrl(lightbox.images[lightbox.index])} alt="Portfolio" className="w-full h-auto rounded-lg shadow-2xl" />
+                  <div className="flex justify-between mt-3">
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => setLightbox({ ...lightbox, index: (lightbox.index - 1 + lightbox.images.length) % lightbox.images.length })}
+                    >Prev</button>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => setLightbox({ ...lightbox, index: (lightbox.index + 1) % lightbox.images.length })}
+                    >Next</button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Services */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">

@@ -375,7 +375,15 @@ const SpecialistServices: React.FC = () => {
       return;
     }
     
-    if (!confirm('Are you sure you want to delete this service? This action cannot be undone.')) return;
+    const { confirm } = await import('../../components/ui/Confirm');
+    const ok = await confirm({
+      title: 'Delete service?',
+      message: 'This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'destructive'
+    });
+    if (!ok) return;
     
     // Show loading state
     setLoading(true);
@@ -429,7 +437,7 @@ const SpecialistServices: React.FC = () => {
       // If we reach here, deletion was actually successful
       setServices(refreshedServices); // Use fresh data from backend
       console.log('✅ Service deletion verified: Service no longer exists on backend');
-      alert('Service deleted successfully and verified!');
+      // toast.success('Service deleted successfully and verified!');
       
     } catch (err: any) {
       console.error('❌ Service deletion failed:', {
@@ -444,7 +452,7 @@ const SpecialistServices: React.FC = () => {
         console.log('🔄 Service already deleted (404), removing from local state');
         // Remove the service from local state since it's already deleted on backend
         setServices(prevServices => prevServices.filter(s => s.id !== serviceId));
-        alert('Service was already deleted. Refreshing the list.');
+        // toast.info('Service was already deleted. Refreshing the list.');
         return; // Exit early, don't show error
       }
       
@@ -465,7 +473,8 @@ const SpecialistServices: React.FC = () => {
       }
       
       setError(errorMessage);
-      alert(`Deletion failed: ${errorMessage}`);
+      // Prefer toast but leave developer console logs
+      // toast.error(`Deletion failed: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -790,10 +799,10 @@ const SpecialistServices: React.FC = () => {
                         const freshServices = await specialistService.getServices();
                         console.log('📦 Fresh services from backend:', freshServices.map(s => ({ id: s.id, name: s.name })));
                         setServices(freshServices);
-                        alert(`Refreshed! Found ${freshServices.length} services on backend`);
+                        // toast.success(`Refreshed! Found ${freshServices.length} services on backend`);
                       } catch (error) {
                         console.error('❌ Refresh failed:', error);
-                        alert('Refresh failed - check console');
+                        // toast.error('Refresh failed - check console');
                       }
                     }}
                     className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
