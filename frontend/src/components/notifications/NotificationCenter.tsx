@@ -349,8 +349,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           ) : (
             (() => {
               const rowH = 80;
-              const start = Math.max(0, win.start);
-              const end = Math.min(notifications.length, win.end || 20);
+              const start = Math.max(0, win?.start ?? 0);
+              const end = Math.min(notifications.length, win?.end ?? 20);
               const items = notifications.slice(start, end);
               const before = start * rowH;
               const after = (notifications.length - end) * rowH;
