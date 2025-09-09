@@ -279,7 +279,7 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
 };
 
 const SpecialistProfile: React.FC = () => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
   
