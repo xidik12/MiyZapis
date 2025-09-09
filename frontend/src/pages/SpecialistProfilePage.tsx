@@ -518,14 +518,14 @@ const SpecialistProfilePage: React.FC = () => {
                       <div className="flex items-start space-x-4">
                         <Avatar
                           src={review.customer?.avatar}
-                          alt={review.customer?.name || 'Customer'}
+                          alt={`${review.customer?.firstName || ''} ${review.customer?.lastName || ''}`.trim() || 'Customer'}
                           size="md"
                           lazy={true}
                         />
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
                             <h4 className="font-medium text-gray-900 dark:text-white">
-                              {review.customer?.name || t('reviews.anonymousUser')}
+                              {`${review.customer?.firstName || ''} ${review.customer?.lastName || ''}`.trim() || t('reviews.anonymousUser')}
                             </h4>
                             <div className="flex items-center">
                               {renderStars(review.rating)}
