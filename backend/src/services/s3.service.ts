@@ -77,27 +77,34 @@ export class S3Service {
 
       if (this.isImageFile(mimeType) && options.resize) {
         console.log('🖼️ Processing image with sharp...');
-        const sharpInstance = sharp(buffer);
+        // Detect animated WebP and preserve without processing
+        const meta = await sharp(buffer, { animated: true }).metadata();
+        const isAnimatedWebp = (mimeType === 'image/webp') && (typeof meta.pages === 'number') && meta.pages > 1;
+        if (isAnimatedWebp) {
+          console.log('🌀 Animated WebP detected. Skipping processing to preserve animation.');
+        } else {
+          let sharpInstance = sharp(buffer);
         
-        if (options.resize.width || options.resize.height) {
-          sharpInstance.resize(options.resize.width, options.resize.height, {
-            fit: 'inside',
-            withoutEnlargement: true
+          if (options.resize.width || options.resize.height) {
+            sharpInstance.resize(options.resize.width, options.resize.height, {
+              fit: 'inside',
+              withoutEnlargement: true
+            });
+          }
+
+          // Convert to WebP for better compression if it's not already
+          if (mimeType !== 'image/webp') {
+            sharpInstance.webp({ quality: options.resize.quality || 85 });
+            finalMimeType = 'image/webp';
+          }
+
+          processedBuffer = await sharpInstance.toBuffer();
+          console.log('✅ Image processed:', {
+            originalSize: buffer.length,
+            processedSize: processedBuffer.length,
+            compression: `${(((buffer.length - processedBuffer.length) / buffer.length) * 100).toFixed(1)}%`
           });
         }
-
-        // Convert to WebP for better compression if it's not already
-        if (mimeType !== 'image/webp') {
-          sharpInstance.webp({ quality: options.resize.quality || 85 });
-          finalMimeType = 'image/webp';
-        }
-
-        processedBuffer = await sharpInstance.toBuffer();
-        console.log('✅ Image processed:', {
-          originalSize: buffer.length,
-          processedSize: processedBuffer.length,
-          compression: `${(((buffer.length - processedBuffer.length) / buffer.length) * 100).toFixed(1)}%`
-        });
       }
 
       // Generate unique key

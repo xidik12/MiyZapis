@@ -287,8 +287,10 @@ export class FileController {
         });
 
         try {
-          const image = sharp(file.buffer);
+          // Enable animated frame awareness to preserve animated WebP
+          const image = sharp(file.buffer, { animated: true });
           const metadata = await image.metadata();
+          const isAnimatedWebp = (metadata.format === 'webp') && (typeof metadata.pages === 'number') && metadata.pages > 1;
           width = metadata.width;
           height = metadata.height;
 
@@ -316,17 +318,23 @@ export class FileController {
             case 'service_image':
             case 'portfolio':
               logger.info('Resizing portfolio/service image');
-              // Check if input is webp and maintain format, otherwise convert to jpeg
-              if (metadata.format === 'webp') {
-                processedBuffer = await image
-                  .resize(1200, 800, { fit: 'inside', withoutEnlargement: true })
-                  .webp({ quality: 85 })
-                  .toBuffer();
+              // Preserve animation for animated WebP by skipping re-encode
+              if (isAnimatedWebp) {
+                logger.info('Detected animated WebP. Skipping resize to preserve animation.');
+                processedBuffer = file.buffer;
               } else {
-                processedBuffer = await image
-                  .resize(1200, 800, { fit: 'inside', withoutEnlargement: true })
-                  .jpeg({ quality: 85 })
-                  .toBuffer();
+                // Check if input is webp and maintain format, otherwise convert to jpeg
+                if (metadata.format === 'webp') {
+                  processedBuffer = await image
+                    .resize(1200, 800, { fit: 'inside', withoutEnlargement: true })
+                    .webp({ quality: 85 })
+                    .toBuffer();
+                } else {
+                  processedBuffer = await image
+                    .resize(1200, 800, { fit: 'inside', withoutEnlargement: true })
+                    .jpeg({ quality: 85 })
+                    .toBuffer();
+                }
               }
               break;
             default:
