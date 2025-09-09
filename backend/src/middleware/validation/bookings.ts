@@ -1,5 +1,10 @@
 import { body, param, query } from 'express-validator';
 
+// Helper for CUID validation (used instead of UUID in this project)
+const validateCUID = () => body().isLength({ min: 20, max: 30 }).matches(/^[a-z0-9]+$/);
+const validateCUIDParam = () => param().isLength({ min: 20, max: 30 }).matches(/^[a-z0-9]+$/);
+const validateCUIDQuery = () => query().isLength({ min: 20, max: 30 }).matches(/^[a-z0-9]+$/);
+
 // Booking statuses
 const BOOKING_STATUSES = [
   'PENDING', 
@@ -14,12 +19,16 @@ const BOOKING_STATUSES = [
 // Create booking validation
 export const validateCreateBooking = [
   body('serviceId')
-    .isUUID()
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid service ID is required'),
   
+  // specialistId is optional since it's derived from the service
   body('specialistId')
-    .isUUID()
-    .withMessage('Valid specialist ID is required'),
+    .optional()
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
+    .withMessage('Specialist ID must be a valid ID if provided'),
   
   body('scheduledAt')
     .isISO8601()
@@ -27,13 +36,16 @@ export const validateCreateBooking = [
     .custom((value) => {
       const scheduledDate = new Date(value);
       const now = new Date();
-      if (scheduledDate <= now) {
+      // Allow booking up to 5 minutes in the past to account for network delays
+      const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+      if (scheduledDate.getTime() < (now.getTime() - bufferTime)) {
         throw new Error('Scheduled time must be in the future');
       }
       return true;
     }),
   
   body('duration')
+    .optional()
     .isInt({ min: 15, max: 480 })
     .withMessage('Duration must be between 15 and 480 minutes'),
   
@@ -51,8 +63,9 @@ export const validateCreateBooking = [
 
 // Update booking status validation
 export const validateUpdateBookingStatus = [
-  param('id')
-    .isUUID()
+  param('bookingId')
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
   
   body('status')
@@ -123,12 +136,14 @@ export const validateGetBookings = [
   
   query('specialistId')
     .optional()
-    .isUUID()
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid specialist ID is required'),
   
   query('customerId')
     .optional()
-    .isUUID()
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid customer ID is required'),
   
   query('sortBy')
@@ -144,15 +159,17 @@ export const validateGetBookings = [
 
 // Booking ID param validation
 export const validateBookingId = [
-  param('id')
-    .isUUID()
+  param('bookingId')
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
 ];
 
 // Confirm booking validation
 export const validateConfirmBooking = [
-  param('id')
-    .isUUID()
+  param('bookingId')
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
   
   body('specialistNotes')
@@ -170,8 +187,9 @@ export const validateConfirmBooking = [
 
 // Cancel booking validation
 export const validateCancelBooking = [
-  param('id')
-    .isUUID()
+  param('bookingId')
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
   
   body('reason')
@@ -188,8 +206,9 @@ export const validateCancelBooking = [
 
 // Complete booking validation
 export const validateCompleteBooking = [
-  param('id')
-    .isUUID()
+  param('bookingId')
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
   
   body('completionNotes')
@@ -211,8 +230,9 @@ export const validateCompleteBooking = [
 
 // Reschedule booking validation
 export const validateRescheduleBooking = [
-  param('id')
-    .isUUID()
+  param('bookingId')
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
     .withMessage('Valid booking ID is required'),
   
   body('newScheduledAt')
@@ -221,7 +241,9 @@ export const validateRescheduleBooking = [
     .custom((value) => {
       const scheduledDate = new Date(value);
       const now = new Date();
-      if (scheduledDate <= now) {
+      // Allow booking up to 5 minutes in the past to account for network delays
+      const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+      if (scheduledDate.getTime() < (now.getTime() - bufferTime)) {
         throw new Error('New scheduled time must be in the future');
       }
       return true;

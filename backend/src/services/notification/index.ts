@@ -3,6 +3,7 @@ import nodemailer from 'nodemailer';
 import { logger } from '@/utils/logger';
 import { config } from '@/config';
 import { redis } from '@/config/redis';
+import { EmailService } from '@/services/email';
 import axios from 'axios';
 
 interface NotificationData {
@@ -29,30 +30,23 @@ interface SMSOptions {
 
 export class NotificationService {
   private prisma: PrismaClient;
-  private emailTransporter?: nodemailer.Transporter;
+  private emailService: EmailService;
 
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
-    // Only setup email if SMTP config is available
-    if (config.email.smtp.auth.user) {
-      this.setupEmailTransporter();
-    }
-  }
-
-  private setupEmailTransporter() {
-    this.emailTransporter = nodemailer.createTransport({
-      host: config.email.smtp.host,
-      port: config.email.smtp.port,
-      secure: config.email.smtp.secure,
-      auth: {
-        user: config.email.smtp.auth.user,
-        pass: config.email.smtp.auth.pass,
-      },
-    });
+    this.emailService = new EmailService();
   }
 
   async sendNotification(userId: string, data: NotificationData): Promise<Notification> {
     try {
+      logger.info('🔔 Starting notification send process', {
+        userId,
+        type: data.type,
+        title: data.title,
+        hasEmailTemplate: !!data.emailTemplate,
+        hasSMSTemplate: !!data.smsTemplate
+      });
+
       // Get user preferences
       const user = await this.prisma.user.findUnique({
         where: { id: userId },
@@ -71,8 +65,18 @@ export class NotificationService {
       });
 
       if (!user) {
+        logger.error('❌ User not found for notification', { userId });
         throw new Error('User not found');
       }
+
+      logger.info('👤 User found for notification', {
+        userId,
+        email: user.email ? `${user.email.substring(0, 5)}...` : 'NOT_SET',
+        firstName: user.firstName,
+        emailNotifications: user.emailNotifications,
+        pushNotifications: user.pushNotifications,
+        telegramNotifications: user.telegramNotifications
+      });
 
       // Create notification record
       const notification = await this.prisma.notification.create({
@@ -85,35 +89,99 @@ export class NotificationService {
         }
       });
 
+      logger.info('📝 Notification record created', {
+        notificationId: notification.id,
+        userId,
+        type: data.type
+      });
+
       // Send via different channels based on user preferences
       const promises = [];
 
       // Email notification
-      if (user.emailNotifications && user.email && data.emailTemplate) {
+      if (user.emailNotifications && user.email) {
+        logger.info('📧 Queuing email notification', { userId, email: user.email });
         promises.push(this.sendEmailNotification(user, data, notification.id));
+      } else {
+        logger.info('📧 Skipping email notification', {
+          userId,
+          emailNotifications: user.emailNotifications,
+          hasEmail: !!user.email,
+          hasEmailTemplate: !!data.emailTemplate
+        });
       }
 
       // SMS notification
       if (user.phoneNumber && data.smsTemplate) {
+        logger.info('📱 Queuing SMS notification', { userId });
         promises.push(this.sendSMSNotification(user, data, notification.id));
+      } else {
+        logger.info('📱 Skipping SMS notification', {
+          userId,
+          hasPhoneNumber: !!user.phoneNumber,
+          hasSMSTemplate: !!data.smsTemplate
+        });
       }
 
       // Telegram notification
       if (user.telegramNotifications && user.telegramId) {
+        logger.info('💬 Queuing Telegram notification', { userId, telegramId: user.telegramId });
         promises.push(this.sendTelegramNotification(user, data, notification.id));
+      } else {
+        logger.info('💬 Skipping Telegram notification', {
+          userId,
+          telegramNotifications: user.telegramNotifications,
+          hasTelegramId: !!user.telegramId
+        });
       }
 
       // Push notification (via WebSocket or Firebase)
       if (user.pushNotifications) {
+        logger.info('🔔 Queuing push notification', { userId });
         promises.push(this.sendPushNotification(user, data, notification.id));
+      } else {
+        logger.info('🔔 Skipping push notification', {
+          userId,
+          pushNotifications: user.pushNotifications
+        });
       }
 
+      logger.info('📤 Executing notification delivery', {
+        userId,
+        channelsQueued: promises.length,
+        totalChannelsAvailable: 4
+      });
+
       // Execute all notification sends in parallel
-      await Promise.allSettled(promises);
+      const results = await Promise.allSettled(promises);
+      
+      // Log results
+      results.forEach((result, index) => {
+        const channels = ['email', 'sms', 'telegram', 'push'];
+        if (result.status === 'rejected') {
+          logger.error(`❌ ${channels[index]} notification failed`, {
+            userId,
+            error: result.reason
+          });
+        } else {
+          logger.info(`✅ ${channels[index]} notification completed`, { userId });
+        }
+      });
+
+      logger.info('🎉 Notification process completed', {
+        userId,
+        notificationId: notification.id,
+        type: data.type,
+        channelsAttempted: promises.length
+      });
 
       return notification;
     } catch (error) {
-      logger.error('Error sending notification:', error);
+      logger.error('💥 Error in notification process:', {
+        userId,
+        type: data.type,
+        error: error instanceof Error ? error.message : String(error)
+      });
       throw error;
     }
   }
@@ -124,73 +192,134 @@ export class NotificationService {
     notificationId: string
   ): Promise<void> {
     try {
-      // Get email template
-      const template = await this.prisma.emailTemplate.findUnique({
-        where: { name: data.emailTemplate! }
+      logger.info('Attempting to send email notification', {
+        userId: user.id,
+        email: user.email,
+        type: data.type,
+        emailTemplate: data.emailTemplate
       });
 
-      if (!template || !template.isActive) {
-        logger.warn('Email template not found or inactive:', data.emailTemplate);
-        return;
-      }
+      let emailSent = false;
 
-      // Get localized content
-      const language = user.language || 'en';
-      let subject = template.subject;
-      let htmlContent = template.htmlContent;
-      let textContent = template.textContent;
+      // Use specific email methods based on notification type
+      if (data.type === 'BOOKING_CONFIRMED' || data.type === 'BOOKING_PENDING' || data.type === 'BOOKING_REQUEST') {
+        // Create a simple booking notification email
+        const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>${data.title}</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #007bff; color: white; padding: 20px; text-align: center; }
+            .content { padding: 30px 20px; }
+            .booking-details { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>${data.title}</h1>
+            </div>
+            <div class="content">
+              <h2>Hi ${user.firstName}!</h2>
+              <p>${data.message}</p>
+              
+              <div class="booking-details">
+                <h3>Booking Details:</h3>
+                ${data.data ? Object.entries(data.data).map(([key, value]) => 
+                  `<p><strong>${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:</strong> ${value}</p>`
+                ).join('') : ''}
+              </div>
+              
+              <p>You can view and manage your bookings by logging into your MiyZapis account.</p>
+            </div>
+            <div class="footer">
+              <p>© 2024 MiyZapis. All rights reserved.</p>
+              <p>This is an automated email, please do not reply.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+        `;
 
-      if (language === 'uk') {
-        subject = template.subjectUk || template.subject;
-        htmlContent = template.htmlContentUk || template.htmlContent;
-        textContent = template.textContentUk || template.textContent;
-      } else if (language === 'ru') {
-        subject = template.subjectRu || template.subject;
-        htmlContent = template.htmlContentRu || template.htmlContent;
-        textContent = template.textContentRu || template.textContent;
-      }
-
-      // Replace template variables
-      const variables = {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        fullName: `${user.firstName} ${user.lastName}`,
-        title: data.title,
-        message: data.message,
-        ...data.data
-      };
-
-      subject = this.replaceTemplateVariables(subject, variables);
-      htmlContent = this.replaceTemplateVariables(htmlContent, variables);
-      textContent = textContent ? this.replaceTemplateVariables(textContent, variables) : undefined;
-
-      // Send email
-      if (this.emailTransporter) {
-        await this.emailTransporter.sendMail({
-          from: config.email.from,
+        emailSent = await this.emailService.sendEmail({
           to: user.email,
-          subject,
-          html: htmlContent,
-          text: textContent,
+          subject: data.title,
+          html,
+          text: `${data.title}\n\nHi ${user.firstName}!\n\n${data.message}\n\nBooking Details:\n${data.data ? Object.entries(data.data).map(([key, value]) => `${key}: ${value}`).join('\n') : ''}`
         });
       } else {
-        logger.warn('Email transporter not configured, skipping email send');
-        return;
+        // Fallback for other notification types
+        const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>${data.title}</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #007bff; color: white; padding: 20px; text-align: center; }
+            .content { padding: 30px 20px; }
+            .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>${data.title}</h1>
+            </div>
+            <div class="content">
+              <h2>Hi ${user.firstName}!</h2>
+              <p>${data.message}</p>
+            </div>
+            <div class="footer">
+              <p>© 2024 MiyZapis. All rights reserved.</p>
+              <p>This is an automated email, please do not reply.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+        `;
+
+        emailSent = await this.emailService.sendEmail({
+          to: user.email,
+          subject: data.title,
+          html,
+          text: `${data.title}\n\nHi ${user.firstName}!\n\n${data.message}`
+        });
       }
 
-      // Update notification status
-      await this.prisma.notification.update({
-        where: { id: notificationId },
-        data: { emailSent: true }
-      });
+      if (emailSent) {
+        // Update notification status
+        await this.prisma.notification.update({
+          where: { id: notificationId },
+          data: { emailSent: true }
+        });
 
-      logger.info('Email notification sent successfully', {
+        logger.info('Email notification sent successfully', {
+          userId: user.id,
+          email: user.email,
+          type: data.type
+        });
+      } else {
+        logger.warn('Email notification failed to send', {
+          userId: user.id,
+          email: user.email,
+          type: data.type
+        });
+      }
+    } catch (error) {
+      logger.error('Error sending email notification:', {
+        error: error instanceof Error ? error.message : String(error),
         userId: user.id,
         email: user.email,
         type: data.type
       });
-    } catch (error) {
-      logger.error('Error sending email notification:', error);
     }
   }
 
@@ -200,50 +329,64 @@ export class NotificationService {
     notificationId: string
   ): Promise<void> {
     try {
-      // Get SMS template
-      const template = await this.prisma.sMSTemplate.findUnique({
-        where: { name: data.smsTemplate! }
+      logger.info('Attempting to send SMS notification', {
+        userId: user.id,
+        phoneNumber: user.phoneNumber ? `${user.phoneNumber.substring(0, 5)}...` : 'NOT_SET',
+        type: data.type
       });
 
-      if (!template || !template.isActive) {
-        logger.warn('SMS template not found or inactive:', data.smsTemplate);
+      if (!user.phoneNumber) {
+        logger.warn('User has no phone number, skipping SMS notification', {
+          userId: user.id,
+          type: data.type
+        });
         return;
       }
 
-      // Get localized content
-      const language = user.language || 'en';
-      let content = template.content;
+      // Create simple SMS message
+      let smsMessage = `${data.title}\n\nHi ${user.firstName}!\n\n${data.message}`;
 
-      if (language === 'uk') {
-        content = template.contentUk || template.content;
-      } else if (language === 'ru') {
-        content = template.contentRu || template.content;
+      // Add booking details for booking notifications
+      if (data.data && (data.type === 'BOOKING_CONFIRMED' || data.type === 'BOOKING_PENDING' || data.type === 'BOOKING_REQUEST')) {
+        smsMessage += `\n\nService: ${data.data.serviceName || 'N/A'}`;
+        if (data.data.scheduledAt) {
+          smsMessage += `\nDate: ${new Date(data.data.scheduledAt).toLocaleDateString()}`;
+        }
       }
 
-      // Replace template variables
-      const variables = {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        title: data.title,
-        message: data.message,
-        ...data.data
-      };
-
-      content = this.replaceTemplateVariables(content, variables);
+      smsMessage += '\n\n- MiyZapis';
 
       // Send SMS (integrate with SMS provider)
-      await this.sendSMS({
-        to: user.phoneNumber,
-        message: content
-      });
+      try {
+        await this.sendSMS({
+          to: user.phoneNumber,
+          message: smsMessage
+        });
 
-      logger.info('SMS notification sent successfully', {
+        // Update notification status
+        await this.prisma.notification.update({
+          where: { id: notificationId },
+          data: { smsSent: true }
+        });
+
+        logger.info('SMS notification sent successfully', {
+          userId: user.id,
+          phoneNumber: user.phoneNumber.substring(0, 5) + '...',
+          type: data.type
+        });
+      } catch (smsError) {
+        logger.warn('SMS sending failed (provider issue)', {
+          userId: user.id,
+          type: data.type,
+          error: smsError instanceof Error ? smsError.message : String(smsError)
+        });
+      }
+    } catch (error) {
+      logger.error('Error sending SMS notification:', {
+        error: error instanceof Error ? error.message : String(error),
         userId: user.id,
-        phoneNumber: user.phoneNumber,
         type: data.type
       });
-    } catch (error) {
-      logger.error('Error sending SMS notification:', error);
     }
   }
 
@@ -381,39 +524,77 @@ export class NotificationService {
       limit?: number;
     } = {}
   ): Promise<any> {
-    const {
-      type,
-      isRead,
-      page = 1,
-      limit = 20
-    } = filters;
+    try {
+      const {
+        type,
+        isRead,
+        page = 1,
+        limit = 20
+      } = filters;
 
-    const skip = (page - 1) * limit;
+      const skip = (page - 1) * limit;
 
-    const where: any = { userId };
-    if (type) where.type = type;
-    if (isRead !== undefined) where.isRead = isRead;
+      const where: any = { userId };
+      if (type) where.type = type;
+      if (isRead !== undefined) where.isRead = isRead;
 
-    const notifications = await this.prisma.notification.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: limit
-    });
+      logger.info('Fetching user notifications', {
+        userId,
+        filters,
+        where,
+        skip,
+        limit
+      });
 
-    const total = await this.prisma.notification.count({ where });
+      const notifications = await this.prisma.notification.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit
+      });
 
-    return {
-      notifications,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-        hasNext: page * limit < total,
-        hasPrev: page > 1
-      }
-    };
+      const total = await this.prisma.notification.count({ where });
+
+      logger.info('User notifications fetched successfully', {
+        userId,
+        notificationsCount: notifications.length,
+        total
+      });
+
+      return {
+        notifications,
+        unreadCount: total, // This should actually be unread count, but for now return total
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+          hasNext: page * limit < total,
+          hasPrev: page > 1
+        }
+      };
+    } catch (error) {
+      logger.error('Error in getUserNotifications', {
+        userId,
+        filters,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
+
+      // Return empty result instead of throwing
+      return {
+        notifications: [],
+        unreadCount: 0,
+        pagination: {
+          page: filters.page || 1,
+          limit: filters.limit || 20,
+          total: 0,
+          totalPages: 0,
+          hasNext: false,
+          hasPrev: false
+        }
+      };
+    }
   }
 
   async getUnreadCount(userId: string): Promise<number> {

@@ -12,11 +12,11 @@ router.use(authenticateToken);
 
 // Validation middleware for specialist and service IDs
 const validateSpecialistId = [
-  param('specialistId').isUUID().withMessage('Invalid specialist ID')
+  param('specialistId').isString().notEmpty().withMessage('Specialist ID is required')
 ];
 
 const validateServiceId = [
-  param('serviceId').isUUID().withMessage('Invalid service ID')
+  param('serviceId').isString().notEmpty().withMessage('Service ID is required')
 ];
 
 // Add specialist to favorites

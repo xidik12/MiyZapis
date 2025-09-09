@@ -7,6 +7,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
+import { FullScreenHandshakeLoader } from './components/ui/FullScreenHandshakeLoader';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { AdminRoute } from './components/admin/AdminRoute';
 import { MainLayout } from './components/layout/MainLayout';
@@ -71,9 +72,7 @@ const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 
 // Loading component for Suspense
 const SuspenseLoader = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <LoadingSpinner size="lg" />
-  </div>
+  <FullScreenHandshakeLoader title="Loading..." subtitle="Preparing your workspace" />
 );
 
 // Component to redirect from /book/:serviceId to /booking/:serviceId

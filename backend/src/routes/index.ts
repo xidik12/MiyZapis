@@ -24,6 +24,7 @@ import telegramEnhancedRoutes from './telegram-enhanced';
 import diagnosticsRoutes from './diagnostics';
 import setupAdminRoutes from './setup-admin';
 import debugAdminRoutes from './debug-admin';
+import debugEmailRoutes from './debug-email';
 
 const router = Router();
 
@@ -50,7 +51,7 @@ router.use('/admin', adminRoutes);
 
 // New enhanced API routes
 router.use('/loyalty', loyaltyRoutes);
-router.use('/availability', availabilityRoutes);
+router.use('/', availabilityRoutes);  // Mount availability routes at root to match /specialists/:id/slots pattern
 router.use('/analytics-enhanced', analyticsEnhancedRoutes);
 router.use('/telegram', telegramEnhancedRoutes);
 router.use('/diagnostics', diagnosticsRoutes);
@@ -60,5 +61,6 @@ router.use('/setup', setupAdminRoutes);
 
 // Debug routes (for testing only)
 router.use('/debug', debugAdminRoutes);
+router.use('/debug/email', debugEmailRoutes);
 
 export default router;

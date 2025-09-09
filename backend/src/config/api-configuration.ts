@@ -543,14 +543,18 @@ export function requestLogger(req: any, res: any, next: any) {
 // Analytics logging function
 async function logAPIUsage(logData: any) {
   try {
-    await prisma.apiUsageLog.create({
+    await prisma.auditLog.create({
       data: {
         userId: logData.userId || null,
-        endpoint: logData.url.split('?')[0], // Remove query params
-        method: logData.method,
-        platform: logData.platform,
-        statusCode: logData.statusCode,
-        responseTime: logData.duration,
+        entityType: 'API_USAGE',
+        entityId: logData.url.split('?')[0], // Use endpoint as entityId
+        action: logData.method,
+        changes: JSON.stringify({
+          platform: logData.platform,
+          statusCode: logData.statusCode,
+          responseTime: logData.duration,
+          url: logData.url
+        }),
         ipAddress: logData.ip,
         userAgent: logData.userAgent
       }

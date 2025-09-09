@@ -76,6 +76,9 @@ const envSchema = z.object({
   // External APIs
   GOOGLE_MAPS_API_KEY: z.string().optional(),
   
+  // Frontend URL
+  FRONTEND_URL: z.string().optional(),
+  
   // Google OAuth
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
@@ -203,6 +206,11 @@ export const config = {
   // External APIs
   externalApis: {
     googleMaps: env.GOOGLE_MAPS_API_KEY,
+  },
+
+  // Frontend
+  frontend: {
+    url: env.FRONTEND_URL,
   },
 
   // Google OAuth

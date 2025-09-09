@@ -18,8 +18,8 @@ export class BookingController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: error.param,
-              message: error.msg,
+              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -168,6 +168,17 @@ export class BookingController {
         return;
       }
 
+      if (error.message === 'DUPLICATE_BOOKING') {
+        res.status(409).json(
+          createErrorResponse(
+            ErrorCodes.BUSINESS_RULE_VIOLATION,
+            'A booking already exists for this time slot',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
       if (error.message === 'SCHEDULED_TIME_MUST_BE_FUTURE') {
         res.status(400).json(
           createErrorResponse(
@@ -260,8 +271,8 @@ export class BookingController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: error.param,
-              message: error.msg,
+              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -700,6 +711,116 @@ export class BookingController {
         createErrorResponse(
           ErrorCodes.INTERNAL_SERVER_ERROR,
           'Failed to get booking statistics',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Complete booking with payment confirmation (specialist only)
+  static async completeBookingWithPayment(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { bookingId } = req.params;
+      const { paymentConfirmed, completionNotes, specialistNotes } = req.body;
+
+      if (!bookingId) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Booking ID is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (typeof paymentConfirmed !== 'boolean') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Payment confirmation status is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const booking = await BookingService.completeBookingWithPayment(
+        bookingId,
+        req.user.id,
+        { paymentConfirmed, completionNotes, specialistNotes }
+      );
+
+      res.json(
+        createSuccessResponse({
+          booking,
+          message: paymentConfirmed 
+            ? 'Booking completed and payment recorded successfully'
+            : 'Booking completion cancelled - please ensure payment is received first',
+        })
+      );
+    } catch (error: any) {
+      logger.error('Complete booking with payment error:', error);
+
+      if (error.message === 'BOOKING_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Booking not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'SPECIALIST_NOT_AUTHORIZED') {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.ACCESS_DENIED,
+            'You do not have permission to complete this booking',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'BOOKING_NOT_IN_PROGRESS') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.BUSINESS_RULE_VIOLATION,
+            'Only confirmed or in-progress bookings can be completed',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message === 'PAYMENT_NOT_CONFIRMED') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.BUSINESS_RULE_VIOLATION,
+            'Payment must be confirmed to complete booking',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to complete booking',
           req.headers['x-request-id'] as string
         )
       );

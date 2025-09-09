@@ -53,13 +53,12 @@ export interface ReviewStats {
 }
 
 export interface CreateReviewData {
-  serviceId?: string;
-  specialistId: string;
   bookingId: string;
   rating: number;
   comment?: string;
   tags?: string[];
-  isRecommended?: boolean;
+  isPublic?: boolean;
+  wouldRecommend?: boolean;
 }
 
 export interface UpdateReviewData {
@@ -85,27 +84,48 @@ export class ReviewsService {
     } = {}
   ): Promise<{
     reviews: Review[];
-    pagination: Pagination;
-    stats: ReviewStats;
+    pagination: Pagination & { hasNextPage?: boolean; hasPreviousPage?: boolean; page?: number; total?: number };
+    stats: ReviewStats | null;
   }> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-      ...filters,
-      ...(filters.tags && { tags: filters.tags.join(',') })
-    });
-
-    const response = await apiClient.get<{
-      reviews: Review[];
-      pagination: Pagination;
-      stats: ReviewStats;
-    }>(`/reviews/service/${serviceId}?${params}`);
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
     
-    if (!response.success || !response.data) {
+    // Only add filter parameters if they have actual values (not undefined)
+    if (filters.rating !== undefined) params.append('rating', filters.rating.toString());
+    if (filters.sortBy !== undefined) params.append('sortBy', filters.sortBy);
+    if (filters.sortOrder !== undefined) params.append('sortOrder', filters.sortOrder);
+    if (filters.verified !== undefined) params.append('verified', filters.verified.toString());
+    if (filters.withComment !== undefined) params.append('withComment', filters.withComment.toString());
+    if (filters.tags && filters.tags.length > 0) params.append('tags', filters.tags.join(','));
+
+    const response = await apiClient.get<any>(`/reviews/service/${serviceId}?${params}`);
+
+    if (!response.success) {
       throw new Error(response.error?.message || 'Failed to get service reviews');
     }
-    
-    return response.data;
+
+    const rawReviews: Review[] = Array.isArray(response.data) ? response.data : (response.data?.reviews || []);
+    const meta = response.meta || {};
+    const p = meta.pagination || {};
+
+    const pagination: Pagination & { hasNextPage?: boolean; hasPreviousPage?: boolean; page?: number; total?: number } = {
+      currentPage: p.currentPage ?? p.page ?? page,
+      totalPages: p.totalPages ?? 0,
+      totalItems: p.totalItems ?? meta.total ?? 0,
+      limit: p.itemsPerPage ?? limit,
+      hasNext: p.hasNext ?? p.hasNextPage ?? false,
+      hasPrev: p.hasPrev ?? p.hasPreviousPage ?? false,
+      // compatibility aliases used by some screens
+      hasNextPage: p.hasNext ?? p.hasNextPage ?? false,
+      hasPreviousPage: p.hasPrev ?? p.hasPreviousPage ?? false,
+      page: p.currentPage ?? p.page ?? page,
+      total: p.totalItems ?? meta.total ?? 0,
+    };
+
+    const stats: ReviewStats | null = meta.stats ?? response.data?.stats ?? null;
+
+    return { reviews: rawReviews, pagination, stats };
   }
 
   // Get reviews for a specialist
@@ -123,27 +143,48 @@ export class ReviewsService {
     } = {}
   ): Promise<{
     reviews: Review[];
-    pagination: Pagination;
-    stats: ReviewStats;
+    pagination: Pagination & { hasNextPage?: boolean; hasPreviousPage?: boolean; page?: number; total?: number };
+    stats: ReviewStats | null;
   }> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-      ...filters,
-      ...(filters.tags && { tags: filters.tags.join(',') })
-    });
-
-    const response = await apiClient.get<{
-      reviews: Review[];
-      pagination: Pagination;
-      stats: ReviewStats;
-    }>(`/reviews/specialist/${specialistId}?${params}`);
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
     
-    if (!response.success || !response.data) {
+    // Only add filter parameters if they have actual values (not undefined)
+    if (filters.rating !== undefined) params.append('rating', filters.rating.toString());
+    if (filters.sortBy !== undefined) params.append('sortBy', filters.sortBy);
+    if (filters.sortOrder !== undefined) params.append('sortOrder', filters.sortOrder);
+    if (filters.verified !== undefined) params.append('verified', filters.verified.toString());
+    if (filters.withComment !== undefined) params.append('withComment', filters.withComment.toString());
+    if (filters.tags && filters.tags.length > 0) params.append('tags', filters.tags.join(','));
+
+    const response = await apiClient.get<any>(`/reviews/specialist/${specialistId}?${params}`);
+
+    if (!response.success) {
       throw new Error(response.error?.message || 'Failed to get specialist reviews');
     }
-    
-    return response.data;
+
+    const rawReviews: Review[] = Array.isArray(response.data) ? response.data : (response.data?.reviews || []);
+    const meta = response.meta || {};
+    const p = meta.pagination || {};
+
+    const pagination: Pagination & { hasNextPage?: boolean; hasPreviousPage?: boolean; page?: number; total?: number } = {
+      currentPage: p.currentPage ?? p.page ?? page,
+      totalPages: p.totalPages ?? 0,
+      totalItems: p.totalItems ?? meta.total ?? 0,
+      limit: p.itemsPerPage ?? limit,
+      hasNext: p.hasNext ?? p.hasNextPage ?? false,
+      hasPrev: p.hasPrev ?? p.hasPreviousPage ?? false,
+      // compatibility aliases used by some screens
+      hasNextPage: p.hasNext ?? p.hasNextPage ?? false,
+      hasPreviousPage: p.hasPrev ?? p.hasPreviousPage ?? false,
+      page: p.currentPage ?? p.page ?? page,
+      total: p.totalItems ?? meta.total ?? 0,
+    };
+
+    const stats: ReviewStats | null = meta.stats ?? response.data?.stats ?? null;
+
+    return { reviews: rawReviews, pagination, stats };
   }
 
   // Get user's own reviews (as a customer)
@@ -172,30 +213,47 @@ export class ReviewsService {
     limit: number = 20
   ): Promise<{
     reviews: Review[];
-    pagination: Pagination;
+    pagination: Pagination & { hasNextPage?: boolean; hasPreviousPage?: boolean; page?: number; total?: number };
     stats: ReviewStats;
   }> {
-    // Note: This endpoint doesn't exist in backend, so we'll return empty data
-    // The specialist needs to use getSpecialistReviews with their own specialistId
-    // For now, return empty data to prevent 404 errors
-    return {
-      reviews: [],
-      pagination: {
-        currentPage: page,
-        totalPages: 0,
-        totalItems: 0,
-        itemsPerPage: limit,
-        hasNextPage: false,
-        hasPreviousPage: false,
-      },
-      stats: {
-        totalReviews: 0,
-        averageRating: 0,
-        ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
-        verifiedReviewsCount: 0,
-        recommendationRate: 0,
+    try {
+      // Get current specialist profile first
+      const profileResponse = await apiClient.get<any>('/specialists/profile');
+      if (!profileResponse.success || !profileResponse.data) {
+        throw new Error('Failed to get specialist profile');
       }
-    };
+      
+      const specialistId = profileResponse.data.id;
+      
+      // Now get reviews using the specialist ID
+      return await this.getSpecialistReviews(specialistId, page, limit);
+    } catch (error) {
+      console.error('Error getting received reviews:', error);
+      // Return empty data if there's an error
+      return {
+        reviews: [],
+        pagination: {
+          currentPage: page,
+          totalPages: 0,
+          totalItems: 0,
+          limit: limit,
+          hasNext: false,
+          hasPrev: false,
+          // compatibility aliases
+          hasNextPage: false,
+          hasPreviousPage: false,
+          page,
+          total: 0,
+        },
+        stats: {
+          totalReviews: 0,
+          averageRating: 0,
+          ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+          verifiedReviewsCount: 0,
+          recommendationRate: 0,
+        }
+      };
+    }
   }
 
   // Create a new review
@@ -260,28 +318,50 @@ export class ReviewsService {
   }
 
   // Respond to a review (specialist only)
-  async respondToReview(reviewId: string, message: string): Promise<{ message: string; response: any }> {
-    const response = await apiClient.post<{ message: string; response: any }>(
-      `/reviews/${reviewId}/respond`, 
-      { message }
+  async respondToReview(reviewId: string, message: string): Promise<{ message?: string; response: any }> {
+    // Backend expects endpoint '/reviews/:id/response' with body { response: string }
+    const res = await apiClient.post<any>(
+      `/reviews/${reviewId}/response`,
+      { response: message }
     );
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to respond to review');
+
+    if (!res.success) {
+      throw new Error(res.error?.message || 'Failed to respond to review');
     }
-    
-    return response.data;
+
+    // Backend returns { review: { ... , response: { ... } } }
+    const reviewObj = res.data?.review || {};
+    return { message: res.meta?.message, response: reviewObj.response };
   }
 
   // Get review statistics for a specialist
   async getSpecialistReviewStats(specialistId: string): Promise<ReviewStats> {
-    const response = await apiClient.get<ReviewStats>(`/reviews/specialist/${specialistId}/stats`);
+    const response = await apiClient.get<any>(`/reviews/specialist/${specialistId}/stats`);
     
-    if (!response.success || !response.data) {
+    if (!response.success) {
       throw new Error(response.error?.message || 'Failed to get review statistics');
     }
     
-    return response.data;
+    // Backend returns { stats: { totalReviews, averageRating, ratingDistribution } }
+    const payload = response.data || {};
+    const data = payload.stats || payload;
+    const totalReviews: number = Number(data.totalReviews || 0);
+    const averageRating: number = Number.isFinite(data.averageRating) ? data.averageRating : 0;
+    const ratingDistribution = data.ratingDistribution || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
+    // Derive fields not provided by backend
+    const recommendedCount = (ratingDistribution[4] || 0) + (ratingDistribution[5] || 0);
+    const recommendationRate = totalReviews > 0 ? recommendedCount / totalReviews : 0;
+
+    const normalized: ReviewStats = {
+      totalReviews,
+      averageRating,
+      ratingDistribution,
+      verifiedReviewsCount: Number(data.verifiedReviewsCount || 0),
+      recommendationRate,
+    };
+
+    return normalized;
   }
 
   // Get available review tags

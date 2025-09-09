@@ -102,6 +102,9 @@ const validateCheckTimeSlot = [
 // Get specialist availability for date range
 router.get('/specialists/:id/availability', AvailabilityController.getSpecialistAvailability);
 
+// Get available dates for a specialist (for booking flow)
+router.get('/specialists/:id/available-dates', AvailabilityController.getAvailableDates);
+
 // Get available time slots for a specific date (for booking flow)
 router.get('/specialists/:id/slots', AvailabilityController.getAvailableSlots);
 
@@ -109,15 +112,21 @@ router.get('/specialists/:id/slots', AvailabilityController.getAvailableSlots);
 router.post('/specialists/:id/availability/check', validateCheckTimeSlot, AvailabilityController.checkTimeSlotAvailability);
 
 // Create availability block (specialist only)
-router.post('/specialists/availability/blocks', authenticateToken, validateCreateAvailabilityBlock, AvailabilityController.createAvailabilityBlock);
+router.post('/specialists/blocks', authenticateToken, validateCreateAvailabilityBlock, AvailabilityController.createAvailabilityBlock);
 
 // Get availability blocks (specialist/admin only)
-router.get('/specialists/availability/blocks', authenticateToken, AvailabilityController.getAvailabilityBlocks);
+router.get('/specialists/blocks', authenticateToken, AvailabilityController.getAvailabilityBlocks);
 
 // Update availability block (specialist/admin only)
-router.put('/specialists/availability/blocks/:id', authenticateToken, validateUpdateAvailabilityBlock, AvailabilityController.updateAvailabilityBlock);
+router.put('/specialists/blocks/:id', authenticateToken, validateUpdateAvailabilityBlock, AvailabilityController.updateAvailabilityBlock);
 
 // Delete availability block (specialist/admin only)
-router.delete('/specialists/availability/blocks/:id', authenticateToken, AvailabilityController.deleteAvailabilityBlock);
+router.delete('/specialists/blocks/:id', authenticateToken, AvailabilityController.deleteAvailabilityBlock);
+
+// Generate availability blocks from working hours (specialist only)
+router.post('/specialists/generate', authenticateToken, AvailabilityController.generateFromWorkingHours);
+
+// Fix all specialists with empty working hours (admin/debug endpoint - temporarily no auth)
+router.post('/specialists/fix-all', AvailabilityController.fixAllSpecialists);
 
 export default router;

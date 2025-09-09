@@ -1,24 +1,25 @@
 import { Router } from 'express';
 import { query } from 'express-validator';
-import { authenticateToken as authMiddleware } from '@/middleware/auth/jwt';
+import { authenticateToken as authMiddleware, authenticateTokenOptional } from '@/middleware/auth/jwt';
 import { validateRequest } from '@/middleware/validation';
 import { AnalyticsController } from '@/controllers/analytics';
 
 const router = Router();
 const analyticsController = new AnalyticsController();
 
-// All routes require authentication
-router.use(authMiddleware);
+// Authentication will be applied per route as needed
 
 // Get dashboard overview
 router.get(
   '/dashboard',
+  authMiddleware,
   analyticsController.getDashboard
 );
 
 // Get booking analytics
 router.get(
   '/bookings',
+  authMiddleware,
   [
     query('fromDate').optional().isISO8601(),
     query('toDate').optional().isISO8601(),
@@ -31,6 +32,7 @@ router.get(
 // Get revenue analytics
 router.get(
   '/revenue',
+  authMiddleware,
   [
     query('fromDate').optional().isISO8601(),
     query('toDate').optional().isISO8601(),
@@ -43,6 +45,7 @@ router.get(
 // Get review analytics
 router.get(
   '/reviews',
+  authMiddleware,
   [
     query('fromDate').optional().isISO8601(),
     query('toDate').optional().isISO8601()
@@ -54,6 +57,7 @@ router.get(
 // Get response time analytics
 router.get(
   '/response-time',
+  authMiddleware,
   [
     query('fromDate').optional().isISO8601(),
     query('toDate').optional().isISO8601()
@@ -65,6 +69,7 @@ router.get(
 // Get service performance
 router.get(
   '/service-performance',
+  authMiddleware,
   [
     query('fromDate').optional().isISO8601(),
     query('toDate').optional().isISO8601()
@@ -76,6 +81,7 @@ router.get(
 // Get earnings data
 router.get(
   '/earnings',
+  authMiddleware,
   [
     query('fromDate').optional().isISO8601(),
     query('toDate').optional().isISO8601(),
@@ -88,6 +94,7 @@ router.get(
 // Get customer insights
 router.get(
   '/customer-insights',
+  authMiddleware,
   [
     query('fromDate').optional().isISO8601(),
     query('toDate').optional().isISO8601()
@@ -114,6 +121,7 @@ router.get(
 // Get overview analytics (general summary)
 router.get(
   '/overview',
+  authMiddleware,
   [
     query('startDate').optional().isISO8601(),
     query('endDate').optional().isISO8601()
@@ -125,6 +133,7 @@ router.get(
 // Get services analytics (service-specific performance)
 router.get(
   '/services',
+  authMiddleware,
   [
     query('startDate').optional().isISO8601(),
     query('endDate').optional().isISO8601()
@@ -136,12 +145,31 @@ router.get(
 // Get performance analytics (response times, conversion rates)
 router.get(
   '/performance',
+  authMiddleware,
   [
     query('startDate').optional().isISO8601(),
     query('endDate').optional().isISO8601()
   ],
   validateRequest,
   analyticsController.getPerformanceAnalytics
+);
+
+// Track profile view (can be accessed by anonymous users)
+router.post(
+  '/profile-views/:specialistId',
+  authenticateTokenOptional,
+  analyticsController.trackProfileView
+);
+
+// Get profile view statistics (authenticated specialists only)
+router.get(
+  '/profile-views',
+  authMiddleware,
+  [
+    query('period').optional().isIn(['week', 'month', 'year'])
+  ],
+  validateRequest,
+  analyticsController.getProfileViewStats
 );
 
 export default router;

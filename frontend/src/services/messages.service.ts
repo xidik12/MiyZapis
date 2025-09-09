@@ -112,42 +112,33 @@ export class MessagesService {
   }
 
   // Mark conversation as read
-  async markAsRead(conversationId: string): Promise<{ message: string }> {
+  async markAsRead(conversationId: string): Promise<void> {
     const response = await apiClient.put<{ message: string }>(
       `/messages/conversations/${conversationId}/read`
     );
-    
-    if (!response.success || !response.data) {
+    if (!response.success) {
       throw new Error(response.error?.message || 'Failed to mark as read');
     }
-    
-    return response.data;
   }
 
   // Archive conversation
-  async archiveConversation(conversationId: string): Promise<{ message: string }> {
+  async archiveConversation(conversationId: string): Promise<void> {
     const response = await apiClient.put<{ message: string }>(
       `/messages/conversations/${conversationId}/archive`
     );
-    
-    if (!response.success || !response.data) {
+    if (!response.success) {
       throw new Error(response.error?.message || 'Failed to archive conversation');
     }
-    
-    return response.data;
   }
 
   // Block conversation
-  async blockConversation(conversationId: string): Promise<{ message: string }> {
+  async blockConversation(conversationId: string): Promise<void> {
     const response = await apiClient.put<{ message: string }>(
       `/messages/conversations/${conversationId}/block`
     );
-    
-    if (!response.success || !response.data) {
+    if (!response.success) {
       throw new Error(response.error?.message || 'Failed to block conversation');
     }
-    
-    return response.data;
   }
 
   // Get unread message count

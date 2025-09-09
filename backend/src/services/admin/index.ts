@@ -124,12 +124,6 @@ export class AdminService {
           specialist: {
             select: {
               id: true,
-              user: {
-                select: {
-                  firstName: true,
-                  lastName: true
-                }
-              }
             }
           },
           service: {

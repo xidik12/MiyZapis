@@ -188,6 +188,12 @@ router.post('/', authenticateToken, validateCreateReview, async (req: Request, r
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      logger.error('Review validation failed:', {
+        errors: errors.array(),
+        body: req.body,
+        userId: (req as AuthenticatedRequest).user?.id,
+        headers: req.headers
+      });
       return res.status(400).json(
         createErrorResponse(
           ErrorCodes.VALIDATION_ERROR,
@@ -198,7 +204,13 @@ router.post('/', authenticateToken, validateCreateReview, async (req: Request, r
       );
     }
 
-    const { userId } = (req as any);
+    // Add debug logging for successful validation  
+    logger.info('Review validation passed:', {
+      body: req.body,
+      userId: (req as AuthenticatedRequest).user?.id
+    });
+
+    const userId = (req as AuthenticatedRequest).user?.id;
     const {
       bookingId,
       rating,
@@ -742,7 +754,7 @@ router.post('/:id/report', authenticateToken, validateReportReview, async (req: 
       );
     }
 
-    const { userId } = (req as any);
+    const userId = (req as AuthenticatedRequest).user?.id;
     const { id } = req.params;
     const { reason, description } = req.body;
 

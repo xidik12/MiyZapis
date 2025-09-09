@@ -17,5 +17,6 @@ router.get('/my/services', authenticateToken, ServiceController.getSpecialistSer
 router.post('/', authenticateToken, requireSpecialist, ServiceController.createService);
 router.put('/:serviceId', authenticateToken, requireSpecialist, ServiceController.updateService);
 router.delete('/:serviceId', authenticateToken, requireSpecialist, ServiceController.deleteService);
+router.post('/migrate-currency', authenticateToken, requireSpecialist, ServiceController.migrateCurrencyData);
 
 export default router;

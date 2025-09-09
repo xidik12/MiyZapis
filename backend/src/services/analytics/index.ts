@@ -1,12 +1,30 @@
 import { PrismaClient } from '@prisma/client';
 import { logger } from '@/utils/logger';
+import { convertCurrency } from '@/utils/currency';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from 'date-fns';
+
+// Booking statuses that generate revenue
+const revenueGeneratingStatuses = ['COMPLETED', 'IN_PROGRESS'] as const;
 
 export class AnalyticsService {
   private prisma: PrismaClient;
 
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
+  }
+
+  // Helper method to get user ID from specialist ID
+  private async getSpecialistUserId(specialistId: string): Promise<string> {
+    const specialist = await this.prisma.specialist.findUnique({
+      where: { id: specialistId },
+      select: { userId: true }
+    });
+
+    if (!specialist) {
+      throw new Error('Specialist not found');
+    }
+
+    return specialist.userId;
   }
 
   async getDashboardData(specialistId: string): Promise<any> {
@@ -254,7 +272,7 @@ export class AnalyticsService {
       }, {} as Record<string, number>);
 
       const topTags = Object.entries(tagCounts)
-        .sort(([, a], [, b]) => b - a)
+        .sort(([, a], [, b]) => (b as number) - (a as number))
         .slice(0, 10)
         .map(([tag, count]) => ({ tag, count }));
 
@@ -387,7 +405,12 @@ export class AnalyticsService {
         },
         select: {
           totalAmount: true,
-          completedAt: true
+          completedAt: true,
+          service: {
+            select: {
+              currency: true
+            }
+          }
         }
       });
 
@@ -396,11 +419,22 @@ export class AnalyticsService {
       return {
         earnings,
         summary: {
-          totalEarnings: completedBookings.reduce((sum, booking) => sum + booking.totalAmount, 0),
+          totalEarnings: completedBookings.reduce((sum, booking) => {
+            // Convert booking amount to UAH base currency before summing
+            const serviceCurrency = booking.service?.currency || 'UAH';
+            const convertedAmount = convertCurrency(booking.totalAmount, serviceCurrency, 'UAH');
+            return sum + convertedAmount;
+          }, 0),
           averageEarningsPerBooking: completedBookings.length > 0 
-            ? completedBookings.reduce((sum, booking) => sum + booking.totalAmount, 0) / completedBookings.length 
+            ? completedBookings.reduce((sum, booking) => {
+                // Convert booking amount to UAH base currency before summing
+                const serviceCurrency = booking.service?.currency || 'UAH';
+                const convertedAmount = convertCurrency(booking.totalAmount, serviceCurrency, 'UAH');
+                return sum + convertedAmount;
+              }, 0) / completedBookings.length 
             : 0,
-          totalCompletedBookings: completedBookings.length
+          totalCompletedBookings: completedBookings.length,
+          currency: 'UAH' // All aggregated amounts are in UAH base currency
         }
       };
     } catch (error) {
@@ -511,6 +545,9 @@ export class AnalyticsService {
       const dateFilter = this.buildDateFilter(startDate, endDate);
       const now = new Date();
       
+      // Use user ID for booking queries since bookings are linked to user ID, not specialist ID
+      const userId = await this.getSpecialistUserId(specialistId);
+      
       // Get basic statistics
       const [
         totalBookings,
@@ -524,20 +561,20 @@ export class AnalyticsService {
       ] = await Promise.all([
         this.prisma.booking.count({
           where: {
-            specialistId,
+            specialistId: userId,
             createdAt: dateFilter
           }
         }),
         this.prisma.booking.count({
           where: {
-            specialistId,
+            specialistId: userId,
             status: 'COMPLETED',
             createdAt: dateFilter
           }
         }),
         this.prisma.booking.aggregate({
           where: {
-            specialistId,
+            specialistId: userId,
             status: 'COMPLETED',
             createdAt: dateFilter
           },
@@ -545,13 +582,13 @@ export class AnalyticsService {
         }),
         this.prisma.booking.count({
           where: {
-            specialistId,
+            specialistId: userId,
             status: 'PENDING'
           }
         }),
         this.prisma.booking.count({
           where: {
-            specialistId,
+            specialistId: userId,
             scheduledAt: {
               gte: startOfDay(now),
               lte: endOfDay(now)
@@ -560,7 +597,7 @@ export class AnalyticsService {
         }),
         this.prisma.review.aggregate({
           where: { 
-            specialistId,
+            specialistId: userId,
             createdAt: dateFilter
           },
           _avg: { rating: true },
@@ -568,13 +605,13 @@ export class AnalyticsService {
         }),
         this.prisma.review.count({
           where: { 
-            specialistId,
+            specialistId: userId,
             createdAt: dateFilter
           }
         }),
         this.prisma.booking.findMany({
           where: {
-            specialistId,
+            specialistId: userId,
             createdAt: dateFilter
           },
           distinct: ['customerId'],
@@ -588,7 +625,7 @@ export class AnalyticsService {
       // Get recent bookings trend
       const recentBookings = await this.prisma.booking.findMany({
         where: {
-          specialistId,
+          specialistId: userId,
           createdAt: dateFilter
         },
         select: {
@@ -656,9 +693,12 @@ export class AnalyticsService {
         }
       });
 
+      // Consider bookings that should count as "completed" for revenue purposes
+      const revenueGeneratingStatuses = ['COMPLETED', 'CONFIRMED', 'IN_PROGRESS'];
+
       const serviceAnalytics = services.map(service => {
         const bookings = service.bookings;
-        const completedBookings = bookings.filter(b => b.status === 'COMPLETED');
+        const completedBookings = bookings.filter(b => (revenueGeneratingStatuses as readonly string[]).includes(b.status));
         const totalRevenue = completedBookings.reduce((sum, b) => sum + b.totalAmount, 0);
         const ratings = bookings
           .filter(b => b.review)
@@ -749,7 +789,7 @@ export class AnalyticsService {
         }
       });
 
-      const completedBookings = bookings.filter(b => b.status === 'COMPLETED');
+      const completedBookings = bookings.filter(b => (revenueGeneratingStatuses as readonly string[]).includes(b.status));
       const cancelledBookings = bookings.filter(b => b.status === 'CANCELLED');
       
       // Calculate key performance metrics
@@ -790,8 +830,8 @@ export class AnalyticsService {
       const performanceTrend = this.groupDataByPeriod(bookings, 'week', 'createdAt').map(group => ({
         period: group.period,
         bookings: group.count,
-        completedBookings: group.items.filter(b => b.status === 'COMPLETED').length,
-        revenue: group.items.filter(b => b.status === 'COMPLETED').reduce((sum, b) => sum + b.totalAmount, 0),
+        completedBookings: group.items.filter(b => revenueGeneratingStatuses.includes(b.status)).length,
+        revenue: group.items.filter(b => revenueGeneratingStatuses.includes(b.status)).reduce((sum, b) => sum + b.totalAmount, 0),
         averageRating: group.items.filter(b => b.review).length > 0 ?
           group.items.filter(b => b.review).reduce((sum, b) => sum + b.review!.rating, 0) / group.items.filter(b => b.review).length : 0
       }));
@@ -904,8 +944,8 @@ export class AnalyticsService {
 
     return Object.entries(categoryGroups).map(([category, data]) => ({
       category,
-      revenue: data?.revenue || 0,
-      count: data?.count || 0
+      revenue: (data as { revenue: number; count: number }).revenue || 0,
+      count: (data as { revenue: number; count: number }).count || 0
     }));
   }
 

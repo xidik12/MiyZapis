@@ -110,9 +110,11 @@ export const API_ENDPOINTS = {
   ANALYTICS: {
     SPECIALIST: '/analytics/specialist',
     PLATFORM: '/analytics/platform',
-    OVERVIEW: '/analytics/overview',
+    OVERVIEW: '/analytics/overview', // Keep this for backward compatibility
+    SPECIALIST_OVERVIEW: '/specialists/analytics', // Add specialist-specific route
     BOOKINGS: '/analytics/bookings',
     REVENUE: '/analytics/revenue',
+    SPECIALIST_REVENUE: '/specialists/revenue', // Add specialist-specific route
     CUSTOMERS: '/analytics/customers',
     PERFORMANCE: '/analytics/performance',
     SERVICES: '/analytics/services',

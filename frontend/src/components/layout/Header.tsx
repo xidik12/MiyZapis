@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, selectIsAuthenticated, logout } from '@/store/slices/authSlice';
-import { selectNotifications, updateNotificationMessages } from '@/store/slices/notificationSlice';
+import { selectNotifications } from '@/store/slices/notificationSlice';
 import { environment } from '@/config/environment';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
@@ -59,9 +59,8 @@ export const Header: React.FC = () => {
   }, [location.pathname]);
 
   // Update notification messages when language changes
-  useEffect(() => {
-    dispatch(updateNotificationMessages({ t }));
-  }, [language, t, dispatch]);
+  // Note: Removed dispatch call to prevent Redux serialization error
+  // The updateNotificationMessages action doesn't perform any actual updates
 
   const handleLogout = async () => {
     try {
@@ -108,8 +107,27 @@ export const Header: React.FC = () => {
                 alt="МійЗапис Logo" 
                 className="w-8 h-8 xs:w-10 xs:h-10 group-hover:scale-110 transition-all duration-300"
                 onError={(e) => {
-                  console.log('🖼️ Logo failed to load, trying fallback');
-                  e.currentTarget.src = '/logo.svg';
+                  const img = e.currentTarget as HTMLImageElement;
+                  const currentSrc = img.src;
+                  
+                  if (currentSrc.includes('miyzapis_logo.png')) {
+                    console.log('🖼️ Primary logo failed, trying SVG fallback');
+                    img.src = '/logo.svg';
+                  } else if (currentSrc.includes('logo.svg')) {
+                    console.log('🖼️ SVG logo failed, trying favicon fallback');
+                    img.src = '/favicon.svg';
+                  } else {
+                    console.log('🖼️ All logos failed, replacing with app name');
+                    img.style.display = 'none';
+                    // Add app name as fallback
+                    const parent = img.parentElement;
+                    if (parent && !parent.querySelector('.logo-fallback')) {
+                      const fallback = document.createElement('div');
+                      fallback.className = 'logo-fallback w-8 h-8 xs:w-10 xs:h-10 bg-blue-600 text-white rounded flex items-center justify-center text-xs font-bold';
+                      fallback.textContent = 'МЗ';
+                      parent.insertBefore(fallback, img);
+                    }
+                  }
                 }}
                 onLoad={() => console.log('✅ Logo loaded successfully')}
               />
@@ -177,15 +195,15 @@ export const Header: React.FC = () => {
 
 
           {/* Right side actions */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
+          <div className="flex items-center space-x-1 xs:space-x-2 sm:space-x-3">
             {/* Hide currency/language toggles on mobile and small tablets */}
             <div className="hidden lg:flex items-center space-x-2">
               <CurrencyToggle />
               <LanguageToggle />
             </div>
             
-            {/* Theme toggle */}
-            <ThemeToggle size="md" />
+            {/* Theme toggle - larger on mobile for better touch targets */}
+            <ThemeToggle size="lg" className="sm:!h-10 sm:!w-10" />
 
             {isAuthenticated ? (
               <>
@@ -193,12 +211,12 @@ export const Header: React.FC = () => {
                 <div className="relative" ref={notificationRef}>
                   <button
                     onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                    className="p-2 text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-gray-200 relative transition-all duration-300"
+                    className="p-2 sm:p-2 text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-gray-200 relative transition-all duration-300 mobile-touch-target"
                   >
                     {unreadNotifications > 0 ? (
-                      <BellIconSolid className="w-6 h-6 text-primary-600" />
+                      <BellIconSolid className="w-7 h-7 sm:w-6 sm:h-6 text-primary-600" />
                     ) : (
-                      <BellIcon className="w-6 h-6" />
+                      <BellIcon className="w-7 h-7 sm:w-6 sm:h-6" />
                     )}
                     {unreadNotifications > 0 && (
                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -216,21 +234,21 @@ export const Header: React.FC = () => {
                 <div className="relative" ref={userMenuRef}>
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center space-x-2 p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300"
+                    className="flex items-center space-x-2 p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 mobile-touch-target"
                   >
                     {user?.avatar ? (
                       <img
                         src={getAbsoluteImageUrl(user.avatar)}
                         alt={`${user.firstName} ${user.lastName}`}
-                        className="w-8 h-8 rounded-full object-cover"
+                        className="w-9 h-9 sm:w-8 sm:h-8 rounded-full object-cover"
                       />
                     ) : (
-                      <UserCircleIcon className="w-8 h-8" />
+                      <UserCircleIcon className="w-9 h-9 sm:w-8 sm:h-8" />
                     )}
                     <span className="hidden sm:block text-sm font-medium">
                       {user?.firstName}
                     </span>
-                    <ChevronDownIcon className="w-4 h-4" />
+                    <ChevronDownIcon className="w-5 h-5 sm:w-4 sm:h-4" />
                   </button>
                   <UserDropdown 
                     isOpen={isUserMenuOpen}
@@ -262,9 +280,9 @@ export const Header: React.FC = () => {
               className="sm:hidden mobile-touch-target p-2 text-gray-400 hover:text-primary-500 transition-all duration-300 rounded-lg hover:glass-effect mobile-touch"
             >
               {isMobileMenuOpen ? (
-                <XMarkIcon className="w-6 h-6" />
+                <XMarkIcon className="w-7 h-7" />
               ) : (
-                <Bars3Icon className="w-6 h-6" />
+                <Bars3Icon className="w-7 h-7" />
               )}
             </button>
           </div>

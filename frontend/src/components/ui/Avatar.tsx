@@ -1,5 +1,6 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { UserCircleIcon } from '@heroicons/react/24/outline';
+import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 
 interface AvatarProps {
   src?: string | null;
@@ -31,116 +32,65 @@ export const Avatar: React.FC<AvatarProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(!!src);
-  const [shouldLoad, setShouldLoad] = useState(!lazy);
-  const imgRef = useRef<HTMLImageElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-
-  // Set up intersection observer for lazy loading
-  const setRef = useCallback((node: HTMLImageElement | null) => {
-    if (imgRef.current) {
-      observerRef.current?.unobserve(imgRef.current);
-    }
-    
-    if (node && lazy && !shouldLoad) {
-      observerRef.current = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting) {
-            setShouldLoad(true);
-            observerRef.current?.disconnect();
-          }
-        },
-        { threshold: 0.1 }
-      );
-      observerRef.current.observe(node);
-    }
-    
-    imgRef.current = node;
-  }, [lazy, shouldLoad]);
-
-  // Cleanup observer on unmount
-  useEffect(() => {
-    return () => {
-      observerRef.current?.disconnect();
-    };
-  }, []);
 
   const handleImageError = useCallback((error: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    console.log('🚨 Avatar image failed to load:', src);
     setImageError(true);
     setImageLoading(false);
     onError?.(error.nativeEvent);
-  }, [onError]);
+  }, [onError, src]);
 
   const handleImageLoad = useCallback(() => {
+    console.log('✅ Avatar image loaded successfully:', src);
     setImageLoading(false);
     onLoad?.();
-  }, [onLoad]);
+  }, [onLoad, src]);
 
   // Reset states when src changes
   useEffect(() => {
     if (src) {
       setImageError(false);
       setImageLoading(true);
-      if (!lazy) {
-        setShouldLoad(true);
-      }
     } else {
       setImageError(false);
       setImageLoading(false);
     }
-  }, [src, lazy]);
+  }, [src]);
 
-  // If no src provided or image failed to load, show fallback
-  if (!src || imageError) {
-    if (fallbackIcon) {
-      return (
-        <UserCircleIcon 
-          className={`${sizeClasses[size]} text-gray-400 dark:text-gray-500 ${className}`}
-        />
-      );
-    } else {
-      return (
-        <div 
-          className={`${sizeClasses[size]} bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center ${className}`}
-        >
-          <UserCircleIcon className="w-2/3 h-2/3 text-gray-400 dark:text-gray-500" />
-        </div>
-      );
-    }
+  // Process the image URL to ensure it's absolute
+  const absoluteSrc = src ? getAbsoluteImageUrl(src) : null;
+  
+  console.log('🎯 Avatar simplified - URL:', absoluteSrc?.substring(0, 50) + '...', 'Error:', imageError);
+  
+  // If no valid src or loading failed, show fallback
+  if (!absoluteSrc || imageError) {
+    console.log('⚠️ Avatar: Showing fallback icon');
+    return (
+      <UserCircleIcon 
+        className={`${sizeClasses[size]} text-gray-400 dark:text-gray-500 ${className}`}
+      />
+    );
   }
 
+  // Simple and direct approach - just like the working navbar
   return (
     <div className={`relative ${sizeClasses[size]}`}>
-      {/* Loading skeleton */}
       {imageLoading && (
         <div 
           className={`absolute inset-0 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse`}
         />
       )}
       
-      {/* Lazy loading placeholder */}
-      {lazy && !shouldLoad && (
-        <div 
-          ref={setRef}
-          className={`${sizeClasses[size]} bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center ${className}`}
-        >
-          <UserCircleIcon className="w-2/3 h-2/3 text-gray-300 dark:text-gray-600" />
-        </div>
-      )}
-      
-      {/* Actual image */}
-      {shouldLoad && (
-        <img
-          ref={lazy ? setRef : undefined}
-          src={src}
-          alt={alt}
-          className={`${sizeClasses[size]} rounded-full object-cover transition-opacity duration-200 ${
-            imageLoading ? 'opacity-0' : 'opacity-100'
-          } ${className}`}
-          onError={handleImageError}
-          onLoad={handleImageLoad}
-          loading={lazy ? 'lazy' : 'eager'}
-        />
-      )}
+      <img
+        src={absoluteSrc}
+        alt={alt}
+        className={`${sizeClasses[size]} rounded-full object-cover transition-opacity duration-200 ${
+          imageLoading ? 'opacity-0' : 'opacity-100'
+        } ${className}`}
+        onError={handleImageError}
+        onLoad={handleImageLoad}
+        loading={lazy ? 'lazy' : 'eager'}
+      />
     </div>
   );
 };

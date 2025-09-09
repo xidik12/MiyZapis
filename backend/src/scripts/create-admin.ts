@@ -47,18 +47,9 @@ async function createAdmin(options: CreateAdminOptions) {
         userType: 'ADMIN',
         isActive: true,
         isEmailVerified: true, // Admin should be pre-verified
-        emailVerificationToken: verificationToken,
         loyaltyPoints: 0,
-        totalBookings: 0,
-        preferences: {
-          language: 'en',
-          currency: 'USD',
-          notifications: {
-            email: true,
-            push: true,
-            telegram: false
-          }
-        }
+        language: 'en',
+        currency: 'USD'
       }
     });
 

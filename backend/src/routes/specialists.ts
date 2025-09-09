@@ -41,6 +41,7 @@ router.get('/services', authenticateToken, requireSpecialist, SpecialistControll
 router.post('/services', authenticateToken, requireSpecialist, SpecialistController.createService);
 router.put('/services/:serviceId', authenticateToken, requireSpecialist, SpecialistController.updateService);
 router.delete('/services/:serviceId', authenticateToken, requireSpecialist, SpecialistController.deleteService);
+router.post('/services/:serviceId/restore', authenticateToken, requireSpecialist, SpecialistController.restoreService);
 router.patch('/services/:serviceId/status', authenticateToken, requireSpecialist, SpecialistController.toggleServiceStatus);
 
 // Specialist availability/schedule routes (frontend expects these - must come before parameterized routes)
@@ -49,7 +50,7 @@ router.post('/availability/block', authenticateToken, requireSpecialist, validat
 router.delete('/availability/block/:blockId', authenticateToken, requireSpecialist, SpecialistController.unblockTimeSlot);
 
 // Protected routes - require specialist access
-router.post('/profile', authenticateToken, requireSpecialist, SpecialistController.createProfile);
+router.post('/profile', authenticateToken, SpecialistController.createProfile);
 router.put('/profile', authenticateToken, requireSpecialist, SpecialistController.updateProfile);
 
 // Admin routes (must come before parameterized routes)

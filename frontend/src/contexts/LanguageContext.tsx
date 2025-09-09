@@ -191,6 +191,10 @@ const translations: Translations = {
   'search.results.loadMore': { en: 'Load More', uk: 'Завантажити більше', ru: 'Загрузить больше' },
   'search.results.endOfResults': { en: 'You\'ve reached the end of results', uk: 'Ви досягли кінця результатів', ru: 'Вы достигли конца результатов' },
   
+  // Search Controls
+  'search.favorites': { en: 'Favorites', uk: 'Улюблені', ru: 'Избранное' },
+  'search.showAll': { en: 'Show All', uk: 'Показати все', ru: 'Показать все' },
+  
   // Sort Options
   'search.sort.title': { en: 'Sort by', uk: 'Сортувати за', ru: 'Сортировать по' },
   'search.sort.relevance': { en: 'Relevance', uk: 'Релевантністю', ru: 'Релевантности' },
@@ -209,7 +213,7 @@ const translations: Translations = {
   'search.specialist.verified': { en: 'Verified', uk: 'Підтверджено', ru: 'Подтверждено' },
   'search.specialist.online': { en: 'Online', uk: 'Онлайн', ru: 'Онлайн' },
   'search.specialist.responseTime': { en: 'Response time', uk: 'Час відповіді', ru: 'Время отклика' },
-  'search.specialist.completedJobs': { en: 'completed jobs', uk: 'виконаних робіт', ru: 'выполненных работ' },
+  'search.specialist.completedJobs': { en: 'Completed jobs', uk: 'Виконаних робіт', ru: 'Выполненных работ' },
   'search.specialist.reviews': { en: 'reviews', uk: 'відгуків', ru: 'отзывов' },
   'search.specialist.yearsExperience': { en: 'years experience', uk: 'років досвіду', ru: 'лет опыта' },
   
@@ -357,7 +361,7 @@ const translations: Translations = {
 
   // Specialist Card Text
   'specialist.responseTime': { en: 'Response time', uk: 'Час відповіді', ru: 'Время отклика' },
-  'specialist.completedJobs': { en: 'completed jobs', uk: 'виконаних робіт', ru: 'выполненных работ' },
+  'specialist.completedJobs': { en: 'Completed jobs', uk: 'Виконаних робіт', ru: 'Выполненных работ' },
   'specialist.yearsExperience': { en: 'years experience', uk: 'років досвіду', ru: 'лет опыта' },
   'specialist.reviews': { en: 'reviews', uk: 'відгуків', ru: 'отзывов' },
   'specialist.verified': { en: 'Verified', uk: 'Підтверджено', ru: 'Подтверждено' },
@@ -397,6 +401,9 @@ const translations: Translations = {
   'dashboard.loadMore': { en: 'Load More', uk: 'Завантажити більше', ru: 'Загрузить больше' },
   'dashboard.noData': { en: 'No data available', uk: 'Немає даних', ru: 'Нет данных' },
   'dashboard.loading': { en: 'Loading...', uk: 'Завантаження...', ru: 'Загрузка...' },
+  // Schedule loading
+  'schedule.loadingTitle': { en: 'Loading schedule', uk: 'Завантаження розкладу', ru: 'Загрузка расписания' },
+  'schedule.loadingSubtitle': { en: 'Preparing your availability', uk: 'Підготовка вашої доступності', ru: 'Подготавливаем вашу доступность' },
 
   // Dashboard - Navigation
   'dashboard.nav.dashboard': { en: 'Dashboard', uk: 'Панель керування', ru: 'Панель управления' },
@@ -442,6 +449,12 @@ const translations: Translations = {
   'dashboard.booking.status.completed': { en: 'Completed', uk: 'Завершено', ru: 'Завершено' },
   'dashboard.booking.status.inProgress': { en: 'In Progress', uk: 'В процесі', ru: 'В процессе' },
   'dashboard.booking.status.noShow': { en: 'No Show', uk: 'Не з\'явився', ru: 'Не явился' },
+  'dashboard.booking.status.PENDING': { en: 'Pending', uk: 'Очікує', ru: 'Ожидает' },
+  'dashboard.booking.status.CONFIRMED': { en: 'Confirmed', uk: 'Підтверджено', ru: 'Подтверждено' },
+  'dashboard.booking.status.CANCELLED': { en: 'Cancelled', uk: 'Скасовано', ru: 'Отменено' },
+  'dashboard.booking.status.COMPLETED': { en: 'Completed', uk: 'Завершено', ru: 'Завершено' },
+  'dashboard.booking.status.IN_PROGRESS': { en: 'In Progress', uk: 'В процесі', ru: 'В процессе' },
+  'dashboard.booking.status.NO_SHOW': { en: 'No Show', uk: 'Не з\'явився', ru: 'Не явился' },
 
   // Dashboard - Specialist Quick Actions
   'dashboard.specialist.addService': { en: 'Add Service', uk: 'Додати послугу', ru: 'Добавить услугу' },
@@ -567,6 +580,7 @@ const translations: Translations = {
   'bookings.cancel': { en: 'Cancel', uk: 'Скасувати', ru: 'Отменить' },
   'bookings.clear': { en: 'Clear', uk: 'Очистити', ru: 'Очистить' },
   'bookings.customer': { en: 'Customer', uk: 'Клієнт', ru: 'Клиент' },
+  'bookings.specialist': { en: 'Specialist', uk: 'Спеціаліст', ru: 'Специалист' },
   'bookings.service': { en: 'Service', uk: 'Послуга', ru: 'Услуга' },
   'bookings.dateTime': { en: 'Date & Time', uk: 'Дата і час', ru: 'Дата и время' },
   'bookings.type': { en: 'Type', uk: 'Тип', ru: 'Тип' },
@@ -583,10 +597,15 @@ const translations: Translations = {
   'bookings.results': { en: 'results', uk: 'результатів', ru: 'результатов' },
   'bookings.noBookingsFound': { en: 'No bookings found', uk: 'Бронювань не знайдено', ru: 'Бронирований не найдено' },
   'bookings.noBookingsDescription': { en: 'No bookings match your current filters. Try adjusting your search criteria.', uk: 'Жодне бронювання не відповідає вашим поточним фільтрам. Спробуйте налаштувати критерії пошуку.', ru: 'Ни одно бронирование не соответствует вашим текущим фильтрам. Попробуйте настроить критерии поиска.' },
+  'bookings.myServices': { en: 'My Services', uk: 'Мої послуги', ru: 'Мои услуги' },
+  'bookings.myBookings': { en: 'My Bookings', uk: 'Мої бронювання', ru: 'Мои бронирования' },
+  'bookings.leaveReview': { en: 'Leave Review', uk: 'Залишити відгук', ru: 'Оставить отзыв' },
+  'bookings.cancelBooking': { en: 'Cancel Booking', uk: 'Скасувати бронювання', ru: 'Отменить бронирование' },
   
   // Booking Details Modal
   'bookingDetails.title': { en: 'Booking Details', uk: 'Деталі бронювання', ru: 'Детали бронирования' },
   'bookingDetails.customerInfo': { en: 'Customer Information', uk: 'Інформація про клієнта', ru: 'Информация о клиенте' },
+  'bookingDetails.specialistInfo': { en: 'Specialist Information', uk: 'Інформація про спеціаліста', ru: 'Информация о специалисте' },
   'bookingDetails.name': { en: 'Name', uk: 'Ім\'я', ru: 'Имя' },
   'bookingDetails.contact': { en: 'Contact', uk: 'Контакт', ru: 'Контакт' },
   'bookingDetails.serviceInfo': { en: 'Service Information', uk: 'Інформація про послугу', ru: 'Информация об услуге' },
@@ -601,6 +620,7 @@ const translations: Translations = {
   'bookingDetails.messagePlaceholder': { en: 'Type your message here...', uk: 'Введіть ваше повідомлення тут...', ru: 'Введите ваше сообщение здесь...' },
   'bookingDetails.sendMessageButton': { en: 'Send Message', uk: 'Надіслати повідомлення', ru: 'Отправить сообщение' },
   'bookingDetails.template': { en: 'Template', uk: 'Шаблон', ru: 'Шаблон' },
+  'bookingDetails.customerActions': { en: 'Customer Actions', uk: 'Дії клієнта', ru: 'Действия клиента' },
 
   // Service Names Translations
   'service.consultation': { en: 'Psychology Consultation', uk: 'Консультація з психології', ru: 'Консультация по психологии' },
@@ -736,9 +756,11 @@ const translations: Translations = {
   'notifications.unread': { en: 'unread', uk: 'непрочитано', ru: 'непрочитано' },
   'notifications.markAllRead': { en: 'Mark All Read', uk: 'Позначити всі як прочитані', ru: 'Отметить все как прочитанные' },
   'notifications.markAsRead': { en: 'Mark as read', uk: 'Позначити як прочитане', ru: 'Отметить как прочитанное' },
+  'notifications.markRead': { en: 'Mark Read', uk: 'Позначити прочитаним', ru: 'Отметить прочитанным' },
   'notifications.delete': { en: 'Delete', uk: 'Видалити', ru: 'Удалить' },
   'notifications.noNotifications': { en: 'No notifications', uk: 'Немає сповіщень', ru: 'Нет уведомлений' },
   'notifications.noNotificationsDescription': { en: 'You are all caught up! Check back later for new updates.', uk: 'Ви прочитали все! Перевірте пізніше для нових оновлень.', ru: 'Вы все прочитали! Проверьте позже для новых обновлений.' },
+  'notifications.error.title': { en: 'Error Loading Notifications', uk: 'Помилка завантаження сповіщень', ru: 'Ошибка загрузки уведомлений' },
 
   // Notification Types
   'notifications.newBooking': { en: 'New Booking', uk: 'Нове бронювання', ru: 'Новое бронирование' },
@@ -886,6 +908,7 @@ const translations: Translations = {
   'specialist.noDescription': { en: 'No description available', uk: 'Опис відсутній', ru: 'Описание отсутствует' },
   'specialist.services': { en: 'Services', uk: 'Послуги', ru: 'Услуги' },
   'specialist.noServices': { en: 'No services available', uk: 'Послуги відсутні', ru: 'Услуги отсутствуют' },
+  'specialist.specialties': { en: 'Specialties', uk: 'Спеціалізації', ru: 'Специализации' },
   'specialist.contactInfo': { en: 'Contact Information', uk: 'Контактна інформація', ru: 'Контактная информация' },
   'specialist.quickStats': { en: 'Quick Stats', uk: 'Швидка статистика', ru: 'Краткая статистика' },
   'specialist.experience': { en: 'Experience', uk: 'Досвід', ru: 'Опыт' },
@@ -984,6 +1007,27 @@ const translations: Translations = {
   'booking.onlineSession': { en: 'Online Session', uk: 'Онлайн сесія', ru: 'Онлайн сессия' },
   'booking.rescheduleAlert': { en: 'Reschedule functionality would be implemented here', uk: 'Функціонал перенесення буде реалізовано тут', ru: 'Функционал переноса будет реализован здесь' },
   'booking.reviewAlert': { en: 'Review functionality would be implemented here', uk: 'Функціонал відгуків буде реалізовано тут', ru: 'Функционал отзывов будет реализован здесь' },
+
+  // Booking Flow & Actions
+  'booking.bookService': { en: 'Book Service', uk: 'Забронювати послугу', ru: 'Забронировать услугу' },
+  'booking.selectedService': { en: 'Selected Service', uk: 'Обрана послуга', ru: 'Выбранная услуга' },
+  'booking.selectDate': { en: 'Select Date', uk: 'Оберіть дату', ru: 'Выберите дату' },
+  'booking.selectTime': { en: 'Select Time', uk: 'Оберіть час', ru: 'Выберите время' },
+  'booking.noAvailableSlots': { en: 'No available slots', uk: 'Немає вільних слотів', ru: 'Нет свободных слотов' },
+  'booking.noAvailableDates': { en: 'No available dates', uk: 'Немає доступних дат', ru: 'Нет доступных дат' },
+  'booking.notesPlaceholder': { en: 'Add any special notes or requests...', uk: 'Додайте будь-які особливі примітки або побажання...', ru: 'Добавьте любые особые заметки или пожелания...' },
+  'booking.summary': { en: 'Booking Summary', uk: 'Підсумок бронювання', ru: 'Итоги бронирования' },
+  'booking.dateTime': { en: 'Date & Time', uk: 'Дата та час', ru: 'Дата и время' },
+  'booking.duration': { en: 'Duration', uk: 'Тривалість', ru: 'Продолжительность' },
+  'booking.total': { en: 'Total', uk: 'Всього', ru: 'Итого' },
+  'booking.paymentIntegrationPending': { en: 'Payment integration pending', uk: 'Інтеграція платежів в розробці', ru: 'Интеграция платежей в разработке' },
+  'booking.bookingRequested': { en: 'Booking Requested', uk: 'Запит на бронювання', ru: 'Запрос на бронирование' },
+  'booking.manualBookingMessage': { en: 'Your booking request has been sent successfully!', uk: 'Ваш запит на бронювання успішно надіслано!', ru: 'Ваш запрос на бронирование успешно отправлен!' },
+  'booking.waitingForSpecialistConfirmation': { en: 'Waiting for specialist confirmation', uk: 'Очікування підтвердження спеціаліста', ru: 'Ожидание подтверждения специалиста' },
+  'booking.viewBookings': { en: 'View My Bookings', uk: 'Переглянути мої бронювання', ru: 'Посмотреть мои бронирования' },
+  'booking.bookingId': { en: 'Booking ID', uk: 'ID бронювання', ru: 'ID бронирования' },
+  'booking.status': { en: 'Status', uk: 'Статус', ru: 'Статус' },
+  'booking.pending': { en: 'Pending', uk: 'Очікує', ru: 'Ожидает' },
 
   // Empty States
   'empty.noCancelledBookings': { en: 'No cancelled bookings', uk: 'Немає скасованих бронювань', ru: 'Нет отмененных бронирований' },
@@ -1246,6 +1290,14 @@ const translations: Translations = {
   'reviews.submitResponse': { en: 'Submit Response', uk: 'Відправити відповідь', ru: 'Отправить ответ' },
   'reviews.submitting': { en: 'Submitting...', uk: 'Відправка...', ru: 'Отправка...' },
   'reviews.loadMore': { en: 'Load More Reviews', uk: 'Завантажити більше відгуків', ru: 'Загрузить больше отзывов' },
+  'reviews.leaveReview': { en: 'Leave Review', uk: 'Залишити відгук', ru: 'Оставить отзыв' },
+  'reviews.rating': { en: 'Rating', uk: 'Рейтинг', ru: 'Рейтинг' },
+  'reviews.comment': { en: 'Comment', uk: 'Коментар', ru: 'Комментарий' },
+  'reviews.commentPlaceholder': { en: 'Share your experience...', uk: 'Поділіться своїм досвідом...', ru: 'Поделитесь вашим опытом...' },
+  'reviews.tags': { en: 'Tags', uk: 'Теги', ru: 'Теги' },
+  'reviews.submitReview': { en: 'Submit Review', uk: 'Відправити відгук', ru: 'Отправить отзыв' },
+  'reviews.pleaseSelectRating': { en: 'Please select a rating', uk: 'Будь ласка, оберіть рейтинг', ru: 'Пожалуйста, выберите рейтинг' },
+  'reviews.submitError': { en: 'Error submitting review', uk: 'Помилка відправки відгуку', ru: 'Ошибка отправки отзыва' },
   
   // Portfolio section
   'portfolio.title': { en: 'Portfolio', uk: 'Портфоліо', ru: 'Портфолио' },
@@ -1271,6 +1323,8 @@ const translations: Translations = {
   'settings.subtitle': { en: 'Manage your account preferences and business settings', uk: 'Керуйте налаштуваннями облікового запису та бізнесу', ru: 'Управляйте настройками аккаунта и бизнеса' },
   'settings.account': { en: 'Account', uk: 'Обліковий запис', ru: 'Аккаунт' },
   'settings.accountDescription': { en: 'Manage your account and booking preferences', uk: 'Керуйте обліковим записом та налаштуваннями бронювання', ru: 'Управляйте аккаунтом и настройками бронирования' },
+  'settings.profile': { en: 'Profile', uk: 'Профіль', ru: 'Профиль' },
+  'settings.profileDescription': { en: 'Manage your profile photo and personal information', uk: 'Керуйте фото профілю та особистою інформацією', ru: 'Управляйте фото профиля и личной информацией' },
   'settings.notifications': { en: 'Notifications', uk: 'Сповіщення', ru: 'Уведомления' },
   'settings.notificationsDescription': { en: 'Configure how you receive notifications', uk: 'Налаштуйте отримання сповіщень', ru: 'Настройте получение уведомлений' },
   'settings.privacy': { en: 'Privacy', uk: 'Конфіденційність', ru: 'Конфиденциальность' },
@@ -1447,6 +1501,7 @@ const translations: Translations = {
   'actions.bookNow': { en: 'Book Now', uk: 'Забронювати зараз', ru: 'Забронировать сейчас' },
   'actions.noServicesAvailable': { en: 'No services available', uk: 'Послуги недоступні', ru: 'Услуги недоступны' },
   'actions.favorite': { en: 'Favorite', uk: 'Обране', ru: 'Избранное' },
+  'actions.unfavorite': { en: 'Remove from Favorites', uk: 'Видалити з обраного', ru: 'Удалить из избранного' },
   
   // Errors
   'errors.specialistNotFound': { en: 'Specialist not found', uk: 'Спеціаліста не знайдено', ru: 'Специалист не найден' },

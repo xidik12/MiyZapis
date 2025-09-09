@@ -3,6 +3,8 @@ import { StarIcon, ChatBubbleLeftIcon, UserIcon, HeartIcon, FlagIcon, Exclamatio
 import { StarIcon as StarIconSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { reviewsService, Review, ReviewStats } from '../../services/reviews.service';
+import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
+import { specialistService } from '../../services/specialist.service';
 
 const SpecialistReviews: React.FC = () => {
   const { t, language } = useLanguage();
@@ -10,6 +12,7 @@ const SpecialistReviews: React.FC = () => {
   const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [specialistId, setSpecialistId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [filters, setFilters] = useState({
@@ -23,26 +26,120 @@ const SpecialistReviews: React.FC = () => {
   const [responseText, setResponseText] = useState('');
   const [submittingResponse, setSubmittingResponse] = useState(false);
 
+  // Load specialist profile to get specialist ID
+  useEffect(() => {
+    const loadSpecialistProfile = async () => {
+      try {
+        console.log('🔍 [Reviews] Loading specialist profile...');
+        const profile = await specialistService.getProfile();
+        console.log('✅ [Reviews] Specialist profile loaded:', profile);
+        
+        // The API returns { specialist: { id: ... } }, so we need to extract the specialist object
+        const specialistData = profile.specialist || profile;
+        console.log('🔧 [Reviews] Extracted specialist data:', specialistData);
+        console.log('🆔 [Reviews] Specialist ID:', specialistData.id);
+        setSpecialistId(specialistData.id);
+      } catch (err: any) {
+        console.error('❌ [Reviews] Error loading specialist profile:', err);
+        setError(err.message || 'Failed to load specialist profile');
+      }
+    };
+
+    loadSpecialistProfile();
+  }, []);
+
   // Load reviews
   useEffect(() => {
     const loadReviews = async () => {
+      // Don't load reviews until we have the specialist ID
+      if (!specialistId) {
+        console.log('⏳ [Reviews] Waiting for specialist ID...');
+        return;
+      }
+      
       try {
+        console.log('📊 [Reviews] Loading reviews for specialist:', specialistId);
+        console.log('📄 [Reviews] Parameters:', { page, filters });
         setLoading(true);
         setError(null);
         
-        const response = await reviewsService.getReceivedReviews(page, 20);
+        const response = await reviewsService.getSpecialistReviews(
+          specialistId, 
+          page, 
+          20, 
+          {
+            rating: filters.rating,
+            sortBy: filters.sortBy,
+            sortOrder: filters.sortOrder,
+            withComment: filters.withComment,
+            verified: filters.verified
+          }
+        );
+        
+        console.log('✅ [Reviews] Reviews loaded successfully:', response);
+        console.log('🔍 [Reviews] Response structure analysis:');
+        console.log('  - response.reviews:', response.reviews);
+        console.log('  - response.data:', response.data);
+        console.log('  - response.stats:', response.stats);
+        console.log('  - response.pagination:', response.pagination);
+        
+        // Handle different possible response structures
+        const reviewsData = response.reviews || [];
+        const statsData = response.stats || null;
+        const paginationData = response.pagination || null;
+
+        // Normalize stats to avoid NaN/undefined in UI and derive missing fields
+        const totalReviews = statsData?.totalReviews ?? reviewsData.length ?? 0;
+        const averageRating = Number.isFinite(statsData?.averageRating) 
+          ? (statsData!.averageRating as number) 
+          : (reviewsData.length > 0 
+              ? reviewsData.reduce((sum, r) => sum + (r.rating || 0), 0) / reviewsData.length 
+              : 0);
+        const ratingDistribution = statsData?.ratingDistribution ?? { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        const verifiedReviewsCount = (statsData as any)?.verifiedReviewsCount ?? reviewsData.filter(r => r.isVerified).length;
+        const recommendedCount = (ratingDistribution[4] || 0) + (ratingDistribution[5] || 0);
+        const recommendationRate = totalReviews > 0 ? (recommendedCount / totalReviews) : 0;
+        
+        console.log('📊 [Reviews] Processed review count:', reviewsData.length);
+        console.log('📈 [Reviews] Processed stats:', statsData);
+        console.log('📄 [Reviews] Processed pagination:', paginationData);
         
         if (page === 1) {
-          setReviews(response.reviews);
+          setReviews(reviewsData);
         } else {
-          setReviews(prev => [...prev, ...response.reviews]);
+          setReviews(prev => [...prev, ...reviewsData]);
         }
-        
-        setReviewStats(response.stats);
-        setHasMore(response.pagination.hasNextPage);
+        // Set normalized stats (based on current response/meta)
+        const baseStats: ReviewStats = {
+          totalReviews,
+          averageRating,
+          ratingDistribution,
+          verifiedReviewsCount,
+          recommendationRate,
+        } as any;
+        setReviewStats(baseStats);
+
+        // For page 1, try to enhance stats via dedicated endpoint for accuracy
+        if (page === 1) {
+          try {
+            const fullStats = await reviewsService.getSpecialistReviewStats(specialistId);
+            // Ensure no NaN values
+            const safeFullStats: ReviewStats = {
+              totalReviews: fullStats.totalReviews ?? baseStats.totalReviews,
+              averageRating: Number.isFinite(fullStats.averageRating) ? fullStats.averageRating : baseStats.averageRating,
+              ratingDistribution: fullStats.ratingDistribution || baseStats.ratingDistribution,
+              verifiedReviewsCount: fullStats.verifiedReviewsCount ?? baseStats.verifiedReviewsCount,
+              recommendationRate: Number.isFinite(fullStats.recommendationRate) ? fullStats.recommendationRate : baseStats.recommendationRate,
+            } as any;
+            setReviewStats(safeFullStats);
+          } catch (e) {
+            // Ignore if stats endpoint fails
+          }
+        }
+        setHasMore(paginationData?.hasNext || false);
         
       } catch (err: any) {
-        console.error('Error loading reviews:', err);
+        console.error('❌ [Reviews] Error loading reviews:', err);
         setError(err.message || 'Failed to load reviews');
       } finally {
         setLoading(false);
@@ -50,7 +147,7 @@ const SpecialistReviews: React.FC = () => {
     };
 
     loadReviews();
-  }, [page, filters]);
+  }, [specialistId, page, filters]);
 
   const handleLoadMore = () => {
     if (hasMore && !loading) {
@@ -158,11 +255,10 @@ const SpecialistReviews: React.FC = () => {
 
   if (loading && page === 1) {
     return (
-      <div className="p-6 max-w-7xl mx-auto">
-        <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent"></div>
-        </div>
-      </div>
+      <FullScreenHandshakeLoader 
+        title={t('common.loading')} 
+        subtitle={t('reviews.subtitle')} 
+      />
     );
   }
 
@@ -398,10 +494,7 @@ const SpecialistReviews: React.FC = () => {
               {review.service && (
                 <div className="mb-3">
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {t('reviews.forService')}: 
-                    <span className="font-medium text-gray-900 dark:text-white ml-1">
-                      {review.service.name}
-                    </span>
+                    {t('reviews.forService').replace('{service}', review.service.name)}
                   </span>
                 </div>
               )}

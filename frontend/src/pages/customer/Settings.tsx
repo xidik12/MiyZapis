@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useAppSelector } from '../../hooks/redux';
-import { selectUser } from '../../store/slices/authSlice';
+import { useAppSelector, useAppDispatch } from '../../hooks/redux';
+import { selectUser, updateUserProfile } from '../../store/slices/authSlice';
 import { PaymentMethod } from '../../types';
 import { PaymentMethodsService } from '../../services/paymentMethods';
 import { fileUploadService } from '../../services/fileUpload.service';
@@ -45,6 +45,7 @@ const CustomerSettings: React.FC = () => {
   
   // Get actual user data from Redux store
   const currentUser = useAppSelector(selectUser);
+  const dispatch = useAppDispatch();
   const [user, setUser] = useState({
     firstName: currentUser?.firstName || '',
     lastName: currentUser?.lastName || '',
@@ -222,7 +223,10 @@ const CustomerSettings: React.FC = () => {
       const result = await fileUploadService.uploadAvatar(file);
       
       // Update user profile with new avatar URL
-      await userService.updateProfile({ avatar: result.url });
+      const updatedUser = await userService.updateProfile({ avatar: result.url });
+      
+      // Update Redux store with only the avatar field
+      dispatch(updateUserProfile({ avatar: result.url }));
       
       // Update local state
       setUser(prev => ({ ...prev, avatar: result.url }));
@@ -253,7 +257,10 @@ const CustomerSettings: React.FC = () => {
       setUploadError('');
       
       // Update user profile to remove avatar
-      await userService.updateProfile({ avatar: null });
+      const updatedUser = await userService.updateProfile({ avatar: null });
+      
+      // Update Redux store with only the avatar field
+      dispatch(updateUserProfile({ avatar: null }));
       
       // Update local state
       setUser(prev => ({ ...prev, avatar: '' }));
@@ -874,7 +881,7 @@ const CustomerSettings: React.FC = () => {
 
       {/* Add Payment Method Modal */}
       {showAddPaymentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
               <CreditCardIcon className="h-6 w-6 mr-2 text-primary-600 dark:text-primary-400" />
@@ -959,7 +966,7 @@ const CustomerSettings: React.FC = () => {
 
       {/* Add Address Modal */}
       {showAddAddressModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
               <MapPinIcon className="h-6 w-6 mr-2 text-primary-600 dark:text-primary-400" />

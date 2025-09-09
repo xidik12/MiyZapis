@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import { config } from '@/config';
 import { logger } from '@/utils/logger';
+import { resendEmailService } from './resend-email';
 
 interface EmailOptions {
   to: string;
@@ -28,56 +29,201 @@ class EmailService {
 
   private initializeTransporter() {
     try {
-      if (!config.email.smtp.host || !config.email.smtp.auth.user) {
-        logger.warn('Email service disabled - SMTP configuration missing');
+      logger.info('🚀 Initializing email service with Resend + SMTP hybrid...', {
+        host: config.email.smtp.host || 'NOT_SET',
+        port: config.email.smtp.port,
+        user: config.email.smtp.auth.user ? `${config.email.smtp.auth.user.substring(0, 5)}...` : 'NOT_SET',
+        pass: config.email.smtp.auth.pass ? '[CONFIGURED]' : 'NOT_SET',
+        secure: config.email.smtp.secure,
+        environment: process.env.NODE_ENV || 'unknown',
+        timestamp: new Date().toISOString()
+      });
+
+      if (!config.email.smtp.host) {
+        logger.warn('Email service disabled - SMTP_HOST not configured');
         return;
       }
 
+      if (!config.email.smtp.auth.user) {
+        logger.warn('Email service disabled - SMTP_USER not configured');
+        return;
+      }
+
+      if (!config.email.smtp.auth.pass) {
+        logger.warn('Email service disabled - SMTP_PASS not configured');
+        return;
+      }
+
+      // Try SSL port 465 first, fallback to TLS port 587 if that fails
+      const useSSL = config.email.smtp.port === 465 || config.email.smtp.secure === true;
+      
       this.transporter = nodemailer.createTransport({
         host: config.email.smtp.host,
         port: config.email.smtp.port,
-        secure: config.email.smtp.secure,
+        secure: useSSL, // true for 465, false for other ports
         auth: {
           user: config.email.smtp.auth.user,
           pass: config.email.smtp.auth.pass,
         },
+        // Add additional options for better reliability on Railway
+        connectionTimeout: 15000, // 15 seconds - Railway may be slower
+        greetingTimeout: 10000, // 10 seconds
+        socketTimeout: 15000, // 15 seconds
+        // Enable STARTTLS for port 587
+        requireTLS: !useSSL,
+        // Gmail-specific settings
+        tls: {
+          // Don't fail on invalid certs in development
+          rejectUnauthorized: config.isProduction
+        },
+        // Add debug logging
+        debug: !config.isProduction,
+        logger: !config.isProduction
       });
 
       logger.info('Email service initialized successfully');
+      
+      // Test connection on initialization
+      this.testConnection().then((connected) => {
+        if (connected) {
+          logger.info('✅ SMTP connection test successful');
+        } else {
+          logger.warn('⚠️ SMTP connection test failed');
+        }
+      }).catch((error) => {
+        logger.error('❌ SMTP connection test error:', error);
+      });
     } catch (error) {
       logger.error('Failed to initialize email service:', error);
     }
   }
 
   async sendEmail(options: EmailOptions): Promise<boolean> {
+    logger.info('📧 Starting email send process', {
+      to: options.to,
+      subject: options.subject,
+      from: config.email.from,
+      resendAvailable: !!process.env.RESEND_API_KEY,
+      smtpAvailable: !!this.transporter
+    });
+
+    // Try Resend first (preferred method for Railway)
+    if (process.env.RESEND_API_KEY) {
+      logger.info('📤 Attempting to send email via Resend API (preferred)');
+      
+      try {
+        const success = await resendEmailService.sendEmail(options);
+        if (success) {
+          logger.info('✅ Email sent successfully via Resend');
+          return true;
+        } else {
+          logger.warn('⚠️ Resend failed, falling back to SMTP');
+        }
+      } catch (error: any) {
+        logger.error('❌ Resend API error, falling back to SMTP', {
+          error: error.message
+        });
+      }
+    }
+
+    // Fallback to SMTP
     if (!this.transporter) {
-      logger.warn('Email service not available - skipping email send');
+      logger.warn('❌ No email service available - both Resend and SMTP unavailable', {
+        resendConfigured: !!process.env.RESEND_API_KEY,
+        smtpConfig: {
+          host: config.email.smtp.host || 'NOT_SET',
+          port: config.email.smtp.port,
+          user: config.email.smtp.auth.user ? `${config.email.smtp.auth.user.substring(0, 5)}...` : 'NOT_SET',
+          pass: config.email.smtp.auth.pass ? '[CONFIGURED]' : 'NOT_SET',
+          secure: config.email.smtp.secure
+        }
+      });
       return false;
     }
 
     try {
-      const result = await this.transporter.sendMail({
+      logger.info('📤 Attempting to send email via SMTP (fallback)', {
+        host: config.email.smtp.host,
+        port: config.email.smtp.port,
+        secure: config.email.smtp.secure,
+        user: config.email.smtp.auth.user ? `${config.email.smtp.auth.user.substring(0, 5)}...` : 'NOT_SET'
+      });
+
+      const mailOptions = {
         from: config.email.from,
         to: options.to,
         subject: options.subject,
         html: options.html,
         text: options.text,
+      };
+
+      logger.info('📨 SMTP mail options prepared', {
+        from: mailOptions.from,
+        to: mailOptions.to,
+        subject: mailOptions.subject,
+        hasHtml: !!mailOptions.html,
+        hasText: !!mailOptions.text
       });
 
-      logger.info('Email sent successfully', { 
+      const result = await this.transporter.sendMail(mailOptions);
+
+      logger.info('✅ Email sent successfully via SMTP', { 
         to: options.to, 
         subject: options.subject,
-        messageId: result.messageId 
+        messageId: result.messageId,
+        response: result.response,
+        accepted: result.accepted,
+        rejected: result.rejected,
+        pending: result.pending
       });
       
       return true;
-    } catch (error) {
-      logger.error('Failed to send email:', error);
+    } catch (error: any) {
+      logger.error('❌ Failed to send email via SMTP - detailed error', {
+        to: options.to,
+        subject: options.subject,
+        error: {
+          message: error.message,
+          code: error.code,
+          command: error.command,
+          response: error.response,
+          responseCode: error.responseCode,
+          stack: error.stack
+        },
+        smtpConfig: {
+          host: config.email.smtp.host,
+          port: config.email.smtp.port,
+          secure: config.email.smtp.secure,
+          user: config.email.smtp.auth.user ? `${config.email.smtp.auth.user.substring(0, 5)}...` : 'NOT_SET'
+        }
+      });
       return false;
     }
   }
 
   async sendVerificationEmail(email: string, data: EmailVerificationData): Promise<boolean> {
+    logger.info('📧 sendVerificationEmail called', {
+      email: email,
+      firstName: data.firstName,
+      verificationLink: data.verificationLink.replace(/token=[^&]+/, 'token=[HIDDEN]'),
+      resendAvailable: !!process.env.RESEND_API_KEY
+    });
+
+    // Try Resend first if available
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const success = await resendEmailService.sendVerificationEmail(email, data);
+        if (success) {
+          logger.info('✅ Verification email sent via Resend');
+          return true;
+        }
+        logger.warn('⚠️ Resend verification email failed, falling back to SMTP');
+      } catch (error: any) {
+        logger.error('❌ Resend verification email error, falling back to SMTP', {
+          error: error.message
+        });
+      }
+    }
     const html = `
     <!DOCTYPE html>
     <html>
@@ -150,6 +296,27 @@ class EmailService {
   }
 
   async sendPasswordResetEmail(email: string, data: PasswordResetData): Promise<boolean> {
+    logger.info('📧 sendPasswordResetEmail called', {
+      email: email,
+      firstName: data.firstName,
+      resendAvailable: !!process.env.RESEND_API_KEY
+    });
+
+    // Try Resend first if available
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const success = await resendEmailService.sendPasswordResetEmail(email, data);
+        if (success) {
+          logger.info('✅ Password reset email sent via Resend');
+          return true;
+        }
+        logger.warn('⚠️ Resend password reset email failed, falling back to SMTP');
+      } catch (error: any) {
+        logger.error('❌ Resend password reset email error, falling back to SMTP', {
+          error: error.message
+        });
+      }
+    }
     const html = `
     <!DOCTYPE html>
     <html>
@@ -223,6 +390,27 @@ class EmailService {
   }
 
   async sendWelcomeEmail(email: string, firstName: string): Promise<boolean> {
+    logger.info('📧 sendWelcomeEmail called', {
+      email: email,
+      firstName: firstName,
+      resendAvailable: !!process.env.RESEND_API_KEY
+    });
+
+    // Try Resend first if available
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const success = await resendEmailService.sendWelcomeEmail(email, firstName);
+        if (success) {
+          logger.info('✅ Welcome email sent via Resend');
+          return true;
+        }
+        logger.warn('⚠️ Resend welcome email failed, falling back to SMTP');
+      } catch (error: any) {
+        logger.error('❌ Resend welcome email error, falling back to SMTP', {
+          error: error.message
+        });
+      }
+    }
     const html = `
     <!DOCTYPE html>
     <html>
@@ -282,15 +470,43 @@ class EmailService {
 
   async testConnection(): Promise<boolean> {
     if (!this.transporter) {
+      logger.warn('🔌 Cannot test connection - transporter not initialized');
       return false;
     }
 
     try {
+      logger.info('🔍 Testing SMTP connection...', {
+        host: config.email.smtp.host,
+        port: config.email.smtp.port,
+        secure: config.email.smtp.secure,
+        user: config.email.smtp.auth.user ? `${config.email.smtp.auth.user.substring(0, 5)}...` : 'NOT_SET'
+      });
+      
+      const startTime = Date.now();
       await this.transporter.verify();
-      logger.info('Email service connection verified');
+      const duration = Date.now() - startTime;
+      
+      logger.info('✅ SMTP connection verified successfully', { duration: `${duration}ms` });
       return true;
-    } catch (error) {
-      logger.error('Email service connection failed:', error);
+    } catch (error: any) {
+      logger.error('❌ SMTP connection failed - detailed error', {
+        error: {
+          message: error.message,
+          code: error.code,
+          command: error.command,
+          response: error.response,
+          responseCode: error.responseCode,
+          syscall: error.syscall,
+          errno: error.errno,
+          stack: error.stack
+        },
+        connectionDetails: {
+          host: config.email.smtp.host,
+          port: config.email.smtp.port,
+          secure: config.email.smtp.secure,
+          user: config.email.smtp.auth.user ? `${config.email.smtp.auth.user.substring(0, 5)}...` : 'NOT_SET'
+        }
+      });
       return false;
     }
   }

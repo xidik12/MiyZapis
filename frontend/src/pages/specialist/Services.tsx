@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { specialistService } from '../../services/specialist.service';
@@ -8,6 +9,8 @@ import { isFeatureEnabled } from '../../config/features';
 import { FloatingElements, UkrainianOrnament } from '../../components/ui/UkrainianElements';
 import { CategoryDropdown } from '../../components/ui/CategoryDropdown';
 import { ServiceCategory } from '../../types';
+import { specialistService } from '../../services/specialist.service';
+import { reviewsService } from '../../services/reviews.service';
 
 interface Service {
   id: string;
@@ -20,6 +23,9 @@ interface Service {
   duration: number;
   isActive: boolean;
   bookings?: number;
+  _count?: {
+    bookings: number;
+  };
   rating?: number;
   requirements?: string[];
   deliverables?: string[];
@@ -32,6 +38,12 @@ interface Service {
 const sampleServices: Service[] = [
   // No mock services - will load from backend API
 ];
+
+// Helper function to get the service currency
+const getServiceCurrency = (service: Service): 'USD' | 'EUR' | 'UAH' => {
+  // Use the service's stored currency, defaulting to UAH if not specified
+  return (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+};
 
 const SpecialistServices: React.FC = () => {
   const { t, language } = useLanguage();
@@ -64,7 +76,13 @@ const SpecialistServices: React.FC = () => {
         const servicesData = await specialistService.getServices();
         console.log('📦 Services data received:', servicesData);
         console.log('🔍 First service structure:', servicesData?.[0]);
-        console.log('🏷️ Service IDs:', servicesData?.map(s => ({ id: s.id, name: s.name })));
+        console.log('🏷️ Service IDs and metadata:', servicesData?.map(s => ({ 
+          id: s.id, 
+          name: s.name,
+          createdAt: s.createdAt,
+          updatedAt: s.updatedAt 
+        })));
+        console.log('📊 Total services loaded:', servicesData?.length || 0);
         setServices(Array.isArray(servicesData) ? servicesData : []);
       } catch (err: any) {
         setError(err.message || 'Failed to load services');
@@ -97,6 +115,47 @@ const SpecialistServices: React.FC = () => {
 
     loadCategories();
   }, []);
+
+  // Enhance services with real ratings from reviews (specialist-wide), then map to services
+  useEffect(() => {
+    const enhanceRatings = async () => {
+      if (!services || services.length === 0) return;
+      try {
+        // Get current specialist ID
+        const profile = await specialistService.getProfile();
+        const specialistId = (profile as any)?.id || (profile as any)?.specialist?.id;
+        if (!specialistId) return;
+
+        // Load up to 200 recent reviews and compute per-service averages
+        const { reviews } = await reviewsService.getSpecialistReviews(specialistId, 1, 100);
+        if (!reviews || reviews.length === 0) return;
+
+        const perService: Record<string, { sum: number; count: number }> = {};
+        reviews.forEach(r => {
+          const sid = r.booking?.service?.id || r.service?.id || r.service?.name || r.booking?.service?.name;
+          if (!sid || typeof r.rating !== 'number') return;
+          if (!perService[sid]) perService[sid] = { sum: 0, count: 0 };
+          perService[sid].sum += r.rating;
+          perService[sid].count += 1;
+        });
+
+        // Apply to services by matching id first, then name
+        setServices(prev => prev.map(s => {
+          const keyById = perService[s.id];
+          const keyByName = perService[s.name];
+          const entry = keyById || keyByName;
+          if (entry && entry.count > 0) {
+            return { ...s, rating: +(entry.sum / entry.count).toFixed(1) } as any;
+          }
+          return s;
+        }));
+      } catch (e) {
+        console.warn('Unable to enhance service ratings from reviews:', e);
+      }
+    };
+
+    enhanceRatings();
+  }, [services.length]);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -108,6 +167,7 @@ const SpecialistServices: React.FC = () => {
     descriptionRu: '',
     category: '',
     price: '',
+    currency: 'UAH', // Default to UAH
     duration: '',
     isActive: true,
     availability: {
@@ -137,6 +197,7 @@ const SpecialistServices: React.FC = () => {
       descriptionRu: '',
       category: '',
       price: '',
+      currency: 'UAH', // Default to UAH
       duration: '',
       isActive: true,
       availability: {
@@ -161,17 +222,26 @@ const SpecialistServices: React.FC = () => {
   };
 
   const openEditModal = (service: Service) => {
+    console.log('🔧 Opening edit modal for service:', service);
+    console.log('⏰ Service duration value:', service.duration);
+    
     // Check if the service category exists in our loaded categories
     const existingCategory = categories.find(cat => cat.id === service.category || cat.name === service.category);
     
-    setFormData({
+    const formDataToSet = {
       name: service.name,
       description: service.description,
       category: existingCategory ? existingCategory.id : '',
       price: service.basePrice?.toString() || service.price?.toString() || '',
+      currency: service.currency || 'UAH',
       duration: service.duration.toString(),
       isActive: service.isActive
-    });
+    };
+    
+    console.log('📝 Form data being set:', formDataToSet);
+    console.log('⏰ Duration in form data:', formDataToSet.duration);
+    
+    setFormData(formDataToSet);
     
     // If category doesn't exist in our list, show it as custom
     if (!existingCategory) {
@@ -223,6 +293,7 @@ const SpecialistServices: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -241,12 +312,16 @@ const SpecialistServices: React.FC = () => {
       ? customCategory.trim()
       : formData.category;
 
+    console.log('📋 Form data before submission:', formData);
+    console.log('⏰ Duration from form:', formData.duration, typeof formData.duration);
+    console.log('⏰ Duration parsed as int:', parseInt(formData.duration));
+    
     const serviceData = {
       name: formData.name,
       description: formData.description,
       category: finalCategory,
       basePrice: parseFloat(formData.price),
-      currency: currency,
+      currency: formData.currency,
       duration: parseInt(formData.duration),
       isActive: formData.isActive,
       requirements: [], // Empty for now, can be extended later
@@ -257,15 +332,24 @@ const SpecialistServices: React.FC = () => {
       minAdvanceBooking: 1
     };
     
+    console.log('🚀 Service data being sent to backend:', serviceData);
+    console.log('⏰ Duration in service data:', serviceData.duration);
+    
     try {
       let updatedService;
       if (editingService) {
+        console.log('📝 Updating existing service:', editingService.id);
         updatedService = await specialistService.updateService(editingService.id, serviceData);
+        console.log('✅ Service updated, response from backend:', updatedService);
+        console.log('⏰ Duration in updated service:', updatedService.duration);
         setServices(prev => prev.map(service => 
           service.id === editingService.id ? updatedService : service
         ));
       } else {
+        console.log('🆕 Creating new service');
         updatedService = await specialistService.createService(serviceData);
+        console.log('✅ Service created, response from backend:', updatedService);
+        console.log('⏰ Duration in created service:', updatedService.duration);
         setServices(prev => [updatedService, ...prev]);
       }
       closeModal();
@@ -281,15 +365,109 @@ const SpecialistServices: React.FC = () => {
     return item[field] || '';
   };
 
+  const getBookingCount = (service: Service): number => {
+    return service._count?.bookings || service.bookings || 0;
+  };
+
   const handleDeleteService = async (serviceId: string) => {
-    if (!confirm('Are you sure you want to delete this service?')) return;
+    if (!serviceId) {
+      setError('Cannot delete service: Service ID is missing');
+      return;
+    }
+    
+    if (!confirm('Are you sure you want to delete this service? This action cannot be undone.')) return;
+    
+    // Show loading state
+    setLoading(true);
+    setError(null);
     
     try {
-      await specialistService.deleteService(serviceId);
-      setServices(prev => prev.filter(service => service.id !== serviceId));
+      console.log('🗑️ Starting service deletion for ID:', serviceId);
+      
+      // Debug: Check if service exists before deletion
+      const servicesBefore = services.length;
+      const serviceToDelete = services.find(s => s.id === serviceId);
+      console.log('📊 Pre-deletion state:', {
+        totalServices: servicesBefore,
+        serviceToDelete: serviceToDelete ? { id: serviceToDelete.id, name: serviceToDelete.name } : 'NOT FOUND',
+        allServiceIds: services.map(s => s.id)
+      });
+      
+      const result = await specialistService.deleteService(serviceId);
+      console.log('📦 Backend deletion result:', result);
+      
+      // Verify deletion by fetching services again from backend
+      console.log('🔍 Verifying deletion by re-fetching services...');
+      const refreshedServices = await specialistService.getServices();
+      console.log('📊 Post-deletion verification:', {
+        backendServicesCount: refreshedServices.length,
+        deletedServiceStillExists: refreshedServices.some(s => s.id === serviceId),
+        backendServiceIds: refreshedServices.map(s => s.id)
+      });
+      
+      // Check if service was actually deleted from backend
+      const serviceStillExists = refreshedServices.some(s => s.id === serviceId);
+      
+      if (serviceStillExists) {
+        // Backend says success but service still exists - this is the bug!
+        console.error('🚨 DELETION BUG DETECTED: Backend returned success but service still exists!', {
+          serviceId,
+          backendResponse: result,
+          serviceStillInBackend: true
+        });
+        
+        // Update UI to reflect actual backend state
+        setServices(refreshedServices);
+        
+        throw new Error(
+          `Deletion failed: Backend returned success but service still exists in database. ` +
+          `This indicates a backend bug. Please check server logs and database state. ` +
+          `Service ID: ${serviceId}`
+        );
+      }
+      
+      // If we reach here, deletion was actually successful
+      setServices(refreshedServices); // Use fresh data from backend
+      console.log('✅ Service deletion verified: Service no longer exists on backend');
+      alert('Service deleted successfully and verified!');
+      
     } catch (err: any) {
-      console.error('Error deleting service:', err);
-      setError(err.message || 'Failed to delete service');
+      console.error('❌ Service deletion failed:', {
+        serviceId,
+        error: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
+      
+      // Handle 404 error - service already deleted
+      if (err.response?.status === 404) {
+        console.log('🔄 Service already deleted (404), removing from local state');
+        // Remove the service from local state since it's already deleted on backend
+        setServices(prevServices => prevServices.filter(s => s.id !== serviceId));
+        alert('Service was already deleted. Refreshing the list.');
+        return; // Exit early, don't show error
+      }
+      
+      // More user-friendly error messages for other errors
+      let errorMessage = err.message || 'Failed to delete service';
+      
+      // Check for specific backend error details
+      if (err.response?.data?.error) {
+        errorMessage = `Backend Error: ${err.response.data.error}`;
+      } else if (err.response?.data?.message) {
+        errorMessage = `Backend Error: ${err.response.data.message}`;
+      } else if (err.response?.status === 500) {
+        errorMessage = 'Server error occurred while deleting service. This may be due to existing bookings or database dependencies. Please try again later or contact support.';
+      } else if (err.message?.includes('existing bookings')) {
+        errorMessage = 'Cannot delete service because it has existing bookings. Please cancel all bookings first or contact support.';
+      } else if (err.message?.includes('dependencies')) {
+        errorMessage = 'Cannot delete service due to existing dependencies. Please contact support for assistance.';
+      }
+      
+      setError(errorMessage);
+      alert(`Deletion failed: ${errorMessage}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -327,11 +505,11 @@ const SpecialistServices: React.FC = () => {
   // Removed getDayName function as availability is no longer supported
 
   const ServiceCard: React.FC<{ service: Service }> = ({ service }) => (
-    <div className={`bg-white/80 backdrop-blur-md rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20 ${!service.isActive ? 'opacity-60' : ''}`}>
+    <div className={`bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20 dark:border-gray-700/20 ${!service.isActive ? 'opacity-60' : ''}`}>
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-lg font-bold text-gray-900">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
               {getLocalizedText(service, 'name')}
             </h3>
             <span className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -342,10 +520,10 @@ const SpecialistServices: React.FC = () => {
               {service.isActive ? t('services.active') : t('services.inactive')}
             </span>
           </div>
-          <p className="text-gray-600 mb-3 text-sm leading-relaxed">
+          <p className="text-gray-600 dark:text-gray-300 mb-3 text-sm leading-relaxed">
             {getLocalizedText(service, 'description')}
           </p>
-          <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-3">
             <span className="flex items-center gap-1">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -356,7 +534,7 @@ const SpecialistServices: React.FC = () => {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              {service.bookings || 0} {t('services.bookings')}
+              {getBookingCount(service)} {t('services.bookings')}
             </span>
             <span className="flex items-center gap-1">
               <svg className="w-4 h-4 text-secondary-500" fill="currentColor" viewBox="0 0 24 24">
@@ -368,9 +546,9 @@ const SpecialistServices: React.FC = () => {
         </div>
         <div className="text-right ml-4">
           <div className="text-2xl font-bold text-primary-600 mb-2">
-            {service.basePrice && !isNaN(service.basePrice) ? formatPrice(service.basePrice, service.currency as any) : 'N/A'}
+            {service.basePrice && !isNaN(service.basePrice) ? formatPrice(service.basePrice, getServiceCurrency(service)) : 'N/A'}
           </div>
-          <div className="text-sm text-gray-500 mb-3">
+          <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">
             {getLocalizedText(service, 'category')}
           </div>
         </div>
@@ -379,7 +557,7 @@ const SpecialistServices: React.FC = () => {
       {/* Removed availability and timeSlots display as they're not part of backend schema */}
 
       {/* Action Buttons */}
-      <div className="flex gap-2 pt-4 border-t border-gray-200">
+      <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
         <button
           onClick={() => openEditModal(service)}
           className="flex-1 bg-primary-50 hover:bg-primary-100 text-primary-700 px-4 py-2 rounded-lg font-medium transition-colors duration-200 dark:bg-primary-900/20 dark:hover:bg-primary-900/30 dark:text-primary-300"
@@ -413,14 +591,7 @@ const SpecialistServices: React.FC = () => {
   );
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading services...</p>
-        </div>
-      </div>
-    );
+    return <FullScreenHandshakeLoader title={t('common.loading')} subtitle={t('dashboard.nav.services')} />;
   }
 
   if (error) {
@@ -451,22 +622,24 @@ const SpecialistServices: React.FC = () => {
           <div className="mb-8">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                   {t('services.title')}
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                   {t('services.subtitle')}
                 </p>
               </div>
-              <button
-                onClick={openAddModal}
-                className="mt-4 lg:mt-0 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                {t('services.addService')}
-              </button>
+              <div className="flex gap-3 mt-4 lg:mt-0">
+                <button
+                  onClick={openAddModal}
+                  className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  {t('services.addService')}
+                </button>
+              </div>
             </div>
             
             <UkrainianOrnament className="mb-6" />
@@ -474,7 +647,7 @@ const SpecialistServices: React.FC = () => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
               <div className="flex items-center">
                 <div className="p-3 bg-primary-100 rounded-xl mr-4">
                   <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -482,14 +655,14 @@ const SpecialistServices: React.FC = () => {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                     {t('services.activeServices')}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900">{services.filter(s => s.isActive).length}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{services.filter(s => s.isActive).length}</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
               <div className="flex items-center">
                 <div className="p-3 bg-secondary-100 rounded-xl mr-4">
                   <svg className="w-6 h-6 text-secondary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -497,14 +670,14 @@ const SpecialistServices: React.FC = () => {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                     {t('services.totalBookings')}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900">{services.reduce((sum, s) => sum + (s.bookings || 0), 0)}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{services.reduce((sum, s) => sum + getBookingCount(s), 0)}</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
               <div className="flex items-center">
                 <div className="p-3 bg-success-100 rounded-xl mr-4">
                   <svg className="w-6 h-6 text-success-600" fill="currentColor" viewBox="0 0 24 24">
@@ -512,10 +685,10 @@ const SpecialistServices: React.FC = () => {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                     {t('services.avgRating')}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {services.length === 0 
                       ? t('services.noDataYet') || 'No data yet'
                       : (() => {
@@ -529,7 +702,7 @@ const SpecialistServices: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
               <div className="flex items-center">
                 <div className="p-3 bg-warning-100 rounded-xl mr-4">
                   <svg className="w-6 h-6 text-warning-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -537,17 +710,20 @@ const SpecialistServices: React.FC = () => {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                     {t('services.avgPrice')}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {services.length === 0 
                       ? t('services.noDataYet') || 'No data yet'
                       : (() => {
-                          const validPrices = services.filter(s => s.price && !isNaN(s.price));
+                          const validPrices = services.filter(s => {
+                            const price = s.basePrice || s.price;
+                            return price && !isNaN(price);
+                          });
                           return validPrices.length === 0 
                             ? t('services.noDataYet') || 'No data yet'
-                            : formatPrice(validPrices.reduce((sum, s) => sum + s.price, 0) / validPrices.length);
+                            : formatPrice(validPrices.reduce((sum, s) => sum + (s.basePrice || s.price), 0) / validPrices.length, validPrices[0]?.currency as 'USD' | 'EUR' | 'UAH' || 'UAH');
                         })()
                     }
                   </p>
@@ -557,12 +733,12 @@ const SpecialistServices: React.FC = () => {
           </div>
 
           {/* Filters */}
-          <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 mb-8">
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20 mb-8">
             <div className="flex flex-col lg:flex-row gap-4">
               {/* Search */}
               <div className="flex-1">
                 <div className="relative">
-                  <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   <input
@@ -570,7 +746,7 @@ const SpecialistServices: React.FC = () => {
                     placeholder={t('services.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                   />
                 </div>
               </div>
@@ -581,7 +757,7 @@ const SpecialistServices: React.FC = () => {
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   disabled={categoriesLoading}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <option value="all">
                     {categoriesLoading ? t('services.loadingCategories') || 'Loading categories...' : t('services.allCategories')}
@@ -601,6 +777,52 @@ const SpecialistServices: React.FC = () => {
             </div>
           </div>
 
+          {/* Debug Panel - Only show in development or when needed */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium text-yellow-800">🔧 Service Deletion Debug Panel</h4>
+                <div className="flex gap-2">
+                  <button
+                    onClick={async () => {
+                      console.log('🔄 Manual service refresh initiated...');
+                      try {
+                        const freshServices = await specialistService.getServices();
+                        console.log('📦 Fresh services from backend:', freshServices.map(s => ({ id: s.id, name: s.name })));
+                        setServices(freshServices);
+                        alert(`Refreshed! Found ${freshServices.length} services on backend`);
+                      } catch (error) {
+                        console.error('❌ Refresh failed:', error);
+                        alert('Refresh failed - check console');
+                      }
+                    }}
+                    className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                  >
+                    Refresh Services
+                  </button>
+                  <button
+                    onClick={() => {
+                      console.log('📊 Current frontend state:', {
+                        totalServices: services.length,
+                        serviceIds: services.map(s => s.id),
+                        services: services.map(s => ({ id: s.id, name: s.name, createdAt: s.createdAt }))
+                      });
+                    }}
+                    className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                  >
+                    Log State
+                  </button>
+                </div>
+              </div>
+              <div className="text-xs text-yellow-700">
+                <strong>Current Services ({services.length}):</strong> {services.map(s => `${s.name} (${s.id})`).join(', ') || 'None'}
+              </div>
+              <div className="text-xs text-yellow-600 mt-1">
+                Use "Refresh Services" after deletion to check if service persists on backend. Check browser console for detailed logs.
+              </div>
+            </div>
+          )}
+
           {/* Services Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {filteredServices.map((service) => (
@@ -610,14 +832,14 @@ const SpecialistServices: React.FC = () => {
 
           {filteredServices.length === 0 && (
             <div className="text-center py-12">
-              <div className="bg-white/80 backdrop-blur-md rounded-2xl p-8 shadow-lg border border-white/20 max-w-md mx-auto">
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-8 shadow-lg border border-white/20 dark:border-gray-700/20 max-w-md mx-auto">
                 <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-4.5a3.375 3.375 0 00-3.375 3.375v2.625m15 0a3 3 0 01-3 3h-9a3 3 0 01-3-3m12-9.75v-2.25a2.25 2.25 0 00-2.25-2.25h-7.5a2.25 2.25 0 00-2.25 2.25v2.25" />
                 </svg>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                   {t('services.noServicesFound')}
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
                   {t('services.noServicesDesc')}
                 </p>
                 <button
@@ -634,7 +856,7 @@ const SpecialistServices: React.FC = () => {
 
       {/* Add/Edit Service Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -727,16 +949,27 @@ const SpecialistServices: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('serviceForm.price')} ({currency}) *
+                      {t('serviceForm.price')} *
                     </label>
-                    <input
-                      type="number"
-                      value={formData.price}
-                      onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                      min="0"
-                      step="0.01"
-                      className={`w-full px-4 py-3 rounded-xl border ${formErrors.price ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        value={formData.price}
+                        onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                        min="0"
+                        step="0.01"
+                        className={`flex-1 px-4 py-3 rounded-xl border ${formErrors.price ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
+                      />
+                      <select
+                        value={formData.currency}
+                        onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
+                        className="px-3 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                      >
+                        <option value="UAH">₴ UAH</option>
+                        <option value="USD">$ USD</option>
+                        <option value="EUR">€ EUR</option>
+                      </select>
+                    </div>
                     {formErrors.price && <p className="mt-1 text-sm text-red-500">{formErrors.price}</p>}
                   </div>
                   <div>
@@ -748,7 +981,7 @@ const SpecialistServices: React.FC = () => {
                       value={formData.duration}
                       onChange={(e) => setFormData(prev => ({ ...prev, duration: e.target.value }))}
                       min="15"
-                      step="15"
+                      step="1"
                       className={`w-full px-4 py-3 rounded-xl border ${formErrors.duration ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
                     />
                     {formErrors.duration && <p className="mt-1 text-sm text-red-500">{formErrors.duration}</p>}

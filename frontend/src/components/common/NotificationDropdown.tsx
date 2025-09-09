@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectNotifications, markAsRead, markAllNotificationsAsRead } from '@/store/slices/notificationSlice';
@@ -41,6 +41,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   isOpen,
   onClose,
 }) => {
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
   const dispatch = useAppDispatch();
   const notifications = useAppSelector(selectNotifications);
   const { t } = useLanguage();
@@ -63,28 +64,57 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     onClose();
   };
 
+  // Close on outside click and Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEsc);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+    <div ref={dropdownRef} className="absolute right-0 mt-2 w-96 max-w-[90vw] bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 transition-all duration-200">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">{t('notifications.title')}</h3>
-        {unreadNotifications.length > 0 && (
+        <div className="flex items-center gap-3">
+          {unreadNotifications.length > 0 && (
+            <button
+              onClick={handleMarkAllAsRead}
+              className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+            >
+              {t('notifications.markAllRead')}
+            </button>
+          )}
           <button
-            onClick={handleMarkAllAsRead}
-            className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+            onClick={onClose}
+            aria-label="Close notifications"
+            className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
           >
-            {t('notifications.markAllRead')}
+            <span className="sr-only">Close</span>
+            ✕
           </button>
-        )}
+        </div>
       </div>
 
       {/* Notifications list */}
       <div className="max-h-96 overflow-y-auto">
         {recentNotifications.length === 0 ? (
           <div className="px-4 py-8 text-center">
-            <BellIcon className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+            <BellIcon className="w-12 h-12 text-gray-300 dark:text-gray-500 mx-auto mb-2" />
             <p className="text-gray-500 text-sm">{t('notifications.noNotifications')}</p>
           </div>
         ) : (
@@ -92,7 +122,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
             {recentNotifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`px-4 py-3 hover:bg-gray-50 cursor-pointer border-l-4 ${
+                className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/40 cursor-pointer border-l-4 transition-colors duration-300 ${
                   notification.isRead 
                     ? 'border-transparent' 
                     : 'border-primary-500 bg-primary-50'
@@ -104,12 +134,12 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                     {getNotificationIcon(notification.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm ${
-                      notification.isRead ? 'text-gray-600' : 'text-gray-900 font-medium'
+                    <p className={`text-sm transition-colors duration-300 ${
+                      notification.isRead ? 'text-gray-600 dark:text-gray-300' : 'text-gray-900 dark:text-white font-medium'
                     }`}>
                       {notification.message}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                     </p>
                   </div>
@@ -119,7 +149,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                         e.stopPropagation();
                         handleMarkAsRead(notification.id);
                       }}
-                      className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+                      className="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100"
                     >
                       <CheckIcon className="w-4 h-4" />
                     </button>
@@ -133,7 +163,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
       {/* Footer */}
       {recentNotifications.length > 0 && (
-        <div className="px-4 py-3 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+        <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-lg">
           <Link
             to="/notifications"
             onClick={onClose}

@@ -536,6 +536,14 @@ export class EnhancedFileUploadService {
   // Private helper methods
   private async optimizeImage(buffer: Buffer, mimeType: string): Promise<Buffer> {
     try {
+      // Detect animated WebP and preserve original to keep animation
+      const meta = await sharp(buffer, { animated: true }).metadata();
+      const isAnimatedWebp = (mimeType === 'image/webp') && (typeof meta.pages === 'number') && meta.pages > 1;
+      if (isAnimatedWebp) {
+        logger.info('Animated WebP detected during optimizeImage, skipping re-encode to preserve animation');
+        return buffer;
+      }
+
       let sharpInstance = sharp(buffer);
 
       // Auto-orient based on EXIF data

@@ -47,7 +47,7 @@ This will create an admin user with default credentials:
 ```bash
 railway run npm run railway:create-admin
 ```
-
+not deploy
 ### Method 3: Manual Database Script (Advanced)
 
 1. **Connect to Railway shell**:

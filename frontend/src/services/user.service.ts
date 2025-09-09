@@ -61,22 +61,45 @@ export class UserService {
   async uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
     try {
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', 'avatar');
-
-      const response = await apiClient.post<{ url: string; filename: string }>(API_ENDPOINTS.USERS.UPLOAD_AVATAR, formData, {
+      formData.append('files', file); // Note: files field name for multer array upload
+      
+      const response = await apiClient.post<any>('/files/upload?purpose=avatar', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      if (!response.success || !response.data) {
+      if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
         throw new Error(response.error?.message || 'Failed to upload avatar');
       }
 
-      return { avatarUrl: response.data.url };
+      // Return the URL of the first uploaded file
+      const uploadedFile = response.data[0];
+      return { avatarUrl: uploadedFile.url || uploadedFile.path };
     } catch (error: any) {
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to upload avatar';
+      throw new Error(errorMessage);
+    }
+  }
+
+  // Save external image (e.g., Google avatar) to backend storage
+  async saveExternalImage(imageUrl: string, purpose: 'avatar' | 'portfolio' = 'avatar'): Promise<{ avatarUrl: string }> {
+    try {
+      console.log('💾 Saving external image to backend:', imageUrl);
+      
+      const response = await apiClient.post<any>('/files/save-external', {
+        imageUrl,
+        purpose
+      });
+
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Failed to save external image');
+      }
+
+      console.log('✅ External image saved to backend:', response.data.url);
+      return { avatarUrl: response.data.url };
+    } catch (error: any) {
+      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to save external image';
       throw new Error(errorMessage);
     }
   }

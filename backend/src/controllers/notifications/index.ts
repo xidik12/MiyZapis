@@ -33,7 +33,7 @@ export class NotificationController {
       const type = req.query.type as string;
       const isRead = req.query.isRead === 'true' ? true : req.query.isRead === 'false' ? false : undefined;
 
-      const result = await this.notificationService.getUserNotifications(
+      const result = await NotificationController.notificationService.getUserNotifications(
         req.user.id,
         { page, limit, type, isRead }
       );
@@ -108,7 +108,7 @@ export class NotificationController {
         return;
       }
 
-      await this.notificationService.markNotificationAsRead(notificationId, req.user.id);
+      await NotificationController.notificationService.markNotificationAsRead(notificationId, req.user.id);
 
       res.json(
         createSuccessResponse({
@@ -144,7 +144,7 @@ export class NotificationController {
         return;
       }
 
-      await this.notificationService.markAllNotificationsAsRead(req.user.id);
+      await NotificationController.notificationService.markAllNotificationsAsRead(req.user.id);
 
       res.json(
         createSuccessResponse({
@@ -231,6 +231,46 @@ export class NotificationController {
   }
 
   /**
+   * Delete all user notifications
+   * DELETE /notifications/all
+   */
+  static async deleteAllNotifications(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Delete all notifications for the user
+      const result = await prisma.notification.deleteMany({
+        where: { userId: req.user.id }
+      });
+
+      res.json(
+        createSuccessResponse({
+          message: `Deleted ${result.count} notifications`,
+          deletedCount: result.count
+        })
+      );
+    } catch (error: any) {
+      logger.error('Error deleting all notifications:', error);
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to delete all notifications',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  /**
    * Update notification preferences
    * PUT /notifications/settings
    */
@@ -245,8 +285,8 @@ export class NotificationController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: error.param,
-              message: error.msg,
+              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -389,7 +429,7 @@ export class NotificationController {
         return;
       }
 
-      const unreadCount = await this.notificationService.getUnreadCount(req.user.id);
+      const unreadCount = await NotificationController.notificationService.getUnreadCount(req.user.id);
 
       res.json(
         createSuccessResponse({
@@ -427,7 +467,7 @@ export class NotificationController {
 
       const { type, title, message } = req.body;
 
-      await this.notificationService.sendNotification(req.user.id, {
+      await NotificationController.notificationService.sendNotification(req.user.id, {
         type: type || 'TEST',
         title: title || 'Test Notification',
         message: message || 'This is a test notification',
@@ -466,8 +506,8 @@ export class NotificationController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: error.param,
-              message: error.msg,
+              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -508,9 +548,9 @@ export class NotificationController {
       };
 
       if (sendToAll) {
-        await this.notificationService.sendNotificationToAllUsers(notificationData);
+        await NotificationController.notificationService.sendNotificationToAllUsers(notificationData);
       } else if (userIds && Array.isArray(userIds)) {
-        await this.notificationService.sendBulkNotification(userIds, notificationData);
+        await NotificationController.notificationService.sendBulkNotification(userIds, notificationData);
       } else {
         res.status(400).json(
           createErrorResponse(

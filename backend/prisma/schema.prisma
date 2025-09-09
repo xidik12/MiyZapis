@@ -65,6 +65,11 @@ model User {
   uploadedFiles        File[]
   reportsMade          Report[]                @relation("ReportsMade")
   reportsReceived      Report[]                @relation("ReportsReceived")
+  favoriteSpecialists  FavoriteSpecialist[]    @relation("UserFavoriteSpecialists")
+  favoriteServices     FavoriteService[]       @relation("UserFavoriteServices")
+  profileViews         ProfileView[]           @relation("ProfileViewer")
+  profileViewsReceived ProfileView[]           @relation("ProfileViewed")
+  telegramSessions     TelegramSession[]
 
   // Indexes for performance
   @@index([email])
@@ -136,6 +141,7 @@ model Specialist {
   reviews            Review[]             @relation("SpecialistReviews")
   availabilityBlocks AvailabilityBlock[]
   analytics          SpecialistAnalytics[]
+  favorites          FavoriteSpecialist[] @relation("SpecialistFavorites")
 
   // Indexes for performance
   @@index([city, isVerified])
@@ -171,6 +177,10 @@ model Service {
   maxAdvanceBooking Int    @default(30) // Days
   minAdvanceBooking Int    @default(1)  // Hours
   
+  // Soft deletion
+  isDeleted        Boolean @default(false)
+  deletedAt        DateTime?
+  
   // Service images
   images String? // JSON string of image URLs
   
@@ -182,13 +192,15 @@ model Service {
   specialist     Specialist @relation(fields: [specialistId], references: [id], onDelete: Cascade)
   categoryModel  Category?  @relation(fields: [categoryId], references: [id])
   bookings       Booking[]
+  favorites      FavoriteService[] @relation("ServiceFavorites")
 
   // Indexes for performance
-  @@index([categoryId, isActive])
-  @@index([specialistId, isActive])
+  @@index([categoryId, isActive, isDeleted])
+  @@index([specialistId, isActive, isDeleted])
   @@index([basePrice])
   @@index([duration])
-  @@index([isActive])
+  @@index([isActive, isDeleted])
+  @@index([isDeleted])
 
   @@map("services")
 }
@@ -349,6 +361,7 @@ model Notification {
   
   // Delivery channels
   emailSent     Boolean @default(false)
+  smsSent       Boolean @default(false)
   pushSent      Boolean @default(false)
   telegramSent  Boolean @default(false)
   
@@ -619,6 +632,11 @@ model File {
   isProcessed Boolean @default(false)
   isPublic    Boolean @default(false)
   
+  // Cloud storage fields
+  cloudProvider String? // 'S3', 'CLOUDINARY', 'LOCAL', etc.
+  cloudKey      String? // Key/path in cloud storage
+  cloudBucket   String? // Bucket name for cloud storage
+  
   // Timestamps
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -797,4 +815,114 @@ model PaymentMethod {
   @@index([userId, isActive])
   @@index([stripeCustomerId])
   @@map("payment_methods")
+}
+
+model FavoriteSpecialist {
+  id           String @id @default(cuid())
+  userId       String
+  specialistId String
+  
+  // Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  user         User @relation("UserFavoriteSpecialists", fields: [userId], references: [id], onDelete: Cascade)
+  specialist   Specialist @relation("SpecialistFavorites", fields: [specialistId], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@unique([userId, specialistId])
+  @@index([userId])
+  @@index([specialistId])
+  @@map("favorite_specialists")
+}
+
+model FavoriteService {
+  id        String @id @default(cuid())
+  userId    String
+  serviceId String
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user      User @relation("UserFavoriteServices", fields: [userId], references: [id], onDelete: Cascade)
+  service   Service @relation("ServiceFavorites", fields: [serviceId], references: [id], onDelete: Cascade)
+  
+  // Constraints
+  @@unique([userId, serviceId])
+  @@index([userId])
+  @@index([serviceId])
+  @@map("favorite_services")
+}
+
+model ProfileView {
+  id          String @id @default(cuid())
+  viewerId    String?  // null for anonymous views
+  specialistId String  // whose profile was viewed
+  
+  // View details
+  ipAddress   String?
+  userAgent   String?
+  referrer    String?
+  
+  // Session tracking (to avoid counting same user multiple times in short period)
+  sessionId   String?
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  viewer      User? @relation("ProfileViewer", fields: [viewerId], references: [id], onDelete: SetNull)
+  specialist  User @relation("ProfileViewed", fields: [specialistId], references: [id], onDelete: Cascade)
+  
+  // Indexes
+  @@index([specialistId, createdAt])
+  @@index([viewerId])
+  @@index([ipAddress, createdAt])
+  @@map("profile_views")
+}
+
+model TelegramSession {
+  id           String @id @default(cuid())
+  userId       String
+  telegramId   String @unique
+  chatId       String?
+  platform     String // 'bot' or 'miniapp'
+  
+  // Session status
+  isActive     Boolean @default(true)
+  lastActivity DateTime @default(now())
+  
+  // Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([telegramId])
+  @@index([platform])
+  @@map("telegram_sessions")
+}
+
+model PlatformAnalytics {
+  id          String @id @default(cuid())
+  date        DateTime
+  platform    String
+  
+  // Metrics
+  activeUsers Int @default(0)
+  newUsers    Int @default(0)
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([date, platform])
+  @@index([date])
+  @@index([platform])
+  @@map("platform_analytics")
 }

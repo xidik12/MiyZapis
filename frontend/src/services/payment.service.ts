@@ -363,6 +363,95 @@ export class PaymentService {
     }
     return response.data;
   }
+
+  // Specialist-specific earnings methods
+  async getSpecialistEarnings(filters: {
+    startDate?: string;
+    endDate?: string;
+    status?: PaymentStatus;
+    limit?: number;
+  } = {}): Promise<{
+    payments: Payment[];
+    totalEarnings: number;
+    pendingEarnings: number;
+    completedEarnings: number;
+    statistics: any;
+  }> {
+    const params = new URLSearchParams();
+    
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        params.append(key, value.toString());
+      }
+    });
+
+    const response = await apiClient.get<{
+      payments: Payment[];
+      totalEarnings: number;
+      pendingEarnings: number;
+      completedEarnings: number;
+      statistics: any;
+    }>(`/payments/earnings/my?${params}`);
+    
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get specialist earnings');
+    }
+    return response.data;
+  }
+
+  async getEarningsOverview(): Promise<{
+    totalEarnings: number;
+    thisMonth: number;
+    pending: number;
+    completed: number;
+    monthlyTrend: Array<{ month: string; earnings: number }>;
+  }> {
+    const response = await apiClient.get<{
+      totalEarnings: number;
+      thisMonth: number;
+      pending: number;
+      completed: number;
+      monthlyTrend: Array<{ month: string; earnings: number }>;
+    }>('/payments/earnings/overview');
+    
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get earnings overview');
+    }
+    return response.data;
+  }
+
+  async getRevenueData(filters: {
+    period?: 'week' | 'month' | 'quarter' | 'year';
+    startDate?: string;
+    endDate?: string;
+  } = {}): Promise<{
+    totalRevenue: number;
+    pendingRevenue: number;
+    paidRevenue: number;
+    monthlyBreakdown: Array<{ month: string; revenue: number; bookings: number }>;
+    trends: any;
+  }> {
+    const params = new URLSearchParams();
+    
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        params.append(key, value.toString());
+      }
+    });
+
+    const response = await apiClient.get<{
+      totalRevenue: number;
+      pendingRevenue: number;
+      paidRevenue: number;
+      monthlyBreakdown: Array<{ month: string; revenue: number; bookings: number }>;
+      trends: any;
+    }>(`/payments/earnings/revenue?${params}`);
+    
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get revenue data');
+    }
+    return response.data;
+  }
 }
 
 export const paymentService = new PaymentService();

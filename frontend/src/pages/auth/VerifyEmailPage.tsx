@@ -128,10 +128,10 @@ const VerifyEmailPage: React.FC = () => {
         return (
           <div className="text-center">
             <LoadingSpinner className="mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               Verifying Your Email
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               Please wait while we verify your email address...
             </p>
           </div>
@@ -141,13 +141,13 @@ const VerifyEmailPage: React.FC = () => {
         return (
           <div className="text-center">
             <CheckCircleIcon className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               Email Verified Successfully!
             </h2>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
               {message}
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               You will be redirected to the login page in a few seconds...
             </p>
             <Link
@@ -163,18 +163,18 @@ const VerifyEmailPage: React.FC = () => {
         return (
           <div className="text-center">
             <EnvelopeIcon className="h-16 w-16 text-blue-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               Email Verification Required
             </h2>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
               {message}
             </p>
-            <p className="text-sm text-gray-500 mb-6">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
               Please check your email ({email}) and click the verification link to activate your account.
             </p>
             
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                 Didn't receive the email?
               </h3>
               
@@ -220,22 +220,22 @@ const VerifyEmailPage: React.FC = () => {
         return (
           <div className="text-center">
             <XCircleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
               Verification Failed
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
               {message}
             </p>
 
             {(status === 'expired' || status === 'error') && (
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                   Request New Verification Email
                 </h3>
                 
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Email Address
                     </label>
                     <input
@@ -243,7 +243,7 @@ const VerifyEmailPage: React.FC = () => {
                       id="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700"
                       placeholder="Enter your email address"
                     />
                   </div>
@@ -292,9 +292,9 @@ const VerifyEmailPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-700 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow dark:shadow-gray-900/20 sm:rounded-lg sm:px-10">
           {renderContent()}
         </div>
       </div>

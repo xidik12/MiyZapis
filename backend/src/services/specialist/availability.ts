@@ -1,7 +1,6 @@
-import { PrismaClient, AvailabilityBlock } from '@prisma/client';
+import { AvailabilityBlock } from '@prisma/client';
 import { logger } from '@/utils/logger';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/config/database';
 
 export interface CreateAvailabilityBlockData {
   specialistId: string;
@@ -41,6 +40,159 @@ export interface TimeSlot {
 }
 
 export class AvailabilityService {
+  /**
+   * Fix specialists with empty working hours and generate availability
+   */
+  static async fixAndGenerateAvailability() {
+    try {
+      // Find specialists with empty or null working hours
+      const specialists = await prisma.specialist.findMany({
+        where: {
+          OR: [
+            { workingHours: null },
+            { workingHours: '' },
+            { workingHours: '{}' }
+          ]
+        },
+        select: { id: true, businessName: true }
+      });
+
+      logger.info('Found specialists with empty working hours:', { count: specialists.length });
+
+      const defaultWorkingHours = {
+        monday: { isWorking: true, start: '09:00', end: '17:00' },
+        tuesday: { isWorking: true, start: '09:00', end: '17:00' },
+        wednesday: { isWorking: true, start: '09:00', end: '17:00' },
+        thursday: { isWorking: true, start: '09:00', end: '17:00' },
+        friday: { isWorking: true, start: '09:00', end: '17:00' },
+        saturday: { isWorking: false, start: '09:00', end: '17:00' },
+        sunday: { isWorking: false, start: '09:00', end: '17:00' }
+      };
+
+      let updated = 0;
+      let generated = 0;
+
+      for (const specialist of specialists) {
+        try {
+          // Update working hours
+          await prisma.specialist.update({
+            where: { id: specialist.id },
+            data: { workingHours: JSON.stringify(defaultWorkingHours) }
+          });
+          updated++;
+
+          // Generate availability blocks
+          await this.generateAvailabilityFromWorkingHours(specialist.id);
+          generated++;
+
+          logger.info('Fixed specialist availability:', {
+            specialistId: specialist.id,
+            businessName: specialist.businessName
+          });
+        } catch (error) {
+          logger.error('Failed to fix specialist availability:', {
+            specialistId: specialist.id,
+            error: error instanceof Error ? error.message : String(error)
+          });
+        }
+      }
+
+      return { updated, generated, total: specialists.length };
+    } catch (error) {
+      logger.error('Error fixing specialist availability:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate availability blocks from working hours
+   */
+  static async generateAvailabilityFromWorkingHours(
+    specialistId: string,
+    weeksAhead: number = 4
+  ) {
+    try {
+      const specialist = await prisma.specialist.findUnique({
+        where: { id: specialistId }
+      });
+
+      if (!specialist || !specialist.workingHours) {
+        throw new Error('SPECIALIST_NOT_FOUND_OR_NO_WORKING_HOURS');
+      }
+
+      const workingHours = JSON.parse(specialist.workingHours);
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + (weeksAhead * 7));
+
+      // Remove old future availability blocks to regenerate
+      await prisma.availabilityBlock.deleteMany({
+        where: {
+          specialistId,
+          startDateTime: { gte: new Date() },
+          isRecurring: false,
+          // Don't delete manually created blocks (those without a specific pattern)
+          reason: 'Working hours'
+        }
+      });
+
+      const newBlocks = [];
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+      // Generate blocks for each day in the date range
+      for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
+        const dayName = dayNames[date.getDay()];
+        const daySchedule = workingHours[dayName];
+
+        if (daySchedule && daySchedule.isWorking) {
+          // Create availability block for this working day
+          const startDateTime = new Date(date);
+          const endDateTime = new Date(date);
+          
+          // Parse time strings (e.g., "09:00")
+          const [startHour, startMinute] = daySchedule.start.split(':').map(Number);
+          const [endHour, endMinute] = daySchedule.end.split(':').map(Number);
+          
+          startDateTime.setHours(startHour, startMinute, 0, 0);
+          endDateTime.setHours(endHour, endMinute, 0, 0);
+
+          // Only create blocks for future dates
+          if (startDateTime > new Date()) {
+            newBlocks.push({
+              specialistId,
+              startDateTime,
+              endDateTime,
+              isAvailable: true,
+              reason: 'Working hours',
+              isRecurring: false
+            });
+          }
+        }
+      }
+
+      // Batch create availability blocks
+      if (newBlocks.length > 0) {
+        await prisma.availabilityBlock.createMany({
+          data: newBlocks
+        });
+        
+        logger.info('Generated availability blocks from working hours', {
+          specialistId,
+          blocksCreated: newBlocks.length,
+          weeksAhead
+        });
+      }
+
+      return {
+        blocksCreated: newBlocks.length,
+        dateRange: { startDate, endDate }
+      };
+    } catch (error) {
+      logger.error('Error generating availability from working hours:', error);
+      throw error;
+    }
+  }
+
   /**
    * Get specialist availability for a date range
    */

@@ -24,21 +24,96 @@ export class BookingService {
   // Create new booking
   async createBooking(data: CreateBookingRequest): Promise<{ booking: Booking; paymentIntent?: PaymentIntent }> {
     console.log('📤 BookingService: Creating booking with data:', data);
-    const response = await apiClient.post<{ booking: Booking; paymentIntent?: PaymentIntent }>('/bookings', data);
-    console.log('📦 BookingService: Create booking response:', response);
+    
+    try {
+      // Optional: Check for conflicts before creating (client-side validation)
+      if (data.specialistId && data.scheduledAt && data.duration) {
+        try {
+          const conflicts = await this.checkBookingConflicts(
+            data.specialistId, 
+            data.scheduledAt, 
+            data.duration
+          );
+          
+          if (conflicts.hasConflicts) {
+            console.warn('⚠️ BookingService: Conflicts detected before booking creation:', conflicts.conflicts);
+            throw new Error('Time slot conflicts detected. Please choose a different time.');
+          }
+        } catch (conflictError) {
+          // If conflict check fails, continue with booking (backend will handle it)
+          console.warn('⚠️ BookingService: Could not check conflicts, proceeding with booking:', conflictError);
+        }
+      }
+      
+      const response = await apiClient.post<{ booking: Booking; paymentIntent?: PaymentIntent }>('/bookings', data);
+      console.log('📦 BookingService: Create booking response:', response);
+      
+      if (!response.success || !response.data) {
+        console.error('❌ BookingService: Failed to create booking:', response.error);
+        const error = new Error(response.error?.message || 'Failed to create booking');
+        (error as any).response = { status: response.error?.code === 'BOOKING_CONFLICT' ? 409 : 400, data: response.error };
+        throw error;
+      }
+      
+      console.log('✅ BookingService: Booking created successfully');
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ BookingService: Booking creation failed:', error);
+      
+      // Re-throw with proper error structure for Redux to handle
+      if (error.response) {
+        throw error; // Already has response structure
+      } else {
+        const wrappedError = new Error(error.message || 'Failed to create booking');
+        (wrappedError as any).response = { 
+          status: error.message?.includes('conflicts detected') ? 409 : 500, 
+          data: { error: error.message } 
+        };
+        throw wrappedError;
+      }
+    }
+  }
+
+  // Update booking (status, notes, etc.)
+  async updateBooking(bookingId: string, data: { status?: string; specialistNotes?: string; customerNotes?: string; preparationNotes?: string; completionNotes?: string; }): Promise<Booking> {
+    console.log('📤 BookingService: Updating booking:', bookingId, data);
+    const response = await apiClient.put<Booking>(`/bookings/${bookingId}`, data);
+    console.log('📦 BookingService: Update booking response:', response);
     
     if (!response.success || !response.data) {
-      console.error('❌ BookingService: Failed to create booking:', response.error);
-      throw new Error(response.error?.message || 'Failed to create booking');
+      console.error('❌ BookingService: Failed to update booking:', response.error);
+      throw new Error(response.error?.message || 'Failed to update booking');
     }
     
-    console.log('✅ BookingService: Booking created successfully');
+    console.log('✅ BookingService: Booking updated successfully');
+    return response.data;
+  }
+
+  // Complete booking with payment confirmation
+  async completeBookingWithPayment(bookingId: string, data: { 
+    paymentConfirmed: boolean; 
+    completionNotes?: string; 
+    specialistNotes?: string; 
+  }): Promise<Booking> {
+    console.log('📤 BookingService: Completing booking with payment:', bookingId, data);
+    const response = await apiClient.post<Booking>(`/bookings/${bookingId}/complete`, data);
+    console.log('📦 BookingService: Complete booking response:', response);
+    
+    if (!response.success || !response.data) {
+      console.error('❌ BookingService: Failed to complete booking:', response.error);
+      throw new Error(response.error?.message || 'Failed to complete booking');
+    }
+    
+    console.log('✅ BookingService: Booking completed successfully');
     return response.data;
   }
 
   // Get user's bookings
-  async getBookings(filters: BookingFilters = {}): Promise<{ bookings: Booking[]; pagination: Pagination }> {
+  async getBookings(filters: BookingFilters = {}, userType: 'customer' | 'specialist' = 'customer'): Promise<{ bookings: Booking[]; pagination: Pagination }> {
     const params = new URLSearchParams();
+    
+    // Add userType parameter - this is crucial for the backend to determine filtering
+    params.append('userType', userType);
     
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -46,6 +121,7 @@ export class BookingService {
       }
     });
 
+    console.log('📡 BookingService: Fetching bookings with userType:', userType, 'filters:', filters);
     const response = await apiClient.get<{ bookings: Booking[]; pagination: Pagination }>(`/bookings?${params}`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get bookings');
@@ -62,19 +138,11 @@ export class BookingService {
     return response.data;
   }
 
-  // Update booking
-  async updateBooking(bookingId: string, data: Partial<Booking>): Promise<Booking> {
-    const response = await apiClient.put<Booking>(`/bookings/${bookingId}`, data);
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to update booking');
-    }
-    return response.data;
-  }
 
   // Cancel booking
   async cancelBooking(bookingId: string, reason?: string): Promise<{ booking: Booking; refundAmount?: number }> {
-    const response = await apiClient.delete<{ booking: Booking; refundAmount?: number }>(`/bookings/${bookingId}`, {
-      data: { reason }
+    const response = await apiClient.put<{ booking: Booking; refundAmount?: number }>(`/bookings/${bookingId}/cancel`, {
+      reason
     });
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to cancel booking');

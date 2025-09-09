@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { specialistService, reviewService } from '../services';
+import { profileViewService } from '../services/profileView.service';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { 
   selectIsSpecialistFavorited, 
@@ -29,6 +30,7 @@ import {
   HeartIcon as HeartIconSolid,
 } from '@heroicons/react/24/solid';
 import { Avatar } from '../components/ui/Avatar';
+import { getAbsoluteImageUrl } from '../utils/imageUrl';
 
 const SpecialistProfilePage: React.FC = () => {
   const { specialistId } = useParams();
@@ -106,8 +108,22 @@ const SpecialistProfilePage: React.FC = () => {
         // Make API call
         await dispatch(addSpecialistToFavorites(specialistId)).unwrap();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error toggling favorite:', error);
+      
+      // Handle specific error cases
+      if (error.response?.status === 409) {
+        console.log('🚫 Conflict error - likely trying to favorite own profile or already favorited');
+        // Show user-friendly message
+        alert('You cannot favorite your own profile or this specialist is already in your favorites.');
+      } else if (error.response?.status === 401) {
+        console.log('🔒 Authentication required');
+        alert('Please log in to add favorites.');
+      } else {
+        console.log('❌ Generic favorites error:', error.message);
+        alert('Failed to update favorites. Please try again.');
+      }
+      
       // The Redux slice will automatically revert optimistic updates on error
     } finally {
       setFavoriteLoading(false);
@@ -123,6 +139,25 @@ const SpecialistProfilePage: React.FC = () => {
         
         // Fetch specialist profile
         const specialistData = await specialistService.getPublicProfile(specialistId);
+        console.log('🔍 Specialist data received:', specialistData);
+        console.log('🏢 Bio fields:', { 
+          bio: specialistData.bio, 
+          bioUk: specialistData.bioUk, 
+          bioRu: specialistData.bioRu 
+        });
+        console.log('📍 Location fields:', { 
+          city: specialistData.city, 
+          state: specialistData.state, 
+          country: specialistData.country, 
+          address: specialistData.address 
+        });
+        console.log('📷 Portfolio images:', specialistData.portfolioImages);
+        console.log('🏷️ Specialties:', specialistData.specialties);
+        console.log('👤 User data:', specialistData.user);
+        console.log('🖼️ Avatar paths:', {
+          userAvatar: specialistData.user?.avatar,
+          directAvatar: specialistData.avatar
+        });
         setSpecialist(specialistData);
 
         // Fetch specialist reviews with basic parameters
@@ -158,6 +193,24 @@ const SpecialistProfilePage: React.FC = () => {
       dispatch(checkSpecialistFavoriteStatus(specialistId));
     }
   }, [dispatch, user, specialistId]);
+
+  // Track profile view when page loads
+  useEffect(() => {
+    const trackView = async () => {
+      if (specialistId && specialist) {
+        try {
+          // Backend expects specialist userId; fall back to route param if needed
+          const profileViewId = specialist?.user?.id || specialist?.userId || specialistId;
+          await profileViewService.trackProfileView(profileViewId as string);
+          console.log('✅ Profile view tracked for specialist:', specialistId);
+        } catch (error) {
+          console.warn('Failed to track profile view:', error);
+        }
+      }
+    };
+
+    trackView();
+  }, [specialistId, specialist]);
 
   if (loading) {
     return (
@@ -211,6 +264,14 @@ const SpecialistProfilePage: React.FC = () => {
                   className="border-4 border-white shadow-lg"
                   fallbackIcon={false}
                 />
+                {/* Debug specialist avatar data */}
+                {console.log('🔍 SpecialistProfilePage - Avatar debug:', {
+                  specialistUserAvatar: specialist.user?.avatar,
+                  specialistAvatar: specialist.avatar,
+                  finalAvatarSrc: specialist.user?.avatar || specialist.avatar,
+                  specialistId: specialist.id,
+                  specialistKeys: Object.keys(specialist)
+                })}
                 {specialist.user?.isVerified && (
                   <CheckBadgeIcon className="absolute -bottom-1 -right-1 w-8 h-8 text-primary-600 bg-white rounded-full" />
                 )}
@@ -243,7 +304,15 @@ const SpecialistProfilePage: React.FC = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 mt-6 md:mt-0">
-              {user && (
+              {(() => {
+                const shouldShowFavorite = user && specialist?.userId !== user.id;
+                console.log('🔍 Favorite button logic:', {
+                  user: user?.id,
+                  specialistUserId: specialist?.userId,
+                  shouldShow: shouldShowFavorite
+                });
+                return shouldShowFavorite;
+              })() && (
                 <button
                   onClick={handleFavoriteToggle}
                   disabled={favoriteLoading}
@@ -297,24 +366,96 @@ const SpecialistProfilePage: React.FC = () => {
                 {getLocalizedDescription(specialist) || t('specialist.noDescription')}
               </p>
               
-              {specialist.specialties && specialist.specialties.length > 0 && (
-                <div className="mt-4">
-                  <h3 className="font-medium text-gray-900 dark:text-white mb-2">
-                    {t('specialist.specialties')}
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {specialist.specialties.map((specialty: string, index: number) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-sm"
-                      >
-                        {specialty}
-                      </span>
-                    ))}
+              {(() => {
+                let specialties = [];
+                try {
+                  if (specialist.specialties) {
+                    specialties = Array.isArray(specialist.specialties)
+                      ? specialist.specialties
+                      : (typeof specialist.specialties === 'string' 
+                         ? JSON.parse(specialist.specialties)
+                         : []);
+                  }
+                } catch (error) {
+                  console.error('Error parsing specialties:', error);
+                  specialties = [];
+                }
+                
+                console.log('🏷️ Specialties processed:', specialties);
+                
+                return specialties && specialties.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="font-medium text-gray-900 dark:text-white mb-2">
+                      {t('specialist.specialties')}
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {specialties.map((specialty: string, index: number) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-sm"
+                        >
+                          {specialty}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Portfolio */}
+            {(() => {
+              let portfolioImages = [];
+              try {
+                if (specialist.portfolioImages) {
+                  portfolioImages = Array.isArray(specialist.portfolioImages) 
+                    ? specialist.portfolioImages
+                    : (typeof specialist.portfolioImages === 'string' 
+                       ? JSON.parse(specialist.portfolioImages)
+                       : []);
+                }
+              } catch (error) {
+                console.error('Error parsing portfolio images:', error);
+                portfolioImages = [];
+              }
+              
+              console.log('🖼️ Portfolio images processed:', portfolioImages);
+              
+              return portfolioImages && portfolioImages.length > 0 && (
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                    Portfolio
+                  </h2>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {portfolioImages.map((portfolioItem: any, index: number) => {
+                      // Handle both direct base64 strings and objects with imageUrl
+                      const imageUrl = portfolioItem.imageUrl || portfolioItem;
+                      
+                      // Check if it's a base64 image (starts with data:image)
+                      const isBase64 = typeof imageUrl === 'string' && imageUrl.startsWith('data:image');
+                      const finalImageUrl = isBase64 ? imageUrl : getAbsoluteImageUrl(imageUrl);
+                      
+                      return (
+                        <div key={portfolioItem.id || `portfolio-${index}`} className="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+                          <img
+                            src={finalImageUrl}
+                            alt={`Portfolio ${index + 1}`}
+                            className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                            loading="lazy"
+                            onError={(e) => {
+                              // Fallback for broken images
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              console.warn('Failed to load portfolio image:', target.src);
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              )}
-            </div>
+              );
+            })()}
 
             {/* Services */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
@@ -344,7 +485,7 @@ const SpecialistProfilePage: React.FC = () => {
                         </div>
                         <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start mt-3 sm:mt-0 sm:ml-4 sm:text-right">
                           <p className="text-lg font-bold text-gray-900 dark:text-white">
-                            {formatPrice(service.price || service.basePrice || 0, service.currency)}
+                            {formatPrice(service.price || service.basePrice || 0)}
                           </p>
                           <Link
                             to={`/book/${service.id}`}
@@ -367,24 +508,24 @@ const SpecialistProfilePage: React.FC = () => {
             {/* Reviews */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                {t('reviews.title')} ({reviews.length})
+                {t('reviews.title')} ({specialist.reviewCount ?? reviews.length})
               </h2>
               
-              {reviews.length > 0 ? (
+              {(specialist.reviewCount ?? reviews.length) > 0 ? (
                 <div className="space-y-6">
                   {reviews.slice(0, 5).map((review: any) => (
                     <div key={review.id} className="border-b border-gray-200 dark:border-gray-700 pb-6 last:border-b-0">
                       <div className="flex items-start space-x-4">
                         <Avatar
                           src={review.customer?.avatar}
-                          alt={review.customer?.name || 'Customer'}
+                          alt={`${review.customer?.firstName || ''} ${review.customer?.lastName || ''}`.trim() || 'Customer'}
                           size="md"
                           lazy={true}
                         />
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
                             <h4 className="font-medium text-gray-900 dark:text-white">
-                              {review.customer?.name || t('reviews.anonymousUser')}
+                              {`${review.customer?.firstName || ''} ${review.customer?.lastName || ''}`.trim() || t('reviews.anonymousUser')}
                             </h4>
                             <div className="flex items-center">
                               {renderStars(review.rating)}
@@ -448,15 +589,6 @@ const SpecialistProfilePage: React.FC = () => {
                   <span className="text-gray-600 dark:text-gray-400">{t('specialist.experience')}</span>
                   <span className="font-semibold text-gray-900 dark:text-white">
                     {formatExperience(specialist.experience)}
-                  </span>
-                </div>
-                
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">{t('specialist.verified')}</span>
-                  <span className={`font-semibold ${
-                    specialist.user?.isVerified ? 'text-green-600' : 'text-gray-500'
-                  }`}>
-                    {specialist.user?.isVerified ? t('common.yes') : t('common.no')}
                   </span>
                 </div>
               </div>

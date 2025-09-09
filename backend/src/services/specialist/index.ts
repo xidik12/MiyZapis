@@ -1,6 +1,7 @@
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
 import { Specialist, User, Service } from '@prisma/client';
+import { convertCurrency } from '@/utils/currency';
 
 interface CreateSpecialistData {
   businessName?: string;
@@ -69,6 +70,27 @@ interface SpecialistWithUser extends Specialist {
 }
 
 export class SpecialistService {
+  private static getDefaultWorkingHours() {
+    return {
+      monday: { isWorking: true, start: '09:00', end: '17:00' },
+      tuesday: { isWorking: true, start: '09:00', end: '17:00' },
+      wednesday: { isWorking: true, start: '09:00', end: '17:00' },
+      thursday: { isWorking: true, start: '09:00', end: '17:00' },
+      friday: { isWorking: true, start: '09:00', end: '17:00' },
+      saturday: { isWorking: false, start: '09:00', end: '17:00' },
+      sunday: { isWorking: false, start: '09:00', end: '17:00' }
+    };
+  }
+
+  private static parseJsonField<T>(field: string | null, defaultValue: T): T {
+    if (!field) return defaultValue;
+    try {
+      return JSON.parse(field) as T;
+    } catch (error) {
+      logger.warn('Failed to parse JSON field', { field, error });
+      return defaultValue;
+    }
+  }
   // Create specialist profile
   static async createProfile(
     userId: string,
@@ -84,8 +106,9 @@ export class SpecialistService {
         throw new Error('USER_NOT_FOUND');
       }
 
-      if (user.userType !== 'SPECIALIST') {
-        throw new Error('USER_NOT_SPECIALIST');
+      // Allow customers to become specialists by creating a profile
+      if (user.userType !== 'SPECIALIST' && user.userType !== 'CUSTOMER') {
+        throw new Error('USER_NOT_ELIGIBLE_FOR_SPECIALIST');
       }
 
       // Check if specialist profile already exists
@@ -118,7 +141,7 @@ export class SpecialistService {
           latitude: data.latitude,
           longitude: data.longitude,
           timezone: data.timezone || user.timezone,
-          workingHours: JSON.stringify(data.workingHours || {}),
+          workingHours: JSON.stringify(data.workingHours || SpecialistService.getDefaultWorkingHours()),
           paymentMethods: JSON.stringify(data.paymentMethods || []),
           serviceArea: JSON.stringify(data.serviceArea || {}),
           notifications: JSON.stringify(data.notifications || {}),
@@ -158,10 +181,31 @@ export class SpecialistService {
         },
       });
 
+      // Update user type to SPECIALIST if they were a CUSTOMER
+      if (user.userType === 'CUSTOMER') {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { userType: 'SPECIALIST' }
+        });
+        logger.info('User type updated to SPECIALIST', { userId });
+      }
+
       logger.info('Specialist profile created successfully', { 
         userId, 
         specialistId: specialist.id 
       });
+
+      // Generate initial availability blocks from working hours
+      try {
+        const { AvailabilityService } = await import('./availability');
+        await AvailabilityService.generateAvailabilityFromWorkingHours(specialist.id);
+        logger.info('Initial availability blocks generated', {
+          specialistId: specialist.id
+        });
+      } catch (availabilityError) {
+        logger.warn('Failed to generate initial availability blocks:', availabilityError);
+        // Don't throw error as profile creation was successful
+      }
 
       return specialist as SpecialistWithUser;
     } catch (error) {
@@ -176,6 +220,18 @@ export class SpecialistService {
     data: UpdateSpecialistData
   ): Promise<SpecialistWithUser> {
     try {
+      // Debug logging to see what data is being saved
+      logger.info('🔄 Updating specialist profile', {
+        userId,
+        fieldsPresent: Object.keys(data),
+        bio: data.bio,
+        bioUk: data.bioUk,
+        bioRu: data.bioRu,
+        city: data.city,
+        state: data.state,
+        country: data.country,
+        portfolioImages: data.portfolioImages ? (Array.isArray(data.portfolioImages) ? `Array[${data.portfolioImages.length}]` : typeof data.portfolioImages) : null
+      });
       // Use transaction to ensure atomicity
       const result = await prisma.$transaction(async (tx) => {
         // Find specialist by userId
@@ -252,6 +308,36 @@ export class SpecialistService {
         return updatedSpecialist as SpecialistWithUser;
       });
 
+      // Debug logging to see what was actually saved
+      logger.info('✅ Specialist profile updated in database', {
+        specialistId: result.id,
+        userId,
+        savedFields: {
+          bio: result.bio,
+          bioUk: result.bioUk,
+          bioRu: result.bioRu,
+          city: result.city,
+          state: result.state,
+          country: result.country,
+          portfolioImages: result.portfolioImages,
+          specialties: result.specialties
+        }
+      });
+
+      // If working hours were updated, regenerate availability blocks
+      if (data.workingHours) {
+        try {
+          const { AvailabilityService } = await import('./availability');
+          await AvailabilityService.generateAvailabilityFromWorkingHours(result.id);
+          logger.info('Availability blocks regenerated from updated working hours', {
+            specialistId: result.id
+          });
+        } catch (availabilityError) {
+          logger.warn('Failed to regenerate availability blocks:', availabilityError);
+          // Don't throw error as profile update was successful
+        }
+      }
+
       logger.info('Specialist profile updated successfully', { 
         userId, 
         specialistId: result.id 
@@ -306,7 +392,22 @@ export class SpecialistService {
         throw new Error('SPECIALIST_NOT_FOUND');
       }
 
-      return specialist as SpecialistWithUser;
+      // Parse JSON fields for frontend consumption
+      const parsedSpecialist = {
+        ...specialist,
+        specialties: SpecialistService.parseJsonField(specialist.specialties, []),
+        languages: SpecialistService.parseJsonField(specialist.languages, []),
+        workingHours: SpecialistService.parseJsonField(specialist.workingHours, {}),
+        paymentMethods: SpecialistService.parseJsonField(specialist.paymentMethods, []),
+        serviceArea: SpecialistService.parseJsonField(specialist.serviceArea, {}),
+        notifications: SpecialistService.parseJsonField(specialist.notifications, {}),
+        privacy: SpecialistService.parseJsonField(specialist.privacy, {}),
+        socialMedia: SpecialistService.parseJsonField(specialist.socialMedia, {}),
+        portfolioImages: SpecialistService.parseJsonField(specialist.portfolioImages, []),
+        certifications: SpecialistService.parseJsonField(specialist.certifications, []),
+      };
+
+      return parsedSpecialist as SpecialistWithUser;
     } catch (error) {
       logger.error('Error getting specialist profile:', error);
       throw error;
@@ -355,7 +456,22 @@ export class SpecialistService {
         throw new Error('SPECIALIST_NOT_FOUND');
       }
 
-      return specialist as SpecialistWithUser;
+      // Parse JSON fields for frontend consumption
+      const parsedSpecialist = {
+        ...specialist,
+        specialties: SpecialistService.parseJsonField(specialist.specialties, []),
+        languages: SpecialistService.parseJsonField(specialist.languages, []),
+        workingHours: SpecialistService.parseJsonField(specialist.workingHours, {}),
+        paymentMethods: SpecialistService.parseJsonField(specialist.paymentMethods, []),
+        serviceArea: SpecialistService.parseJsonField(specialist.serviceArea, {}),
+        notifications: SpecialistService.parseJsonField(specialist.notifications, {}),
+        privacy: SpecialistService.parseJsonField(specialist.privacy, {}),
+        socialMedia: SpecialistService.parseJsonField(specialist.socialMedia, {}),
+        portfolioImages: SpecialistService.parseJsonField(specialist.portfolioImages, []),
+        certifications: SpecialistService.parseJsonField(specialist.certifications, []),
+      };
+
+      return parsedSpecialist as SpecialistWithUser;
     } catch (error) {
       logger.error('Error getting specialist profile:', error);
       throw error;
@@ -426,7 +542,7 @@ export class SpecialistService {
           orderBy = { rating: 'desc' };
       }
 
-      const [specialists, total] = await Promise.all([
+      const [rawSpecialists, total] = await Promise.all([
         prisma.specialist.findMany({
           where,
           include: {
@@ -468,6 +584,21 @@ export class SpecialistService {
         prisma.specialist.count({ where }),
       ]);
 
+      // Parse JSON fields for each specialist in search results
+      const specialists = rawSpecialists.map(specialist => ({
+        ...specialist,
+        specialties: SpecialistService.parseJsonField(specialist.specialties, []),
+        languages: SpecialistService.parseJsonField(specialist.languages, []),
+        workingHours: SpecialistService.parseJsonField(specialist.workingHours, {}),
+        paymentMethods: SpecialistService.parseJsonField(specialist.paymentMethods, []),
+        serviceArea: SpecialistService.parseJsonField(specialist.serviceArea, {}),
+        notifications: SpecialistService.parseJsonField(specialist.notifications, {}),
+        privacy: SpecialistService.parseJsonField(specialist.privacy, {}),
+        socialMedia: SpecialistService.parseJsonField(specialist.socialMedia, {}),
+        portfolioImages: SpecialistService.parseJsonField(specialist.portfolioImages, []),
+        certifications: SpecialistService.parseJsonField(specialist.certifications, []),
+      }));
+
       const totalPages = Math.ceil(total / limit);
 
       return {
@@ -495,6 +626,19 @@ export class SpecialistService {
     averageRating: number;
     responseTime: number;
     recentBookings: any[];
+    // Enhanced analytics
+    averageMonthlyRevenue: number;
+    monthlyBookings: number;
+    completionRate: number;
+    profileViews: number;
+    conversionRate: number;
+    revenueTrend: any[];
+    servicePerformance: any[];
+    revenueByService: any[];
+    reviewCount: number;
+    monthlyGrowth: number;
+    averageBookingValue: number;
+    activeClients: number;
   }> {
     try {
       const specialist = await prisma.specialist.findUnique({
@@ -516,15 +660,33 @@ export class SpecialistService {
         };
       }
 
-      const [bookings, recentBookings] = await Promise.all([
+      // Get comprehensive data for analytics
+      const [
+        bookings, 
+        recentBookings, 
+        allTimeBookings, 
+        reviews,
+        services,
+        monthlyData
+      ] = await Promise.all([
+        // Filtered bookings for the specified date range
         prisma.booking.findMany({
           where,
           select: {
             status: true,
             totalAmount: true,
             createdAt: true,
+            scheduledAt: true,
+            completedAt: true,
+            customerId: true,
+            service: {
+              select: {
+                currency: true,
+              },
+            },
           },
         }),
+        // Recent bookings for display
         prisma.booking.findMany({
           where: {
             specialistId: specialist.userId,
@@ -546,14 +708,234 @@ export class SpecialistService {
           orderBy: { createdAt: 'desc' },
           take: 10,
         }),
+        // All time bookings for trends and averages
+        prisma.booking.findMany({
+          where: {
+            specialistId: specialist.userId,
+          },
+          select: {
+            status: true,
+            totalAmount: true,
+            createdAt: true,
+            completedAt: true,
+            customerId: true,
+            serviceId: true,
+            service: {
+              select: {
+                currency: true,
+              },
+            },
+          },
+        }),
+        // Reviews for rating analysis
+        prisma.review.findMany({
+          where: {
+            specialist: {
+              userId: specialist.userId
+            }
+          },
+          select: {
+            rating: true,
+            createdAt: true,
+          }
+        }),
+        // Services for performance analysis
+        prisma.service.findMany({
+          where: {
+            specialistId: specialist.id,
+            isDeleted: false,
+          },
+          select: {
+            id: true,
+            name: true,
+            basePrice: true,
+            _count: {
+              select: {
+                bookings: true,
+              },
+            },
+          },
+        }),
+        // Monthly data for trends (last 12 months)
+        prisma.booking.groupBy({
+          by: ['createdAt'],
+          where: {
+            specialistId: specialist.userId,
+            createdAt: {
+              gte: new Date(new Date().setMonth(new Date().getMonth() - 12)),
+            },
+          },
+          _count: {
+            id: true,
+          },
+          _sum: {
+            totalAmount: true,
+          },
+        }),
       ]);
 
+      // Basic calculations
       const totalBookings = bookings.length;
-      const completedBookings = bookings.filter(b => b.status === 'COMPLETED').length;
+      // Consider bookings that should count as "completed" for revenue purposes
+      const revenueGeneratingStatuses = ['COMPLETED', 'CONFIRMED', 'IN_PROGRESS'];
+      const completedBookings = bookings.filter(b => revenueGeneratingStatuses.includes(b.status)).length;
       const cancelledBookings = bookings.filter(b => b.status === 'CANCELLED').length;
       const totalRevenue = bookings
-        .filter(b => b.status === 'COMPLETED')
-        .reduce((sum, b) => sum + b.totalAmount, 0);
+        .filter(b => revenueGeneratingStatuses.includes(b.status))
+        .reduce((sum, b) => {
+          // Convert booking amount to UAH base currency before summing
+          const serviceCurrency = b.service?.currency || 'UAH';
+          const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+          return sum + convertedAmount;
+        }, 0);
+
+      // Enhanced analytics calculations
+      const allTimeCompleted = allTimeBookings.filter(b => revenueGeneratingStatuses.includes(b.status));
+      const monthsInOperation = Math.max(1, Math.floor(
+        (new Date().getTime() - new Date(specialist.createdAt).getTime()) / (1000 * 60 * 60 * 24 * 30)
+      ));
+      
+      const averageMonthlyRevenue = allTimeCompleted.reduce((sum, b) => {
+        const serviceCurrency = b.service?.currency || 'UAH';
+        const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+        return sum + convertedAmount;
+      }, 0) / monthsInOperation;
+      const averageBookingValue = allTimeCompleted.length > 0 
+        ? allTimeCompleted.reduce((sum, b) => {
+            const serviceCurrency = b.service?.currency || 'UAH';
+            const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+            return sum + convertedAmount;
+          }, 0) / allTimeCompleted.length 
+        : 0;
+      
+      // Current month calculations
+      const currentMonth = new Date();
+      const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+      const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+      
+      const monthlyBookings = bookings.filter(b => {
+        const bookingDate = new Date(b.createdAt);
+        return bookingDate >= monthStart && bookingDate <= monthEnd;
+      }).length;
+
+      // Completion rate
+      const completionRate = totalBookings > 0 ? (completedBookings / totalBookings) * 100 : 0;
+
+      // Active clients (unique customers in last 3 months)
+      const threeMonthsAgo = new Date();
+      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+      const activeClients = new Set(
+        allTimeBookings
+          .filter(b => new Date(b.createdAt) >= threeMonthsAgo)
+          .map(b => b.customerId)
+      ).size;
+
+      // Conversion rate (completed vs total bookings)
+      const conversionRate = totalBookings > 0 ? (completedBookings / totalBookings) * 100 : 0;
+
+      // Monthly growth (current month vs previous month)
+      const previousMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+      const previousMonthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 0);
+      
+      const currentMonthRevenue = bookings
+        .filter(b => {
+          const date = new Date(b.createdAt);
+          return date >= monthStart && date <= monthEnd && revenueGeneratingStatuses.includes(b.status);
+        })
+        .reduce((sum, b) => {
+          const serviceCurrency = b.service?.currency || 'UAH';
+          const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+          return sum + convertedAmount;
+        }, 0);
+      
+      const previousMonthRevenue = allTimeBookings
+        .filter(b => {
+          const date = new Date(b.createdAt);
+          return date >= previousMonth && date <= previousMonthEnd && revenueGeneratingStatuses.includes(b.status);
+        })
+        .reduce((sum, b) => {
+          const serviceCurrency = b.service?.currency || 'UAH';
+          const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+          return sum + convertedAmount;
+        }, 0);
+      
+      const monthlyGrowth = previousMonthRevenue > 0 
+        ? ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100 
+        : currentMonthRevenue > 0 ? 100 : 0;
+
+      // Revenue trend (last 6 months)
+      const revenueTrend = [];
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+        const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        
+        const monthRevenue = allTimeBookings
+          .filter(b => {
+            const bookingDate = new Date(b.createdAt);
+            return bookingDate >= monthStart && bookingDate <= monthEnd && revenueGeneratingStatuses.includes(b.status);
+          })
+          .reduce((sum, b) => {
+            const serviceCurrency = b.service?.currency || 'UAH';
+            const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+            return sum + convertedAmount;
+          }, 0);
+        
+        const monthBookings = allTimeBookings
+          .filter(b => {
+            const bookingDate = new Date(b.createdAt);
+            return bookingDate >= monthStart && bookingDate <= monthEnd;
+          }).length;
+        
+        revenueTrend.push({
+          date: monthStart.toISOString().substring(0, 7), // YYYY-MM format
+          revenue: monthRevenue,
+          bookings: monthBookings,
+        });
+      }
+
+      // Service performance
+      const servicePerformance = await Promise.all(
+        services.map(async (service) => {
+          const serviceBookings = await prisma.booking.findMany({
+            where: {
+              serviceId: service.id,
+            },
+            select: {
+              status: true,
+              totalAmount: true,
+              service: {
+                select: {
+                  currency: true,
+                },
+              },
+            },
+          });
+          
+          const completed = serviceBookings.filter(b => revenueGeneratingStatuses.includes(b.status));
+          const revenue = completed.reduce((sum, b) => {
+            const serviceCurrency = b.service?.currency || 'UAH';
+            const convertedAmount = convertCurrency(b.totalAmount, serviceCurrency, 'UAH');
+            return sum + convertedAmount;
+          }, 0);
+          
+          return {
+            serviceName: service.name,
+            totalBookings: serviceBookings.length,
+            completedBookings: completed.length,
+            revenue,
+            completionRate: serviceBookings.length > 0 ? (completed.length / serviceBookings.length) * 100 : 0,
+          };
+        })
+      );
+
+      // Revenue by service
+      const revenueByService = servicePerformance.map(sp => ({
+        serviceName: sp.serviceName,
+        revenue: sp.revenue,
+        percentage: totalRevenue > 0 ? (sp.revenue / totalRevenue) * 100 : 0,
+      }));
 
       return {
         totalBookings,
@@ -572,6 +954,19 @@ export class SpecialistService {
           totalAmount: booking.totalAmount,
           createdAt: booking.createdAt,
         })),
+        // Enhanced analytics
+        averageMonthlyRevenue,
+        monthlyBookings,
+        completionRate,
+        profileViews: 0, // TODO: Implement profile view tracking
+        conversionRate,
+        revenueTrend,
+        servicePerformance,
+        revenueByService,
+        reviewCount: reviews.length,
+        monthlyGrowth,
+        averageBookingValue,
+        activeClients,
       };
     } catch (error) {
       logger.error('Error getting specialist analytics:', error);

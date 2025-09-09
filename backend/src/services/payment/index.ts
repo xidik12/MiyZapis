@@ -2,6 +2,7 @@ import { Payment, Booking, PaymentMethod } from '@prisma/client';
 import { logger } from '@/utils/logger';
 import { config } from '@/config';
 import { prisma } from '@/config/database';
+import { convertCurrency } from '@/utils/currency';
 
 interface PaymentIntentData {
   bookingId: string;
@@ -953,6 +954,7 @@ export class PaymentService {
     } = {}
   ): Promise<{
     totalEarnings: number;
+    pendingEarnings: number;
     totalTransactions: number;
     payments: Payment[];
     currency: string;
@@ -972,12 +974,26 @@ export class PaymentService {
         if (toDate) where.createdAt.lte = toDate;
       }
 
-      // Get total earnings
-      const totalEarnings = await prisma.payment.aggregate({
+      // Get all payments with currency info to properly convert before summing
+      const allPayments = await prisma.payment.findMany({
         where,
-        _sum: { amount: true },
-        _count: true,
+        select: {
+          amount: true,
+          currency: true,
+        },
       });
+
+      // Convert all payments to UAH (base currency) and sum
+      let totalEarningsInUAH = 0;
+      for (const payment of allPayments) {
+        const convertedAmount = convertCurrency(payment.amount, payment.currency, 'UAH');
+        totalEarningsInUAH += convertedAmount;
+      }
+
+      const totalEarnings = {
+        _sum: { amount: totalEarningsInUAH },
+        _count: allPayments.length,
+      };
 
       // Get recent payments
       const payments = await prisma.payment.findMany({
@@ -1003,14 +1019,141 @@ export class PaymentService {
         take: 20,
       });
 
+      // Get pending earnings with currency conversion
+      const pendingPayments = await prisma.payment.findMany({
+        where: {
+          ...where,
+          status: { in: ['PENDING', 'PROCESSING'] },
+        },
+        select: {
+          amount: true,
+          currency: true,
+        },
+      });
+
+      // Convert all pending payments to UAH and sum
+      let pendingEarningsInUAH = 0;
+      for (const payment of pendingPayments) {
+        const convertedAmount = convertCurrency(payment.amount, payment.currency, 'UAH');
+        pendingEarningsInUAH += convertedAmount;
+      }
+
+      const pendingEarnings = {
+        _sum: { amount: pendingEarningsInUAH },
+      };
+
       return {
         totalEarnings: totalEarnings._sum.amount || 0,
+        pendingEarnings: pendingEarnings._sum.amount || 0,
         totalTransactions: totalEarnings._count,
         payments,
-        currency: payments[0]?.currency || 'USD',
+        currency: 'UAH', // All aggregated amounts are converted to UAH base currency
       };
     } catch (error) {
       logger.error('Error getting specialist earnings:', error);
+      throw error;
+    }
+  }
+
+  // Get earnings trends for analytics
+  static async getEarningsTrends(
+    specialistId: string,
+    options: {
+      period: string;
+      groupBy: string;
+    }
+  ): Promise<{
+    trends: Array<{
+      date: string;
+      earnings: number;
+      bookingCount: number;
+    }>;
+  }> {
+    try {
+      const { period, groupBy } = options;
+      
+      // Determine date range based on period
+      let dateRange: Date;
+      switch (period) {
+        case 'week':
+          dateRange = new Date();
+          dateRange.setDate(dateRange.getDate() - 7);
+          break;
+        case 'month':
+          dateRange = new Date();
+          dateRange.setMonth(dateRange.getMonth() - 1);
+          break;
+        case 'year':
+          dateRange = new Date();
+          dateRange.setFullYear(dateRange.getFullYear() - 1);
+          break;
+        default:
+          dateRange = new Date();
+          dateRange.setMonth(dateRange.getMonth() - 1);
+      }
+
+      // Get payments with earnings
+      const payments = await prisma.payment.findMany({
+        where: {
+          booking: { specialistId },
+          status: 'SUCCEEDED',
+          type: { in: ['FULL_PAYMENT', 'DEPOSIT'] },
+          createdAt: {
+            gte: dateRange
+          }
+        },
+        include: {
+          booking: {
+            select: {
+              id: true,
+              createdAt: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'asc'
+        }
+      });
+
+      // Group by date
+      const trendsMap = new Map();
+      
+      payments.forEach(payment => {
+        let dateKey: string;
+        const paymentDate = new Date(payment.createdAt);
+        
+        if (groupBy === 'day') {
+          dateKey = paymentDate.toISOString().split('T')[0]; // YYYY-MM-DD
+        } else if (groupBy === 'month') {
+          dateKey = paymentDate.toISOString().substring(0, 7); // YYYY-MM
+        } else {
+          dateKey = paymentDate.toISOString().split('T')[0]; // Default to day
+        }
+
+        if (!trendsMap.has(dateKey)) {
+          trendsMap.set(dateKey, {
+            date: dateKey,
+            earnings: 0,
+            bookingCount: 0,
+            bookingIds: new Set()
+          });
+        }
+
+        const trend = trendsMap.get(dateKey);
+        trend.earnings += payment.amount;
+        trend.bookingIds.add(payment.booking.id);
+      });
+
+      // Convert map to array and calculate final booking counts
+      const trends = Array.from(trendsMap.values()).map(trend => ({
+        date: trend.date,
+        earnings: trend.earnings,
+        bookingCount: trend.bookingIds.size
+      }));
+
+      return { trends };
+    } catch (error) {
+      logger.error('Error getting earnings trends:', error);
       throw error;
     }
   }

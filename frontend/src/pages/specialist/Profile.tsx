@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
-import { useAppSelector } from '../../hooks/redux';
-import { selectUser } from '../../store/slices/authSlice';
+import { useAppSelector, useAppDispatch } from '../../hooks/redux';
+import { selectUser, updateUserProfile } from '../../store/slices/authSlice';
 import { specialistService } from '../../services/specialist.service';
 import { userService } from '../../services/user.service';
 import { fileUploadService } from '../../services/fileUpload.service';
@@ -10,6 +11,9 @@ import { isFeatureEnabled } from '../../config/features';
 import { ProfessionDropdown } from '../../components/ui/ProfessionDropdown';
 import { LocationPicker } from '../../components/LocationPicker';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
+import OptimizedImage from '../../components/ui/OptimizedImage';
+import { Avatar } from '../../components/ui/Avatar';
+import AutoMigrateAvatar from '../../components/AutoMigrateAvatar';
 import { 
   CheckCircleIcon,
   XCircleIcon,
@@ -226,6 +230,8 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
   
   const result = {
     ...defaultProfile,
+    // Preserve the real specialist ID
+    id: specialist?.id || defaultProfile.id,
     // User data (flat from apiData)
     firstName: apiData?.firstName || '',
     lastName: apiData?.lastName || '',
@@ -273,8 +279,9 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
 };
 
 const SpecialistProfile: React.FC = () => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const user = useAppSelector(selectUser);
+  const dispatch = useAppDispatch();
   
   // State management
   const [profile, setProfile] = useState<SpecialistProfile>(getEmptyProfile());
@@ -634,6 +641,9 @@ const SpecialistProfile: React.FC = () => {
               const { userService } = await import('../../services/user.service');
               await userService.updateProfile(userUpdateData);
               console.log('User profile updated successfully');
+              
+              // Update Redux store so changes persist
+              dispatch(updateUserProfile(userUpdateData));
             } catch (userError: any) {
               console.error('Failed to update user info:', userError);
               console.error('Error details:', userError.message);
@@ -711,6 +721,19 @@ const SpecialistProfile: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Warn user if they're replacing a Google avatar
+    if (user?.avatar && (user.avatar.includes('googleusercontent.com') || user.avatar.includes('google.com'))) {
+      const confirmed = window.confirm(
+        language === 'uk' ? 'Ви впевнені, що хочете замінити аватар з Google?' :
+        language === 'ru' ? 'Вы уверены, что хотите заменить аватар из Google?' :
+        'Are you sure you want to replace your Google avatar?'
+      );
+      if (!confirmed) {
+        event.target.value = ''; // Reset file input
+        return;
+      }
+    }
+
     // Validate file type and size
     if (!file.type.startsWith('image/')) {
       showErrorNotification(
@@ -738,6 +761,9 @@ const SpecialistProfile: React.FC = () => {
       
       // Update user profile with new avatar URL
       await userService.updateProfile({ avatar: result.url });
+      
+      // Update Redux store so changes persist
+      dispatch(updateUserProfile({ avatar: result.url }));
       
       showSuccessNotification(
         language === 'uk' ? 'Аватар успішно оновлено' :
@@ -853,22 +879,24 @@ const SpecialistProfile: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">
-            {language === 'uk' ? 'Завантаження профілю...' : language === 'ru' ? 'Загрузка профиля...' : 'Loading profile...'}
-          </p>
-        </div>
-      </div>
-    );
+    const subtitle = language === 'uk' ? 'Завантаження профілю' : language === 'ru' ? 'Загрузка профиля' : 'Fetching your profile';
+    return (<FullScreenHandshakeLoader title={t('common.loading')} subtitle={subtitle} />);
   }
 
   const completionPercentage = getProfileCompletion();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900">
+      {/* Auto-migrate Google avatars */}
+      <AutoMigrateAvatar 
+        showStatus={true} 
+        onMigrationComplete={(success, newAvatarUrl) => {
+          if (success && newAvatarUrl) {
+            setProfile(prev => ({ ...prev, avatar: newAvatarUrl }));
+          }
+        }}
+      />
+      
       {/* Success/Error Notifications */}
       {showSuccessMessage && (
         <div className="fixed top-4 right-4 z-50 animate-slide-in">
@@ -915,9 +943,10 @@ const SpecialistProfile: React.FC = () => {
               {/* Modern Avatar */}
               <div className="relative group">
                 {user?.avatar ? (
-                  <img
+                  <Avatar
                     src={user.avatar}
                     alt={profile.firstName || 'Profile'}
+                    size="custom"
                     className="w-28 h-28 rounded-2xl object-cover shadow-lg ring-4 ring-white dark:ring-gray-800"
                   />
                 ) : (
@@ -1003,9 +1032,11 @@ const SpecialistProfile: React.FC = () => {
               {!isEditing && (
                 <button 
                   onClick={() => {
-                    if (user?.userType === 'SPECIALIST') {
-                      // Open specialist's public profile in a new tab - use current user ID
-                      const publicProfileUrl = `/specialist/${user.id}`;
+                    if (user?.userType === 'specialist') {
+                      // Open specialist's public profile in a new tab - use specialist profile ID
+                      const specialistId = (profile as any).id || user.id;
+                      const publicProfileUrl = `/specialist/${specialistId}`;
+                      console.log('🔍 Opening preview for specialist ID:', specialistId);
                       window.open(publicProfileUrl, '_blank');
                     } else {
                       console.warn('User is not a specialist');
@@ -1353,9 +1384,12 @@ const SpecialistProfile: React.FC = () => {
                         type="number"
                         min="0"
                         max="50"
-                        value={profile.experience || 0}
+                        value={profile.experience === 0 ? '' : profile.experience || ''}
                         disabled={!isEditing}
-                        onChange={(e) => handleProfileChange('experience', parseInt(e.target.value) || 0)}
+                        onChange={(e) => {
+                          const value = e.target.value === '' ? 0 : parseInt(e.target.value) || 0;
+                          handleProfileChange('experience', value);
+                        }}
                         className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
                           !isEditing 
                             ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
@@ -1525,8 +1559,8 @@ const SpecialistProfile: React.FC = () => {
                       </h3>
                       <div className="space-y-3">
                         {profile.businessHours && Object.entries(profile.businessHours).map(([day, hours]) => (
-                          <div key={day} className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                            <div className="w-24">
+                          <div key={day} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                            <div className="w-full sm:w-24">
                               <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
                                 {language === 'uk' 
                                   ? day === 'monday' ? 'Понеділок' 
@@ -1673,13 +1707,14 @@ const SpecialistProfile: React.FC = () => {
                             type="number"
                             min="0"
                             max="100"
-                            value={profile.serviceArea?.radius || 0}
+                            value={profile.serviceArea?.radius === 0 ? '' : profile.serviceArea?.radius || ''}
                             disabled={!isEditing}
                             onChange={(e) => {
                               if (isEditing) {
+                                const radius = e.target.value === '' ? 0 : parseInt(e.target.value) || 0;
                                 const newServiceArea = {
                                   ...(profile.serviceArea || { radius: 0, cities: [] }),
-                                  radius: parseInt(e.target.value) || 0
+                                  radius: radius
                                 };
                                 handleProfileChange('serviceArea', newServiceArea);
                               }
@@ -1758,6 +1793,14 @@ const SpecialistProfile: React.FC = () => {
                               src={getAbsoluteImageUrl(item.imageUrl)}
                               alt={item.title || `Portfolio item ${index + 1}`}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              onError={(e) => {
+                                console.error('Portfolio image failed to load:', item.imageUrl);
+                                // Hide broken images
+                                e.currentTarget.style.display = 'none';
+                              }}
+                              onLoad={(e) => {
+                                console.log('✅ Portfolio image loaded successfully:', item.imageUrl);
+                              }}
                             />
                           </div>
                           {item.title && (

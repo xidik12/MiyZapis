@@ -56,6 +56,9 @@ export class ServiceService {
         throw new Error('SPECIALIST_NOT_FOUND');
       }
 
+      console.log('🏗️ Creating service with data:', data);
+      console.log('⏰ Duration value before DB save:', data.duration, typeof data.duration);
+      
       // Create service
       const service = await prisma.service.create({
         data: {
@@ -102,10 +105,14 @@ export class ServiceService {
         },
       });
 
+      console.log('✅ Service created in DB:', service);
+      console.log('⏰ Duration in created service:', service.duration, typeof service.duration);
+      
       logger.info('Service created successfully', {
         serviceId: service.id,
         specialistId: specialist.id,
         serviceName: service.name,
+        duration: service.duration,
       });
 
       return service as ServiceWithDetails;
@@ -138,6 +145,9 @@ export class ServiceService {
         throw new Error('UNAUTHORIZED_ACCESS');
       }
 
+      console.log('🔄 Updating service with data:', data);
+      console.log('⏰ Duration value from frontend:', data.duration, typeof data.duration);
+      
       // Update service
       const updateData: any = {
         updatedAt: new Date(),
@@ -148,7 +158,10 @@ export class ServiceService {
       if (data.category !== undefined) updateData.category = data.category;
       if (data.basePrice !== undefined) updateData.basePrice = data.basePrice;
       if (data.currency !== undefined) updateData.currency = data.currency;
-      if (data.duration !== undefined) updateData.duration = data.duration;
+      if (data.duration !== undefined) {
+        console.log('⏰ Setting duration in updateData:', data.duration);
+        updateData.duration = data.duration;
+      }
       if (data.requirements !== undefined) updateData.requirements = JSON.stringify(data.requirements);
       if (data.deliverables !== undefined) updateData.deliverables = JSON.stringify(data.deliverables);
       if (data.images !== undefined) updateData.images = JSON.stringify(data.images);
@@ -156,6 +169,9 @@ export class ServiceService {
       if (data.requiresApproval !== undefined) updateData.requiresApproval = data.requiresApproval;
       if (data.maxAdvanceBooking !== undefined) updateData.maxAdvanceBooking = data.maxAdvanceBooking;
       if (data.minAdvanceBooking !== undefined) updateData.minAdvanceBooking = data.minAdvanceBooking;
+
+      console.log('📤 Final updateData being sent to DB:', updateData);
+      console.log('⏰ Duration in updateData:', updateData.duration);
 
       const service = await prisma.service.update({
         where: { id: serviceId },
@@ -188,9 +204,13 @@ export class ServiceService {
         },
       });
 
+      console.log('✅ Service updated in DB:', service);
+      console.log('⏰ Duration in updated service:', service.duration, typeof service.duration);
+      
       logger.info('Service updated successfully', {
         serviceId: service.id,
         specialistId: existingService.specialist.id,
+        duration: service.duration,
       });
 
       return service as ServiceWithDetails;
@@ -200,12 +220,15 @@ export class ServiceService {
     }
   }
 
-  // Delete a service (soft delete by setting isActive to false)
+  // Delete a service (soft delete to preserve booking history and allow restoration)
   static async deleteService(serviceId: string, specialistUserId: string): Promise<void> {
     try {
       // Verify service exists and belongs to specialist
       const existingService = await prisma.service.findUnique({
-        where: { id: serviceId },
+        where: { 
+          id: serviceId,
+          isDeleted: false // Only allow deletion of non-deleted services
+        },
         include: {
           specialist: true,
         },
@@ -219,12 +242,12 @@ export class ServiceService {
         throw new Error('UNAUTHORIZED_ACCESS');
       }
 
-      // Check for active bookings
+      // Only block deletion for truly active bookings (not completed, cancelled, or no-show)
       const activeBookings = await prisma.booking.findFirst({
         where: {
           serviceId,
           status: {
-            in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'],
+            in: ['PENDING', 'CONFIRMED', 'IN_PROGRESS'],
           },
         },
       });
@@ -233,16 +256,17 @@ export class ServiceService {
         throw new Error('ACTIVE_BOOKINGS_EXIST');
       }
 
-      // Soft delete by setting isActive to false
+      // Soft delete the service - preserves all data including booking history
       await prisma.service.update({
         where: { id: serviceId },
-        data: {
-          isActive: false,
-          updatedAt: new Date(),
+        data: { 
+          isDeleted: true,
+          deletedAt: new Date(),
+          isActive: false // Also mark as inactive for consistency
         },
       });
 
-      logger.info('Service deleted successfully', {
+      logger.info('Service soft deleted successfully', {
         serviceId,
         specialistId: existingService.specialist.id,
       });
@@ -252,11 +276,83 @@ export class ServiceService {
     }
   }
 
+  // Restore a deleted service
+  static async restoreService(serviceId: string, specialistUserId: string): Promise<ServiceWithDetails> {
+    try {
+      // Verify service exists and belongs to specialist (include deleted services)
+      const existingService = await prisma.service.findUnique({
+        where: { 
+          id: serviceId,
+          isDeleted: true // Only allow restoration of deleted services
+        },
+        include: {
+          specialist: true,
+        },
+      });
+
+      if (!existingService) {
+        throw new Error('DELETED_SERVICE_NOT_FOUND');
+      }
+
+      if (existingService.specialist.userId !== specialistUserId) {
+        throw new Error('UNAUTHORIZED_ACCESS');
+      }
+
+      // Restore the service
+      const restoredService = await prisma.service.update({
+        where: { id: serviceId },
+        data: { 
+          isDeleted: false,
+          deletedAt: null,
+          isActive: true // Mark as active when restoring
+        },
+        include: {
+          specialist: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  firstName: true,
+                  lastName: true,
+                  avatar: true,
+                  userType: true,
+                  phoneNumber: true,
+                  isEmailVerified: true,
+                  isPhoneVerified: true,
+                  isActive: true,
+                  loyaltyPoints: true,
+                  language: true,
+                  currency: true,
+                  timezone: true,
+                  createdAt: true,
+                  updatedAt: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      logger.info('Service restored successfully', {
+        serviceId,
+        specialistId: existingService.specialist.id,
+      });
+
+      return restoredService as ServiceWithDetails;
+    } catch (error) {
+      logger.error('Error restoring service:', error);
+      throw error;
+    }
+  }
+
   // Get service by ID
   static async getService(serviceId: string): Promise<ServiceWithDetails> {
     try {
       const service = await prisma.service.findUnique({
-        where: { id: serviceId },
+        where: { 
+          id: serviceId,
+        },
         include: {
           specialist: {
             include: {
@@ -299,7 +395,8 @@ export class ServiceService {
   // Get specialist's services by user ID
   static async getSpecialistServices(
     specialistUserId: string,
-    includeInactive: boolean = false
+    includeInactive: boolean = false,
+    includeDeleted: boolean = false
   ): Promise<ServiceWithDetails[]> {
     try {
       const specialist = await prisma.specialist.findUnique({
@@ -312,6 +409,77 @@ export class ServiceService {
 
       const where: any = {
         specialistId: specialist.id,
+      };
+
+      if (!includeInactive) {
+        where.isActive = true;
+      }
+
+      if (!includeDeleted) {
+        where.isDeleted = false;
+      }
+
+      const services = await prisma.service.findMany({
+        where,
+        include: {
+          specialist: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  firstName: true,
+                  lastName: true,
+                  avatar: true,
+                  userType: true,
+                  phoneNumber: true,
+                  isEmailVerified: true,
+                  isPhoneVerified: true,
+                  isActive: true,
+                  loyaltyPoints: true,
+                  language: true,
+                  currency: true,
+                  timezone: true,
+                  createdAt: true,
+                  updatedAt: true,
+                },
+              },
+            },
+          },
+          _count: {
+            select: {
+              bookings: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return services as ServiceWithDetails[];
+    } catch (error) {
+      logger.error('Error getting specialist services:', error);
+      throw error;
+    }
+  }
+
+  // Get services by specialist ID (for public access)
+  static async getServicesBySpecialistId(
+    specialistId: string,
+    includeInactive: boolean = false
+  ): Promise<ServiceWithDetails[]> {
+    try {
+      // Verify specialist exists
+      const specialist = await prisma.specialist.findUnique({
+        where: { id: specialistId },
+      });
+
+      if (!specialist) {
+        throw new Error('SPECIALIST_NOT_FOUND');
+      }
+
+      const where: any = {
+        specialistId: specialistId,
+        isDeleted: false, // Never include deleted services in public views
       };
 
       if (!includeInactive) {
@@ -345,65 +513,9 @@ export class ServiceService {
               },
             },
           },
-        },
-        orderBy: { createdAt: 'desc' },
-      });
-
-      return services as ServiceWithDetails[];
-    } catch (error) {
-      logger.error('Error getting specialist services:', error);
-      throw error;
-    }
-  }
-
-  // Get services by specialist ID (for public access)
-  static async getServicesBySpecialistId(
-    specialistId: string,
-    includeInactive: boolean = false
-  ): Promise<ServiceWithDetails[]> {
-    try {
-      // Verify specialist exists
-      const specialist = await prisma.specialist.findUnique({
-        where: { id: specialistId },
-      });
-
-      if (!specialist) {
-        throw new Error('SPECIALIST_NOT_FOUND');
-      }
-
-      const where: any = {
-        specialistId: specialistId,
-      };
-
-      if (!includeInactive) {
-        where.isActive = true;
-      }
-
-      const services = await prisma.service.findMany({
-        where,
-        include: {
-          specialist: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  email: true,
-                  firstName: true,
-                  lastName: true,
-                  avatar: true,
-                  userType: true,
-                  phoneNumber: true,
-                  isEmailVerified: true,
-                  isPhoneVerified: true,
-                  isActive: true,
-                  loyaltyPoints: true,
-                  language: true,
-                  currency: true,
-                  timezone: true,
-                  createdAt: true,
-                  updatedAt: true,
-                },
-              },
+          _count: {
+            select: {
+              bookings: true,
             },
           },
         },
@@ -437,6 +549,7 @@ export class ServiceService {
 
       const where: any = {
         isActive: true,
+        isDeleted: false,
         specialist: {
           user: {
             isActive: true,
@@ -540,6 +653,7 @@ export class ServiceService {
         by: ['category'],
         where: {
           isActive: true,
+          isDeleted: false,
           specialist: {
             user: {
               isActive: true,
@@ -669,6 +783,7 @@ export class ServiceService {
       const services = await prisma.service.findMany({
         where: {
           isActive: true,
+          isDeleted: false,
           specialist: {
             user: {
               isActive: true,
@@ -717,6 +832,98 @@ export class ServiceService {
       return services as ServiceWithDetails[];
     } catch (error) {
       logger.error('Error getting popular services:', error);
+      throw error;
+    }
+  }
+
+  // Migration method to fix currency data for existing services
+  static async migrateCurrencyData(specialistUserId: string) {
+    try {
+      // Get specialist
+      const specialist = await prisma.specialist.findUnique({
+        where: { userId: specialistUserId },
+      });
+
+      if (!specialist) {
+        throw new Error('SPECIALIST_NOT_FOUND');
+      }
+
+      // Get all services for this specialist
+      const services = await prisma.service.findMany({
+        where: { 
+          specialistId: specialist.id,
+          isDeleted: false,
+        },
+      });
+
+      const updates = [];
+      
+      for (const service of services) {
+        let newCurrency = service.currency;
+        let newPrice = service.basePrice;
+        
+        // Smart detection based on service name and price patterns
+        if (service.name.toLowerCase().includes('barber')) {
+          // Barber services are typically in USD
+          if (service.basePrice >= 1000) {
+            // This is likely UAH stored as USD, convert it
+            newPrice = service.basePrice / 37; // Convert UAH to USD
+            newCurrency = 'USD';
+            logger.info(`Migrating barber service ${service.id}: ${service.basePrice} UAH -> ${newPrice} USD`);
+          } else if (service.basePrice <= 100) {
+            // This is likely correct USD pricing
+            newCurrency = 'USD';
+          }
+        } else if (service.name.toLowerCase().includes('beard')) {
+          // Beard trim services are typically in UAH
+          if (service.basePrice <= 100) {
+            // This is likely USD stored as UAH, convert it
+            newPrice = service.basePrice * 37; // Convert USD to UAH
+            newCurrency = 'UAH';
+            logger.info(`Migrating beard service ${service.id}: ${service.basePrice} USD -> ${newPrice} UAH`);
+          } else if (service.basePrice >= 1000) {
+            // This is likely correct UAH pricing
+            newCurrency = 'UAH';
+          }
+        } else {
+          // For other services, use heuristics based on price
+          if (service.basePrice >= 1000) {
+            newCurrency = 'UAH';
+          } else if (service.basePrice <= 100) {
+            newCurrency = 'USD';
+          }
+        }
+
+        // Update if currency or price changed
+        if (newCurrency !== service.currency || newPrice !== service.basePrice) {
+          await prisma.service.update({
+            where: { id: service.id },
+            data: {
+              currency: newCurrency,
+              basePrice: newPrice,
+            },
+          });
+          
+          updates.push({
+            serviceId: service.id,
+            serviceName: service.name,
+            oldPrice: service.basePrice,
+            oldCurrency: service.currency,
+            newPrice: newPrice,
+            newCurrency: newCurrency,
+          });
+        }
+      }
+
+      logger.info(`Currency migration completed for specialist ${specialistUserId}: ${updates.length} services updated`);
+      
+      return {
+        totalServices: services.length,
+        updatedServices: updates.length,
+        updates: updates,
+      };
+    } catch (error) {
+      logger.error('Error migrating currency data:', error);
       throw error;
     }
   }

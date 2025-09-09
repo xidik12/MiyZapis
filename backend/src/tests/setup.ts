@@ -222,7 +222,7 @@ export class TestDataBuilder {
     const user = await testPrisma.user.create({ data: userData });
     
     const specialistData = testFactories.specialist(user.id);
-    const specialist = await testPrisma.specialist.create({ data: specialistData });
+    const specialist = await testPrisma.specialist.create({ data: specialistData as any });
     
     this.data.specialist = { ...user, specialistProfile: specialist };
     return this;
@@ -241,7 +241,7 @@ export class TestDataBuilder {
     }
 
     const serviceData = testFactories.service(this.data.specialist.specialistProfile.id);
-    const service = await testPrisma.service.create({ data: serviceData });
+    const service = await testPrisma.service.create({ data: serviceData as any });
     this.data.service = service;
     return this;
   }
@@ -263,7 +263,7 @@ export class TestDataBuilder {
       this.data.service.id
     );
     
-    const booking = await testPrisma.booking.create({ data: bookingData });
+    const booking = await testPrisma.booking.create({ data: bookingData as any });
     this.data.booking = booking;
     return this;
   }
@@ -478,7 +478,7 @@ export async function seedTestDatabase() {
 
 // Performance test helpers
 export class PerformanceTimer {
-  private startTime: number = 0;
+  private startTime: bigint = 0n;
   private measurements: Record<string, number[]> = {};
 
   start() {

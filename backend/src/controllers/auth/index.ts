@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
 import { EnhancedAuthService as AuthService } from '@/services/auth/enhanced';
 import { EmailService } from '@/services/email';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
@@ -11,8 +10,7 @@ import { ErrorCodes, LoginRequest, RegisterRequest, TelegramAuthRequest, JwtPayl
 import { validationResult } from 'express-validator';
 import { config } from '@/config';
 import { redis } from '@/config/redis';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/config/database';
 
 export class AuthController {
   // Register new user
@@ -637,7 +635,7 @@ export class AuthController {
         const emailService = new EmailService();
         await emailService.sendPasswordResetEmail(user.email, {
           firstName: user.firstName,
-          resetUrl
+          resetLink: resetUrl
         });
       } catch (emailError) {
         logger.error('Failed to send password reset email:', emailError);

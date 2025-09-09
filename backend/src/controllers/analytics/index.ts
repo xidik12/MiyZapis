@@ -1,12 +1,10 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { AnalyticsService } from '@/services/analytics/index';
 import { successResponse, errorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { AuthenticatedRequest } from '@/types';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/config/database';
 
 export class AnalyticsController {
   private analyticsService: AnalyticsService;
@@ -358,6 +356,190 @@ export class AnalyticsController {
     } catch (error) {
       logger.error('Error getting performance analytics:', error);
       return errorResponse(res, 'Failed to retrieve performance analytics', 500);
+    }
+  };
+
+  // Track profile view
+  trackProfileView = async (req: Request, res: Response) => {
+    try {
+      const { specialistId } = req.params;
+      const viewerId = req.user?.id || null; // Authenticated user or anonymous
+      const ipAddress = req.ip;
+      const userAgent = req.get('User-Agent');
+      const referrer = req.get('Referer');
+      const sessionId = req.sessionID || req.get('x-session-id');
+
+      // Check if specialist exists
+      const specialist = await prisma.user.findUnique({
+        where: { 
+          id: specialistId,
+          userType: 'SPECIALIST',
+          isActive: true
+        }
+      });
+
+      if (!specialist) {
+        return errorResponse(res, 'Specialist not found', 404);
+      }
+
+      // Avoid duplicate views from same user/IP in last 30 minutes (optional anti-spam)
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+      const recentView = await prisma.profileView.findFirst({
+        where: {
+          specialistId,
+          createdAt: { gte: thirtyMinutesAgo },
+          OR: [
+            { viewerId: viewerId },
+            { ipAddress: ipAddress }
+          ]
+        }
+      });
+
+      if (recentView) {
+        // Don't create duplicate, but return success
+        return successResponse(res, { tracked: false, reason: 'Recent view exists' }, 'Profile view noted');
+      }
+
+      // Create profile view record
+      const profileView = await prisma.profileView.create({
+        data: {
+          specialistId,
+          viewerId,
+          ipAddress,
+          userAgent,
+          referrer,
+          sessionId
+        }
+      });
+
+      return successResponse(res, { tracked: true, id: profileView.id }, 'Profile view tracked successfully');
+    } catch (error) {
+      logger.error('Error tracking profile view:', error);
+      return errorResponse(res, 'Failed to track profile view', 500);
+    }
+  };
+
+  // Get profile view statistics
+  getProfileViewStats = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      if (!req.user) {
+        return errorResponse(res, 'Authentication required', 401);
+      }
+
+      const userId = req.user.id;
+      const { period = 'month' } = req.query;
+
+      // Verify user is a specialist
+      const specialist = await prisma.specialist.findUnique({
+        where: { userId }
+      });
+
+      if (!specialist) {
+        return errorResponse(res, 'Access denied. Specialist account required.', 403);
+      }
+
+      // Calculate date range
+      let startDate: Date;
+      const endDate = new Date();
+
+      switch (period) {
+        case 'week':
+          startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case 'month':
+          startDate = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case 'year':
+          startDate = new Date(endDate.getTime() - 365 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          startDate = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+      }
+
+      try {
+        // Check if ProfileView model/table exists by trying to count
+        await prisma.profileView.count({ take: 1 });
+
+        // Get total views
+        const totalViews = await prisma.profileView.count({
+          where: {
+            specialistId: userId,
+            createdAt: { gte: startDate }
+          }
+        });
+
+        // Get unique viewers
+        const uniqueViewers = await prisma.profileView.findMany({
+          where: {
+            specialistId: userId,
+            createdAt: { gte: startDate }
+          },
+          distinct: ['viewerId'],
+          select: { viewerId: true }
+        });
+
+        // Get views by day for trend data using safe query
+        const viewsByDay = await prisma.$queryRaw`
+          SELECT DATE("createdAt") as date, COUNT(*) as count
+          FROM "ProfileView" 
+          WHERE "specialistId" = ${userId} 
+          AND "createdAt" >= ${startDate}
+          GROUP BY DATE("createdAt")
+          ORDER BY DATE("createdAt")
+        `;
+
+        // Calculate growth compared to previous period
+        const previousStartDate = new Date(startDate.getTime() - (endDate.getTime() - startDate.getTime()));
+        const previousViews = await prisma.profileView.count({
+          where: {
+            specialistId: userId,
+            createdAt: { gte: previousStartDate, lt: startDate }
+          }
+        });
+
+        const growth = previousViews === 0 ? 0 : ((totalViews - previousViews) / previousViews) * 100;
+
+        const stats = {
+          totalViews,
+          uniqueViewers: uniqueViewers.length,
+          growth: Math.round(growth * 10) / 10, // Round to 1 decimal
+          viewsByDay,
+          period
+        };
+
+        return successResponse(res, stats, 'Profile view statistics retrieved successfully');
+      } catch (dbError: any) {
+        // If ProfileView table doesn't exist yet, return default stats
+        if (dbError.code === 'P2021' || dbError.code === 'P2010' || 
+            dbError.message?.includes('does not exist') || 
+            dbError.message?.includes('ProfileView') || 
+            dbError.message?.includes('profile_views') ||
+            dbError.message?.includes('column') ||
+            dbError.meta?.code === '42703') {
+          logger.warn('ProfileView table or columns not found, returning default stats', { 
+            error: dbError.message, 
+            code: dbError.code,
+            meta: dbError.meta 
+          });
+          
+          const defaultStats = {
+            totalViews: 0,
+            uniqueViewers: 0,
+            growth: 0,
+            viewsByDay: [],
+            period,
+            message: 'Profile view tracking is being set up. Data will be available soon.'
+          };
+
+          return successResponse(res, defaultStats, 'Profile view statistics (default - tracking not yet active)');
+        }
+        
+        // Re-throw other database errors
+        throw dbError;
+      }
+    } catch (error) {
+      logger.error('Error getting profile view stats:', error);
+      return errorResponse(res, 'Failed to retrieve profile view statistics', 500);
     }
   };
 }

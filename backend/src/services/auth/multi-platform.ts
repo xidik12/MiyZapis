@@ -207,7 +207,7 @@ export class MultiPlatformAuthService {
 
     // Generate secret key
     const secretKey = crypto.createHmac('sha256', 'WebAppData')
-      .update(config.telegram.botToken!)
+      .update(config.telegram.botToken || '')
       .digest();
 
     // Calculate hash
@@ -328,9 +328,11 @@ export class MultiPlatformAuthService {
       iat: Math.floor(Date.now() / 1000)
     };
 
-    const accessToken = jwt.sign(payload, config.jwt.secret!, {
-      expiresIn: config.jwt.expiresIn
-    });
+    const accessToken = jwt.sign(
+      payload, 
+      config.jwt.secret as string, 
+      { expiresIn: config.jwt.expiresIn as string } as jwt.SignOptions
+    );
 
     const refreshTokenPayload = {
       userId,
@@ -338,9 +340,11 @@ export class MultiPlatformAuthService {
       type: 'refresh'
     };
 
-    const refreshToken = jwt.sign(refreshTokenPayload, config.jwt.refreshSecret!, {
-      expiresIn: config.jwt.refreshExpiresIn
-    });
+    const refreshToken = jwt.sign(
+      refreshTokenPayload, 
+      config.jwt.refreshSecret as string, 
+      { expiresIn: config.jwt.refreshExpiresIn as string } as jwt.SignOptions
+    );
 
     // Store refresh token
     await prisma.refreshToken.create({
@@ -399,7 +403,7 @@ export class MultiPlatformAuthService {
   async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string; user: any }> {
     try {
       // Verify refresh token
-      const decoded = jwt.verify(refreshToken, config.jwt.refreshSecret!) as any;
+      const decoded = jwt.verify(refreshToken, config.jwt.refreshSecret) as any;
       
       // Check if token exists and is valid
       const tokenRecord = await prisma.refreshToken.findFirst({
@@ -427,8 +431,8 @@ export class MultiPlatformAuthService {
           platform: decoded.platform,
           iat: Math.floor(Date.now() / 1000)
         },
-        config.jwt.secret!,
-        { expiresIn: config.jwt.expiresIn }
+        config.jwt.secret as string,
+        { expiresIn: config.jwt.expiresIn as string } as jwt.SignOptions
       );
 
       return {

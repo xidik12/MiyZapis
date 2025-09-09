@@ -23,11 +23,116 @@ export class SpecialistService {
 
   // Get public specialist profile (for customers)
   async getPublicProfile(specialistId: string): Promise<Specialist> {
-    const response = await apiClient.get<Specialist>(`/specialists/${specialistId}/public`);
+    const response = await apiClient.get<{ specialist: any }>(`/specialists/${specialistId}/public`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get specialist profile');
     }
-    return response.data;
+    
+    // Extract the specialist data from the nested response
+    const specialistData = response.data.specialist;
+    console.log('🔍 Raw specialist data from API:', specialistData);
+    
+    // Check if avatar URLs are accessible (basic validation)
+    if (specialistData.user?.avatar && specialistData.user.avatar.includes('/uploads/')) {
+      console.log('⚠️ Avatar URL points to uploads directory - may not be accessible if files were lost');
+    }
+    
+    // Transform the response to match frontend expectations
+    // Normalize response time to minutes if backend stores milliseconds
+    const normalizeResponseTime = (value: any): number | undefined => {
+      if (value === null || value === undefined) return undefined;
+      const n = Number(value);
+      if (!isFinite(n) || n <= 0) return undefined;
+      // Heuristic: if value looks like milliseconds (> 300), convert to minutes
+      return n > 300 ? Math.round(n / 60000) : n;
+    };
+
+    const transformedSpecialist = {
+      ...specialistData,
+      // Handle user data nesting
+      user: specialistData.user ? {
+        ...specialistData.user,
+        firstName: specialistData.user.firstName || specialistData.firstName,
+        lastName: specialistData.user.lastName || specialistData.lastName,
+        avatar: specialistData.user.avatar || specialistData.avatar,
+        isVerified: specialistData.user.isVerified || specialistData.isVerified || false
+      } : {
+        firstName: specialistData.firstName,
+        lastName: specialistData.lastName,
+        avatar: specialistData.avatar,
+        isVerified: specialistData.isVerified || false
+      },
+      // Also keep avatar at root level for backward compatibility
+      avatar: specialistData.user?.avatar || specialistData.avatar,
+      // Flatten location data to root level for compatibility
+      city: specialistData.location?.city || specialistData.city,
+      state: specialistData.location?.state || specialistData.state,
+      country: specialistData.location?.country || specialistData.country,
+      address: specialistData.location?.address || specialistData.address,
+      // Ensure specialties is properly handled
+      specialties: Array.isArray(specialistData.specialties) 
+        ? specialistData.specialties 
+        : (typeof specialistData.specialties === 'string' 
+           ? JSON.parse(specialistData.specialties) 
+           : []),
+      // Ensure portfolio images are properly structured
+      portfolioImages: (() => {
+        try {
+          const portfolioData = Array.isArray(specialistData.portfolioImages)
+            ? specialistData.portfolioImages
+            : (typeof specialistData.portfolioImages === 'string'
+               ? JSON.parse(specialistData.portfolioImages)
+               : []);
+          
+          // Filter out overly large base64 images that could cause performance issues
+          const filteredPortfolio = portfolioData.filter((item: any) => {
+            if (typeof item === 'string' && item.startsWith('data:image/')) {
+              const sizeKB = Math.round(item.length / 1024);
+              if (item.length >= 500000) {
+                console.warn(`⚠️ Skipping large base64 portfolio image: ${sizeKB}KB (max 488KB)`);
+                console.warn('💡 Suggestion: Convert large images to files and upload via backend');
+                return false;
+              }
+              return true;
+            } else if (typeof item === 'object' && item.imageUrl && item.imageUrl.startsWith('data:image/')) {
+              const sizeKB = Math.round(item.imageUrl.length / 1024);
+              if (item.imageUrl.length >= 500000) {
+                console.warn(`⚠️ Skipping large base64 portfolio image: ${sizeKB}KB (max 488KB)`);
+                console.warn('💡 Suggestion: Convert large images to files and upload via backend');
+                return false;
+              }
+              return true;
+            }
+            return true; // Keep all non-base64 images
+          });
+          
+          console.log('📸 Portfolio images processed:', {
+            original: portfolioData.length,
+            filtered: filteredPortfolio.length,
+            removed: portfolioData.length - filteredPortfolio.length
+          });
+          
+          return filteredPortfolio;
+        } catch (error) {
+          console.error('❌ Error processing portfolio images:', error);
+          return [];
+        }
+      })(),
+      // Handle bio fields
+      bio: specialistData.bio || specialistData.description,
+      bioUk: specialistData.bioUk,
+      bioRu: specialistData.bioRu,
+      // Ensure other common fields
+      businessName: specialistData.businessName,
+      rating: specialistData.rating || 0,
+      reviewCount: specialistData.reviewCount || specialistData.totalReviews || 0,
+      completedBookings: specialistData.completedBookings || specialistData.totalBookings || 0,
+      experience: specialistData.experience || 0,
+      responseTime: normalizeResponseTime(specialistData.responseTime)
+    };
+    
+    console.log('✅ Transformed specialist data:', transformedSpecialist);
+    return transformedSpecialist;
   }
 
   // Create specialist profile
@@ -69,72 +174,14 @@ export class SpecialistService {
   async uploadPortfolioImage(file: File): Promise<{ imageUrl: string }> {
     console.log('📸 Processing portfolio image:', file.name, 'Size:', file.size);
     
-    // Validate file size (limit to 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      throw new Error('File size too large. Please choose an image smaller than 5MB.');
-    }
+    // Import fileUploadService dynamically to avoid circular dependencies
+    const { fileUploadService } = await import('./fileUpload.service');
     
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      throw new Error('Invalid file type. Please choose a JPEG, PNG, or WebP image.');
-    }
+    // Use the proper backend file upload service
+    const result = await fileUploadService.uploadPortfolioImage(file);
     
-    return new Promise((resolve, reject) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      
-      img.onload = () => {
-        // Resize image to max 800x600 to reduce size
-        const maxWidth = 800;
-        const maxHeight = 600;
-        let { width, height } = img;
-        
-        if (width > height) {
-          if (width > maxWidth) {
-            height = (height * maxWidth) / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width = (width * maxHeight) / height;
-            height = maxHeight;
-          }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        ctx?.drawImage(img, 0, 0, width, height);
-        
-        // Convert to smaller format with compression
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const base64String = e.target?.result as string;
-              console.log('✅ Image processed and compressed, size:', base64String.length);
-              resolve({ imageUrl: base64String });
-            };
-            reader.onerror = () => reject(new Error('Failed to process compressed image'));
-            reader.readAsDataURL(blob);
-          } else {
-            reject(new Error('Failed to compress image'));
-          }
-        }, 'image/jpeg', 0.8); // 80% quality JPEG
-      };
-      
-      img.onerror = () => reject(new Error('Failed to load image for processing'));
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        img.src = e.target?.result as string;
-      };
-      reader.onerror = () => reject(new Error('Failed to read file'));
-      reader.readAsDataURL(file);
-    });
+    console.log('✅ Portfolio image uploaded successfully:', result.url);
+    return { imageUrl: result.url };
   }
 
   // Get specialist's services (for own profile)
@@ -183,9 +230,50 @@ export class SpecialistService {
 
   // Delete service
   async deleteService(serviceId: string): Promise<{ message: string }> {
-    const response = await apiClient.delete<{ message: string }>(`/specialists/services/${serviceId}`);
+    try {
+      console.log('🗑️ API: Deleting service:', serviceId);
+      
+      if (!serviceId || serviceId.trim() === '') {
+        throw new Error('Service ID is required for deletion');
+      }
+      
+      const response = await apiClient.delete<{ message: string }>(`/specialists/services/${serviceId}`);
+      console.log('📦 API: Delete response:', response);
+      
+      if (!response.success || !response.data) {
+        const errorMessage = response.error?.message || 'Failed to delete service';
+        console.error('❌ API: Delete failed:', response.error);
+        throw new Error(errorMessage);
+      }
+      
+      console.log('✅ API: Service deleted successfully');
+      return response.data;
+    } catch (error: any) {
+      console.error('🚨 API: Service deletion error:', {
+        serviceId,
+        error: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      
+      // Provide more specific error messages based on status code
+      if (error.response?.status === 500) {
+        throw new Error('Server error occurred while deleting service. This may be due to existing bookings or dependencies.');
+      } else if (error.response?.status === 404) {
+        throw new Error('Service not found or already deleted.');
+      } else if (error.response?.status === 403) {
+        throw new Error('You do not have permission to delete this service.');
+      }
+      
+      throw new Error(error.message || 'Failed to delete service');
+    }
+  }
+
+  // Migrate currency data for existing services
+  async migrateCurrencyData(): Promise<{ totalServices: number; updatedServices: number; updates: any[] }> {
+    const response = await apiClient.post<{ totalServices: number; updatedServices: number; updates: any[] }>('/services/migrate-currency');
     if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to delete service');
+      throw new Error(response.error?.message || 'Failed to migrate currency data');
     }
     return response.data;
   }
@@ -282,11 +370,20 @@ export class SpecialistService {
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
 
-    const response = await apiClient.get<{ blocks: BlockedSlot[] }>(`/availability/specialists/availability/blocks?${params}`);
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get availability blocks');
+    try {
+      // Use the existing blocked slots endpoint directly (skip the non-existent /specialists/blocks)
+      console.log('📦 Fetching availability blocks from blocked slots endpoint...');
+      const response = await apiClient.get<{ blockedSlots: BlockedSlot[] }>(`/specialists/availability/blocked?${params}`);
+      if (response.success && response.data) {
+        const blocks = response.data.blockedSlots || response.data.data?.blockedSlots || [];
+        console.log('📦 getAvailabilityBlocks response:', { response: response.data, extractedBlocks: blocks });
+        return Array.isArray(blocks) ? blocks : [];
+      }
+    } catch (error: any) {
+      console.warn('📦 Failed to fetch availability blocks:', error);
     }
-    return response.data.blocks;
+    
+    return [];
   }
 
   // Create availability block (available or blocked)
@@ -299,10 +396,25 @@ export class SpecialistService {
     recurringDays?: string[];
     recurringUntil?: string;
   }): Promise<{ message: string; block: BlockedSlot }> {
-    const response = await apiClient.post<{ message: string; block: BlockedSlot }>('/availability/specialists/availability/blocks', data);
+    // Convert frontend field names to backend field names
+    const backendData = {
+      startDateTime: data.startDateTime,
+      endDateTime: data.endDateTime,
+      isAvailable: data.isAvailable,
+      reason: data.reason,
+      isRecurring: data.recurring, // Note: backend uses isRecurring, not recurring
+      recurringDays: data.recurringDays,
+      recurringUntil: data.recurringUntil,
+    };
+    
+    console.log('📤 Creating availability block:', backendData);
+    
+    const response = await apiClient.post<{ message: string; block: BlockedSlot }>('/specialists/blocks', backendData);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to create availability block');
     }
+    
+    console.log('✅ Block created successfully:', response.data);
     return response.data;
   }
 
@@ -316,16 +428,31 @@ export class SpecialistService {
     recurringDays?: string[];
     recurringUntil?: string;
   }): Promise<{ message: string; block: BlockedSlot }> {
-    const response = await apiClient.put<{ message: string; block: BlockedSlot }>(`/availability/specialists/availability/blocks/${blockId}`, data);
+    // Convert frontend field names to backend field names
+    const backendData = {
+      startDateTime: data.startDateTime,
+      endDateTime: data.endDateTime,
+      isAvailable: data.isAvailable,
+      reason: data.reason,
+      isRecurring: data.recurring, // Note: backend uses isRecurring, not recurring
+      recurringDays: data.recurringDays,
+      recurringUntil: data.recurringUntil,
+    };
+    
+    console.log('📤 Updating availability block:', blockId, backendData);
+    
+    const response = await apiClient.put<{ message: string; block: BlockedSlot }>(`/specialists/blocks/${blockId}`, backendData);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to update availability block');
     }
+    
+    console.log('✅ Block updated successfully:', response.data);
     return response.data;
   }
 
   // Delete availability block
   async deleteAvailabilityBlock(blockId: string): Promise<{ message: string }> {
-    const response = await apiClient.delete<{ message: string }>(`/availability/specialists/availability/blocks/${blockId}`);
+    const response = await apiClient.delete<{ message: string }>(`/specialists/blocks/${blockId}`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to delete availability block');
     }
@@ -520,6 +647,27 @@ export class SpecialistService {
   }
 
   // Get available time slots for a specific date
+  // Get available dates for a specialist (for booking flow)
+  async getAvailableDates(specialistId: string): Promise<{ availableDates: string[] }> {
+    try {
+      console.log('📅 API: Getting available dates for specialist:', specialistId);
+      
+      const response = await apiClient.get<{ availableDates: string[] }>(
+        `/specialists/${specialistId}/available-dates`
+      );
+      
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Failed to get available dates');
+      }
+      
+      console.log('✅ API: Available dates received:', response.data.availableDates);
+      return { availableDates: response.data.availableDates || [] };
+    } catch (error: any) {
+      console.error('❌ API: Error getting available dates:', error);
+      throw error;
+    }
+  }
+
   async getAvailableSlots(specialistId: string, date: string): Promise<string[]> {
     try {
       console.log('📅 API: Getting available slots for specialist:', specialistId, 'date:', date);
@@ -529,7 +677,7 @@ export class SpecialistService {
       const endDate = `${date}T23:59:59.999Z`;
       
       const response = await apiClient.get<{ availableSlots: string[] }>(
-        `/availability/specialists/${specialistId}/slots?date=${date}`
+        `/specialists/${specialistId}/slots?date=${date}`
       );
       
       if (!response.success || !response.data) {

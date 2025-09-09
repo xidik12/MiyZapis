@@ -1,12 +1,10 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { EnhancedAnalyticsService, AnalyticsFilters } from '@/services/analytics/enhanced';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { ErrorCodes, AuthenticatedRequest } from '@/types';
 import { validationResult } from 'express-validator';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/config/database';
 
 export class EnhancedAnalyticsController {
   /**

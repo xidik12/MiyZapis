@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/redux';
+import { useTheme } from '@/contexts/ThemeContext';
 import { setAuthTokens } from '@/services';
 import { toast } from 'react-toastify';
 
@@ -13,6 +14,7 @@ import { toast } from 'react-toastify';
 const AuthCallbackPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { theme } = useTheme();
   const [searchParams] = useSearchParams();
 
   useEffect(() => {

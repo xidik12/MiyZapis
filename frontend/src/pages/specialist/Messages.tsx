@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { messagesService, Conversation, Message } from '../../services/messages.service';
 import { 
@@ -189,11 +190,7 @@ const SpecialistMessages: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="p-6 max-w-7xl mx-auto">
-        <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent"></div>
-        </div>
-      </div>
+      <FullScreenHandshakeLoader title={t('common.loading')} subtitle={t('dashboard.nav.messages')} />
     );
   }
 
@@ -374,20 +371,20 @@ const SpecialistMessages: React.FC = () => {
                       >
                         <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
                           isFromSpecialist
-                            ? 'bg-primary-600 text-white'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+                            ? 'bg-blue-600 text-white shadow-md'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600'
                         }`}>
                           <p className="text-sm">{message.content}</p>
                           <div className="flex items-center justify-between mt-1">
                             <p className={`text-xs ${
                               isFromSpecialist
-                                ? 'text-primary-100'
+                                ? 'text-blue-100 opacity-90'
                                 : 'text-gray-500 dark:text-gray-400'
                             }`}>
                               {formatMessageTime(message.createdAt)}
                             </p>
                             {isFromSpecialist && message.readAt && (
-                              <CheckIcon className="w-3 h-3 text-primary-100" />
+                              <CheckIcon className="w-3 h-3 text-blue-100 opacity-90" />
                             )}
                           </div>
                         </div>

@@ -9,18 +9,18 @@ const TermsPage: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-800">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Terms of Service</h1>
-          <p className="text-lg text-gray-600">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">Terms of Service</h1>
+          <p className="text-lg text-gray-600 dark:text-gray-400">
             Last updated: {lastUpdated}
           </p>
         </div>
 
-        <div className="prose prose-lg max-w-none">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-            <p className="text-blue-800 mb-0">
+        <div className="prose prose-lg dark:prose-invert max-w-none">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-8">
+            <p className="text-blue-800 dark:text-blue-200 mb-0">
               These Terms of Service ("Terms") govern your use of {environment.APP_NAME} ("we", "our", or "us"), 
               a platform that connects customers with professional service specialists.
             </p>
@@ -179,15 +179,15 @@ const TermsPage: React.FC = () => {
           <p>
             For questions about these Terms, contact us at:
           </p>
-          <div className="bg-gray-50 rounded-lg p-6 mt-6">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 mt-6">
             <p className="mb-2"><strong>Email:</strong> legal@{environment.APP_NAME.toLowerCase()}.com</p>
             <p className="mb-2"><strong>Support:</strong> support@{environment.APP_NAME.toLowerCase()}.com</p>
             <p className="mb-0"><strong>Address:</strong> 123 Legal Street, Terms City, TC 12345</p>
           </div>
 
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mt-8">
-            <h3 className="text-red-800 font-semibold mb-2">Important</h3>
-            <p className="text-red-700 mb-0">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 mt-8">
+            <h3 className="text-red-800 dark:text-red-200 font-semibold mb-2">Important</h3>
+            <p className="text-red-700 dark:text-red-300 mb-0">
               By using {environment.APP_NAME}, you acknowledge that you have read, 
               understood, and agree to be bound by these Terms of Service.
             </p>

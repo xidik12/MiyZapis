@@ -1,12 +1,10 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { ReviewService, CreateReviewData, UpdateReviewData, ReviewFilters } from '@/services/review';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { ErrorCodes, AuthenticatedRequest } from '@/types';
 import { validationResult } from 'express-validator';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/config/database';
 
 export class ReviewController {
   /**
@@ -24,8 +22,8 @@ export class ReviewController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: error.param,
-              message: error.msg,
+              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )
@@ -253,8 +251,8 @@ export class ReviewController {
             'Invalid request data',
             req.headers['x-request-id'] as string,
             errors.array().map(error => ({
-              field: error.param,
-              message: error.msg,
+              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
               code: 'INVALID_VALUE',
             }))
           )

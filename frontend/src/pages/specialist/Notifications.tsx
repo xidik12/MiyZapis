@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { notificationService } from '../../services/notification.service';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
 import {
   BellIcon,
@@ -27,20 +28,78 @@ interface Notification {
 const SpecialistNotifications: React.FC = () => {
   const { t, language } = useLanguage();
   
-  // Helper function to create localized notification messages
-  const createNotifications = (): Notification[] => {
-    // Return empty array - no mock notifications for production
-    // Real notifications will come from the backend API
-    return [];
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [filter, setFilter] = useState<'all' | 'unread' | 'booking' | 'payment' | 'review' | 'system'>('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Load notifications from service
+  const loadNotifications = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await notificationService.getNotifications({
+        page: 1,
+        limit: 50
+      });
+      
+      // Map service notifications to component format
+      const mappedNotifications: Notification[] = response.notifications.map(notif => ({
+        id: notif.id,
+        type: notif.type as 'booking' | 'payment' | 'review' | 'system' | 'reminder',
+        title: notif.title,
+        message: notif.message,
+        timestamp: notif.createdAt,
+        isRead: notif.isRead,
+        priority: 'medium' as const, // Default priority
+        actionUrl: notif.actionUrl
+      }));
+      
+      setNotifications(mappedNotifications);
+      setUnreadCount(response.unreadCount);
+    } catch (err) {
+      console.error('Failed to load notifications:', err);
+      setError('Failed to load notifications');
+      
+      // Try to force local mode if backend fails
+      notificationService.forceLocalMode();
+      
+      // Retry once with local service
+      try {
+        const response = await notificationService.getNotifications({
+          page: 1,
+          limit: 50
+        });
+        
+        const mappedNotifications: Notification[] = response.notifications.map(notif => ({
+          id: notif.id,
+          type: notif.type as 'booking' | 'payment' | 'review' | 'system' | 'reminder',
+          title: notif.title,
+          message: notif.message,
+          timestamp: notif.createdAt,
+          isRead: notif.isRead,
+          priority: 'medium' as const,
+          actionUrl: notif.actionUrl
+        }));
+        
+        setNotifications(mappedNotifications);
+        setUnreadCount(response.unreadCount);
+        setError(null);
+      } catch (localErr) {
+        console.error('Local notifications also failed:', localErr);
+        setError('Could not load notifications');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const [notifications, setNotifications] = useState<Notification[]>(createNotifications());
-  const [filter, setFilter] = useState<'all' | 'unread' | 'booking' | 'payment' | 'review' | 'system'>('all');
-
-  // Update notifications when language changes
+  // Load notifications on component mount
   useEffect(() => {
-    setNotifications(createNotifications());
-  }, [language, t]);
+    loadNotifications();
+  }, []);
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -72,22 +131,46 @@ const SpecialistNotifications: React.FC = () => {
     }
   };
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(notif =>
-        notif.id === id ? { ...notif, isRead: true } : notif
-      )
-    );
+  const markAsRead = async (id: string) => {
+    try {
+      await notificationService.markAsRead(id);
+      setNotifications(prev =>
+        prev.map(notif =>
+          notif.id === id ? { ...notif, isRead: true } : notif
+        )
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (err) {
+      console.error('Failed to mark notification as read:', err);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev =>
-      prev.map(notif => ({ ...notif, isRead: true }))
-    );
+  const markAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+      setNotifications(prev =>
+        prev.map(notif => ({ ...notif, isRead: true }))
+      );
+      setUnreadCount(0);
+    } catch (err) {
+      console.error('Failed to mark all notifications as read:', err);
+    }
   };
 
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(notif => notif.id !== id));
+  const deleteNotification = async (id: string) => {
+    try {
+      await notificationService.deleteNotification(id);
+      setNotifications(prev => {
+        const filtered = prev.filter(notif => notif.id !== id);
+        const deletedNotif = prev.find(notif => notif.id === id);
+        if (deletedNotif && !deletedNotif.isRead) {
+          setUnreadCount(count => Math.max(0, count - 1));
+        }
+        return filtered;
+      });
+    } catch (err) {
+      console.error('Failed to delete notification:', err);
+    }
   };
 
   const filteredNotifications = notifications.filter(notif => {
@@ -96,11 +179,11 @@ const SpecialistNotifications: React.FC = () => {
     return notif.type === filter;
   });
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  // Unread count is now managed by state from the service
 
   return (
     
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-2 sm:p-6 max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -118,17 +201,18 @@ const SpecialistNotifications: React.FC = () => {
         <div className="flex items-center space-x-3">
           <button
             onClick={markAllAsRead}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2"
+            className="px-3 sm:px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2"
           >
             <CheckIcon className="w-4 h-4" />
-            <span>{t('notifications.markAllRead')}</span>
+            <span className="hidden sm:inline">{t('notifications.markAllRead')}</span>
+            <span className="sm:hidden">{t('notifications.markRead')}</span>
           </button>
         </div>
       </div>
 
       {/* Filter tabs */}
       <div className="mb-6">
-        <nav className="flex space-x-8">
+        <nav className="flex flex-wrap gap-2 sm:space-x-8 sm:gap-0">
           {[
             { key: 'all', label: t('notifications.filter.all') },
             { key: 'unread', label: t('notifications.filter.unread') },
@@ -157,9 +241,46 @@ const SpecialistNotifications: React.FC = () => {
         </nav>
       </div>
 
+      {/* Loading state */}
+      {loading && (
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow animate-pulse">
+              <div className="flex items-start space-x-4">
+                <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4"></div>
+                  <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Error state */}
+      {error && !loading && (
+        <div className="text-center py-12">
+          <ExclamationTriangleIcon className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            {t('notifications.error.title')}
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            {error}
+          </p>
+          <button 
+            onClick={loadNotifications}
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            {t('common.retry')}
+          </button>
+        </div>
+      )}
+
       {/* Notifications list */}
-      <div className="space-y-4">
-        {filteredNotifications.length === 0 ? (
+      {!loading && !error && (
+        <div className="space-y-4">
+          {filteredNotifications.length === 0 ? (
           <div className="text-center py-12">
             <BellIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
@@ -235,7 +356,8 @@ const SpecialistNotifications: React.FC = () => {
             );
           })
         )}
-      </div>
+        </div>
+      )}
       </div>
     
   );

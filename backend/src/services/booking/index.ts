@@ -7,7 +7,7 @@ interface CreateBookingData {
   customerId: string;
   serviceId: string;
   scheduledAt: Date;
-  duration: number;
+  duration?: number; // Optional - will use service duration if not provided
   customerNotes?: string;
   loyaltyPointsUsed?: number;
 }
@@ -30,6 +30,20 @@ interface BookingWithDetails extends Booking {
   };
 }
 
+interface TransformedBooking extends Booking {
+  customer: Omit<User, 'password'>;
+  specialist: Omit<User, 'password'>;
+  service: Service;
+  customerName: string;
+  customerEmail: string | undefined;
+  customerPhone: string | undefined;
+  serviceName: string;
+  date: string;
+  time: string;
+  amount: number;
+  type: string;
+}
+
 export class BookingService {
   private static notificationService = new NotificationService(prisma);
 
@@ -49,13 +63,33 @@ export class BookingService {
         throw new Error('SCHEDULED_AT_REQUIRED');
       }
 
-      if (!data.duration || data.duration <= 0) {
-        throw new Error('INVALID_DURATION');
-      }
+      // Duration validation will be done after fetching service
 
       // Validate scheduled time is in the future
       if (data.scheduledAt <= new Date()) {
         throw new Error('SCHEDULED_TIME_MUST_BE_FUTURE');
+      }
+
+      // Check for duplicate bookings (same customer, service, and time)
+      const existingBooking = await prisma.booking.findFirst({
+        where: {
+          customerId: data.customerId,
+          serviceId: data.serviceId,
+          scheduledAt: data.scheduledAt,
+          status: {
+            not: 'CANCELLED'
+          }
+        }
+      });
+
+      if (existingBooking) {
+        logger.warn('Duplicate booking attempt detected', {
+          customerId: data.customerId,
+          serviceId: data.serviceId,
+          scheduledAt: data.scheduledAt,
+          existingBookingId: existingBooking.id
+        });
+        throw new Error('DUPLICATE_BOOKING');
       }
 
       // Validate service exists and is active
@@ -74,6 +108,14 @@ export class BookingService {
         throw new Error('SERVICE_NOT_ACTIVE');
       }
 
+      // Use service duration if not provided, or validate provided duration
+      const bookingDuration = data.duration || service.duration;
+      if (!bookingDuration || bookingDuration <= 0) {
+        throw new Error('INVALID_DURATION');
+      }
+
+      // Duration can be any positive number of minutes
+
       // Validate customer exists
       const customer = await prisma.user.findUnique({
         where: { id: data.customerId },
@@ -88,71 +130,116 @@ export class BookingService {
       }
 
       // Check if specialist is available at the requested time
-      const conflictingBooking = await prisma.booking.findFirst({
-        where: {
-          specialistId: service.specialist.userId,
-          scheduledAt: {
-            lte: new Date(data.scheduledAt.getTime() + (data.duration * 60 * 1000)),
-          },
-          AND: {
-            OR: [
-              {
-                scheduledAt: {
-                  gte: data.scheduledAt,
-                },
-              },
-              {
-                // Check if the new booking overlaps with existing ones
-                scheduledAt: {
-                  lte: data.scheduledAt,
-                },
-                // This is a simplified check - in production, you'd want more sophisticated overlap detection
-              },
-            ],
-          },
-          status: {
-            in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'],
-          },
-        },
+      const bookingStartTime = data.scheduledAt;
+      const bookingEndTime = new Date(bookingStartTime.getTime() + (bookingDuration * 60 * 1000));
+      
+      logger.info('Checking for booking conflicts', {
+        specialistId: service.specialist.userId, // Use User ID for logging consistency
+        bookingStartTime: bookingStartTime.toISOString(),
+        bookingEndTime: bookingEndTime.toISOString(),
+        duration: bookingDuration
       });
 
-      if (conflictingBooking) {
-        throw new Error('TIME_SLOT_NOT_AVAILABLE');
-      }
+      // Use a database transaction + advisory locks to prevent race conditions
+      const booking = await prisma.$transaction(async (tx) => {
+        // Acquire per-minute advisory locks for the requested time range to serialize
+        // concurrent booking attempts for the same specialist and overlapping minutes.
+        // This prevents two parallel transactions from both passing the overlap check.
+        const specialistUserId = service.specialist.userId;
+        const hash32 = (str: string) => {
+          let h = 0;
+          for (let i = 0; i < str.length; i++) {
+            h = (h << 5) - h + str.charCodeAt(i);
+            h |= 0; // 32-bit
+          }
+          return h | 0;
+        };
+        const specialistKey = hash32(specialistUserId);
+        const startMinute = Math.floor(bookingStartTime.getTime() / 60000);
+        const endMinute = Math.floor(bookingEndTime.getTime() / 60000);
+        for (let m = startMinute; m < endMinute; m++) {
+          // Use two-int variant to avoid bigint collisions
+          await tx.$executeRawUnsafe('SELECT pg_advisory_xact_lock($1::int, $2::int)', specialistKey, m);
+        }
+        // Find any existing bookings that overlap with the requested time slot
+        const existingBookings = await tx.booking.findMany({
+          where: {
+            specialistId: service.specialist.userId, // Use User ID, not Specialist ID
+            status: {
+              in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'],
+            },
+            // Add time range filter to reduce the dataset
+            scheduledAt: {
+              gte: new Date(bookingStartTime.getTime() - (24 * 60 * 60 * 1000)), // 24 hours before
+              lte: new Date(bookingEndTime.getTime() + (24 * 60 * 60 * 1000)), // 24 hours after
+            }
+          },
+          select: {
+            id: true,
+            scheduledAt: true,
+            duration: true,
+            status: true
+          }
+        });
 
-      // Calculate pricing
-      const baseAmount = service.basePrice;
-      const loyaltyPointsUsed = data.loyaltyPointsUsed || 0;
-      const loyaltyDiscount = loyaltyPointsUsed * 0.01; // 1 point = $0.01
-      const totalAmount = Math.max(0, baseAmount - loyaltyDiscount);
-      const depositAmount = totalAmount * 0.2; // 20% deposit
-      const remainingAmount = totalAmount - depositAmount;
+        // Check for time overlap with any existing booking
+        const conflictingBooking = existingBookings.find(booking => {
+          const existingStart = new Date(booking.scheduledAt);
+          const existingEnd = new Date(existingStart.getTime() + (booking.duration * 60 * 1000));
+          
+          // Two time ranges overlap if: start1 < end2 && start2 < end1
+          const hasOverlap = bookingStartTime < existingEnd && existingStart < bookingEndTime;
+          
+          if (hasOverlap) {
+            logger.warn('Booking conflict detected', {
+              existingBookingId: booking.id,
+              existingStart: existingStart.toISOString(),
+              existingEnd: existingEnd.toISOString(),
+              requestedStart: bookingStartTime.toISOString(),
+              requestedEnd: bookingEndTime.toISOString()
+            });
+          }
+          
+          return hasOverlap;
+        });
 
-      // Check if customer has enough loyalty points
-      if (loyaltyPointsUsed > 0 && customer.loyaltyPoints < loyaltyPointsUsed) {
-        throw new Error('INSUFFICIENT_LOYALTY_POINTS');
-      }
+        if (conflictingBooking) {
+          throw new Error('TIME_SLOT_NOT_AVAILABLE');
+        }
 
-      // Determine initial booking status based on specialist's auto-booking setting
-      const initialStatus = service.specialist.autoBooking ? 'CONFIRMED' : 'PENDING';
-      
-      // Create booking
-      const booking = await prisma.booking.create({
-        data: {
-          customerId: data.customerId,
-          specialistId: service.specialist.userId,
-          serviceId: data.serviceId,
-          scheduledAt: data.scheduledAt,
-          duration: data.duration,
-          totalAmount,
-          depositAmount,
-          remainingAmount,
-          loyaltyPointsUsed,
-          customerNotes: data.customerNotes,
-          deliverables: JSON.stringify([]), // Empty deliverables initially
-          status: initialStatus, // Auto-booking: CONFIRMED if autoBooking enabled, otherwise PENDING
-          confirmedAt: service.specialist.autoBooking ? new Date() : null, // Auto-confirm if auto-booking
-        },
+        // Calculate pricing
+        const baseAmount = service.basePrice;
+        const loyaltyPointsUsed = data.loyaltyPointsUsed || 0;
+        const loyaltyDiscount = loyaltyPointsUsed * 0.01; // 1 point = $0.01
+        const totalAmount = Math.max(0, baseAmount - loyaltyDiscount);
+        const depositAmount = totalAmount * 0.2; // 20% deposit
+        const remainingAmount = totalAmount - depositAmount;
+
+        // Check if customer has enough loyalty points
+        if (loyaltyPointsUsed > 0 && customer.loyaltyPoints < loyaltyPointsUsed) {
+          throw new Error('INSUFFICIENT_LOYALTY_POINTS');
+        }
+
+        // Determine initial booking status based on specialist's auto-booking setting
+        const initialStatus = service.specialist.autoBooking ? 'CONFIRMED' : 'PENDING';
+        
+        // Create booking within the transaction
+        const createdBooking = await tx.booking.create({
+          data: {
+            customerId: data.customerId,
+            specialistId: service.specialist.userId, // Use the User ID, not the Specialist ID
+            serviceId: data.serviceId,
+            scheduledAt: data.scheduledAt,
+            duration: bookingDuration,
+            totalAmount,
+            depositAmount,
+            remainingAmount,
+            loyaltyPointsUsed,
+            customerNotes: data.customerNotes,
+            deliverables: JSON.stringify([]), // Empty deliverables initially
+            status: initialStatus, // Auto-booking: CONFIRMED if autoBooking enabled, otherwise PENDING
+            confirmedAt: service.specialist.autoBooking ? new Date() : null, // Auto-confirm if auto-booking
+          },
         include: {
           customer: {
             select: {
@@ -200,37 +287,46 @@ export class BookingService {
             },
           },
         },
-      });
+        });
 
-      // Deduct loyalty points if used
-      if (loyaltyPointsUsed > 0) {
-        await prisma.user.update({
-          where: { id: data.customerId },
-          data: {
-            loyaltyPoints: {
-              decrement: loyaltyPointsUsed,
+        // Deduct loyalty points if used - within transaction
+        if (loyaltyPointsUsed > 0) {
+          await tx.user.update({
+            where: { id: data.customerId },
+            data: {
+              loyaltyPoints: {
+                decrement: loyaltyPointsUsed,
+              },
             },
-          },
-        });
+          });
 
-        // Create loyalty transaction record
-        await prisma.loyaltyTransaction.create({
-          data: {
-            userId: data.customerId,
-            type: 'REDEEMED',
-            points: -loyaltyPointsUsed,
-            reason: 'Booking payment',
-            description: `Redeemed ${loyaltyPointsUsed} points for booking ${booking.id}`,
-            referenceId: booking.id,
-          },
-        });
-      }
+          // Create loyalty transaction record
+          await tx.loyaltyTransaction.create({
+            data: {
+              userId: data.customerId,
+              type: 'REDEEMED',
+              points: -loyaltyPointsUsed,
+              reason: 'Booking payment',
+              description: `Redeemed ${loyaltyPointsUsed} points for booking`,
+              referenceId: createdBooking.id,
+            },
+          });
+        }
+
+        return createdBooking;
+      });
 
       // Send appropriate notifications based on auto-booking setting
       try {
         if (service.specialist.autoBooking) {
+          logger.info('📧 Auto-booking is ON, sending booking confirmed notifications', {
+            bookingId: booking.id,
+            customerId: booking.customerId,
+            specialistId: booking.specialistId
+          });
+          
           // Auto-booking ON: Send "booking confirmed" notifications
-          await this.notificationService.sendNotification(booking.customerId, {
+          await BookingService.notificationService.sendNotification(booking.customerId, {
             type: 'BOOKING_CONFIRMED',
             title: 'Your booking is confirmed',
             message: `Your booking for ${service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()} is automatically confirmed.`,
@@ -244,7 +340,7 @@ export class BookingService {
             smsTemplate: 'booking_confirmed_sms'
           });
 
-          await this.notificationService.sendNotification(booking.specialistId, {
+          await BookingService.notificationService.sendNotification(booking.specialistId, {
             type: 'BOOKING_CONFIRMED',
             title: 'You have been booked',
             message: `You have been booked for ${service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()}.`,
@@ -259,8 +355,14 @@ export class BookingService {
             smsTemplate: 'specialist_booking_confirmed_sms'
           });
         } else {
+          logger.info('📧 Auto-booking is OFF, sending booking pending notifications', {
+            bookingId: booking.id,
+            customerId: booking.customerId,
+            specialistId: booking.specialistId
+          });
+          
           // Auto-booking OFF: Send "booking pending" notifications
-          await this.notificationService.sendNotification(booking.customerId, {
+          await BookingService.notificationService.sendNotification(booking.customerId, {
             type: 'BOOKING_PENDING',
             title: 'Your booking request has been sent',
             message: `Your booking request for ${service.name} has been sent to the specialist and is waiting for confirmation.`,
@@ -274,7 +376,7 @@ export class BookingService {
             smsTemplate: 'booking_pending_sms'
           });
 
-          await this.notificationService.sendNotification(booking.specialistId, {
+          await BookingService.notificationService.sendNotification(booking.specialistId, {
             type: 'BOOKING_REQUEST',
             title: 'New booking request requires confirmation',
             message: `New booking request for ${service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()} - requires your confirmation.`,
@@ -298,8 +400,8 @@ export class BookingService {
         bookingId: booking.id,
         customerId: data.customerId,
         serviceId: data.serviceId,
-        totalAmount,
-        status: initialStatus,
+        totalAmount: booking.totalAmount,
+        status: booking.status,
         autoBooking: service.specialist.autoBooking,
       });
 
@@ -389,21 +491,32 @@ export class BookingService {
         throw new Error('BOOKING_NOT_FOUND');
       }
 
-      // Validate status transitions
+      // Allow flexible status transitions for specialist management
+      // Only prevent transitions that would cause data integrity issues
       if (data.status) {
-        const allowedTransitions = {
-          PENDING: ['PENDING_PAYMENT', 'CONFIRMED', 'CANCELLED'],
-          PENDING_PAYMENT: ['CONFIRMED', 'CANCELLED'],
-          CONFIRMED: ['IN_PROGRESS', 'CANCELLED'],
-          IN_PROGRESS: ['COMPLETED', 'CANCELLED'],
-          COMPLETED: [], // Cannot change from completed
-          CANCELLED: [], // Cannot change from cancelled
-          REFUNDED: [], // Cannot change from refunded
-        };
+        const currentStatus = booking.status;
+        const newStatus = data.status;
+        
+        // Log the transition attempt
+        logger.info('Status transition attempt', {
+          bookingId: booking.id,
+          currentStatus,
+          newStatus
+        });
 
-        if (!allowedTransitions[booking.status as keyof typeof allowedTransitions]?.includes(data.status)) {
-          throw new Error('INVALID_STATUS_TRANSITION');
-        }
+        // Very minimal validation - only prevent obviously invalid transitions
+        const invalidTransitions = [
+          // Don't allow transitions from final states to earlier states without explicit business logic
+          // For now, allow all transitions to give specialists full control
+        ];
+
+        // For now, allow all status transitions to give specialists maximum flexibility
+        // This can be tightened later based on business requirements
+        logger.info('Status transition allowed', {
+          bookingId: booking.id,
+          from: currentStatus,
+          to: newStatus
+        });
       }
 
       // Prepare update data
@@ -486,7 +599,7 @@ export class BookingService {
       try {
         if (data.status === 'CONFIRMED' && booking.status === 'PENDING') {
           // Booking was confirmed by specialist
-          await this.notificationService.sendNotification(booking.customerId, {
+          await BookingService.notificationService.sendNotification(booking.customerId, {
             type: 'BOOKING_CONFIRMED',
             title: 'Your booking is confirmed',
             message: `Your booking for ${updatedBooking.service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()} has been confirmed by the specialist.`,
@@ -500,7 +613,7 @@ export class BookingService {
             smsTemplate: 'booking_confirmed_sms'
           });
 
-          await this.notificationService.sendNotification(booking.specialistId, {
+          await BookingService.notificationService.sendNotification(booking.specialistId, {
             type: 'BOOKING_CONFIRMED',
             title: 'Booking confirmed',
             message: `You have confirmed the booking for ${updatedBooking.service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()}.`,
@@ -707,7 +820,7 @@ export class BookingService {
     page: number = 1,
     limit: number = 20
   ): Promise<{
-    bookings: BookingWithDetails[];
+    bookings: TransformedBooking[];
     total: number;
     page: number;
     totalPages: number;
@@ -740,6 +853,7 @@ export class BookingService {
                 avatar: true,
                 userType: true,
                 phoneNumber: true,
+                telegramId: true,
                 isEmailVerified: true,
                 isPhoneVerified: true,
                 isActive: true,
@@ -747,6 +861,10 @@ export class BookingService {
                 language: true,
                 currency: true,
                 timezone: true,
+                lastLoginAt: true,
+                emailNotifications: true,
+                pushNotifications: true,
+                telegramNotifications: true,
                 createdAt: true,
                 updatedAt: true,
               },
@@ -760,6 +878,7 @@ export class BookingService {
                 avatar: true,
                 userType: true,
                 phoneNumber: true,
+                telegramId: true,
                 isEmailVerified: true,
                 isPhoneVerified: true,
                 isActive: true,
@@ -767,12 +886,26 @@ export class BookingService {
                 language: true,
                 currency: true,
                 timezone: true,
+                lastLoginAt: true,
+                emailNotifications: true,
+                pushNotifications: true,
+                telegramNotifications: true,
                 createdAt: true,
                 updatedAt: true,
               },
             },
             service: {
-              include: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                basePrice: true,
+                currency: true,
+                duration: true,
+                isActive: true,
+                categoryId: true,
+                createdAt: true,
+                updatedAt: true,
                 specialist: true,
               },
             },
@@ -786,8 +919,33 @@ export class BookingService {
 
       const totalPages = Math.ceil(total / limit);
 
+      // Transform bookings to include flattened fields for frontend compatibility
+      const transformedBookings = bookings.map(booking => {
+        const scheduledDate = new Date(booking.scheduledAt);
+        return {
+          ...booking,
+          // Flattened customer fields
+          customerName: booking.customer ? `${booking.customer.firstName} ${booking.customer.lastName}`.trim() : 'Unknown Customer',
+          customerEmail: booking.customer?.email,
+          customerPhone: booking.customer?.phoneNumber,
+          
+          // Flattened service fields  
+          serviceName: booking.service?.name || 'Unknown Service',
+          
+          // Flattened date/time fields
+          date: scheduledDate.toISOString().split('T')[0], // YYYY-MM-DD format
+          time: scheduledDate.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }),
+          
+          // Amount field (frontend expects 'amount' not 'totalAmount')
+          amount: booking.totalAmount,
+          
+          // Type field (defaulting to in-person as meetingLink field doesn't exist)
+          type: 'in-person',
+        };
+      });
+
       return {
-        bookings: bookings as BookingWithDetails[],
+        bookings: transformedBookings as TransformedBooking[],
         total,
         page,
         totalPages,
@@ -847,6 +1005,82 @@ export class BookingService {
       return await this.cancelBooking(bookingId, specialistUserId, reason || 'Booking rejected by specialist');
     } catch (error) {
       logger.error('Error rejecting booking:', error);
+      throw error;
+    }
+  }
+
+  // Complete booking with payment confirmation (specialist action)
+  static async completeBookingWithPayment(
+    bookingId: string,
+    specialistUserId: string,
+    data: {
+      paymentConfirmed: boolean;
+      completionNotes?: string;
+      specialistNotes?: string;
+    }
+  ): Promise<BookingWithDetails> {
+    try {
+      const booking = await this.getBooking(bookingId);
+
+      // Verify the specialist owns this booking
+      if (booking.specialistId !== specialistUserId) {
+        throw new Error('SPECIALIST_NOT_AUTHORIZED');
+      }
+
+      // Verify booking is in a state that can be completed
+      if (!['CONFIRMED', 'IN_PROGRESS'].includes(booking.status)) {
+        throw new Error('BOOKING_NOT_IN_PROGRESS');
+      }
+
+      // If payment not confirmed, don't complete the booking
+      if (!data.paymentConfirmed) {
+        throw new Error('PAYMENT_NOT_CONFIRMED');
+      }
+
+      // Update booking to COMPLETED with notes
+      const updateData: any = {
+        status: 'COMPLETED',
+        completionNotes: data.completionNotes,
+        specialistNotes: data.specialistNotes,
+      };
+
+      const completedBooking = await this.updateBooking(bookingId, updateData);
+
+      // Create payment record if payment was confirmed
+      if (data.paymentConfirmed) {
+        try {
+          await prisma.payment.create({
+            data: {
+              id: `pay_${bookingId}_${Date.now()}`,
+              bookingId: booking.id,
+              userId: booking.customerId,
+              amount: booking.totalAmount,
+              currency: 'USD',
+              status: 'SUCCEEDED',
+              type: 'FULL_PAYMENT',
+              paymentMethodType: 'cash',
+              metadata: JSON.stringify({
+                confirmedBy: specialistUserId,
+                completedAt: new Date().toISOString(),
+                paymentMethod: 'specialist_confirmed'
+              }),
+            },
+          });
+
+          logger.info('Payment record created for completed booking', {
+            bookingId: booking.id,
+            amount: booking.totalAmount,
+            specialistId: specialistUserId
+          });
+        } catch (paymentError) {
+          logger.error('Failed to create payment record:', paymentError);
+          // Don't fail the completion if payment record creation fails
+        }
+      }
+
+      return completedBooking;
+    } catch (error) {
+      logger.error('Error completing booking with payment:', error);
       throw error;
     }
   }

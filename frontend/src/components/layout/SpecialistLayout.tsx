@@ -5,9 +5,10 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser, logout } from '../../store/slices/authSlice';
-import { fetchNotifications } from '../../store/slices/notificationSlice';
 import { isFeatureEnabled } from '../../config/features';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
+import { getAbsoluteImageUrl } from '../../utils/imageUrl';
+import { NotificationBell } from '../notifications/NotificationBell';
 import {
   ChartBarIcon,
   CalendarIcon,
@@ -26,6 +27,8 @@ import {
   ChatBubbleLeftRightIcon,
   MagnifyingGlassIcon,
   ArrowRightOnRectangleIcon,
+  HomeIcon,
+  PresentationChartLineIcon,
 } from '@heroicons/react/24/outline';
 import { ChartBarIcon as ChartBarIconSolid } from '@heroicons/react/24/solid';
 
@@ -48,8 +51,8 @@ const navigation: SidebarNavItem[] = [
     name: 'Dashboard',
     nameUk: 'Панель керування',
     href: '/specialist/dashboard',
-    icon: ChartBarIcon,
-    iconActive: ChartBarIconSolid,
+    icon: HomeIcon,
+    iconActive: HomeIcon,
   },
   {
     name: 'Find Services',
@@ -83,8 +86,8 @@ const navigation: SidebarNavItem[] = [
     name: 'Analytics',
     nameUk: 'Аналітика',
     href: '/specialist/analytics',
-    icon: ChartBarIcon,
-    iconActive: ChartBarIcon,
+    icon: PresentationChartLineIcon,
+    iconActive: PresentationChartLineIcon,
   },
   {
     name: 'Earnings',
@@ -132,8 +135,6 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
   const location = useLocation();
-  const notificationState = useAppSelector((state: any) => state.notifications);
-  const unreadCount = notificationState?.unreadCount || 0;
 
   // Check if mobile view
   useEffect(() => {
@@ -150,15 +151,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Fetch notifications on mount with error handling
-  useEffect(() => {
-    if (user && isFeatureEnabled('ENABLE_NOTIFICATIONS_API')) {
-      dispatch(fetchNotifications({ limit: 50 })).catch((error) => {
-        console.warn('Failed to fetch notifications:', error);
-        // Don't show error to user, just log it - notifications are not critical
-      });
-    }
-  }, [user, dispatch]);
+  // Notifications are now handled by the NotificationBell component
 
   const isCurrentPath = (path: string) => location.pathname === path;
 
@@ -206,6 +199,29 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
                 src="/miyzapis_logo.png" 
                 alt="МійЗапис Logo" 
                 className="w-8 h-8 group-hover:scale-110 transition-all duration-300"
+                onError={(e) => {
+                  const img = e.currentTarget as HTMLImageElement;
+                  const currentSrc = img.src;
+                  
+                  if (currentSrc.includes('miyzapis_logo.png')) {
+                    console.log('🖼️ SpecialistLayout logo failed, trying SVG fallback');
+                    img.src = '/logo.svg';
+                  } else if (currentSrc.includes('logo.svg')) {
+                    console.log('🖼️ SpecialistLayout SVG logo failed, trying favicon fallback');
+                    img.src = '/favicon.svg';
+                  } else {
+                    console.log('🖼️ SpecialistLayout all logos failed, replacing with text fallback');
+                    img.style.display = 'none';
+                    const parent = img.parentElement;
+                    if (parent && !parent.querySelector('.logo-fallback')) {
+                      const fallback = document.createElement('div');
+                      fallback.className = 'logo-fallback w-8 h-8 bg-blue-600 text-white rounded flex items-center justify-center text-xs font-bold';
+                      fallback.textContent = 'МЗ';
+                      parent.insertBefore(fallback, img);
+                    }
+                  }
+                }}
+                onLoad={() => console.log('✅ SpecialistLayout logo loaded successfully')}
               />
               <span className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-500 transition-colors duration-300">
                 МійЗапис
@@ -234,11 +250,19 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
         {/* User profile section */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
-              <span className="text-white font-semibold">
-                {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
-              </span>
-            </div>
+            {user?.avatar ? (
+              <img
+                src={getAbsoluteImageUrl(user.avatar)}
+                alt={`${user.firstName} ${user.lastName}`}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
+                <span className="text-white font-semibold">
+                  {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+                </span>
+              </div>
+            )}
             {!isCollapsed && (
               <div className="flex-1 min-w-0">
                 <h2 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
@@ -308,19 +332,20 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
 
         {/* Bottom controls */}
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
-          {/* Theme toggle */}
+          {/* Theme toggle (larger touch target on mobile) */}
           <button
             onClick={toggleTheme}
             className={`
-              flex items-center w-full px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200
-              text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700
+              flex items-center w-full px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
+              text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 mobile-touch-target
               ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
             `}
+            aria-label={theme === 'dark' ? t('theme.light') : t('theme.dark')}
           >
             {theme === 'dark' ? (
-              <SunIcon className="w-5 h-5" />
+              <SunIcon className="w-7 h-7 sm:w-6 sm:h-6" />
             ) : (
-              <MoonIcon className="w-5 h-5" />
+              <MoonIcon className="w-7 h-7 sm:w-6 sm:h-6" />
             )}
             {!isCollapsed && (
               <span>{theme === 'dark' ? t('theme.light') : t('theme.dark')}</span>
@@ -345,16 +370,16 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
             </div>
           )}
 
-          {/* Logout button */}
+          {/* Logout button (larger touch target on mobile) */}
           <button
             onClick={handleLogout}
             className={`
-              flex items-center w-full px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200
-              text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20
+              flex items-center w-full px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
+              text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 mobile-touch-target
               ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
             `}
           >
-            <ArrowRightOnRectangleIcon className="w-5 h-5" />
+            <ArrowRightOnRectangleIcon className="w-7 h-7 sm:w-6 sm:h-6" />
             {!isCollapsed && <span>{t('auth.logout')}</span>}
           </button>
         </div>
@@ -366,29 +391,19 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
         <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 lg:px-6">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="lg:hidden p-3 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <Bars3Icon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
           </button>
 
           <div className="flex items-center space-x-4">
             {/* Notifications */}
-            <Link 
-              to="/specialist/notifications"
-              className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              <BellIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-              {isFeatureEnabled('ENABLE_NOTIFICATIONS_API') && unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
-            </Link>
+            <NotificationBell />
 
             {/* Settings */}
             <Link 
               to="/specialist/settings"
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="p-3 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <Cog6ToothIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
             </Link>
@@ -396,7 +411,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
+        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 animate-fade-in">
           {children}
         </main>
       </div>
