@@ -49,6 +49,7 @@ interface ServiceWithSpecialist {
     experience: string;
     rating: number;
   };
+  _count?: { bookings: number };
   distance?: number;
   isAvailable: boolean;
 }
@@ -128,6 +129,12 @@ const SearchPage: React.FC = () => {
         const data = await serviceService.searchServices(filters);
         
         // Transform the data to match our interface based on actual backend response
+        const toMinutes = (v: any) => {
+          const n = Number(v);
+          if (!isFinite(n) || n <= 0) return undefined;
+          return n > 300 ? Math.round(n / 60000) : n;
+        };
+
         const servicesWithSpecialists = (data.services || []).map((service: any) => ({
           id: service.id,
           name: service.name,
@@ -149,11 +156,15 @@ const SearchPage: React.FC = () => {
             businessName: service.specialist?.businessName || '',
             location: '', // Backend doesn't seem to have location info yet
             isOnline: true, // Assume online for now
-            responseTime: service.specialist?.responseTime || '', // Use response time if available
-            completedBookings: service.specialist?.completedBookings || service.specialist?.totalBookings || 0, // Use actual completed bookings count
+            responseTime: toMinutes(service.specialist?.responseTime) as any, // minutes if available
+            completedBookings: service.specialist?.completedBookings 
+              || service.specialist?.totalBookings 
+              || service._count?.bookings 
+              || 0,
             experience: '', // Not available in backend response
             rating: service.specialist?.rating || 0
           },
+          _count: service._count,
           distance: undefined, // Not available in backend response
           isAvailable: true // Assume available if service exists
         }));
@@ -286,7 +297,7 @@ const SearchPage: React.FC = () => {
 
           <div className="flex items-center justify-between mt-4">
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              {service.specialist.completedBookings} {t('specialist.completedJobs')} • {service.specialist.experience}
+              {(service.specialist.completedBookings ?? service._count?.bookings ?? 0)} {t('specialist.completedJobs')} • {service.specialist.experience}
             </div>
             <div className="text-right">
               <div className={`text-xs px-2 py-1 rounded-full mb-1 ${service.isAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>

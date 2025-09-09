@@ -38,6 +38,15 @@ export class SpecialistService {
     }
     
     // Transform the response to match frontend expectations
+    // Normalize response time to minutes if backend stores milliseconds
+    const normalizeResponseTime = (value: any): number | undefined => {
+      if (value === null || value === undefined) return undefined;
+      const n = Number(value);
+      if (!isFinite(n) || n <= 0) return undefined;
+      // Heuristic: if value looks like milliseconds (> 300), convert to minutes
+      return n > 300 ? Math.round(n / 60000) : n;
+    };
+
     const transformedSpecialist = {
       ...specialistData,
       // Handle user data nesting
@@ -119,7 +128,7 @@ export class SpecialistService {
       reviewCount: specialistData.reviewCount || specialistData.totalReviews || 0,
       completedBookings: specialistData.completedBookings || specialistData.totalBookings || 0,
       experience: specialistData.experience || 0,
-      responseTime: specialistData.responseTime
+      responseTime: normalizeResponseTime(specialistData.responseTime)
     };
     
     console.log('✅ Transformed specialist data:', transformedSpecialist);
