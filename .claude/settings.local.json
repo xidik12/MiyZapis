@@ -124,7 +124,12 @@
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" PORT=3005 npm start)",
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" PORT=3005 npm start)",
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" PORT=3006 npm start)",
-      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" PORT=3006 npm start)"
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" PORT=3006 npm start)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx tsx src/scripts/check-review.ts)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" node check-review.js)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" node ../check-review.js)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" node check-specialists-db.js)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" node check-specialists-db.js)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
