@@ -46,6 +46,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     localCount: number;
   }>({ mode: 'backend', hasLocalData: false, localCount: 0 });
 
+  // Window for simple list virtualization to avoid rendering all rows at once
+  const [win, setWin] = useState<{ start: number; end: number }>({ start: 0, end: 20 });
+
   // Load notifications
   const loadNotifications = async () => {
     try {
