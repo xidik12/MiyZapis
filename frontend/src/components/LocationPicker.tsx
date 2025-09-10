@@ -6,6 +6,7 @@ interface Location {
   city: string;
   region: string;
   country: string;
+  postalCode?: string;
   latitude?: number;
   longitude?: number;
 }
@@ -213,6 +214,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     let city = '';
     let region = '';
     let country = '';
+    let postalCode = '';
     
     // Extract address components with improved logic
     addressComponents.forEach((component: any) => {
@@ -230,6 +232,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         region = component.long_name;
       } else if (types.includes('country')) {
         country = component.long_name;
+      } else if (types.includes('postal_code')) {
+        postalCode = component.long_name;
       }
     });
 
@@ -245,6 +249,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       city: city || '',
       region: region || '',
       country: country || '',
+      postalCode: postalCode || '',
     };
 
     console.log('📍 Location extracted:', location);

@@ -11,6 +11,7 @@ import { fileUploadService } from '../../services/fileUpload.service';
 import { userService } from '../../services/user.service';
 import { toast } from 'react-toastify';
 import { Avatar } from '../../components/ui/Avatar';
+import { LocationPicker } from '../../components/LocationPicker';
 import { 
   UserCircleIcon,
   BellIcon,
@@ -34,9 +35,12 @@ interface Address {
   label: string;
   street: string;
   city: string;
+  region?: string;
   postalCode: string;
   country: string;
   isDefault: boolean;
+  latitude?: number;
+  longitude?: number;
 }
 
 const CustomerSettings: React.FC = () => {
@@ -92,6 +96,7 @@ const CustomerSettings: React.FC = () => {
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
+  const [newAddressLocation, setNewAddressLocation] = useState<{ address: string; city: string; region: string; country: string; postalCode?: string; latitude?: number; longitude?: number; }>({ address: '', city: '', region: '', country: '' });
 
   // Load payment methods when component mounts
   useEffect(() => {
@@ -180,16 +185,20 @@ const CustomerSettings: React.FC = () => {
     // TODO: Integrate with address API when backend is ready
     const newAddress: Address = {
       id: Date.now().toString(),
-      type: addressData.type,
-      label: addressData.label,
-      street: addressData.street,
-      city: addressData.city,
-      postalCode: addressData.postalCode,
-      country: addressData.country,
+      type: addressData.type as 'home' | 'work' | 'other',
+      label: String(addressData.label || ''),
+      street: String(addressData.street || newAddressLocation.address || ''),
+      city: String(addressData.city || newAddressLocation.city || ''),
+      region: String(addressData.region || newAddressLocation.region || ''),
+      postalCode: String(addressData.postalCode || newAddressLocation.postalCode || ''),
+      country: String(addressData.country || newAddressLocation.country || ''),
       isDefault: addresses.length === 0, // First address becomes default
+      latitude: newAddressLocation.latitude,
+      longitude: newAddressLocation.longitude,
     };
     setAddresses(prev => [...prev, newAddress]);
     setShowAddAddressModal(false);
+    setNewAddressLocation({ address: '', city: '', region: '', country: '' });
   };
 
   // Handle profile image upload
@@ -994,13 +1003,37 @@ const CustomerSettings: React.FC = () => {
               handleSaveAddress({
                 type: formData.get('addressType'),
                 label: formData.get('label'),
-                street: formData.get('street'),
-                city: formData.get('city'),
-                postalCode: formData.get('postalCode'),
-                country: formData.get('country') || 'Ukraine'
+                street: formData.get('street') || newAddressLocation.address,
+                city: formData.get('city') || newAddressLocation.city,
+                region: formData.get('region') || newAddressLocation.region,
+                postalCode: formData.get('postalCode') || newAddressLocation.postalCode,
+                country: formData.get('country') || newAddressLocation.country || 'Ukraine'
               });
             }}>
               <div className="space-y-5">
+                {/* Pick on Map */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                    {language === 'uk' ? 'Вибрати на карті' : language === 'ru' ? 'Выбрать на карте' : 'Pick on Map'}
+                  </label>
+                  <LocationPicker
+                    location={{
+                      address: newAddressLocation.address,
+                      city: newAddressLocation.city,
+                      region: newAddressLocation.region,
+                      country: newAddressLocation.country,
+                      postalCode: newAddressLocation.postalCode,
+                      latitude: newAddressLocation.latitude,
+                      longitude: newAddressLocation.longitude,
+                    }}
+                    onLocationChange={(loc) => setNewAddressLocation(loc)}
+                  />
+                  {(!import.meta.env.VITE_GOOGLE_MAPS_API_KEY) && (
+                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      Google Maps key not configured; manual entry only.
+                    </p>
+                  )}
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
                     {language === 'uk' ? 'Тип адреси' : language === 'ru' ? 'Тип адреса' : 'Address Type'}
@@ -1033,6 +1066,7 @@ const CustomerSettings: React.FC = () => {
                   <input
                     type="text"
                     name="street"
+                    defaultValue={newAddressLocation.address}
                     placeholder={language === 'uk' ? 'вул. Хрещатик, 1' : language === 'ru' ? 'ул. Крещатик, 1' : '123 Main Street'}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                     required
@@ -1046,6 +1080,7 @@ const CustomerSettings: React.FC = () => {
                     <input
                       type="text"
                       name="city"
+                      defaultValue={newAddressLocation.city}
                       placeholder={language === 'uk' ? 'Київ' : language === 'ru' ? 'Киев' : 'Kyiv'}
                       className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                       required
@@ -1058,6 +1093,7 @@ const CustomerSettings: React.FC = () => {
                     <input
                       type="text"
                       name="postalCode"
+                      defaultValue={newAddressLocation.postalCode}
                       placeholder="01001"
                       className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                       required
@@ -1066,11 +1102,23 @@ const CustomerSettings: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                    {language === 'uk' ? 'Регіон / Область' : language === 'ru' ? 'Регион / Область' : 'Region / State'}
+                  </label>
+                  <input
+                    type="text"
+                    name="region"
+                    defaultValue={newAddressLocation.region}
+                    placeholder={language === 'uk' ? 'Київська область' : language === 'ru' ? 'Киевская область' : 'Kyiv Oblast'}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
                     {language === 'uk' ? 'Країна' : language === 'ru' ? 'Страна' : 'Country'}
                   </label>
                   <select 
                     name="country"
-                    defaultValue="Ukraine"
+                    defaultValue={newAddressLocation.country || 'Ukraine'}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   >
                     <option value="Ukraine">{language === 'uk' ? 'Україна' : language === 'ru' ? 'Украина' : 'Ukraine'}</option>
