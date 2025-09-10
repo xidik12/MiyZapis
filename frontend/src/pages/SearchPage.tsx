@@ -518,9 +518,26 @@ const SearchPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-sm text-gray-600 dark:text-gray-400 order-3 sm:order-1">
-              <span className="hidden sm:inline">{t('search.showing')} </span>{getFilteredServices().length} <span className="hidden sm:inline">{t('search.results')}</span>
-            </span>
+            <div className="flex items-center gap-2 order-3 sm:order-1 flex-wrap">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="hidden sm:inline">{t('search.showing')} </span>{getFilteredServices().length} <span className="hidden sm:inline">{t('search.results')}</span>
+              </span>
+              {selectedRating > 0 && (
+                <span className="inline-flex items-center gap-1 h-7 px-2 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 text-xs">
+                  {t('search.rating') || 'Rating'}: {selectedRating}★
+                </span>
+              )}
+              {selectedDistance > 0 && (
+                <span className="inline-flex items-center gap-1 h-7 px-2 rounded-full bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 text-xs">
+                  ≤ {selectedDistance} km
+                </span>
+              )}
+              {(priceRange.min > 0 || priceRange.max < 1000) && (
+                <span className="inline-flex items-center gap-1 h-7 px-2 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 text-xs">
+                  ₴{priceRange.min}–₴{priceRange.max}
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-2 order-2 sm:order-2">
               {/* Inline sort control for better UX */}
               <select
@@ -541,6 +558,15 @@ const SearchPage: React.FC = () => {
                 <FunnelIcon className="w-4 h-4" />
                 {t('search.filters') || 'Filters'}
               </button>
+              {(selectedCategory || selectedLocation || selectedRating > 0 || selectedDistance > 0 || showFavoritesOnly || priceRange.min > 0 || priceRange.max < 1000) && (
+                <button
+                  onClick={clearFilters}
+                  className="hidden sm:inline-flex items-center gap-2 h-10 px-3 rounded-full border border-red-200 text-red-700 hover:bg-red-50"
+                  title={t('search.resetFilters') || 'Reset filters'}
+                >
+                  {t('search.resetFilters') || 'Reset filters'}
+                </button>
+              )}
             </div>
             <div className="flex items-center space-x-1 order-1 sm:order-3">
               {/* Mobile filter tray toggle */}
@@ -622,7 +648,17 @@ const SearchPage: React.FC = () => {
             <div className="absolute right-0 top-0 h-full w-full max-w-sm bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-2xl animate-slide-in-right p-4 flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('search.filters') || 'Filters'}</h3>
-                <button onClick={() => setIsFilterTrayOpen(false)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 focus-visible-ring" aria-label="Close filters">✕</button>
+                <div className="flex items-center gap-3">
+                  {(selectedCategory || selectedLocation || selectedRating > 0 || selectedDistance > 0 || showFavoritesOnly || priceRange.min > 0 || priceRange.max < 1000) && (
+                    <button
+                      onClick={clearFilters}
+                      className="text-sm text-red-600 hover:text-red-700"
+                    >
+                      {t('search.resetFilters') || 'Reset filters'}
+                    </button>
+                  )}
+                  <button onClick={() => setIsFilterTrayOpen(false)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 focus-visible-ring" aria-label="Close filters">✕</button>
+                </div>
               </div>
               <div className="space-y-4 overflow-y-auto">
                 <div>
