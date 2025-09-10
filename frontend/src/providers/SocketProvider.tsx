@@ -259,6 +259,14 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     socketService.on('notification:mark_all_read', handleNotificationMarkAll);
     socketService.on('notification:deleted', handleNotificationDeleted);
     socketService.on('payment:status_changed', handlePaymentStatusChanged);
+    // Exact unread count from backend initial payload
+    const handleUnreadNotifications = (data: any) => {
+      const count = typeof data?.count === 'number' ? data.count : undefined;
+      if (count !== undefined) {
+        try { window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: count } })); } catch {}
+      }
+    };
+    socketService.on('unread_notifications', handleUnreadNotifications);
 
     // Handle connection status
     socketService.on('connect', () => {
@@ -285,6 +293,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       socketService.off('notification:mark_all_read', handleNotificationMarkAll);
       socketService.off('notification:deleted', handleNotificationDeleted);
       socketService.off('payment:status_changed', handlePaymentStatusChanged);
+      socketService.off('unread_notifications', handleUnreadNotifications);
     };
   }, [isConnected, user, dispatch]);
 
