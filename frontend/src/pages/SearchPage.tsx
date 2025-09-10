@@ -443,38 +443,38 @@ const SearchPage: React.FC = () => {
           <div className="flex items-center gap-2 overflow-x-auto flex-nowrap pb-1 -mx-2 px-2">
             <button
               onClick={() => setSortBy('rating')}
-              className={`px-3 py-1.5 rounded-full text-sm border ${sortBy === 'rating' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-sm border ${sortBy === 'rating' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               {t('search.topRated') || 'Top Rated'}
             </button>
             <button
               onClick={() => setSortBy('reviews')}
-              className={`px-3 py-1.5 rounded-full text-sm border ${sortBy === 'reviews' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-sm border ${sortBy === 'reviews' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               {t('search.mostReviewed') || 'Most Reviewed'}
             </button>
             <button
               onClick={() => setSortBy('distance')}
-              className={`px-3 py-1.5 rounded-full text-sm border ${sortBy === 'distance' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-sm border ${sortBy === 'distance' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               {t('search.nearby') || 'Nearby'}
             </button>
             {/* Rating distribution quick chips */}
             <button
               onClick={() => setSelectedRating(selectedRating === 5 ? 0 : 5)}
-              className={`px-3 py-1.5 rounded-full text-sm border ${selectedRating === 5 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-sm border ${selectedRating === 5 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               5★
             </button>
             <button
               onClick={() => setSelectedRating(selectedRating === 4 ? 0 : 4)}
-              className={`px-3 py-1.5 rounded-full text-sm border ${selectedRating === 4 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-sm border ${selectedRating === 4 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               4★+
             </button>
             <button
               onClick={() => setSelectedRating(selectedRating === 3 ? 0 : 3)}
-              className={`px-3 py-1.5 rounded-full text-sm border ${selectedRating === 3 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-sm border ${selectedRating === 3 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               3★+
             </button>
@@ -505,7 +505,7 @@ const SearchPage: React.FC = () => {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+              className="px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
             >
               {categories.map((category) => (
                 <option key={category.id} value={category.id === 'all' ? '' : category.id}>
@@ -526,13 +526,21 @@ const SearchPage: React.FC = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+                className="px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
               >
                 <option value="rating">{t('search.sortBy.rating')}</option>
                 <option value="price">{t('search.sortBy.price')}</option>
                 <option value="distance">{t('search.sortBy.distance')}</option>
                 <option value="reviews">{t('search.sortBy.reviews')}</option>
               </select>
+              {/* Always-visible Filters button */}
+              <button
+                onClick={() => setIsFilterTrayOpen(true)}
+                className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <FunnelIcon className="w-4 h-4" />
+                {t('search.filters') || 'Filters'}
+              </button>
             </div>
             <div className="flex items-center space-x-1 order-1 sm:order-3">
               {/* Mobile filter tray toggle */}
@@ -609,7 +617,7 @@ const SearchPage: React.FC = () => {
 
         {/* Mobile Filter Tray */}
         {isFilterTrayOpen && (
-          <div className="fixed inset-0 z-50 sm:hidden" role="dialog" aria-modal="true" aria-label="Filters">
+          <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Filters">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsFilterTrayOpen(false)} />
             <div className="absolute right-0 top-0 h-full w-full max-w-sm bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-2xl animate-slide-in-right p-4 flex flex-col">
               <div className="flex items-center justify-between mb-4">
