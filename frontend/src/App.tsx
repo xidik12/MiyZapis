@@ -51,6 +51,9 @@ const SpecialistSchedule = React.lazy(() => import('./pages/specialist/Schedule'
 const SpecialistEarnings = React.lazy(() => import('./pages/specialist/Earnings'));
 const SpecialistReviews = React.lazy(() => import('./pages/specialist/Reviews'));
 const SpecialistMessages = React.lazy(() => import('./pages/specialist/Messages'));
+
+// Customer pages
+const CustomerReviews = React.lazy(() => import('./pages/customer/Reviews'));
 const SpecialistSettings = React.lazy(() => import('./pages/specialist/Settings'));
 const SpecialistNotifications = React.lazy(() => import('./pages/specialist/Notifications'));
 
@@ -417,10 +420,7 @@ function App() {
             element={
               <ProtectedRoute requiredUserType="customer">
                 <CustomerLayout>
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">My Reviews</h1>
-                    <p className="text-gray-600 mt-2">Manage your reviews and ratings</p>
-                  </div>
+                  <CustomerReviews />
                 </CustomerLayout>
               </ProtectedRoute>
             }
@@ -554,10 +554,7 @@ function App() {
             element={
               <ProtectedRoute requiredUserType="customer">
                 <CustomerLayout>
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">My Reviews</h1>
-                    <p className="text-gray-600 mt-2">Manage your reviews and ratings</p>
-                  </div>
+                  <CustomerReviews />
                 </CustomerLayout>
               </ProtectedRoute>
             }
