@@ -242,6 +242,22 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     socketService.on('booking:new', handleNewBooking);
     socketService.on('booking:updated', handleBookingUpdated);
     socketService.on('notification:new', handleNewNotification);
+    // Decrement optimistically on notification read or bulk read events if emitted by server
+    const handleNotificationRead = (_data: any) => {
+      optimisticIncrement(-1);
+    };
+    const handleNotificationMarkAll = (_data: any) => {
+      try { window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: 0 } })); } catch {}
+      // Reconcile to be sure
+      broadcastUnreadCount();
+    };
+    const handleNotificationDeleted = (_data: any) => {
+      // If server indicates deletion of an unread notification, decrement; else reconcile
+      optimisticIncrement(-1);
+    };
+    socketService.on('notification:read', handleNotificationRead);
+    socketService.on('notification:mark_all_read', handleNotificationMarkAll);
+    socketService.on('notification:deleted', handleNotificationDeleted);
     socketService.on('payment:status_changed', handlePaymentStatusChanged);
 
     // Handle connection status
@@ -265,6 +281,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       socketService.off('booking:new', handleNewBooking);
       socketService.off('booking:updated', handleBookingUpdated);
       socketService.off('notification:new', handleNewNotification);
+      socketService.off('notification:read', handleNotificationRead);
+      socketService.off('notification:mark_all_read', handleNotificationMarkAll);
+      socketService.off('notification:deleted', handleNotificationDeleted);
       socketService.off('payment:status_changed', handlePaymentStatusChanged);
     };
   }, [isConnected, user, dispatch]);

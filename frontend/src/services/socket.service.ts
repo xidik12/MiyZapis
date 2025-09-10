@@ -166,6 +166,28 @@ class SocketService {
       this.emit('notification:new', data);
     });
 
+    // Optional notification read events (if server emits)
+    this.socket.on('notification:read', (data: any) => {
+      if (import.meta.env.VITE_DEBUG === 'true') {
+        console.log('[Socket] Notification read:', data);
+      }
+      this.emit('notification:read', data);
+    });
+
+    this.socket.on('notification:mark_all_read', (data: any) => {
+      if (import.meta.env.VITE_DEBUG === 'true') {
+        console.log('[Socket] Notifications mark all read:', data);
+      }
+      this.emit('notification:mark_all_read', data);
+    });
+
+    this.socket.on('notification:deleted', (data: any) => {
+      if (import.meta.env.VITE_DEBUG === 'true') {
+        console.log('[Socket] Notification deleted:', data);
+      }
+      this.emit('notification:deleted', data);
+    });
+
     // Specialist availability events
     this.socket.on('availability:updated', (data) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
