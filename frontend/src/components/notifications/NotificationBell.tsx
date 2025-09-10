@@ -48,12 +48,17 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
     });
     // Also listen to global updates from NotificationCenter (mark-all, delete-all)
     const onGlobalUpdate = (e: any) => {
-      const count = e?.detail?.unreadCount;
-      if (typeof count === 'number') {
-        setUnreadCount(count);
-      } else {
-        loadUnreadCount();
+      const detail = e?.detail || {};
+      if (typeof detail.unreadCount === 'number') {
+        setUnreadCount(detail.unreadCount);
+        return;
       }
+      if (typeof detail.delta === 'number') {
+        setUnreadCount((prev) => Math.max(0, prev + detail.delta));
+        return;
+      }
+      // Fallback: pull fresh count
+      loadUnreadCount();
     };
     window.addEventListener('notifications:update', onGlobalUpdate as any);
 

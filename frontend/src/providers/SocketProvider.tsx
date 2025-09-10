@@ -106,6 +106,21 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       }
     };
 
+    // Optimistic increment then reconcile after short delay
+    let reconcileTimer: number | null = null;
+    const optimisticIncrement = (delta: number = 1) => {
+      try {
+        window.dispatchEvent(new CustomEvent('notifications:update', { detail: { delta } }));
+      } catch {}
+      if (reconcileTimer) {
+        window.clearTimeout(reconcileTimer);
+      }
+      reconcileTimer = window.setTimeout(() => {
+        broadcastUnreadCount();
+        reconcileTimer = null;
+      }, 1000);
+    };
+
     // Handle booking events
     const handleBookingStatusChanged = (event: BookingSocketEvent) => {
       if (environment.DEBUG) {
@@ -139,8 +154,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }));
-        // Sync bell badge count
-        broadcastUnreadCount();
+        // Optimistically bump the bell, then reconcile
+        optimisticIncrement(1);
       }
     };
 
@@ -162,7 +177,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }));
-        broadcastUnreadCount();
+        optimisticIncrement(1);
       }
     };
 
@@ -185,7 +200,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       }
 
       dispatch(addNotification(event.data.notification));
-      broadcastUnreadCount();
+      optimisticIncrement(1);
     };
 
     // Handle payment events
@@ -218,7 +233,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }));
-        broadcastUnreadCount();
+        optimisticIncrement(1);
       }
     };
 
