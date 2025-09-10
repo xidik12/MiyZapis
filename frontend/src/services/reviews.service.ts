@@ -195,16 +195,40 @@ export class ReviewsService {
     reviews: Review[];
     pagination: Pagination;
   }> {
-    const response = await apiClient.get<{
-      reviews: Review[];
-      pagination: Pagination;
-    }>(`/reviews/my-reviews?page=${page}&limit=${limit}`);
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get my reviews');
+    try {
+      const response = await apiClient.get<{
+        reviews: Review[];
+        pagination: Pagination;
+      }>(`/reviews/my-reviews?page=${page}&limit=${limit}`);
+
+      if (!response.success || !response.data) {
+        return {
+          reviews: [],
+          pagination: {
+            currentPage: page,
+            totalPages: 0,
+            totalItems: 0,
+            hasNext: false,
+            hasPrev: false,
+            limit,
+          }
+        };
+      }
+      return response.data;
+    } catch (error) {
+      // Gracefully degrade if endpoint not available
+      return {
+        reviews: [],
+        pagination: {
+          currentPage: page,
+          totalPages: 0,
+          totalItems: 0,
+          hasNext: false,
+          hasPrev: false,
+          limit,
+        }
+      };
     }
-    
-    return response.data;
   }
 
   // Get reviews received by current specialist

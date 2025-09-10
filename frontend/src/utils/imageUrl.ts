@@ -3,6 +3,8 @@
  * - Static assets (miyzapis_logo.png, etc.) stay on frontend domain
  * - Uploaded files (/uploads/*) go to backend domain
  */
+import { environment } from '../config/environment';
+
 export function getAbsoluteImageUrl(url: string | undefined | null | any): string {
   // Debug logging for all inputs
   console.log('🔧 getAbsoluteImageUrl input:', { url, type: typeof url, length: url?.length });
@@ -37,7 +39,13 @@ export function getAbsoluteImageUrl(url: string | undefined | null | any): strin
   
   // Warn about Google URLs that should be stored in backend
   if (url.includes('googleusercontent.com') || url.includes('google.com')) {
-    console.warn('⚠️ Google avatar URL detected - this should be saved to backend storage:', url);
+    // Be noisy only in debug; otherwise keep console clean in production
+    const msg = '⚠️ Google avatar URL detected - this should be saved to backend storage:';
+    if (environment.DEBUG) {
+      console.warn(msg, url);
+    } else {
+      try { console.debug(msg, url); } catch {}
+    }
   }
   
   // If it's already an absolute URL, check if it's S3 and needs proxying
