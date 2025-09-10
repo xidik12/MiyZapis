@@ -56,6 +56,16 @@ model User {
   paymentMethods       PaymentMethod[]
   notifications        Notification[]
   loyaltyTransactions  LoyaltyTransaction[]
+  
+  // Enhanced Loyalty Relations
+  loyaltyTier          LoyaltyTier? @relation("UserLoyaltyTier", fields: [loyaltyTierId], references: [id])
+  loyaltyTierId        String?
+  badges               UserBadge[]
+  referralsGiven       LoyaltyReferral[] @relation("ReferrerRelation")
+  referralsReceived    LoyaltyReferral[] @relation("ReferredRelation")
+  campaignRedemptions  CampaignRedemption[]
+  pointsRedemptions    PointsRedemption[]
+  reviewRewards        ReviewReward[]
   refreshTokens        RefreshToken[]
   emailVerificationTokens EmailVerificationToken[]
   sentMessages         Message[]               @relation("SentMessages")
@@ -260,6 +270,10 @@ model Booking {
   review        Review?
   notifications Notification[]
   conversations Conversation[]
+  
+  // Loyalty Relations
+  pointsRedemptions PointsRedemption[]
+  reviewRewards     ReviewReward[]
 
   @@map("bookings")
 }
@@ -925,4 +939,221 @@ model PlatformAnalytics {
   @@index([date])
   @@index([platform])
   @@map("platform_analytics")
+}
+
+// Enhanced Loyalty Program Models
+
+model LoyaltyTier {
+  id          String @id @default(cuid())
+  name        String @unique // SILVER, GOLD, PLATINUM
+  minPoints   Int
+  maxPoints   Int?
+  color       String
+  icon        String
+  benefits    String // JSON array of benefits
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  users       User[] @relation("UserLoyaltyTier")
+  
+  @@map("loyalty_tiers")
+}
+
+model UserBadge {
+  id       String @id @default(cuid())
+  userId   String
+  badgeId  String
+  
+  // Badge metadata
+  earnedAt DateTime @default(now())
+  progress Float?   // Progress towards badge if applicable (0.0-1.0)
+  
+  // Relations
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge    Badge  @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+model Badge {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String
+  icon        String
+  color       String
+  category    String // BOOKING, REVIEW, REFERRAL, LOYALTY
+  
+  // Badge criteria (JSON)
+  criteria    String
+  rarity      String @default("COMMON") // COMMON, RARE, EPIC, LEGENDARY
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  userBadges  UserBadge[]
+  
+  @@map("badges")
+}
+
+model LoyaltyReferral {
+  id            String @id @default(cuid())
+  referrerId    String
+  referredId    String?
+  referralCode  String @unique
+  
+  // Referral status
+  status        String @default("PENDING") // PENDING, COMPLETED, EXPIRED
+  completedAt   DateTime?
+  
+  // Points tracking
+  referrerPoints    Int @default(0)
+  referredPoints    Int @default(0)
+  pointsAwarded     Boolean @default(false)
+  
+  // Metadata
+  inviteChannel     String? // EMAIL, SMS, SOCIAL, DIRECT
+  firstBookingId    String? // First booking that completed the referral
+  
+  // Timestamps
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  expiresAt     DateTime
+  
+  // Relations
+  referrer      User     @relation("ReferrerRelation", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred      User?    @relation("ReferredRelation", fields: [referredId], references: [id], onDelete: Cascade)
+  
+  @@index([referralCode])
+  @@index([referrerId])
+  @@map("loyalty_referrals")
+}
+
+model LoyaltyCampaign {
+  id                String @id @default(cuid())
+  name              String
+  description       String
+  type              String // DOUBLE_POINTS, BONUS_REVIEW, SEASONAL, SPECIALIST_MULTIPLIER
+  
+  // Campaign rules (JSON)
+  rules             String
+  multiplier        Float @default(1.0)
+  bonusPoints       Int @default(0)
+  
+  // Targeting
+  targetUserType    String? // CUSTOMER, SPECIALIST, ALL
+  targetTiers       String? // JSON array of tier names
+  specialistIds     String? // JSON array for specialist-specific campaigns
+  
+  // Status
+  isActive          Boolean @default(true)
+  
+  // Time bounds
+  startsAt          DateTime
+  endsAt            DateTime
+  
+  // Usage limits
+  maxRedemptions    Int?
+  currentRedemptions Int @default(0)
+  maxPerUser        Int @default(1)
+  
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  redemptions       CampaignRedemption[]
+  
+  @@index([isActive, startsAt, endsAt])
+  @@map("loyalty_campaigns")
+}
+
+model CampaignRedemption {
+  id          String @id @default(cuid())
+  campaignId  String
+  userId      String
+  
+  // Redemption details
+  pointsEarned    Int
+  referenceId     String? // Booking ID, Review ID, etc.
+  referenceType   String? // BOOKING, REVIEW, REFERRAL
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  campaign    LoyaltyCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([campaignId, userId, referenceId])
+  @@index([userId])
+  @@map("campaign_redemptions")
+}
+
+model PointsRedemption {
+  id              String @id @default(cuid())
+  userId          String
+  
+  // Redemption details
+  type            String // DISCOUNT, PAYMENT, PERK
+  pointsUsed      Int
+  discountPercent Float?
+  cashValue       Float? // For partial payments
+  
+  // Service/booking reference
+  bookingId       String?
+  serviceId       String?
+  specialistId    String?
+  
+  // Status
+  status          String @default("COMPLETED") // COMPLETED, REFUNDED, CANCELLED
+  
+  // Metadata
+  description     String
+  originalAmount  Float?
+  finalAmount     Float?
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking         Booking? @relation(fields: [bookingId], references: [id])
+  
+  @@index([userId])
+  @@index([bookingId])
+  @@map("points_redemptions")
+}
+
+model ReviewReward {
+  id            String @id @default(cuid())
+  userId        String
+  reviewId      String?
+  bookingId     String
+  
+  // Reward details
+  pointsEarned  Int
+  rewardType    String // RATING_ONLY, WITH_COMMENT, WITH_PHOTO
+  monthYear     String // YYYY-MM for monthly cap tracking
+  
+  // Verification
+  verified      Boolean @default(false)
+  verifiedAt    DateTime?
+  
+  // Timestamps
+  createdAt     DateTime @default(now())
+  
+  // Relations
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking       Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, bookingId]) // One reward per booking
+  @@index([userId, monthYear])
+  @@map("review_rewards")
 }

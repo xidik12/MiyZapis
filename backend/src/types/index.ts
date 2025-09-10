@@ -221,6 +221,14 @@ export const ErrorCodes = {
   SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
   RATE_LIMIT_EXCEEDED: 'RATE_LIMIT_EXCEEDED',
   DATABASE_ERROR: 'DATABASE_ERROR',
+  
+  // Loyalty-specific errors
+  INSUFFICIENT_POINTS: 'INSUFFICIENT_POINTS',
+  INVALID_DISCOUNT: 'INVALID_DISCOUNT',
+  EXPIRED_CODE: 'EXPIRED_CODE',
+  ALREADY_USED: 'ALREADY_USED',
+  NOT_FOUND: 'NOT_FOUND',
+  UNAUTHORIZED: 'UNAUTHORIZED',
 } as const;
 
 // Rate limit configurations
@@ -231,3 +239,34 @@ export const RateLimitConfigs = {
   PAYMENTS: { windowMs: 60 * 1000, max: 3 }, // 3 requests per minute
   SEARCH: { windowMs: 60 * 1000, max: 30 }, // 30 requests per minute
 } as const;
+
+// Utility functions
+export const formatValidationErrors = (errors: any[]): ApiError['details'] => {
+  return errors.map(error => ({
+    field: error.param || error.path,
+    message: error.msg || error.message,
+    code: 'VALIDATION_ERROR'
+  }));
+};
+
+export const calculatePaginationOffset = (page: number, limit: number): number => {
+  return (Math.max(1, page) - 1) * limit;
+};
+
+export const createPaginationMeta = (
+  page: number,
+  limit: number,
+  totalItems: number
+): PaginationMeta => {
+  const currentPage = Math.max(1, page);
+  const totalPages = Math.ceil(totalItems / limit);
+  
+  return {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage: limit,
+    hasNext: currentPage < totalPages,
+    hasPrev: currentPage > 1
+  };
+};

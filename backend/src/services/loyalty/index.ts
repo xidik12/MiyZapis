@@ -1,22 +1,72 @@
-import { LoyaltyTransaction } from '@prisma/client';
-import { logger } from '@/utils/logger';
 import { prisma } from '@/config/database';
+import { logger } from '@/utils/logger';
 
-export interface CreateLoyaltyTransactionData {
+// Loyalty Program Configuration
+export const LOYALTY_CONFIG = {
+  // Point earning rates
+  POINTS_PER_DOLLAR: 1,
+  FIRST_BOOKING_BONUS: 100,
+  STREAK_BONUS_POINTS: 50,
+  STREAK_REQUIRED_BOOKINGS: 3,
+  
+  // Review rewards
+  RATING_POINTS: 10,
+  REVIEW_COMMENT_POINTS: 30,
+  REVIEW_PHOTO_POINTS: 50,
+  MAX_REVIEW_REWARDS_PER_MONTH: 3,
+  MIN_REVIEW_COMMENT_LENGTH: 20,
+  
+  // Referral rewards
+  REFERRER_POINTS: 200,
+  REFERRED_POINTS: 200,
+  
+  // Discounts
+  DISCOUNT_TIERS: [
+    { points: 500, discount: 0.05 },   // 5%
+    { points: 1000, discount: 0.10 },  // 10%
+    { points: 2000, discount: 0.25 }   // 25%
+  ],
+  
+  // Tier thresholds
+  TIERS: {
+    SILVER: { min: 0, max: 999 },
+    GOLD: { min: 1000, max: 4999 },
+    PLATINUM: { min: 5000, max: null }
+  },
+  
+  // Point expiration
+  POINTS_EXPIRY_MONTHS: 12
+};
+
+export interface EarnPointsOptions {
   userId: string;
-  type: 'EARNED' | 'REDEEMED' | 'EXPIRED' | 'BONUS';
   points: number;
   reason: string;
   description?: string;
   referenceId?: string;
+  type?: 'EARNED' | 'BONUS';
+}
+
+// Export types for controller usage
+export interface CreateLoyaltyTransactionData {
+  userId: string;
+  type: 'EARN' | 'REDEEM';
+  points: number;
+  description: string;
+  reason?: string;
   expiresAt?: Date;
+  bookingId?: string;
+  campaignId?: string;
+  referenceId?: string;
 }
 
 export interface LoyaltyFilters {
   userId?: string;
-  type?: string;
+  type?: 'EARN' | 'REDEEM' | string;
   startDate?: Date;
   endDate?: Date;
+  bookingId?: string;
+  campaignId?: string;
   minPoints?: number;
   maxPoints?: number;
 }
@@ -27,469 +77,745 @@ export interface RedeemPointsData {
   reason: string;
   description?: string;
   referenceId?: string;
+  bookingId?: string;
+}
+
+export interface SpendPointsOptions {
+  userId: string;
+  points: number;
+  reason: string;
+  description?: string;
+  referenceId?: string;
+  bookingId?: string;
 }
 
 export class LoyaltyService {
-  /**
-   * Get user's current loyalty balance
-   */
-  static async getLoyaltyBalance(userId: string) {
+  
+  // Core Points Management
+  static async earnPoints(options: EarnPointsOptions): Promise<boolean> {
+    const { userId, points, reason, description, referenceId, type = 'EARNED' } = options;
+    
+    try {
+      const expiresAt = new Date();
+      expiresAt.setMonth(expiresAt.getMonth() + LOYALTY_CONFIG.POINTS_EXPIRY_MONTHS);
+      
+      await prisma.$transaction(async (tx) => {
+        // Create loyalty transaction
+        await tx.loyaltyTransaction.create({
+          data: {
+            userId,
+            type,
+            points,
+            reason,
+            description,
+            referenceId,
+            expiresAt
+          }
+        });
+        
+        // Update user's total loyalty points
+        await tx.user.update({
+          where: { id: userId },
+          data: {
+            loyaltyPoints: {
+              increment: points
+            }
+          }
+        });
+        
+        // Check and update user tier
+        await this.updateUserTier(userId, tx);
+        
+        // Check for badge achievements
+        await this.checkBadgeAchievements(userId, reason, tx);
+      });
+      
+      logger.info('Points earned successfully', { userId, points, reason });
+      return true;
+    } catch (error) {
+      logger.error('Failed to earn points', { error, userId, points, reason });
+      return false;
+    }
+  }
+  
+  static async spendPoints(options: SpendPointsOptions): Promise<boolean> {
+    const { userId, points, reason, description, referenceId, bookingId } = options;
+    
     try {
       const user = await prisma.user.findUnique({
         where: { id: userId },
-        select: {
-          loyaltyPoints: true,
-          firstName: true,
-          lastName: true,
-        },
+        select: { loyaltyPoints: true }
       });
-
-      if (!user) {
-        throw new Error('USER_NOT_FOUND');
+      
+      if (!user || user.loyaltyPoints < points) {
+        logger.warn('Insufficient loyalty points', { userId, requested: points, available: user?.loyaltyPoints });
+        return false;
       }
-
-      // Get recent transactions for activity summary
-      const recentTransactions = await prisma.loyaltyTransaction.findMany({
-        where: { userId },
-        orderBy: { createdAt: 'desc' },
-        take: 5,
-      });
-
-      // Calculate total earned and redeemed
-      const allTransactions = await prisma.loyaltyTransaction.findMany({
-        where: { userId },
-        select: { type: true, points: true },
-      });
-
-      const totalEarned = allTransactions
-        .filter(t => ['EARNED', 'BONUS'].includes(t.type))
-        .reduce((sum, t) => sum + t.points, 0);
-
-      const totalRedeemed = allTransactions
-        .filter(t => t.type === 'REDEEMED')
-        .reduce((sum, t) => sum + Math.abs(t.points), 0);
-
-      return {
-        balance: user.loyaltyPoints,
-        totalEarned,
-        totalRedeemed,
-        recentTransactions: recentTransactions.map(t => ({
-          ...t,
-          isPositive: ['EARNED', 'BONUS'].includes(t.type),
-        })),
-        user: {
-          firstName: user.firstName,
-          lastName: user.lastName,
-        },
-      };
-    } catch (error) {
-      logger.error('Error getting loyalty balance:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get loyalty transaction history with pagination
-   */
-  static async getLoyaltyTransactions(
-    filters: LoyaltyFilters = {},
-    page: number = 1,
-    limit: number = 20
-  ) {
-    try {
-      const where: any = {};
-
-      if (filters.userId) {
-        where.userId = filters.userId;
-      }
-
-      if (filters.type) {
-        where.type = filters.type;
-      }
-
-      if (filters.startDate || filters.endDate) {
-        where.createdAt = {};
-        if (filters.startDate) {
-          where.createdAt.gte = filters.startDate;
-        }
-        if (filters.endDate) {
-          where.createdAt.lte = filters.endDate;
-        }
-      }
-
-      if (filters.minPoints !== undefined || filters.maxPoints !== undefined) {
-        where.points = {};
-        if (filters.minPoints !== undefined) {
-          where.points.gte = filters.minPoints;
-        }
-        if (filters.maxPoints !== undefined) {
-          where.points.lte = filters.maxPoints;
-        }
-      }
-
-      const offset = (page - 1) * limit;
-
-      const [transactions, total] = await Promise.all([
-        prisma.loyaltyTransaction.findMany({
-          where,
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
-              },
-            },
-          },
-          orderBy: { createdAt: 'desc' },
-          skip: offset,
-          take: limit,
-        }),
-        prisma.loyaltyTransaction.count({ where }),
-      ]);
-
-      const totalPages = Math.ceil(total / limit);
-
-      return {
-        transactions: transactions.map(t => ({
-          ...t,
-          isPositive: ['EARNED', 'BONUS'].includes(t.type),
-          isExpired: t.expiresAt && t.expiresAt < new Date(),
-        })),
-        page,
-        totalPages,
-        total,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
-      };
-    } catch (error) {
-      logger.error('Error getting loyalty transactions:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Award loyalty points to a user
-   */
-  static async awardPoints(data: CreateLoyaltyTransactionData): Promise<LoyaltyTransaction> {
-    try {
-      // Validate user exists
-      const user = await prisma.user.findUnique({
-        where: { id: data.userId },
-      });
-
-      if (!user) {
-        throw new Error('USER_NOT_FOUND');
-      }
-
-      if (data.points <= 0) {
-        throw new Error('POINTS_MUST_BE_POSITIVE');
-      }
-
-      // Create transaction and update user balance in a transaction
-      const result = await prisma.$transaction(async (tx) => {
-        // Update user balance
-        await tx.user.update({
-          where: { id: data.userId },
+      
+      await prisma.$transaction(async (tx) => {
+        // Create redemption transaction
+        await tx.loyaltyTransaction.create({
           data: {
-            loyaltyPoints: { increment: data.points },
-          },
-        });
-
-        // Create transaction record
-        const transaction = await tx.loyaltyTransaction.create({
-          data: {
-            userId: data.userId,
-            type: data.type,
-            points: data.points,
-            reason: data.reason,
-            description: data.description,
-            referenceId: data.referenceId,
-            expiresAt: data.expiresAt,
-          },
-        });
-
-        return transaction;
-      });
-
-      logger.info(`Awarded ${data.points} loyalty points to user ${data.userId}: ${data.reason}`);
-      return result;
-    } catch (error) {
-      logger.error('Error awarding loyalty points:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Redeem loyalty points
-   */
-  static async redeemPoints(data: RedeemPointsData): Promise<LoyaltyTransaction> {
-    try {
-      // Validate user and balance
-      const user = await prisma.user.findUnique({
-        where: { id: data.userId },
-      });
-
-      if (!user) {
-        throw new Error('USER_NOT_FOUND');
-      }
-
-      if (data.points <= 0) {
-        throw new Error('POINTS_MUST_BE_POSITIVE');
-      }
-
-      if (user.loyaltyPoints < data.points) {
-        throw new Error('INSUFFICIENT_POINTS');
-      }
-
-      // Create transaction and update user balance
-      const result = await prisma.$transaction(async (tx) => {
-        // Update user balance
-        await tx.user.update({
-          where: { id: data.userId },
-          data: {
-            loyaltyPoints: { decrement: data.points },
-          },
-        });
-
-        // Create transaction record (negative points for redemption)
-        const transaction = await tx.loyaltyTransaction.create({
-          data: {
-            userId: data.userId,
+            userId,
             type: 'REDEEMED',
-            points: -data.points, // Negative for redemption
-            reason: data.reason,
-            description: data.description,
-            referenceId: data.referenceId,
-          },
+            points: -points, // Negative for spending
+            reason,
+            description,
+            referenceId
+          }
         });
-
-        return transaction;
+        
+        // Update user's total loyalty points
+        await tx.user.update({
+          where: { id: userId },
+          data: {
+            loyaltyPoints: {
+              decrement: points
+            }
+          }
+        });
+        
+        // Create points redemption record if it's a booking-related redemption
+        if (bookingId) {
+          await tx.pointsRedemption.create({
+            data: {
+              userId,
+              type: 'PAYMENT',
+              pointsUsed: points,
+              bookingId,
+              description: description || `Redeemed ${points} points for booking`
+            }
+          });
+        }
+        
+        // Update user tier (might have dropped)
+        await this.updateUserTier(userId, tx);
       });
-
-      logger.info(`Redeemed ${data.points} loyalty points for user ${data.userId}: ${data.reason}`);
-      return result;
+      
+      logger.info('Points spent successfully', { userId, points, reason });
+      return true;
     } catch (error) {
-      logger.error('Error redeeming loyalty points:', error);
-      throw error;
+      logger.error('Failed to spend points', { error, userId, points, reason });
+      return false;
     }
   }
-
-  /**
-   * Get loyalty program statistics
-   */
-  static async getLoyaltyStats(userId?: string) {
+  
+  // Booking-related point earning
+  static async processBookingCompletion(bookingId: string): Promise<void> {
     try {
-      const where = userId ? { userId } : {};
-
-      const [
-        totalTransactions,
-        totalPointsEarned,
-        totalPointsRedeemed,
-        activeUsers,
-        recentActivity,
-      ] = await Promise.all([
-        prisma.loyaltyTransaction.count({ where }),
-        prisma.loyaltyTransaction.aggregate({
+      const booking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        include: { customer: true }
+      });
+      
+      if (!booking) {
+        logger.warn('Booking not found for loyalty processing', { bookingId });
+        return;
+      }
+      
+      // Calculate points (1 point per dollar)
+      const basePoints = Math.floor(booking.totalAmount * LOYALTY_CONFIG.POINTS_PER_DOLLAR);
+      let totalPoints = basePoints;
+      let bonusDescription = '';
+      
+      // Check for first booking bonus
+      const customerBookingCount = await prisma.booking.count({
+        where: {
+          customerId: booking.customerId,
+          status: 'COMPLETED'
+        }
+      });
+      
+      if (customerBookingCount === 1) {
+        totalPoints += LOYALTY_CONFIG.FIRST_BOOKING_BONUS;
+        bonusDescription = ` (includes ${LOYALTY_CONFIG.FIRST_BOOKING_BONUS} first booking bonus)`;
+      }
+      
+      // Check for streak bonus (3 bookings in current month)
+      const currentMonth = new Date();
+      currentMonth.setDate(1);
+      currentMonth.setHours(0, 0, 0, 0);
+      
+      const monthlyBookings = await prisma.booking.count({
+        where: {
+          customerId: booking.customerId,
+          status: 'COMPLETED',
+          scheduledAt: {
+            gte: currentMonth
+          }
+        }
+      });
+      
+      if (monthlyBookings >= LOYALTY_CONFIG.STREAK_REQUIRED_BOOKINGS) {
+        // Check if streak bonus not already awarded this month
+        const streakBonusThisMonth = await prisma.loyaltyTransaction.findFirst({
           where: {
-            ...where,
-            type: { in: ['EARNED', 'BONUS'] },
-          },
-          _sum: { points: true },
-        }),
-        prisma.loyaltyTransaction.aggregate({
-          where: {
-            ...where,
-            type: 'REDEEMED',
-          },
-          _sum: { points: true },
-        }),
-        userId ? null : prisma.user.count({
-          where: { loyaltyPoints: { gt: 0 } },
-        }),
-        prisma.loyaltyTransaction.findMany({
-          where,
-          orderBy: { createdAt: 'desc' },
-          take: 10,
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
-          },
-        }),
-      ]);
-
-      return {
-        totalTransactions,
-        totalPointsEarned: totalPointsEarned._sum.points || 0,
-        totalPointsRedeemed: Math.abs(totalPointsRedeemed._sum.points || 0),
-        activeUsers,
-        recentActivity: recentActivity.map(t => ({
-          ...t,
-          isPositive: ['EARNED', 'BONUS'].includes(t.type),
-        })),
-      };
+            userId: booking.customerId,
+            reason: 'BOOKING_STREAK_BONUS',
+            createdAt: {
+              gte: currentMonth
+            }
+          }
+        });
+        
+        if (!streakBonusThisMonth) {
+          totalPoints += LOYALTY_CONFIG.STREAK_BONUS_POINTS;
+          bonusDescription += ` (includes ${LOYALTY_CONFIG.STREAK_BONUS_POINTS} streak bonus)`;
+        }
+      }
+      
+      // Award points
+      await this.earnPoints({
+        userId: booking.customerId,
+        points: totalPoints,
+        reason: 'BOOKING_COMPLETED',
+        description: `Earned ${totalPoints} points for booking completion${bonusDescription}`,
+        referenceId: bookingId
+      });
+      
+      // Check for active campaigns
+      await this.processCampaignBonuses(booking.customerId, 'BOOKING', bookingId, basePoints);
+      
     } catch (error) {
-      logger.error('Error getting loyalty stats:', error);
-      throw error;
+      logger.error('Failed to process booking completion for loyalty', { error, bookingId });
     }
   }
-
-  /**
-   * Get loyalty tiers and benefits (static for now)
-   */
-  static getLoyaltyTiers() {
-    return {
-      tiers: [
-        {
-          name: 'Bronze',
-          minPoints: 0,
-          maxPoints: 999,
-          benefits: [
-            'Earn 1 point per $1 spent',
-            'Birthday bonus: 100 points',
-            'Access to basic promotions',
-          ],
-          badgeColor: '#CD7F32',
-        },
-        {
-          name: 'Silver',
-          minPoints: 1000,
-          maxPoints: 4999,
-          benefits: [
-            'Earn 1.5 points per $1 spent',
-            'Birthday bonus: 200 points',
-            'Early access to sales',
-            '5% discount on selected services',
-          ],
-          badgeColor: '#C0C0C0',
-        },
-        {
-          name: 'Gold',
-          minPoints: 5000,
-          maxPoints: 9999,
-          benefits: [
-            'Earn 2 points per $1 spent',
-            'Birthday bonus: 500 points',
-            'Priority booking support',
-            '10% discount on selected services',
-            'Free service upgrade once per month',
-          ],
-          badgeColor: '#FFD700',
-        },
-        {
-          name: 'Platinum',
-          minPoints: 10000,
-          maxPoints: null,
-          benefits: [
-            'Earn 3 points per $1 spent',
-            'Birthday bonus: 1000 points',
-            'VIP customer support',
-            '15% discount on all services',
-            'Free service upgrade anytime',
-            'Exclusive access to premium specialists',
-          ],
-          badgeColor: '#E5E4E2',
-        },
-      ],
-      pointsValue: {
-        currency: 'USD',
-        exchangeRate: 0.01, // 100 points = $1
-      },
-    };
-  }
-
-  /**
-   * Get user's loyalty tier
-   */
-  static async getUserTier(userId: string) {
+  
+  // Review rewards
+  static async processReviewReward(reviewId: string, bookingId: string, customerId: string, rating: number, comment?: string, hasPhoto?: boolean): Promise<void> {
     try {
-      const user = await prisma.user.findUnique({
+      // Check monthly review reward cap
+      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+      const monthlyRewards = await prisma.reviewReward.count({
+        where: {
+          userId: customerId,
+          monthYear: currentMonth
+        }
+      });
+      
+      if (monthlyRewards >= LOYALTY_CONFIG.MAX_REVIEW_REWARDS_PER_MONTH) {
+        logger.info('Monthly review reward cap reached', { customerId, monthlyRewards });
+        return;
+      }
+      
+      // Calculate reward points
+      let points = LOYALTY_CONFIG.RATING_POINTS;
+      let rewardType = 'RATING_ONLY';
+      
+      if (comment && comment.length >= LOYALTY_CONFIG.MIN_REVIEW_COMMENT_LENGTH) {
+        points += LOYALTY_CONFIG.REVIEW_COMMENT_POINTS;
+        rewardType = 'WITH_COMMENT';
+      }
+      
+      if (hasPhoto) {
+        points += LOYALTY_CONFIG.REVIEW_PHOTO_POINTS;
+        rewardType = 'WITH_PHOTO';
+      }
+      
+      await prisma.$transaction(async (tx) => {
+        // Create review reward record
+        await tx.reviewReward.create({
+          data: {
+            userId: customerId,
+            reviewId,
+            bookingId,
+            pointsEarned: points,
+            rewardType,
+            monthYear: currentMonth,
+            verified: true,
+            verifiedAt: new Date()
+          }
+        });
+        
+        // Award points
+        await this.earnPoints({
+          userId: customerId,
+          points,
+          reason: 'REVIEW_SUBMITTED',
+          description: `Earned ${points} points for ${rewardType.toLowerCase().replace('_', ' ')} review`,
+          referenceId: reviewId
+        });
+      });
+      
+    } catch (error) {
+      // Handle unique constraint violation (duplicate reward)
+      if (error.code === 'P2002') {
+        logger.info('Review reward already processed', { reviewId, customerId });
+        return;
+      }
+      logger.error('Failed to process review reward', { error, reviewId, customerId });
+    }
+  }
+  
+  // Referral system
+  static async processReferralCompletion(referralCode: string): Promise<void> {
+    try {
+      const referral = await prisma.loyaltyReferral.findUnique({
+        where: { referralCode },
+        include: { referrer: true, referred: true }
+      });
+      
+      if (!referral || referral.status !== 'COMPLETED' || referral.pointsAwarded) {
+        return;
+      }
+      
+      await prisma.$transaction(async (tx) => {
+        // Award points to referrer
+        await this.earnPoints({
+          userId: referral.referrerId,
+          points: LOYALTY_CONFIG.REFERRER_POINTS,
+          reason: 'REFERRAL_COMPLETED',
+          description: `Earned ${LOYALTY_CONFIG.REFERRER_POINTS} points for successful referral`,
+          referenceId: referralCode,
+          type: 'BONUS'
+        });
+        
+        // Award points to referred user
+        if (referral.referredId) {
+          await this.earnPoints({
+            userId: referral.referredId,
+            points: LOYALTY_CONFIG.REFERRED_POINTS,
+            reason: 'REFERRAL_JOINED',
+            description: `Earned ${LOYALTY_CONFIG.REFERRED_POINTS} points for joining via referral`,
+            referenceId: referralCode,
+            type: 'BONUS'
+          });
+        }
+        
+        // Mark referral as points awarded
+        await tx.loyaltyReferral.update({
+          where: { id: referral.id },
+          data: { pointsAwarded: true }
+        });
+      });
+      
+    } catch (error) {
+      logger.error('Failed to process referral completion', { error, referralCode });
+    }
+  }
+  
+  // Tier management
+  static async updateUserTier(userId: string, tx?: any): Promise<void> {
+    const dbClient = tx || prisma;
+    
+    try {
+      const user = await dbClient.user.findUnique({
         where: { id: userId },
-        select: { loyaltyPoints: true },
+        select: { loyaltyPoints: true }
       });
-
-      if (!user) {
-        throw new Error('USER_NOT_FOUND');
+      
+      if (!user) return;
+      
+      let tierName: string;
+      if (user.loyaltyPoints >= LOYALTY_CONFIG.TIERS.PLATINUM.min) {
+        tierName = 'PLATINUM';
+      } else if (user.loyaltyPoints >= LOYALTY_CONFIG.TIERS.GOLD.min) {
+        tierName = 'GOLD';
+      } else {
+        tierName = 'SILVER';
       }
-
-      const tiers = this.getLoyaltyTiers().tiers;
-      const userTier = tiers.find(tier => {
-        if (tier.maxPoints === null) {
-          return user.loyaltyPoints >= tier.minPoints;
-        }
-        return user.loyaltyPoints >= tier.minPoints && user.loyaltyPoints <= tier.maxPoints;
-      }) || tiers[0];
-
-      const nextTier = tiers.find(tier => tier.minPoints > user.loyaltyPoints);
-      const pointsToNextTier = nextTier ? nextTier.minPoints - user.loyaltyPoints : 0;
-
-      return {
-        currentTier: userTier,
-        nextTier,
-        pointsToNextTier,
-        currentPoints: user.loyaltyPoints,
-      };
+      
+      // Find or create tier
+      let tier = await dbClient.loyaltyTier.findUnique({
+        where: { name: tierName }
+      });
+      
+      if (!tier) {
+        // Create default tiers if they don't exist
+        await this.createDefaultTiers(dbClient);
+        tier = await dbClient.loyaltyTier.findUnique({
+          where: { name: tierName }
+        });
+      }
+      
+      // Update user tier
+      await dbClient.user.update({
+        where: { id: userId },
+        data: { loyaltyTierId: tier?.id }
+      });
+      
     } catch (error) {
-      logger.error('Error getting user tier:', error);
-      throw error;
+      logger.error('Failed to update user tier', { error, userId });
     }
   }
-
-  /**
-   * Expire old loyalty points (for cleanup jobs)
-   */
-  static async expireOldPoints() {
+  
+  // Badge achievements
+  static async checkBadgeAchievements(userId: string, reason: string, tx?: any): Promise<void> {
+    const dbClient = tx || prisma;
+    
+    try {
+      // Get user's current stats
+      const stats = await this.getUserLoyaltyStats(userId);
+      
+      // Define badge criteria checks
+      const badgeChecks = [
+        {
+          name: 'SUPER_BOOKER',
+          condition: stats.totalBookings >= 10,
+          category: 'BOOKING'
+        },
+        {
+          name: 'TOP_REVIEWER',
+          condition: stats.totalReviews >= 25,
+          category: 'REVIEW'
+        },
+        {
+          name: 'LOYAL_CLIENT',
+          condition: stats.totalPoints >= 1000,
+          category: 'LOYALTY'
+        },
+        {
+          name: 'REFERRAL_MASTER',
+          condition: stats.successfulReferrals >= 5,
+          category: 'REFERRAL'
+        }
+      ];
+      
+      for (const check of badgeChecks) {
+        if (check.condition) {
+          await this.awardBadge(userId, check.name, dbClient);
+        }
+      }
+      
+    } catch (error) {
+      logger.error('Failed to check badge achievements', { error, userId, reason });
+    }
+  }
+  
+  static async awardBadge(userId: string, badgeName: string, tx?: any): Promise<void> {
+    const dbClient = tx || prisma;
+    
+    try {
+      // Check if user already has this badge
+      const existingBadge = await dbClient.userBadge.findFirst({
+        where: {
+          userId,
+          badge: { name: badgeName }
+        }
+      });
+      
+      if (existingBadge) return;
+      
+      // Find or create badge
+      let badge = await dbClient.badge.findUnique({
+        where: { name: badgeName }
+      });
+      
+      if (!badge) {
+        await this.createDefaultBadges(dbClient);
+        badge = await dbClient.badge.findUnique({
+          where: { name: badgeName }
+        });
+      }
+      
+      if (badge) {
+        await dbClient.userBadge.create({
+          data: {
+            userId,
+            badgeId: badge.id,
+            earnedAt: new Date()
+          }
+        });
+        
+        logger.info('Badge awarded', { userId, badgeName });
+      }
+      
+    } catch (error) {
+      if (error.code !== 'P2002') { // Ignore unique constraint violations
+        logger.error('Failed to award badge', { error, userId, badgeName });
+      }
+    }
+  }
+  
+  // Campaign processing
+  static async processCampaignBonuses(userId: string, eventType: string, referenceId: string, basePoints?: number): Promise<void> {
     try {
       const now = new Date();
-      
-      const expiredTransactions = await prisma.loyaltyTransaction.findMany({
+      const activeCampaigns = await prisma.loyaltyCampaign.findMany({
         where: {
-          expiresAt: { lt: now },
-          type: { in: ['EARNED', 'BONUS'] },
-        },
+          isActive: true,
+          startsAt: { lte: now },
+          endsAt: { gte: now },
+          OR: [
+            { targetUserType: null },
+            { targetUserType: 'ALL' },
+            { targetUserType: 'CUSTOMER' }
+          ]
+        }
       });
-
-      const expiredCount = expiredTransactions.length;
-      let totalExpiredPoints = 0;
-
-      // Process expired transactions
-      for (const transaction of expiredTransactions) {
-        // Create expiration transaction
-        await prisma.loyaltyTransaction.create({
-          data: {
-            userId: transaction.userId,
-            type: 'EXPIRED',
-            points: -transaction.points,
-            reason: 'Points expired',
-            description: `Expired points from transaction: ${transaction.reason}`,
-            referenceId: transaction.id,
-          },
-        });
-
-        // Update user balance
-        await prisma.user.update({
-          where: { id: transaction.userId },
-          data: {
-            loyaltyPoints: { decrement: transaction.points },
-          },
-        });
-
-        totalExpiredPoints += transaction.points;
-      }
-
-      logger.info(`Expired ${totalExpiredPoints} points from ${expiredCount} transactions`);
       
-      return {
-        expiredTransactions: expiredCount,
-        totalExpiredPoints,
-      };
+      for (const campaign of activeCampaigns) {
+        // Check if user can participate
+        const existingRedemptions = await prisma.campaignRedemption.count({
+          where: {
+            campaignId: campaign.id,
+            userId
+          }
+        });
+        
+        if (existingRedemptions >= campaign.maxPerUser) continue;
+        
+        // Calculate bonus points
+        let bonusPoints = campaign.bonusPoints;
+        if (campaign.multiplier > 1 && basePoints) {
+          bonusPoints += Math.floor((basePoints * campaign.multiplier) - basePoints);
+        }
+        
+        if (bonusPoints > 0) {
+          await prisma.$transaction(async (tx) => {
+            // Create campaign redemption
+            await tx.campaignRedemption.create({
+              data: {
+                campaignId: campaign.id,
+                userId,
+                pointsEarned: bonusPoints,
+                referenceId,
+                referenceType: eventType
+              }
+            });
+            
+            // Award bonus points
+            await this.earnPoints({
+              userId,
+              points: bonusPoints,
+              reason: 'CAMPAIGN_BONUS',
+              description: `Earned ${bonusPoints} bonus points from ${campaign.name} campaign`,
+              referenceId: campaign.id,
+              type: 'BONUS'
+            });
+            
+            // Update campaign redemption count
+            await tx.loyaltyCampaign.update({
+              where: { id: campaign.id },
+              data: {
+                currentRedemptions: { increment: 1 }
+              }
+            });
+          });
+        }
+      }
+      
     } catch (error) {
-      logger.error('Error expiring old points:', error);
-      throw error;
+      logger.error('Failed to process campaign bonuses', { error, userId, eventType });
     }
   }
+  
+  // Utility methods
+  static async getUserLoyaltyStats(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        loyaltyTier: true,
+        badges: { include: { badge: true } },
+        loyaltyTransactions: true,
+        customerBookings: { where: { status: 'COMPLETED' } },
+        reviews: true,
+        referralsGiven: { where: { status: 'COMPLETED' } }
+      }
+    });
+    
+    if (!user) return null;
+    
+    return {
+      totalPoints: user.loyaltyPoints,
+      tier: user.loyaltyTier,
+      badges: user.badges.map(ub => ub.badge),
+      totalTransactions: user.loyaltyTransactions.length,
+      totalBookings: user.customerBookings.length,
+      totalReviews: user.reviews.length,
+      successfulReferrals: user.referralsGiven.length
+    };
+  }
+  
+  static async getAvailableDiscounts(points: number): Promise<Array<{ points: number; discount: number }>> {
+    return LOYALTY_CONFIG.DISCOUNT_TIERS.filter(tier => points >= tier.points);
+  }
+  
+  static calculateDiscountedAmount(originalAmount: number, discountPercent: number): number {
+    return originalAmount * (1 - discountPercent);
+  }
+  
+  // Initialize default data
+  static async createDefaultTiers(tx?: any): Promise<void> {
+    const dbClient = tx || prisma;
+    
+    const defaultTiers = [
+      {
+        name: 'SILVER',
+        minPoints: 0,
+        maxPoints: 999,
+        color: '#C0C0C0',
+        icon: 'star',
+        benefits: JSON.stringify(['Basic support', 'Standard booking', 'Point earning'])
+      },
+      {
+        name: 'GOLD',
+        minPoints: 1000,
+        maxPoints: 4999,
+        color: '#FFD700',
+        icon: 'star-solid',
+        benefits: JSON.stringify(['Priority support', 'Early booking access', '5% bonus points'])
+      },
+      {
+        name: 'PLATINUM',
+        minPoints: 5000,
+        maxPoints: null,
+        color: '#E5E4E2',
+        icon: 'crown',
+        benefits: JSON.stringify(['VIP support', 'Exclusive services', '10% bonus points', 'Free cancellation'])
+      }
+    ];
+    
+    for (const tier of defaultTiers) {
+      try {
+        await dbClient.loyaltyTier.create({ data: tier });
+      } catch (error) {
+        // Ignore if already exists
+        if (error.code !== 'P2002') {
+          logger.error('Failed to create default tier', { error, tier: tier.name });
+        }
+      }
+    }
+  }
+  
+  static async createDefaultBadges(tx?: any): Promise<void> {
+    const dbClient = tx || prisma;
+    
+    const defaultBadges = [
+      {
+        name: 'SUPER_BOOKER',
+        description: 'Completed 10+ bookings',
+        icon: 'calendar-check',
+        color: '#10B981',
+        category: 'BOOKING',
+        criteria: JSON.stringify({ totalBookings: { gte: 10 } }),
+        rarity: 'COMMON'
+      },
+      {
+        name: 'TOP_REVIEWER',
+        description: 'Left 25+ reviews',
+        icon: 'star',
+        color: '#F59E0B',
+        category: 'REVIEW',
+        criteria: JSON.stringify({ totalReviews: { gte: 25 } }),
+        rarity: 'RARE'
+      },
+      {
+        name: 'LOYAL_CLIENT',
+        description: 'Earned 1000+ loyalty points',
+        icon: 'heart',
+        color: '#EF4444',
+        category: 'LOYALTY',
+        criteria: JSON.stringify({ totalPoints: { gte: 1000 } }),
+        rarity: 'EPIC'
+      },
+      {
+        name: 'REFERRAL_MASTER',
+        description: 'Successfully referred 5+ friends',
+        icon: 'user-group',
+        color: '#8B5CF6',
+        category: 'REFERRAL',
+        criteria: JSON.stringify({ successfulReferrals: { gte: 5 } }),
+        rarity: 'LEGENDARY'
+      }
+    ];
+    
+    for (const badge of defaultBadges) {
+      try {
+        await dbClient.badge.create({ data: badge });
+      } catch (error) {
+        // Ignore if already exists
+        if (error.code !== 'P2002') {
+          logger.error('Failed to create default badge', { error, badge: badge.name });
+        }
+      }
+    }
+  }
+  
+  // Method aliases for backward compatibility and controller integration
+  static async getLoyaltyBalance(userId: string): Promise<number> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { loyaltyPoints: true }
+    });
+    return user?.loyaltyPoints || 0;
+  }
+  
+  static async getLoyaltyTransactions(filters: LoyaltyFilters, page = 1, limit = 20) {
+    const offset = (page - 1) * limit;
+    
+    const where: any = {};
+    if (filters.userId) where.userId = filters.userId;
+    if (filters.type) where.type = filters.type;
+    if (filters.startDate) where.createdAt = { gte: filters.startDate };
+    if (filters.endDate) where.createdAt = { ...where.createdAt, lte: filters.endDate };
+    if (filters.bookingId) where.referenceId = filters.bookingId;
+    if (filters.campaignId) where.campaignId = filters.campaignId;
+    if (filters.minPoints) where.points = { gte: filters.minPoints };
+    if (filters.maxPoints) where.points = { ...where.points, lte: filters.maxPoints };
+    
+    const [transactions, total] = await Promise.all([
+      prisma.loyaltyTransaction.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: offset,
+        take: limit
+      }),
+      prisma.loyaltyTransaction.count({ where })
+    ]);
+    
+    const totalPages = Math.ceil(total / limit);
+    
+    return {
+      transactions,
+      total,
+      page,
+      limit,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
+    };
+  }
+  
+  static async awardPoints(data: CreateLoyaltyTransactionData): Promise<boolean> {
+    return await this.earnPoints({
+      userId: data.userId,
+      points: data.points,
+      reason: data.description,
+      referenceId: data.referenceId
+    });
+  }
+  
+  static async redeemPoints(data: RedeemPointsData): Promise<boolean> {
+    return await this.spendPoints({
+      userId: data.userId,
+      points: data.points,
+      reason: data.reason,
+      referenceId: data.bookingId
+    });
+  }
+  
+  static async getLoyaltyStats(userId: string) {
+    return await this.getUserLoyaltyStats(userId);
+  }
+  
+  static async getLoyaltyTiers() {
+    return await prisma.loyaltyTier.findMany({
+      orderBy: { minPoints: 'asc' }
+    });
+  }
+  
+  static async getUserTier(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { loyaltyPoints: true }
+    });
+    
+    if (!user) return null;
+    
+    const tiers = await this.getLoyaltyTiers();
+    return tiers.reverse().find(tier => user.loyaltyPoints >= tier.minPoints) || null;
+  }
 }
+
+export default LoyaltyService;
