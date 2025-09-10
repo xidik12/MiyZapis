@@ -75,6 +75,7 @@ const SearchPage: React.FC = () => {
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
   const [selectedRating, setSelectedRating] = useState(0);
   const [selectedDistance, setSelectedDistance] = useState<number>(0); // km, 0 means ignore
+  const [availableNow, setAvailableNow] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState('rating');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
@@ -125,9 +126,8 @@ const SearchPage: React.FC = () => {
     dispatch(fetchFavoriteSpecialists());
   }, [dispatch]);
 
-  // Fetch services from API
-  useEffect(() => {
-    const fetchServices = async () => {
+  // Fetch services from API (extracted so we can call on Apply)
+  const fetchServices = React.useCallback(async () => {
       try {
         setLoading(true);
         const filters = {
@@ -193,10 +193,12 @@ const SearchPage: React.FC = () => {
       } finally {
         setLoading(false);
       }
-    };
+  }, [searchQuery, selectedCategory, selectedLocation, priceRange, selectedRating, sortBy, selectedDistance]);
 
+  // Fetch on first mount and when deps change
+  useEffect(() => {
     fetchServices();
-  }, [searchQuery, selectedCategory, selectedLocation, priceRange, selectedRating, sortBy]);
+  }, [fetchServices]);
 
   // Update URL params
   useEffect(() => {
@@ -222,17 +224,24 @@ const SearchPage: React.FC = () => {
     setShowFavoritesOnly(false);
   };
 
-  // Filter services for favorites
+  // Filter services (favorites, availability)
   const getFilteredServices = () => {
-    if (!showFavoritesOnly) {
-      return services;
+    let list = services;
+    if (showFavoritesOnly) {
+      const favoriteSpecialistIds = favoriteSpecialists.map(fav => fav.id);
+      list = list.filter(service => favoriteSpecialistIds.includes(service.specialist.id));
     }
-    
-    // Filter services to show only those from favorited specialists
-    const favoriteSpecialistIds = favoriteSpecialists.map(fav => fav.id);
-    return services.filter(service => 
-      favoriteSpecialistIds.includes(service.specialist.id)
-    );
+    if (availableNow) {
+      // Heuristic: treat responseTime <= 30 minutes as available now
+      list = list.filter(service => typeof (service as any).specialist?.responseTime === 'number' && (service as any).specialist.responseTime <= 30);
+    }
+    return list;
+  };
+
+  // Apply in drawer: refetch, close
+  const handleApplyFilters = async () => {
+    await fetchServices();
+    setIsFilterTrayOpen(false);
   };
 
   const renderStars = (rating: number) => {
@@ -558,6 +567,13 @@ const SearchPage: React.FC = () => {
                 <FunnelIcon className="w-4 h-4" />
                 {t('search.filters') || 'Filters'}
               </button>
+              <button
+                onClick={handleApplyFilters}
+                className="hidden sm:inline-flex items-center gap-2 h-10 px-3 rounded-full bg-primary-600 text-white hover:bg-primary-700"
+                title={t('actions.apply') || 'Apply'}
+              >
+                {t('actions.apply') || 'Apply'}
+              </button>
               {(selectedCategory || selectedLocation || selectedRating > 0 || selectedDistance > 0 || showFavoritesOnly || priceRange.min > 0 || priceRange.max < 1000) && (
                 <button
                   onClick={clearFilters}
@@ -713,6 +729,16 @@ const SearchPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+                {/* Availability toggle */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('search.availableNow') || 'Only available now'}</span>
+                  <button
+                    onClick={() => setAvailableNow(!availableNow)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${availableNow ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${availableNow ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.location') || 'Location'}</label>
                   <input
@@ -780,7 +806,7 @@ const SearchPage: React.FC = () => {
                 <button className="btn btn-secondary flex-1 h-10" onClick={() => setIsFilterTrayOpen(false)}>
                   {t('actions.close') || 'Close'}
                 </button>
-                <button className="btn btn-primary flex-1 h-10" onClick={() => setIsFilterTrayOpen(false)}>
+                <button className="btn btn-primary flex-1 h-10" onClick={handleApplyFilters}>
                   {t('actions.apply') || 'Apply'}
                 </button>
               </div>
