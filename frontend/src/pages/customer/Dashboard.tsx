@@ -10,6 +10,7 @@ import { bookingService } from '@/services/booking.service';
 import { favoritesService } from '@/services/favorites.service';
 import { reviewsService } from '@/services/reviews.service';
 import { messagesService } from '@/services/messages.service';
+import { translateProfession } from '@/utils/profession';
 // Status colors for bookings
 const statusColors = {
   confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -191,8 +192,8 @@ const CustomerDashboard: React.FC = () => {
           const fullName = `${s?.user?.firstName || ''} ${s?.user?.lastName || ''}`.trim();
           return {
             id: s?.id || fs.id,
-            name: fullName || (translateProfession ? translateProfession(s?.businessName, t) : (s?.businessName || 'Specialist')),
-            service: (translateProfession ? translateProfession(s?.businessName, t) : (s?.businessName || '')),
+            name: fullName || translateProfession(s?.businessName, t) || (s?.businessName || 'Specialist'),
+            service: translateProfession(s?.businessName, t) || (s?.businessName || ''),
             rating: s?.rating || 0,
             bookings: s?.reviewCount || 0,
             specialistUserId: s?.user?.id,
