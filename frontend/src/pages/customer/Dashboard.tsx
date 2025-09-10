@@ -8,6 +8,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { bookingService } from '@/services/booking.service';
 import { favoritesService } from '@/services/favorites.service';
 import { reviewsService } from '@/services/reviews.service';
+import { messagesService } from '@/services/messages.service';
 // Status colors for bookings
 const statusColors = {
   confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -103,6 +104,7 @@ const CustomerDashboard: React.FC = () => {
   const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
   const [favoriteSpecialists, setFavoriteSpecialists] = useState<FavoriteSpecialist[]>([]);
   const [specialOffers, setSpecialOffers] = useState<SpecialOffer[]>([]);
+  const [unreadMessages, setUnreadMessages] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -123,12 +125,14 @@ const CustomerDashboard: React.FC = () => {
         setError(null);
 
         // Fetch customer's bookings
-        const [upcomingRes, completedRes, allRes, favoritesCount, myReviews] = await Promise.all([
+        const [upcomingRes, completedRes, allRes, favoritesCount, myReviews, favSpecs, unread] = await Promise.all([
           bookingService.getBookings({ limit: 10, status: 'confirmed,pending,inProgress' as any }, 'customer'),
           bookingService.getBookings({ limit: 5, status: 'COMPLETED' as any }, 'customer'),
           bookingService.getBookings({ limit: 1 }, 'customer'),
           favoritesService.getFavoritesCount().catch(() => ({ specialists: 0, services: 0 })),
           reviewsService.getMyReviews(1, 100).catch(() => ({ reviews: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 100, hasNext: false, hasPrev: false } } as any)),
+          favoritesService.getFavoriteSpecialists(1, 6).catch(() => ({ specialists: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 6, hasNext: false, hasPrev: false } } as any)),
+          messagesService.getUnreadCount().catch(() => ({ count: 0 })),
         ]);
 
         // Next appointment (earliest upcoming)
@@ -173,9 +177,22 @@ const CustomerDashboard: React.FC = () => {
           reviewsWritten,
         });
 
-        // Leave favorites/special offers empty for now (depends on respective services)
-        setFavoriteSpecialists([]);
+        // Recent favorite specialists (map to simplified view model)
+        const favSimple = ((favSpecs as any).specialists || []).map((fs: any) => {
+          const s = fs.specialist;
+          const fullName = `${s?.user?.firstName || ''} ${s?.user?.lastName || ''}`.trim();
+          return {
+            id: s?.id || fs.id,
+            name: fullName || s?.businessName || 'Specialist',
+            service: s?.businessName || '',
+            rating: s?.rating || 0,
+            bookings: s?.reviewCount || 0,
+          } as FavoriteSpecialist;
+        });
+        setFavoriteSpecialists(favSimple);
         setSpecialOffers([]);
+        // Unread messages
+        setUnreadMessages((unread as any).count || 0);
       } catch (err) {
         console.error('Failed to fetch dashboard data:', err);
         setError('Failed to load dashboard data');
@@ -327,16 +344,25 @@ const CustomerDashboard: React.FC = () => {
               iconBg="bg-gradient-to-br from-warning-500 to-warning-600"
               description={`${stats ? stats.averageRating : 0}/5.0 ${t('dashboard.customer.averageRating').toLowerCase()}`}
             />
+          <StatCard
+            title={t('dashboard.customer.favoriteSpecialists')}
+            value={stats ? stats.favoriteSpecialists : 0}
+            change={`${stats ? stats.reviewsWritten : 0} ${t('dashboard.nav.reviews').toLowerCase()}`}
+            changeType="positive"
+            icon={HeartIconSolid}
+            iconBg="bg-gradient-to-br from-info-500 to-info-600"
+            description={`${t('dashboard.customer.memberSince')} 2024`}
+          />
             <StatCard
-              title={t('dashboard.customer.favoriteSpecialists')}
-              value={stats ? stats.favoriteSpecialists : 0}
-              change={`${stats ? stats.reviewsWritten : 0} ${t('dashboard.nav.reviews').toLowerCase()}`}
+              title={t('dashboard.customer.unreadMessages')}
+              value={unreadMessages}
+              change={undefined}
               changeType="positive"
-              icon={HeartIconSolid}
-              iconBg="bg-gradient-to-br from-info-500 to-info-600"
-              description={`${t('dashboard.customer.memberSince')} 2024`}
+              icon={ChatBubbleLeftRightIcon}
+              iconBg="bg-gradient-to-br from-secondary-500 to-secondary-600"
+              description={t('dashboard.specialist.allTime')}
             />
-          </div>
+        </div>
 
           {/* Next Appointment Banner */}
           {nextAppointment && (
@@ -471,14 +497,14 @@ const CustomerDashboard: React.FC = () => {
                       </div>
                       <div>
                         <p className="font-medium text-gray-900 dark:text-white">{specialist.name}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{specialist.profession}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{specialist.service}</p>
                         <div className="flex items-center space-x-2 text-xs text-gray-400">
                           <span className="flex items-center">
                             <StarIcon className="w-3 h-3 mr-1 text-warning-500" />
                             {specialist.rating}
                           </span>
                           <span>•</span>
-                          <span>{formatPrice(specialist.priceFrom, specialist.currency)} {t('currency.from')}</span>
+                          <span>{specialist.bookings} {t('dashboard.nav.reviews').toLowerCase()}</span>
                         </div>
                       </div>
                     </div>
