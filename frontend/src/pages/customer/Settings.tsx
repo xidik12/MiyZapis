@@ -89,8 +89,33 @@ const CustomerSettings: React.FC = () => {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Addresses - start with empty array for new users
+  // Addresses - persisted per-user in localStorage until backend endpoint exists
   const [addresses, setAddresses] = useState<Address[]>([]);
+  const addressesStorageKey = currentUser?.id ? `mz.addresses.${currentUser.id}` : null;
+
+  // Load saved addresses on mount/user change
+  useEffect(() => {
+    if (!addressesStorageKey) return;
+    try {
+      const raw = localStorage.getItem(addressesStorageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setAddresses(parsed);
+      }
+    } catch (e) {
+      console.warn('Failed to load saved addresses:', e);
+    }
+  }, [addressesStorageKey]);
+
+  // Persist addresses to localStorage on change
+  useEffect(() => {
+    if (!addressesStorageKey) return;
+    try {
+      localStorage.setItem(addressesStorageKey, JSON.stringify(addresses));
+    } catch (e) {
+      console.warn('Failed to save addresses:', e);
+    }
+  }, [addresses, addressesStorageKey]);
 
   const [activeSection, setActiveSection] = useState('account');
   const [showChangePassword, setShowChangePassword] = useState(false);

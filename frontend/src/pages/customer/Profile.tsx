@@ -59,19 +59,22 @@ const CustomerProfile: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
-  const [addresses] = useState<Address[]>([
-    {
-      id: '1',
-      type: 'home',
-      label: language === 'uk' ? 'Домашня адреса' : language === 'ru' ? 'Домашний адрес' : 'Home Address',
-      street: 'вул. Індепенденс, 15, кв. 42',
-      city: 'Київ',
-      region: 'Київська область',
-      postalCode: '01001',
-      country: 'Україна',
-      isDefault: true,
-    },
-  ]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+
+  // Load saved addresses from localStorage (persisted in Settings)
+  useEffect(() => {
+    const key = currentUser?.id ? `mz.addresses.${currentUser.id}` : null;
+    if (!key) return;
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setAddresses(parsed);
+      }
+    } catch (e) {
+      console.warn('Failed to load addresses for profile:', e);
+    }
+  }, [currentUser?.id]);
   
   const [loyalty] = useState<LoyaltyInfo>({
     points: 1240,
