@@ -528,7 +528,7 @@ const SearchPage: React.FC = () => {
         </form>
 
         {/* Filters and Controls */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0 sticky-controls rounded-b-xl">
+        <div className="flex flex-col gap-3 mb-6 sticky-controls rounded-b-xl">
           {/* Quick filter chips */}
           <div className="flex items-center gap-2 overflow-x-auto flex-nowrap pb-1 -mx-2 px-2 transition-all">
             <button
@@ -608,7 +608,7 @@ const SearchPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2 order-3 sm:order-1 flex-wrap">
+            <div className="flex items-center gap-2 order-3 sm:order-1 flex-wrap flex-1 min-w-[240px]">
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 <span className="hidden sm:inline">{t('search.showing')} </span>{getFilteredServices().length} <span className="hidden sm:inline">{t('search.results')}</span>
               </span>
@@ -628,7 +628,7 @@ const SearchPage: React.FC = () => {
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2 order-2 sm:order-2">
+            <div className="flex items-center gap-2 order-2 sm:order-2 flex-wrap flex-1 min-w-[260px]">
               {/* Inline sort control for better UX */}
               <select
                 value={sortBy}
@@ -665,7 +665,7 @@ const SearchPage: React.FC = () => {
                 </button>
               )}
             </div>
-            <div className="flex items-center space-x-1 order-1 sm:order-3">
+            <div className="flex items-center space-x-1 order-1 sm:order-3 flex-shrink-0">
               {/* Mobile filter tray toggle */}
               <button
                 onClick={() => setIsFilterTrayOpen(true)}
