@@ -440,7 +440,7 @@ const SearchPage: React.FC = () => {
         {/* Filters and Controls */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0 sticky-controls rounded-b-xl">
           {/* Quick filter chips */}
-          <div className="flex flex-wrap gap-2 mb-2">
+          <div className="flex items-center gap-2 overflow-x-auto flex-nowrap pb-1 -mx-2 px-2">
             <button
               onClick={() => setSortBy('rating')}
               className={`px-3 py-1.5 rounded-full text-sm border ${sortBy === 'rating' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
@@ -478,6 +478,18 @@ const SearchPage: React.FC = () => {
             >
               3★+
             </button>
+            {/* Favorites toggle (compact) */}
+            <button
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              className={`flex items-center px-3 py-1.5 border rounded-full transition-colors whitespace-nowrap ${
+                showFavoritesOnly
+                  ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400'
+                  : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              <HeartIcon className="w-4 h-4 mr-1.5" />
+              {showFavoritesOnly ? t('search.showAll') : t('search.favorites')}
+            </button>
             {(selectedCategory || selectedLocation || selectedRating > 0 || showFavoritesOnly) && (
               <button
                 onClick={clearFilters}
@@ -488,19 +500,7 @@ const SearchPage: React.FC = () => {
             )}
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-              className={`flex items-center px-3 sm:px-4 py-2 border rounded-lg transition-colors ${
-                showFavoritesOnly
-                  ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400'
-                  : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
-            >
-              <HeartIcon className="w-5 h-5 mr-2" />
-              <span className="hidden sm:inline">
-                {showFavoritesOnly ? t('search.showAll') : t('search.favorites')}
-              </span>
-            </button>
+            {/* Favorites toggle moved to chip row above */}
 
             <select
               value={selectedCategory}

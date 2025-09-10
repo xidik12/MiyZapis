@@ -1551,6 +1551,10 @@ const translations: Translations = {
   'actions.call': { en: 'Call', uk: 'Подзвонити', ru: 'Позвонить' },
   'actions.directions': { en: 'Directions', uk: 'Маршрут', ru: 'Маршрут' },
   'actions.message': { en: 'Message', uk: 'Повідомлення', ru: 'Сообщение' },
+  // Additional common/missing keys
+  'dashboard.specialist.analytics': { en: 'Analytics', uk: 'Аналітика', ru: 'Аналитика' },
+  'reviews.verifiedBooking': { en: 'Verified booking', uk: 'Підтверджене бронювання', ru: 'Подтвержденное бронирование' },
+  'common.moreOptions': { en: 'More options', uk: 'Більше опцій', ru: 'Больше опций' },
   
   // Errors
   'errors.specialistNotFound': { en: 'Specialist not found', uk: 'Спеціаліста не знайдено', ru: 'Специалист не найден' },
