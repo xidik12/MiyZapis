@@ -6,6 +6,8 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { bookingService } from '@/services/booking.service';
+import { favoritesService } from '@/services/favorites.service';
+import { reviewsService } from '@/services/reviews.service';
 // Status colors for bookings
 const statusColors = {
   confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -121,10 +123,12 @@ const CustomerDashboard: React.FC = () => {
         setError(null);
 
         // Fetch customer's bookings
-        const [upcomingRes, completedRes, allRes] = await Promise.all([
+        const [upcomingRes, completedRes, allRes, favoritesCount, myReviews] = await Promise.all([
           bookingService.getBookings({ limit: 10, status: 'confirmed,pending,inProgress' as any }, 'customer'),
           bookingService.getBookings({ limit: 5, status: 'COMPLETED' as any }, 'customer'),
           bookingService.getBookings({ limit: 1 }, 'customer'),
+          favoritesService.getFavoritesCount().catch(() => ({ specialists: 0, services: 0 })),
+          reviewsService.getMyReviews(1, 100).catch(() => ({ reviews: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 100, hasNext: false, hasPrev: false } } as any)),
         ]);
 
         // Next appointment (earliest upcoming)
@@ -153,7 +157,10 @@ const CustomerDashboard: React.FC = () => {
         // Stats (basic derived)
         const totalSpent = completedRes.bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
         const servicesUsed = new Set(completedRes.bookings.map((b) => b.service?.id || b.serviceId)).size;
-        const reviewsWritten = completedRes.bookings.filter((b: any) => Boolean((b as any).review)).length;
+        // Reviews written and average rating from my reviews endpoint
+        const myReviewsList = (myReviews as any)?.reviews || [];
+        const reviewsWritten = myReviewsList.length;
+        const averageRating = reviewsWritten > 0 ? (myReviewsList.reduce((s: number, r: any) => s + (r.rating || 0), 0) / reviewsWritten) : 0;
         setStats({
           totalSpent,
           loyaltyPoints: user.loyaltyPoints || 0,
@@ -161,8 +168,8 @@ const CustomerDashboard: React.FC = () => {
           servicesUsed,
           completedBookings: completedRes.bookings.length,
           totalBookings: allRes.pagination?.total || completedRes.bookings.length + upcomingRes.bookings.length,
-          averageRating: 0,
-          favoriteSpecialists: 0,
+          averageRating,
+          favoriteSpecialists: (favoritesCount as any).specialists || 0,
           reviewsWritten,
         });
 
