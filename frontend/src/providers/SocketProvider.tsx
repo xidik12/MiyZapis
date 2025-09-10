@@ -5,6 +5,7 @@ import { addNotification } from '@/store/slices/notificationSlice';
 import { updateBookingStatus } from '@/store/slices/bookingSlice';
 import { socketService } from '@/services/socket.service';
 import { environment } from '@/config/environment';
+import { notificationService } from '@/services/notification.service';
 import type { 
   SocketEvent, 
   BookingSocketEvent, 
@@ -93,6 +94,18 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   useEffect(() => {
     if (!isConnected) return;
 
+    // Helper: broadcast latest unread count to sync bell badge immediately
+    const broadcastUnreadCount = async () => {
+      try {
+        const { unreadCount } = await notificationService.getUnreadCount();
+        try {
+          window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount } }));
+        } catch {}
+      } catch (e) {
+        if (environment.DEBUG) console.warn('Failed to refresh unread count:', e);
+      }
+    };
+
     // Handle booking events
     const handleBookingStatusChanged = (event: BookingSocketEvent) => {
       if (environment.DEBUG) {
@@ -126,6 +139,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }));
+        // Sync bell badge count
+        broadcastUnreadCount();
       }
     };
 
@@ -147,6 +162,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }));
+        broadcastUnreadCount();
       }
     };
 
@@ -169,6 +185,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       }
 
       dispatch(addNotification(event.data.notification));
+      broadcastUnreadCount();
     };
 
     // Handle payment events
@@ -201,6 +218,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }));
+        broadcastUnreadCount();
       }
     };
 
