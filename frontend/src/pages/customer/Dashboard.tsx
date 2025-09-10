@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useAppSelector } from '@/hooks/redux';
 import { selectUser } from '@/store/slices/authSlice';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -270,11 +271,14 @@ const CustomerDashboard: React.FC = () => {
       }
       if (conversationId) {
         navigate(`/customer/messages?conversationId=${conversationId}`);
+        toast.success(t('specialistProfile.sendMessage') || 'Message');
       } else {
         navigate('/customer/messages');
+        toast.info(t('messages.noConversations') || 'No conversations yet');
       }
     } catch {
       navigate('/customer/messages');
+      toast.error('Failed to start conversation');
     }
   };
 

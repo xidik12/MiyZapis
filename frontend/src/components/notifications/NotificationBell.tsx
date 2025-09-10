@@ -46,8 +46,21 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
     const unsubscribe = notificationService.addListener(() => {
       loadUnreadCount();
     });
-    
-    return unsubscribe;
+    // Also listen to global updates from NotificationCenter (mark-all, delete-all)
+    const onGlobalUpdate = (e: any) => {
+      const count = e?.detail?.unreadCount;
+      if (typeof count === 'number') {
+        setUnreadCount(count);
+      } else {
+        loadUnreadCount();
+      }
+    };
+    window.addEventListener('notifications:update', onGlobalUpdate as any);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('notifications:update', onGlobalUpdate as any);
+    };
   }, []);
 
   const handleClick = () => {

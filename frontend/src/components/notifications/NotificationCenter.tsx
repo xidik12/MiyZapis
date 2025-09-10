@@ -114,6 +114,11 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const markAllAsRead = async () => {
     try {
       await notificationService.markAllAsRead();
+      // Optimistically zero counts and notify listeners
+      setUnreadCount(0);
+      try {
+        window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: 0 } }));
+      } catch {}
       await loadNotifications();
     } catch (error) {
       console.error('Error marking all as read:', error);
@@ -143,6 +148,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     if (!ok) return;
     try {
       await notificationService.deleteAllNotifications();
+      setUnreadCount(0);
+      try {
+        window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: 0 } }));
+      } catch {}
       await loadNotifications();
     } catch (error) {
       console.error('Error deleting all notifications:', error);
