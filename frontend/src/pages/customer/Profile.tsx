@@ -46,7 +46,7 @@ interface LoyaltyInfo {
 }
 
 const CustomerProfile: React.FC = () => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const currentUser = useAppSelector(selectUser);
   
   // Default data - will be replaced with API calls
