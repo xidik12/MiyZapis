@@ -4,6 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { serviceService } from '../services';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
+import { selectUser } from '@/store/slices/authSlice';
 import { fetchFavoriteSpecialists, selectFavoriteSpecialists } from '../store/slices/favoritesSlice';
 import {
   MagnifyingGlassIcon,
@@ -38,6 +39,7 @@ interface ServiceWithSpecialist {
   specialist: {
     id: string;
     user: {
+      id?: string;
       firstName: string;
       lastName: string;
       avatar?: string;
@@ -62,6 +64,7 @@ const SearchPage: React.FC = () => {
   const { formatPrice } = useCurrency();
   const dispatch = useAppDispatch();
   const favoriteSpecialists = useAppSelector(selectFavoriteSpecialists);
+  const currentUser = useAppSelector(selectUser);
 
   // State
   const [services, setServices] = useState<ServiceWithSpecialist[]>([]);
@@ -161,6 +164,7 @@ const SearchPage: React.FC = () => {
           specialist: {
             id: service.specialist?.id || '',
             user: {
+              id: service.specialist?.user?.id || undefined,
               firstName: service.specialist?.user?.firstName || '',
               lastName: service.specialist?.user?.lastName || '',
               avatar: service.specialist?.user?.avatar || service.specialist?.avatar || undefined,
@@ -242,7 +246,14 @@ const SearchPage: React.FC = () => {
     ));
   };
 
-  const renderServiceCard = (service: ServiceWithSpecialist) => (
+  const renderServiceCard = (service: ServiceWithSpecialist) => {
+    const isOwnService = Boolean(
+      currentUser?.userType === 'specialist' &&
+      currentUser?.id &&
+      service.specialist?.user?.id &&
+      currentUser.id === service.specialist.user.id
+    );
+    return (
     <div
       key={service.id}
       className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 dark:border-gray-700"
@@ -340,17 +351,27 @@ const SearchPage: React.FC = () => {
             >
               {t('actions.viewProfile')}
             </Link>
-            <Link
-              to={`/booking/${service.id}`}
-              className={`flex-1 text-white text-center py-2 px-4 rounded-lg transition-colors text-sm font-medium ${
-                service.isAvailable 
-                  ? 'bg-primary-600 hover:bg-primary-700' 
-                  : 'bg-gray-400 cursor-not-allowed'
-              }`}
-              onClick={(e) => !service.isAvailable && e.preventDefault()}
-            >
-              {t('actions.book')}
-            </Link>
+            {isOwnService ? (
+              <button
+                disabled
+                className={`flex-1 text-white text-center py-2 px-4 rounded-lg text-sm font-medium bg-gray-400 cursor-not-allowed`}
+                title={t('booking.cannotBookOwn') || "You can't book your own service"}
+              >
+                {t('actions.book')}
+              </button>
+            ) : (
+              <Link
+                to={`/booking/${service.id}`}
+                className={`flex-1 text-white text-center py-2 px-4 rounded-lg transition-colors text-sm font-medium ${
+                  service.isAvailable 
+                    ? 'bg-primary-600 hover:bg-primary-700' 
+                    : 'bg-gray-400 cursor-not-allowed'
+                }`}
+                onClick={(e) => !service.isAvailable && e.preventDefault()}
+              >
+                {t('actions.book')}
+              </Link>
+            )}
             {/* Conditional Call/Directions CTAs when data exists */}
             {(() => {
               const phone = (service as any)?.specialist?.user?.phone || (service as any)?.specialist?.phone;
@@ -386,7 +407,8 @@ const SearchPage: React.FC = () => {
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

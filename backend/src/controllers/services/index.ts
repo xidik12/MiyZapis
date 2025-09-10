@@ -431,8 +431,10 @@ export class ServiceController {
               businessName: service.specialist.businessName,
               rating: service.specialist.rating,
               reviewCount: service.specialist.reviewCount,
+              completedBookings: service.specialist.completedBookings, // expose completed jobs count
               isVerified: service.specialist.isVerified,
               user: {
+                id: service.specialist.user.id,
                 firstName: service.specialist.user.firstName,
                 lastName: service.specialist.user.lastName,
                 avatar: service.specialist.user.avatar,

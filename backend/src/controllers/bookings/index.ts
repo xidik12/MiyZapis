@@ -124,6 +124,17 @@ export class BookingController {
         return;
       }
 
+      if (error.message === 'CANNOT_BOOK_OWN_SERVICE') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.BUSINESS_RULE_VIOLATION,
+            'You cannot book your own service',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
       if (error.message === 'CUSTOMER_ID_REQUIRED') {
         res.status(400).json(
           createErrorResponse(

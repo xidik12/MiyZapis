@@ -320,6 +320,38 @@ const BookingFlow: React.FC = () => {
     );
   }
 
+  // Prevent specialists from booking their own services (client-side UX guard)
+  const isOwnService = Boolean(
+    user?.userType === 'specialist' &&
+    user?.id &&
+    (
+      specialist?.user?.id === user.id ||
+      specialist?.userId === user.id ||
+      service?.specialist?.user?.id === user.id
+    )
+  );
+
+  if (isOwnService) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+            {t('booking.cannotBookOwn') || "You can't book your own service"}
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            {t('booking.cannotBookOwnDesc') || 'Please ask a customer to book this service.'}
+          </p>
+          <button
+            onClick={() => navigate(-1)}
+            className="bg-primary-600 text-white py-2 px-6 rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            {t('navigation.goBack')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 0: // Service Selection

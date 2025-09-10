@@ -108,6 +108,12 @@ export class BookingService {
         throw new Error('SERVICE_NOT_ACTIVE');
       }
 
+      // Prevent specialists from booking their own services
+      // service.specialist.userId is the User ID of the specialist who owns the service
+      if (data.customerId === service.specialist.userId) {
+        throw new Error('CANNOT_BOOK_OWN_SERVICE');
+      }
+
       // Use service duration if not provided, or validate provided duration
       const bookingDuration = data.duration || service.duration;
       if (!bookingDuration || bookingDuration <= 0) {
