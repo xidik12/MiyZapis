@@ -37,6 +37,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const swiping = useRef(false);
   const [translateX, setTranslateX] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [allNotifications, setAllNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<NotificationType | 'all'>('all');
@@ -53,9 +54,12 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const loadNotifications = async () => {
     try {
       setLoading(true);
-      const filters = selectedFilter !== 'all' ? { type: selectedFilter } : {};
-      const result = await notificationService.getNotifications(filters);
-      setNotifications(result.notifications);
+      // Always fetch all, apply category filtering client-side
+      const result = await notificationService.getNotifications();
+      setAllNotifications(result.notifications);
+      // Apply category filter client-side to accommodate backend type values (e.g. BOOKING_CONFIRMED)
+      const filtered = filterByCategory(result.notifications, selectedFilter);
+      setNotifications(filtered);
       setUnreadCount(result.unreadCount);
       
       // Get service status
@@ -74,7 +78,13 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     if (isOpen) {
       loadNotifications();
     }
-  }, [isOpen, selectedFilter]);
+  }, [isOpen]);
+
+  // Re-filter when selectedFilter or data changes
+  useEffect(() => {
+    const filtered = filterByCategory(allNotifications, selectedFilter);
+    setNotifications(filtered);
+  }, [selectedFilter, allNotifications]);
 
   // Close on Esc
   useEffect(() => {
@@ -126,6 +136,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       await notificationService.markAllAsRead();
       // Optimistically zero counts and notify listeners
       setUnreadCount(0);
+      // Optimistically mark all as read in UI
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setAllNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       try {
         window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: 0 } }));
       } catch {}
@@ -133,6 +146,28 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     } catch (error) {
       console.error('Error marking all as read:', error);
     }
+  };
+
+  // Helper: filter notifications by category tab
+  const filterByCategory = (items: Notification[], filter: NotificationType | 'all') => {
+    if (filter === 'all') return items;
+    const f = filter.toLowerCase();
+    return items.filter(n => {
+      const t = (n.type || '').toLowerCase();
+      // Accept both backend-style (BOOKING_CONFIRMED) and frontend-style (booking_confirmed)
+      switch (f) {
+        case 'booking':
+          return t.includes('booking');
+        case 'payment':
+          return t.includes('payment');
+        case 'review':
+          return t.includes('review');
+        case 'system':
+          return t.includes('system');
+        default:
+          return true;
+      }
+    });
   };
 
   // Delete notification

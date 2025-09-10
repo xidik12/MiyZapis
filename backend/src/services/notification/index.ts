@@ -561,9 +561,17 @@ export class NotificationService {
         total
       });
 
+      // Calculate actual unread count
+      const unreadCount = await this.prisma.notification.count({
+        where: {
+          userId,
+          isRead: false,
+        },
+      });
+
       return {
         notifications,
-        unreadCount: total, // This should actually be unread count, but for now return total
+        unreadCount,
         pagination: {
           page,
           limit,
