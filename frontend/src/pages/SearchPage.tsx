@@ -443,45 +443,45 @@ const SearchPage: React.FC = () => {
           <div className="flex items-center gap-2 overflow-x-auto flex-nowrap pb-1 -mx-2 px-2">
             <button
               onClick={() => setSortBy('rating')}
-              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-sm border ${sortBy === 'rating' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none ${sortBy === 'rating' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               {t('search.topRated') || 'Top Rated'}
             </button>
             <button
               onClick={() => setSortBy('reviews')}
-              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-sm border ${sortBy === 'reviews' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none ${sortBy === 'reviews' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               {t('search.mostReviewed') || 'Most Reviewed'}
             </button>
             <button
               onClick={() => setSortBy('distance')}
-              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-sm border ${sortBy === 'distance' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none ${sortBy === 'distance' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               {t('search.nearby') || 'Nearby'}
             </button>
             {/* Rating distribution quick chips */}
             <button
               onClick={() => setSelectedRating(selectedRating === 5 ? 0 : 5)}
-              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-sm border ${selectedRating === 5 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none ${selectedRating === 5 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               5★
             </button>
             <button
               onClick={() => setSelectedRating(selectedRating === 4 ? 0 : 4)}
-              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-sm border ${selectedRating === 4 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none ${selectedRating === 4 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               4★+
             </button>
             <button
               onClick={() => setSelectedRating(selectedRating === 3 ? 0 : 3)}
-              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-sm border ${selectedRating === 3 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none ${selectedRating === 3 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               3★+
             </button>
             {/* Favorites toggle (compact) */}
             <button
               onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-              className={`flex items-center px-3 py-1.5 border rounded-full transition-colors whitespace-nowrap ${
+              className={`h-9 inline-flex items-center px-3 border rounded-full transition-colors whitespace-nowrap leading-none ${
                 showFavoritesOnly
                   ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400'
                   : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -505,7 +505,7 @@ const SearchPage: React.FC = () => {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+              className="h-10 inline-flex items-center px-3 sm:px-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
             >
               {categories.map((category) => (
                 <option key={category.id} value={category.id === 'all' ? '' : category.id}>
@@ -526,7 +526,7 @@ const SearchPage: React.FC = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+                className="h-10 inline-flex items-center px-3 sm:px-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
               >
                 <option value="rating">{t('search.sortBy.rating')}</option>
                 <option value="price">{t('search.sortBy.price')}</option>
@@ -536,7 +536,7 @@ const SearchPage: React.FC = () => {
               {/* Always-visible Filters button */}
               <button
                 onClick={() => setIsFilterTrayOpen(true)}
-                className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="hidden sm:inline-flex items-center gap-2 h-10 px-3 rounded-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 <FunnelIcon className="w-4 h-4" />
                 {t('search.filters') || 'Filters'}
@@ -638,6 +638,44 @@ const SearchPage: React.FC = () => {
                       </option>
                     ))}
                   </select>
+                </div>
+                {/* Price Range */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.priceRange') || 'Price Range'}</label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    <button
+                      onClick={() => setPriceRange({ min: 0, max: 25 })}
+                      className="px-3 py-1.5 rounded-full text-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    >
+                      {t('search.price.under25') || 'Under ₴25'}
+                    </button>
+                    <button onClick={() => setPriceRange({ min: 25, max: 50 })} className="px-3 py-1.5 rounded-full text-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">₴25-₴50</button>
+                    <button onClick={() => setPriceRange({ min: 50, max: 100 })} className="px-3 py-1.5 rounded-full text-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">₴50-₴100</button>
+                    <button onClick={() => setPriceRange({ min: 100, max: 200 })} className="px-3 py-1.5 rounded-full text-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">₴100-₴200</button>
+                    <button onClick={() => setPriceRange({ min: 200, max: 1000 })} className="px-3 py-1.5 rounded-full text-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">{t('search.price.over200') || 'Over ₴200'}</button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t('search.minPrice') || 'Min'}</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={priceRange.min}
+                        onChange={(e) => setPriceRange({ ...priceRange, min: Math.max(0, Number(e.target.value) || 0) })}
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t('search.maxPrice') || 'Max'}</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={priceRange.max}
+                        onChange={(e) => setPriceRange({ ...priceRange, max: Math.max(0, Number(e.target.value) || 0) })}
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+                      />
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.location') || 'Location'}</label>
