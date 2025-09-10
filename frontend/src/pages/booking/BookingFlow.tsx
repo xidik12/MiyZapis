@@ -602,7 +602,7 @@ const BookingFlow: React.FC = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">{t('booking.bookingId')}</span>
                   <span className="font-medium text-gray-900 dark:text-white">
-                    {booking?.id || 'N/A'}
+                    {booking?.id || t('common.notAvailable') || 'N/A'}
                   </span>
                 </div>
                 

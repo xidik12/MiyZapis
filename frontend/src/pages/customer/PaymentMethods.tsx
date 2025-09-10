@@ -28,7 +28,7 @@ const PaymentMethods: React.FC = () => {
         setPaymentMethods(methods);
       } catch (error) {
         console.error('Failed to load payment methods:', error);
-        toast.error(language === 'uk' ? 'Помилка завантаження способів оплати' : language === 'ru' ? 'Ошибка загрузки способов оплаты' : 'Failed to load payment methods');
+        toast.error(t('payments.loadError') || 'Failed to load payment methods');
       } finally {
         setLoading(false);
       }
@@ -57,10 +57,10 @@ const PaymentMethods: React.FC = () => {
       
       setPaymentMethods(prev => [...prev, newMethod]);
       setShowAddModal(false);
-      toast.success(language === 'uk' ? 'Спосіб оплати додано успішно' : language === 'ru' ? 'Способ оплаты добавлен успешно' : 'Payment method added successfully');
+      toast.success(t('payments.addSuccess') || 'Payment method added successfully');
     } catch (error) {
       console.error('Failed to add payment method:', error);
-      toast.error(language === 'uk' ? 'Помилка додавання способу оплати' : language === 'ru' ? 'Ошибка добавления способа оплаты' : 'Failed to add payment method');
+      toast.error(t('payments.addError') || 'Failed to add payment method');
     } finally {
       setLoading(false);
     }
@@ -71,10 +71,10 @@ const PaymentMethods: React.FC = () => {
       setLoading(true);
       await PaymentMethodsService.deletePaymentMethod(id);
       setPaymentMethods(prev => prev.filter(pm => pm.id !== id));
-      toast.success(language === 'uk' ? 'Спосіб оплати видалено успішно' : language === 'ru' ? 'Способ оплаты удален успешно' : 'Payment method removed successfully');
+      toast.success(t('payments.removeSuccess') || 'Payment method removed successfully');
     } catch (error) {
       console.error('Failed to remove payment method:', error);
-      toast.error(language === 'uk' ? 'Помилка видалення способу оплати' : language === 'ru' ? 'Ошибка удаления способа оплаты' : 'Failed to remove payment method');
+      toast.error(t('payments.removeError') || 'Failed to remove payment method');
     } finally {
       setLoading(false);
     }
@@ -87,10 +87,10 @@ const PaymentMethods: React.FC = () => {
       setPaymentMethods(prev => 
         prev.map(pm => ({ ...pm, isDefault: pm.id === id }))
       );
-      toast.success(language === 'uk' ? 'Основний спосіб оплати змінено' : language === 'ru' ? 'Основной способ оплаты изменен' : 'Default payment method updated');
+      toast.success(t('payments.defaultSetSuccess') || 'Default payment method updated');
     } catch (error) {
       console.error('Failed to set default payment method:', error);
-      toast.error(language === 'uk' ? 'Помилка зміни основного способу оплати' : language === 'ru' ? 'Ошибка изменения основного способа оплаты' : 'Failed to set default payment method');
+      toast.error(t('payments.defaultSetError') || 'Failed to set default payment method');
     } finally {
       setLoading(false);
     }

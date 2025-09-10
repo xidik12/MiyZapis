@@ -285,7 +285,7 @@ const SpecialistDashboard: React.FC = () => {
               .map(booking => {
                 // Format date nicely instead of raw ISO format
                 const rawDate = booking.completedAt || booking.scheduledAt || booking.createdAt;
-                let formattedDate = 'N/A';
+                let formattedDate = t('common.notAvailable') || 'N/A';
                 try {
                   if (rawDate) {
                     const date = new Date(rawDate);

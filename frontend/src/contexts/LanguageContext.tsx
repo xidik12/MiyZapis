@@ -411,6 +411,20 @@ const translations: Translations = {
 
   // Time units
   'time.minutes': { en: 'min', uk: 'хв', ru: 'мин' },
+  'actions.remove': { en: 'Remove', uk: 'Видалити', ru: 'Удалить' },
+  'settings.upload.uploading': { en: 'Uploading...', uk: 'Завантаження...', ru: 'Загрузка...' },
+  'settings.upload.changePhoto': { en: 'Change Photo', uk: 'Змінити фото', ru: 'Изменить фото' },
+  'settings.payment.removed': { en: 'Payment method removed', uk: 'Спосіб оплати видалено', ru: 'Способ оплаты удален' },
+  'settings.payment.removeError': { en: 'Failed to remove payment method', uk: 'Помилка видалення способу оплати', ru: 'Ошибка удаления способа оплаты' },
+  'settings.payment.added': { en: 'Payment method added', uk: 'Спосіб оплати додано', ru: 'Способ оплаты добавлен' },
+  'settings.payment.addError': { en: 'Failed to add payment method', uk: 'Помилка додавання способу оплати', ru: 'Ошибка добавления способа оплаты' },
+  'payments.loadError': { en: 'Failed to load payment methods', uk: 'Помилка завантаження способів оплати', ru: 'Ошибка загрузки способов оплаты' },
+  'payments.addSuccess': { en: 'Payment method added successfully', uk: 'Спосіб оплати додано успішно', ru: 'Способ оплаты добавлен успешно' },
+  'payments.addError': { en: 'Failed to add payment method', uk: 'Помилка додавання способу оплати', ru: 'Ошибка добавления способа оплаты' },
+  'payments.removeSuccess': { en: 'Payment method removed successfully', uk: 'Спосіб оплати видалено успішно', ru: 'Способ оплаты удален успешно' },
+  'payments.removeError': { en: 'Failed to remove payment method', uk: 'Помилка видалення способу оплати', ru: 'Ошибка удаления способа оплаты' },
+  'payments.defaultSetSuccess': { en: 'Default payment method updated', uk: 'Основний спосіб оплати змінено', ru: 'Основной способ оплаты изменен' },
+  'payments.defaultSetError': { en: 'Failed to set default payment method', uk: 'Помилка зміни основного способу оплати', ru: 'Ошибка изменения основного способа оплаты' },
   'time.hours': { en: 'h', uk: 'год', ru: 'ч' },
 
   // Dashboard - Common

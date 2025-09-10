@@ -132,10 +132,10 @@ const CustomerSettings: React.FC = () => {
       setLoading(true);
       await PaymentMethodsService.deletePaymentMethod(id);
       setPaymentMethods(prev => prev.filter(pm => pm.id !== id));
-      toast.success(language === 'uk' ? 'Спосіб оплати видалено' : language === 'ru' ? 'Способ оплаты удален' : 'Payment method removed');
+      toast.success(t('settings.payment.removed') || 'Payment method removed');
     } catch (error) {
       console.error('Failed to remove payment method:', error);
-      toast.error(language === 'uk' ? 'Помилка видалення способу оплати' : language === 'ru' ? 'Ошибка удаления способа оплаты' : 'Failed to remove payment method');
+      toast.error(t('settings.payment.removeError') || 'Failed to remove payment method');
     } finally {
       setLoading(false);
     }
@@ -167,10 +167,10 @@ const CustomerSettings: React.FC = () => {
       
       setPaymentMethods(prev => [...prev, newMethod]);
       setShowAddPaymentModal(false);
-      toast.success(language === 'uk' ? 'Спосіб оплати додано' : language === 'ru' ? 'Способ оплаты добавлен' : 'Payment method added');
+      toast.success(t('settings.payment.added') || 'Payment method added');
     } catch (error) {
       console.error('Failed to add payment method:', error);
-      toast.error(language === 'uk' ? 'Помилка додавання способу оплати' : language === 'ru' ? 'Ошибка добавления способа оплаты' : 'Failed to add payment method');
+      toast.error(t('settings.payment.addError') || 'Failed to add payment method');
     } finally {
       setLoading(false);
     }
@@ -371,10 +371,7 @@ const CustomerSettings: React.FC = () => {
                               disabled={isUploadingImage}
                             />
                             <CameraIcon className="w-4 h-4 inline mr-2" />
-                            {isUploadingImage ? 
-                              (language === 'uk' ? 'Завантаження...' : language === 'ru' ? 'Загрузка...' : 'Uploading...') :
-                              (language === 'uk' ? 'Змінити фото' : language === 'ru' ? 'Изменить фото' : 'Change Photo')
-                            }
+                            {isUploadingImage ? (t('settings.upload.uploading') || 'Uploading...') : (t('settings.upload.changePhoto') || 'Change Photo')}
                           </label>
                           
                           {user.avatar && (
@@ -384,7 +381,7 @@ const CustomerSettings: React.FC = () => {
                               className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600"
                             >
                               <TrashIcon className="w-4 h-4 inline mr-2" />
-                              {language === 'uk' ? 'Видалити' : language === 'ru' ? 'Удалить' : 'Remove'}
+                              {t('actions.remove') || 'Remove'}
                             </button>
                           )}
                         </div>

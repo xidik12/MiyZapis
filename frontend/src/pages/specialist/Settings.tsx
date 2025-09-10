@@ -367,8 +367,8 @@ const SpecialistSettings: React.FC = () => {
                               />
                               <CameraIcon className="w-4 h-4 inline mr-2" />
                               {isUploadingImage ? 
-                                (language === 'uk' ? 'Завантаження...' : language === 'ru' ? 'Загрузка...' : 'Uploading...') :
-                                (language === 'uk' ? 'Змінити фото' : language === 'ru' ? 'Изменить фото' : 'Change Photo')
+                                (t('settings.upload.uploading') || 'Uploading...') :
+                                (t('settings.upload.changePhoto') || 'Change Photo')
                               }
                             </label>
                             
