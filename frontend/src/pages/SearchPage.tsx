@@ -461,19 +461,19 @@ const SearchPage: React.FC = () => {
             </button>
             {/* Rating distribution quick chips */}
             <button
-              onClick={() => setSelectedRating(5)}
+              onClick={() => setSelectedRating(selectedRating === 5 ? 0 : 5)}
               className={`px-3 py-1.5 rounded-full text-sm border ${selectedRating === 5 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               5★
             </button>
             <button
-              onClick={() => setSelectedRating(4)}
+              onClick={() => setSelectedRating(selectedRating === 4 ? 0 : 4)}
               className={`px-3 py-1.5 rounded-full text-sm border ${selectedRating === 4 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               4★+
             </button>
             <button
-              onClick={() => setSelectedRating(3)}
+              onClick={() => setSelectedRating(selectedRating === 3 ? 0 : 3)}
               className={`px-3 py-1.5 rounded-full text-sm border ${selectedRating === 3 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               3★+
@@ -514,23 +514,27 @@ const SearchPage: React.FC = () => {
               ))}
             </select>
 
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
-            >
-              <option value="rating">{t('search.sortBy.rating')}</option>
-              <option value="price">{t('search.sortBy.price')}</option>
-              <option value="distance">{t('search.sortBy.distance')}</option>
-              <option value="reviews">{t('search.sortBy.reviews')}</option>
-            </select>
+            {/* Sort moved to right controls for better layout */}
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-sm text-gray-600 dark:text-gray-400 order-2 sm:order-1">
+            <span className="text-sm text-gray-600 dark:text-gray-400 order-3 sm:order-1">
               <span className="hidden sm:inline">{t('search.showing')} </span>{getFilteredServices().length} <span className="hidden sm:inline">{t('search.results')}</span>
             </span>
-            <div className="flex items-center space-x-1 order-1 sm:order-2">
+            <div className="flex items-center gap-2 order-2 sm:order-2">
+              {/* Inline sort control for better UX */}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+              >
+                <option value="rating">{t('search.sortBy.rating')}</option>
+                <option value="price">{t('search.sortBy.price')}</option>
+                <option value="distance">{t('search.sortBy.distance')}</option>
+                <option value="reviews">{t('search.sortBy.reviews')}</option>
+              </select>
+            </div>
+            <div className="flex items-center space-x-1 order-1 sm:order-3">
               {/* Mobile filter tray toggle */}
               <button
                 onClick={() => setIsFilterTrayOpen(true)}

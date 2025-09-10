@@ -328,23 +328,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">Swipe right or press Esc to close</span>
         </div>
 
-        {/* Service Status */}
-        <div className="p-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${serviceStatus.mode === 'backend' ? 'bg-green-500' : 'bg-orange-500'}`} />
-              <span>Mode: {serviceStatus.mode}</span>
-            </div>
-            {serviceStatus.mode === 'local' && (
-              <button
-                onClick={() => notificationService.resetBackendConnection()}
-                className="text-blue-500 hover:text-blue-400"
-              >
-                Try Backend
-              </button>
-            )}
-          </div>
-        </div>
+        {/* Service Status removed per UX request */}
 
         {/* Controls */}
         <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 sticky top-0 z-10">
