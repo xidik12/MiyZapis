@@ -441,12 +441,8 @@ const SearchPage: React.FC = () => {
             >
               {t('actions.viewProfile')}
             </Link>
-            {isOwnService ? (
-              <button
-                disabled
-                className={`flex-1 text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-lg text-sm font-medium bg-gray-400 cursor-not-allowed`}
-                title={t('booking.cannotBookOwn') || "You can't book your own service"}
-              >
+            {false ? (
+              <button disabled className={`flex-1 text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-lg text-sm font-medium bg-gray-400 cursor-not-allowed`}>
                 {t('actions.book')}
               </button>
             ) : (
