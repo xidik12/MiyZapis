@@ -191,8 +191,8 @@ const CustomerDashboard: React.FC = () => {
           const fullName = `${s?.user?.firstName || ''} ${s?.user?.lastName || ''}`.trim();
           return {
             id: s?.id || fs.id,
-            name: fullName || s?.businessName || 'Specialist',
-            service: s?.businessName || '',
+            name: fullName || (translateProfession ? translateProfession(s?.businessName, t) : (s?.businessName || 'Specialist')),
+            service: (translateProfession ? translateProfession(s?.businessName, t) : (s?.businessName || '')),
             rating: s?.rating || 0,
             bookings: s?.reviewCount || 0,
             specialistUserId: s?.user?.id,

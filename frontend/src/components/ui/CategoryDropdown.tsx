@@ -64,6 +64,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   };
 
   const selectedCategoryName = value ? getCategoryName(value, language as 'en' | 'uk' | 'ru') : '';
+  const placeholderLabel = t('serviceForm.selectCategory') || placeholder || 'Select a category';
 
   return (
     <div className="relative">
@@ -77,7 +78,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
             } focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white appearance-none ${className}`}
           >
             <option value="">
-              {placeholder}
+              {placeholderLabel}
             </option>
             
             {/* Main Categories */}
