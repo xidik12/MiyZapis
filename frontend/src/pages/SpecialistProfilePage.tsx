@@ -322,8 +322,8 @@ const SpecialistProfilePage: React.FC = () => {
                   </>
                 );
               })()}
-              {false ? (
-                <button className="btn btn-secondary btn-sm cursor-not-allowed opacity-60" disabled>
+              {isOwnProfile ? (
+                <button className="btn btn-secondary btn-sm cursor-not-allowed opacity-60" disabled title={t('booking.cannotBookOwn') || "You can't book your own service"}>
                   {t('actions.book') || 'Book'}
                 </button>
               ) : (
@@ -596,8 +596,12 @@ const SpecialistProfilePage: React.FC = () => {
                           <p className="text-lg font-bold text-gray-900 dark:text-white">
                             {formatPrice(service.price || service.basePrice || 0)}
                           </p>
-                          {false ? (
-                            <button disabled className="inline-block mt-0 sm:mt-2 px-3 py-1 bg-gray-400 text-white rounded text-sm font-medium cursor-not-allowed">
+                          {isOwnProfile ? (
+                            <button
+                              disabled
+                              className="inline-block mt-0 sm:mt-2 px-3 py-1 bg-gray-400 text-white rounded text-sm font-medium cursor-not-allowed"
+                              title={t('booking.cannotBookOwn') || "You can't book your own service"}
+                            >
                               {t('actions.book')}
                             </button>
                           ) : (
