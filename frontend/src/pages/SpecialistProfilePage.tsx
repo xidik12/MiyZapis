@@ -31,6 +31,7 @@ import {
   HeartIcon as HeartIconSolid,
 } from '@heroicons/react/24/solid';
 import { Avatar } from '../components/ui/Avatar';
+import { translateProfession } from '@/utils/profession';
 import { getAbsoluteImageUrl } from '../utils/imageUrl';
 
 const SpecialistProfilePage: React.FC = () => {
@@ -352,7 +353,7 @@ const SpecialistProfilePage: React.FC = () => {
                   {specialist.user?.firstName} {specialist.user?.lastName}
                 </h1>
                 <p className="text-lg text-gray-600 dark:text-gray-400">
-                  {specialist.businessName}
+                  {translateProfession(specialist.businessName, t)}
                 </p>
                 
                 <div className="flex items-center mt-2">

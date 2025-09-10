@@ -8,6 +8,7 @@ import { isFeatureEnabled } from '../../config/features';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
 import { FloatingElements, UkrainianOrnament } from '../../components/ui/UkrainianElements';
 import { CategoryDropdown } from '../../components/ui/CategoryDropdown';
+import { getCategoryName } from '@/data/serviceCategories';
 import { ServiceCategory } from '../../types';
 import { specialistService } from '../../services/specialist.service';
 import { reviewsService } from '../../services/reviews.service';
@@ -773,7 +774,7 @@ const SpecialistServices: React.FC = () => {
                   </option>
                   {!categoriesLoading && categories.map((category) => (
                     <option key={category.id} value={category.id}>
-                      {category.name}
+                      {getCategoryName?.(category.id, language as 'en' | 'uk' | 'ru') || category.name}
                     </option>
                   ))}
                   {categoriesError && (

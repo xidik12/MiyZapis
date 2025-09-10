@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { socketService } from '../../services/socket.service';
+import { translateProfession } from '@/utils/profession';
 import { toast } from 'react-toastify';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -660,7 +661,7 @@ const BookingFlow: React.FC = () => {
           </h1>
           
           <p className="text-gray-600 dark:text-gray-400 mt-2">
-            {specialist.user?.firstName} {specialist.user?.lastName} - {specialist.businessName}
+            {specialist.user?.firstName} {specialist.user?.lastName} - {translateProfession(specialist.businessName, t)}
           </p>
         </div>
 

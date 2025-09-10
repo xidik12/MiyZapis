@@ -31,6 +31,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid, StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { Avatar } from '../../components/ui/Avatar';
+import { translateProfession } from '@/utils/profession';
 import { ServiceImage } from '../../components/ui/ServiceImage';
 import { Pagination } from '@/types';
 
@@ -324,13 +325,13 @@ const CustomerFavorites: React.FC = () => {
                       onClick={handleClearSearch}
                       className="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-gray-700"
                     >
-                      Clear Search
+                      {t('search.clearSearch') || 'Clear search'}
                     </button>
                     <button
                       onClick={() => navigate('/search')}
                       className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700"
                     >
-                      Browse Specialists
+                      {t('empty.browseSpecialists') || 'Browse Specialists'}
                     </button>
                   </div>
                 ) : (
@@ -362,7 +363,7 @@ const CustomerFavorites: React.FC = () => {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center space-x-2">
                                   <h3 className="font-semibold text-gray-900 truncate">
-                                    {specialist.businessName || `${specialist.user.firstName} ${specialist.user.lastName}`}
+                                    {translateProfession(specialist.businessName, t) || `${specialist.user.firstName} ${specialist.user.lastName}`}
                                   </h3>
                                   {specialist.isVerified && (
                                     <span className="text-blue-600 text-xs">✓</span>
@@ -409,7 +410,7 @@ const CustomerFavorites: React.FC = () => {
                           {specialist.experience && (
                             <div className="flex items-center text-sm text-gray-600 mb-4">
                               <UserIcon className="h-4 w-4 mr-1" />
-                              <span>{specialist.experience} years experience</span>
+                              <span>{specialist.experience} {t('specialistProfile.years') || 'years'} {t('specialist.experience') || 'experience'}</span>
                             </div>
                           )}
 
