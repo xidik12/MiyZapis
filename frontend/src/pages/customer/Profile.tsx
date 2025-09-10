@@ -215,7 +215,7 @@ const CustomerProfile: React.FC = () => {
                       {currentUser?.firstName} {currentUser?.lastName}
                     </h1>
                     <p className="text-xl text-primary-600 dark:text-primary-400 font-medium mb-3">
-                      {language === 'uk' ? 'Клієнт' : language === 'ru' ? 'Клиент' : 'Customer'}
+                      {t('profile.customer') || 'Customer'}
                     </p>
                   </div>
                 </div>
@@ -233,7 +233,7 @@ const CustomerProfile: React.FC = () => {
                   <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-xl">
                     <CalendarIcon className="h-5 w-5 text-gray-500" />
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {language === 'uk' ? 'Учасник з' : language === 'ru' ? 'Участник с' : 'Member since'} {formatMemberDate(currentUser?.createdAt || '')}
+                      {t('profile.memberSince') || 'Member since'} {formatMemberDate(currentUser?.createdAt || '')}
                     </span>
                   </div>
                   
@@ -241,7 +241,7 @@ const CustomerProfile: React.FC = () => {
                   <div className="flex items-center gap-2 px-4 py-2 bg-success-50 text-success-700 dark:bg-success-900/20 dark:text-success-300 rounded-xl">
                     <div className="w-2 h-2 bg-success-400 rounded-full animate-pulse"></div>
                     <span className="text-sm font-medium">
-                      {language === 'uk' ? 'Онлайн' : language === 'ru' ? 'Онлайн' : 'Online'}
+                      {t('common.online') || 'Online'}
                     </span>
                   </div>
                 </div>
@@ -253,7 +253,7 @@ const CustomerProfile: React.FC = () => {
               {!isEditing && (
                 <button className="px-6 py-3 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2">
                   <EyeIcon className="h-4 w-4" />
-                  {language === 'uk' ? 'Перегляд' : language === 'ru' ? 'Просмотр' : 'Preview'}
+                  {t('actions.preview') || 'Preview'}
                 </button>
               )}
               <Link

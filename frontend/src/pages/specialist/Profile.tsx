@@ -998,7 +998,7 @@ const SpecialistProfile: React.FC = () => {
                       ></div>
                     </div>
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {completionPercentage}% {language === 'uk' ? 'завершено' : language === 'ru' ? 'завершено' : 'complete'}
+                      {completionPercentage}% {t('profile.complete') || 'complete'}
                     </span>
                   </div>
                   
@@ -1007,7 +1007,7 @@ const SpecialistProfile: React.FC = () => {
                     <div className="flex items-center gap-2 px-4 py-2 bg-success-50 text-success-700 dark:bg-success-900/20 dark:text-success-300 rounded-xl border border-success-200 dark:border-success-800">
                       <DocumentCheckIcon className="h-5 w-5" />
                       <span className="font-medium text-sm">
-                        {language === 'uk' ? 'Підтверджено' : language === 'ru' ? 'Подтверждено' : 'Verified'}
+                        {t('specialist.verified') || 'Verified'}
                       </span>
                       {formatVerificationDate(profile.verification?.verifiedDate) && (
                         <span className="text-xs opacity-75 ml-1">
@@ -1022,7 +1022,7 @@ const SpecialistProfile: React.FC = () => {
                     <div className="flex items-center gap-2 px-4 py-2 bg-warning-50 text-warning-700 dark:bg-warning-900/20 dark:text-warning-300 rounded-xl border border-warning-200 dark:border-warning-800">
                       <ExclamationTriangleIcon className="h-5 w-5" />
                       <span className="font-medium text-sm">
-                        {language === 'uk' ? 'Незбережені зміни' : language === 'ru' ? 'Несохраненные изменения' : 'Unsaved changes'}
+                        {t('profile.unsavedChanges') || 'Unsaved changes'}
                       </span>
                     </div>
                   )}

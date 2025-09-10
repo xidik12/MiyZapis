@@ -1538,6 +1538,12 @@ const translations: Translations = {
   // Actions
   'actions.viewProfile': { en: 'View Profile', uk: 'Переглянути профіль', ru: 'Посмотреть профиль' },
   'actions.book': { en: 'Book', uk: 'Забронювати', ru: 'Забронировать' },
+  'actions.preview': { en: 'Preview', uk: 'Перегляд', ru: 'Просмотр' },
+  'profile.memberSince': { en: 'Member since', uk: 'Учасник з', ru: 'Участник с' },
+  'profile.customer': { en: 'Customer', uk: 'Клієнт', ru: 'Клиент' },
+  'profile.complete': { en: 'complete', uk: 'завершено', ru: 'завершено' },
+  'profile.unsavedChanges': { en: 'Unsaved changes', uk: 'Незбережені зміни', ru: 'Несохраненные изменения' },
+  'common.online': { en: 'Online', uk: 'Онлайн', ru: 'Онлайн' },
   'actions.bookNow': { en: 'Book Now', uk: 'Забронювати зараз', ru: 'Забронировать сейчас' },
   'actions.noServicesAvailable': { en: 'No services available', uk: 'Послуги недоступні', ru: 'Услуги недоступны' },
   'actions.favorite': { en: 'Favorite', uk: 'Обране', ru: 'Избранное' },
