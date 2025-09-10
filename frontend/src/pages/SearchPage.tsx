@@ -256,7 +256,7 @@ const SearchPage: React.FC = () => {
     return (
     <div
       key={service.id}
-      className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 dark:border-gray-700"
+      className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-5 sm:p-6 border border-gray-200 dark:border-gray-700"
     >
       <div className="flex items-start space-x-4">
         <div className="relative">
@@ -325,7 +325,7 @@ const SearchPage: React.FC = () => {
             {service.description}
           </p>
 
-          <div className="flex items-center justify-between mt-4">
+          <div className="flex items-center justify-between mt-3 sm:mt-4">
             <div className="text-sm text-gray-500 dark:text-gray-400">
               {(service.specialist.completedBookings ?? (service as any).specialist?.completedJobs ?? service._count?.bookings ?? 0)} {t('specialist.completedJobs')} • {service.specialist.experience}
               {typeof service.specialist.responseTime === 'number' && (
@@ -347,14 +347,14 @@ const SearchPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4">
             <Link
               to={`/specialist/${service.specialist.id}`}
-              className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-center py-2 px-4 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+              className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-center h-10 inline-flex items-center justify-center px-4 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
             >
               {t('actions.viewProfile')}
             </Link>
             {isOwnService ? (
               <button
                 disabled
-                className={`flex-1 text-white text-center py-2 px-4 rounded-lg text-sm font-medium bg-gray-400 cursor-not-allowed`}
+                className={`flex-1 text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-lg text-sm font-medium bg-gray-400 cursor-not-allowed`}
                 title={t('booking.cannotBookOwn') || "You can't book your own service"}
               >
                 {t('actions.book')}
@@ -362,7 +362,7 @@ const SearchPage: React.FC = () => {
             ) : (
               <Link
                 to={`/booking/${service.id}`}
-                className={`flex-1 text-white text-center py-2 px-4 rounded-lg transition-colors text-sm font-medium ${
+                className={`flex-1 text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-lg transition-colors text-sm font-medium ${
                   service.isAvailable 
                     ? 'bg-primary-600 hover:bg-primary-700' 
                     : 'bg-gray-400 cursor-not-allowed'
@@ -440,41 +440,41 @@ const SearchPage: React.FC = () => {
         {/* Filters and Controls */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0 sticky-controls rounded-b-xl">
           {/* Quick filter chips */}
-          <div className="flex items-center gap-2 overflow-x-auto flex-nowrap pb-1 -mx-2 px-2">
+          <div className="flex items-center gap-2 overflow-x-auto flex-nowrap pb-1 -mx-2 px-2 transition-all">
             <button
               onClick={() => setSortBy('rating')}
-              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none ${sortBy === 'rating' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none transition-colors ${sortBy === 'rating' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               {t('search.topRated') || 'Top Rated'}
             </button>
             <button
               onClick={() => setSortBy('reviews')}
-              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none ${sortBy === 'reviews' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none transition-colors ${sortBy === 'reviews' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               {t('search.mostReviewed') || 'Most Reviewed'}
             </button>
             <button
               onClick={() => setSortBy('distance')}
-              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none ${sortBy === 'distance' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none transition-colors ${sortBy === 'distance' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               {t('search.nearby') || 'Nearby'}
             </button>
             {/* Rating distribution quick chips */}
             <button
               onClick={() => setSelectedRating(selectedRating === 5 ? 0 : 5)}
-              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none ${selectedRating === 5 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none transition-colors ${selectedRating === 5 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               5★
             </button>
             <button
               onClick={() => setSelectedRating(selectedRating === 4 ? 0 : 4)}
-              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none ${selectedRating === 4 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none transition-colors ${selectedRating === 4 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               4★+
             </button>
             <button
               onClick={() => setSelectedRating(selectedRating === 3 ? 0 : 3)}
-              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none ${selectedRating === 3 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none transition-colors ${selectedRating === 3 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
             >
               3★+
             </button>
@@ -523,17 +523,17 @@ const SearchPage: React.FC = () => {
                 <span className="hidden sm:inline">{t('search.showing')} </span>{getFilteredServices().length} <span className="hidden sm:inline">{t('search.results')}</span>
               </span>
               {selectedRating > 0 && (
-                <span className="inline-flex items-center gap-1 h-7 px-2 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 text-xs">
+                <span className="inline-flex items-center gap-1 h-7 px-2 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 text-xs transition-all duration-200">
                   {t('search.rating') || 'Rating'}: {selectedRating}★
                 </span>
               )}
               {selectedDistance > 0 && (
-                <span className="inline-flex items-center gap-1 h-7 px-2 rounded-full bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 text-xs">
+                <span className="inline-flex items-center gap-1 h-7 px-2 rounded-full bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 text-xs transition-all duration-200">
                   ≤ {selectedDistance} km
                 </span>
               )}
               {(priceRange.min > 0 || priceRange.max < 1000) && (
-                <span className="inline-flex items-center gap-1 h-7 px-2 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 text-xs">
+                <span className="inline-flex items-center gap-1 h-7 px-2 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 text-xs transition-all duration-200">
                   ₴{priceRange.min}–₴{priceRange.max}
                 </span>
               )}
@@ -776,11 +776,11 @@ const SearchPage: React.FC = () => {
                   </button>
                 </div>
               </div>
-              <div className="mt-auto pt-4 flex gap-2">
-                <button className="btn btn-secondary flex-1" onClick={() => setIsFilterTrayOpen(false)}>
+              <div className="sticky bottom-0 -mx-4 px-4 pt-3 pb-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex gap-2">
+                <button className="btn btn-secondary flex-1 h-10" onClick={() => setIsFilterTrayOpen(false)}>
                   {t('actions.close') || 'Close'}
                 </button>
-                <button className="btn btn-primary flex-1" onClick={() => setIsFilterTrayOpen(false)}>
+                <button className="btn btn-primary flex-1 h-10" onClick={() => setIsFilterTrayOpen(false)}>
                   {t('actions.apply') || 'Apply'}
                 </button>
               </div>
