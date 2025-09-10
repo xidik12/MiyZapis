@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { messagesService, Conversation, Message } from '../../services/messages.service';
@@ -29,6 +30,7 @@ const SpecialistMessages: React.FC = () => {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const typingTimeoutRef = useRef<number | null>(null);
   const [isOtherTyping, setIsOtherTyping] = useState(false);
+  const [searchParams] = useSearchParams();
 
   // Load conversations from API
   useEffect(() => {
@@ -38,9 +40,13 @@ const SpecialistMessages: React.FC = () => {
         setError(null);
         const response = await messagesService.getConversations();
         setConversations(response.conversations);
-        
-        // Select first conversation if available
-        if (response.conversations.length > 0 && !selectedChat) {
+        // If conversationId is provided in URL, prefer selecting it
+        const cid = searchParams.get('conversationId');
+        const target = cid && response.conversations.find(c => c.id === cid) ? cid : null;
+        if (target) {
+          setSelectedChat(target);
+        } else if (response.conversations.length > 0 && !selectedChat) {
+          // Fallback: select first conversation
           setSelectedChat(response.conversations[0].id);
         }
       } catch (err: any) {
@@ -52,7 +58,7 @@ const SpecialistMessages: React.FC = () => {
     };
 
     loadConversations();
-  }, []);
+  }, [searchParams]);
 
   // Load messages for selected conversation
   useEffect(() => {

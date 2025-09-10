@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/redux';
 import { selectUser } from '@/store/slices/authSlice';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -81,6 +81,8 @@ interface FavoriteSpecialist {
   service: string;
   rating: number;
   bookings: number;
+  specialistUserId?: string;
+  specialistId?: string;
 }
 
 interface SpecialOffer {
@@ -96,6 +98,7 @@ const CustomerDashboard: React.FC = () => {
   const { formatPrice } = useCurrency();
   const { t, language } = useLanguage();
   const { theme } = useTheme();
+  const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
   
   // State management for dashboard data
@@ -105,6 +108,9 @@ const CustomerDashboard: React.FC = () => {
   const [favoriteSpecialists, setFavoriteSpecialists] = useState<FavoriteSpecialist[]>([]);
   const [specialOffers, setSpecialOffers] = useState<SpecialOffer[]>([]);
   const [unreadMessages, setUnreadMessages] = useState<number>(0);
+  const [favoritesPage, setFavoritesPage] = useState(1);
+  const [favoritesHasMore, setFavoritesHasMore] = useState(false);
+  const [favoritesLoading, setFavoritesLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -177,8 +183,9 @@ const CustomerDashboard: React.FC = () => {
           reviewsWritten,
         });
 
-        // Recent favorite specialists (map to simplified view model)
-        const favSimple = ((favSpecs as any).specialists || []).map((fs: any) => {
+        // Map first page of favorite specialists
+        const favPage = favSpecs as any;
+        const favSimple = (favPage.specialists || []).map((fs: any) => {
           const s = fs.specialist;
           const fullName = `${s?.user?.firstName || ''} ${s?.user?.lastName || ''}`.trim();
           return {
@@ -187,9 +194,13 @@ const CustomerDashboard: React.FC = () => {
             service: s?.businessName || '',
             rating: s?.rating || 0,
             bookings: s?.reviewCount || 0,
+            specialistUserId: s?.user?.id,
+            specialistId: s?.id,
           } as FavoriteSpecialist;
         });
         setFavoriteSpecialists(favSimple);
+        setFavoritesPage(favPage.pagination?.currentPage || 1);
+        setFavoritesHasMore(Boolean(favPage.pagination?.hasNext || (favPage.pagination?.currentPage || 1) < (favPage.pagination?.totalPages || 1)));
         setSpecialOffers([]);
         // Unread messages
         setUnreadMessages((unread as any).count || 0);
@@ -202,6 +213,70 @@ const CustomerDashboard: React.FC = () => {
     };
     fetchDashboardData();
   }, [user]);
+
+  const loadFavoritesPage = async (page: number) => {
+    try {
+      setFavoritesLoading(true);
+      const res = await favoritesService.getFavoriteSpecialists(page, 6);
+      const favSimple = res.specialists.map((fs: any) => {
+        const s = fs.specialist;
+        const fullName = `${s?.user?.firstName || ''} ${s?.user?.lastName || ''}`.trim();
+        return {
+          id: s?.id || fs.id,
+          name: fullName || s?.businessName || 'Specialist',
+          service: s?.businessName || '',
+          rating: s?.rating || 0,
+          bookings: s?.reviewCount || 0,
+          specialistUserId: s?.user?.id,
+          specialistId: s?.id,
+        } as FavoriteSpecialist;
+      });
+      setFavoriteSpecialists(prev => page === 1 ? favSimple : [...prev, ...favSimple]);
+      setFavoritesPage(res.pagination.currentPage);
+      setFavoritesHasMore(Boolean(res.pagination.hasNext || res.pagination.currentPage < res.pagination.totalPages));
+    } catch (e) {
+      // noop
+    } finally {
+      setFavoritesLoading(false);
+    }
+  };
+
+  const handleLoadMoreFavorites = async () => {
+    if (favoritesHasMore && !favoritesLoading) {
+      await loadFavoritesPage(favoritesPage + 1);
+    } else {
+      navigate('/customer/favorites');
+    }
+  };
+
+  const handleMessageFavorite = async (fav: FavoriteSpecialist) => {
+    try {
+      if (!fav.specialistUserId) {
+        navigate('/customer/messages');
+        return;
+      }
+      // Create or reuse conversation, then navigate with query to focus it
+      let conversationId: string | null = null;
+      try {
+        const conv = await messagesService.createConversation({ participantId: fav.specialistUserId });
+        conversationId = conv.id;
+      } catch (err) {
+        // Fallback: find existing
+        try {
+          const list = await messagesService.getConversations(1, 50);
+          const existing = list.conversations.find(c => c.specialist?.id === fav.specialistUserId);
+          if (existing) conversationId = existing.id;
+        } catch {}
+      }
+      if (conversationId) {
+        navigate(`/customer/messages?conversationId=${conversationId}`);
+      } else {
+        navigate('/customer/messages');
+      }
+    } catch {
+      navigate('/customer/messages');
+    }
+  };
 
   const getGreeting = () => {
     const hour = currentTime.getHours();
@@ -467,12 +542,13 @@ const CustomerDashboard: React.FC = () => {
             <div className="bg-surface rounded-2xl p-6 shadow-lg">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.customer.favoriteSpecialists')}</h3>
-                <Link 
-                  to="/customer/favorites"
-                  className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                <button
+                  onClick={handleLoadMoreFavorites}
+                  disabled={favoritesLoading}
+                  className="text-primary-600 hover:text-primary-700 text-sm font-medium disabled:opacity-50"
                 >
                   {t('dashboard.viewAll')}
-                </Link>
+                </button>
               </div>
               <div className="space-y-4">
                 {favoriteSpecialists.length === 0 ? (
@@ -487,7 +563,7 @@ const CustomerDashboard: React.FC = () => {
                   </Link>
                 </div>
               ) : (
-                favoriteSpecialists.slice(0, 3).map((specialist) => (
+                favoriteSpecialists.map((specialist) => (
                   <div key={specialist.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center">
@@ -515,15 +591,19 @@ const CustomerDashboard: React.FC = () => {
                       >
                         <EyeIcon className="w-4 h-4" />
                       </Link>
-                      <Link
-                        to="/search"
+                      <button
+                        onClick={() => handleMessageFavorite(specialist)}
                         className="p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        title={t('specialistProfile.sendMessage')}
                       >
-                        <CalendarIcon className="w-4 h-4" />
-                      </Link>
+                        <ChatBubbleLeftRightIcon className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 ))
+              )}
+              {favoritesLoading && (
+                <div className="text-center py-3 text-sm text-gray-500">Loading...</div>
               )}
               </div>
             </div>
