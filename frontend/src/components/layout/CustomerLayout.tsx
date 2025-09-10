@@ -67,13 +67,6 @@ const navigation: SidebarNavItem[] = [
     iconActive: CalendarIcon,
   },
   {
-    name: 'History',
-    nameKey: 'customer.nav.history',
-    href: '/history',
-    icon: ClockIcon,
-    iconActive: ClockIcon,
-  },
-  {
     name: 'Favorites',
     nameKey: 'customer.nav.favorites',
     href: '/favorites',

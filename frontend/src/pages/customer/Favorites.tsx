@@ -370,7 +370,20 @@ const CustomerFavorites: React.FC = () => {
                                   )}
                                 </div>
                                 <p className="text-sm text-gray-600 truncate">
-                                  {specialist.specialties.join(', ')}
+                                  {(() => {
+                                    let specs: any = specialist.specialties;
+                                    if (!specs) return null;
+                                    if (Array.isArray(specs)) return specs.join(', ');
+                                    if (typeof specs === 'string') {
+                                      try {
+                                        const parsed = JSON.parse(specs);
+                                        return Array.isArray(parsed) ? parsed.join(', ') : specs;
+                                      } catch {
+                                        return specs;
+                                      }
+                                    }
+                                    return String(specs);
+                                  })()}
                                 </p>
                               </div>
                             </div>

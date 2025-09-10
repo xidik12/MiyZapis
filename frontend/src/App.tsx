@@ -411,19 +411,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/customer/history"
-            element={
-              <ProtectedRoute requiredUserType="customer">
-                <CustomerLayout>
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">Booking History</h1>
-                    <p className="text-gray-600 mt-2">View your past bookings and service history</p>
-                  </div>
-                </CustomerLayout>
-              </ProtectedRoute>
-            }
-          />
+          {/* Removed redundant customer history route (use /customer/bookings) */}
           <Route
             path="/customer/reviews"
             element={
