@@ -369,7 +369,7 @@ const SpecialistProfilePage: React.FC = () => {
                   <MapPinIcon className="w-4 h-4 mr-1" />
                   <span>{getFormattedLocation(specialist) || t('location.notSpecified')}</span>
                   <ClockIcon className="w-4 h-4 ml-4 mr-1" />
-                  <span>{t('specialist.responseTime')}: {specialist.responseTime || 'N/A'} {t('time.minutes')}</span>
+                  <span>{t('specialist.responseTime')}: {specialist.responseTime || t('common.notAvailable') || 'N/A'} {t('time.minutes')}</span>
                 </div>
               </div>
             </div>
@@ -662,7 +662,7 @@ const SpecialistProfilePage: React.FC = () => {
                 
                 <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                   <ClockIcon className="w-4 h-4 mr-3" />
-                  <span>{t('specialist.responseTime')}: {specialist.responseTime || 'N/A'} {t('time.minutes')}</span>
+                  <span>{t('specialist.responseTime')}: {specialist.responseTime || t('common.notAvailable') || 'N/A'} {t('time.minutes')}</span>
                 </div>
               </div>
             </div>

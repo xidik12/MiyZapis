@@ -190,6 +190,7 @@ const translations: Translations = {
   'search.results.loading': { en: 'Loading results...', uk: 'Завантаження результатів...', ru: 'Загрузка результатов...' },
   'search.results.loadMore': { en: 'Load More', uk: 'Завантажити більше', ru: 'Загрузить больше' },
   'search.results.endOfResults': { en: 'You\'ve reached the end of results', uk: 'Ви досягли кінця результатів', ru: 'Вы достигли конца результатов' },
+  'common.notAvailable': { en: 'N/A', uk: 'Н/Д', ru: 'Н/Д' },
   
   // Search Controls
   'search.favorites': { en: 'Favorites', uk: 'Улюблені', ru: 'Избранное' },
@@ -385,6 +386,8 @@ const translations: Translations = {
   // Specialist Card Text
   'specialist.responseTime': { en: 'Response time', uk: 'Час відповіді', ru: 'Время отклика' },
   'specialist.completedJobs': { en: 'Completed jobs', uk: 'Виконаних робіт', ru: 'Выполненных работ' },
+  'specialist.profession': { en: 'Profession *', uk: 'Професія *', ru: 'Профессия *' },
+  'specialist.professionNotSpecified': { en: 'Profession not specified', uk: 'Професія не вказана', ru: 'Профессия не указана' },
   'specialist.yearsExperience': { en: 'years experience', uk: 'років досвіду', ru: 'лет опыта' },
   'specialist.reviews': { en: 'reviews', uk: 'відгуків', ru: 'отзывов' },
   'specialist.verified': { en: 'Verified', uk: 'Підтверджено', ru: 'Подтверждено' },

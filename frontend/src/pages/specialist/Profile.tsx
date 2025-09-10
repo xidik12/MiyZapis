@@ -983,7 +983,7 @@ const SpecialistProfile: React.FC = () => {
                       {profile.firstName} {profile.lastName}
                     </h1>
                     <p className="text-xl text-primary-600 dark:text-primary-400 font-medium mb-3">
-                      {profile.profession || (language === 'uk' ? 'Професія не вказана' : language === 'ru' ? 'Профессия не указана' : 'Profession not specified')}
+                      {profile.profession || t('specialist.professionNotSpecified') || 'Profession not specified'}
                     </p>
                   </div>
                 </div>
@@ -1343,14 +1343,14 @@ const SpecialistProfile: React.FC = () => {
                     {/* Profession */}
                     <div>
                       <label htmlFor="profession" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {language === 'uk' ? 'Професія *' : language === 'ru' ? 'Профессия *' : 'Profession *'}
+                        {t('specialist.profession') || 'Profession *'}
                       </label>
                       {isEditing ? (
                         <ProfessionDropdown
                           value={profile.profession || ''}
                           onChange={(value) => handleProfileChange('profession', value)}
                           onCustomProfession={(customValue) => handleProfileChange('profession', customValue)}
-                          placeholder={language === 'uk' ? 'Оберіть професію' : language === 'ru' ? 'Выберите профессию' : 'Select a profession'}
+                          placeholder={t('professionForm.selectProfession') || 'Select a profession'}
                           error={validationErrors.profession}
                           allowCustom={true}
                         />
@@ -1364,7 +1364,7 @@ const SpecialistProfile: React.FC = () => {
                             value={profile.profession || ''}
                             disabled={true}
                             className="w-full pl-11 pr-4 py-3 rounded-xl border bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:cursor-not-allowed dark:border-gray-600 border-gray-300"
-                            placeholder={language === 'uk' ? 'Професія не вказана' : language === 'ru' ? 'Профессия не указана' : 'Profession not specified'}
+                            placeholder={t('specialist.professionNotSpecified') || 'Profession not specified'}
                           />
                         </div>
                       )}

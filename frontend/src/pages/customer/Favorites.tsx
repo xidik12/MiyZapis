@@ -471,7 +471,7 @@ const CustomerFavorites: React.FC = () => {
                       onClick={handleClearSearch}
                       className="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-gray-700"
                     >
-                      Clear Search
+                      {t('search.clearSearch') || 'Clear search'}
                     </button>
                     <button
                       onClick={() => navigate('/search')}
