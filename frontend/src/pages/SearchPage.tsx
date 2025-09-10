@@ -21,6 +21,7 @@ import {
   StarIcon as StarIconSolid,
 } from '@heroicons/react/24/solid';
 import { Avatar } from '../components/ui/Avatar';
+import { translateProfession } from '@/utils/profession';
 import Skeleton, { SkeletonText } from '../components/ui/Skeleton';
 
 interface ServiceWithSpecialist {
@@ -290,7 +291,7 @@ const SearchPage: React.FC = () => {
           </div>
 
           <p className="text-sm text-primary-600 dark:text-primary-400 font-medium">
-            {service.specialist.businessName} • {service.specialist.user.firstName} {service.specialist.user.lastName}
+            {translateProfession(service.specialist.businessName, t)} • {service.specialist.user.firstName} {service.specialist.user.lastName}
           </p>
 
           <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
@@ -315,7 +316,7 @@ const SearchPage: React.FC = () => {
 
           <div className="flex items-center justify-between mt-4">
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              {(service.specialist.completedBookings ?? service._count?.bookings ?? 0)} {t('specialist.completedJobs')} • {service.specialist.experience}
+              {(service.specialist.completedBookings ?? (service as any).specialist?.completedJobs ?? service._count?.bookings ?? 0)} {t('specialist.completedJobs')} • {service.specialist.experience}
               {typeof service.specialist.responseTime === 'number' && (
                 <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
                   ~{service.specialist.responseTime} {t('common.minutes') || 'min'}
