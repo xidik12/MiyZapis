@@ -1431,6 +1431,7 @@ const translations: Translations = {
   'customer.online': { en: 'Online', uk: 'Онлайн', ru: 'Онлайн' },
   'customer.nav.dashboard': { en: 'Dashboard', uk: 'Головна', ru: 'Главная' },
   'customer.nav.searchServices': { en: 'Search Services', uk: 'Пошук послуг', ru: 'Поиск услуг' },
+  'customer.favorites.searchPlaceholder': { en: 'Search your favorites...', uk: 'Пошук у вибраному...', ru: 'Поиск в избранном...' },
   'customer.nav.bookings': { en: 'Bookings', uk: 'Бронювання', ru: 'Бронирования' },
   'customer.nav.history': { en: 'History', uk: 'Історія', ru: 'История' },
   'customer.nav.favorites': { en: 'Favorites', uk: 'Улюблені', ru: 'Избранные' },
