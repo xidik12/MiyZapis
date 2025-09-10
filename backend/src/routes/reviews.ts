@@ -8,6 +8,7 @@ import {
   validateUpdateReview,
   validateGetServiceReviews,
   validateGetSpecialistReviews,
+  validateGetMyReviews,
   validateReviewId,
   validateMarkReviewHelpful,
   validateReportReview,
@@ -19,6 +20,80 @@ import { logger } from '@/utils/logger';
 import { ReviewController } from '@/controllers/reviews';
 
 const router = Router();
+
+// Get user's own reviews (as a customer)
+router.get('/my-reviews', authenticateToken, validateGetMyReviews, async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json(
+        createErrorResponse(
+          ErrorCodes.VALIDATION_ERROR,
+          'Invalid query parameters',
+          req.headers['x-request-id'] as string,
+          formatValidationErrors(errors.array())
+        )
+      );
+    }
+
+    const userId = (req as AuthenticatedRequest).user?.id;
+    const {
+      page = 1,
+      limit = 20,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = req.query;
+
+    const { skip, take } = calculatePaginationOffset(Number(page), Number(limit));
+
+    // Build order by clause
+    let orderBy: any = { createdAt: 'desc' };
+    if (sortBy === 'rating') {
+      orderBy = { rating: sortOrder };
+    }
+
+    // Get total count
+    const totalCount = await prisma.review.count({
+      where: { customerId: userId }
+    });
+
+    // Get user's reviews - simple customer view
+    const reviews = await prisma.review.findMany({
+      where: { customerId: userId },
+      orderBy,
+      skip,
+      take
+    });
+
+    // Format response data for customer dashboard
+    const formattedReviews = reviews.map(review => ({
+      id: review.id,
+      rating: review.rating,
+      comment: review.comment,
+      tags: review.tags ? JSON.parse(review.tags) : [],
+      isVerified: review.isVerified,
+      isPublic: review.isPublic,
+      createdAt: review.createdAt,
+      updatedAt: review.updatedAt
+    }));
+
+    const paginationMeta = createPaginationMeta(Number(page), Number(limit), totalCount);
+
+    res.json(createSuccessResponse({
+      reviews: formattedReviews,
+      pagination: paginationMeta
+    }));
+  } catch (error) {
+    logger.error('Get my reviews error:', error);
+    res.status(500).json(
+      createErrorResponse(
+        ErrorCodes.INTERNAL_SERVER_ERROR,
+        'Failed to get your reviews',
+        req.headers['x-request-id'] as string
+      )
+    );
+  }
+});
 
 // Get service reviews
 router.get('/service/:id', validateGetServiceReviews, async (req: Request, res: Response) => {

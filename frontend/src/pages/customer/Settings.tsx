@@ -96,11 +96,14 @@ const CustomerSettings: React.FC = () => {
   // Load saved addresses on mount/user change
   useEffect(() => {
     if (!addressesStorageKey) return;
+    
     try {
       const raw = localStorage.getItem(addressesStorageKey);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) setAddresses(parsed);
+        if (Array.isArray(parsed)) {
+          setAddresses(parsed);
+        }
       }
     } catch (e) {
       console.warn('Failed to load saved addresses:', e);
@@ -110,6 +113,7 @@ const CustomerSettings: React.FC = () => {
   // Persist addresses to localStorage on change
   useEffect(() => {
     if (!addressesStorageKey) return;
+    
     try {
       localStorage.setItem(addressesStorageKey, JSON.stringify(addresses));
     } catch (e) {
