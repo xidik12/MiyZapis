@@ -8,11 +8,8 @@ const BookingRouter: React.FC = () => {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const user = useAppSelector(selectUser);
 
-  // Allow customers and guests to access the booking flow.
-  // Redirect specialists to their dashboard to avoid self-booking via UI.
-  if (isAuthenticated && user?.userType === 'specialist') {
-    return <Navigate to="/specialist/dashboard" replace />;
-  }
+  // Allow customers, specialists, and guests to access the booking flow.
+  // The BookingFlow component will handle preventing specialists from self-booking.
   return <BookingFlow />;
 };
 

@@ -129,7 +129,12 @@
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" node check-review.js)",
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" node ../check-review.js)",
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" node check-specialists-db.js)",
-      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" node check-specialists-db.js)"
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" node check-specialists-db.js)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma migrate dev --name add-comprehensive-loyalty-program)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" PORT=3007 npm start)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma migrate dev --name add-loyalty-program)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma generate)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx tsx src/scripts/seed-loyalty.ts)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

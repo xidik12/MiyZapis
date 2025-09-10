@@ -27,6 +27,7 @@ import {
   CreditCardIcon,
   MagnifyingGlassIcon,
   ArrowRightOnRectangleIcon,
+  ChatBubbleLeftEllipsisIcon,
 } from '@heroicons/react/24/outline';
 import { HomeIcon as HomeIconSolid } from '@heroicons/react/24/solid';
 
@@ -79,6 +80,13 @@ const navigation: SidebarNavItem[] = [
     href: '/reviews',
     icon: StarIcon,
     iconActive: StarIcon,
+  },
+  {
+    name: 'Messages',
+    nameKey: 'customer.nav.messages',
+    href: '/messages',
+    icon: ChatBubbleLeftEllipsisIcon,
+    iconActive: ChatBubbleLeftEllipsisIcon,
   },
   {
     name: 'Payments',

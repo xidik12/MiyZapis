@@ -326,10 +326,19 @@ const BookingFlow: React.FC = () => {
     user?.id &&
     (
       specialist?.user?.id === user.id ||
-      specialist?.userId === user.id ||
       service?.specialist?.user?.id === user.id
     )
   );
+  
+  // Debug logging for specialists
+  if (user?.userType === 'specialist' && (specialist || service)) {
+    console.log('🔍 BookingFlow: Specialist booking check:', {
+      userId: user.id,
+      specialistUserId: specialist?.user?.id,
+      serviceSpecialistUserId: service?.specialist?.user?.id,
+      isOwnService
+    });
+  }
 
   if (isOwnService) {
     return (
