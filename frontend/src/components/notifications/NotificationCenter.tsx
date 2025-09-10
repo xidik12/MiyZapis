@@ -103,8 +103,18 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   // Mark notification as read
   const markAsRead = async (notificationId: string) => {
     try {
+      // Optimistic update
+      const target = notifications.find(n => n.id === notificationId);
+      if (target && !target.isRead) {
+        setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+        try {
+          window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: Math.max(0, (unreadCount - 1)) } }));
+        } catch {}
+      }
       await notificationService.markAsRead(notificationId);
-      await loadNotifications(); // Reload to update counts
+      // Refresh in background to ensure consistency
+      loadNotifications();
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
@@ -128,8 +138,17 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   // Delete notification
   const deleteNotification = async (notificationId: string) => {
     try {
+      // Optimistic update, adjust unread count if needed
+      const target = notifications.find(n => n.id === notificationId);
+      if (target && !target.isRead) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+        try {
+          window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: Math.max(0, (unreadCount - 1)) } }));
+        } catch {}
+      }
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
       await notificationService.deleteNotification(notificationId);
-      await loadNotifications();
+      loadNotifications();
     } catch (error) {
       console.error('Error deleting notification:', error);
     }
