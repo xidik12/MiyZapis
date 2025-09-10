@@ -256,6 +256,12 @@ const SpecialistProfilePage: React.FC = () => {
     );
   }
 
+  const isOwnProfile = Boolean(
+    user?.userType === 'specialist' &&
+    user?.id &&
+    (specialist?.user?.id === user.id || specialist?.userId === user.id)
+  );
+
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <StarIconSolid
@@ -316,7 +322,13 @@ const SpecialistProfilePage: React.FC = () => {
                   </>
                 );
               })()}
-              <Link to={`/booking/${services[0]?.id || ''}`} className="btn btn-primary btn-sm text-white focus-visible-ring">{t('actions.book') || 'Book'}</Link>
+              {isOwnProfile ? (
+                <button className="btn btn-secondary btn-sm cursor-not-allowed opacity-60" disabled title={t('booking.cannotBookOwn') || "You can't book your own service"}>
+                  {t('actions.book') || 'Book'}
+                </button>
+              ) : (
+                <Link to={`/booking/${services[0]?.id || ''}`} className="btn btn-primary btn-sm text-white focus-visible-ring">{t('actions.book') || 'Book'}</Link>
+              )}
               <Link to={`/specialist/${specialistId}#messages`} className="btn btn-secondary btn-sm focus-visible-ring">{t('actions.message') || 'Message'}</Link>
             </div>
           </div>
@@ -406,8 +418,9 @@ const SpecialistProfilePage: React.FC = () => {
               
               {services.length > 0 ? (
                 <Link
-                  to={`/book/${services[0]?.id}`}
-                  className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center"
+                  to={isOwnProfile ? '#' : `/book/${services[0]?.id}`}
+                  onClick={(e) => { if (isOwnProfile) e.preventDefault(); }}
+                  className={`${isOwnProfile ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'} text-white px-6 py-2 rounded-lg transition-colors flex items-center justify-center`}
                 >
                   <CalendarIcon className="w-5 h-5 mr-2" />
                   {t('actions.bookNow')}
@@ -583,12 +596,22 @@ const SpecialistProfilePage: React.FC = () => {
                           <p className="text-lg font-bold text-gray-900 dark:text-white">
                             {formatPrice(service.price || service.basePrice || 0)}
                           </p>
-                          <Link
-                            to={`/book/${service.id}`}
-                            className="inline-block mt-0 sm:mt-2 px-3 py-1 bg-primary-600 text-white hover:bg-primary-700 rounded text-sm font-medium transition-colors"
-                          >
-                            {t('actions.book')}
-                          </Link>
+                          {isOwnProfile ? (
+                            <button
+                              disabled
+                              className="inline-block mt-0 sm:mt-2 px-3 py-1 bg-gray-400 text-white rounded text-sm font-medium cursor-not-allowed"
+                              title={t('booking.cannotBookOwn') || "You can't book your own service"}
+                            >
+                              {t('actions.book')}
+                            </button>
+                          ) : (
+                            <Link
+                              to={`/book/${service.id}`}
+                              className="inline-block mt-0 sm:mt-2 px-3 py-1 bg-primary-600 text-white hover:bg-primary-700 rounded text-sm font-medium transition-colors"
+                            >
+                              {t('actions.book')}
+                            </Link>
+                          )}
                         </div>
                       </div>
                     </div>

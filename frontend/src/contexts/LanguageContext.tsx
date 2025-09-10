@@ -1548,6 +1548,9 @@ const translations: Translations = {
   'actions.noServicesAvailable': { en: 'No services available', uk: 'Послуги недоступні', ru: 'Услуги недоступны' },
   'actions.favorite': { en: 'Favorite', uk: 'Обране', ru: 'Избранное' },
   'actions.unfavorite': { en: 'Remove from Favorites', uk: 'Видалити з обраного', ru: 'Удалить из избранного' },
+  'actions.call': { en: 'Call', uk: 'Подзвонити', ru: 'Позвонить' },
+  'actions.directions': { en: 'Directions', uk: 'Маршрут', ru: 'Маршрут' },
+  'actions.message': { en: 'Message', uk: 'Повідомлення', ru: 'Сообщение' },
   
   // Errors
   'errors.specialistNotFound': { en: 'Specialist not found', uk: 'Спеціаліста не знайдено', ru: 'Специалист не найден' },
@@ -1558,6 +1561,10 @@ const translations: Translations = {
   // Common
   'common.error': { en: 'Error', uk: 'Помилка', ru: 'Ошибка' },
   'common.retry': { en: 'Retry', uk: 'Повторити', ru: 'Повторить' },
+  
+  // Booking restrictions
+  'booking.cannotBookOwn': { en: "You can't book your own service", uk: 'Ви не можете бронювати власну послугу', ru: 'Вы не можете бронировать собственную услугу' },
+  'booking.cannotBookOwnDesc': { en: 'Please ask a customer to book this service.', uk: 'Будь ласка, попросіть клієнта забронювати цю послугу.', ru: 'Попросите клиента забронировать эту услугу.' },
 };
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

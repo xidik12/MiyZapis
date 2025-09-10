@@ -52,11 +52,13 @@ export class SpecialistService {
       // Handle user data nesting
       user: specialistData.user ? {
         ...specialistData.user,
+        id: specialistData.user.id || specialistData.userId || specialistData.id,
         firstName: specialistData.user.firstName || specialistData.firstName,
         lastName: specialistData.user.lastName || specialistData.lastName,
         avatar: specialistData.user.avatar || specialistData.avatar,
         isVerified: specialistData.user.isVerified || specialistData.isVerified || false
       } : {
+        id: specialistData.userId || specialistData.id,
         firstName: specialistData.firstName,
         lastName: specialistData.lastName,
         avatar: specialistData.avatar,
