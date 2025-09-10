@@ -226,6 +226,8 @@ const translations: Translations = {
   'search.priceRange': { en: 'Price Range', uk: 'Діапазон цін', ru: 'Диапазон цен' },
   'search.minPrice': { en: 'Min', uk: 'Мін', ru: 'Мин' },
   'search.maxPrice': { en: 'Max', uk: 'Макс', ru: 'Макс' },
+  'search.savedFilters': { en: 'Saved filters', uk: 'Збережені фільтри', ru: 'Сохраненные фильтры' },
+  'search.noSavedFilters': { en: 'No saved filters yet.', uk: 'Збережених фільтрів ще немає.', ru: 'Сохраненных фильтров пока нет.' },
   
   // Specialist Card
   'search.specialist.from': { en: 'From', uk: 'Від', ru: 'От' },
@@ -1557,6 +1559,8 @@ const translations: Translations = {
   'actions.message': { en: 'Message', uk: 'Повідомлення', ru: 'Сообщение' },
   'actions.apply': { en: 'Apply', uk: 'Застосувати', ru: 'Применить' },
   'actions.close': { en: 'Close', uk: 'Закрити', ru: 'Закрыть' },
+  'actions.save': { en: 'Save', uk: 'Зберегти', ru: 'Сохранить' },
+  'actions.delete': { en: 'Delete', uk: 'Видалити', ru: 'Удалить' },
   // Additional common/missing keys
   'dashboard.specialist.analytics': { en: 'Analytics', uk: 'Аналітика', ru: 'Аналитика' },
   'reviews.verifiedBooking': { en: 'Verified booking', uk: 'Підтверджене бронювання', ru: 'Подтвержденное бронирование' },

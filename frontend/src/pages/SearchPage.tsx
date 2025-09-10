@@ -82,6 +82,15 @@ const SearchPage: React.FC = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [isFilterTrayOpen, setIsFilterTrayOpen] = useState(false);
+  // Saved filter presets
+  const [presets, setPresets] = useState<Array<{ name: string; data: any }>>(() => {
+    try {
+      const raw = localStorage.getItem('search-presets');
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  });
+  const [showSaveInput, setShowSaveInput] = useState(false);
+  const [presetName, setPresetName] = useState('');
 
   // Fetch categories from API
   useEffect(() => {
@@ -141,8 +150,21 @@ const SearchPage: React.FC = () => {
           sortOrder: 'desc' as const, // Default to descending (best first)
           distance: selectedDistance > 0 ? selectedDistance : undefined,
         };
-        
-        const data = await serviceService.searchServices(filters);
+        let data: any;
+        if (sortBy === 'distance' && typeof navigator !== 'undefined' && navigator.geolocation) {
+          try {
+            const coords = await new Promise<GeolocationCoordinates>((resolve, reject) => {
+              navigator.geolocation.getCurrentPosition((pos) => resolve(pos.coords), (err) => reject(err), { timeout: 5000 });
+            });
+            const byLoc = await serviceService.getServicesByLocation(coords.latitude, coords.longitude, selectedDistance || 50, 1, 20);
+            data = { services: byLoc.services, pagination: byLoc.pagination };
+          } catch (e) {
+            console.warn('Geolocation denied/unavailable. Fallback to normal search.', e);
+            data = await serviceService.searchServices(filters);
+          }
+        } else {
+          data = await serviceService.searchServices(filters);
+        }
         
         // Transform the data to match our interface based on actual backend response
         const toMinutes = (v: any) => {
@@ -151,7 +173,7 @@ const SearchPage: React.FC = () => {
           return n > 300 ? Math.round(n / 60000) : n;
         };
 
-        const servicesWithSpecialists = (data.services || []).map((service: any) => ({
+        let servicesWithSpecialists = (data.services || []).map((service: any) => ({
           id: service.id,
           name: service.name,
           description: service.description,
@@ -186,6 +208,21 @@ const SearchPage: React.FC = () => {
           isAvailable: true // Assume available if service exists
         }));
         
+        // Optional refine: available now via backend availability (cap calls for perf)
+        if (availableNow && servicesWithSpecialists.length > 0) {
+          const cap = Math.min(servicesWithSpecialists.length, 24);
+          const subset = servicesWithSpecialists.slice(0, cap);
+          const refined = await Promise.allSettled(subset.map(async (svc) => {
+            try {
+              const availability = await serviceService.getServiceAvailability(svc.id, 1);
+              const today = availability?.[0];
+              if (today?.available && today?.earliestSlot) return svc;
+            } catch {}
+            return null;
+          }));
+          servicesWithSpecialists = refined.map(r => (r.status === 'fulfilled' ? r.value : null)).filter(Boolean) as typeof servicesWithSpecialists;
+        }
+
         setServices(servicesWithSpecialists);
       } catch (error) {
         console.error('Error fetching services:', error);
@@ -193,7 +230,7 @@ const SearchPage: React.FC = () => {
       } finally {
         setLoading(false);
       }
-  }, [searchQuery, selectedCategory, selectedLocation, priceRange, selectedRating, sortBy, selectedDistance]);
+  }, [searchQuery, selectedCategory, selectedLocation, priceRange, selectedRating, sortBy, selectedDistance, availableNow]);
 
   // Fetch on first mount and when deps change
   useEffect(() => {
@@ -212,6 +249,50 @@ const SearchPage: React.FC = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     // Search is handled by useEffect
+  };
+
+  // Presets helpers
+  const savePreset = () => {
+    const name = (presetName || 'My filter').trim();
+    if (!name) return;
+    const preset = {
+      name,
+      data: {
+        searchQuery,
+        selectedCategory,
+        selectedLocation,
+        priceRange,
+        selectedRating,
+        selectedDistance,
+        showFavoritesOnly,
+        sortBy,
+        availableNow,
+      }
+    };
+    const next = [preset, ...presets.filter(p => p.name !== name)].slice(0, 8);
+    setPresets(next);
+    try { localStorage.setItem('search-presets', JSON.stringify(next)); } catch {}
+    setPresetName('');
+    setShowSaveInput(false);
+  };
+
+  const applyPreset = (p: { name: string; data: any }) => {
+    const d = p.data || {};
+    setSearchQuery(d.searchQuery ?? '');
+    setSelectedCategory(d.selectedCategory ?? '');
+    setSelectedLocation(d.selectedLocation ?? '');
+    setPriceRange(d.priceRange ?? { min: 0, max: 1000 });
+    setSelectedRating(d.selectedRating ?? 0);
+    setSelectedDistance(d.selectedDistance ?? 0);
+    setShowFavoritesOnly(!!d.showFavoritesOnly);
+    setSortBy(d.sortBy ?? 'rating');
+    setAvailableNow(!!d.availableNow);
+  };
+
+  const deletePreset = (name: string) => {
+    const next = presets.filter(p => p.name !== name);
+    setPresets(next);
+    try { localStorage.setItem('search-presets', JSON.stringify(next)); } catch {}
   };
 
   const clearFilters = () => {
@@ -690,6 +771,38 @@ const SearchPage: React.FC = () => {
                       </option>
                     ))}
                   </select>
+                </div>
+                {/* Saved filters */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('search.savedFilters') || 'Saved filters'}</label>
+                    {!showSaveInput ? (
+                      <button onClick={() => setShowSaveInput(true)} className="text-sm text-primary-600 hover:text-primary-700">{t('actions.save') || 'Save'}</button>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <input
+                          value={presetName}
+                          onChange={(e) => setPresetName(e.target.value)}
+                          placeholder={t('search.savedFilters') || 'Saved filters'}
+                          className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+                        />
+                        <button onClick={savePreset} className="text-sm text-primary-600 hover:text-primary-700">{t('actions.save') || 'Save'}</button>
+                        <button onClick={() => { setShowSaveInput(false); setPresetName(''); }} className="text-sm text-gray-500 hover:text-gray-700">{t('actions.close') || 'Close'}</button>
+                      </div>
+                    )}
+                  </div>
+                  {presets.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {presets.map((p) => (
+                        <span key={p.name} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-sm">
+                          <button className="text-primary-600 hover:text-primary-700" onClick={() => applyPreset(p)}>{p.name}</button>
+                          <button className="text-gray-400 hover:text-red-600" aria-label={t('actions.delete') || 'Delete'} onClick={() => deletePreset(p.name)}>×</button>
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('search.noSavedFilters') || 'No saved filters yet.'}</p>
+                  )}
                 </div>
                 {/* Price Range */}
                 <div>
