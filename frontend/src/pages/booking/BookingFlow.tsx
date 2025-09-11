@@ -8,6 +8,7 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { specialistService, serviceService, bookingService } from '../../services';
+import { loyaltyService, UserLoyalty } from '@/services/loyalty.service';
 import {
   CalendarIcon,
   ClockIcon,
@@ -16,6 +17,8 @@ import {
   CheckCircleIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
+  GiftIcon,
+  StarIcon,
 } from '@heroicons/react/24/outline';
 
 interface BookingStep {
@@ -53,6 +56,8 @@ const BookingFlow: React.FC = () => {
   const [bookingNotes, setBookingNotes] = useState('');
   const [bookingResult, setBookingResult] = useState<any>(null);
   const [conflictHint, setConflictHint] = useState<{ active: boolean; lastTried?: string }>({ active: false });
+  const [loyaltyData, setLoyaltyData] = useState<UserLoyalty | null>(null);
+  const [pointsToEarn, setPointsToEarn] = useState<number>(0);
 
   const steps: BookingStep[] = [
     { id: 'service', title: t('booking.selectService'), completed: false },
@@ -128,6 +133,27 @@ const BookingFlow: React.FC = () => {
     fetchBookingData();
   }, [specialistId, serviceId]);
 
+  // Fetch loyalty data and calculate points to earn
+  useEffect(() => {
+    const fetchLoyaltyData = async () => {
+      if (!user || !service) return;
+      
+      try {
+        const loyalty = await loyaltyService.getUserLoyalty().catch(() => null);
+        setLoyaltyData(loyalty);
+
+        // Calculate points to earn (typically 1% of service price)
+        const servicePrice = service.price || service.basePrice || 0;
+        const earnedPoints = Math.floor(servicePrice * 0.01); // 1 point per 1 currency unit spent
+        setPointsToEarn(earnedPoints);
+      } catch (error) {
+        console.error('Error fetching loyalty data:', error);
+      }
+    };
+
+    fetchLoyaltyData();
+  }, [user, service]);
+
   useEffect(() => {
     // Fetch available dates when specialist is loaded
     const fetchAvailableDates = async () => {
@@ -193,13 +219,9 @@ const BookingFlow: React.FC = () => {
         setAvailableSlots(slots || []);
       } catch (error) {
         console.error('❌ BookingFlow: Error fetching available slots:', error);
-        // For now, provide some default time slots for testing
-        const defaultSlots = [
-          '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-          '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
-        ];
-        console.log('🕰️ BookingFlow: Using default slots:', defaultSlots);
-        setAvailableSlots(defaultSlots);
+        // Don't show any slots if there's an error - better to show empty than incorrect availability
+        setAvailableSlots([]);
+        toast.error('Unable to load available time slots. Please try again.');
       }
     };
 
@@ -451,7 +473,7 @@ const BookingFlow: React.FC = () => {
                 </h3>
                 {conflictHint.active && (
                   <div className="flex items-center justify-between bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-2 rounded-lg mb-4">
-                    <div className="text-sm">That time just got booked. Try next available?</div>
+                    <div className="text-sm">{t('booking.timeConflict') || 'That time just got booked. Try next available?'}</div>
                     <button
                       onClick={() => {
                         if (!availableSlots || availableSlots.length === 0) return;
@@ -567,6 +589,33 @@ const BookingFlow: React.FC = () => {
                       {formatPrice(service.price || service.basePrice || 0, service.currency)}
                     </span>
                   </div>
+                  
+                  {/* Loyalty Points to Earn */}
+                  {loyaltyData && pointsToEarn > 0 && (
+                    <div className="flex justify-between mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                      <div className="flex items-center space-x-2">
+                        <GiftIcon className="h-4 w-4 text-purple-500" />
+                        <span className="text-sm text-purple-600 dark:text-purple-400 font-medium">
+                          Points you'll earn
+                        </span>
+                      </div>
+                      <span className="text-sm font-bold text-purple-600 dark:text-purple-400">
+                        +{pointsToEarn} points
+                      </span>
+                    </div>
+                  )}
+                  
+                  {/* Current Loyalty Points */}
+                  {loyaltyData && (
+                    <div className="flex justify-between mt-1">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        Your current points
+                      </span>
+                      <span className="text-xs text-gray-600 dark:text-gray-300">
+                        {loyaltyData.currentPoints.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -576,14 +625,81 @@ const BookingFlow: React.FC = () => {
       case 3: // Payment
         return (
           <div className="space-y-6">
+            {/* Payment Summary */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">
                 {t('booking.payment')}
               </h3>
               
-              <p className="text-gray-600 dark:text-gray-400 text-center py-8">
-                {t('booking.paymentIntegrationPending')}
-              </p>
+              {/* Order Summary */}
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="font-medium text-gray-900 dark:text-white">{service.name}</span>
+                  <span className="font-bold text-gray-900 dark:text-white">
+                    {formatPrice(service.price || service.basePrice || 0, service.currency)}
+                  </span>
+                </div>
+                
+                <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                  <div className="flex justify-between">
+                    <span>Duration:</span>
+                    <span>{service.duration} minutes</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Date:</span>
+                    <span>{selectedDate?.toLocaleDateString()} at {selectedTime}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Specialist:</span>
+                    <span>{specialist.user?.firstName} {specialist.user?.lastName}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Loyalty Benefits */}
+              {loyaltyData && (
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-4 mb-6">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="h-8 w-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                      <GiftIcon className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">Loyalty Rewards</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {loyaltyData.tier?.name || 'Bronze'} Member Benefits
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
+                      <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                        +{pointsToEarn}
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Points to earn</p>
+                    </div>
+                    <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
+                      <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                        {loyaltyData.currentPoints.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Current points</p>
+                    </div>
+                  </div>
+                  
+                  <p className="text-xs text-purple-600 dark:text-purple-400 text-center mt-3">
+                    After this booking: {(loyaltyData.currentPoints + pointsToEarn).toLocaleString()} points
+                  </p>
+                </div>
+              )}
+              
+              <div className="text-center py-4 mb-6">
+                <p className="text-gray-600 dark:text-gray-400 mb-2">
+                  {t('booking.paymentIntegrationPending')}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-500">
+                  Complete booking to earn your loyalty points
+                </p>
+              </div>
               
               <button
                 onClick={handleBookingSubmit}
@@ -616,6 +732,34 @@ const BookingFlow: React.FC = () => {
                   : t('booking.manualBookingMessage')
                 }
               </p>
+
+              {/* Loyalty Points Earned Notification */}
+              {loyaltyData && pointsToEarn > 0 && isAutoBooked && (
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-4 mb-6">
+                  <div className="flex items-center justify-center space-x-3 mb-2">
+                    <div className="h-10 w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <GiftIcon className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-semibold text-purple-600 dark:text-purple-400">
+                        🎉 You earned {pointsToEarn} loyalty points!
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        New balance: {(loyaltyData.currentPoints + pointsToEarn).toLocaleString()} points
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <button
+                      onClick={() => window.open('/loyalty', '_blank')}
+                      className="inline-flex items-center px-3 py-1.5 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
+                    >
+                      <StarIcon className="h-4 w-4 mr-1" />
+                      View Loyalty Dashboard
+                    </button>
+                  </div>
+                </div>
+              )}
               
               {isPending && (
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">

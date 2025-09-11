@@ -10,6 +10,7 @@ import { bookingService } from '@/services/booking.service';
 import { favoritesService } from '@/services/favorites.service';
 import { reviewsService } from '@/services/reviews.service';
 import { messagesService } from '@/services/messages.service';
+import { loyaltyService, UserLoyalty, LoyaltyStats } from '@/services/loyalty.service';
 import { translateProfession } from '@/utils/profession';
 // Status colors for bookings
 const statusColors = {
@@ -50,6 +51,10 @@ import {
 interface CustomerStats {
   totalSpent: number;
   loyaltyPoints: number;
+  lifetimePoints: number;
+  currentTier: string;
+  nextTierPoints: number;
+  monthlyPoints: number;
   savedAmount: number;
   servicesUsed: number;
   completedBookings: number;
@@ -110,6 +115,8 @@ const CustomerDashboard: React.FC = () => {
   const [favoriteSpecialists, setFavoriteSpecialists] = useState<FavoriteSpecialist[]>([]);
   const [specialOffers, setSpecialOffers] = useState<SpecialOffer[]>([]);
   const [unreadMessages, setUnreadMessages] = useState<number>(0);
+  const [loyaltyData, setLoyaltyData] = useState<UserLoyalty | null>(null);
+  const [loyaltyStats, setLoyaltyStats] = useState<LoyaltyStats | null>(null);
   const [favoritesPage, setFavoritesPage] = useState(1);
   const [favoritesHasMore, setFavoritesHasMore] = useState(false);
   const [favoritesLoading, setFavoritesLoading] = useState(false);
@@ -132,8 +139,8 @@ const CustomerDashboard: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch customer's bookings
-        const [upcomingRes, completedRes, allRes, favoritesCount, myReviews, favSpecs, unread] = await Promise.all([
+        // Fetch customer's bookings and loyalty data
+        const [upcomingRes, completedRes, allRes, favoritesCount, myReviews, favSpecs, unread, loyaltyProfile, loyaltyStatsData] = await Promise.all([
           bookingService.getBookings({ limit: 10, status: 'confirmed,pending,inProgress' as any }, 'customer'),
           bookingService.getBookings({ limit: 5, status: 'COMPLETED' as any }, 'customer'),
           bookingService.getBookings({ limit: 1 }, 'customer'),
@@ -141,7 +148,13 @@ const CustomerDashboard: React.FC = () => {
           reviewsService.getMyReviews(1, 100).catch(() => ({ reviews: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 100, hasNext: false, hasPrev: false } } as any)),
           favoritesService.getFavoriteSpecialists(1, 6).catch(() => ({ specialists: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 6, hasNext: false, hasPrev: false } } as any)),
           messagesService.getUnreadCount().catch(() => ({ count: 0 })),
+          loyaltyService.getUserLoyalty().catch(() => null),
+          loyaltyService.getLoyaltyStats().catch(() => null),
         ]);
+
+        // Set loyalty data
+        setLoyaltyData(loyaltyProfile);
+        setLoyaltyStats(loyaltyStatsData);
 
         // Next appointment (earliest upcoming)
         const upcomingSorted = [...upcomingRes.bookings].sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
@@ -175,7 +188,11 @@ const CustomerDashboard: React.FC = () => {
         const averageRating = reviewsWritten > 0 ? (myReviewsList.reduce((s: number, r: any) => s + (r.rating || 0), 0) / reviewsWritten) : 0;
         setStats({
           totalSpent,
-          loyaltyPoints: user.loyaltyPoints || 0,
+          loyaltyPoints: loyaltyProfile?.currentPoints || 0,
+          lifetimePoints: loyaltyProfile?.lifetimePoints || 0,
+          currentTier: loyaltyStatsData?.currentTier?.name || 'Bronze',
+          nextTierPoints: loyaltyStatsData?.pointsToNextTier || 0,
+          monthlyPoints: loyaltyStatsData?.monthlyPoints || 0,
           savedAmount: 0,
           servicesUsed,
           completedBookings: completedRes.bookings.length,
@@ -408,12 +425,13 @@ const CustomerDashboard: React.FC = () => {
             />
             <StatCard
               title={t('dashboard.customer.loyaltyPoints')}
-              value={stats ? stats.loyaltyPoints : 0}
-              change={`+340 ${t('dashboard.specialist.thisMonthImprovement')}`}
+              value={stats ? stats.loyaltyPoints.toLocaleString() : '0'}
+              change={`+${stats?.monthlyPoints || 0} this month`}
               changeType="positive"
               icon={GiftIconSolid}
-              iconBg="bg-gradient-to-br from-success-500 to-success-600"
-              description={`${stats ? formatPrice(stats.savedAmount, 'UAH') : '₴0'} ${t('dashboard.customer.savedAmount').toLowerCase()}`}
+              iconBg="bg-gradient-to-br from-purple-500 to-purple-600"
+              description={`${stats?.currentTier || 'Bronze'} Tier • ${stats?.nextTierPoints || 0} to next`}
+              onClick={() => navigate('/loyalty')}
             />
             <StatCard
               title={t('dashboard.customer.servicesUsed')}
@@ -613,6 +631,79 @@ const CustomerDashboard: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Loyalty Progress */}
+          {loyaltyData && loyaltyStats && (
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 shadow-lg border border-purple-200 dark:border-purple-700">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="h-10 w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <GiftIconSolid className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Loyalty Progress</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {loyaltyStats.currentTier?.name || 'Bronze'} Member
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  to="/loyalty"
+                  className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                >
+                  View Details
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                    {loyaltyData.currentPoints.toLocaleString()}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Current Points</p>
+                </div>
+                
+                <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                    {loyaltyStats.monthlyPoints?.toLocaleString() || '0'}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">This Month</p>
+                </div>
+                
+                <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {loyaltyData.lifetimePoints.toLocaleString()}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Lifetime Points</p>
+                </div>
+              </div>
+
+              {loyaltyStats.nextTier && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Progress to {loyaltyStats.nextTier.name}
+                    </span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {loyaltyStats.pointsToNextTier} points needed
+                    </span>
+                  </div>
+                  <div className="overflow-hidden h-3 mb-2 text-xs flex rounded-full bg-purple-200 dark:bg-purple-800">
+                    <div 
+                      style={{ 
+                        width: `${Math.min(100, ((loyaltyData.currentPoints - (loyaltyStats.currentTier?.minPoints || 0)) / ((loyaltyStats.nextTier.minPoints || 0) - (loyaltyStats.currentTier?.minPoints || 0))) * 100)}%` 
+                      }}
+                      className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-500"
+                    ></div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                    <span>{loyaltyStats.currentTier?.name}</span>
+                    <span>{loyaltyStats.nextTier.name}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Special Offers */}
           {specialOffers && specialOffers.length > 0 && (
