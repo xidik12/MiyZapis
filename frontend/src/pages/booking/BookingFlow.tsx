@@ -612,7 +612,7 @@ const BookingFlow: React.FC = () => {
                         Your current points
                       </span>
                       <span className="text-xs text-gray-600 dark:text-gray-300">
-                        {loyaltyData.currentPoints.toLocaleString()}
+                        {loyaltyData?.currentPoints?.toLocaleString() || '0'}
                       </span>
                     </div>
                   )}
