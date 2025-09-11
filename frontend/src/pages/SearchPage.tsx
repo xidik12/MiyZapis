@@ -717,10 +717,13 @@ const SearchPage: React.FC = () => {
               </button>
             )}
           </div>
-        </div>
+
+          {/* Controls Row */}
+          <div className="flex items-center justify-between gap-4 mt-4">
+            <div className="hidden sm:flex items-center gap-2">
               <button
                 onClick={handleApplyFilters}
-                className="hidden sm:inline-flex items-center gap-2 h-10 px-3 rounded-full bg-primary-600 text-white hover:bg-primary-700"
+                className="inline-flex items-center gap-2 h-10 px-3 rounded-full bg-primary-600 text-white hover:bg-primary-700"
                 title={t('actions.apply') || 'Apply'}
               >
                 {t('actions.apply') || 'Apply'}
@@ -728,14 +731,14 @@ const SearchPage: React.FC = () => {
               {(selectedCategory || selectedLocation || selectedRating > 0 || selectedDistance > 0 || showFavoritesOnly || priceRange.min > 0 || priceRange.max < 1000) && (
                 <button
                   onClick={clearFilters}
-                  className="hidden sm:inline-flex items-center gap-2 h-10 px-3 rounded-full border border-red-200 text-red-700 hover:bg-red-50"
+                  className="inline-flex items-center gap-2 h-10 px-3 rounded-full border border-red-200 text-red-700 hover:bg-red-50"
                   title={t('search.resetFilters') || 'Reset filters'}
                 >
                   {t('search.resetFilters') || 'Reset filters'}
                 </button>
               )}
             </div>
-            <div className="flex items-center space-x-1 order-1 sm:order-3 flex-shrink-0">
+            <div className="flex items-center space-x-1 flex-shrink-0">
               {/* Mobile filter tray toggle */}
               <button
                 onClick={() => setIsFilterTrayOpen(true)}
