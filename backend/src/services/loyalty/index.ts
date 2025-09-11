@@ -795,6 +795,57 @@ export class LoyaltyService {
     });
   }
   
+  static async getUserLoyaltyStats(userId: string) {
+    try {
+      // Get user's full info including related data
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          bookings: {
+            where: { status: 'COMPLETED' }
+          },
+          reviews: true,
+          referralsGiven: {
+            where: { status: 'COMPLETED' }
+          },
+          userBadges: {
+            include: { badge: true }
+          }
+        }
+      });
+      
+      if (!user) return null;
+      
+      // Determine current tier based on points
+      let tier = 'SILVER';
+      if (user.loyaltyPoints >= LOYALTY_CONFIG.TIERS.PLATINUM.min) {
+        tier = 'PLATINUM';
+      } else if (user.loyaltyPoints >= LOYALTY_CONFIG.TIERS.GOLD.min) {
+        tier = 'GOLD';
+      }
+      
+      // Get transaction count
+      const totalTransactions = await prisma.loyaltyTransaction.count({ 
+        where: { userId } 
+      });
+      
+      return {
+        userId,
+        totalPoints: user.loyaltyPoints,
+        tier,
+        badges: user.userBadges.map(ub => ub.badge),
+        totalBookings: user.bookings.length,
+        totalReviews: user.reviews.length,
+        successfulReferrals: user.referralsGiven.length,
+        totalTransactions,
+        memberSince: user.createdAt
+      };
+    } catch (error) {
+      logger.error('Failed to get user loyalty stats', { error, userId });
+      return null;
+    }
+  }
+
   static async getLoyaltyStats(userId: string) {
     return await this.getUserLoyaltyStats(userId);
   }

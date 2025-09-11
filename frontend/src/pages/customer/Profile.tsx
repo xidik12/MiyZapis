@@ -4,6 +4,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
+import { LoyaltyService, UserLoyalty, LoyaltyStats } from '../../services/loyalty.service';
 import { 
   PencilSquareIcon,
   MapPinIcon,
@@ -60,6 +61,11 @@ const CustomerProfile: React.FC = () => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
   const [addresses, setAddresses] = useState<Address[]>([]);
+  const [userLoyalty, setUserLoyalty] = useState<UserLoyalty | null>(null);
+  const [loyaltyStats, setLoyaltyStats] = useState<LoyaltyStats | null>(null);
+  const [loadingLoyalty, setLoadingLoyalty] = useState(true);
+  
+  const loyaltyService = new LoyaltyService();
 
   // Load saved addresses from localStorage (persisted in Settings)
   useEffect(() => {
@@ -85,15 +91,60 @@ const CustomerProfile: React.FC = () => {
       console.warn('Failed to load addresses for profile:', e);
     }
   }, [currentUser?.id]);
+
+  // Load loyalty data
+  useEffect(() => {
+    const loadLoyaltyData = async () => {
+      if (!currentUser?.id) return;
+      
+      try {
+        setLoadingLoyalty(true);
+        const [loyaltyProfile, stats] = await Promise.all([
+          loyaltyService.getUserLoyalty(),
+          loyaltyService.getLoyaltyStats()
+        ]);
+        
+        setUserLoyalty(loyaltyProfile);
+        setLoyaltyStats(stats);
+      } catch (error) {
+        console.error('Failed to load loyalty data:', error);
+        // Keep the component working with fallback data if API fails
+        setUserLoyalty({
+          id: 'fallback',
+          userId: currentUser.id,
+          currentPoints: 0,
+          lifetimePoints: 0,
+          createdAt: currentUser.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+        setLoyaltyStats({
+          totalPoints: 0,
+          totalTransactions: 0,
+          totalBadges: 0,
+          totalReferrals: 0,
+          currentTier: null,
+          nextTier: null,
+          pointsToNextTier: 0,
+          monthlyPoints: 0,
+          yearlyPoints: 0
+        });
+      } finally {
+        setLoadingLoyalty(false);
+      }
+    };
+
+    loadLoyaltyData();
+  }, [currentUser?.id]);
   
-  const [loyalty] = useState<LoyaltyInfo>({
-    points: 1240,
-    tier: 'silver',
-    nextTierPoints: 760,
-    memberSince: '2024-03-15',
-    totalSpent: 15600,
-    discountsUsed: 8,
-  });
+  // Convert loyalty data to the format expected by the UI
+  const loyalty: LoyaltyInfo = {
+    points: loyaltyStats?.totalPoints || userLoyalty?.currentPoints || 0,
+    tier: loyaltyStats?.currentTier?.slug || userLoyalty?.tier?.slug || 'silver',
+    nextTierPoints: loyaltyStats?.pointsToNextTier || 0,
+    memberSince: userLoyalty?.createdAt || loyaltyStats?.memberSince || currentUser?.createdAt || '',
+    totalSpent: 0, // This would need to be calculated from bookings
+    discountsUsed: 0, // This would need to be tracked separately
+  };
   
   // Success/Error message handlers
   const showSuccessNotification = (message: string) => {
@@ -431,15 +482,22 @@ const CustomerProfile: React.FC = () => {
           <div className="space-y-6">
             {/* Loyalty Program Card */}
             <div className="bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-gray-800 dark:to-gray-800 rounded-2xl shadow-sm border border-primary-200 dark:border-gray-700 p-8">
-              <div className="text-center mb-6">
-                <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <StarIcon className="h-12 w-12 text-white" />
+              {loadingLoyalty ? (
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
+                  <p className="text-gray-600 dark:text-gray-400">Loading loyalty data...</p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{getTierName(loyalty.tier)}</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  {language === 'uk' ? `Учасник з ${formatMemberDate(currentUser?.createdAt || '')}` : language === 'ru' ? `Участник с ${formatMemberDate(currentUser?.createdAt || '')}` : `Member since ${formatMemberDate(currentUser?.createdAt || '')}`}
-                </p>
-              </div>
+              ) : (
+                <>
+                  <div className="text-center mb-6">
+                    <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                      <StarIcon className="h-12 w-12 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{getTierName(loyalty.tier)}</h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      {language === 'uk' ? `Учасник з ${formatMemberDate(loyalty.memberSince)}` : language === 'ru' ? `Участник с ${formatMemberDate(loyalty.memberSince)}` : `Member since ${formatMemberDate(loyalty.memberSince)}`}
+                    </p>
+                  </div>
 
               <div className="grid grid-cols-1 gap-6 mb-6">
                 <div className="text-center p-4 bg-white dark:bg-gray-700 rounded-xl">
@@ -481,7 +539,8 @@ const CustomerProfile: React.FC = () => {
                     style={{ width: `${(loyalty.points / (loyalty.points + loyalty.nextTierPoints)) * 100}%` }}
                   ></div>
                 </div>
-              </div>
+                </>
+              )}
             </div>
 
             {/* Quick Actions Card */}
