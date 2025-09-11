@@ -539,6 +539,7 @@ const CustomerProfile: React.FC = () => {
                     style={{ width: `${(loyalty.points / (loyalty.points + loyalty.nextTierPoints)) * 100}%` }}
                   ></div>
                 </div>
+              </div>
                 </>
               )}
             </div>
