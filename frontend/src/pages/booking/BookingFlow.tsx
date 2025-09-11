@@ -680,14 +680,14 @@ const BookingFlow: React.FC = () => {
                     </div>
                     <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
                       <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                        {loyaltyData.currentPoints.toLocaleString()}
+                        {loyaltyData?.currentPoints?.toLocaleString() || '0'}
                       </p>
                       <p className="text-xs text-gray-600 dark:text-gray-400">Current points</p>
                     </div>
                   </div>
                   
                   <p className="text-xs text-purple-600 dark:text-purple-400 text-center mt-3">
-                    After this booking: {(loyaltyData.currentPoints + pointsToEarn).toLocaleString()} points
+                    After this booking: {((loyaltyData?.currentPoints || 0) + pointsToEarn).toLocaleString()} points
                   </p>
                 </div>
               )}
@@ -745,7 +745,7 @@ const BookingFlow: React.FC = () => {
                         🎉 You earned {pointsToEarn} loyalty points!
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        New balance: {(loyaltyData.currentPoints + pointsToEarn).toLocaleString()} points
+                        New balance: {((loyaltyData?.currentPoints || 0) + pointsToEarn).toLocaleString()} points
                       </p>
                     </div>
                   </div>
