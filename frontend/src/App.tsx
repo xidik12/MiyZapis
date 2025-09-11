@@ -337,8 +337,12 @@ function App() {
           <Route
             path="/customer/messages"
             element={
-              <ProtectedRoute>
-                <CustomerMessages />
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerMessages />
+                  </Suspense>
+                </CustomerLayout>
               </ProtectedRoute>
             }
           />
