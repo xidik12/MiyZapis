@@ -84,7 +84,7 @@ const navigation: SidebarNavItem[] = [
   {
     name: 'Messages',
     nameKey: 'customer.nav.messages',
-    href: '/messages',
+    href: '/customer/messages',
     icon: ChatBubbleLeftEllipsisIcon,
     iconActive: ChatBubbleLeftEllipsisIcon,
   },

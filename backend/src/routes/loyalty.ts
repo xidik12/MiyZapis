@@ -10,6 +10,132 @@ import { prisma } from '@/config/database';
 
 const router = Router();
 
+// Get loyalty program statistics (frontend expects flat stats object)
+router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as AuthenticatedRequest).user?.id;
+    if (!userId) {
+      return res.status(401).json(
+        createErrorResponse(
+          ErrorCodes.UNAUTHORIZED,
+          'User not authenticated',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+
+    // Base stats
+    const baseStats = await LoyaltyService.getUserLoyaltyStats(userId);
+    if (!baseStats) {
+      return res.status(404).json(
+        createErrorResponse(
+          ErrorCodes.NOT_FOUND,
+          'User not found',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+
+    // Compute monthly and yearly earned points (sum of positive points)
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const yearStart = new Date(now.getFullYear(), 0, 1);
+
+    const [monthlyAgg, yearlyAgg] = await Promise.all([
+      prisma.loyaltyTransaction.aggregate({
+        _sum: { points: true },
+        where: { userId, createdAt: { gte: monthStart }, points: { gt: 0 } }
+      }),
+      prisma.loyaltyTransaction.aggregate({
+        _sum: { points: true },
+        where: { userId, createdAt: { gte: yearStart }, points: { gt: 0 } }
+      })
+    ]);
+
+    const monthlyPoints = monthlyAgg._sum.points || 0;
+    const yearlyPoints = yearlyAgg._sum.points || 0;
+
+    // Determine current and next tier from configured tiers and/or DB tiers
+    const tiers = await prisma.loyaltyTier.findMany({ orderBy: { minPoints: 'asc' } });
+    const totalPoints = baseStats.totalPoints;
+
+    const currentTierRec = [...tiers].reverse().find(t => totalPoints >= t.minPoints) || null;
+    const nextTierRec = tiers.find(t => totalPoints < t.minPoints) || null;
+
+    const mapTier = (t: typeof currentTierRec) => t && ({
+      id: t.id,
+      name: t.name,
+      slug: t.name.toLowerCase(),
+      minPoints: t.minPoints,
+      maxPoints: t.maxPoints || undefined,
+      benefits: (() => { try { return JSON.parse(t.benefits); } catch { return []; } })(),
+      discountPercentage: undefined as number | undefined,
+      prioritySupport: false,
+      exclusiveOffers: false,
+      createdAt: t.createdAt
+    });
+
+    const currentTier = mapTier(currentTierRec) || null;
+    const nextTier = mapTier(nextTierRec) || null;
+    const pointsToNextTier = nextTierRec ? Math.max(0, nextTierRec.minPoints - totalPoints) : 0;
+
+    // Shape response to match frontend LoyaltyStats
+    const responsePayload = {
+      totalPoints,
+      totalTransactions: baseStats.totalTransactions,
+      totalBadges: baseStats.badges?.length || 0,
+      totalReferrals: baseStats.successfulReferrals || 0,
+      currentTier,
+      nextTier,
+      pointsToNextTier,
+      monthlyPoints,
+      yearlyPoints
+    };
+
+    res.json(createSuccessResponse(responsePayload));
+  } catch (error) {
+    logger.error('Get loyalty stats (frontend) error:', error);
+    res.status(500).json(
+      createErrorResponse(
+        ErrorCodes.INTERNAL_SERVER_ERROR,
+        'Failed to get loyalty statistics',
+        req.headers['x-request-id'] as string
+      )
+    );
+  }
+});
+
+// Get loyalty tiers (public, shape mapped for frontend)
+router.get('/tiers', async (req: Request, res: Response) => {
+  try {
+    const tiers = await prisma.loyaltyTier.findMany({ orderBy: { minPoints: 'asc' } });
+
+    const mapped = tiers.map(t => ({
+      id: t.id,
+      name: t.name,
+      slug: t.name.toLowerCase(),
+      minPoints: t.minPoints,
+      maxPoints: t.maxPoints || undefined,
+      benefits: (() => { try { return JSON.parse(t.benefits); } catch { return []; } })(),
+      discountPercentage: undefined as number | undefined,
+      prioritySupport: false,
+      exclusiveOffers: false,
+      createdAt: t.createdAt
+    }));
+
+    res.json(createSuccessResponse({ tiers: mapped }));
+  } catch (error) {
+    logger.error('Get loyalty tiers (frontend) error:', error);
+    res.status(500).json(
+      createErrorResponse(
+        ErrorCodes.INTERNAL_SERVER_ERROR,
+        'Failed to get loyalty tiers',
+        req.headers['x-request-id'] as string
+      )
+    );
+  }
+});
+
 // Get user's loyalty profile
 router.get('/profile', authenticateToken, async (req: Request, res: Response) => {
   try {

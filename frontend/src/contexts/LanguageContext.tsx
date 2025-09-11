@@ -1436,6 +1436,7 @@ const translations: Translations = {
   'customer.nav.history': { en: 'History', uk: 'Історія', ru: 'История' },
   'customer.nav.favorites': { en: 'Favorites', uk: 'Улюблені', ru: 'Избранные' },
   'customer.nav.reviews': { en: 'Reviews', uk: 'Відгуки', ru: 'Отзывы' },
+  'customer.nav.messages': { en: 'Messages', uk: 'Повідомлення', ru: 'Сообщения' },
   'customer.nav.payments': { en: 'Payments', uk: 'Платежі', ru: 'Платежи' },
   'customer.nav.loyalty': { en: 'Loyalty Points', uk: 'Бали лояльності', ru: 'Баллы лояльности' },
   'customer.nav.profile': { en: 'Profile', uk: 'Профіль', ru: 'Профиль' },
@@ -1580,6 +1581,8 @@ const translations: Translations = {
   // Booking restrictions
   'booking.cannotBookOwn': { en: "You can't book your own service", uk: 'Ви не можете бронювати власну послугу', ru: 'Вы не можете бронировать собственную услугу' },
   'booking.cannotBookOwnDesc': { en: 'Please ask a customer to book this service.', uk: 'Будь ласка, попросіть клієнта забронювати цю послугу.', ru: 'Попросите клиента забронировать эту услугу.' },
+  'booking.timeConflict': { en: 'That time just got booked. Try next available?', uk: 'Цей час щойно забронювали. Спробувати наступний доступний?', ru: 'Это время только что забронировали. Попробовать следующий доступный?' },
+  'booking.tryNextAvailable': { en: 'Try next available', uk: 'Спробувати наступний', ru: 'Попробовать следующий' },
 };
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

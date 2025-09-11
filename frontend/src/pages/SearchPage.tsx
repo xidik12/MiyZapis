@@ -527,126 +527,197 @@ const SearchPage: React.FC = () => {
           </div>
         </form>
 
-        {/* Filters and Controls */}
-        <div className="flex flex-col gap-3 mb-6 sticky-controls rounded-b-xl">
-          {/* Quick filter chips */}
-          <div className="flex items-center gap-2 overflow-x-auto flex-nowrap pb-1 -mx-2 px-2 transition-all">
-            <button
-              onClick={() => setSortBy('rating')}
-              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none transition-colors ${sortBy === 'rating' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
-            >
-              {t('search.topRated') || 'Top Rated'}
-            </button>
-            <button
-              onClick={() => setSortBy('reviews')}
-              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none transition-colors ${sortBy === 'reviews' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
-            >
-              {t('search.mostReviewed') || 'Most Reviewed'}
-            </button>
-            <button
-              onClick={() => setSortBy('distance')}
-              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none transition-colors ${sortBy === 'distance' ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
-            >
-              {t('search.nearby') || 'Nearby'}
-            </button>
-            {/* Rating distribution quick chips */}
-            <button
-              onClick={() => setSelectedRating(selectedRating === 5 ? 0 : 5)}
-              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none transition-colors ${selectedRating === 5 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
-            >
-              5★
-            </button>
-            <button
-              onClick={() => setSelectedRating(selectedRating === 4 ? 0 : 4)}
-              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none transition-colors ${selectedRating === 4 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
-            >
-              4★+
-            </button>
-            <button
-              onClick={() => setSelectedRating(selectedRating === 3 ? 0 : 3)}
-              className={`h-9 inline-flex items-center px-2.5 sm:px-3 rounded-full text-sm border leading-none transition-colors ${selectedRating === 3 ? 'bg-primary-600 text-white border-primary-600' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
-            >
-              3★+
-            </button>
-            {/* Favorites toggle (compact) */}
+        {/* Enhanced Filters and Controls */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+          {/* Header with results count and main controls */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div className="flex items-center gap-3">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {t('search.results') || 'Search Results'}
+              </h3>
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300">
+                {getFilteredServices().length} {t('search.found') || 'found'}
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              {/* Category Selector */}
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  {t('search.category') || 'Category'}:
+                </label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="h-9 px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm min-w-[140px]"
+                >
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id === 'all' ? '' : category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sort Selector */}
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  {t('search.sortBy') || 'Sort by'}:
+                </label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="h-9 px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm min-w-[120px]"
+                >
+                  <option value="rating">{t('search.sortBy.rating') || 'Rating'}</option>
+                  <option value="price">{t('search.sortBy.price') || 'Price'}</option>
+                  <option value="distance">{t('search.sortBy.distance') || 'Distance'}</option>
+                  <option value="reviews">{t('search.sortBy.reviews') || 'Reviews'}</option>
+                </select>
+              </div>
+
+              {/* Advanced Filters Button */}
+              <button
+                onClick={() => setIsFilterTrayOpen(true)}
+                className="inline-flex items-center gap-2 h-9 px-4 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
+              >
+                <AdjustmentsHorizontalIcon className="w-4 h-4" />
+                {t('search.filters') || 'Filters'}
+              </button>
+            </div>
+          </div>
+
+          {/* Quick Sort Filters Row */}
+          <div className="mb-4">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              {t('search.quickSort') || 'Quick Sort'}
+            </h4>
+            <div className="flex items-center gap-2 overflow-x-auto pb-2">
+              <button
+                onClick={() => setSortBy('rating')}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all whitespace-nowrap ${
+                  sortBy === 'rating' 
+                    ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-sm dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-300' 
+                    : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                }`}
+              >
+                <StarIcon className="w-4 h-4" />
+                {t('search.topRated') || 'Top Rated'}
+              </button>
+              <button
+                onClick={() => setSortBy('reviews')}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all whitespace-nowrap ${
+                  sortBy === 'reviews' 
+                    ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-sm dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-300' 
+                    : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                }`}
+              >
+                <ListBulletIcon className="w-4 h-4" />
+                {t('search.mostReviewed') || 'Most Reviewed'}
+              </button>
+              <button
+                onClick={() => setSortBy('distance')}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all whitespace-nowrap ${
+                  sortBy === 'distance' 
+                    ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-sm dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-300' 
+                    : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                }`}
+              >
+                <MapPinIcon className="w-4 h-4" />
+                {t('search.nearby') || 'Nearby'}
+              </button>
+            </div>
+          </div>
+
+          {/* Rating Filters Row */}
+          <div className="mb-4">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              {t('search.ratingFilter') || 'Filter by Rating'}
+            </h4>
+            <div className="flex items-center gap-2 overflow-x-auto pb-2">
+              <button
+                onClick={() => setSelectedRating(selectedRating === 5 ? 0 : 5)}
+                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
+                  selectedRating === 5 
+                    ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300' 
+                    : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                }`}
+              >
+                <StarIconSolid className="w-4 h-4 text-yellow-400" />
+                5★
+              </button>
+              <button
+                onClick={() => setSelectedRating(selectedRating === 4 ? 0 : 4)}
+                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
+                  selectedRating === 4 
+                    ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300' 
+                    : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                }`}
+              >
+                <StarIconSolid className="w-4 h-4 text-yellow-400" />
+                4★+
+              </button>
+              <button
+                onClick={() => setSelectedRating(selectedRating === 3 ? 0 : 3)}
+                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
+                  selectedRating === 3 
+                    ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300' 
+                    : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                }`}
+              >
+                <StarIconSolid className="w-4 h-4 text-yellow-400" />
+                3★+
+              </button>
+            </div>
+          </div>
+
+          {/* Additional Filters Row */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Favorites Toggle */}
             <button
               onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-              className={`h-9 inline-flex items-center px-3 border rounded-full transition-colors whitespace-nowrap leading-none ${
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
                 showFavoritesOnly
-                  ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400'
-                  : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  ? 'bg-red-50 border-red-200 text-red-700 shadow-sm dark:bg-red-900/20 dark:border-red-800 dark:text-red-400'
+                  : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
               }`}
             >
-              <HeartIcon className="w-4 h-4 mr-1.5" />
-              {showFavoritesOnly ? t('search.showAll') : t('search.favorites')}
+              <HeartIcon className={`w-4 h-4 ${showFavoritesOnly ? 'fill-current' : ''}`} />
+              {showFavoritesOnly ? t('search.showAll') || 'Show All' : t('search.favorites') || 'Favorites'}
             </button>
-            {(selectedCategory || selectedLocation || selectedRating > 0 || showFavoritesOnly) && (
+
+            {/* Active Filter Tags */}
+            {selectedRating > 0 && (
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 text-xs font-medium">
+                {t('search.rating') || 'Rating'}: {selectedRating}★
+                <button onClick={() => setSelectedRating(0)} className="ml-1 hover:text-blue-600">×</button>
+              </span>
+            )}
+            {selectedDistance > 0 && (
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 text-xs font-medium">
+                ≤ {selectedDistance} km
+                <button onClick={() => setSelectedDistance(0)} className="ml-1 hover:text-green-600">×</button>
+              </span>
+            )}
+            {(priceRange.min > 0 || priceRange.max < 1000) && (
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 text-xs font-medium">
+                ₴{priceRange.min}–₴{priceRange.max}
+                <button onClick={() => setPriceRange({ min: 0, max: 1000 })} className="ml-1 hover:text-purple-600">×</button>
+              </span>
+            )}
+
+            {/* Clear All Filters */}
+            {(selectedCategory || selectedLocation || selectedRating > 0 || showFavoritesOnly || selectedDistance > 0 || priceRange.min > 0 || priceRange.max < 1000) && (
               <button
                 onClick={clearFilters}
-                className="px-3 py-1.5 rounded-full text-sm border bg-red-50 text-red-700 border-red-200"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/30 transition-colors"
               >
-                {t('search.resetFilters') || 'Reset filters'}
+                <span>×</span>
+                {t('search.resetFilters') || 'Clear All Filters'}
               </button>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Favorites toggle moved to chip row above */}
-
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="h-10 inline-flex items-center px-3 sm:px-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
-            >
-              {categories.map((category) => (
-                <option key={category.id} value={category.id === 'all' ? '' : category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-
-            {/* Sort moved to right controls for better layout */}
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2 order-3 sm:order-1 flex-wrap flex-1 min-w-[240px]">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                <span className="hidden sm:inline">{t('search.showing')} </span>{getFilteredServices().length} <span className="hidden sm:inline">{t('search.results')}</span>
-              </span>
-              {selectedRating > 0 && (
-                <span className="inline-flex items-center gap-1 h-7 px-2 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 text-xs transition-all duration-200">
-                  {t('search.rating') || 'Rating'}: {selectedRating}★
-                </span>
-              )}
-              {selectedDistance > 0 && (
-                <span className="inline-flex items-center gap-1 h-7 px-2 rounded-full bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 text-xs transition-all duration-200">
-                  ≤ {selectedDistance} km
-                </span>
-              )}
-              {(priceRange.min > 0 || priceRange.max < 1000) && (
-                <span className="inline-flex items-center gap-1 h-7 px-2 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 text-xs transition-all duration-200">
-                  ₴{priceRange.min}–₴{priceRange.max}
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-2 order-2 sm:order-2 flex-wrap flex-1 min-w-[260px]">
-              {/* Inline sort control for better UX */}
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="h-10 inline-flex items-center px-3 sm:px-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
-              >
-                <option value="rating">{t('search.sortBy.rating')}</option>
-                <option value="price">{t('search.sortBy.price')}</option>
-                <option value="distance">{t('search.sortBy.distance')}</option>
-                <option value="reviews">{t('search.sortBy.reviews')}</option>
-              </select>
-              {/* Always-visible Filters button */}
-              <button
-                onClick={() => setIsFilterTrayOpen(true)}
-                className="hidden sm:inline-flex items-center gap-2 h-10 px-3 rounded-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                <FunnelIcon className="w-4 h-4" />
-                {t('search.filters') || 'Filters'}
+        </div>
               </button>
               <button
                 onClick={handleApplyFilters}
