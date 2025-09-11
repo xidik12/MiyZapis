@@ -206,7 +206,7 @@ const translations: Translations = {
   'search.sort.newest': { en: 'Newest First', uk: 'Спочатку нові', ru: 'Сначала новые' },
   'search.sort.reviews': { en: 'Most Reviews', uk: 'Найбільше відгуків', ru: 'Больше всего отзывов' },
   'professionForm.selectProfession': { en: 'Select a profession', uk: 'Оберіть професію', ru: 'Выберите профессию' },
-  'serviceForm.selectCategory': { en: 'Select a category', uk: 'Оберіть категорію', ru: 'Выберите категорию' },
+  // duplicate key removed: 'serviceForm.selectCategory'
   'schedule.availableTime': { en: 'Available time', uk: 'Доступний час', ru: 'Доступное время' },
   'schedule.blockedTime': { en: 'Blocked time', uk: 'Заблокований час', ru: 'Заблокированное время' },
   'search.resetFilters': { en: 'Reset filters', uk: 'Скинути фільтри', ru: 'Сбросить фильтры' },
@@ -1023,7 +1023,7 @@ const translations: Translations = {
   'common.add': { en: 'Add', uk: 'Додати', ru: 'Добавить' },
   'common.again': { en: 'again', uk: 'знову', ru: 'снова' },
   'common.default': { en: 'Default', uk: 'За замовчуванням', ru: 'По умолчанию' },
-  'common.online': { en: 'Online', uk: 'Онлайн', ru: 'Онлайн' },
+  // duplicate key removed: 'common.online'
   'common.verified': { en: 'Verified', uk: 'Підтверджено', ru: 'Подтверждено' },
   'common.upcoming': { en: 'Upcoming', uk: 'Майбутні', ru: 'Предстоящие' },
   'common.completed': { en: 'Completed', uk: 'Завершені', ru: 'Завершенные' },

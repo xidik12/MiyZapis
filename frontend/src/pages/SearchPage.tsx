@@ -718,7 +718,6 @@ const SearchPage: React.FC = () => {
             )}
           </div>
         </div>
-              </button>
               <button
                 onClick={handleApplyFilters}
                 className="hidden sm:inline-flex items-center gap-2 h-10 px-3 rounded-full bg-primary-600 text-white hover:bg-primary-700"
