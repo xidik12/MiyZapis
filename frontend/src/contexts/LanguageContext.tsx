@@ -1515,6 +1515,11 @@ const translations: Translations = {
   'search.sortBy.price': { en: 'Sort by Price', uk: 'Сортувати за ціною', ru: 'Сортировать по цене' },
   'search.sortBy.distance': { en: 'Sort by Distance', uk: 'Сортувати за відстанню', ru: 'Сортировать по расстоянию' },
   'search.sortBy.reviews': { en: 'Sort by Reviews', uk: 'Сортувати за відгуками', ru: 'Сортировать по отзывам' },
+  'search.found': { en: 'specialists found', uk: 'спеціалістів знайдено', ru: 'специалистов найдено' },
+  'search.category': { en: 'Category', uk: 'Категорія', ru: 'Категория' },
+  'search.sortBy': { en: 'Sort by', uk: 'Сортувати за', ru: 'Сортировать по' },
+  'search.quickSort': { en: 'Quick Sort', uk: 'Швидке сортування', ru: 'Быстрая сортировка' },
+  'search.ratingFilter': { en: 'Rating Filter', uk: 'Фільтр рейтингу', ru: 'Фильтр рейтинга' },
 
   // Service availability
   'service.available': { en: 'Available', uk: 'Доступна', ru: 'Доступна' },
