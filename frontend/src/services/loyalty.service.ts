@@ -115,6 +115,7 @@ export interface LoyaltyStats {
   pointsToNextTier: number;
   monthlyPoints: number;
   yearlyPoints: number;
+  totalSpentPoints: number;
 }
 
 export class LoyaltyService {

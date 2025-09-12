@@ -193,6 +193,18 @@ export interface Booking extends BaseEntity {
   cancellationReason?: string;
   rescheduleHistory?: RescheduleRecord[];
   
+  // Review information for completed bookings
+  review?: {
+    id: string;
+    rating: number;
+    comment?: string;
+    tags?: string;
+    isPublic: boolean;
+    isVerified: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+  
   // Flattened fields for frontend convenience (added by backend transform)
   customerName: string;
   customerEmail?: string;  

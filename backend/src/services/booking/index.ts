@@ -923,6 +923,19 @@ export class BookingService {
                 specialist: true,
               },
             },
+            // Include review information for completed bookings
+            review: {
+              select: {
+                id: true,
+                rating: true,
+                comment: true,
+                tags: true,
+                isPublic: true,
+                isVerified: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
           },
           orderBy: { scheduledAt: 'desc' },
           skip,

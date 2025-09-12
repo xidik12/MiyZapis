@@ -3,6 +3,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { loyaltyService, UserLoyalty, LoyaltyTransaction, LoyaltyTier, LoyaltyStats } from '@/services/loyalty.service';
+import { formatPoints as utilFormatPoints } from '@/utils/formatPoints';
 import { toast } from 'react-toastify';
 import {
   StarIcon,
@@ -62,9 +63,7 @@ const CustomerLoyalty: React.FC = () => {
     }
   };
 
-  const formatPoints = (points: number) => {
-    return new Intl.NumberFormat().format(points);
-  };
+  const formatPoints = utilFormatPoints;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -175,17 +174,17 @@ const CustomerLoyalty: React.FC = () => {
             </div>
           </div>
 
-          {/* Points to Next Tier */}
+          {/* Points Spent */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">To Next Tier</p>
-                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {formatPoints(loyaltyStats?.pointsToNextTier || 0)}
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Points Spent</p>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                  {formatPoints(loyaltyStats?.totalSpentPoints || 0)}
                 </p>
               </div>
-              <div className="h-12 w-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-                <ArrowUpIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div className="h-12 w-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+                <ArrowDownIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
               </div>
             </div>
           </div>

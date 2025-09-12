@@ -12,6 +12,7 @@ import { reviewsService } from '@/services/reviews.service';
 import { messagesService } from '@/services/messages.service';
 import { loyaltyService, UserLoyalty, LoyaltyStats } from '@/services/loyalty.service';
 import { translateProfession } from '@/utils/profession';
+import { formatPoints } from '@/utils/formatPoints';
 // Status colors for bookings
 const statusColors = {
   confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -658,21 +659,21 @@ const CustomerDashboard: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
                   <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                    {loyaltyData?.profile?.totalPoints?.toLocaleString() || '0'}
+                    {formatPoints(loyaltyData?.profile?.totalPoints)}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Current Points</p>
                 </div>
                 
                 <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
                   <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                    {loyaltyStats.monthlyPoints?.toLocaleString() || '0'}
+                    {formatPoints(loyaltyStats.monthlyPoints)}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">This Month</p>
                 </div>
                 
                 <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
                   <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    {loyaltyData?.profile?.totalPoints?.toLocaleString() || '0'}
+                    {formatPoints(loyaltyData?.profile?.totalPoints)}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Lifetime Points</p>
                 </div>

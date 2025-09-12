@@ -5,6 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { LoyaltyService, UserLoyalty, LoyaltyStats } from '../../services/loyalty.service';
+import { calculateTier, formatPoints } from '../../utils/formatPoints';
 import { 
   PencilSquareIcon,
   MapPinIcon,
@@ -139,7 +140,7 @@ const CustomerProfile: React.FC = () => {
   // Convert loyalty data to the format expected by the UI
   const loyalty: LoyaltyInfo = {
     points: loyaltyStats?.totalPoints || userLoyalty?.currentPoints || 0,
-    tier: loyaltyStats?.currentTier?.slug || userLoyalty?.tier?.slug || 'silver',
+    tier: loyaltyStats?.currentTier?.slug || userLoyalty?.tier?.slug || calculateTier(loyaltyStats?.totalPoints || userLoyalty?.currentPoints || 0),
     nextTierPoints: loyaltyStats?.pointsToNextTier || 0,
     memberSince: userLoyalty?.createdAt || loyaltyStats?.memberSince || currentUser?.createdAt || '',
     totalSpent: 0, // This would need to be calculated from bookings

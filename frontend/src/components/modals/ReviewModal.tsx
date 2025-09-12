@@ -14,22 +14,30 @@ interface ReviewModalProps {
     comment: string;
     tags: string[];
   }) => Promise<void>;
-  booking: {
+  bookingId?: string;
+  serviceName?: string;
+  specialistName?: string;
+  booking?: {
     id: string;
     service?: { id: string; name: string };
     serviceName?: string;
     specialist?: { id: string; firstName: string; lastName: string };
     specialistName?: string;
   };
-  loading?: boolean;
+  isLoading?: boolean;
+  loading?: boolean; // backward compatibility
 }
 
 const ReviewModal: React.FC<ReviewModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
+  bookingId,
+  serviceName: propServiceName,
+  specialistName: propSpecialistName,
   booking,
-  loading = false
+  isLoading = false,
+  loading = false // backward compatibility
 }) => {
   const { t } = useLanguage();
   const { theme } = useTheme();
@@ -98,10 +106,21 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
     );
   };
 
-  const serviceName = booking.service?.name || booking.serviceName || 'Unknown Service';
-  const specialistName = booking.specialist 
-    ? `${booking.specialist.firstName} ${booking.specialist.lastName}`
-    : booking.specialistName || 'Unknown Specialist';
+  // Determine loading state (support both old and new prop names)
+  const actualLoading = isLoading || loading;
+  
+  // Determine service name from either booking object or direct props
+  const serviceName = propServiceName || 
+    booking?.service?.name || 
+    booking?.serviceName || 
+    'Unknown Service';
+  
+  // Determine specialist name from either booking object or direct props  
+  const specialistName = propSpecialistName || 
+    (booking?.specialist 
+      ? `${booking.specialist.firstName} ${booking.specialist.lastName}`
+      : booking?.specialistName) || 
+    'Unknown Specialist';
 
   const panelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -156,7 +175,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                   ? 'text-gray-400 hover:text-gray-200' 
                   : 'text-gray-400 hover:text-gray-600'
               }`}
-              disabled={loading}
+              disabled={actualLoading}
               aria-label="Close review dialog"
             >
               <XMarkIcon className="h-6 w-6" />
@@ -188,7 +207,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                     onMouseEnter={() => setHoverRating(star)}
                     onMouseLeave={() => setHoverRating(0)}
                     onClick={() => setRating(star)}
-                    disabled={loading}
+                    disabled={actualLoading}
                   >
                     {(hoverRating || rating) >= star ? (
                       <StarIconSolid className="h-8 w-8 text-yellow-400" />
@@ -222,7 +241,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                     : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
                 }`}
                 placeholder={t('reviews.commentPlaceholder')}
-                disabled={loading}
+                disabled={actualLoading}
               />
             </div>
             
@@ -239,7 +258,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                     key={tag}
                     type="button"
                     onClick={() => toggleTag(tag, displayTags[index])}
-                    disabled={loading}
+                    disabled={actualLoading}
                     className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                       selectedTags.includes(tag)
                         ? 'bg-blue-100 text-blue-800 border border-blue-200'
@@ -259,7 +278,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                disabled={loading}
+                disabled={actualLoading}
                 className={`w-full sm:w-auto px-4 py-2 border rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 ${
                   theme === 'dark'
                     ? 'border-gray-600 text-gray-300 bg-gray-700 hover:bg-gray-600'
@@ -270,10 +289,10 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
               </button>
               <button
                 type="submit"
-                disabled={loading || rating === 0}
+                disabled={actualLoading || rating === 0}
                 className="w-full sm:w-auto px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                {loading && <LoadingSpinner size="sm" className="mr-2" />}
+                {actualLoading && <LoadingSpinner size="sm" className="mr-2" />}
                 {t('reviews.submitReview')}
               </button>
             </div>

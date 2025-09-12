@@ -41,7 +41,7 @@ router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const yearStart = new Date(now.getFullYear(), 0, 1);
 
-    const [monthlyAgg, yearlyAgg] = await Promise.all([
+    const [monthlyAgg, yearlyAgg, totalSpentAgg] = await Promise.all([
       prisma.loyaltyTransaction.aggregate({
         _sum: { points: true },
         where: { userId, createdAt: { gte: monthStart }, points: { gt: 0 } }
@@ -49,11 +49,17 @@ router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
       prisma.loyaltyTransaction.aggregate({
         _sum: { points: true },
         where: { userId, createdAt: { gte: yearStart }, points: { gt: 0 } }
+      }),
+      // Calculate total loyalty points spent (redeemed) - points are negative for redemptions
+      prisma.loyaltyTransaction.aggregate({
+        _sum: { points: true },
+        where: { userId, type: 'REDEEMED' }
       })
     ]);
 
     const monthlyPoints = monthlyAgg._sum.points || 0;
     const yearlyPoints = yearlyAgg._sum.points || 0;
+    const totalSpentPoints = Math.abs(totalSpentAgg._sum.points || 0); // Convert to positive number
 
     // Determine current and next tier from configured tiers and/or DB tiers
     const tiers = await prisma.loyaltyTier.findMany({ orderBy: { minPoints: 'asc' } });
@@ -89,7 +95,8 @@ router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
       nextTier,
       pointsToNextTier,
       monthlyPoints,
-      yearlyPoints
+      yearlyPoints,
+      totalSpentPoints
     };
 
     res.json(createSuccessResponse(responsePayload));
