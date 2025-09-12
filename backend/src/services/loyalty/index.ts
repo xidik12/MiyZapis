@@ -879,11 +879,13 @@ export class LoyaltyService {
       if (!user) return null;
       
       // Determine current tier based on points
-      let tier = 'SILVER';
+      let tier = 'BRONZE';
       if (user.loyaltyPoints >= LOYALTY_CONFIG.TIERS.PLATINUM.min) {
         tier = 'PLATINUM';
       } else if (user.loyaltyPoints >= LOYALTY_CONFIG.TIERS.GOLD.min) {
         tier = 'GOLD';
+      } else if (user.loyaltyPoints >= LOYALTY_CONFIG.TIERS.SILVER.min) {
+        tier = 'SILVER';
       }
       
       // Get transaction count

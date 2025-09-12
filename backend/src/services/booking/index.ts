@@ -1,6 +1,7 @@
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
 import { NotificationService } from '@/services/notification';
+import LoyaltyService from '@/services/loyalty';
 import { Booking, User, Service, Specialist } from '@prisma/client';
 
 interface CreateBookingData {
@@ -645,30 +646,10 @@ export class BookingService {
         // Don't throw error as booking update was successful
       }
 
-      // Award loyalty points when booking is completed
+      // Award loyalty points when booking is completed using centralized service
       if (data.status === 'COMPLETED') {
-        const pointsEarned = Math.floor(booking.totalAmount * 0.1); // 10% of total amount as points
-        
-        await prisma.user.update({
-          where: { id: booking.customerId },
-          data: {
-            loyaltyPoints: {
-              increment: pointsEarned,
-            },
-          },
-        });
-
-        // Create loyalty transaction record
-        await prisma.loyaltyTransaction.create({
-          data: {
-            userId: booking.customerId,
-            type: 'EARNED',
-            points: pointsEarned,
-            reason: 'Booking completion',
-            description: `Earned ${pointsEarned} points for completing booking ${booking.id}`,
-            referenceId: booking.id,
-          },
-        });
+        // Use centralized loyalty service for consistent point calculation
+        await LoyaltyService.processBookingCompletion(booking.id);
 
         // Update specialist metrics
         await prisma.specialist.update({
