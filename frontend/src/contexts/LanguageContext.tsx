@@ -460,6 +460,7 @@ const translations: Translations = {
   'dashboard.nav.earnings': { en: 'Earnings', uk: 'Заробітки', ru: 'Заработки' },
   'dashboard.nav.profile': { en: 'Profile', uk: 'Профіль', ru: 'Профиль' },
   'dashboard.nav.reviews': { en: 'Reviews', uk: 'Відгуки', ru: 'Отзывы' },
+  'dashboard.nav.loyalty': { en: 'Loyalty', uk: 'Лояльність', ru: 'Лояльность' },
   'dashboard.reviews': { en: 'Reviews', uk: 'Відгуки', ru: 'Отзывы' },
   'dashboard.nav.messages': { en: 'Messages', uk: 'Повідомлення', ru: 'Сообщения' },
   'dashboard.nav.settings': { en: 'Settings', uk: 'Налаштування', ru: 'Настройки' },

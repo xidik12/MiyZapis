@@ -105,9 +105,9 @@ const navigation: SidebarNavItem[] = [
     iconActive: StarIcon,
   },
   {
-    name: 'Referrals',
-    nameUk: 'Реферали',
-    href: '/specialist/referrals',
+    name: 'Loyalty',
+    nameUk: 'Лояльність',
+    href: '/specialist/loyalty',
     icon: GiftIcon,
     iconActive: GiftIcon,
   },
