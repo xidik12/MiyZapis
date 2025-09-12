@@ -169,7 +169,7 @@ const CustomerFavorites: React.FC = () => {
 
     return (
       <div className="flex items-center justify-between mt-8">
-        <div className="text-sm text-gray-700">
+        <div className="text-sm text-gray-700 dark:text-gray-300">
           Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
         </div>
         <div className="flex items-center space-x-2">
@@ -218,10 +218,10 @@ const CustomerFavorites: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             {t('customer.favorites.title')}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             {t('customer.favorites.subtitle')}
           </p>
         </div>
@@ -362,7 +362,7 @@ const CustomerFavorites: React.FC = () => {
                               />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center space-x-2">
-                                  <h3 className="font-semibold text-gray-900 truncate">
+                                  <h3 className="font-semibold text-gray-900 dark:text-white truncate">
                                     {translateProfession(specialist.businessName, t) || `${specialist.user.firstName} ${specialist.user.lastName}`}
                                   </h3>
                                   {specialist.isVerified && (
@@ -401,7 +401,7 @@ const CustomerFavorites: React.FC = () => {
                             <div className="flex items-center space-x-2 mb-3">
                               <div className="flex items-center space-x-1">
                                 <StarIconSolid className="h-4 w-4 text-yellow-400" />
-                                <span className="text-sm font-medium text-gray-900">
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
                                   {specialist.rating.toFixed(1)}
                                 </span>
                               </div>
@@ -525,7 +525,7 @@ const CustomerFavorites: React.FC = () => {
 
                         <div className="p-6">
                           {/* Service Info */}
-                          <h3 className="font-semibold text-gray-900 mb-2 truncate">
+                          <h3 className="font-semibold text-gray-900 dark:text-white mb-2 truncate">
                             {service.name}
                           </h3>
                           {service.description && (
@@ -548,7 +548,7 @@ const CustomerFavorites: React.FC = () => {
                               lazy={true}
                             />
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-900 truncate">
+                              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                                 {service.specialist.businessName || 
                                  `${service.specialist.user.firstName} ${service.specialist.user.lastName}`}
                               </p>
@@ -561,7 +561,7 @@ const CustomerFavorites: React.FC = () => {
                               <ClockIcon className="h-4 w-4 mr-1" />
                               <span>{service.duration} min</span>
                             </div>
-                            <div className="text-lg font-semibold text-gray-900">
+                            <div className="text-lg font-semibold text-gray-900 dark:text-white">
                               {formatPrice(service.price)}
                             </div>
                           </div>
