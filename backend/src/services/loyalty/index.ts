@@ -601,31 +601,6 @@ export class LoyaltyService {
   }
   
   // Utility methods
-  static async getUserLoyaltyStats(userId: string) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        loyaltyTier: true,
-        badges: { include: { badge: true } },
-        loyaltyTransactions: true,
-        customerBookings: { where: { status: 'COMPLETED' } },
-        reviews: true,
-        referralsGiven: { where: { status: 'COMPLETED' } }
-      }
-    });
-    
-    if (!user) return null;
-    
-    return {
-      totalPoints: user.loyaltyPoints,
-      tier: user.loyaltyTier,
-      badges: user.badges.map(ub => ub.badge),
-      totalTransactions: user.loyaltyTransactions.length,
-      totalBookings: user.customerBookings.length,
-      totalReviews: user.reviews.length,
-      successfulReferrals: user.referralsGiven.length
-    };
-  }
   
   static async getAvailableDiscounts(points: number): Promise<Array<{ points: number; discount: number }>> {
     return LOYALTY_CONFIG.DISCOUNT_TIERS.filter(tier => points >= tier.points);
@@ -801,14 +776,14 @@ export class LoyaltyService {
       const user = await prisma.user.findUnique({
         where: { id: userId },
         include: {
-          bookings: {
+          customerBookings: {
             where: { status: 'COMPLETED' }
           },
           reviews: true,
           referralsGiven: {
             where: { status: 'COMPLETED' }
           },
-          userBadges: {
+          badges: {
             include: { badge: true }
           }
         }
@@ -833,8 +808,8 @@ export class LoyaltyService {
         userId,
         totalPoints: user.loyaltyPoints,
         tier,
-        badges: user.userBadges.map(ub => ub.badge),
-        totalBookings: user.bookings.length,
+        badges: user.badges.map(ub => ub.badge),
+        totalBookings: user.customerBookings.length,
         totalReviews: user.reviews.length,
         successfulReferrals: user.referralsGiven.length,
         totalTransactions,

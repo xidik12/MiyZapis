@@ -29,16 +29,20 @@ export interface LoyaltyTier {
 }
 
 export interface UserLoyalty {
-  id: string;
-  userId: string;
-  currentPoints: number;
-  lifetimePoints: number;
-  tierId?: string;
-  tier?: LoyaltyTier;
-  nextTierPoints?: number;
-  pointsToNextTier?: number;
-  createdAt: string;
-  updatedAt: string;
+  profile: {
+    totalPoints: number;
+    tier: string;
+    badges: LoyaltyBadge[];
+    nextTier: string | null;
+    progressToNext: number;
+    availableDiscounts: Array<{ points: number; discount: number }>;
+    stats: {
+      totalBookings: number;
+      totalReviews: number;
+      successfulReferrals: number;
+      totalTransactions: number;
+    };
+  };
 }
 
 export interface LoyaltyBadge {

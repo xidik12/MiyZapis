@@ -658,7 +658,7 @@ const CustomerDashboard: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
                   <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                    {loyaltyData.currentPoints.toLocaleString()}
+                    {loyaltyData?.profile?.totalPoints?.toLocaleString() || '0'}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Current Points</p>
                 </div>
@@ -672,7 +672,7 @@ const CustomerDashboard: React.FC = () => {
                 
                 <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
                   <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    {loyaltyData.lifetimePoints.toLocaleString()}
+                    {loyaltyData?.profile?.totalPoints?.toLocaleString() || '0'}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Lifetime Points</p>
                 </div>
@@ -691,7 +691,7 @@ const CustomerDashboard: React.FC = () => {
                   <div className="overflow-hidden h-3 mb-2 text-xs flex rounded-full bg-purple-200 dark:bg-purple-800">
                     <div 
                       style={{ 
-                        width: `${Math.min(100, ((loyaltyData.currentPoints - (loyaltyStats.currentTier?.minPoints || 0)) / ((loyaltyStats.nextTier.minPoints || 0) - (loyaltyStats.currentTier?.minPoints || 0))) * 100)}%` 
+                        width: `${Math.min(100, (((loyaltyData?.profile?.totalPoints || 0) - (loyaltyStats?.currentTier?.minPoints || 0)) / ((loyaltyStats?.nextTier?.minPoints || 0) - (loyaltyStats?.currentTier?.minPoints || 0))) * 100)}%` 
                       }}
                       className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-500"
                     ></div>
