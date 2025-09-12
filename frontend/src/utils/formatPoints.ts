@@ -18,8 +18,9 @@ export const formatPoints = (points: number | undefined | null): string => {
  */
 export const calculateTier = (points: number): string => {
   if (points >= 5000) return 'platinum';
-  if (points >= 1000) return 'gold';
-  return 'silver';
+  if (points >= 1500) return 'gold';
+  if (points >= 500) return 'silver';
+  return 'bronze';
 };
 
 /**
@@ -27,6 +28,8 @@ export const calculateTier = (points: number): string => {
  */
 export const getTierName = (tier: string): string => {
   switch (tier.toLowerCase()) {
+    case 'bronze':
+      return 'Bronze';
     case 'silver':
       return 'Silver';
     case 'gold':
@@ -34,7 +37,7 @@ export const getTierName = (tier: string): string => {
     case 'platinum':
       return 'Platinum';
     default:
-      return 'Silver';
+      return 'Bronze';
   }
 };
 
@@ -42,10 +45,16 @@ export const getTierName = (tier: string): string => {
  * Get points needed for next tier
  */
 export const getPointsToNextTier = (currentPoints: number): { nextTier: string; pointsNeeded: number } => {
-  if (currentPoints < 1000) {
+  if (currentPoints < 500) {
+    return {
+      nextTier: 'Silver',
+      pointsNeeded: 500 - currentPoints
+    };
+  }
+  if (currentPoints < 1500) {
     return {
       nextTier: 'Gold',
-      pointsNeeded: 1000 - currentPoints
+      pointsNeeded: 1500 - currentPoints
     };
   }
   if (currentPoints < 5000) {

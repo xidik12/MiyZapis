@@ -29,8 +29,9 @@ export const LOYALTY_CONFIG = {
   
   // Tier thresholds
   TIERS: {
-    SILVER: { min: 0, max: 999 },
-    GOLD: { min: 1000, max: 4999 },
+    BRONZE: { min: 0, max: 499 },
+    SILVER: { min: 500, max: 1499 },
+    GOLD: { min: 1500, max: 4999 },
     PLATINUM: { min: 5000, max: null }
   },
   
@@ -411,8 +412,10 @@ export class LoyaltyService {
         tierName = 'PLATINUM';
       } else if (user.loyaltyPoints >= LOYALTY_CONFIG.TIERS.GOLD.min) {
         tierName = 'GOLD';
-      } else {
+      } else if (user.loyaltyPoints >= LOYALTY_CONFIG.TIERS.SILVER.min) {
         tierName = 'SILVER';
+      } else {
+        tierName = 'BRONZE';
       }
       
       // Find or create tier
@@ -436,6 +439,90 @@ export class LoyaltyService {
       
     } catch (error) {
       logger.error('Failed to update user tier', { error, userId });
+    }
+  }
+
+  // Create default loyalty tiers
+  static async createDefaultTiers(tx?: any): Promise<void> {
+    const dbClient = tx || prisma;
+    
+    try {
+      const defaultTiers = [
+        {
+          name: 'BRONZE',
+          minPoints: LOYALTY_CONFIG.TIERS.BRONZE.min,
+          maxPoints: LOYALTY_CONFIG.TIERS.BRONZE.max,
+          benefits: JSON.stringify([
+            'Basic customer support',
+            'Access to standard promotions'
+          ]),
+          discountPercentage: 0,
+          prioritySupport: false,
+          exclusiveOffers: false
+        },
+        {
+          name: 'SILVER',
+          minPoints: LOYALTY_CONFIG.TIERS.SILVER.min,
+          maxPoints: LOYALTY_CONFIG.TIERS.SILVER.max,
+          benefits: JSON.stringify([
+            'Priority customer support',
+            'Early access to new services',
+            '5% discount on bookings'
+          ]),
+          discountPercentage: 5,
+          prioritySupport: true,
+          exclusiveOffers: false
+        },
+        {
+          name: 'GOLD',
+          minPoints: LOYALTY_CONFIG.TIERS.GOLD.min,
+          maxPoints: LOYALTY_CONFIG.TIERS.GOLD.max,
+          benefits: JSON.stringify([
+            'Premium customer support',
+            'Exclusive service access',
+            '10% discount on bookings',
+            'Free service upgrades'
+          ]),
+          discountPercentage: 10,
+          prioritySupport: true,
+          exclusiveOffers: true
+        },
+        {
+          name: 'PLATINUM',
+          minPoints: LOYALTY_CONFIG.TIERS.PLATINUM.min,
+          maxPoints: LOYALTY_CONFIG.TIERS.PLATINUM.max,
+          benefits: JSON.stringify([
+            'VIP customer support',
+            'Personal account manager',
+            '15% discount on bookings',
+            'Free service upgrades',
+            'Exclusive events and offers'
+          ]),
+          discountPercentage: 15,
+          prioritySupport: true,
+          exclusiveOffers: true
+        }
+      ];
+
+      for (const tier of defaultTiers) {
+        await dbClient.loyaltyTier.upsert({
+          where: { name: tier.name },
+          update: {
+            minPoints: tier.minPoints,
+            maxPoints: tier.maxPoints,
+            benefits: tier.benefits,
+            discountPercentage: tier.discountPercentage,
+            prioritySupport: tier.prioritySupport,
+            exclusiveOffers: tier.exclusiveOffers
+          },
+          create: tier
+        });
+      }
+
+      logger.info('Default loyalty tiers created/updated successfully');
+    } catch (error) {
+      logger.error('Failed to create default tiers', { error });
+      throw error;
     }
   }
   

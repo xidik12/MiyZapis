@@ -165,9 +165,13 @@ router.get('/profile', authenticateToken, async (req: Request, res: Response) =>
     // Calculate next tier progress
     let nextTier = null;
     let progressToNext = 0;
-    if (stats.totalPoints < LOYALTY_CONFIG.TIERS.GOLD.min) {
+    if (stats.totalPoints < LOYALTY_CONFIG.TIERS.SILVER.min) {
+      nextTier = 'SILVER';
+      progressToNext = stats.totalPoints / LOYALTY_CONFIG.TIERS.SILVER.min;
+    } else if (stats.totalPoints < LOYALTY_CONFIG.TIERS.GOLD.min) {
       nextTier = 'GOLD';
-      progressToNext = stats.totalPoints / LOYALTY_CONFIG.TIERS.GOLD.min;
+      progressToNext = (stats.totalPoints - LOYALTY_CONFIG.TIERS.SILVER.min) / 
+                      (LOYALTY_CONFIG.TIERS.GOLD.min - LOYALTY_CONFIG.TIERS.SILVER.min);
     } else if (stats.totalPoints < LOYALTY_CONFIG.TIERS.PLATINUM.min) {
       nextTier = 'PLATINUM';
       progressToNext = (stats.totalPoints - LOYALTY_CONFIG.TIERS.GOLD.min) / 
