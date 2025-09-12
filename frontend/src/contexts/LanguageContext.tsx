@@ -647,6 +647,41 @@ const translations: Translations = {
   'bookings.myBookings': { en: 'My Bookings', uk: 'Мої бронювання', ru: 'Мои бронирования' },
   'bookings.leaveReview': { en: 'Leave Review', uk: 'Залишити відгук', ru: 'Оставить отзыв' },
   'bookings.cancelBooking': { en: 'Cancel Booking', uk: 'Скасувати бронювання', ru: 'Отменить бронирование' },
+  'bookings.noBookings': { en: 'No bookings', uk: 'Немає бронювань', ru: 'Нет бронирований' },
+  'bookings.bookingDetails': { en: 'Booking Details', uk: 'Деталі бронювання', ru: 'Детали бронирования' },
+  'bookings.serviceDetails': { en: 'Service Details', uk: 'Деталі послуги', ru: 'Детали услуги' },
+  'bookings.specialistDetails': { en: 'Specialist Details', uk: 'Деталі спеціаліста', ru: 'Детали специалиста' },
+  'bookings.paymentDetails': { en: 'Payment Details', uk: 'Деталі платежу', ru: 'Детали платежа' },
+  'bookings.totalAmount': { en: 'Total Amount', uk: 'Загальна сума', ru: 'Общая сумма' },
+  'bookings.paymentStatus': { en: 'Payment Status', uk: 'Статус платежу', ru: 'Статус платежа' },
+  'bookings.notes': { en: 'Notes', uk: 'Примітки', ru: 'Заметки' },
+  'bookings.yourNotes': { en: 'Your Notes', uk: 'Ваші примітки', ru: 'Ваши заметки' },
+  
+  // Simple status translations (for filters)
+  'status.pending': { en: 'Pending', uk: 'Очікується', ru: 'Ожидает' },
+  'status.confirmed': { en: 'Confirmed', uk: 'Підтверджено', ru: 'Подтверждено' },
+  'status.inProgress': { en: 'In Progress', uk: 'В процесі', ru: 'В процессе' },
+  'status.completed': { en: 'Completed', uk: 'Завершено', ru: 'Завершено' },
+  'status.cancelled': { en: 'Cancelled', uk: 'Скасовано', ru: 'Отменено' },
+  
+  // Simple filter translations
+  'filters.all': { en: 'All', uk: 'Всі', ru: 'Все' },
+  'filters.allTime': { en: 'All Time', uk: 'Весь час', ru: 'Все время' },
+  'filters.dateRange': { en: 'Date Range', uk: 'Діапазон дат', ru: 'Диапазон дат' },
+  'filters.today': { en: 'Today', uk: 'Сьогодні', ru: 'Сегодня' },
+  'filters.thisWeek': { en: 'This Week', uk: 'Цей тиждень', ru: 'Эта неделя' },
+  'filters.search': { en: 'Search', uk: 'Пошук', ru: 'Поиск' },
+  'filters.searchPlaceholder': { en: 'Search...', uk: 'Пошук...', ru: 'Поиск...' },
+  'filters.sortBy': { en: 'Sort By', uk: 'Сортувати за', ru: 'Сортировать по' },
+  'filters.date': { en: 'Date', uk: 'Дата', ru: 'Дата' },
+  'filters.amount': { en: 'Amount', uk: 'Сума', ru: 'Сумма' },
+  'filters.status': { en: 'Status', uk: 'Статус', ru: 'Статус' },
+  'filters.descending': { en: 'Descending', uk: 'За спаданням', ru: 'По убыванию' },
+  
+  // Additional action translations
+  'actions.cancel': { en: 'Cancel', uk: 'Скасувати', ru: 'Отменить' },
+  'actions.reschedule': { en: 'Reschedule', uk: 'Перенести', ru: 'Перенести' },
+  'actions.viewDetails': { en: 'View Details', uk: 'Переглянути деталі', ru: 'Просмотр деталей' },
   
   // Booking Details Modal
   'bookingDetails.title': { en: 'Booking Details', uk: 'Деталі бронювання', ru: 'Детали бронирования' },
