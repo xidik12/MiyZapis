@@ -4,7 +4,6 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser, updateUserProfile } from '../../store/slices/authSlice';
-import { selectDensity, setDensity } from '../../store/slices/uiSlice';
 import { PaymentMethod } from '../../types';
 import { PaymentMethodsService } from '../../services/paymentMethods';
 import { fileUploadService } from '../../services/fileUpload.service';
