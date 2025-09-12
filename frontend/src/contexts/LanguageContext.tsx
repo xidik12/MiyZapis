@@ -647,6 +647,8 @@ const translations: Translations = {
   'bookings.myBookings': { en: 'My Bookings', uk: 'Мої бронювання', ru: 'Мои бронирования' },
   'bookings.leaveReview': { en: 'Leave Review', uk: 'Залишити відгук', ru: 'Оставить отзыв' },
   'bookings.cancelBooking': { en: 'Cancel Booking', uk: 'Скасувати бронювання', ru: 'Отменить бронирование' },
+  'bookings.confirmCancel': { en: 'Are you sure you want to cancel this booking?', uk: 'Ви впевнені, що хочете скасувати це бронювання?', ru: 'Вы уверены, что хотите отменить это бронирование?' },
+  'bookings.confirmCancelTitle': { en: 'Cancel Booking', uk: 'Скасування бронювання', ru: 'Отмена бронирования' },
   'bookings.noBookings': { en: 'No bookings', uk: 'Немає бронювань', ru: 'Нет бронирований' },
   'bookings.bookingDetails': { en: 'Booking Details', uk: 'Деталі бронювання', ru: 'Детали бронирования' },
   'bookings.serviceDetails': { en: 'Service Details', uk: 'Деталі послуги', ru: 'Детали услуги' },
@@ -682,6 +684,7 @@ const translations: Translations = {
   'actions.cancel': { en: 'Cancel', uk: 'Скасувати', ru: 'Отменить' },
   'actions.reschedule': { en: 'Reschedule', uk: 'Перенести', ru: 'Перенести' },
   'actions.viewDetails': { en: 'View Details', uk: 'Переглянути деталі', ru: 'Просмотр деталей' },
+  'actions.back': { en: 'Back', uk: 'Назад', ru: 'Назад' },
   
   // Booking Details Modal
   'bookingDetails.title': { en: 'Booking Details', uk: 'Деталі бронювання', ru: 'Детали бронирования' },

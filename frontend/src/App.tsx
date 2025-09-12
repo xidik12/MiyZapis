@@ -50,6 +50,7 @@ const SpecialistAnalytics = React.lazy(() => import('./pages/specialist/Analytic
 const SpecialistSchedule = React.lazy(() => import('./pages/specialist/Schedule'));
 const SpecialistEarnings = React.lazy(() => import('./pages/specialist/Earnings'));
 const SpecialistReviews = React.lazy(() => import('./pages/specialist/Reviews'));
+const SpecialistReferrals = React.lazy(() => import('./pages/specialist/Referrals'));
 const SpecialistMessages = React.lazy(() => import('./pages/specialist/Messages'));
 
 // Customer pages
@@ -105,6 +106,7 @@ const usePageTitle = () => {
       '/specialist/schedule': 'Schedule - МійЗапис',
       '/specialist/earnings': 'Earnings - МійЗапис',
       '/specialist/reviews': 'Reviews - МійЗапис',
+      '/specialist/referrals': 'Referrals - МійЗапис',
       '/specialist/messages': 'Messages - МійЗапис',
       '/specialist/settings': 'Settings - МійЗапис',
       '/specialist/notifications': 'Notifications - МійЗапис',
@@ -279,6 +281,18 @@ function App() {
                 <SpecialistLayout>
                   <Suspense fallback={<SuspenseLoader />}>
                     <SpecialistReviews />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/specialist/referrals"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistReferrals />
                   </Suspense>
                 </SpecialistLayout>
               </ProtectedRoute>
