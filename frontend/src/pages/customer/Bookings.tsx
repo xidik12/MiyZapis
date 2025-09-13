@@ -569,12 +569,12 @@ const CustomerBookings: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-8 space-y-2 sm:space-y-0">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white">
               {t('customer.bookings.title')}
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-1">
+            <p className="text-xs sm:text-base text-gray-600 dark:text-gray-300 mt-1">
               {t('customer.bookings.subtitle')}
             </p>
           </div>
@@ -662,95 +662,139 @@ const CustomerBookings: React.FC = () => {
         {/* Bookings List */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
           {paginatedBookings.length === 0 ? (
-            <div className="p-12 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 text-gray-400">
+            <div className="p-8 sm:p-12 text-center">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-gray-400">
                 <CalendarIcon className="w-full h-full" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">
                 {t('bookings.noBookings')}
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                 {t('bookings.noBookingsDescription')}
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[600px]">
-                <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-                  <tr>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('bookings.service')}
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('bookings.specialist')}
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('bookings.dateTime')}
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('bookings.amount')}
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('bookings.status')}
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('bookings.actions')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {paginatedBookings.map((booking) => {
-                    const scheduledDate = new Date(booking.scheduledAt);
-                    const specialistName = booking.specialist?.firstName && booking.specialist?.lastName 
-                      ? `${booking.specialist.firstName} ${booking.specialist.lastName}`
-                      : booking.specialistName || 'Unknown Specialist';
-                    const specialistAvatar = booking.specialist?.profileImage || booking.specialist?.user?.avatar;
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full min-w-[600px]">
+                  <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        {t('bookings.service')}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        {t('bookings.specialist')}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        {t('bookings.dateTime')}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        {t('bookings.amount')}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        {t('bookings.status')}
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        {t('bookings.actions')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {paginatedBookings.map((booking) => {
+                      const scheduledDate = new Date(booking.scheduledAt);
+                      const specialistName = booking.specialist?.firstName && booking.specialist?.lastName 
+                        ? `${booking.specialist.firstName} ${booking.specialist.lastName}`
+                        : booking.specialistName || 'Unknown Specialist';
+                      const specialistAvatar = booking.specialist?.profileImage || booking.specialist?.user?.avatar;
 
-                    return (
-                      <tr key={booking.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <td className="px-3 sm:px-6 py-4">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">
-                              {getTranslatedServiceName(booking.service?.name || booking.serviceName || 'Unknown Service')}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              {getTranslatedDuration(booking.duration || '60 min')}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-3 sm:px-6 py-4">
-                          <div className="flex items-center space-x-3">
-                            <Avatar
-                              src={specialistAvatar}
-                              alt={specialistName}
-                              size="sm"
-                            />
+                      return (
+                        <tr key={booking.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                          <td className="px-6 py-4">
                             <div>
                               <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                {specialistName}
+                                {getTranslatedServiceName(booking.service?.name || booking.serviceName || 'Unknown Service')}
+                              </div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">
+                                {getTranslatedDuration(booking.duration || '60 min')}
                               </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-3 sm:px-6 py-4">
-                          <div className="text-sm text-gray-900 dark:text-white">
-                            {scheduledDate.toLocaleDateString()}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </div>
-                        </td>
-                        <td className="px-3 sm:px-6 py-4">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {formatPrice(booking.totalAmount)}
-                          </div>
-                        </td>
-                        <td className="px-3 sm:px-6 py-4">
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center space-x-3">
+                              <Avatar
+                                src={specialistAvatar}
+                                alt={specialistName}
+                                size="sm"
+                              />
+                              <div>
+                                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {specialistName}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm text-gray-900 dark:text-white">
+                              {scheduledDate.toLocaleDateString()}
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              {scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {formatPrice(booking.totalAmount)}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${statusColors[booking.status] || statusColors.PENDING}`}>
+                              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1).toLowerCase()}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <button
+                              onClick={() => {
+                                setSelectedBooking(booking);
+                                setShowDetailModal(true);
+                              }}
+                              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1"
+                              title={t('actions.viewDetails')}
+                            >
+                              <EyeIcon className="w-5 h-5" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              
+              {/* Mobile Card View */}
+              <div className="lg:hidden divide-y divide-gray-200 dark:divide-gray-700">
+                {paginatedBookings.map((booking) => {
+                  const scheduledDate = new Date(booking.scheduledAt);
+                  const specialistName = booking.specialist?.firstName && booking.specialist?.lastName 
+                    ? `${booking.specialist.firstName} ${booking.specialist.lastName}`
+                    : booking.specialistName || 'Unknown Specialist';
+                  const specialistAvatar = booking.specialist?.profileImage || booking.specialist?.user?.avatar;
+
+                  return (
+                    <div key={booking.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                            {getTranslatedServiceName(booking.service?.name || booking.serviceName || 'Unknown Service')}
+                          </h3>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {getTranslatedDuration(booking.duration || '60 min')}
+                          </p>
+                        </div>
+                        <div className="flex items-center space-x-2 ml-3">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${statusColors[booking.status] || statusColors.PENDING}`}>
                             {booking.status.charAt(0).toUpperCase() + booking.status.slice(1).toLowerCase()}
                           </span>
-                        </td>
-                        <td className="px-3 sm:px-6 py-4 text-right">
                           <button
                             onClick={() => {
                               setSelectedBooking(booking);
@@ -759,25 +803,50 @@ const CustomerBookings: React.FC = () => {
                             className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1"
                             title={t('actions.viewDetails')}
                           >
-                            <EyeIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <EyeIcon className="w-4 h-4" />
                           </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3 mb-3">
+                        <Avatar
+                          src={specialistAvatar}
+                          alt={specialistName}
+                          size="sm"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                            {specialistName}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center space-x-1 text-gray-600 dark:text-gray-400">
+                          <CalendarIcon className="w-4 h-4" />
+                          <span>{scheduledDate.toLocaleDateString()}</span>
+                          <ClockIcon className="w-4 h-4 ml-2" />
+                          <span>{scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {formatPrice(booking.totalAmount)}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between">
-            <div className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mb-2 sm:mb-0">
+          <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row sm:items-center justify-between space-y-3 sm:space-y-0">
+            <div className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 text-center sm:text-left">
               {t('pagination.showing')} {((currentPage - 1) * itemsPerPage) + 1} {t('pagination.to')} {Math.min(currentPage * itemsPerPage, filteredAndSortedBookings.length)} {t('pagination.of')} {filteredAndSortedBookings.length} {t('pagination.results')}
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap justify-center sm:justify-end gap-1 sm:gap-2">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
@@ -785,19 +854,32 @@ const CustomerBookings: React.FC = () => {
               >
                 {t('pagination.previous')}
               </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium border rounded-lg ${
-                    page === currentPage
-                      ? 'bg-blue-600 text-white border-blue-600'
-                      : 'text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                let page;
+                if (totalPages <= 5) {
+                  page = i + 1;
+                } else if (currentPage <= 3) {
+                  page = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  page = totalPages - 4 + i;
+                } else {
+                  page = currentPage - 2 + i;
+                }
+                
+                return (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium border rounded-lg ${
+                      page === currentPage
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
               <button
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}

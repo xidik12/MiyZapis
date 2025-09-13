@@ -234,14 +234,14 @@ const CustomerLoyalty: React.FC = () => {
                   <button
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key as any)}
-                    className={`flex items-center py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap ${
+                    className={`flex flex-col sm:flex-row items-center py-2 sm:py-4 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap ${
                       isActive
                         ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                         : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:border-gray-300'
-                    } transition-colors`}
+                    } transition-colors min-w-0 flex-1 sm:flex-initial`}
                   >
-                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-                    <span className="hidden xs:inline sm:inline">{tab.label}</span>
+                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 mb-1 sm:mb-0 sm:mr-2" />
+                    <span className="text-xs sm:text-sm">{tab.label}</span>
                   </button>
                 );
               })}
