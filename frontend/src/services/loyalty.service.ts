@@ -109,6 +109,7 @@ export interface LoyaltyStats {
   totalTransactions: number;
   totalBadges: number;
   totalReferrals: number;
+  totalServices: number; // Added missing field for services completed
   currentTier: LoyaltyTier | null;
   nextTier: LoyaltyTier | null;
   pointsToNextTier: number;
@@ -192,6 +193,7 @@ export class LoyaltyService {
       totalTransactions: 0,
       totalBadges: 0,
       totalReferrals: 0,
+      totalServices: 0,
       currentTier: null,
       nextTier: null,
       pointsToNextTier: 0,

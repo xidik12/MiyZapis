@@ -925,7 +925,26 @@ export class LoyaltyService {
   }
 
   static async getLoyaltyStats(userId: string) {
-    return await this.getUserLoyaltyStats(userId);
+    const userStats = await this.getUserLoyaltyStats(userId);
+    
+    if (!userStats) {
+      return null;
+    }
+    
+    // Transform the user stats to match frontend expectations
+    return {
+      totalPoints: userStats.totalPoints,
+      totalTransactions: userStats.totalTransactions,
+      totalBadges: userStats.badges.length,
+      totalReferrals: userStats.successfulReferrals,
+      totalServices: userStats.totalBookings, // Map totalBookings to totalServices
+      currentTier: null, // TODO: Implement tier lookup
+      nextTier: null, // TODO: Implement next tier lookup
+      pointsToNextTier: 0, // TODO: Calculate points needed for next tier
+      monthlyPoints: 0, // TODO: Calculate monthly points
+      yearlyPoints: 0, // TODO: Calculate yearly points
+      totalSpentPoints: 0 // TODO: Calculate spent points from redemption transactions
+    };
   }
   
   static async getLoyaltyTiers() {
