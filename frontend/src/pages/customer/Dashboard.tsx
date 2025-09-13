@@ -465,38 +465,40 @@ const CustomerDashboard: React.FC = () => {
 
           {/* Next Appointment Banner */}
           {nextAppointment && (
-            <div className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl p-6 text-white shadow-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">{t('dashboard.customer.nextAppointment')}</h3>
+            <div className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white shadow-lg">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <h3 className="text-base sm:text-lg font-semibold mb-2">{t('dashboard.customer.nextAppointment')}</h3>
                   <div className="space-y-1">
-                    <p className="text-primary-100">{nextAppointment.serviceName}</p>
-                    <p className="text-sm text-primary-200">
+                    <p className="text-primary-100 text-sm sm:text-base">{nextAppointment.serviceName}</p>
+                    <p className="text-xs sm:text-sm text-primary-200">
                       {language === 'uk' ? 'з' : language === 'ru' ? 'с' : 'with'} {nextAppointment.specialistName}
                     </p>
-                    <div className="flex items-center space-x-4 text-sm text-primary-200">
-                      <span className="flex items-center">
-                        <CalendarIcon className="w-4 h-4 mr-1" />
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-primary-200">
+                      <span className="flex items-center whitespace-nowrap">
+                        <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                         {nextAppointment.date}
                       </span>
-                      <span className="flex items-center">
-                        <ClockIcon className="w-4 h-4 mr-1" />
+                      <span className="flex items-center whitespace-nowrap">
+                        <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                         {nextAppointment.time}
                       </span>
                       <span className="flex items-center">
-                        <MapPinIcon className="w-4 h-4 mr-1" />
-                        {nextAppointment.type === 'online' 
-                          ? t('dashboard.specialist.online')
-                          : nextAppointment.location
-                        }
+                        <MapPinIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                        <span className="truncate max-w-[120px] sm:max-w-none">
+                          {nextAppointment.type === 'online' 
+                            ? t('dashboard.specialist.online')
+                            : nextAppointment.location
+                          }
+                        </span>
                       </span>
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="sm:text-right">
                   <Link
                     to="/customer/bookings"
-                    className="inline-flex items-center px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors font-medium"
+                    className="inline-flex items-center justify-center w-full sm:w-auto px-3 sm:px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors font-medium text-sm sm:text-base"
                   >
                     {t('dashboard.viewAll')}
                   </Link>
@@ -506,11 +508,11 @@ const CustomerDashboard: React.FC = () => {
           )}
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Recent Bookings */}
-            <div className="bg-surface rounded-2xl p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.customer.recentBookings')}</h3>
+            <div className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.customer.recentBookings')}</h3>
                 <Link 
                   to="/customer/history"
                   className="text-primary-600 hover:text-primary-700 text-sm font-medium"
@@ -518,28 +520,28 @@ const CustomerDashboard: React.FC = () => {
                   {t('dashboard.viewAll')}
                 </Link>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {recentBookings.slice(0, 4).map((booking) => (
                   <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
-                        <span className="text-white font-semibold text-sm">
+                    <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-semibold text-xs sm:text-sm">
                           {booking.specialistName?.split(' ').map(n => n[0]).join('')}
                         </span>
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{booking.specialistName}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{booking.serviceName}</p>
-                        <p className="text-xs text-gray-400">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{booking.specialistName}</p>
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">{booking.serviceName}</p>
+                        <p className="text-xs text-gray-400 truncate">
                           {booking.date} {language === 'uk' ? 'о' : language === 'ru' ? 'в' : 'at'} {booking.time}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-gray-900 dark:text-white">
+                    <div className="text-right flex-shrink-0">
+                      <p className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
                         {formatPrice(booking.amount, booking.currency)}
                       </p>
-                      <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
+                      <span className={`inline-block px-2 py-0.5 sm:py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
                         {getStatusText(booking.status)}
                       </span>
                     </div>
@@ -563,9 +565,9 @@ const CustomerDashboard: React.FC = () => {
             </div>
 
             {/* Favorite Specialists */}
-            <div className="bg-surface rounded-2xl p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.customer.favoriteSpecialists')}</h3>
+            <div className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.customer.favoriteSpecialists')}</h3>
                 <button
                   onClick={handleLoadMoreFavorites}
                   disabled={favoritesLoading}
@@ -574,9 +576,9 @@ const CustomerDashboard: React.FC = () => {
                   {t('dashboard.viewAll')}
                 </button>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {favoriteSpecialists.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <div className="text-center py-6 sm:py-8 text-gray-500 dark:text-gray-400">
                   <HeartIconSolid className="w-12 h-12 mx-auto mb-3 opacity-50" />
                   <p>{t('customer.favorites.noSpecialists')}</p>
                   <Link 
@@ -589,15 +591,15 @@ const CustomerDashboard: React.FC = () => {
               ) : (
                 favoriteSpecialists.map((specialist) => (
                   <div key={specialist.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center">
-                        <span className="text-white font-semibold text-sm">
+                    <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-semibold text-xs sm:text-sm">
                           {specialist.name.split(' ').map(n => n[0]).join('')}
                         </span>
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{specialist.name}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{specialist.service}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{specialist.name}</p>
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">{specialist.service}</p>
                         <div className="flex items-center space-x-2 text-xs text-gray-400">
                           <span className="flex items-center">
                             <StarIcon className="w-3 h-3 mr-1 text-warning-500" />
@@ -608,19 +610,19 @@ const CustomerDashboard: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex space-x-2">
+                    <div className="flex space-x-1 sm:space-x-2 flex-shrink-0">
                       <Link
                         to={`/specialist/${specialist.id}`}
-                        className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-lg transition-colors"
+                        className="p-1 sm:p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-lg transition-colors"
                       >
-                        <EyeIcon className="w-4 h-4" />
+                        <EyeIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Link>
                       <button
                         onClick={() => handleMessageFavorite(specialist)}
-                        className="p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        className="p-1 sm:p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
                         title={t('specialistProfile.sendMessage')}
                       >
-                        <ChatBubbleLeftRightIcon className="w-4 h-4" />
+                        <ChatBubbleLeftRightIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                       </button>
                     </div>
                   </div>
@@ -635,57 +637,57 @@ const CustomerDashboard: React.FC = () => {
 
           {/* Loyalty Progress */}
           {loyaltyData && loyaltyStats && (
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 shadow-lg border border-purple-200 dark:border-purple-700">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-3">
-                  <div className="h-10 w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <GiftIconSolid className="h-5 w-5 text-white" />
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-purple-200 dark:border-purple-700">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <GiftIconSolid className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Loyalty Progress</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Loyalty Progress</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                       {loyaltyStats.currentTier?.name || 'Bronze'} Member
                     </p>
                   </div>
                 </div>
                 <Link
                   to="/loyalty"
-                  className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                  className="inline-flex items-center justify-center w-full sm:w-auto px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs sm:text-sm font-medium"
                 >
                   View Details
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
-                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-lg">
+                  <p className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
                     {formatPoints(loyaltyData?.currentPoints || 0)}
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Current Points</p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Current Points</p>
                 </div>
                 
-                <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-lg">
+                  <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
                     {formatPoints(loyaltyStats.monthlyPoints)}
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">This Month</p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">This Month</p>
                 </div>
                 
-                <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
-                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-lg">
+                  <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {formatPoints(loyaltyData?.lifetimePoints || 0)}
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Lifetime Points</p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Lifetime Points</p>
                 </div>
               </div>
 
               {loyaltyStats.nextTier && (
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-1">
+                    <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
                       Progress to {loyaltyStats.nextTier.name}
                     </span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                    <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                       {loyaltyStats.pointsToNextTier} points needed
                     </span>
                   </div>
@@ -698,8 +700,8 @@ const CustomerDashboard: React.FC = () => {
                     ></div>
                   </div>
                   <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-                    <span>{loyaltyStats.currentTier?.name}</span>
-                    <span>{loyaltyStats.nextTier.name}</span>
+                    <span className="truncate">{loyaltyStats.currentTier?.name}</span>
+                    <span className="truncate">{loyaltyStats.nextTier.name}</span>
                   </div>
                 </div>
               )}

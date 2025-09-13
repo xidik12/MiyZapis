@@ -502,54 +502,61 @@ const SearchPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-4">
             {t('search.title')}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             {t('search.subtitle')}
           </p>
         </div>
 
         {/* Search Form */}
-        <form onSubmit={handleSearch} className="mb-8">
+        <form onSubmit={handleSearch} className="mb-6 sm:mb-8">
           <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('search.placeholder')}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+              className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
             />
           </div>
         </form>
 
         {/* Enhanced Filters and Controls */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-3 sm:p-4 mb-4 sm:mb-6">
           {/* Header with results count and main controls */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {t('search.results') || 'Search Results'}
-              </h3>
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300">
-                {getFilteredServices().length} {t('search.found') || 'found'}
-              </span>
+          <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                  {t('search.results') || 'Search Results'}
+                </h3>
+                <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300">
+                  {getFilteredServices().length}
+                </span>
+              </div>
+              {/* Advanced Filters Button - Mobile Priority */}
+              <button
+                onClick={() => setIsFilterTrayOpen(true)}
+                className="inline-flex items-center gap-1 sm:gap-2 h-8 sm:h-9 px-3 sm:px-4 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
+              >
+                <AdjustmentsHorizontalIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">{t('search.filters') || 'Filters'}</span>
+              </button>
             </div>
-            
-            <div className="flex items-center gap-3">
+            {/* Category and Sort Controls - Mobile Optimized */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               {/* Category Selector */}
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                  {t('search.category') || 'Category'}:
-                </label>
+              <div className="flex-1 sm:flex-none">
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="h-9 px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm min-w-[140px]"
+                  className="w-full sm:w-auto h-8 sm:h-9 px-2 sm:px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-xs sm:text-sm"
                 >
                   {categories.map((category) => (
                     <option key={category.id} value={category.id === 'all' ? '' : category.id}>
@@ -560,14 +567,11 @@ const SearchPage: React.FC = () => {
               </div>
 
               {/* Sort Selector */}
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                  {t('search.sortBy') || 'Sort by'}:
-                </label>
+              <div className="flex-1 sm:flex-none">
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="h-9 px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm min-w-[120px]"
+                  className="w-full sm:w-auto h-8 sm:h-9 px-2 sm:px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-xs sm:text-sm"
                 >
                   <option value="rating">{t('search.sortBy.rating') || 'Rating'}</option>
                   <option value="price">{t('search.sortBy.price') || 'Price'}</option>
@@ -575,27 +579,18 @@ const SearchPage: React.FC = () => {
                   <option value="reviews">{t('search.sortBy.reviews') || 'Reviews'}</option>
                 </select>
               </div>
-
-              {/* Advanced Filters Button */}
-              <button
-                onClick={() => setIsFilterTrayOpen(true)}
-                className="inline-flex items-center gap-2 h-9 px-4 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
-              >
-                <AdjustmentsHorizontalIcon className="w-4 h-4" />
-                {t('search.filters') || 'Filters'}
-              </button>
             </div>
           </div>
 
-          {/* Quick Sort Filters Row */}
-          <div className="mb-4">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          {/* Quick Sort Filters Row - Mobile Optimized */}
+          <div className="mb-3 sm:mb-4">
+            <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">
               {t('search.quickSort') || 'Quick Sort'}
             </h4>
-            <div className="flex items-center gap-2 overflow-x-auto pb-2">
+            <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-1 sm:pb-2">
               <button
                 onClick={() => setSortBy('rating')}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all whitespace-nowrap ${
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
                   sortBy === 'rating' 
                     ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-sm dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-300' 
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
