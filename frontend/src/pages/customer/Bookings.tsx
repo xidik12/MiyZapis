@@ -120,54 +120,54 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const specialistRating = booking.specialist?.rating || 5;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-t-xl sm:rounded-xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+        <div className="flex items-center justify-between p-3 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-base sm:text-xl font-semibold text-gray-900 dark:text-white truncate">
             {t('bookings.bookingDetails')}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors flex-shrink-0"
           >
-            <XMarkIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+            <XMarkIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="p-3 sm:p-6 space-y-3 sm:space-y-6">
           {/* Status Badge */}
-          <div className="flex items-center space-x-3">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium border ${statusColors[booking.status] || statusColors.PENDING}`}>
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+            <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium border ${statusColors[booking.status] || statusColors.PENDING} text-center sm:text-left`}>
               {booking.status.charAt(0).toUpperCase() + booking.status.slice(1).toLowerCase()}
             </span>
-            <span className="text-gray-500 dark:text-gray-400 text-sm">
+            <span className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm text-center sm:text-left">
               #{booking.id.substring(0, 8)}...
             </span>
           </div>
 
           {/* Service Info */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-            <h3 className="font-medium text-gray-900 dark:text-white mb-3">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 sm:p-4">
+            <h3 className="font-medium text-gray-900 dark:text-white mb-2 sm:mb-3 text-sm sm:text-base">
               {t('bookings.serviceDetails')}
             </h3>
-            <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-              <div className="flex items-center space-x-2">
-                <CalendarIcon className="w-4 h-4" />
-                <span>
+            <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+              <div className="flex items-start space-x-2">
+                <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4 mt-0.5 flex-shrink-0" />
+                <span className="break-words">
                   <strong>{getTranslatedServiceName(booking.service?.name || booking.serviceName || 'Unknown Service')}</strong>
                 </span>
               </div>
-              <div className="flex items-center space-x-2">
-                <ClockIcon className="w-4 h-4" />
-                <span>
+              <div className="flex items-start space-x-2">
+                <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4 mt-0.5 flex-shrink-0" />
+                <span className="break-words">
                   {scheduledDate.toLocaleDateString()} at {scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
-              <div className="flex items-center space-x-2">
-                <ClockIcon className="w-4 h-4" />
-                <span>
+              <div className="flex items-start space-x-2">
+                <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4 mt-0.5 flex-shrink-0" />
+                <span className="break-words">
                   {getTranslatedDuration(booking.duration || '60 min')}
                 </span>
               </div>
@@ -175,33 +175,33 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           </div>
 
           {/* Specialist Info */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-            <h3 className="font-medium text-gray-900 dark:text-white mb-3">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 sm:p-4">
+            <h3 className="font-medium text-gray-900 dark:text-white mb-2 sm:mb-3 text-sm sm:text-base">
               {t('bookings.specialistDetails')}
             </h3>
-            <div className="flex items-start space-x-3">
+            <div className="flex items-start space-x-2 sm:space-x-3">
               <Avatar
                 src={specialistAvatar}
                 alt={specialistName}
                 size="md"
               />
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center space-x-2">
-                  <UserIcon className="w-4 h-4 text-gray-500" />
-                  <span className="font-medium text-gray-900 dark:text-white">{specialistName}</span>
+                  <UserIcon className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
+                  <span className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{specialistName}</span>
                 </div>
                 <div className="flex items-center space-x-1 mt-1">
                   {Array.from({ length: 5 }).map((_, index) => (
                     <StarIcon
                       key={index}
-                      className={`w-4 h-4 ${
+                      className={`w-3 h-3 sm:w-4 sm:h-4 ${
                         index < Math.floor(specialistRating)
                           ? 'text-yellow-400 fill-current'
                           : 'text-gray-300'
                       }`}
                     />
                   ))}
-                  <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 ml-1">
                     {specialistRating.toFixed(1)}
                   </span>
                 </div>
@@ -210,11 +210,11 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           </div>
 
           {/* Payment Info */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-            <h3 className="font-medium text-gray-900 dark:text-white mb-3">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 sm:p-4">
+            <h3 className="font-medium text-gray-900 dark:text-white mb-2 sm:mb-3 text-sm sm:text-base">
               {t('bookings.paymentDetails')}
             </h3>
-            <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+            <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
               <div className="flex justify-between">
                 <span>{t('bookings.totalAmount')}:</span>
                 <span className="font-medium text-gray-900 dark:text-white">
@@ -236,26 +236,26 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
           {/* Notes */}
           {(booking.customerNotes || booking.specialistNotes) && (
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-              <h3 className="font-medium text-gray-900 dark:text-white mb-3">
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 sm:p-4">
+              <h3 className="font-medium text-gray-900 dark:text-white mb-2 sm:mb-3 text-sm sm:text-base">
                 {t('bookings.notes')}
               </h3>
               {booking.customerNotes && (
-                <div className="mb-3">
-                  <p className="text-sm text-gray-600 dark:text-gray-300 font-medium mb-1">
+                <div className="mb-2 sm:mb-3">
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-medium mb-1">
                     {t('bookings.yourNotes')}:
                   </p>
-                  <p className="text-sm text-gray-700 dark:text-gray-200">
+                  <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-200 break-words">
                     {booking.customerNotes}
                   </p>
                 </div>
               )}
               {booking.specialistNotes && (
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 font-medium mb-1">
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-medium mb-1">
                     {t('bookings.specialistNotes')}:
                   </p>
-                  <p className="text-sm text-gray-700 dark:text-gray-200">
+                  <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-200 break-words">
                     {booking.specialistNotes}
                   </p>
                 </div>
@@ -265,18 +265,18 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         </div>
 
         {/* Actions */}
-        <div className="p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 rounded-b-xl sm:rounded-b-2xl">
-          <div className="flex flex-wrap gap-2 sm:gap-3">
+        <div className="p-3 sm:p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 rounded-b-xl">
+          <div className="flex flex-wrap gap-2">
             {canCancel && (
               <button
                 onClick={() => {
                   onCancel(booking.id);
                   onClose();
                 }}
-                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors border border-red-200 dark:border-red-800"
+                className="flex-1 sm:flex-none px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors border border-red-200 dark:border-red-800 min-w-0"
               >
                 <XMarkIcon className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-                {t('actions.cancel')}
+                <span className="truncate">{t('actions.cancel')}</span>
               </button>
             )}
             
@@ -286,10 +286,10 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   onReschedule(booking.id);
                   onClose();
                 }}
-                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors border border-blue-200 dark:border-blue-800"
+                className="flex-1 sm:flex-none px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors border border-blue-200 dark:border-blue-800 min-w-0"
               >
                 <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-                {t('actions.reschedule')}
+                <span className="truncate">{t('actions.reschedule')}</span>
               </button>
             )}
             
@@ -299,10 +299,10 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   onLeaveReview(booking.id);
                   onClose();
                 }}
-                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors border border-green-200 dark:border-green-800"
+                className="flex-1 sm:flex-none px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors border border-green-200 dark:border-green-800 min-w-0"
               >
                 <StarIcon className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-                {t('actions.review')}
+                <span className="truncate">{t('actions.review')}</span>
               </button>
             )}
             
@@ -312,10 +312,10 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   onBookAgain(booking);
                   onClose();
                 }}
-                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors border border-purple-200 dark:border-purple-800"
+                className="flex-1 sm:flex-none px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors border border-purple-200 dark:border-purple-800 min-w-0"
               >
                 <ArrowPathIcon className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-                {t('actions.bookAgain')}
+                <span className="truncate">{t('actions.bookAgain')}</span>
               </button>
             )}
           </div>
@@ -581,8 +581,8 @@ const CustomerBookings: React.FC = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-4 sm:p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-3 sm:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {/* Status Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -649,7 +649,7 @@ const CustomerBookings: React.FC = () => {
                 </select>
                 <button
                   onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                  className="px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white text-sm"
+                  className="px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white text-sm min-w-[3rem] flex items-center justify-center"
                   title={sortOrder === 'asc' ? t('filters.ascending') : t('filters.descending')}
                 >
                   {sortOrder === 'asc' ? '↑' : '↓'}
@@ -675,7 +675,7 @@ const CustomerBookings: React.FC = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px]">
+              <table className="w-full min-w-[600px]">
                 <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
                   <tr>
                     <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -693,7 +693,7 @@ const CustomerBookings: React.FC = () => {
                     <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       {t('bookings.status')}
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       {t('bookings.actions')}
                     </th>
                   </tr>
@@ -750,16 +750,16 @@ const CustomerBookings: React.FC = () => {
                             {booking.status.charAt(0).toUpperCase() + booking.status.slice(1).toLowerCase()}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-3 sm:px-6 py-4 text-right">
                           <button
                             onClick={() => {
                               setSelectedBooking(booking);
                               setShowDetailModal(true);
                             }}
-                            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1"
                             title={t('actions.viewDetails')}
                           >
-                            <EyeIcon className="w-5 h-5" />
+                            <EyeIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                           </button>
                         </td>
                       </tr>

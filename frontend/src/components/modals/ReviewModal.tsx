@@ -152,25 +152,25 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-start justify-center px-4 py-4 sm:p-4" onClick={onClose}>
-      <div ref={panelRef} className={`relative w-full max-w-lg shadow-lg rounded-md ${
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-end sm:items-start justify-center px-0 sm:px-4 py-0 sm:py-4" onClick={onClose}>
+      <div ref={panelRef} className={`relative w-full max-w-lg shadow-lg rounded-t-lg sm:rounded-lg ${
         theme === 'dark' 
           ? 'bg-gray-800 border-gray-600' 
           : 'bg-white border-gray-300'
-      } my-4 sm:my-8 mx-auto min-h-fit max-h-full`} style={{ 
-        marginTop: 'max(1rem, 2vh)',
+      } my-0 sm:my-8 mx-auto min-h-fit max-h-full`} style={{ 
+        marginTop: 'max(0rem, 2vh)',
         maxHeight: 'calc(100vh - 2rem)'
       }} role="dialog" aria-modal="true" aria-labelledby="review-title" onClick={(e) => e.stopPropagation()} tabIndex={-1}>
-        <div className="p-4 sm:p-6 overflow-y-auto max-h-full">
-          <div className="flex items-center justify-between mb-4">
-            <h3 id="review-title" className={`text-lg font-medium ${
+        <div className="p-3 sm:p-6 overflow-y-auto max-h-full">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h3 id="review-title" className={`text-base sm:text-lg font-medium truncate ${
               theme === 'dark' ? 'text-gray-100' : 'text-gray-900'
             }`}>
               {t('reviews.leaveReview')}
             </h3>
             <button
               onClick={onClose}
-              className={`${
+              className={`flex-shrink-0 p-1 ${
                 theme === 'dark' 
                   ? 'text-gray-400 hover:text-gray-200' 
                   : 'text-gray-400 hover:text-gray-600'
@@ -178,27 +178,27 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
               disabled={actualLoading}
               aria-label="Close review dialog"
             >
-              <XMarkIcon className="h-6 w-6" />
+              <XMarkIcon className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
           </div>
           
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             {/* Service Info */}
-            <div className={`text-sm ${
+            <div className={`text-xs sm:text-sm ${
               theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
             }`}>
-              <p><span className="font-medium">{t('booking.service')}:</span> {serviceName}</p>
-              <p><span className="font-medium">{t('booking.specialist')}:</span> {specialistName}</p>
+              <p className="break-words"><span className="font-medium">{t('booking.service')}:</span> {serviceName}</p>
+              <p className="break-words"><span className="font-medium">{t('booking.specialist')}:</span> {specialistName}</p>
             </div>
             
             {/* Rating */}
             <div>
-              <label className={`block text-sm font-medium mb-2 ${
+              <label className={`block text-xs sm:text-sm font-medium mb-1 sm:mb-2 ${
                 theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 {t('reviews.rating')} <span className="text-red-500">*</span>
               </label>
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1 justify-center sm:justify-start">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
@@ -210,13 +210,13 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                     disabled={actualLoading}
                   >
                     {(hoverRating || rating) >= star ? (
-                      <StarIconSolid className="h-8 w-8 text-yellow-400" />
+                      <StarIconSolid className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-400" />
                     ) : (
-                      <StarIcon className="h-8 w-8 text-gray-300" />
+                      <StarIcon className="h-6 w-6 sm:h-8 sm:w-8 text-gray-300" />
                     )}
                   </button>
                 ))}
-                <span className={`ml-2 text-sm ${
+                <span className={`ml-2 text-xs sm:text-sm ${
                   theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
                 }`}>
                   {rating > 0 && `${rating}/5`}
@@ -226,7 +226,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
             
             {/* Comment */}
             <div>
-              <label className={`block text-sm font-medium mb-2 ${
+              <label className={`block text-xs sm:text-sm font-medium mb-1 sm:mb-2 ${
                 theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 {t('reviews.comment')}
@@ -234,8 +234,8 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                rows={4}
-                className={`mt-1 block w-full border rounded-md shadow-sm px-3 py-2 focus:ring-blue-500 focus:border-blue-500 ${
+                rows={3}
+                className={`mt-1 block w-full border rounded-md shadow-sm px-2 sm:px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 ${
                   theme === 'dark' 
                     ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' 
                     : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
@@ -247,19 +247,19 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
             
             {/* Tags */}
             <div>
-              <label className={`block text-sm font-medium mb-2 ${
+              <label className={`block text-xs sm:text-sm font-medium mb-1 sm:mb-2 ${
                 theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 {t('reviews.tags')}
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1 sm:gap-2">
                 {availableTags.map((tag, index) => (
                   <button
                     key={tag}
                     type="button"
                     onClick={() => toggleTag(tag, displayTags[index])}
                     disabled={actualLoading}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                    className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium transition-colors ${
                       selectedTags.includes(tag)
                         ? 'bg-blue-100 text-blue-800 border border-blue-200'
                         : theme === 'dark'
@@ -274,12 +274,12 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
             </div>
             
             {/* Buttons */}
-            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={actualLoading}
-                className={`w-full sm:w-auto px-4 py-2 border rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 ${
+                className={`w-full sm:w-auto px-3 sm:px-4 py-2 border rounded-md text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 ${
                   theme === 'dark'
                     ? 'border-gray-600 text-gray-300 bg-gray-700 hover:bg-gray-600'
                     : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
@@ -290,14 +290,14 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
               <button
                 type="submit"
                 disabled={actualLoading || rating === 0}
-                className="w-full sm:w-auto px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-transparent rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {actualLoading && <LoadingSpinner size="sm" className="mr-2" />}
                 {t('reviews.submitReview')}
               </button>
             </div>
           </form>
-          <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">Press Esc or click outside to close</p>
+          <p className="mt-2 sm:mt-4 text-xs text-gray-500 dark:text-gray-400 text-center sm:text-left">Press Esc or click outside to close</p>
         </div>
       </div>
     </div>
