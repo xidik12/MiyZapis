@@ -161,7 +161,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-2 sm:p-4"
       onClick={(e) => {
         // Close modal when clicking on overlay
         if (e.target === e.currentTarget) {
@@ -170,12 +170,12 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       }}
     >
       <div 
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{t('bookingDetails.title')}</h3>
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">{t('bookingDetails.title')}</h3>
           <button
             onClick={onClose}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -187,13 +187,13 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         </div>
         
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           {/* Customer Info (for provider view) or Specialist Info (for customer view) */}
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
             <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
               {activeTab === 'provider' ? t('bookingDetails.customerInfo') : t('bookingDetails.specialistInfo')}
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.name')}</label>
                 <p className="font-medium text-gray-900 dark:text-white">
@@ -224,7 +224,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           {/* Service Info */}
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
             <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.serviceInfo')}</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.service')}</label>
                 <p className="font-medium text-gray-900 dark:text-white">
@@ -257,7 +257,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           {/* Appointment Details */}
           <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
             <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.appointmentDetails')}</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.date')}</label>
                 <p className="font-medium text-gray-900 dark:text-white">
@@ -293,7 +293,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               {/* Status Management */}
               <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.statusManagement')}</h4>
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-1 sm:gap-2 mb-4">
                   {['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'IN_PROGRESS', 'NO_SHOW'].map((status) => (
                     <label key={status} className="flex items-center cursor-pointer">
                       <input
@@ -304,7 +304,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                         onChange={(e) => setSelectedStatus(e.target.value as BookingStatus)}
                         className="sr-only"
                       />
-                      <span className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      <span className={`px-2 sm:px-3 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                         selectedStatus === status
                           ? 'bg-blue-600 text-white'
                           : 'bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -329,18 +329,18 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={t('bookingDetails.messagePlaceholder')}
-                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
+                  className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700 text-sm sm:text-base"
                   rows={3}
                 />
                 <div className="flex space-x-2 mt-3">
                   <button
                     onClick={handleSendMessage}
                     disabled={!message.trim()}
-                    className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors"
+                    className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-2 px-3 sm:px-4 rounded-lg transition-colors text-sm sm:text-base"
                   >
                     {t('bookingDetails.sendMessageButton')}
                   </button>
-                  <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                  <button className="px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm sm:text-base">
                     {t('bookingDetails.template')}
                   </button>
                 </div>

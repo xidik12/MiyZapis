@@ -22,14 +22,12 @@ import {
   CameraIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
-import { selectDensity, setDensity } from '../../store/slices/uiSlice';
 
 const SpecialistSettings: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
   const { currency, setCurrency } = useCurrency();
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
-  const density = useAppSelector(selectDensity);
   
   // Profile image state
   const [profileImage, setProfileImage] = useState(user?.avatar || '');
@@ -301,28 +299,6 @@ const SpecialistSettings: React.FC = () => {
 
               {/* Settings Content */}
               <div className="lg:col-span-2 space-y-8">
-                {/* Display / Density */}
-                <div id="display" className="bg-white dark:bg-gray-800 rounded-lg shadow">
-                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
-                      <Cog6ToothIcon className="w-5 h-5 mr-2" />
-                      {t('settings.display') || 'Display'}
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      {t('settings.displayDescription') || 'Control interface density for faster workflows.'}
-                    </p>
-                  </div>
-                  <div className="p-6 flex gap-3">
-                    <button
-                      onClick={() => dispatch(setDensity('comfortable'))}
-                      className={`btn ${density === 'comfortable' ? 'btn-primary' : 'btn-secondary'}`}
-                    >{t('settings.comfortable') || 'Comfortable'}</button>
-                    <button
-                      onClick={() => dispatch(setDensity('compact'))}
-                      className={`btn ${density === 'compact' ? 'btn-primary' : 'btn-secondary'}`}
-                    >{t('settings.compact') || 'Compact'}</button>
-                  </div>
-                </div>
                 {/* Profile Settings */}
                 <div id="profile" className="bg-white dark:bg-gray-800 rounded-lg shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
