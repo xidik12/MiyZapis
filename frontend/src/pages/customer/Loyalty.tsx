@@ -115,113 +115,105 @@ const CustomerLoyalty: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-4 sm:py-8">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-2 sm:py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="mb-4 sm:mb-8">
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1 sm:mb-2">
             MiyZapis Loyalty Program
           </h1>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+          <p className="text-xs sm:text-base text-gray-600 dark:text-gray-400">
             Earn points, unlock rewards, and enjoy exclusive benefits
           </p>
         </div>
 
         {/* Points Overview Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-6 mb-4 sm:mb-8">
           {/* Current Points */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-6 border border-gray-200 dark:border-gray-700">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-              <div className="text-center sm:text-left">
-                <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Current Points</p>
-                <p className="text-xl sm:text-3xl font-bold text-primary-600 dark:text-primary-400">
-                  {formatPoints(loyaltyProfile?.currentPoints || 0)}
-                </p>
+          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm p-2 sm:p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col items-center text-center">
+              <div className="h-6 w-6 sm:h-12 sm:w-12 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center mb-1 sm:mb-2">
+                <StarIconSolid className="h-3 w-3 sm:h-6 sm:w-6 text-primary-600 dark:text-primary-400" />
               </div>
-              <div className="h-8 w-8 sm:h-12 sm:w-12 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center mx-auto sm:mx-0 mt-2 sm:mt-0">
-                <StarIconSolid className="h-4 w-4 sm:h-6 sm:w-6 text-primary-600 dark:text-primary-400" />
-              </div>
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Current Points</p>
+              <p className="text-sm sm:text-3xl font-bold text-primary-600 dark:text-primary-400 break-all">
+                {formatPoints(loyaltyProfile?.currentPoints || 0)}
+              </p>
             </div>
           </div>
 
           {/* Lifetime Points */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-6 border border-gray-200 dark:border-gray-700">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-              <div className="text-center sm:text-left">
-                <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Lifetime Points</p>
-                <p className="text-xl sm:text-3xl font-bold text-purple-600 dark:text-purple-400">
-                  {formatPoints(loyaltyProfile?.lifetimePoints || 0)}
-                </p>
+          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm p-2 sm:p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col items-center text-center">
+              <div className="h-6 w-6 sm:h-12 sm:w-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center mb-1 sm:mb-2">
+                <TrophyIconSolid className="h-3 w-3 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
               </div>
-              <div className="h-8 w-8 sm:h-12 sm:w-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center mx-auto sm:mx-0 mt-2 sm:mt-0">
-                <TrophyIconSolid className="h-4 w-4 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
-              </div>
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Lifetime Points</p>
+              <p className="text-sm sm:text-3xl font-bold text-purple-600 dark:text-purple-400 break-all">
+                {formatPoints(loyaltyProfile?.lifetimePoints || 0)}
+              </p>
             </div>
           </div>
 
           {/* Current Tier */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-6 border border-gray-200 dark:border-gray-700">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-              <div className="text-center sm:text-left">
-                <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Current Tier</p>
-                <p className="text-lg sm:text-xl font-bold text-yellow-600 dark:text-yellow-400">
-                  {loyaltyStats?.currentTier?.name || 'Bronze'}
-                </p>
+          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm p-2 sm:p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col items-center text-center">
+              <div className="h-6 w-6 sm:h-12 sm:w-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center mb-1 sm:mb-2">
+                <SparklesIcon className="h-3 w-3 sm:h-6 sm:w-6 text-yellow-600 dark:text-yellow-400" />
               </div>
-              <div className="h-8 w-8 sm:h-12 sm:w-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center mx-auto sm:mx-0 mt-2 sm:mt-0">
-                <SparklesIcon className="h-4 w-4 sm:h-6 sm:w-6 text-yellow-600 dark:text-yellow-400" />
-              </div>
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Current Tier</p>
+              <p className="text-sm sm:text-xl font-bold text-yellow-600 dark:text-yellow-400 truncate">
+                {loyaltyStats?.currentTier?.name || 'Bronze'}
+              </p>
             </div>
           </div>
 
           {/* Points Spent */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-6 border border-gray-200 dark:border-gray-700">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-              <div className="text-center sm:text-left">
-                <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Points Spent</p>
-                <p className="text-lg sm:text-2xl font-bold text-red-600 dark:text-red-400">
-                  {formatPoints(loyaltyStats?.totalSpentPoints || 0)}
-                </p>
+          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm p-2 sm:p-6 border border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col items-center text-center">
+              <div className="h-6 w-6 sm:h-12 sm:w-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center mb-1 sm:mb-2">
+                <ArrowDownIcon className="h-3 w-3 sm:h-6 sm:w-6 text-red-600 dark:text-red-400" />
               </div>
-              <div className="h-8 w-8 sm:h-12 sm:w-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center mx-auto sm:mx-0 mt-2 sm:mt-0">
-                <ArrowDownIcon className="h-4 w-4 sm:h-6 sm:w-6 text-red-600 dark:text-red-400" />
-              </div>
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Points Spent</p>
+              <p className="text-sm sm:text-2xl font-bold text-red-600 dark:text-red-400 break-all">
+                {formatPoints(loyaltyStats?.totalSpentPoints || 0)}
+              </p>
             </div>
           </div>
         </div>
 
         {/* Tier Progress */}
         {loyaltyStats?.nextTier && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700 mb-6 sm:mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+          <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm p-3 sm:p-6 border border-gray-200 dark:border-gray-700 mb-4 sm:mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 gap-2">
+              <h3 className="text-sm sm:text-lg font-semibold text-gray-900 dark:text-white text-center sm:text-left">
                 Progress to {loyaltyStats.nextTier.name}
               </h3>
-              <span className="text-sm sm:text-sm text-gray-500 dark:text-gray-400">
+              <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 text-center sm:text-right">
                 {Math.round(getTierProgress())}%
               </span>
             </div>
             
             <div className="relative">
-              <div className="overflow-hidden h-4 mb-4 text-xs flex rounded-full bg-gray-200 dark:bg-gray-700">
+              <div className="overflow-hidden h-3 sm:h-4 mb-3 sm:mb-4 text-xs flex rounded-full bg-gray-200 dark:bg-gray-700">
                 <div 
                   style={{ width: `${getTierProgress()}%` }}
                   className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-500"
                 ></div>
               </div>
               
-              <div className="flex justify-between text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                <span className="truncate pr-2">{loyaltyStats.currentTier?.name} ({formatPoints(loyaltyStats.currentTier?.minPoints || 0)})</span>
-                <span className="truncate pl-2">{loyaltyStats.nextTier.name} ({formatPoints(loyaltyStats.nextTier.minPoints)})</span>
+              <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
+                <span className="truncate pr-1 flex-1 text-left">{loyaltyStats.currentTier?.name} ({formatPoints(loyaltyStats.currentTier?.minPoints || 0)})</span>
+                <span className="truncate pl-1 flex-1 text-right">{loyaltyStats.nextTier.name} ({formatPoints(loyaltyStats.nextTier.minPoints)})</span>
               </div>
             </div>
           </div>
         )}
 
         {/* Tab Navigation */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6 sm:mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-4 sm:mb-8">
           <div className="border-b border-gray-200 dark:border-gray-700">
-            <nav className="flex overflow-x-auto scrollbar-hide px-3 sm:px-6">
+            <nav className="flex overflow-x-auto scrollbar-hide px-1 sm:px-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {[
                 { key: 'overview', label: 'Overview', icon: StarIcon },
                 { key: 'history', label: 'History', icon: ClockIcon },
@@ -248,52 +240,52 @@ const CustomerLoyalty: React.FC = () => {
             </nav>
           </div>
 
-          <div className="p-4 sm:p-6">
+          <div className="p-3 sm:p-6">
             {/* Overview Tab */}
             {activeTab === 'overview' && (
               <div className="space-y-6">
                 {/* Quick Stats */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-                  <div className="text-center p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                    <CalendarDaysIcon className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
-                    <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
+                  <div className="text-center p-2 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <CalendarDaysIcon className="h-5 w-5 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400 mx-auto mb-1 sm:mb-2" />
+                    <p className="text-sm sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
                       {formatPoints(loyaltyStats?.monthlyPoints || 0)}
                     </p>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Points This Month</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Points This Month</p>
                   </div>
                   
-                  <div className="text-center p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                    <UsersIcon className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 dark:text-green-400 mx-auto mb-2" />
-                    <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
+                  <div className="text-center p-2 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <UsersIcon className="h-5 w-5 sm:h-8 sm:w-8 text-green-600 dark:text-green-400 mx-auto mb-1 sm:mb-2" />
+                    <p className="text-sm sm:text-2xl font-bold text-green-600 dark:text-green-400">
                       {loyaltyStats?.totalReferrals || 0}
                     </p>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total Referrals</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Total Referrals</p>
                   </div>
                   
-                  <div className="text-center p-3 sm:p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                    <TrophyIcon className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600 dark:text-purple-400 mx-auto mb-2" />
-                    <p className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
+                  <div className="text-center p-2 sm:p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <TrophyIcon className="h-5 w-5 sm:h-8 sm:w-8 text-purple-600 dark:text-purple-400 mx-auto mb-1 sm:mb-2" />
+                    <p className="text-sm sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
                       {loyaltyStats?.totalBadges || 0}
                     </p>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Badges Earned</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Badges Earned</p>
                   </div>
                 </div>
 
                 {/* Recent Activity */}
                 <div>
-                  <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">Recent Activity</h4>
-                  <div className="space-y-2 sm:space-y-3">
+                  <h4 className="text-sm sm:text-lg font-semibold text-gray-900 dark:text-white mb-2 sm:mb-4">Recent Activity</h4>
+                  <div className="space-y-2">
                     {transactions.slice(0, 5).map((transaction) => (
                       <div key={transaction.id} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                          {getTransactionIcon(transaction.type)}
+                        <div className="flex items-center space-x-2 flex-1 min-w-0">
+                          <div className="flex-shrink-0">{getTransactionIcon(transaction.type)}</div>
                           <div className="min-w-0 flex-1">
-                            <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{transaction.description}</p>
-                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{formatDate(transaction.createdAt)}</p>
+                            <p className="font-medium text-gray-900 dark:text-white text-xs sm:text-base truncate">{transaction.description}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(transaction.createdAt)}</p>
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className={`font-semibold text-sm sm:text-base ${
+                          <p className={`font-semibold text-xs sm:text-base ${
                             transaction.type === 'EARNED' || transaction.type === 'BONUS' || transaction.type === 'REFERRAL' || transaction.type === 'CAMPAIGN'
                               ? 'text-green-600 dark:text-green-400'
                               : 'text-red-600 dark:text-red-400'
