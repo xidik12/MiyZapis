@@ -345,8 +345,7 @@ export class LoyaltyController {
       }
 
       // For non-admin users, only show their own stats
-      const userId = req.user.userType === 'ADMIN' ? undefined : req.user.id;
-      const stats = await LoyaltyService.getLoyaltyStats(userId);
+      const stats = await LoyaltyService.getLoyaltyStats(req.user.id);
 
       res.json(
         createSuccessResponse({

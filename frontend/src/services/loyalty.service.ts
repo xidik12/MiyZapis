@@ -29,19 +29,18 @@ export interface LoyaltyTier {
 }
 
 export interface UserLoyalty {
-  profile: {
-    totalPoints: number;
-    tier: string;
-    badges: LoyaltyBadge[];
-    nextTier: string | null;
-    progressToNext: number;
-    availableDiscounts: Array<{ points: number; discount: number }>;
-    stats: {
-      totalBookings: number;
-      totalReviews: number;
-      successfulReferrals: number;
-      totalTransactions: number;
-    };
+  currentPoints: number;
+  lifetimePoints: number;
+  tier: string;
+  badges: LoyaltyBadge[];
+  nextTier: string | null;
+  progressToNext: number;
+  availableDiscounts: Array<{ points: number; discount: number }>;
+  stats: {
+    totalBookings: number;
+    totalReviews: number;
+    successfulReferrals: number;
+    totalTransactions: number;
   };
 }
 
@@ -121,24 +120,85 @@ export interface LoyaltyStats {
 export class LoyaltyService {
   // Get user's loyalty profile
   async getUserLoyalty(): Promise<UserLoyalty> {
-    const response = await apiClient.get<UserLoyalty>('/loyalty/profile');
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get loyalty profile');
+    try {
+      const response = await apiClient.get<{profile: any}>('/loyalty/profile');
+      
+      if (!response.success || !response.data) {
+        // Return default values if no loyalty profile exists yet
+        return this.getDefaultLoyaltyProfile();
+      }
+      
+      const profile = response.data.profile;
+      
+      // Transform backend response to match frontend interface
+      return {
+        currentPoints: profile.totalPoints || 0,
+        lifetimePoints: profile.totalPoints || 0, // Assuming current points is also lifetime for now
+        tier: profile.tier || 'Bronze',
+        badges: profile.badges || [],
+        nextTier: profile.nextTier,
+        progressToNext: profile.progressToNext || 0,
+        availableDiscounts: profile.availableDiscounts || [],
+        stats: profile.stats || {
+          totalBookings: 0,
+          totalReviews: 0,
+          successfulReferrals: 0,
+          totalTransactions: 0
+        }
+      };
+    } catch (error) {
+      console.warn('Failed to fetch loyalty profile, using defaults:', error);
+      return this.getDefaultLoyaltyProfile();
     }
-    
-    return response.data;
+  }
+
+  private getDefaultLoyaltyProfile(): UserLoyalty {
+    return {
+      currentPoints: 0,
+      lifetimePoints: 0,
+      tier: 'Bronze',
+      badges: [],
+      nextTier: 'Silver',
+      progressToNext: 0,
+      availableDiscounts: [],
+      stats: {
+        totalBookings: 0,
+        totalReviews: 0,
+        successfulReferrals: 0,
+        totalTransactions: 0
+      }
+    };
   }
 
   // Get loyalty statistics
   async getLoyaltyStats(): Promise<LoyaltyStats> {
-    const response = await apiClient.get<LoyaltyStats>('/loyalty/stats');
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get loyalty stats');
+    try {
+      const response = await apiClient.get<LoyaltyStats>('/loyalty/stats');
+      
+      if (!response.success || !response.data) {
+        return this.getDefaultLoyaltyStats();
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.warn('Failed to fetch loyalty stats, using defaults:', error);
+      return this.getDefaultLoyaltyStats();
     }
-    
-    return response.data;
+  }
+
+  private getDefaultLoyaltyStats(): LoyaltyStats {
+    return {
+      totalPoints: 0,
+      totalTransactions: 0,
+      totalBadges: 0,
+      totalReferrals: 0,
+      currentTier: null,
+      nextTier: null,
+      pointsToNextTier: 0,
+      monthlyPoints: 0,
+      yearlyPoints: 0,
+      totalSpentPoints: 0
+    };
   }
 
   // Get loyalty transactions history

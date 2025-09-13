@@ -866,6 +866,9 @@ export class LoyaltyService {
           customerBookings: {
             where: { status: 'COMPLETED' }
           },
+          specialistBookings: {
+            where: { status: 'COMPLETED' }
+          },
           reviews: true,
           referralsGiven: {
             where: { status: 'COMPLETED' }
@@ -878,13 +881,21 @@ export class LoyaltyService {
       
       if (!user) return null;
       
-      // Determine current tier based on points
+      // Calculate total points from transactions (more accurate than user.loyaltyPoints field)
+      const pointsAggregate = await prisma.loyaltyTransaction.aggregate({
+        _sum: { points: true },
+        where: { userId }
+      });
+      
+      const totalPoints = pointsAggregate._sum.points || 0;
+      
+      // Determine current tier based on calculated points
       let tier = 'BRONZE';
-      if (user.loyaltyPoints >= LOYALTY_CONFIG.TIERS.PLATINUM.min) {
+      if (totalPoints >= LOYALTY_CONFIG.TIERS.PLATINUM.min) {
         tier = 'PLATINUM';
-      } else if (user.loyaltyPoints >= LOYALTY_CONFIG.TIERS.GOLD.min) {
+      } else if (totalPoints >= LOYALTY_CONFIG.TIERS.GOLD.min) {
         tier = 'GOLD';
-      } else if (user.loyaltyPoints >= LOYALTY_CONFIG.TIERS.SILVER.min) {
+      } else if (totalPoints >= LOYALTY_CONFIG.TIERS.SILVER.min) {
         tier = 'SILVER';
       }
       
@@ -893,12 +904,15 @@ export class LoyaltyService {
         where: { userId } 
       });
       
+      // Count total bookings for both customer and specialist roles
+      const totalBookings = user.customerBookings.length + user.specialistBookings.length;
+      
       return {
         userId,
-        totalPoints: user.loyaltyPoints,
+        totalPoints: Math.max(0, totalPoints), // Ensure non-negative
         tier,
         badges: user.badges.map(ub => ub.badge),
-        totalBookings: user.customerBookings.length,
+        totalBookings,
         totalReviews: user.reviews.length,
         successfulReferrals: user.referralsGiven.length,
         totalTransactions,

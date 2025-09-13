@@ -659,7 +659,7 @@ const CustomerDashboard: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
                   <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                    {formatPoints(loyaltyData?.profile?.totalPoints)}
+                    {formatPoints(loyaltyData?.currentPoints || 0)}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Current Points</p>
                 </div>
@@ -673,7 +673,7 @@ const CustomerDashboard: React.FC = () => {
                 
                 <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
                   <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    {formatPoints(loyaltyData?.profile?.totalPoints)}
+                    {formatPoints(loyaltyData?.lifetimePoints || 0)}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Lifetime Points</p>
                 </div>
