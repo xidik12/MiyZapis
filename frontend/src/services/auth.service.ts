@@ -231,17 +231,38 @@ export class AuthService {
       }
       return response.data;
     } catch (error: any) {
-      // If 404, try using change password endpoint without currentPassword
+      // If 404, try different endpoints that might be available
       if (error.response?.status === 404) {
-        console.log('Fallback: Using change password endpoint for initial password setup');
-        const response = await apiClient.post<{ message: string }>('/auth/change-password', {
-          newPassword: password
-          // Omit currentPassword for Google OAuth users who don't have one
-        });
-        if (!response.success || !response.data) {
-          throw new Error(response.error?.message || 'Failed to set initial password');
+        console.log('Fallback: Trying alternative password setup methods');
+
+        // Try change-password endpoint
+        try {
+          const response = await apiClient.post<{ message: string }>('/auth/change-password', {
+            newPassword: password
+          });
+          if (!response.success || !response.data) {
+            throw new Error(response.error?.message || 'Failed to set initial password');
+          }
+          return response.data;
+        } catch (changeError: any) {
+          if (changeError.response?.status === 404) {
+            console.log('Change password endpoint also not found, trying profile update approach');
+            // Last resort: Try updating user profile with password field
+            try {
+              const response = await apiClient.put<{ message: string }>('/users/profile', {
+                password: password
+              });
+              if (!response.success || !response.data) {
+                throw new Error(response.error?.message || 'Failed to set initial password');
+              }
+              return { message: 'Password set successfully' };
+            } catch (profileError: any) {
+              console.error('All password setup methods failed:', profileError);
+              throw new Error('Unable to set password. Please contact support or try using the forgot password option.');
+            }
+          }
+          throw changeError;
         }
-        return response.data;
       }
       throw error;
     }
