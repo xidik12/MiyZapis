@@ -221,13 +221,30 @@ export class AuthService {
 
   // Set initial password for Google OAuth users
   async setInitialPassword(password: string): Promise<{ message: string }> {
-    const response = await apiClient.post<{ message: string }>('/auth/set-initial-password', {
-      password
-    });
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to set initial password');
+    // Try the dedicated endpoint first, fallback to change password without current password
+    try {
+      const response = await apiClient.post<{ message: string }>('/auth/set-initial-password', {
+        password
+      });
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Failed to set initial password');
+      }
+      return response.data;
+    } catch (error: any) {
+      // If 404, try using change password endpoint without currentPassword
+      if (error.response?.status === 404) {
+        console.log('Fallback: Using change password endpoint for initial password setup');
+        const response = await apiClient.post<{ message: string }>('/auth/change-password', {
+          newPassword: password
+          // Omit currentPassword for Google OAuth users who don't have one
+        });
+        if (!response.success || !response.data) {
+          throw new Error(response.error?.message || 'Failed to set initial password');
+        }
+        return response.data;
+      }
+      throw error;
     }
-    return response.data;
   }
 
   // Verify email
