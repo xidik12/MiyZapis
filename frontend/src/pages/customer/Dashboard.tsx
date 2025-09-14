@@ -513,8 +513,8 @@ const CustomerDashboard: React.FC = () => {
             <div className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
               <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.customer.recentBookings')}</h3>
-                <Link 
-                  to="/customer/history"
+                <Link
+                  to="/customer/bookings"
                   className="text-primary-600 hover:text-primary-700 text-sm font-medium"
                 >
                   {t('dashboard.viewAll')}

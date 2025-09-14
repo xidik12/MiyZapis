@@ -104,7 +104,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
     {
       name: 'Booking History',
       translationKey: 'dashboard.nav.history',
-      href: '/customer/history',
+      href: '/customer/bookings',
       icon: ClockIcon,
       iconSolid: ClockIconSolid,
     },
