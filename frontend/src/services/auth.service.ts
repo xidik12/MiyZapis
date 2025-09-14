@@ -255,7 +255,14 @@ export class AuthService {
       if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Failed to get user profile');
       }
-      return this.transformUserFromBackend(response.data.user);
+      console.log('🔍 getCurrentUser raw response:', response.data);
+      const transformedUser = this.transformUserFromBackend(response.data.user);
+      console.log('🔍 getCurrentUser transformed result:', {
+        authProvider: transformedUser.authProvider,
+        hasPassword: transformedUser.hasPassword,
+        passwordLastChanged: transformedUser.passwordLastChanged
+      });
+      return transformedUser;
     } catch (error: any) {
       // Extract error message from API response
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to get user profile';
@@ -332,6 +339,15 @@ export class AuthService {
 
   // Helper method to transform backend user format to frontend format
   private transformUserFromBackend(backendUser: any): User {
+    // Debug: Log the raw backend user data
+    console.log('🔍 Raw backend user data:', {
+      authProvider: backendUser.authProvider,
+      provider: backendUser.provider,
+      hasPassword: backendUser.hasPassword,
+      passwordLastChanged: backendUser.passwordLastChanged,
+      allKeys: Object.keys(backendUser)
+    });
+
     // Ensure avatar URL is properly formatted - all avatars should now be stored in backend
     let avatarUrl = backendUser.avatar;
     console.log('🔄 Transforming user avatar from backend:', avatarUrl);
