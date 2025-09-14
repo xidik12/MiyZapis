@@ -21,6 +21,8 @@ import {
   CheckIcon,
   CameraIcon,
   TrashIcon,
+  KeyIcon,
+  LockClosedIcon,
 } from '@heroicons/react/24/outline';
 
 const SpecialistSettings: React.FC = () => {
@@ -420,6 +422,112 @@ const SpecialistSettings: React.FC = () => {
                       label={t('settings.showProfileInSearch')}
                       description={t('settings.showProfileInSearchDesc')}
                     />
+                  </div>
+                </div>
+
+                {/* Security Settings */}
+                <div id="security" className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
+                      <ShieldCheckIcon className="w-5 h-5 mr-2" />
+                      Security & Password
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      Manage your account security and password settings
+                    </p>
+                  </div>
+                  <div className="p-6 space-y-6">
+                    {/* Password Management */}
+                    <div className="border-b border-gray-200 dark:border-gray-700 pb-6">
+                      <h4 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                        <KeyIcon className="w-4 h-4 mr-2" />
+                        Password Management
+                      </h4>
+
+                      {/* Google OAuth Users - Set Password */}
+                      {user?.authProvider === 'google' && !user?.hasPassword && (
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                          <div className="flex items-start space-x-3">
+                            <LockClosedIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                            <div className="flex-1">
+                              <h5 className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                                Set up password for your account
+                              </h5>
+                              <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                                You signed up with Google. Set a password to enable password reset and additional security options.
+                              </p>
+                              <a
+                                href="/auth/forgot-password"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center mt-3 px-3 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700 transition-colors"
+                              >
+                                Set Password
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Regular Users - Change Password */}
+                      {(user?.authProvider !== 'google' || user?.hasPassword) && (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                Password
+                              </p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                Last changed: {user?.passwordLastChanged ? new Date(user.passwordLastChanged).toLocaleDateString() : 'Never'}
+                              </p>
+                            </div>
+                            <a
+                              href="/auth/forgot-password"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                            >
+                              <KeyIcon className="w-4 h-4 mr-2" />
+                              Change Password
+                            </a>
+                          </div>
+
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            <p className="font-medium mb-2">Password requirements:</p>
+                            <ul className="space-y-1 text-xs">
+                              <li>• At least 8 characters long</li>
+                              <li>• One uppercase letter (A-Z)</li>
+                              <li>• One lowercase letter (a-z)</li>
+                              <li>• One number (0-9)</li>
+                              <li>• One symbol (!@#$%^&*)</li>
+                              <li>• English characters only</li>
+                            </ul>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Account Recovery */}
+                    <div>
+                      <h4 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-4">
+                        Account Recovery
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              Recovery Email
+                            </p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              {user?.email || 'Not set'}
+                            </p>
+                          </div>
+                          <button className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium">
+                            Update
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

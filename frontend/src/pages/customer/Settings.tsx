@@ -529,14 +529,80 @@ const CustomerSettings: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Change Password */}
+                  {/* Password & Security */}
                   <div className="border-t pt-6">
-                    <button
-                      onClick={() => setShowChangePassword(!showChangePassword)}
-                      className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
-                    >
-                      {t('customer.settings.changePassword')}
-                    </button>
+                    <h4 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                      <ShieldCheckIcon className="w-4 h-4 mr-2" />
+                      Password & Security
+                    </h4>
+
+                    {/* Google OAuth Users - Set Password */}
+                    {currentUser?.authProvider === 'google' && !currentUser?.hasPassword && (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                        <div className="flex items-start space-x-3">
+                          <ShieldCheckIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                          <div className="flex-1">
+                            <h5 className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                              Set up password for your account
+                            </h5>
+                            <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                              You signed up with Google. Set a password to enable password reset and additional security options.
+                            </p>
+                            <a
+                              href="/auth/forgot-password"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center mt-3 px-3 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700 transition-colors"
+                            >
+                              Set Password
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Regular Users - Change Password */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          Password
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Last changed: {currentUser?.passwordLastChanged ? new Date(currentUser.passwordLastChanged).toLocaleDateString() : 'Never'}
+                        </p>
+                      </div>
+                      {(currentUser?.authProvider !== 'google' || currentUser?.hasPassword) ? (
+                        <button
+                          onClick={() => setShowChangePassword(!showChangePassword)}
+                          className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
+                        >
+                          {t('customer.settings.changePassword')}
+                        </button>
+                      ) : (
+                        <a
+                          href="/auth/forgot-password"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
+                        >
+                          Reset Password
+                        </a>
+                      )}
+                    </div>
+
+                    {/* Password Requirements */}
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                      <p className="font-medium mb-2">Password requirements:</p>
+                      <ul className="space-y-1 text-xs">
+                        <li>• At least 8 characters long</li>
+                        <li>• One uppercase letter (A-Z)</li>
+                        <li>• One lowercase letter (a-z)</li>
+                        <li>• One number (0-9)</li>
+                        <li>• One symbol (!@#$%^&*)</li>
+                        <li>• English characters only</li>
+                      </ul>
+                    </div>
+
                     {showChangePassword && (
                       <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>

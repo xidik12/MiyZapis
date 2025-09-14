@@ -4,12 +4,14 @@ import { useForm } from 'react-hook-form';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { register as registerUser, selectIsAuthenticated, selectAuthError, selectIsLoading, clearError } from '@/store/slices/authSlice';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import PasswordStrengthIndicator from '@/components/ui/PasswordStrengthIndicator';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { RegisterRequest, UserType } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import EnhancedGoogleSignIn from '@/components/auth/EnhancedGoogleSignIn';
 import TelegramLogin from '@/components/auth/TelegramLogin';
+import { getPasswordValidationRules, getConfirmPasswordValidationRules } from '@/utils/passwordValidation';
 
 interface RegisterFormData {
   firstName: string;
@@ -347,17 +349,7 @@ const RegisterPage: React.FC = () => {
           </label>
           <div className="relative mt-1">
             <input
-              {...register('password', {
-                required: t('auth.error.passwordRequired'),
-                minLength: {
-                  value: 8,
-                  message: t('auth.error.passwordMinLengthRegister'),
-                },
-                pattern: {
-                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-                  message: t('auth.error.passwordPattern'),
-                },
-              })}
+              {...register('password', getPasswordValidationRules(t))}
               id="password"
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
@@ -381,6 +373,16 @@ const RegisterPage: React.FC = () => {
           {errors.password && (
             <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.password.message}</p>
           )}
+
+          {/* Password Strength Indicator */}
+          {watchPassword && (
+            <div className="mt-3">
+              <PasswordStrengthIndicator
+                password={watchPassword}
+                showRequirements={true}
+              />
+            </div>
+          )}
         </div>
 
         {/* Confirm Password */}
@@ -390,10 +392,7 @@ const RegisterPage: React.FC = () => {
           </label>
           <div className="relative mt-1">
             <input
-              {...register('confirmPassword', {
-                required: t('auth.error.confirmPasswordRequired'),
-                validate: value => value === watchPassword || t('auth.error.passwordsDoNotMatch'),
-              })}
+              {...register('confirmPassword', getConfirmPasswordValidationRules(watchPassword, t))}
               id="confirmPassword"
               type={showConfirmPassword ? 'text' : 'password'}
               autoComplete="new-password"
