@@ -6,6 +6,7 @@ import { selectUser, updateUserProfile } from '../../store/slices/authSlice';
 import { fileUploadService } from '../../services/fileUpload.service';
 import { userService } from '../../services/user.service';
 import { Avatar } from '../../components/ui/Avatar';
+import SetPasswordModal from '../../components/auth/SetPasswordModal';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
 import {
   UserIcon,
@@ -36,6 +37,9 @@ const SpecialistSettings: React.FC = () => {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
+
+  // Modal states
+  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
   
   // Debug user avatar data
   console.log('🔍 Settings component - User avatar debug:', {
@@ -456,14 +460,13 @@ const SpecialistSettings: React.FC = () => {
                               <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
                                 You signed up with Google. Set a password to enable password reset and additional security options.
                               </p>
-                              <a
-                                href="/auth/forgot-password"
-                                target="_blank"
-                                rel="noopener noreferrer"
+                              <button
+                                onClick={() => setShowSetPasswordModal(true)}
                                 className="inline-flex items-center mt-3 px-3 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700 transition-colors"
                               >
+                                <KeyIcon className="w-4 h-4 mr-2" />
                                 Set Password
-                              </a>
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -724,8 +727,18 @@ const SpecialistSettings: React.FC = () => {
               </div>
             </div>
         </div>
+
+        {/* Set Password Modal */}
+        <SetPasswordModal
+          isOpen={showSetPasswordModal}
+          onClose={() => setShowSetPasswordModal(false)}
+          onSuccess={() => {
+            // Refresh user data after successful password set
+            window.location.reload();
+          }}
+        />
       </div>
-    
+
   );
 };
 

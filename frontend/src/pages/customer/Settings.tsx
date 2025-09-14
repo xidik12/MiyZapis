@@ -11,6 +11,7 @@ import { userService } from '../../services/user.service';
 import { toast } from 'react-toastify';
 import { Avatar } from '../../components/ui/Avatar';
 import { LocationPicker } from '../../components/LocationPicker';
+import SetPasswordModal from '../../components/auth/SetPasswordModal';
 import { 
   UserCircleIcon,
   BellIcon,
@@ -121,6 +122,7 @@ const CustomerSettings: React.FC = () => {
 
   const [activeSection, setActiveSection] = useState('account');
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
   const [newAddressLocation, setNewAddressLocation] = useState<{ address: string; city: string; region: string; country: string; postalCode?: string; latitude?: number; longitude?: number; }>({ address: '', city: '', region: '', country: '' });
@@ -548,14 +550,12 @@ const CustomerSettings: React.FC = () => {
                             <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
                               You signed up with Google. Set a password to enable password reset and additional security options.
                             </p>
-                            <a
-                              href="/auth/forgot-password"
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button
+                              onClick={() => setShowSetPasswordModal(true)}
                               className="inline-flex items-center mt-3 px-3 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700 transition-colors"
                             >
                               Set Password
-                            </a>
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -571,22 +571,20 @@ const CustomerSettings: React.FC = () => {
                           Last changed: {currentUser?.passwordLastChanged ? new Date(currentUser.passwordLastChanged).toLocaleDateString() : 'Never'}
                         </p>
                       </div>
-                      {(currentUser?.authProvider !== 'google' || currentUser?.hasPassword) ? (
+                      {currentUser?.authProvider === 'google' && !currentUser?.hasPassword ? (
+                        <button
+                          onClick={() => setShowSetPasswordModal(true)}
+                          className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
+                        >
+                          Set Password
+                        </button>
+                      ) : (
                         <button
                           onClick={() => setShowChangePassword(!showChangePassword)}
                           className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
                         >
                           {t('customer.settings.changePassword')}
                         </button>
-                      ) : (
-                        <a
-                          href="/auth/forgot-password"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
-                        >
-                          Reset Password
-                        </a>
                       )}
                     </div>
 
@@ -1224,6 +1222,16 @@ const CustomerSettings: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Set Password Modal */}
+      <SetPasswordModal
+        isOpen={showSetPasswordModal}
+        onClose={() => setShowSetPasswordModal(false)}
+        onSuccess={() => {
+          // Refresh user data after successful password set
+          window.location.reload();
+        }}
+      />
     </div>
   );
 };

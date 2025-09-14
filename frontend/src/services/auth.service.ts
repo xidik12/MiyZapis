@@ -219,6 +219,17 @@ export class AuthService {
     return response.data;
   }
 
+  // Set initial password for Google OAuth users
+  async setInitialPassword(password: string): Promise<{ message: string }> {
+    const response = await apiClient.post<{ message: string }>('/auth/set-initial-password', {
+      password
+    });
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to set initial password');
+    }
+    return response.data;
+  }
+
   // Verify email
   async verifyEmail(token: string): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>(API_ENDPOINTS.AUTH.VERIFY_EMAIL, { token });
