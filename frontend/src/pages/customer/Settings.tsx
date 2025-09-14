@@ -539,6 +539,12 @@ const CustomerSettings: React.FC = () => {
                     </h4>
 
                     {/* Google OAuth Users - Set Password */}
+                    {/* Debug logging - remove in production */}
+                    {console.log('🔍 Customer Settings Blue Box Auth Debug:', {
+                      authProvider: currentUser?.authProvider,
+                      hasPassword: currentUser?.hasPassword,
+                      condition: currentUser?.authProvider === 'google' && !currentUser?.hasPassword
+                    })}
                     {currentUser?.authProvider === 'google' && !currentUser?.hasPassword && (
                       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
                         <div className="flex items-start space-x-3">
@@ -571,6 +577,13 @@ const CustomerSettings: React.FC = () => {
                           Last changed: {currentUser?.passwordLastChanged ? new Date(currentUser.passwordLastChanged).toLocaleDateString() : 'Never'}
                         </p>
                       </div>
+                      {/* Debug logging - remove in production */}
+                      {console.log('🔍 Customer Settings Auth Debug:', {
+                        authProvider: currentUser?.authProvider,
+                        hasPassword: currentUser?.hasPassword,
+                        passwordLastChanged: currentUser?.passwordLastChanged,
+                        condition: currentUser?.authProvider === 'google' && !currentUser?.hasPassword
+                      })}
                       {currentUser?.authProvider === 'google' && !currentUser?.hasPassword ? (
                         <button
                           onClick={() => setShowSetPasswordModal(true)}

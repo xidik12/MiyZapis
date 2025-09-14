@@ -358,6 +358,10 @@ export class AuthService {
       ...backendUser,
       userType: backendUser.userType === 'CUSTOMER' ? 'customer' : backendUser.userType === 'SPECIALIST' ? 'specialist' : backendUser.userType === 'ADMIN' ? 'admin' : backendUser.userType.toLowerCase(),
       avatar: avatarUrl, // Use the transformed avatar URL
+      // Preserve authentication-related fields
+      authProvider: backendUser.authProvider || backendUser.provider,
+      hasPassword: backendUser.hasPassword !== undefined ? backendUser.hasPassword : true,
+      passwordLastChanged: backendUser.passwordLastChanged,
       // Set default values for missing frontend properties
       totalBookings: backendUser.totalBookings || 0,
       memberSince: backendUser.createdAt || backendUser.memberSince,
