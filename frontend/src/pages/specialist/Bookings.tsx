@@ -22,6 +22,7 @@ import { reviewsService } from '../../services/reviews.service';
 import { validateReviewTags } from '../../constants/reviewTags';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { messagesService } from '../../services/messages.service';
+import TierBadge from '@/components/common/TierBadge';
 
 // Status colors for bookings (matching backend status values)
 const statusColors = {
@@ -197,18 +198,30 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.name')}</label>
-                <p className="font-medium text-gray-900 dark:text-white">
-                  {activeTab === 'provider' 
-                    ? (booking.customer 
-                        ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
-                        : (booking.customerName || 'Unknown Customer')
-                      )
-                    : (booking.specialist
-                        ? `${booking.specialist.user?.firstName || ''} ${booking.specialist.user?.lastName || ''}`.trim() || 'Unknown Specialist'
-                        : 'Unknown Specialist'
-                      )
-                  }
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-gray-900 dark:text-white">
+                    {activeTab === 'provider' 
+                      ? (booking.customer 
+                          ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
+                          : (booking.customerName || 'Unknown Customer')
+                        )
+                      : (booking.specialist
+                          ? `${booking.specialist.user?.firstName || ''} ${booking.specialist.user?.lastName || ''}`.trim() || 'Unknown Specialist'
+                          : 'Unknown Specialist'
+                        )
+                    }
+                  </p>
+                  {/* Tier badge for the other participant */}
+                  {activeTab === 'provider' ? (
+                    booking.customer?.loyaltyPoints != null && (
+                      <TierBadge points={booking.customer.loyaltyPoints} size="sm" />
+                    )
+                  ) : (
+                    booking.specialist?.user?.loyaltyPoints != null && (
+                      <TierBadge points={booking.specialist.user.loyaltyPoints} size="sm" />
+                    )
+                  )}
+                </div>
               </div>
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.contact')}</label>
@@ -1207,11 +1220,14 @@ const SpecialistBookings: React.FC = () => {
                       }
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
+                      <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
                         {booking.customer 
                           ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
                           : (booking.customerName || 'Unknown Customer')
                         }
+                        {booking.customer?.loyaltyPoints != null && (
+                          <TierBadge points={booking.customer.loyaltyPoints} size="sm" />
+                        )}
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         ID: #{booking.id}
@@ -1355,17 +1371,28 @@ const SpecialistBookings: React.FC = () => {
                           </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {activeTab === 'provider'
-                              ? (booking.customer 
-                                ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
-                                : (booking.customerName || 'Unknown Customer')
+                          <div className="flex items-center gap-2">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {activeTab === 'provider'
+                                ? (booking.customer 
+                                  ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
+                                  : (booking.customerName || 'Unknown Customer')
+                                )
+                                : (booking.specialist
+                                  ? `${booking.specialist.user?.firstName || ''} ${booking.specialist.user?.lastName || ''}`.trim()
+                                  : 'Unknown Specialist'
+                                )
+                              }
+                            </div>
+                            {activeTab === 'provider' ? (
+                              booking.customer?.loyaltyPoints != null && (
+                                <TierBadge points={booking.customer.loyaltyPoints} size="sm" />
                               )
-                              : (booking.specialist
-                                ? `${booking.specialist.user?.firstName || ''} ${booking.specialist.user?.lastName || ''}`.trim()
-                                : 'Unknown Specialist'
+                            ) : (
+                              booking.specialist?.user?.loyaltyPoints != null && (
+                                <TierBadge points={booking.specialist.user.loyaltyPoints} size="sm" />
                               )
-                            }
+                            )}
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">ID: #{booking.id}</div>
                         </div>
