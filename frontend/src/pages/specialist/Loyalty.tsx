@@ -261,6 +261,22 @@ const SpecialistLoyalty: React.FC = () => {
     }
   };
 
+  const getTransactionTypeLabel = (type: string) => {
+    switch (type) {
+      case 'EARNED': return t('loyalty.tx.earned') || 'earned';
+      case 'REDEEMED': return t('loyalty.tx.redeemed') || 'redeemed';
+      case 'BONUS': return t('loyalty.tx.bonus') || 'bonus';
+      case 'REFERRAL': return t('loyalty.tx.referral') || 'referral';
+      case 'CAMPAIGN': return t('loyalty.tx.campaign') || 'campaign';
+      case 'SERVICE': return t('loyalty.tx.service') || 'service';
+      case 'BOOKING_COMPLETION': return t('loyalty.tx.bookingCompletion') || 'booking completion';
+      case 'PROFILE_VIEW': return t('loyalty.tx.profileView') || 'profile view';
+      case 'EXPIRED': return t('loyalty.tx.expired') || 'expired';
+      case 'ADJUSTMENT': return t('loyalty.tx.adjustment') || 'adjustment';
+      default: return type.toLowerCase().replace('_', ' ');
+    }
+  };
+
   const getTierProgress = () => {
     if (!loyaltyProfile || !loyaltyStats) return 0;
     
@@ -458,8 +474,8 @@ const SpecialistLoyalty: React.FC = () => {
                 <GiftIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <h4 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">Redeem Rewards</h4>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Use points to redeem discount vouchers</p>
+                <h4 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">{t('loyalty.redeemRewards') || 'Redeem Rewards'}</h4>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.redeemRewardsHelpShort') || 'Use points to redeem discount vouchers'}</p>
               </div>
             </div>
 
@@ -468,8 +484,8 @@ const SpecialistLoyalty: React.FC = () => {
                 <UsersIcon className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <h4 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">Referrals</h4>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Refer new customers and specialists</p>
+                <h4 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">{t('loyalty.referrals') || 'Referrals'}</h4>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.referralsHelp') || 'Refer new customers and specialists'}</p>
               </div>
             </div>
 
@@ -478,8 +494,8 @@ const SpecialistLoyalty: React.FC = () => {
                 <FireIconSolid className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
-                <h4 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">Special Campaigns</h4>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Participate in bonus point events</p>
+                <h4 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">{t('loyalty.specialCampaigns') || 'Special Campaigns'}</h4>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.specialCampaignsHelp') || 'Participate in bonus point events'}</p>
               </div>
             </div>
           </div>
@@ -599,7 +615,7 @@ const SpecialistLoyalty: React.FC = () => {
                               transaction.type === 'PROFILE_VIEW' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-400' :
                               'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
                             }`}>
-                              {transaction.type.toLowerCase().replace('_', ' ')}
+                              {getTransactionTypeLabel(transaction.type)}
                             </span>
                           </div>
                         </div>
@@ -754,23 +770,23 @@ const SpecialistLoyalty: React.FC = () => {
                               </h5>
                               {isCurrentTier && (
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-600 text-white">
-                                  Current
+                                  {t('loyalty.current') || 'Current'}
                                 </span>
                               )}
                               {isNextTier && (
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-600 text-white">
-                                  Next Tier
+                                  {t('loyalty.nextTier') || 'Next Tier'}
                                 </span>
                               )}
                             </div>
 
                             <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4">
-                              {formatPoints(tier.minPoints)} points required
-                              {tier.maxPoints && ` - ${formatPoints(tier.maxPoints)} points`}
+                              {formatPoints(tier.minPoints)} {t('loyalty.pointsRequired') || 'points required'}
+                              {tier.maxPoints && ` - ${formatPoints(tier.maxPoints)} ${t('loyalty.points') || 'points'}`}
                             </p>
 
                             <div className="space-y-2">
-                              <h6 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">Benefits:</h6>
+                              <h6 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">{t('loyalty.benefits') || 'Benefits'}:</h6>
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {tier.benefits.map((benefit, index) => (
                                   <div key={index} className="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
@@ -787,7 +803,7 @@ const SpecialistLoyalty: React.FC = () => {
                               <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
                                 {tier.discountPercentage}%
                               </p>
-                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Commission Bonus</p>
+                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{t('loyalty.commissionBonus') || 'Commission Bonus'}</p>
                             </div>
                           )}
                         </div>
@@ -866,7 +882,7 @@ const SpecialistLoyalty: React.FC = () => {
                                     ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
                                     : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
                                 }`}>
-                                  {reward.isActive ? 'Active' : 'Inactive'}
+                                  {reward.isActive ? (t('common.active') || 'Active') : (t('common.inactive') || 'Inactive')}
                                 </span>
                               </div>
                             </div>

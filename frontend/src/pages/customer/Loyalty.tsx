@@ -195,6 +195,22 @@ const CustomerLoyalty: React.FC = () => {
     }
   };
 
+  const getTransactionTypeLabel = (type: string) => {
+    switch (type) {
+      case 'EARNED': return t('loyalty.tx.earned') || 'earned';
+      case 'REDEEMED': return t('loyalty.tx.redeemed') || 'redeemed';
+      case 'BONUS': return t('loyalty.tx.bonus') || 'bonus';
+      case 'REFERRAL': return t('loyalty.tx.referral') || 'referral';
+      case 'CAMPAIGN': return t('loyalty.tx.campaign') || 'campaign';
+      case 'SERVICE': return t('loyalty.tx.service') || 'service';
+      case 'BOOKING_COMPLETION': return t('loyalty.tx.bookingCompletion') || 'booking completion';
+      case 'PROFILE_VIEW': return t('loyalty.tx.profileView') || 'profile view';
+      case 'EXPIRED': return t('loyalty.tx.expired') || 'expired';
+      case 'ADJUSTMENT': return t('loyalty.tx.adjustment') || 'adjustment';
+      default: return type.toLowerCase().replace('_', ' ');
+    }
+  };
+
   const getTierProgress = () => {
     if (!loyaltyProfile || !loyaltyStats) return 0;
     
@@ -408,7 +424,7 @@ const CustomerLoyalty: React.FC = () => {
             {/* History Tab */}
             {activeTab === 'history' && (
               <div className="space-y-4">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Transaction History</h4>
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{t('loyalty.transactionHistory') || 'Transaction History'}</h4>
                 <div className="space-y-3">
                   {transactions.map((transaction) => (
                     <div key={transaction.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
@@ -425,7 +441,7 @@ const CustomerLoyalty: React.FC = () => {
                               transaction.type === 'REFERRAL' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' :
                               'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
                             }`}>
-                              {transaction.type.toLowerCase()}
+                              {getTransactionTypeLabel(transaction.type)}
                             </span>
                           </div>
                         </div>
@@ -449,7 +465,7 @@ const CustomerLoyalty: React.FC = () => {
             {/* Tiers Tab */}
             {activeTab === 'tiers' && (
               <div className="space-y-6">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Membership Tiers</h4>
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">{t('loyalty.membershipTiers') || 'Membership Tiers'}</h4>
                 <div className="grid gap-6">
                   {tiers.map((tier) => {
                     const isCurrentTier = loyaltyStats?.currentTier?.id === tier.id;
@@ -475,23 +491,23 @@ const CustomerLoyalty: React.FC = () => {
                               </h5>
                               {isCurrentTier && (
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-600 text-white">
-                                  Current
+                                  {t('loyalty.current') || 'Current'}
                                 </span>
                               )}
                               {isNextTier && (
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-600 text-white">
-                                  Next Tier
+                                  {t('loyalty.nextTier') || 'Next Tier'}
                                 </span>
                               )}
                             </div>
                             
                             <p className="text-gray-600 dark:text-gray-400 mb-4">
-                              {formatPoints(tier.minPoints)} points required
-                              {tier.maxPoints && ` - ${formatPoints(tier.maxPoints)} points`}
+                              {formatPoints(tier.minPoints)} {t('loyalty.pointsRequired') || 'points required'}
+                              {tier.maxPoints && ` - ${formatPoints(tier.maxPoints)} ${t('loyalty.points') || 'points'}`}
                             </p>
                             
                             <div className="space-y-2">
-                              <h6 className="font-medium text-gray-900 dark:text-white">Benefits:</h6>
+                              <h6 className="font-medium text-gray-900 dark:text-white">{t('loyalty.benefits') || 'Benefits'}:</h6>
                               <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 dark:text-gray-400">
                                 {tier.benefits.map((benefit, index) => (
                                   <li key={index}>{benefit}</li>
@@ -505,7 +521,7 @@ const CustomerLoyalty: React.FC = () => {
                               <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                                 {tier.discountPercentage}%
                               </p>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">Discount</p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">{t('loyalty.commissionBonus') || 'Commission Bonus'}</p>
                             </div>
                           )}
                         </div>
@@ -520,7 +536,7 @@ const CustomerLoyalty: React.FC = () => {
             {activeTab === 'rewards' && (
               <div className="space-y-4 sm:space-y-6">
                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                  Available Rewards
+                  {t('loyalty.availableRewards') || 'Available Rewards'}
                 </h4>
 
                 {rewardsLoading ? (
@@ -533,10 +549,10 @@ const CustomerLoyalty: React.FC = () => {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <h5 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">
-                          Rewards You Can Redeem ({availableRewards.length})
+                          {t('loyalty.rewardsYouCanRedeem') || 'Rewards You Can Redeem'} ({availableRewards.length})
                         </h5>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
-                          Your Points: {formatPoints(loyaltyProfile?.currentPoints || 0)}
+                          {t('loyalty.yourPoints') || 'Your Points'}: {formatPoints(loyaltyProfile?.currentPoints || 0)}
                         </div>
                       </div>
 
@@ -544,7 +560,7 @@ const CustomerLoyalty: React.FC = () => {
                         <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                           <GiftIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                           <p className="text-gray-600 dark:text-gray-400 text-sm">
-                            No rewards available at the moment
+                            {t('loyalty.noRewardsAvailable') || 'No rewards available right now.'}
                           </p>
                         </div>
                       ) : (
@@ -619,7 +635,7 @@ const CustomerLoyalty: React.FC = () => {
                                           : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400'
                                       }`}
                                     >
-                                      {!canAfford ? 'Not Enough Points' : !isAvailable ? 'Unavailable' : 'Redeem'}
+                                      {!canAfford ? (t('loyalty.notEnoughPoints') || 'Not Enough Points') : !isAvailable ? (t('common.unavailable') || 'Unavailable') : (t('loyalty.redeem') || 'Redeem')}
                                     </button>
                                   </div>
                                 </div>
@@ -633,14 +649,14 @@ const CustomerLoyalty: React.FC = () => {
                     {/* My Redemptions Section */}
                     <div className="space-y-4">
                       <h5 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">
-                        My Redemptions ({myRedemptions.length})
+                        {t('loyalty.myRedemptions') || 'My Redemptions'} ({myRedemptions.length})
                       </h5>
 
                       {myRedemptions.length === 0 ? (
                         <div className="text-center py-6 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                           <TrophyIcon className="h-10 w-10 text-gray-400 mx-auto mb-2" />
                           <p className="text-gray-600 dark:text-gray-400 text-sm">
-                            No redemptions yet. Start redeeming rewards above!
+                            {t('loyalty.noRedemptionsYet') || 'You haven’t redeemed any rewards yet.'}
                           </p>
                         </div>
                       ) : (
@@ -667,13 +683,13 @@ const CustomerLoyalty: React.FC = () => {
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-                                      <span>{formatPoints(redemption.pointsUsed)} points used</span>
+                                      <span>{formatPoints(redemption.pointsUsed)} {t('loyalty.pointsUsed') || 'points used'}</span>
                                       <span>•</span>
                                       <span>{formatDate(redemption.redeemedAt)}</span>
                                       {redemption.expiresAt && redemption.status === 'APPROVED' && (
                                         <>
                                           <span>•</span>
-                                          <span>Expires {formatDate(redemption.expiresAt)}</span>
+                                          <span>{t('common.expires') || 'Expires'} {formatDate(redemption.expiresAt)}</span>
                                         </>
                                       )}
                                     </div>
@@ -686,7 +702,7 @@ const CustomerLoyalty: React.FC = () => {
                           {myRedemptions.length > 10 && (
                             <div className="text-center">
                               <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Showing 10 of {myRedemptions.length} redemptions
+                                {(t('common.showing') || 'Showing')} 10 {(t('common.of') || 'of')} {myRedemptions.length} {(t('loyalty.redemptions') || 'redemptions')}
                               </p>
                             </div>
                           )}

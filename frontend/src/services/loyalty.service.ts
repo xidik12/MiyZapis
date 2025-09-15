@@ -242,7 +242,54 @@ export class LoyaltyService {
       throw new Error(response.error?.message || 'Failed to get loyalty tiers');
     }
     
-    return response.data.tiers;
+    const apiTiers = response.data.tiers || [];
+    // Normalize to fixed ranges: Bronze 0-499, Silver 500-999, Gold 1000-1999, Platinum 2000+
+    const byKey = new Map<string, LoyaltyTier>();
+    for (const t of apiTiers) {
+      const k = (t.slug || t.name || '').toLowerCase();
+      if (k) byKey.set(k, t);
+    }
+    const fixed = [
+      { key: 'bronze', name: 'Bronze', min: 0, max: 499, defaults: ['Basic support', 'Standard booking', 'Point earning'] },
+      { key: 'silver', name: 'Silver', min: 500, max: 999, defaults: ['Priority support', 'Early booking access'] },
+      { key: 'gold', name: 'Gold', min: 1000, max: 1999, defaults: ['5% bonus points', 'Priority support', 'Early access'] },
+      { key: 'platinum', name: 'Platinum', min: 2000, max: undefined as number | undefined, defaults: ['10% bonus points', 'VIP support', 'Exclusive services'] },
+    ];
+    const pick = (key: string): LoyaltyTier | undefined => {
+      const direct = byKey.get(key);
+      if (direct) return direct;
+      for (const [k, v] of byKey) {
+        if (k.includes(key)) return v;
+      }
+      return undefined;
+    };
+    const normalized: LoyaltyTier[] = fixed.map((f, idx) => {
+      const found = pick(f.key);
+      const base: LoyaltyTier = found
+        ? { ...found }
+        : {
+            id: `local-${f.key}`,
+            name: f.name,
+            slug: f.key,
+            minPoints: f.min,
+            maxPoints: f.max,
+            benefits: f.defaults,
+            discountPercentage: idx === 2 ? 5 : idx === 3 ? 10 : 0,
+            prioritySupport: idx >= 1,
+            exclusiveOffers: idx >= 3,
+            createdAt: new Date(0).toISOString(),
+          };
+      base.name = f.name;
+      base.slug = f.key;
+      base.minPoints = f.min;
+      base.maxPoints = f.max;
+      if (!base.benefits || base.benefits.length === 0) base.benefits = f.defaults;
+      if (base.discountPercentage == null) base.discountPercentage = idx === 2 ? 5 : idx === 3 ? 10 : 0;
+      base.prioritySupport = idx >= 1;
+      base.exclusiveOffers = idx >= 3;
+      return base;
+    });
+    return normalized;
   }
 
   // Get user's badges
