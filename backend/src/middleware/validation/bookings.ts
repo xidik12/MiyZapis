@@ -59,6 +59,13 @@ export const validateCreateBooking = [
     .optional()
     .isInt({ min: 0 })
     .withMessage('Loyalty points used must be a non-negative integer'),
+  
+  // Optional reward redemption ID
+  body('rewardRedemptionId')
+    .optional()
+    .isLength({ min: 20, max: 30 })
+    .matches(/^[a-z0-9]+$/)
+    .withMessage('Reward redemption ID must be a valid ID if provided'),
 ];
 
 // Update booking status validation

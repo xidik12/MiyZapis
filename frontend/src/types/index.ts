@@ -249,6 +249,8 @@ export interface CreateBookingRequest {
   duration: number;
   notes?: string;
   paymentMethodId?: string;
+  loyaltyPointsUsed?: number;
+  rewardRedemptionId?: string;
 }
 
 // Payment Types

@@ -11,6 +11,7 @@ interface CreateBookingData {
   duration?: number; // Optional - will use service duration if not provided
   customerNotes?: string;
   loyaltyPointsUsed?: number;
+  rewardRedemptionId?: string;
 }
 
 interface UpdateBookingData {
@@ -218,7 +219,105 @@ export class BookingService {
         const baseAmount = service.basePrice;
         const loyaltyPointsUsed = data.loyaltyPointsUsed || 0;
         const loyaltyDiscount = loyaltyPointsUsed * 0.01; // 1 point = $0.01
-        const totalAmount = Math.max(0, baseAmount - loyaltyDiscount);
+        let subtotalAfterPoints = Math.max(0, baseAmount - loyaltyDiscount);
+
+        // Optional: apply approved reward redemption
+        let rewardDiscount = 0;
+        let rewardRedemptionId: string | undefined = data.rewardRedemptionId;
+
+        const now = new Date();
+        if (rewardRedemptionId) {
+          const redemption = await tx.rewardRedemption.findUnique({
+            where: { id: rewardRedemptionId },
+            include: { reward: true }
+          });
+
+          if (!redemption) {
+            throw new Error('REWARD_REDEMPTION_NOT_FOUND');
+          }
+          if (redemption.userId !== data.customerId) {
+            throw new Error('REWARD_REDEMPTION_NOT_OWNED');
+          }
+          if (redemption.status !== 'APPROVED') {
+            throw new Error('REWARD_REDEMPTION_NOT_APPROVED');
+          }
+          if (redemption.expiresAt && redemption.expiresAt < new Date()) {
+            throw new Error('REWARD_REDEMPTION_EXPIRED');
+          }
+
+          // Validate specialist match
+          if (redemption.reward.specialistId !== service.specialist.userId) {
+            throw new Error('REWARD_NOT_FOR_THIS_SPECIALIST');
+          }
+
+          // Validate service applicability if serviceIds restriction exists
+          if (redemption.reward.serviceIds) {
+            try {
+              const allowed: string[] = JSON.parse(redemption.reward.serviceIds);
+              if (Array.isArray(allowed) && allowed.length > 0 && !allowed.includes(data.serviceId)) {
+                throw new Error('REWARD_NOT_APPLICABLE_TO_SERVICE');
+              }
+            } catch (_e) {
+              // If parsing fails, treat as not restricted
+            }
+          }
+
+          // Compute reward discount
+          if (redemption.reward.type === 'PERCENTAGE_OFF' && redemption.reward.discountPercent) {
+            rewardDiscount = (subtotalAfterPoints * redemption.reward.discountPercent) / 100;
+          } else if (redemption.reward.type === 'DISCOUNT_VOUCHER' && redemption.reward.discountAmount) {
+            rewardDiscount = Math.min(redemption.reward.discountAmount, subtotalAfterPoints);
+          } else if (redemption.reward.type === 'FREE_SERVICE') {
+            rewardDiscount = subtotalAfterPoints;
+          }
+
+          subtotalAfterPoints = Math.max(0, subtotalAfterPoints - rewardDiscount);
+        } else {
+          // Attempt auto-apply: find an applicable approved redemption for this specialist/service
+          const candidate = await tx.rewardRedemption.findFirst({
+            where: {
+              userId: data.customerId,
+              status: 'APPROVED',
+              OR: [
+                { expiresAt: null },
+                { expiresAt: { gte: now } }
+              ],
+              reward: {
+                specialistId: service.specialist.userId,
+                isActive: true
+              }
+            },
+            include: { reward: true },
+            orderBy: { expiresAt: 'asc' }
+          });
+
+          if (candidate) {
+            // Validate service applicability
+            let applicable = true;
+            if (candidate.reward.serviceIds) {
+              try {
+                const allowed: string[] = JSON.parse(candidate.reward.serviceIds);
+                if (Array.isArray(allowed) && allowed.length > 0 && !allowed.includes(data.serviceId)) {
+                  applicable = false;
+                }
+              } catch (_e) { /* ignore */ }
+            }
+
+            if (applicable) {
+              rewardRedemptionId = candidate.id;
+              if (candidate.reward.type === 'PERCENTAGE_OFF' && candidate.reward.discountPercent) {
+                rewardDiscount = (subtotalAfterPoints * candidate.reward.discountPercent) / 100;
+              } else if (candidate.reward.type === 'DISCOUNT_VOUCHER' && candidate.reward.discountAmount) {
+                rewardDiscount = Math.min(candidate.reward.discountAmount, subtotalAfterPoints);
+              } else if (candidate.reward.type === 'FREE_SERVICE') {
+                rewardDiscount = subtotalAfterPoints;
+              }
+              subtotalAfterPoints = Math.max(0, subtotalAfterPoints - rewardDiscount);
+            }
+          }
+        }
+
+        const totalAmount = subtotalAfterPoints;
         const depositAmount = totalAmount * 0.2; // 20% deposit
         const remainingAmount = totalAmount - depositAmount;
 
@@ -319,6 +418,21 @@ export class BookingService {
               description: `Redeemed ${loyaltyPointsUsed} points for booking`,
               referenceId: createdBooking.id,
             },
+          });
+        }
+
+        // Mark reward redemption as used and link to booking
+        if (rewardRedemptionId && rewardDiscount > 0) {
+          await tx.rewardRedemption.update({
+            where: { id: rewardRedemptionId },
+            data: {
+              bookingId: createdBooking.id,
+              originalAmount: Math.max(0, baseAmount - loyaltyDiscount),
+              discountApplied: rewardDiscount,
+              finalAmount: totalAmount,
+              status: 'USED',
+              usedAt: new Date(),
+            }
           });
         }
 

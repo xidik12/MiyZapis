@@ -529,17 +529,17 @@ const SpecialistLoyalty: React.FC = () => {
             {/* Tiers Tab */}
             {activeTab === 'tiers' && (
               <div className="space-y-4 sm:space-y-6">
-                <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Specialist Membership Tiers</h4>
+                <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('loyalty.specialistMembershipTiers') || 'Specialist Membership Tiers'}</h4>
                 {/* Summary card */}
                 <div className="p-4 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-gradient-to-r from-primary-50 to-blue-50 dark:from-gray-800 dark:to-gray-800">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <p className="text-xs uppercase tracking-wide text-gray-600 dark:text-gray-400">Your current tier</p>
+                      <p className="text-xs uppercase tracking-wide text-gray-600 dark:text-gray-400">{t('loyalty.currentTier') || 'Your current tier'}</p>
                       <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                         {loyaltyStats?.currentTier?.name || 'BRONZE'}
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {formatPoints(loyaltyProfile?.currentPoints || 0)} points • Next: {loyaltyStats?.nextTier?.name || '—'}
+                        {formatPoints(loyaltyProfile?.currentPoints || 0)} {t('loyalty.points') || 'points'} • {t('loyalty.next') || 'Next'}: {loyaltyStats?.nextTier?.name || '—'}
                       </p>
                     </div>
                     <div className="w-full sm:w-1/2">
@@ -550,8 +550,8 @@ const SpecialistLoyalty: React.FC = () => {
                         />
                       </div>
                       <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mt-1">
-                        <span>{formatPoints(loyaltyStats?.currentTier?.minPoints || 0)} pts</span>
-                        <span>{formatPoints(loyaltyStats?.nextTier?.minPoints || (loyaltyStats?.currentTier?.minPoints || 0))} pts</span>
+                        <span>{formatPoints(loyaltyStats?.currentTier?.minPoints || 0)} {t('loyalty.pointsShort') || 'pts'}</span>
+                        <span>{formatPoints(loyaltyStats?.nextTier?.minPoints || (loyaltyStats?.currentTier?.minPoints || 0))} {t('loyalty.pointsShort') || 'pts'}</span>
                       </div>
                     </div>
                   </div>
@@ -630,7 +630,7 @@ const SpecialistLoyalty: React.FC = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                      Your Loyalty Rewards
+                      {t('loyalty.yourRewards') || 'Your Loyalty Rewards'}
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                       Create rewards for customers to redeem with their loyalty points
@@ -641,7 +641,7 @@ const SpecialistLoyalty: React.FC = () => {
                     className="inline-flex items-center px-3 sm:px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
                   >
                     <PlusIcon className="h-4 w-4 mr-2" />
-                    Create Reward
+                    {t('loyalty.createReward') || 'Create Reward'}
                   </button>
                 </div>
 
@@ -653,16 +653,16 @@ const SpecialistLoyalty: React.FC = () => {
                 ) : rewards.length === 0 ? (
                   <div className="text-center py-12">
                     <GiftIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Rewards Yet</h4>
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('loyalty.noRewardsYet') || 'No Rewards Yet'}</h4>
                     <p className="text-gray-600 dark:text-gray-400 mb-4">
-                      Create your first loyalty reward to engage customers
+                      {t('loyalty.createFirstRewardHelp') || 'Create your first loyalty reward to engage customers'}
                     </p>
                     <button
                       onClick={() => setShowCreateReward(true)}
                       className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
                     >
                       <PlusIcon className="h-4 w-4 mr-2" />
-                      Create Your First Reward
+                      {t('loyalty.createYourFirstReward') || 'Create Your First Reward'}
                     </button>
                   </div>
                 ) : (
@@ -771,16 +771,16 @@ const SpecialistLoyalty: React.FC = () => {
                 {/* Available Rewards for Me (as a user) */}
                 <div className="space-y-3 sm:space-y-4">
                   <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-                    Redeem Rewards
+                    {t('loyalty.redeemRewards') || 'Redeem Rewards'}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Browse rewards you can redeem using your current points balance.
+                    {t('loyalty.redeemRewardsHelp') || 'Browse rewards you can redeem using your current points balance.'}
                   </p>
 
                   {availableRewards.length === 0 ? (
                     <div className="text-center py-10 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
                       <GiftIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                      <p className="text-gray-600 dark:text-gray-400">No rewards available right now.</p>
+                      <p className="text-gray-600 dark:text-gray-400">{t('loyalty.noRewardsAvailable') || 'No rewards available right now.'}</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -806,7 +806,7 @@ const SpecialistLoyalty: React.FC = () => {
                               onClick={() => handleRedeem(reward.id)}
                               className="inline-flex items-center px-3 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
                             >
-                              {redeemingId === reward.id ? 'Redeeming...' : 'Redeem'}
+                              {redeemingId === reward.id ? (t('loyalty.redeeming') || 'Redeeming...') : (t('loyalty.redeem') || 'Redeem')}
                             </button>
                           </div>
                         </div>
@@ -817,9 +817,9 @@ const SpecialistLoyalty: React.FC = () => {
 
                 {/* My Redemptions */}
                 <div className="space-y-3 sm:space-y-4">
-                  <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">My Redemptions</h4>
+                  <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('loyalty.myRedemptions') || 'My Redemptions'}</h4>
                   {myRedemptions.length === 0 ? (
-                    <p className="text-sm text-gray-600 dark:text-gray-400">You haven’t redeemed any rewards yet.</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{t('loyalty.noRedemptionsYet') || 'You haven’t redeemed any rewards yet.'}</p>
                   ) : (
                     <div className="space-y-2">
                       {myRedemptions.slice(0, 5).map((r) => (
