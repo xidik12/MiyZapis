@@ -137,6 +137,13 @@ export interface SpecialistLocation {
   country?: string;
   latitude?: number;
   longitude?: number;
+  // Detailed contact information for confirmed bookings
+  preciseAddress?: string;
+  businessPhone?: string;
+  whatsappNumber?: string;
+  locationNotes?: string;
+  parkingInfo?: string;
+  accessInstructions?: string;
 }
 
 // Service Types
@@ -159,6 +166,13 @@ export interface Service extends BaseEntity {
   loyaltyPointsEnabled?: boolean;
   loyaltyPointsPrice?: number;
   loyaltyPointsOnly?: boolean;
+  // Service Discounts
+  discountEnabled?: boolean;
+  discountType?: string;
+  discountValue?: number;
+  discountValidFrom?: string;
+  discountValidUntil?: string;
+  discountDescription?: string;
 }
 
 export interface ServiceCategory {

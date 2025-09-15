@@ -38,6 +38,13 @@ interface Service {
   loyaltyPointsEnabled?: boolean;
   loyaltyPointsPrice?: number;
   loyaltyPointsOnly?: boolean;
+  // Service Discounts
+  discountEnabled?: boolean;
+  discountType?: string;
+  discountValue?: number;
+  discountValidFrom?: string;
+  discountValidUntil?: string;
+  discountDescription?: string;
 }
 
 const sampleServices: Service[] = [
@@ -179,6 +186,13 @@ const SpecialistServices: React.FC = () => {
     loyaltyPointsEnabled: false,
     loyaltyPointsPrice: undefined as number | undefined,
     loyaltyPointsOnly: false,
+    // Service Discounts
+    discountEnabled: false,
+    discountType: 'PERCENTAGE',
+    discountValue: '',
+    discountValidFrom: '',
+    discountValidUntil: '',
+    discountDescription: '',
     availability: {
       monday: false,
       tuesday: false,
@@ -222,7 +236,14 @@ const SpecialistServices: React.FC = () => {
       // Loyalty Points pricing
       loyaltyPointsEnabled: false,
       loyaltyPointsPrice: '',
-      loyaltyPointsOnly: false
+      loyaltyPointsOnly: false,
+      // Service Discounts
+      discountEnabled: false,
+      discountType: 'PERCENTAGE',
+      discountValue: '',
+      discountValidFrom: '',
+      discountValidUntil: '',
+      discountDescription: ''
     });
     setCustomCategory('');
     setShowCustomCategory(false);
@@ -267,6 +288,13 @@ const SpecialistServices: React.FC = () => {
       loyaltyPointsEnabled: service.loyaltyPointsEnabled || false,
       loyaltyPointsPrice: service.loyaltyPointsPrice?.toString() || '',
       loyaltyPointsOnly: service.loyaltyPointsOnly || false,
+      // Service Discounts
+      discountEnabled: service.discountEnabled || false,
+      discountType: service.discountType || 'PERCENTAGE',
+      discountValue: service.discountValue?.toString() || '',
+      discountValidFrom: service.discountValidFrom ? service.discountValidFrom.split('T')[0] : '',
+      discountValidUntil: service.discountValidUntil ? service.discountValidUntil.split('T')[0] : '',
+      discountDescription: service.discountDescription || '',
     };
     
     console.log('📝 Form data being set:', formDataToSet);
@@ -325,6 +353,25 @@ const SpecialistServices: React.FC = () => {
       }
     }
 
+    // Discount validation
+    if (formData.discountEnabled) {
+      const discountValue = parseFloat(formData.discountValue);
+      if (!formData.discountValue || isNaN(discountValue) || discountValue <= 0) {
+        errors.discountValue = 'Discount value must be greater than 0';
+      } else if (formData.discountType === 'PERCENTAGE' && discountValue > 100) {
+        errors.discountValue = 'Percentage discount cannot exceed 100%';
+      }
+
+      // Validate dates if provided
+      if (formData.discountValidFrom && formData.discountValidUntil) {
+        const fromDate = new Date(formData.discountValidFrom);
+        const untilDate = new Date(formData.discountValidUntil);
+        if (fromDate >= untilDate) {
+          errors.discountValidUntil = 'End date must be after start date';
+        }
+      }
+    }
+
     // Removed availability and timeSlots validation as they're not part of backend schema
     
     setFormErrors(errors);
@@ -371,7 +418,14 @@ const SpecialistServices: React.FC = () => {
       // Loyalty Points pricing
       loyaltyPointsEnabled: formData.loyaltyPointsEnabled,
       loyaltyPointsPrice: formData.loyaltyPointsEnabled ? parseInt(formData.loyaltyPointsPrice || '0') : undefined,
-      loyaltyPointsOnly: formData.loyaltyPointsOnly
+      loyaltyPointsOnly: formData.loyaltyPointsOnly,
+      // Service Discounts
+      discountEnabled: formData.discountEnabled,
+      discountType: formData.discountEnabled ? formData.discountType : undefined,
+      discountValue: formData.discountEnabled ? parseFloat(formData.discountValue) : undefined,
+      discountValidFrom: formData.discountEnabled && formData.discountValidFrom ? formData.discountValidFrom : undefined,
+      discountValidUntil: formData.discountEnabled && formData.discountValidUntil ? formData.discountValidUntil : undefined,
+      discountDescription: formData.discountEnabled && formData.discountDescription ? formData.discountDescription : undefined
     };
     
     console.log('🚀 Service data being sent to backend:', serviceData);
@@ -1111,6 +1165,159 @@ const SpecialistServices: React.FC = () => {
                             ? ' (points only - no cash payment option)'
                             : ` or ${formatPrice(parseFloat(formData.price || '0'), getServiceCurrency(formData as any))} (customers can choose)`
                           }
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Service Discounts */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Service Discounts</h3>
+
+                {/* Enable Discounts */}
+                <div className="mb-4">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.discountEnabled || false}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        discountEnabled: e.target.checked,
+                        // Clear discount fields if disabling
+                        discountValue: e.target.checked ? prev.discountValue : '',
+                        discountValidFrom: e.target.checked ? prev.discountValidFrom : '',
+                        discountValidUntil: e.target.checked ? prev.discountValidUntil : '',
+                        discountDescription: e.target.checked ? prev.discountDescription : ''
+                      }))}
+                      className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    />
+                    <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                      Enable promotional discount for this service
+                    </span>
+                  </label>
+                </div>
+
+                {/* Discount Options */}
+                {formData.discountEnabled && (
+                  <div className="space-y-4 pl-8 border-l-2 border-primary-200 dark:border-primary-800">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Discount Type *
+                        </label>
+                        <select
+                          value={formData.discountType}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            discountType: e.target.value,
+                            discountValue: '' // Clear value when changing type
+                          }))}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                        >
+                          <option value="PERCENTAGE">Percentage (%) Discount</option>
+                          <option value="FIXED_AMOUNT">Fixed Amount Discount</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Discount Value *
+                        </label>
+                        <div className="flex items-center">
+                          {formData.discountType === 'PERCENTAGE' && (
+                            <span className="mr-2 text-gray-500 dark:text-gray-400">%</span>
+                          )}
+                          {formData.discountType === 'FIXED_AMOUNT' && (
+                            <span className="mr-2 text-gray-500 dark:text-gray-400">{formData.currency === 'UAH' ? '₴' : formData.currency === 'USD' ? '$' : '€'}</span>
+                          )}
+                          <input
+                            type="number"
+                            value={formData.discountValue}
+                            onChange={(e) => setFormData(prev => ({ ...prev, discountValue: e.target.value }))}
+                            min="0"
+                            max={formData.discountType === 'PERCENTAGE' ? "100" : undefined}
+                            step={formData.discountType === 'PERCENTAGE' ? "1" : "0.01"}
+                            placeholder={formData.discountType === 'PERCENTAGE' ? 'e.g., 20' : 'e.g., 50'}
+                            className={`w-full px-4 py-3 rounded-xl border ${
+                              formErrors.discountValue ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                            } focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
+                          />
+                        </div>
+                        {formErrors.discountValue && <p className="mt-1 text-sm text-red-500">{formErrors.discountValue}</p>}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Valid From (Optional)
+                        </label>
+                        <input
+                          type="date"
+                          value={formData.discountValidFrom}
+                          onChange={(e) => setFormData(prev => ({ ...prev, discountValidFrom: e.target.value }))}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Valid Until (Optional)
+                        </label>
+                        <input
+                          type="date"
+                          value={formData.discountValidUntil}
+                          onChange={(e) => setFormData(prev => ({ ...prev, discountValidUntil: e.target.value }))}
+                          className={`w-full px-4 py-3 rounded-xl border ${
+                            formErrors.discountValidUntil ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                          } focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
+                        />
+                        {formErrors.discountValidUntil && <p className="mt-1 text-sm text-red-500">{formErrors.discountValidUntil}</p>}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Discount Description (Optional)
+                      </label>
+                      <textarea
+                        value={formData.discountDescription}
+                        onChange={(e) => setFormData(prev => ({ ...prev, discountDescription: e.target.value }))}
+                        placeholder="e.g., Early bird special, Limited time offer, etc."
+                        rows={2}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
+
+                    {formData.discountValue && (
+                      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                        <p className="text-sm text-green-700 dark:text-green-300">
+                          🎉 <strong>Discount Preview:</strong> {' '}
+                          {formData.discountType === 'PERCENTAGE'
+                            ? `${formData.discountValue}% off`
+                            : `${formData.currency === 'UAH' ? '₴' : formData.currency === 'USD' ? '$' : '€'}${formData.discountValue} off`
+                          }
+                          {' '}
+                          {formData.price && (
+                            <span>
+                              (New price: {' '}
+                              {formData.discountType === 'PERCENTAGE'
+                                ? formatPrice(
+                                    parseFloat(formData.price) * (1 - parseFloat(formData.discountValue) / 100),
+                                    formData.currency as 'USD' | 'EUR' | 'UAH'
+                                  )
+                                : formatPrice(
+                                    parseFloat(formData.price) - parseFloat(formData.discountValue),
+                                    formData.currency as 'USD' | 'EUR' | 'UAH'
+                                  )
+                              })
+                            </span>
+                          )}
+                          {formData.discountValidFrom && formData.discountValidUntil && (
+                            <span className="block mt-1">
+                              📅 Valid from {formData.discountValidFrom} to {formData.discountValidUntil}
+                            </span>
+                          )}
                         </p>
                       </div>
                     )}

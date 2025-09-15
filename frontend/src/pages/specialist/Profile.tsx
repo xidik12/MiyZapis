@@ -1321,6 +1321,147 @@ const SpecialistProfile: React.FC = () => {
                         </div>
                       )}
                     </div>
+
+                    {/* Contact Information for Confirmed Bookings */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Precise Address (Shown only to confirmed customers)
+                        </label>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={profile.preciseAddress || ''}
+                            onChange={(e) => handleProfileChange('preciseAddress', e.target.value)}
+                            placeholder="Apt 5B, Building A, 123 Main Street"
+                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          />
+                        ) : (
+                          <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
+                            <div className="flex items-center space-x-2">
+                              <BuildingOfficeIcon className="h-5 w-5 text-gray-400" />
+                              <span>{profile.preciseAddress || 'Not specified'}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Business Phone
+                        </label>
+                        {isEditing ? (
+                          <input
+                            type="tel"
+                            value={profile.businessPhone || ''}
+                            onChange={(e) => handleProfileChange('businessPhone', e.target.value)}
+                            placeholder="+1 (555) 123-4567"
+                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          />
+                        ) : (
+                          <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
+                            <div className="flex items-center space-x-2">
+                              <PhoneIcon className="h-5 w-5 text-gray-400" />
+                              <span>{profile.businessPhone || 'Not specified'}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          WhatsApp Number (Optional)
+                        </label>
+                        {isEditing ? (
+                          <input
+                            type="tel"
+                            value={profile.whatsappNumber || ''}
+                            onChange={(e) => handleProfileChange('whatsappNumber', e.target.value)}
+                            placeholder="+1 (555) 123-4567"
+                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          />
+                        ) : (
+                          <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
+                            <div className="flex items-center space-x-2">
+                              <PhoneIcon className="h-5 w-5 text-green-500" />
+                              <span>{profile.whatsappNumber || 'Not specified'}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Location Notes
+                        </label>
+                        {isEditing ? (
+                          <textarea
+                            value={profile.locationNotes || ''}
+                            onChange={(e) => handleProfileChange('locationNotes', e.target.value)}
+                            placeholder="Special instructions for finding the location..."
+                            rows={3}
+                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          />
+                        ) : (
+                          <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
+                            <span>{profile.locationNotes || 'No special instructions'}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Parking Information
+                        </label>
+                        {isEditing ? (
+                          <textarea
+                            value={profile.parkingInfo || ''}
+                            onChange={(e) => handleProfileChange('parkingInfo', e.target.value)}
+                            placeholder="Parking instructions, costs, restrictions..."
+                            rows={3}
+                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          />
+                        ) : (
+                          <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
+                            <span>{profile.parkingInfo || 'No parking information provided'}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Access Instructions
+                        </label>
+                        {isEditing ? (
+                          <textarea
+                            value={profile.accessInstructions || ''}
+                            onChange={(e) => handleProfileChange('accessInstructions', e.target.value)}
+                            placeholder="Building access codes, buzzer instructions, etc..."
+                            rows={3}
+                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          />
+                        ) : (
+                          <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
+                            <span>{profile.accessInstructions || 'No access instructions provided'}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                      <div className="flex items-start">
+                        <ShieldCheckIcon className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
+                        <div>
+                          <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                            Privacy Notice
+                          </h4>
+                          <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                            This detailed contact information will only be shared with customers after their booking is confirmed.
+                            Public profiles will only show your general city/area for privacy protection.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

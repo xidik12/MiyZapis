@@ -22,6 +22,13 @@ interface CreateSpecialistData {
   longitude?: number;
   timezone?: string;
   workingHours?: Record<string, any>;
+  // Detailed contact information for confirmed bookings
+  preciseAddress?: string;
+  businessPhone?: string;
+  whatsappNumber?: string;
+  locationNotes?: string;
+  parkingInfo?: string;
+  accessInstructions?: string;
   paymentMethods?: string[];
   serviceArea?: Record<string, any>;
   notifications?: Record<string, any>;
@@ -51,6 +58,13 @@ interface UpdateSpecialistData {
   longitude?: number;
   timezone?: string;
   workingHours?: Record<string, any>;
+  // Detailed contact information for confirmed bookings
+  preciseAddress?: string;
+  businessPhone?: string;
+  whatsappNumber?: string;
+  locationNotes?: string;
+  parkingInfo?: string;
+  accessInstructions?: string;
   paymentMethods?: string[];
   serviceArea?: Record<string, any>;
   notifications?: Record<string, any>;
@@ -142,6 +156,13 @@ export class SpecialistService {
           longitude: data.longitude,
           timezone: data.timezone || user.timezone,
           workingHours: JSON.stringify(data.workingHours || SpecialistService.getDefaultWorkingHours()),
+          // Detailed contact information for confirmed bookings
+          preciseAddress: data.preciseAddress,
+          businessPhone: data.businessPhone,
+          whatsappNumber: data.whatsappNumber,
+          locationNotes: data.locationNotes,
+          parkingInfo: data.parkingInfo,
+          accessInstructions: data.accessInstructions,
           paymentMethods: JSON.stringify(data.paymentMethods || []),
           serviceArea: JSON.stringify(data.serviceArea || {}),
           notifications: JSON.stringify(data.notifications || {}),
@@ -265,6 +286,13 @@ export class SpecialistService {
           ...(data.longitude !== undefined && { longitude: data.longitude }),
           ...(data.timezone && { timezone: data.timezone }),
           ...(data.workingHours && { workingHours: JSON.stringify(data.workingHours) }),
+          // Detailed contact information for confirmed bookings
+          ...(data.preciseAddress !== undefined && { preciseAddress: data.preciseAddress }),
+          ...(data.businessPhone !== undefined && { businessPhone: data.businessPhone }),
+          ...(data.whatsappNumber !== undefined && { whatsappNumber: data.whatsappNumber }),
+          ...(data.locationNotes !== undefined && { locationNotes: data.locationNotes }),
+          ...(data.parkingInfo !== undefined && { parkingInfo: data.parkingInfo }),
+          ...(data.accessInstructions !== undefined && { accessInstructions: data.accessInstructions }),
           ...(data.paymentMethods && { paymentMethods: JSON.stringify(data.paymentMethods) }),
           ...(data.serviceArea && { serviceArea: JSON.stringify(data.serviceArea) }),
           ...(data.notifications && { notifications: JSON.stringify(data.notifications) }),

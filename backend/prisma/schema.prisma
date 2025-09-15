@@ -120,6 +120,14 @@ model Specialist {
   longitude    Float?
   timezone     String   @default("UTC")
   workingHours String   // JSON string for working hours
+
+  // Detailed contact information for confirmed bookings
+  preciseAddress    String? // Exact address with apartment/suite number
+  businessPhone     String? // Primary business phone number
+  whatsappNumber    String? // WhatsApp contact number
+  locationNotes     String? // Special instructions for finding the location
+  parkingInfo       String? // Parking instructions
+  accessInstructions String? // Building access, buzzer codes, etc.
   
   // Business operations
   paymentMethods String? // JSON string of accepted payment methods
@@ -180,7 +188,15 @@ model Service {
   loyaltyPointsEnabled Boolean @default(false)
   loyaltyPointsPrice   Int?    // Points required to book this service
   loyaltyPointsOnly    Boolean @default(false) // If true, only bookable with points
-  
+
+  // Service Discounts
+  discountEnabled      Boolean @default(false)
+  discountType         String? // PERCENTAGE, FIXED_AMOUNT
+  discountValue        Float?  // Percentage (0-100) or fixed amount
+  discountValidFrom    DateTime?
+  discountValidUntil   DateTime?
+  discountDescription  String? // Optional description for the discount
+
   // Service details
   duration       Int    // Duration in minutes
   

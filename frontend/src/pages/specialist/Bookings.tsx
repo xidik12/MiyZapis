@@ -7,12 +7,15 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { RootState, AppDispatch } from '../../store';
 import { fetchBookings, updateBookingStatus, cancelBooking } from '../../store/slices/bookingSlice';
 import { Booking, BookingStatus } from '../../types';
-import { 
-  EyeIcon, 
-  CheckCircleIcon, 
+import {
+  EyeIcon,
+  CheckCircleIcon,
   CheckIcon,
   StarIcon,
-  XMarkIcon
+  XMarkIcon,
+  MapPinIcon,
+  PhoneIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import ReviewModal from '../../components/modals/ReviewModal';
 import { reviewsService } from '../../services/reviews.service';
@@ -286,7 +289,127 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               </div>
             )}
           </div>
-          
+
+          {/* Contact Information - Only show for confirmed bookings where specialist info is available */}
+          {booking.status === 'CONFIRMED' && booking.specialist?.location && activeTab === 'customer' && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3 flex items-center">
+                <MapPinIcon className="w-5 h-5 mr-2" />
+                {t('bookings.contactInformation')}
+              </h4>
+              <div className="space-y-3 text-sm">
+                {/* Precise Address */}
+                {booking.specialist.location.preciseAddress && (
+                  <div className="flex items-start space-x-3">
+                    <MapPinIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                        {t('bookings.address')}:
+                      </span>
+                      <p className="text-blue-800 dark:text-blue-200 break-words">
+                        {booking.specialist.location.preciseAddress}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Business Phone */}
+                {booking.specialist.location.businessPhone && (
+                  <div className="flex items-start space-x-3">
+                    <PhoneIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                        {t('bookings.phone')}:
+                      </span>
+                      <a
+                        href={`tel:${booking.specialist.location.businessPhone}`}
+                        className="text-blue-800 dark:text-blue-200 hover:underline ml-1"
+                      >
+                        {booking.specialist.location.businessPhone}
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {/* WhatsApp Number */}
+                {booking.specialist.location.whatsappNumber && (
+                  <div className="flex items-start space-x-3">
+                    <ChatBubbleLeftRightIcon className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                        {t('bookings.whatsapp')}:
+                      </span>
+                      <a
+                        href={`https://wa.me/${booking.specialist.location.whatsappNumber.replace(/[^0-9]/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-700 dark:text-green-300 hover:underline ml-1"
+                      >
+                        {booking.specialist.location.whatsappNumber}
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {/* Location Notes */}
+                {booking.specialist.location.locationNotes && (
+                  <div className="flex items-start space-x-3">
+                    <MapPinIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                        {t('bookings.locationNotes')}:
+                      </span>
+                      <p className="text-blue-800 dark:text-blue-200 break-words">
+                        {booking.specialist.location.locationNotes}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Parking Information */}
+                {booking.specialist.location.parkingInfo && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0">
+                      🚗
+                    </div>
+                    <div>
+                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                        {t('bookings.parking')}:
+                      </span>
+                      <p className="text-blue-800 dark:text-blue-200 break-words">
+                        {booking.specialist.location.parkingInfo}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Access Instructions */}
+                {booking.specialist.location.accessInstructions && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0">
+                      🔑
+                    </div>
+                    <div>
+                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                        {t('bookings.accessInstructions')}:
+                      </span>
+                      <p className="text-blue-800 dark:text-blue-200 break-words">
+                        {booking.specialist.location.accessInstructions}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Privacy Notice */}
+                <div className="mt-4 pt-3 border-t border-blue-200 dark:border-blue-700">
+                  <p className="text-xs text-blue-700 dark:text-blue-300 italic">
+                    ℹ️ {t('bookings.contactInfoNote')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Status Management and Quick Message - Only show for provider view */}
           {activeTab === 'provider' && (
             <>
