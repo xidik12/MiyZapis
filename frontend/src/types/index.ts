@@ -155,6 +155,10 @@ export interface Service extends BaseEntity {
   specialist?: Specialist;
   images?: string[];
   tags?: string[];
+  // Loyalty Points pricing
+  loyaltyPointsEnabled?: boolean;
+  loyaltyPointsPrice?: number;
+  loyaltyPointsOnly?: boolean;
 }
 
 export interface ServiceCategory {

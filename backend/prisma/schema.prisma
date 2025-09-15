@@ -175,6 +175,11 @@ model Service {
   // Pricing
   basePrice      Float
   currency       String @default("USD")
+
+  // Loyalty Points Pricing
+  loyaltyPointsEnabled Boolean @default(false)
+  loyaltyPointsPrice   Int?    // Points required to book this service
+  loyaltyPointsOnly    Boolean @default(false) // If true, only bookable with points
   
   // Service details
   duration       Int    // Duration in minutes
@@ -234,6 +239,7 @@ model Booking {
   depositAmount  Float
   remainingAmount Float
   loyaltyPointsUsed Int @default(0)
+  paidWithLoyaltyPoints Boolean @default(false) // True if booking was paid entirely with loyalty points
   
   // Additional information
   customerNotes    String?

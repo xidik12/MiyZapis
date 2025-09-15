@@ -16,6 +16,10 @@ interface CreateServiceData {
   requiresApproval?: boolean;
   maxAdvanceBooking?: number;
   minAdvanceBooking?: number;
+  // Loyalty Points pricing
+  loyaltyPointsEnabled?: boolean;
+  loyaltyPointsPrice?: number;
+  loyaltyPointsOnly?: boolean;
 }
 
 interface UpdateServiceData {
@@ -32,6 +36,10 @@ interface UpdateServiceData {
   requiresApproval?: boolean;
   maxAdvanceBooking?: number;
   minAdvanceBooking?: number;
+  // Loyalty Points pricing
+  loyaltyPointsEnabled?: boolean;
+  loyaltyPointsPrice?: number;
+  loyaltyPointsOnly?: boolean;
 }
 
 interface ServiceWithDetails extends Service {
@@ -76,6 +84,10 @@ export class ServiceService {
           requiresApproval: data.requiresApproval !== undefined ? data.requiresApproval : true,
           maxAdvanceBooking: data.maxAdvanceBooking || 30,
           minAdvanceBooking: data.minAdvanceBooking || 1,
+          // Loyalty Points pricing
+          loyaltyPointsEnabled: data.loyaltyPointsEnabled || false,
+          loyaltyPointsPrice: data.loyaltyPointsPrice || null,
+          loyaltyPointsOnly: data.loyaltyPointsOnly || false,
         },
         include: {
           specialist: {
@@ -169,6 +181,10 @@ export class ServiceService {
       if (data.requiresApproval !== undefined) updateData.requiresApproval = data.requiresApproval;
       if (data.maxAdvanceBooking !== undefined) updateData.maxAdvanceBooking = data.maxAdvanceBooking;
       if (data.minAdvanceBooking !== undefined) updateData.minAdvanceBooking = data.minAdvanceBooking;
+      // Loyalty Points pricing
+      if (data.loyaltyPointsEnabled !== undefined) updateData.loyaltyPointsEnabled = data.loyaltyPointsEnabled;
+      if (data.loyaltyPointsPrice !== undefined) updateData.loyaltyPointsPrice = data.loyaltyPointsPrice;
+      if (data.loyaltyPointsOnly !== undefined) updateData.loyaltyPointsOnly = data.loyaltyPointsOnly;
 
       console.log('📤 Final updateData being sent to DB:', updateData);
       console.log('⏰ Duration in updateData:', updateData.duration);
@@ -924,6 +940,77 @@ export class ServiceService {
       };
     } catch (error) {
       logger.error('Error migrating currency data:', error);
+      throw error;
+    }
+  }
+
+  // Get services available for loyalty points
+  static async getLoyaltyPointsServices(
+    page: number = 1,
+    limit: number = 20,
+    specialistId?: string
+  ) {
+    try {
+      const skip = (page - 1) * limit;
+
+      const where: any = {
+        isActive: true,
+        isDeleted: false,
+        loyaltyPointsEnabled: true,
+      };
+
+      if (specialistId) {
+        where.specialist = { userId: specialistId };
+      }
+
+      const [services, total] = await Promise.all([
+        prisma.service.findMany({
+          where,
+          include: {
+            specialist: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    email: true,
+                    firstName: true,
+                    lastName: true,
+                    avatar: true,
+                    userType: true,
+                    phoneNumber: true,
+                    isEmailVerified: true,
+                    isPhoneVerified: true,
+                    isActive: true,
+                    loyaltyPoints: true,
+                    language: true,
+                    currency: true,
+                    timezone: true,
+                    createdAt: true,
+                    updatedAt: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            loyaltyPointsPrice: 'asc', // Sort by points required (cheapest first)
+          },
+          skip,
+          take: limit,
+        }),
+        prisma.service.count({ where }),
+      ]);
+
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        services: services as ServiceWithDetails[],
+        total,
+        page,
+        totalPages,
+      };
+    } catch (error) {
+      logger.error('Error getting loyalty points services:', error);
       throw error;
     }
   }

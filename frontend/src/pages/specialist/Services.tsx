@@ -34,6 +34,10 @@ interface Service {
   requiresApproval?: boolean;
   maxAdvanceBooking?: number;
   minAdvanceBooking?: number;
+  // Loyalty Points pricing
+  loyaltyPointsEnabled?: boolean;
+  loyaltyPointsPrice?: number;
+  loyaltyPointsOnly?: boolean;
 }
 
 const sampleServices: Service[] = [
@@ -171,6 +175,10 @@ const SpecialistServices: React.FC = () => {
     currency: 'UAH', // Default to UAH
     duration: '',
     isActive: true,
+    // Loyalty Points pricing
+    loyaltyPointsEnabled: false,
+    loyaltyPointsPrice: undefined as number | undefined,
+    loyaltyPointsOnly: false,
     availability: {
       monday: false,
       tuesday: false,
@@ -210,7 +218,11 @@ const SpecialistServices: React.FC = () => {
         saturday: false,
         sunday: false,
       },
-      timeSlots: ['']
+      timeSlots: [''],
+      // Loyalty Points pricing
+      loyaltyPointsEnabled: false,
+      loyaltyPointsPrice: '',
+      loyaltyPointsOnly: false
     });
     setCustomCategory('');
     setShowCustomCategory(false);
@@ -231,12 +243,30 @@ const SpecialistServices: React.FC = () => {
     
     const formDataToSet = {
       name: service.name,
+      nameUk: '', // These localized fields aren't used in the backend yet
+      nameRu: '',
       description: service.description,
+      descriptionUk: '',
+      descriptionRu: '',
       category: existingCategory ? existingCategory.id : '',
       price: service.basePrice?.toString() || service.price?.toString() || '',
       currency: service.currency || 'UAH',
       duration: service.duration.toString(),
-      isActive: service.isActive
+      isActive: service.isActive,
+      availability: {
+        monday: false,
+        tuesday: false,
+        wednesday: false,
+        thursday: false,
+        friday: false,
+        saturday: false,
+        sunday: false,
+      },
+      timeSlots: [''],
+      // Loyalty Points pricing
+      loyaltyPointsEnabled: service.loyaltyPointsEnabled || false,
+      loyaltyPointsPrice: service.loyaltyPointsPrice?.toString() || '',
+      loyaltyPointsOnly: service.loyaltyPointsOnly || false,
     };
     
     console.log('📝 Form data being set:', formDataToSet);
@@ -287,7 +317,14 @@ const SpecialistServices: React.FC = () => {
     if (!formData.duration || isNaN(duration) || duration < 15) {
       errors.duration = t('serviceForm.durationMin');
     }
-    
+
+    // Loyalty Points validation
+    if (formData.loyaltyPointsEnabled) {
+      if (!formData.loyaltyPointsPrice || formData.loyaltyPointsPrice < 1) {
+        errors.loyaltyPointsPrice = 'Loyalty points price must be at least 1';
+      }
+    }
+
     // Removed availability and timeSlots validation as they're not part of backend schema
     
     setFormErrors(errors);
@@ -330,7 +367,11 @@ const SpecialistServices: React.FC = () => {
       images: [], // Empty for now, can be extended later
       requiresApproval: true,
       maxAdvanceBooking: 30,
-      minAdvanceBooking: 1
+      minAdvanceBooking: 1,
+      // Loyalty Points pricing
+      loyaltyPointsEnabled: formData.loyaltyPointsEnabled,
+      loyaltyPointsPrice: formData.loyaltyPointsEnabled ? parseInt(formData.loyaltyPointsPrice || '0') : undefined,
+      loyaltyPointsOnly: formData.loyaltyPointsOnly
     };
     
     console.log('🚀 Service data being sent to backend:', serviceData);
@@ -997,6 +1038,84 @@ const SpecialistServices: React.FC = () => {
                     {formErrors.duration && <p className="mt-1 text-sm text-red-500">{formErrors.duration}</p>}
                   </div>
                 </div>
+              </div>
+
+              {/* Loyalty Points Pricing */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Loyalty Points Pricing</h3>
+
+                {/* Enable Loyalty Points */}
+                <div className="mb-4">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.loyaltyPointsEnabled || false}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        loyaltyPointsEnabled: e.target.checked,
+                        // If disabling, also clear the points-only setting
+                        loyaltyPointsOnly: e.target.checked ? prev.loyaltyPointsOnly : false
+                      }))}
+                      className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    />
+                    <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                      Allow customers to book with loyalty points
+                    </span>
+                  </label>
+                </div>
+
+                {/* Loyalty Points Options */}
+                {formData.loyaltyPointsEnabled && (
+                  <div className="space-y-4 pl-8 border-l-2 border-primary-200 dark:border-primary-800">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Points Required *
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.loyaltyPointsPrice || ''}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          loyaltyPointsPrice: e.target.value ? parseInt(e.target.value) : undefined
+                        }))}
+                        min="1"
+                        step="1"
+                        placeholder="e.g., 500 points"
+                        className={`w-full px-4 py-3 rounded-xl border ${formErrors.loyaltyPointsPrice ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
+                      />
+                      {formErrors.loyaltyPointsPrice && <p className="mt-1 text-sm text-red-500">{formErrors.loyaltyPointsPrice}</p>}
+                    </div>
+
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.loyaltyPointsOnly || false}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            loyaltyPointsOnly: e.target.checked
+                          }))}
+                          className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                        />
+                        <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                          Only bookable with loyalty points (no cash payment option)
+                        </span>
+                      </label>
+                    </div>
+
+                    {formData.loyaltyPointsPrice && (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                        <p className="text-sm text-blue-700 dark:text-blue-300">
+                          💰 This service will be bookable for <strong>{formData.loyaltyPointsPrice} loyalty points</strong>
+                          {formData.loyaltyPointsOnly
+                            ? ' (points only - no cash payment option)'
+                            : ` or ${formatPrice(parseFloat(formData.price || '0'), getServiceCurrency(formData as any))} (customers can choose)`
+                          }
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Removed availability and timeSlots form sections as they're not part of backend schema */}
