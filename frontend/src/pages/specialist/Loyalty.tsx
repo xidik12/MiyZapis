@@ -79,7 +79,31 @@ const SpecialistLoyalty: React.FC = () => {
       setLoyaltyProfile(profile);
       setLoyaltyStats(stats);
       setTransactions(transactionHistory.transactions);
-      setTiers(allTiers);
+      // Ensure Bronze base tier exists even if backend doesn't return it
+      const bronzeExists = allTiers.some(t => (t.slug || t.name)?.toLowerCase().includes('bronze'));
+      let normalized = allTiers.slice();
+      if (!bronzeExists) {
+        const nextMin = Math.min(...normalized.map(t => t.minPoints));
+        const bronzeMax = Number.isFinite(nextMin) && nextMin > 0 ? nextMin - 1 : 499;
+        normalized = [
+          {
+            id: 'local-bronze',
+            name: 'Bronze',
+            slug: 'bronze',
+            minPoints: 0,
+            maxPoints: bronzeMax,
+            benefits: ['Basic support', 'Standard booking', 'Point earning'],
+            discountPercentage: 0,
+            prioritySupport: false,
+            exclusiveOffers: false,
+            createdAt: new Date(0).toISOString(),
+          },
+          ...normalized,
+        ];
+      }
+      // Sort by minPoints ascending to keep order Bronze -> ... -> Platinum
+      normalized.sort((a, b) => a.minPoints - b.minPoints);
+      setTiers(normalized);
     } catch (error) {
       console.error('Error fetching loyalty data:', error);
       toast.error('Failed to load loyalty program data');
@@ -288,7 +312,7 @@ const SpecialistLoyalty: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
@@ -653,7 +677,7 @@ const SpecialistLoyalty: React.FC = () => {
                       <p className="text-sm font-medium text-gray-900 dark:text-white">{t('loyalty.tiersProgress') || 'Tiers Progress'}</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400">{t('loyalty.tiersProgressHelp') || 'See how your points map across tiers'}</p>
                     </div>
-                    <div className="relative">
+                    <div className="relative overflow-hidden">
                       <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full" />
                       <div className="absolute inset-0 flex justify-between">
                         {tiers.map((tier, idx) => {

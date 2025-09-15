@@ -176,7 +176,7 @@ const CustomerLoyalty: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-1 sm:py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-1 sm:py-8 overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-0.5 sm:px-4 lg:px-8">
         {/* Header */}
         <div className="mb-1 sm:mb-8 px-0.5 sm:px-1">
