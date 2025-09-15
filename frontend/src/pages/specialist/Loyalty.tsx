@@ -532,26 +532,50 @@ const SpecialistLoyalty: React.FC = () => {
                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('loyalty.specialistMembershipTiers') || 'Specialist Membership Tiers'}</h4>
                 {/* Summary card */}
                 <div className="p-4 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-gradient-to-r from-primary-50 to-blue-50 dark:from-gray-800 dark:to-gray-800">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
                     <div>
                       <p className="text-xs uppercase tracking-wide text-gray-600 dark:text-gray-400">{t('loyalty.currentTier') || 'Your current tier'}</p>
                       <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                         {loyaltyStats?.currentTier?.name || 'BRONZE'}
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {formatPoints(loyaltyProfile?.currentPoints || 0)} {t('loyalty.points') || 'points'} • {t('loyalty.next') || 'Next'}: {loyaltyStats?.nextTier?.name || '—'}
-                      </p>
-                    </div>
-                    <div className="w-full sm:w-1/2">
-                      <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <div
-                          className="h-2 bg-primary-500 rounded-full transition-all"
-                          style={{ width: `${getTierProgress()}%` }}
-                        />
+                      <div className="mt-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/60 dark:bg-gray-700/60 text-gray-800 dark:text-gray-200">
+                        {(() => {
+                          const nextName = loyaltyStats?.nextTier?.name;
+                          const nextMin = loyaltyStats?.nextTier?.minPoints || 0;
+                          const curPts = loyaltyProfile?.currentPoints || 0;
+                          const toNext = Math.max(0, nextMin - curPts);
+                          return nextName ? `${formatPoints(toNext)} ${t('loyalty.points') || 'points'} ${t('loyalty.next') || 'Next'}: ${nextName}` : t('common.notAvailable') || 'N/A';
+                        })()}
                       </div>
-                      <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mt-1">
-                        <span>{formatPoints(loyaltyStats?.currentTier?.minPoints || 0)} {t('loyalty.pointsShort') || 'pts'}</span>
-                        <span>{formatPoints(loyaltyStats?.nextTier?.minPoints || (loyaltyStats?.currentTier?.minPoints || 0))} {t('loyalty.pointsShort') || 'pts'}</span>
+                    </div>
+                    <div className="justify-self-center">
+                      {/* Donut progress */}
+                      {(() => {
+                        const progress = getTierProgress();
+                        const size = 96;
+                        const stroke = 10;
+                        const radius = (size - stroke) / 2;
+                        const circumference = 2 * Math.PI * radius;
+                        const dash = (progress / 100) * circumference;
+                        return (
+                          <svg width={size} height={size} className="rotate-[-90deg]">
+                            <circle cx={size/2} cy={size/2} r={radius} strokeWidth={stroke} className="fill-none stroke-gray-200 dark:stroke-gray-700"/>
+                            <circle cx={size/2} cy={size/2} r={radius} strokeWidth={stroke} className="fill-none stroke-primary-500" strokeDasharray={`${dash} ${circumference}`} strokeLinecap="round"/>
+                            <text x="50%" y="50%" className="rotate-[90deg] fill-gray-900 dark:fill-gray-100 text-xs" textAnchor="middle" dominantBaseline="middle">{Math.round(progress)}%</text>
+                          </svg>
+                        );
+                      })()}
+                    </div>
+                    <div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="p-2 rounded-lg bg-white/60 dark:bg-gray-700/60">
+                          <p className="text-xs text-gray-600 dark:text-gray-300">{t('bookings.amount') || 'Amount'}</p>
+                          <p className="font-semibold text-gray-900 dark:text-white">{formatPoints(loyaltyProfile?.currentPoints || 0)} {t('loyalty.points') || 'points'}</p>
+                        </div>
+                        <div className="p-2 rounded-lg bg-white/60 dark:bg-gray-700/60">
+                          <p className="text-xs text-gray-600 dark:text-gray-300">{t('labels.spent') || 'Spent'}</p>
+                          <p className="font-semibold text-gray-900 dark:text-white">{formatPoints(loyaltyStats?.totalSpentPoints || 0)} {t('loyalty.pointsShort') || 'pts'}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -599,7 +623,7 @@ const SpecialistLoyalty: React.FC = () => {
                     const isNextTier = loyaltyStats?.nextTier?.id === tier.id;
                     
                     return (
-                      <div key={tier.id} className={`p-4 sm:p-6 rounded-xl border-2 ${
+                      <div key={tier.id} className={`p-4 sm:p-6 rounded-xl border-2 relative overflow-hidden ${
                         isCurrentTier
                           ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
                           : isNextTier
@@ -635,11 +659,14 @@ const SpecialistLoyalty: React.FC = () => {
 
                             <div className="space-y-2">
                               <h6 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">Benefits:</h6>
-                              <ul className="list-disc list-inside space-y-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {tier.benefits.map((benefit, index) => (
-                                  <li key={index}>{benefit}</li>
+                                  <div key={index} className="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                                    <span className="h-5 w-5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 flex items-center justify-center mr-2">✓</span>
+                                    <span className="break-words">{benefit}</span>
+                                  </div>
                                 ))}
-                              </ul>
+                              </div>
                             </div>
                           </div>
 
