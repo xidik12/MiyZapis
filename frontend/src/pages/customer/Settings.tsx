@@ -12,6 +12,7 @@ import { toast } from 'react-toastify';
 import { Avatar } from '../../components/ui/Avatar';
 import { LocationPicker } from '../../components/LocationPicker';
 import SetPasswordModal from '../../components/auth/SetPasswordModal';
+import ChangePasswordModal from '../../components/auth/ChangePasswordModal';
 import { 
   UserCircleIcon,
   BellIcon,
@@ -123,6 +124,7 @@ const CustomerSettings: React.FC = () => {
   const [activeSection, setActiveSection] = useState('account');
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
   const [newAddressLocation, setNewAddressLocation] = useState<{ address: string; city: string; region: string; country: string; postalCode?: string; latitude?: number; longitude?: number; }>({ address: '', city: '', region: '', country: '' });
@@ -593,7 +595,7 @@ const CustomerSettings: React.FC = () => {
                         </button>
                       ) : (
                         <button
-                          onClick={() => setShowChangePassword(!showChangePassword)}
+                          onClick={() => setShowChangePasswordModal(true)}
                           className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
                         >
                           {t('customer.settings.changePassword')}
@@ -614,37 +616,6 @@ const CustomerSettings: React.FC = () => {
                       </ul>
                     </div>
 
-                    {showChangePassword && (
-                      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {t('profile.currentPassword')}
-                          </label>
-                          <input
-                            type="password"
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {t('profile.newPassword')}
-                          </label>
-                          <input
-                            type="password"
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {t('profile.confirmPassword')}
-                          </label>
-                          <input
-                            type="password"
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                          />
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   <div className="flex justify-end mt-6">
@@ -1242,6 +1213,16 @@ const CustomerSettings: React.FC = () => {
         onClose={() => setShowSetPasswordModal(false)}
         onSuccess={() => {
           // Refresh user data after successful password set
+          window.location.reload();
+        }}
+      />
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+        onSuccess={() => {
+          // Refresh user data after successful password change
           window.location.reload();
         }}
       />

@@ -7,6 +7,7 @@ import { fileUploadService } from '../../services/fileUpload.service';
 import { userService } from '../../services/user.service';
 import { Avatar } from '../../components/ui/Avatar';
 import SetPasswordModal from '../../components/auth/SetPasswordModal';
+import ChangePasswordModal from '../../components/auth/ChangePasswordModal';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
 import {
   UserIcon,
@@ -40,6 +41,7 @@ const SpecialistSettings: React.FC = () => {
 
   // Modal states
   const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   
   // Debug user avatar data
   console.log('🔍 Settings component - User avatar debug:', {
@@ -484,15 +486,13 @@ const SpecialistSettings: React.FC = () => {
                                 Last changed: {user?.passwordLastChanged ? new Date(user.passwordLastChanged).toLocaleDateString() : 'Never'}
                               </p>
                             </div>
-                            <a
-                              href="/auth/forgot-password"
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button
+                              onClick={() => setShowChangePasswordModal(true)}
                               className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                             >
                               <KeyIcon className="w-4 h-4 mr-2" />
                               Change Password
-                            </a>
+                            </button>
                           </div>
 
                           <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -734,6 +734,16 @@ const SpecialistSettings: React.FC = () => {
           onClose={() => setShowSetPasswordModal(false)}
           onSuccess={() => {
             // Refresh user data after successful password set
+            window.location.reload();
+          }}
+        />
+
+        {/* Change Password Modal */}
+        <ChangePasswordModal
+          isOpen={showChangePasswordModal}
+          onClose={() => setShowChangePasswordModal(false)}
+          onSuccess={() => {
+            // Refresh user data after successful password change
             window.location.reload();
           }}
         />
