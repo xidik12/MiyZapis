@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
 import { logger } from '../../utils/logger';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/config/database';
 
 // Types
 export interface CreateRewardData {
@@ -52,10 +50,8 @@ export interface LoyaltyReward {
   updatedAt: Date;
   specialist?: {
     id: string;
-    user: {
-      firstName: string;
-      lastName: string;
-    };
+    firstName?: string;
+    lastName?: string;
   };
 }
 
