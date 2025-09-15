@@ -79,31 +79,53 @@ const SpecialistLoyalty: React.FC = () => {
       setLoyaltyProfile(profile);
       setLoyaltyStats(stats);
       setTransactions(transactionHistory.transactions);
-      // Ensure Bronze base tier exists even if backend doesn't return it
-      const bronzeExists = allTiers.some(t => (t.slug || t.name)?.toLowerCase().includes('bronze'));
-      let normalized = allTiers.slice();
-      if (!bronzeExists) {
-        const nextMin = Math.min(...normalized.map(t => t.minPoints));
-        const bronzeMax = Number.isFinite(nextMin) && nextMin > 0 ? nextMin - 1 : 499;
-        normalized = [
-          {
-            id: 'local-bronze',
-            name: 'Bronze',
-            slug: 'bronze',
-            minPoints: 0,
-            maxPoints: bronzeMax,
-            benefits: ['Basic support', 'Standard booking', 'Point earning'],
-            discountPercentage: 0,
-            prioritySupport: false,
-            exclusiveOffers: false,
-            createdAt: new Date(0).toISOString(),
-          },
-          ...normalized,
+      // Normalize tiers to fixed ranges (Bronze 0-499, Silver 500-999, Gold 1000-1999, Platinum 2000+)
+      const normalizeTiers = (tiers: LoyaltyTier[]): LoyaltyTier[] => {
+        const byKey = new Map<string, LoyaltyTier>();
+        for (const t of tiers) {
+          const k = (t.slug || t.name || '').toLowerCase();
+          byKey.set(k, t);
+        }
+        const fixed = [
+          { key: 'bronze', name: 'Bronze', min: 0, max: 499, defaults: ['Basic support', 'Standard booking', 'Point earning'] },
+          { key: 'silver', name: 'Silver', min: 500, max: 999, defaults: ['Priority support', 'Early booking access'] },
+          { key: 'gold', name: 'Gold', min: 1000, max: 1999, defaults: ['5% bonus points', 'Priority support', 'Early access'] },
+          { key: 'platinum', name: 'Platinum', min: 2000, max: undefined as number | undefined, defaults: ['10% bonus points', 'VIP support', 'Exclusive services'] },
         ];
-      }
-      // Sort by minPoints ascending to keep order Bronze -> ... -> Platinum
-      normalized.sort((a, b) => a.minPoints - b.minPoints);
-      setTiers(normalized);
+        const pick = (key: string): LoyaltyTier | undefined => {
+          const direct = byKey.get(key);
+          if (direct) return direct;
+          // try matching by name substring
+          for (const [k, v] of byKey) {
+            if (k.includes(key)) return v;
+          }
+          return undefined;
+        };
+        const result: LoyaltyTier[] = fixed.map((f, idx) => {
+          const found = pick(f.key);
+          const base: LoyaltyTier = found
+            ? { ...found }
+            : {
+                id: `local-${f.key}`,
+                name: f.name,
+                slug: f.key,
+                minPoints: f.min,
+                maxPoints: f.max,
+                benefits: f.defaults,
+                discountPercentage: idx === 2 ? 5 : idx === 3 ? 10 : 0,
+                prioritySupport: idx >= 1,
+                exclusiveOffers: idx >= 3,
+                createdAt: new Date(0).toISOString(),
+              };
+          base.name = f.name;
+          base.slug = f.key;
+          base.minPoints = f.min;
+          base.maxPoints = f.max;
+          return base;
+        });
+        return result;
+      };
+      setTiers(normalizeTiers(allTiers));
     } catch (error) {
       console.error('Error fetching loyalty data:', error);
       toast.error('Failed to load loyalty program data');
@@ -317,10 +339,10 @@ const SpecialistLoyalty: React.FC = () => {
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Specialist Loyalty Program
+            {t('loyalty.specialistProgramTitle') || 'Specialist Loyalty Program'}
           </h1>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-            Earn points by providing excellent services and grow your business
+            {t('loyalty.specialistProgramSubtitle') || 'Earn points by providing excellent services and grow your business'}
           </p>
         </div>
 
@@ -330,7 +352,7 @@ const SpecialistLoyalty: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Current Points</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.currentPoints') || 'Current Points'}</p>
                 <p className="text-2xl sm:text-3xl font-bold text-primary-600 dark:text-primary-400">
                   {formatPoints(loyaltyProfile?.currentPoints || 0)}
                 </p>
@@ -345,7 +367,7 @@ const SpecialistLoyalty: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Lifetime Points</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.lifetimePoints') || 'Lifetime Points'}</p>
                 <p className="text-2xl sm:text-3xl font-bold text-purple-600 dark:text-purple-400">
                   {formatPoints(loyaltyProfile?.lifetimePoints || 0)}
                 </p>
@@ -360,7 +382,7 @@ const SpecialistLoyalty: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Current Tier</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.currentTierShort') || 'Current Tier'}</p>
                 <p className="text-lg sm:text-xl font-bold text-yellow-600 dark:text-yellow-400">
                   {loyaltyStats?.currentTier?.name || 'Bronze'}
                 </p>
@@ -375,7 +397,7 @@ const SpecialistLoyalty: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Points Spent</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('loyalty.pointsSpent') || 'Points Spent'}</p>
                 <p className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400">
                   {formatPoints(loyaltyStats?.totalSpentPoints || 0)}
                 </p>
@@ -392,7 +414,7 @@ const SpecialistLoyalty: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-gray-700 mb-6 sm:mb-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Progress to {loyaltyStats.nextTier.name}
+                {(t('loyalty.progressTo') || 'Progress to') + ' ' + loyaltyStats.nextTier.name}
               </h3>
               <span className="text-sm text-gray-500 dark:text-gray-400">
                 {Math.round(getTierProgress())}%
@@ -468,10 +490,10 @@ const SpecialistLoyalty: React.FC = () => {
           <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="flex overflow-x-auto px-4 sm:px-6 scrollbar-hide">
               {[
-                { key: 'overview', label: 'Overview', shortLabel: 'Overview', icon: StarIcon },
-                { key: 'history', label: 'Transaction History', shortLabel: 'History', icon: ClockIcon },
-                { key: 'tiers', label: 'Tiers & Benefits', shortLabel: 'Tiers', icon: TrophyIcon },
-                { key: 'rewards', label: 'Rewards', shortLabel: 'Rewards', icon: GiftIcon },
+                { key: 'overview', label: t('loyalty.tab.overview') || 'Overview', shortLabel: t('loyalty.tab.overview') || 'Overview', icon: StarIcon },
+                { key: 'history', label: t('loyalty.tab.history') || 'Transaction History', shortLabel: t('loyalty.tab.historyShort') || 'History', icon: ClockIcon },
+                { key: 'tiers', label: t('loyalty.tab.tiers') || 'Tiers & Benefits', shortLabel: t('loyalty.tab.tiersShort') || 'Tiers', icon: TrophyIcon },
+                { key: 'rewards', label: t('loyalty.tab.rewards') || 'Rewards', shortLabel: t('loyalty.tab.rewards') || 'Rewards', icon: GiftIcon },
               ].map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.key;
@@ -505,7 +527,7 @@ const SpecialistLoyalty: React.FC = () => {
                     <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
                       {formatPoints(loyaltyStats?.monthlyPoints || 0)}
                     </p>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Points This Month</p>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.pointsThisMonth') || 'Points This Month'}</p>
                   </div>
 
                   <div className="text-center p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
@@ -513,7 +535,7 @@ const SpecialistLoyalty: React.FC = () => {
                     <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
                       {loyaltyStats?.totalServices || 0}
                     </p>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Services Completed</p>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.servicesCompleted') || 'Services Completed'}</p>
                   </div>
 
                   <div className="text-center p-3 sm:p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
@@ -521,13 +543,13 @@ const SpecialistLoyalty: React.FC = () => {
                     <p className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
                       {loyaltyStats?.totalBadges || 0}
                     </p>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Badges Earned</p>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.badgesEarned') || 'Badges Earned'}</p>
                   </div>
                 </div>
 
                 {/* Recent Activity */}
                 <div>
-                  <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h4>
+                  <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('loyalty.recentActivity') || 'Recent Activity'}</h4>
                   <div className="space-y-2 sm:space-y-3">
                     {transactions.slice(0, 5).map((transaction) => (
                       <div key={transaction.id} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -557,7 +579,7 @@ const SpecialistLoyalty: React.FC = () => {
             {/* History Tab */}
             {activeTab === 'history' && (
               <div className="space-y-4">
-                <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Transaction History</h4>
+                <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('loyalty.transactionHistory') || 'Transaction History'}</h4>
                 <div className="space-y-3">
                   {transactions.map((transaction) => (
                     <div key={transaction.id} className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 dark:border-gray-600 rounded-lg">

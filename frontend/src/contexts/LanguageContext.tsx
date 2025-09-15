@@ -235,6 +235,31 @@ const translations: Translations = {
   'loyalty.points': { en: 'points', uk: 'балів', ru: 'баллов' },
   'loyalty.next': { en: 'Next', uk: 'Наступний', ru: 'Следующий' },
   'loyalty.pointsShort': { en: 'pts', uk: 'бали', ru: 'балл.' },
+  // Loyalty - general labels
+  'loyalty.currentPoints': { en: 'Current Points', uk: 'Поточні бали', ru: 'Текущие баллы' },
+  'loyalty.lifetimePoints': { en: 'Lifetime Points', uk: 'Усього балів', ru: 'Баллы за всё время' },
+  'loyalty.currentTierShort': { en: 'Current Tier', uk: 'Поточний рівень', ru: 'Текущий уровень' },
+  'loyalty.pointsSpent': { en: 'Points Spent', uk: 'Використано балів', ru: 'Потрачено баллов' },
+  'loyalty.progressTo': { en: 'Progress to', uk: 'Прогрес до', ru: 'Прогресс к' },
+  'loyalty.pointsThisMonth': { en: 'Points This Month', uk: 'Бали за цей місяць', ru: 'Баллы за этот месяц' },
+  'loyalty.servicesCompleted': { en: 'Services Completed', uk: 'Виконані послуги', ru: 'Выполненные услуги' },
+  'loyalty.badgesEarned': { en: 'Badges Earned', uk: 'Отримані бейджі', ru: 'Заработанные бейджи' },
+  'loyalty.recentActivity': { en: 'Recent Activity', uk: 'Нещодавня активність', ru: 'Недавняя активность' },
+  'loyalty.transactionHistory': { en: 'Transaction History', uk: 'Історія транзакцій', ru: 'История транзакций' },
+  
+  // Loyalty - program titles
+  'loyalty.specialistProgramTitle': { en: 'Specialist Loyalty Program', uk: 'Програма лояльності для спеціалістів', ru: 'Программа лояльности для специалистов' },
+  'loyalty.specialistProgramSubtitle': { en: 'Earn points by providing excellent services and grow your business', uk: 'Заробляйте бали, надаючи якісні послуги, та розвивайте бізнес', ru: 'Зарабатывайте баллы, оказывая отличные услуги, и развивайте бизнес' },
+  'loyalty.customerProgramTitle': { en: 'Loyalty Program', uk: 'Програма лояльності', ru: 'Программа лояльности' },
+  'loyalty.customerProgramSubtitle': { en: 'Earn points, unlock rewards, and enjoy exclusive benefits', uk: 'Заробляйте бали, отримуйте винагороди та користуйтеся ексклюзивними перевагами', ru: 'Зарабатывайте баллы, получайте награды и пользуйтесь эксклюзивными преимуществами' },
+  
+  // Loyalty - tabs
+  'loyalty.tab.overview': { en: 'Overview', uk: 'Огляд', ru: 'Обзор' },
+  'loyalty.tab.history': { en: 'Transaction History', uk: 'Історія транзакцій', ru: 'История транзакций' },
+  'loyalty.tab.historyShort': { en: 'History', uk: 'Історія', ru: 'История' },
+  'loyalty.tab.tiers': { en: 'Tiers & Benefits', uk: 'Рівні та переваги', ru: 'Уровни и преимущества' },
+  'loyalty.tab.tiersShort': { en: 'Tiers', uk: 'Рівні', ru: 'Уровни' },
+  'loyalty.tab.rewards': { en: 'Rewards', uk: 'Винагороди', ru: 'Награды' },
   'loyalty.tiersProgress': { en: 'Tiers Progress', uk: 'Прогрес рівнів', ru: 'Прогресс уровней' },
   'loyalty.tiersProgressHelp': { en: 'See how your points map across tiers', uk: 'Подивіться, як ваші бали розподілені між рівнями', ru: 'Посмотрите, как ваши баллы распределяются по уровням' },
   'nav.level': { en: 'Level', uk: 'Рівень', ru: 'Уровень' },

@@ -17,8 +17,8 @@ export const formatPoints = (points: number | undefined | null): string => {
  * Calculate tier based on loyalty points
  */
 export const calculateTier = (points: number): string => {
-  if (points >= 5000) return 'platinum';
-  if (points >= 1500) return 'gold';
+  if (points >= 2000) return 'platinum';
+  if (points >= 1000) return 'gold';
   if (points >= 500) return 'silver';
   return 'bronze';
 };
@@ -46,25 +46,13 @@ export const getTierName = (tier: string): string => {
  */
 export const getPointsToNextTier = (currentPoints: number): { nextTier: string; pointsNeeded: number } => {
   if (currentPoints < 500) {
-    return {
-      nextTier: 'Silver',
-      pointsNeeded: 500 - currentPoints
-    };
+    return { nextTier: 'Silver', pointsNeeded: 500 - currentPoints };
   }
-  if (currentPoints < 1500) {
-    return {
-      nextTier: 'Gold',
-      pointsNeeded: 1500 - currentPoints
-    };
+  if (currentPoints < 1000) {
+    return { nextTier: 'Gold', pointsNeeded: 1000 - currentPoints };
   }
-  if (currentPoints < 5000) {
-    return {
-      nextTier: 'Platinum', 
-      pointsNeeded: 5000 - currentPoints
-    };
+  if (currentPoints < 2000) {
+    return { nextTier: 'Platinum', pointsNeeded: 2000 - currentPoints };
   }
-  return {
-    nextTier: 'Platinum (Max)',
-    pointsNeeded: 0
-  };
+  return { nextTier: 'Platinum (Max)', pointsNeeded: 0 };
 };

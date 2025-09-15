@@ -67,7 +67,51 @@ const CustomerLoyalty: React.FC = () => {
       setLoyaltyProfile(profile);
       setLoyaltyStats(stats);
       setTransactions(transactionHistory.transactions);
-      setTiers(allTiers);
+      // Normalize tiers ranges to fixed thresholds
+      const normalizeTiers = (tiers: LoyaltyTier[]): LoyaltyTier[] => {
+        const byKey = new Map<string, LoyaltyTier>();
+        for (const t of tiers) {
+          const k = (t.slug || t.name || '').toLowerCase();
+          byKey.set(k, t);
+        }
+        const fixed = [
+          { key: 'bronze', name: 'Bronze', min: 0, max: 499, defaults: ['Basic support', 'Standard booking', 'Point earning'] },
+          { key: 'silver', name: 'Silver', min: 500, max: 999, defaults: ['Priority support', 'Early booking access'] },
+          { key: 'gold', name: 'Gold', min: 1000, max: 1999, defaults: ['5% bonus points', 'Priority support', 'Early access'] },
+          { key: 'platinum', name: 'Platinum', min: 2000, max: undefined as number | undefined, defaults: ['10% bonus points', 'VIP support', 'Exclusive services'] },
+        ];
+        const pick = (key: string): LoyaltyTier | undefined => {
+          const direct = byKey.get(key);
+          if (direct) return direct;
+          for (const [k, v] of byKey) {
+            if (k.includes(key)) return v;
+          }
+          return undefined;
+        };
+        return fixed.map((f, idx) => {
+          const found = pick(f.key);
+          const base: LoyaltyTier = found
+            ? { ...found }
+            : {
+                id: `local-${f.key}`,
+                name: f.name,
+                slug: f.key,
+                minPoints: f.min,
+                maxPoints: f.max,
+                benefits: f.defaults,
+                discountPercentage: idx === 2 ? 5 : idx === 3 ? 10 : 0,
+                prioritySupport: idx >= 1,
+                exclusiveOffers: idx >= 3,
+                createdAt: new Date(0).toISOString(),
+              };
+          base.name = f.name;
+          base.slug = f.key;
+          base.minPoints = f.min;
+          base.maxPoints = f.max;
+          return base;
+        });
+      };
+      setTiers(normalizeTiers(allTiers));
     } catch (error) {
       console.error('Error fetching loyalty data:', error);
       toast.error('Failed to load loyalty program data');
@@ -181,10 +225,10 @@ const CustomerLoyalty: React.FC = () => {
         {/* Header */}
         <div className="mb-1 sm:mb-8 px-0.5 sm:px-1">
           <h1 className="text-sm sm:text-3xl font-bold text-gray-900 dark:text-white mb-0.5 sm:mb-1 leading-tight">
-            MiyZapis Loyalty Program
+            {t('loyalty.customerProgramTitle') || 'Loyalty Program'}
           </h1>
           <p className="text-xs sm:text-base text-gray-600 dark:text-gray-400">
-            Earn points, unlock rewards, and enjoy exclusive benefits
+            {t('loyalty.customerProgramSubtitle') || 'Earn points, unlock rewards, and enjoy exclusive benefits'}
           </p>
         </div>
 
@@ -196,7 +240,7 @@ const CustomerLoyalty: React.FC = () => {
               <div className="h-4 w-4 sm:h-12 sm:w-12 bg-primary-100 dark:bg-primary-900/20 rounded flex items-center justify-center mb-0.5 sm:mb-2">
                 <StarIconSolid className="h-2 w-2 sm:h-6 sm:w-6 text-primary-600 dark:text-primary-400" />
               </div>
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5 leading-tight">Current Points</p>
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5 leading-tight">{t('loyalty.currentPoints') || 'Current Points'}</p>
               <p className="text-xs sm:text-3xl font-bold text-primary-600 dark:text-primary-400 break-all leading-none">
                 {formatPoints(loyaltyProfile?.currentPoints || 0)}
               </p>
@@ -209,7 +253,7 @@ const CustomerLoyalty: React.FC = () => {
               <div className="h-4 w-4 sm:h-12 sm:w-12 bg-purple-100 dark:bg-purple-900/20 rounded flex items-center justify-center mb-0.5 sm:mb-2">
                 <TrophyIconSolid className="h-2 w-2 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
               </div>
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5 leading-tight">Lifetime Points</p>
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5 leading-tight">{t('loyalty.lifetimePoints') || 'Lifetime Points'}</p>
               <p className="text-xs sm:text-3xl font-bold text-purple-600 dark:text-purple-400 break-all leading-none">
                 {formatPoints(loyaltyProfile?.lifetimePoints || 0)}
               </p>
@@ -222,7 +266,7 @@ const CustomerLoyalty: React.FC = () => {
               <div className="h-4 w-4 sm:h-12 sm:w-12 bg-yellow-100 dark:bg-yellow-900/20 rounded flex items-center justify-center mb-0.5 sm:mb-2">
                 <SparklesIcon className="h-2 w-2 sm:h-6 sm:w-6 text-yellow-600 dark:text-yellow-400" />
               </div>
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5 leading-tight">Current Tier</p>
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5 leading-tight">{t('loyalty.currentTierShort') || 'Current Tier'}</p>
               <p className="text-xs sm:text-xl font-bold text-yellow-600 dark:text-yellow-400 truncate leading-none">
                 {loyaltyStats?.currentTier?.name || 'Bronze'}
               </p>
@@ -235,7 +279,7 @@ const CustomerLoyalty: React.FC = () => {
               <div className="h-4 w-4 sm:h-12 sm:w-12 bg-red-100 dark:bg-red-900/20 rounded flex items-center justify-center mb-0.5 sm:mb-2">
                 <ArrowDownIcon className="h-2 w-2 sm:h-6 sm:w-6 text-red-600 dark:text-red-400" />
               </div>
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5 leading-tight">Points Spent</p>
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-0.5 leading-tight">{t('loyalty.pointsSpent') || 'Points Spent'}</p>
               <p className="text-xs sm:text-2xl font-bold text-red-600 dark:text-red-400 break-all leading-none">
                 {formatPoints(loyaltyStats?.totalSpentPoints || 0)}
               </p>
@@ -248,7 +292,7 @@ const CustomerLoyalty: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded sm:rounded-xl shadow-sm p-1 sm:p-6 border border-gray-200 dark:border-gray-700 mb-1 sm:mb-8 mx-0.5 sm:mx-1">
             <div className="flex flex-col items-center justify-center mb-2 sm:mb-4 gap-1">
               <h3 className="text-xs sm:text-lg font-semibold text-gray-900 dark:text-white text-center leading-tight">
-                Progress to {loyaltyStats.nextTier.name}
+                {(t('loyalty.progressTo') || 'Progress to') + ' ' + loyaltyStats.nextTier.name}
               </h3>
               <span className="text-xs text-gray-500 dark:text-gray-400 text-center">
                 {Math.round(getTierProgress())}%
