@@ -253,9 +253,9 @@ const CustomerLoyalty: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-1 sm:py-8 overflow-x-hidden">
-      <div className="max-w-7xl mx-auto px-0.5 sm:px-4 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-1 sm:mb-8 px-0.5 sm:px-1">
+        <div className="mb-1 sm:mb-8">
           <h1 className="text-sm sm:text-3xl font-bold text-gray-900 dark:text-white mb-0.5 sm:mb-1 leading-tight">
             {t('loyalty.customerProgramTitle') || 'Loyalty Program'}
           </h1>
@@ -348,9 +348,9 @@ const CustomerLoyalty: React.FC = () => {
         )}
 
         {/* Tab Navigation */}
-        <div className="bg-white dark:bg-gray-800 rounded sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-1 sm:mb-8 mx-0.5 sm:mx-1">
+        <div className="bg-white dark:bg-gray-800 rounded sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-1 sm:mb-8">
           <div className="border-b border-gray-200 dark:border-gray-700">
-            <nav className="flex overflow-x-auto scrollbar-hide px-0 sm:px-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
+            <nav className="flex overflow-x-auto scrollbar-hide px-4 sm:px-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
               {[
                 { key: 'overview', label: t('loyalty.tab.overview') || 'Overview', icon: StarIcon },
                 { key: 'history', label: t('loyalty.tab.historyShort') || 'History', icon: ClockIcon },
