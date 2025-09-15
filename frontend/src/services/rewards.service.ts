@@ -75,31 +75,31 @@ export interface RewardRedemption {
 export class RewardsService {
   // Specialist methods - for creating and managing rewards
   static async createReward(data: CreateRewardData): Promise<LoyaltyReward> {
-    const response = await apiClient.post('/rewards', {
+    const response = await apiClient.post<{ reward: LoyaltyReward }>('/rewards', {
       ...data,
       validFrom: data.validFrom?.toISOString(),
       validUntil: data.validUntil?.toISOString(),
     });
-    return response.data.data.reward;
+    return response.data.reward;
   }
 
   static async getSpecialistRewards(specialistId?: string, includeInactive = false): Promise<LoyaltyReward[]> {
     const endpoint = specialistId
       ? `/rewards/specialist/${specialistId}`
       : '/rewards/specialist';
-    const response = await apiClient.get(endpoint, {
+    const response = await apiClient.get<{ rewards: LoyaltyReward[] }>(endpoint, {
       params: { includeInactive }
     });
-    return response.data.data.rewards;
+    return response.data.rewards;
   }
 
   static async updateReward(rewardId: string, data: UpdateRewardData): Promise<LoyaltyReward> {
-    const response = await apiClient.put(`/rewards/${rewardId}`, {
+    const response = await apiClient.put<{ reward: LoyaltyReward }>(`/rewards/${rewardId}`, {
       ...data,
       validFrom: data.validFrom?.toISOString(),
       validUntil: data.validUntil?.toISOString(),
     });
-    return response.data.data.reward;
+    return response.data.reward;
   }
 
   static async deleteReward(rewardId: string): Promise<void> {
@@ -108,29 +108,29 @@ export class RewardsService {
 
   // Customer methods - for browsing and redeeming rewards
   static async getAvailableRewards(specialistId?: string): Promise<LoyaltyReward[]> {
-    const response = await apiClient.get('/rewards/available', {
+    const response = await apiClient.get<{ rewards: LoyaltyReward[] }>('/rewards/available', {
       params: specialistId ? { specialistId } : {}
     });
-    return response.data.data.rewards;
+    return response.data.rewards;
   }
 
   static async redeemReward(rewardId: string, bookingId?: string): Promise<RewardRedemption> {
-    const response = await apiClient.post('/rewards/redeem', {
+    const response = await apiClient.post<{ redemption: RewardRedemption }>('/rewards/redeem', {
       rewardId,
       bookingId
     });
-    return response.data.data.redemption;
+    return response.data.redemption;
   }
 
   static async getUserRedemptions(): Promise<RewardRedemption[]> {
-    const response = await apiClient.get('/rewards/redemptions');
-    return response.data.data.redemptions;
+    const response = await apiClient.get<{ redemptions: RewardRedemption[] }>('/rewards/redemptions');
+    return response.data.redemptions;
   }
 
   // Public methods
   static async getRewardById(rewardId: string): Promise<LoyaltyReward> {
-    const response = await apiClient.get(`/rewards/${rewardId}`);
-    return response.data.data.reward;
+    const response = await apiClient.get<{ reward: LoyaltyReward }>(`/rewards/${rewardId}`);
+    return response.data.reward;
   }
 
   // Helper methods
