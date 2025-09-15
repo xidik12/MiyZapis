@@ -254,6 +254,10 @@ const translations: Translations = {
   'booking.freeService': { en: 'Free service', uk: 'Безкоштовна послуга', ru: 'Бесплатная услуга' },
   'booking.expires': { en: 'Expires', uk: 'Діє до', ru: 'Истекает' },
   
+  // Generic labels
+  'labels.spent': { en: 'Spent', uk: 'Витрачено', ru: 'Потрачено' },
+  'labels.amount': { en: 'Amount', uk: 'Сума', ru: 'Сумма' },
+  
   // Specialist Card
   'search.specialist.from': { en: 'From', uk: 'Від', ru: 'От' },
   'search.specialist.starting': { en: 'starting', uk: 'починаючи з', ru: 'начиная с' },

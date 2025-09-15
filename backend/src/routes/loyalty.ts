@@ -68,7 +68,12 @@ router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
     const totalSpentPoints = Math.abs(totalSpentAgg._sum.points || 0); // Convert to positive number
 
     // Determine current and next tier from configured tiers and/or DB tiers
-    const tiers = await prisma.loyaltyTier.findMany({ orderBy: { minPoints: 'asc' } });
+    let tiers = await prisma.loyaltyTier.findMany({ orderBy: { minPoints: 'asc' } });
+    if (!tiers || tiers.length === 0) {
+      // Ensure default tiers exist
+      await LoyaltyService.createDefaultTiers();
+      tiers = await prisma.loyaltyTier.findMany({ orderBy: { minPoints: 'asc' } });
+    }
     const totalPoints = baseStats.totalPoints;
 
     const currentTierRec = [...tiers].reverse().find(t => totalPoints >= t.minPoints) || null;
@@ -121,7 +126,11 @@ router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
 // Get loyalty tiers (public, shape mapped for frontend)
 router.get('/tiers', async (req: Request, res: Response) => {
   try {
-    const tiers = await prisma.loyaltyTier.findMany({ orderBy: { minPoints: 'asc' } });
+    let tiers = await prisma.loyaltyTier.findMany({ orderBy: { minPoints: 'asc' } });
+    if (!tiers || tiers.length === 0) {
+      await LoyaltyService.createDefaultTiers();
+      tiers = await prisma.loyaltyTier.findMany({ orderBy: { minPoints: 'asc' } });
+    }
 
     const mapped = tiers.map(t => ({
       id: t.id,

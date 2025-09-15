@@ -206,7 +206,7 @@ export class LoyaltyService {
     try {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
-        include: { customer: true }
+        include: { customer: true, service: true }
       });
       
       if (!booking) {
@@ -214,8 +214,22 @@ export class LoyaltyService {
         return;
       }
       
-      // Calculate points (1 point per dollar)
-      const basePoints = Math.floor(booking.totalAmount * LOYALTY_CONFIG.POINTS_PER_DOLLAR);
+      // Calculate points based on USD-equivalent spend (1 USD = 10 points)
+      // Conversion uses simple heuristics aligned with frontend context (UAH:USD ~ 41, EUR:UAH ~ 40)
+      const currency = booking.service?.currency || 'USD';
+      const amount = booking.totalAmount;
+      const uahPerUsd = 41; // 1 USD = 41 UAH
+      const uahPerEur = 40; // 1 EUR = 40 UAH
+      let usdAmount = amount;
+      if (currency === 'UAH') {
+        usdAmount = amount / uahPerUsd;
+      } else if (currency === 'EUR') {
+        // Convert EUR -> UAH -> USD
+        const amountUAH = amount * uahPerEur;
+        usdAmount = amountUAH / uahPerUsd;
+      } // USD stays as is
+
+      const basePoints = Math.floor(usdAmount * LOYALTY_CONFIG.POINTS_PER_DOLLAR);
       let totalPoints = basePoints;
       let bonusDescription = '';
       
