@@ -145,11 +145,13 @@ const CustomerLoyalty: React.FC = () => {
     if (!reward) return;
 
     if (loyaltyProfile.currentPoints < reward.pointsRequired) {
-      toast.error('Insufficient points for this reward');
+      toast.error(t('loyalty.insufficientPoints') || 'Insufficient points for this reward');
       return;
     }
 
-    if (!window.confirm(`Redeem "${reward.title}" for ${formatPoints(reward.pointsRequired)} points?`)) {
+    const prefix = t('loyalty.confirmRedeemPrefix') || 'Redeem';
+    const suffix = t('loyalty.confirmRedeemSuffix') || 'for';
+    if (!window.confirm(`${prefix} "${reward.title}" ${suffix} ${formatPoints(reward.pointsRequired)} ${t('loyalty.points') || 'points'}?`)) {
       return;
     }
 
@@ -222,6 +224,20 @@ const CustomerLoyalty: React.FC = () => {
     
     const progress = ((currentPoints - currentTierMin) / (nextTierMin - currentTierMin)) * 100;
     return Math.max(0, Math.min(100, progress));
+  };
+
+  const translateBenefit = (benefit: string) => {
+    const b = (benefit || '').toLowerCase();
+    if (b.includes('basic support')) return t('loyalty.benefit.basicSupport') || benefit;
+    if (b.includes('standard booking')) return t('loyalty.benefit.standardBooking') || benefit;
+    if (b.includes('point earning')) return t('loyalty.benefit.pointEarning') || benefit;
+    if (b.includes('priority support')) return t('loyalty.benefit.prioritySupport') || benefit;
+    if (b.includes('early booking')) return t('loyalty.benefit.earlyBookingAccess') || benefit;
+    if (b.includes('5%')) return t('loyalty.benefit.bonusPoints5') || benefit;
+    if (b.includes('10%')) return t('loyalty.benefit.bonusPoints10') || benefit;
+    if (b.includes('exclusive services')) return t('loyalty.benefit.exclusiveServices') || benefit;
+    if (b.includes('free cancellation')) return t('loyalty.benefit.freeCancellation') || benefit;
+    return benefit;
   };
 
   if (loading) {
@@ -336,10 +352,10 @@ const CustomerLoyalty: React.FC = () => {
           <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="flex overflow-x-auto scrollbar-hide px-0 sm:px-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
               {[
-                { key: 'overview', label: 'Overview', icon: StarIcon },
-                { key: 'history', label: 'History', icon: ClockIcon },
-                { key: 'tiers', label: 'Tiers', icon: TrophyIcon },
-                { key: 'rewards', label: 'Rewards', icon: GiftIcon },
+                { key: 'overview', label: t('loyalty.tab.overview') || 'Overview', icon: StarIcon },
+                { key: 'history', label: t('loyalty.tab.historyShort') || 'History', icon: ClockIcon },
+                { key: 'tiers', label: t('loyalty.tab.tiersShort') || 'Tiers', icon: TrophyIcon },
+                { key: 'rewards', label: t('loyalty.tab.rewards') || 'Rewards', icon: GiftIcon },
               ].map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.key;
@@ -454,7 +470,7 @@ const CustomerLoyalty: React.FC = () => {
                         }`}>
                           {transaction.type === 'REDEEMED' ? '-' : '+'}{formatPoints(transaction.points)}
                         </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">points</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('loyalty.points') || 'points'}</p>
                       </div>
                     </div>
                   ))}
@@ -510,7 +526,7 @@ const CustomerLoyalty: React.FC = () => {
                               <h6 className="font-medium text-gray-900 dark:text-white">{t('loyalty.benefits') || 'Benefits'}:</h6>
                               <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 dark:text-gray-400">
                                 {tier.benefits.map((benefit, index) => (
-                                  <li key={index}>{benefit}</li>
+                                  <li key={index} className="break-words">{translateBenefit(benefit)}</li>
                                 ))}
                               </ul>
                             </div>
