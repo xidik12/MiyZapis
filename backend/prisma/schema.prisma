@@ -15,6 +15,8 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique
   password  String?
+  passwordLastChanged DateTime?
+  authProvider String? // "google", "telegram", "email" - tracks how user registered/authenticated
   firstName String
   lastName  String
   avatar    String?

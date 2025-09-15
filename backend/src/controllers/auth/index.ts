@@ -761,4 +761,212 @@ export class AuthController {
       );
     }
   }
+
+  // Change password (for users with existing passwords)
+  static async changePassword(req: Request, res: Response): Promise<void> {
+    try {
+      // Check validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid request data',
+            req.headers['x-request-id'] as string,
+            errors.array().map(error => ({
+              field: (error as any).param || (error as any).path || 'unknown',
+              message: (error as any).msg || error.toString(),
+              code: 'INVALID_VALUE',
+            }))
+          )
+        );
+        return;
+      }
+
+      const userId = (req as any).user?.id;
+      if (!userId) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.UNAUTHORIZED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { currentPassword, newPassword } = req.body;
+
+      // Get user from database
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, email: true, password: true, authProvider: true }
+      });
+
+      if (!user) {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'User not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // For Google OAuth users who don't have a password set, currentPassword is not required
+      if (user.password && currentPassword) {
+        // Verify current password
+        const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+        if (!isValidPassword) {
+          res.status(400).json(
+            createErrorResponse(
+              ErrorCodes.INVALID_CREDENTIALS,
+              'Current password is incorrect',
+              req.headers['x-request-id'] as string
+            )
+          );
+          return;
+        }
+      } else if (user.password && !currentPassword) {
+        // User has existing password but didn't provide current password
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Current password is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Hash the new password
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+      // Update user password
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          password: hashedPassword,
+          passwordLastChanged: new Date()
+        }
+      });
+
+      logger.info('Password changed successfully', { userId, email: user.email });
+
+      res.status(200).json(
+        createSuccessResponse({
+          message: 'Password changed successfully',
+        })
+      );
+    } catch (error: any) {
+      logger.error('Change password controller error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Password change failed',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Set initial password (for Google OAuth users)
+  static async setInitialPassword(req: Request, res: Response): Promise<void> {
+    try {
+      // Check validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid request data',
+            req.headers['x-request-id'] as string,
+            errors.array().map(error => ({
+              field: (error as any).param || (error as any).path || 'unknown',
+              message: (error as any).msg || error.toString(),
+              code: 'INVALID_VALUE',
+            }))
+          )
+        );
+        return;
+      }
+
+      const userId = (req as any).user?.id;
+      if (!userId) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.UNAUTHORIZED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { password } = req.body;
+
+      // Get user from database
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, email: true, password: true, authProvider: true }
+      });
+
+      if (!user) {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'User not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Check if user already has a password
+      if (user.password) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.INVALID_OPERATION,
+            'User already has a password set. Use change password instead.',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Hash the new password
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+      // Update user with initial password
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          password: hashedPassword,
+          passwordLastChanged: new Date()
+        }
+      });
+
+      logger.info('Initial password set successfully', { userId, email: user.email });
+
+      res.status(200).json(
+        createSuccessResponse({
+          message: 'Password set successfully',
+        })
+      );
+    } catch (error: any) {
+      logger.error('Set initial password controller error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to set initial password',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
 }
