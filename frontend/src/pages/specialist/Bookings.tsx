@@ -1347,7 +1347,7 @@ const SpecialistBookings: React.FC = () => {
                                   : (booking.customerName ? booking.customerName.split(' ').map(n => n[0]).join('') : 'UC')
                                 )
                                 : (booking.specialist
-                                  ? `${booking.specialist.firstName?.[0] || ''}${booking.specialist.lastName?.[0] || ''}`
+                                ? `${booking.specialist.user?.firstName?.[0] || ''}${booking.specialist.user?.lastName?.[0] || ''}`
                                   : 'US'
                                 )
                               }
@@ -1362,7 +1362,7 @@ const SpecialistBookings: React.FC = () => {
                                 : (booking.customerName || 'Unknown Customer')
                               )
                               : (booking.specialist
-                                ? `${booking.specialist.firstName || ''} ${booking.specialist.lastName || ''}`.trim()
+                                ? `${booking.specialist.user?.firstName || ''} ${booking.specialist.user?.lastName || ''}`.trim()
                                 : 'Unknown Specialist'
                               )
                             }
@@ -1557,7 +1557,6 @@ const SpecialistBookings: React.FC = () => {
         onClose={() => setShowDetailModal(false)}
         onStatusChange={handleStatusChange}
         getTranslatedServiceName={getTranslatedServiceName}
-        getTranslatedDuration={getTranslatedDuration}
         activeTab={activeTab}
       />
 

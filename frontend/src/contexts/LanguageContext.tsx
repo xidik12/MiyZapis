@@ -229,6 +229,31 @@ const translations: Translations = {
   'search.savedFilters': { en: 'Saved filters', uk: 'Збережені фільтри', ru: 'Сохраненные фильтры' },
   'search.noSavedFilters': { en: 'No saved filters yet.', uk: 'Збережених фільтрів ще немає.', ru: 'Сохраненных фильтров пока нет.' },
   
+  // Loyalty (new)
+  'loyalty.specialistMembershipTiers': { en: 'Specialist Membership Tiers', uk: 'Рівні участі спеціаліста', ru: 'Уровни участия специалиста' },
+  'loyalty.currentTier': { en: 'Your current tier', uk: 'Ваш поточний рівень', ru: 'Ваш текущий уровень' },
+  'loyalty.points': { en: 'points', uk: 'балів', ru: 'баллов' },
+  'loyalty.next': { en: 'Next', uk: 'Наступний', ru: 'Следующий' },
+  'loyalty.pointsShort': { en: 'pts', uk: 'бали', ru: 'балл.' },
+  'loyalty.tiersProgress': { en: 'Tiers Progress', uk: 'Прогрес рівнів', ru: 'Прогресс уровней' },
+  'loyalty.tiersProgressHelp': { en: 'See how your points map across tiers', uk: 'Подивіться, як ваші бали розподілені між рівнями', ru: 'Посмотрите, как ваши баллы распределяются по уровням' },
+  'loyalty.yourRewards': { en: 'Your Loyalty Rewards', uk: 'Ваші винагороди лояльності', ru: 'Ваши награды лояльности' },
+  'loyalty.createReward': { en: 'Create Reward', uk: 'Створити винагороду', ru: 'Создать награду' },
+  'loyalty.noRewardsYet': { en: 'No Rewards Yet', uk: 'Поки що немає винагород', ru: 'Пока нет наград' },
+  'loyalty.createFirstRewardHelp': { en: 'Create your first loyalty reward to engage customers', uk: 'Створіть першу винагороду, щоб зацікавити клієнтів', ru: 'Создайте первую награду, чтобы заинтересовать клиентов' },
+  'loyalty.createYourFirstReward': { en: 'Create Your First Reward', uk: 'Створити першу винагороду', ru: 'Создать первую награду' },
+  'loyalty.redeemRewards': { en: 'Redeem Rewards', uk: 'Використати винагороди', ru: 'Использовать награды' },
+  'loyalty.redeemRewardsHelp': { en: 'Browse rewards you can redeem using your current points balance.', uk: 'Перегляньте винагороди, які ви можете використати за наявні бали.', ru: 'Посмотрите награды, которые вы можете использовать за текущие баллы.' },
+  'loyalty.noRewardsAvailable': { en: 'No rewards available right now.', uk: 'Наразі немає доступних винагород.', ru: 'Сейчас нет доступных наград.' },
+  'loyalty.myRedemptions': { en: 'My Redemptions', uk: 'Мої використання', ru: 'Мои использования' },
+  'loyalty.noRedemptionsYet': { en: 'You haven’t redeemed any rewards yet.', uk: 'Ви ще не використовували винагороди.', ru: 'Вы еще не использовали награды.' },
+
+  // Booking Flow (reward selection)
+  'booking.applyReward': { en: 'Apply a reward', uk: 'Застосувати винагороду', ru: 'Применить награду' },
+  'booking.noRewardSelected': { en: 'No reward selected', uk: 'Винагороду не обрано', ru: 'Награда не выбрана' },
+  'booking.freeService': { en: 'Free service', uk: 'Безкоштовна послуга', ru: 'Бесплатная услуга' },
+  'booking.expires': { en: 'Expires', uk: 'Діє до', ru: 'Истекает' },
+  
   // Specialist Card
   'search.specialist.from': { en: 'From', uk: 'Від', ru: 'От' },
   'search.specialist.starting': { en: 'starting', uk: 'починаючи з', ru: 'начиная с' },
