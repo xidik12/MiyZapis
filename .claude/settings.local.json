@@ -172,7 +172,8 @@
       "Bash(DATABASE_URL=\"postgresql://postgres:password@localhost:5432/bookingbot_test\" npx prisma migrate status)",
       "Bash(DATABASE_URL=\"postgresql://postgres:password@localhost:5432/bookingbot_test\" npx prisma migrate dev --name add-service-discounts)",
       "Bash(DATABASE_URL=\"postgresql://postgres:password@localhost:5432/bookingbot_test\" node test-discount-functionality.js)",
-      "Bash(DATABASE_URL=\"postgresql://postgres:password@localhost:5432/bookingbot_test\" node ../test-discount-functionality.js)"
+      "Bash(DATABASE_URL=\"postgresql://postgres:password@localhost:5432/bookingbot_test\" node ../test-discount-functionality.js)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:password@localhost:5432/bookingbot_test\" PORT=3020 npm start)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

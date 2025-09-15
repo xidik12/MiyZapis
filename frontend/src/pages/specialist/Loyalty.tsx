@@ -4,6 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { loyaltyService, UserLoyalty, LoyaltyTransaction, LoyaltyTier, LoyaltyStats } from '@/services/loyalty.service';
 import { RewardsService, LoyaltyReward, CreateRewardData } from '@/services/rewards.service';
+import type { RewardRedemption } from '@/services/rewards.service';
 import { formatPoints as utilFormatPoints } from '@/utils/formatPoints';
 import { toast } from 'react-toastify';
 import {
@@ -46,9 +47,12 @@ const SpecialistLoyalty: React.FC = () => {
 
   // Rewards management state
   const [rewards, setRewards] = useState<LoyaltyReward[]>([]);
+  const [availableRewards, setAvailableRewards] = useState<LoyaltyReward[]>([]);
+  const [myRedemptions, setMyRedemptions] = useState<RewardRedemption[]>([]);
   const [showCreateReward, setShowCreateReward] = useState(false);
   const [editingReward, setEditingReward] = useState<LoyaltyReward | null>(null);
   const [rewardsLoading, setRewardsLoading] = useState(false);
+  const [redeemingId, setRedeemingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchLoyaltyData();
@@ -58,6 +62,7 @@ const SpecialistLoyalty: React.FC = () => {
   useEffect(() => {
     if (activeTab === 'rewards') {
       fetchRewards();
+      fetchRedeemData();
     }
   }, [activeTab]);
 
@@ -94,6 +99,19 @@ const SpecialistLoyalty: React.FC = () => {
       toast.error('Failed to load rewards');
     } finally {
       setRewardsLoading(false);
+    }
+  };
+
+  const fetchRedeemData = async () => {
+    try {
+      const [avail, red] = await Promise.all([
+        RewardsService.getAvailableRewards(),
+        RewardsService.getUserRedemptions(),
+      ]);
+      setAvailableRewards(avail);
+      setMyRedemptions(red);
+    } catch (error) {
+      console.error('Error fetching redeemable rewards:', error);
     }
   };
 
@@ -146,6 +164,21 @@ const SpecialistLoyalty: React.FC = () => {
     } catch (error) {
       console.error('Error toggling reward status:', error);
       toast.error('Failed to update reward status');
+    }
+  };
+
+  const handleRedeem = async (rewardId: string) => {
+    try {
+      setRedeemingId(rewardId);
+      await RewardsService.redeemReward(rewardId);
+      toast.success('Reward redeemed');
+      await fetchRedeemData();
+    } catch (error: any) {
+      console.error('Failed to redeem reward:', error);
+      const message = error?.apiError?.message || 'Failed to redeem reward';
+      toast.error(message);
+    } finally {
+      setRedeemingId(null);
     }
   };
 
@@ -321,18 +354,18 @@ const SpecialistLoyalty: React.FC = () => {
                 <StarIconSolid className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <h4 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">Complete Bookings</h4>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Earn points for each completed service</p>
+                <h4 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">Book Services</h4>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">10 points per $1 spent when booking services</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
-                <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
+                <GiftIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <h4 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">Profile Views</h4>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Get points when customers view your profile</p>
+                <h4 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">Redeem Rewards</h4>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Use points to redeem discount vouchers</p>
               </div>
             </div>
 
@@ -497,6 +530,32 @@ const SpecialistLoyalty: React.FC = () => {
             {activeTab === 'tiers' && (
               <div className="space-y-4 sm:space-y-6">
                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Specialist Membership Tiers</h4>
+                {/* Summary card */}
+                <div className="p-4 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-gradient-to-r from-primary-50 to-blue-50 dark:from-gray-800 dark:to-gray-800">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-gray-600 dark:text-gray-400">Your current tier</p>
+                      <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                        {loyaltyStats?.currentTier?.name || 'BRONZE'}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {formatPoints(loyaltyProfile?.currentPoints || 0)} points • Next: {loyaltyStats?.nextTier?.name || '—'}
+                      </p>
+                    </div>
+                    <div className="w-full sm:w-1/2">
+                      <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-2 bg-primary-500 rounded-full transition-all"
+                          style={{ width: `${getTierProgress()}%` }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mt-1">
+                        <span>{formatPoints(loyaltyStats?.currentTier?.minPoints || 0)} pts</span>
+                        <span>{formatPoints(loyaltyStats?.nextTier?.minPoints || (loyaltyStats?.currentTier?.minPoints || 0))} pts</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div className="grid gap-4 sm:gap-6">
                   {tiers.map((tier) => {
                     const isCurrentTier = loyaltyStats?.currentTier?.id === tier.id;
@@ -563,7 +622,8 @@ const SpecialistLoyalty: React.FC = () => {
               </div>
             )}
 
-            {/* Rewards Tab */}
+            {/* Rewards Tab */
+            /* Includes: manage my rewards + view and redeem available rewards */}
             {activeTab === 'rewards' && (
               <div className="space-y-4 sm:space-y-6">
                 {/* Rewards Header */}
@@ -704,6 +764,76 @@ const SpecialistLoyalty: React.FC = () => {
                     ))}
                   </div>
                 )}
+
+                {/* Divider */}
+                <div className="h-px bg-gray-200 dark:bg-gray-700 my-2" />
+
+                {/* Available Rewards for Me (as a user) */}
+                <div className="space-y-3 sm:space-y-4">
+                  <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                    Redeem Rewards
+                  </h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Browse rewards you can redeem using your current points balance.
+                  </p>
+
+                  {availableRewards.length === 0 ? (
+                    <div className="text-center py-10 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                      <GiftIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                      <p className="text-gray-600 dark:text-gray-400">No rewards available right now.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {availableRewards.map((reward) => (
+                        <div key={reward.id} className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <h5 className="font-semibold text-gray-900 dark:text-white">{reward.title}</h5>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{reward.description}</p>
+                              <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-600 dark:text-gray-400">
+                                <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                                  {formatPoints(reward.pointsRequired)} pts
+                                </span>
+                                {reward.validUntil && (
+                                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
+                                    Expires {new Date(reward.validUntil).toLocaleDateString()}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <button
+                              disabled={redeemingId === reward.id}
+                              onClick={() => handleRedeem(reward.id)}
+                              className="inline-flex items-center px-3 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
+                            >
+                              {redeemingId === reward.id ? 'Redeeming...' : 'Redeem'}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* My Redemptions */}
+                <div className="space-y-3 sm:space-y-4">
+                  <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">My Redemptions</h4>
+                  {myRedemptions.length === 0 ? (
+                    <p className="text-sm text-gray-600 dark:text-gray-400">You haven’t redeemed any rewards yet.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {myRedemptions.slice(0, 5).map((r) => (
+                        <div key={r.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{r.reward.title}</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">{new Date(r.redeemedAt).toLocaleString()} • {r.status}</p>
+                          </div>
+                          <span className="text-sm font-semibold text-green-600 dark:text-green-400">-{formatPoints(r.pointsUsed)} pts</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

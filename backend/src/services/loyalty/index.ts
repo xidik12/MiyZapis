@@ -4,7 +4,7 @@ import { logger } from '@/utils/logger';
 // Loyalty Program Configuration
 export const LOYALTY_CONFIG = {
   // Point earning rates
-  POINTS_PER_DOLLAR: 1,
+  POINTS_PER_DOLLAR: 10,
   FIRST_BOOKING_BONUS: 100,
   STREAK_BONUS_POINTS: 50,
   STREAK_REQUIRED_BOOKINGS: 3,

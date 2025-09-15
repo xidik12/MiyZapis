@@ -47,18 +47,8 @@ const requireSpecialist = async (req: Request, res: Response, next: any) => {
   }
 };
 
-// Helper function to check if user is customer
-const requireCustomer = async (req: Request, res: Response, next: any) => {
-  try {
-    const user = (req as AuthenticatedRequest).user;
-    if (!user || user.userType !== 'CUSTOMER') {
-      return res.status(403).json(createErrorResponse('FORBIDDEN', 'Access denied. Customers only.'));
-    }
-    next();
-  } catch (error) {
-    return res.status(401).json(createErrorResponse('UNAUTHORIZED', 'Authentication required'));
-  }
-};
+// Note: Specialists should also be able to redeem rewards for their own bookings.
+// We therefore do not restrict redemption to customers only.
 
 // Specialist Routes (for creating and managing rewards)
 
@@ -241,7 +231,7 @@ router.get('/available', authenticateToken, async (req: Request, res: Response) 
  * POST /api/v1/rewards/redeem
  * Redeem a reward (customers only)
  */
-router.post('/redeem', authenticateToken, requireCustomer, async (req: Request, res: Response) => {
+router.post('/redeem', authenticateToken, async (req: Request, res: Response) => {
   try {
     const user = (req as AuthenticatedRequest).user;
     const userId = user?.id;
@@ -290,7 +280,7 @@ router.post('/redeem', authenticateToken, requireCustomer, async (req: Request, 
  * GET /api/v1/rewards/redemptions
  * Get user's reward redemptions (customers only)
  */
-router.get('/redemptions', authenticateToken, requireCustomer, async (req: Request, res: Response) => {
+router.get('/redemptions', authenticateToken, async (req: Request, res: Response) => {
   try {
     const user = (req as AuthenticatedRequest).user;
     const userId = user?.id;

@@ -107,11 +107,7 @@ export class RewardsService {
         },
         include: {
           specialist: {
-            include: {
-              user: {
-                select: { firstName: true, lastName: true }
-              }
-            }
+            select: { id: true, firstName: true, lastName: true }
           }
         }
       });
@@ -148,11 +144,7 @@ export class RewardsService {
         data: updateData,
         include: {
           specialist: {
-            include: {
-              user: {
-                select: { firstName: true, lastName: true }
-              }
-            }
+            select: { id: true, firstName: true, lastName: true }
           }
         }
       });
@@ -200,11 +192,7 @@ export class RewardsService {
         },
         include: {
           specialist: {
-            include: {
-              user: {
-                select: { firstName: true, lastName: true }
-              }
-            }
+            select: { id: true, firstName: true, lastName: true }
           }
         },
         orderBy: { createdAt: 'desc' }
@@ -268,11 +256,7 @@ export class RewardsService {
         where: whereClause,
         include: {
           specialist: {
-            include: {
-              user: {
-                select: { firstName: true, lastName: true }
-              }
-            }
+            select: { id: true, firstName: true, lastName: true }
           }
         },
         orderBy: [
@@ -298,11 +282,7 @@ export class RewardsService {
         where: { id: data.rewardId },
         include: {
           specialist: {
-            include: {
-              user: {
-                select: { firstName: true, lastName: true }
-              }
-            }
+            select: { id: true, firstName: true, lastName: true }
           }
         }
       });
@@ -457,11 +437,7 @@ export class RewardsService {
           reward: {
             include: {
               specialist: {
-                include: {
-                  user: {
-                    select: { firstName: true, lastName: true }
-                  }
-                }
+                select: { id: true, firstName: true, lastName: true }
               }
             }
           },
