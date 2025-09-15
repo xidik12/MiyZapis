@@ -556,6 +556,43 @@ const SpecialistLoyalty: React.FC = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Tiers chart */}
+                {tiers.length > 0 && (
+                  <div className="p-3 sm:p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                    <div className="mb-3 sm:mb-4">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{t('loyalty.tiersProgress') || 'Tiers Progress'}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">{t('loyalty.tiersProgressHelp') || 'See how your points map across tiers'}</p>
+                    </div>
+                    <div className="relative">
+                      <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full" />
+                      <div className="absolute inset-0 flex justify-between">
+                        {tiers.map((tier, idx) => {
+                          const min = tier.minPoints;
+                          const max = tier.maxPoints ?? Math.max(...tiers.map(t => (t.maxPoints ?? t.minPoints + 1)));
+                          const totalSpan = Math.max(...tiers.map(t => (t.maxPoints ?? t.minPoints + 1)));
+                          const leftPct = Math.min(100, Math.max(0, (min / totalSpan) * 100));
+                          const isCurrent = loyaltyStats?.currentTier?.id === tier.id;
+                          return (
+                            <div key={tier.id} className="absolute" style={{ left: `calc(${leftPct}% - 8px)` }}>
+                              <div className={`h-4 w-4 rounded-full border-2 ${isCurrent ? 'bg-primary-500 border-primary-600' : 'bg-white dark:bg-gray-800 border-gray-400 dark:border-gray-500'}`}></div>
+                              <div className="mt-1 text-center w-20 -ml-8">
+                                <div className={`text-[10px] sm:text-xs font-medium ${isCurrent ? 'text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-gray-300'}`}>{tier.name}</div>
+                                <div className="text-[10px] text-gray-500 dark:text-gray-400">{formatPoints(min)} {t('loyalty.pointsShort') || 'pts'}</div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {/* Current position marker */}
+                      {loyaltyProfile && (
+                        <div className="absolute -top-2" style={{ left: `${Math.min(100, Math.max(0, (loyaltyProfile.currentPoints / Math.max(...tiers.map(t => (t.maxPoints ?? t.minPoints + 1)))) * 100))}%` }}>
+                          <div className="h-6 w-1 bg-primary-500 rounded-full" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 <div className="grid gap-4 sm:gap-6">
                   {tiers.map((tier) => {
                     const isCurrentTier = loyaltyStats?.currentTier?.id === tier.id;

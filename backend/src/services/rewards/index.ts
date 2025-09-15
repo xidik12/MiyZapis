@@ -390,11 +390,7 @@ export class RewardsService {
             reward: {
               include: {
                 specialist: {
-                  include: {
-                    user: {
-                      select: { firstName: true, lastName: true }
-                    }
-                  }
+                  select: { id: true, firstName: true, lastName: true }
                 }
               }
             },
