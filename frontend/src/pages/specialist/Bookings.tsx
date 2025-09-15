@@ -54,7 +54,6 @@ interface BookingDetailModalProps {
   onClose: () => void;
   onStatusChange: (bookingId: string, newStatus: keyof typeof statusColors) => void;
   getTranslatedServiceName: (serviceName: string) => string;
-  getTranslatedDuration: (duration: string | number) => string;
   activeTab: 'provider' | 'customer';
 }
 
@@ -71,7 +70,6 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   onClose, 
   onStatusChange,
   getTranslatedServiceName,
-  getTranslatedDuration,
   activeTab
 }) => {
   const { t } = useLanguage();
@@ -206,8 +204,8 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                         : (booking.customerName || 'Unknown Customer')
                       )
                     : (booking.specialist
-                        ? `${booking.specialist.firstName || ''} ${booking.specialist.lastName || ''}`.trim()
-                        : (booking.specialistName || 'Unknown Specialist')
+                        ? `${booking.specialist.user?.firstName || ''} ${booking.specialist.user?.lastName || ''}`.trim() || 'Unknown Specialist'
+                        : 'Unknown Specialist'
                       )
                   }
                 </p>
@@ -217,7 +215,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 <p className="font-medium text-gray-900 dark:text-white">
                   {activeTab === 'provider'
                     ? (booking.customer?.phoneNumber || booking.customer?.email || booking.customerEmail || booking.customerPhone || t('bookingDetails.contactNotAvailable'))
-                    : (booking.specialist?.phoneNumber || booking.specialist?.email || t('bookingDetails.contactNotAvailable'))
+                    : (booking.specialist?.user?.phoneNumber || booking.specialist?.user?.email || t('bookingDetails.contactNotAvailable'))
                   }
                 </p>
               </div>
@@ -567,7 +565,7 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Payment Confirmation</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{t('bookings.paymentConfirmation') || 'Payment Confirmation'}</h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100 transition-colors"
@@ -587,21 +585,21 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
               </svg>
             </div>
             <h4 className="text-lg font-medium text-gray-900 dark:text-white text-center mb-2">
-              Complete Booking
+              {t('bookings.completeBooking') || 'Complete Booking'}
             </h4>
             <p className="text-gray-600 dark:text-gray-300 text-center">
-              Has the customer paid for this service?
+              {t('bookings.hasCustomerPaid') || 'Has the customer paid for this service?'}
             </p>
           </div>
 
           {/* Booking Details */}
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-600 dark:text-gray-300">Service:</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.service') || 'Service'}:</span>
               <span className="font-medium dark:text-white">{booking.service?.name || booking.serviceName}</span>
             </div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-600 dark:text-gray-300">Customer:</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">{t('labels.customer') || 'Customer'}:</span>
               <span className="font-medium dark:text-white">
                 {booking.customer 
                   ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
@@ -610,7 +608,7 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600 dark:text-gray-300">Amount:</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">{t('labels.amount') || 'Amount'}:</span>
               <span className="font-bold text-green-600">{formatPrice(booking.totalAmount, getBookingCurrency(booking))}</span>
             </div>
           </div>
@@ -643,19 +641,19 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                 </svg>
               )}
-              Yes, Payment Received
+              {t('bookings.yesPaymentReceived') || 'Yes, Payment Received'}
             </button>
             <button
               onClick={handleDeclinePayment}
               disabled={isSubmitting}
               className="flex-1 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-3 px-4 rounded-lg font-medium transition-colors"
             >
-              No, Not Paid Yet
+              {t('bookings.noNotPaidYet') || 'No, Not Paid Yet'}
             </button>
           </div>
 
           <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
-            Only complete the booking if payment has been received from the customer.
+            {t('bookings.onlyCompleteIfPaid') || 'Only complete the booking if payment has been received from the customer.'}
           </p>
         </div>
       </div>
@@ -1602,15 +1600,11 @@ const SpecialistBookings: React.FC = () => {
           specialistName:
             selectedBooking?.specialist
               ? `${
-                  (selectedBooking.specialist as any).firstName ||
-                  (selectedBooking.specialist as any).user?.firstName ||
-                  ''
+                  (selectedBooking.specialist as any).user?.firstName || ''
                 } ${
-                  (selectedBooking.specialist as any).lastName ||
-                  (selectedBooking.specialist as any).user?.lastName ||
-                  ''
-                }`.trim() || selectedBooking?.specialistName
-              : selectedBooking?.specialistName
+                  (selectedBooking.specialist as any).user?.lastName || ''
+                }`.trim()
+              : undefined
         }}
         loading={reviewLoading}
       />
