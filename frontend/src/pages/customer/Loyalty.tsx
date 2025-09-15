@@ -3,6 +3,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { loyaltyService, UserLoyalty, LoyaltyTransaction, LoyaltyTier, LoyaltyStats } from '@/services/loyalty.service';
+import { RewardsService, LoyaltyReward, RewardRedemption } from '@/services/rewards.service';
 import { formatPoints as utilFormatPoints } from '@/utils/formatPoints';
 import { toast } from 'react-toastify';
 import {
@@ -37,9 +38,21 @@ const CustomerLoyalty: React.FC = () => {
   const [tiers, setTiers] = useState<LoyaltyTier[]>([]);
   const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'tiers' | 'rewards'>('overview');
 
+  // Rewards state
+  const [availableRewards, setAvailableRewards] = useState<LoyaltyReward[]>([]);
+  const [myRedemptions, setMyRedemptions] = useState<RewardRedemption[]>([]);
+  const [rewardsLoading, setRewardsLoading] = useState(false);
+
   useEffect(() => {
     fetchLoyaltyData();
+    fetchRewards();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'rewards') {
+      fetchRewards();
+    }
+  }, [activeTab]);
 
   const fetchLoyaltyData = async () => {
     try {
@@ -60,6 +73,54 @@ const CustomerLoyalty: React.FC = () => {
       toast.error('Failed to load loyalty program data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Rewards functions
+  const fetchRewards = async () => {
+    try {
+      setRewardsLoading(true);
+      const [rewards, redemptions] = await Promise.all([
+        RewardsService.getAvailableRewards(),
+        RewardsService.getUserRedemptions()
+      ]);
+      setAvailableRewards(rewards);
+      setMyRedemptions(redemptions);
+    } catch (error) {
+      console.error('Error fetching rewards:', error);
+      toast.error('Failed to load rewards');
+    } finally {
+      setRewardsLoading(false);
+    }
+  };
+
+  const handleRedeemReward = async (rewardId: string) => {
+    if (!loyaltyProfile) return;
+
+    const reward = availableRewards.find(r => r.id === rewardId);
+    if (!reward) return;
+
+    if (loyaltyProfile.currentPoints < reward.pointsRequired) {
+      toast.error('Insufficient points for this reward');
+      return;
+    }
+
+    if (!window.confirm(`Redeem "${reward.title}" for ${formatPoints(reward.pointsRequired)} points?`)) {
+      return;
+    }
+
+    try {
+      await RewardsService.redeemReward(rewardId);
+      toast.success('Reward redeemed successfully!');
+
+      // Refresh both loyalty data and rewards
+      await Promise.all([
+        fetchLoyaltyData(),
+        fetchRewards()
+      ]);
+    } catch (error) {
+      console.error('Error redeeming reward:', error);
+      toast.error('Failed to redeem reward');
     }
   };
 
@@ -413,12 +474,183 @@ const CustomerLoyalty: React.FC = () => {
 
             {/* Rewards Tab */}
             {activeTab === 'rewards' && (
-              <div className="text-center py-12">
-                <GiftIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Rewards Coming Soon</h4>
-                <p className="text-gray-600 dark:text-gray-400">
-                  We're working on exciting rewards you can redeem with your points
-                </p>
+              <div className="space-y-4 sm:space-y-6">
+                <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                  Available Rewards
+                </h4>
+
+                {rewardsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary-500 border-t-transparent"></div>
+                  </div>
+                ) : (
+                  <div className="grid gap-4 sm:gap-6">
+                    {/* Available Rewards Section */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h5 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">
+                          Rewards You Can Redeem ({availableRewards.length})
+                        </h5>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          Your Points: {formatPoints(loyaltyProfile?.currentPoints || 0)}
+                        </div>
+                      </div>
+
+                      {availableRewards.length === 0 ? (
+                        <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                          <GiftIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                          <p className="text-gray-600 dark:text-gray-400 text-sm">
+                            No rewards available at the moment
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {availableRewards.map((reward) => {
+                            const canAfford = (loyaltyProfile?.currentPoints || 0) >= reward.pointsRequired;
+                            const isAvailable = RewardsService.isRewardAvailable(reward);
+
+                            return (
+                              <div
+                                key={reward.id}
+                                className={`p-4 rounded-lg border transition-colors ${
+                                  canAfford && isAvailable
+                                    ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
+                                    : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800'
+                                }`}
+                              >
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                  <div className="flex-1">
+                                    <div className="flex items-start justify-between mb-2">
+                                      <div>
+                                        <h6 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
+                                          {reward.title}
+                                        </h6>
+                                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                          {reward.description}
+                                        </p>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm">
+                                      <div className="flex items-center text-primary-600 dark:text-primary-400">
+                                        <StarIcon className="h-4 w-4 mr-1" />
+                                        {formatPoints(reward.pointsRequired)} points
+                                      </div>
+                                      <div className="flex items-center text-purple-600 dark:text-purple-400">
+                                        <GiftIcon className="h-4 w-4 mr-1" />
+                                        {RewardsService.getRewardValue(reward)}
+                                      </div>
+                                      {reward.specialist && (
+                                        <div className="flex items-center text-blue-600 dark:text-blue-400">
+                                          <UsersIcon className="h-4 w-4 mr-1" />
+                                          {reward.specialist.user.firstName} {reward.specialist.user.lastName}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2 mt-3">
+                                      <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                                        {RewardsService.getRewardTypeLabel(reward.type)}
+                                      </span>
+                                      {reward.usageLimit === 'ONCE_PER_USER' && (
+                                        <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
+                                          One time only
+                                        </span>
+                                      )}
+                                      {reward.validUntil && (
+                                        <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
+                                          Expires {new Date(reward.validUntil).toLocaleDateString()}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <div className="flex-shrink-0">
+                                    <button
+                                      onClick={() => handleRedeemReward(reward.id)}
+                                      disabled={!canAfford || !isAvailable}
+                                      className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                                        canAfford && isAvailable
+                                          ? 'bg-primary-600 text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500'
+                                          : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400'
+                                      }`}
+                                    >
+                                      {!canAfford ? 'Not Enough Points' : !isAvailable ? 'Unavailable' : 'Redeem'}
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* My Redemptions Section */}
+                    <div className="space-y-4">
+                      <h5 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">
+                        My Redemptions ({myRedemptions.length})
+                      </h5>
+
+                      {myRedemptions.length === 0 ? (
+                        <div className="text-center py-6 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                          <TrophyIcon className="h-10 w-10 text-gray-400 mx-auto mb-2" />
+                          <p className="text-gray-600 dark:text-gray-400 text-sm">
+                            No redemptions yet. Start redeeming rewards above!
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {myRedemptions.slice(0, 10).map((redemption) => {
+                            const statusInfo = RewardsService.formatRedemptionStatus(redemption.status);
+
+                            return (
+                              <div key={redemption.id} className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between mb-1">
+                                      <h6 className="font-medium text-gray-900 dark:text-white text-sm truncate">
+                                        {redemption.reward.title}
+                                      </h6>
+                                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ml-2 ${
+                                        statusInfo.color === 'green' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' :
+                                        statusInfo.color === 'blue' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' :
+                                        statusInfo.color === 'yellow' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
+                                        statusInfo.color === 'red' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' :
+                                        'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+                                      }`}>
+                                        {statusInfo.label}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                                      <span>{formatPoints(redemption.pointsUsed)} points used</span>
+                                      <span>•</span>
+                                      <span>{formatDate(redemption.redeemedAt)}</span>
+                                      {redemption.expiresAt && redemption.status === 'APPROVED' && (
+                                        <>
+                                          <span>•</span>
+                                          <span>Expires {formatDate(redemption.expiresAt)}</span>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+
+                          {myRedemptions.length > 10 && (
+                            <div className="text-center">
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                Showing 10 of {myRedemptions.length} redemptions
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

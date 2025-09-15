@@ -82,6 +82,8 @@ model User {
   profileViews         ProfileView[]           @relation("ProfileViewer")
   profileViewsReceived ProfileView[]           @relation("ProfileViewed")
   telegramSessions     TelegramSession[]
+  createdRewards       LoyaltyReward[]         @relation("SpecialistRewards")
+  rewardRedemptions    RewardRedemption[]      @relation("UserRewardRedemptions")
 
   // Indexes for performance
   @@index([email])
@@ -298,6 +300,7 @@ model Booking {
   // Loyalty Relations
   pointsRedemptions PointsRedemption[]
   reviewRewards     ReviewReward[]
+  rewardRedemptions RewardRedemption[] @relation("BookingRewardRedemptions")
 
   @@map("bookings")
 }
@@ -1180,4 +1183,80 @@ model ReviewReward {
   @@unique([userId, bookingId]) // One reward per booking
   @@index([userId, monthYear])
   @@map("review_rewards")
+}
+
+model LoyaltyReward {
+  id              String @id @default(cuid())
+  specialistId    String
+
+  // Reward details
+  title           String
+  description     String
+  type            String // DISCOUNT_VOUCHER, SERVICE_CREDIT, FREE_SERVICE, PERCENTAGE_OFF
+
+  // Reward value
+  pointsRequired  Int
+  discountPercent Float? // For percentage-based discounts
+  discountAmount  Float? // For fixed amount discounts
+  serviceIds      String? // JSON array of applicable service IDs (null = all services)
+
+  // Usage limits
+  maxRedemptions  Int? // null = unlimited
+  currentRedemptions Int @default(0)
+  usageLimit      String @default("UNLIMITED") // UNLIMITED, ONCE_PER_USER, LIMITED_TOTAL
+
+  // Availability
+  isActive        Boolean @default(true)
+  validFrom       DateTime @default(now())
+  validUntil      DateTime?
+
+  // Terms and conditions
+  termsConditions String?
+  minimumTier     String? // Minimum loyalty tier required (BRONZE, SILVER, GOLD, PLATINUM)
+
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  specialist      User @relation("SpecialistRewards", fields: [specialistId], references: [id], onDelete: Cascade)
+  redemptions     RewardRedemption[]
+
+  @@index([specialistId, isActive])
+  @@index([isActive, validFrom, validUntil])
+  @@map("loyalty_rewards")
+}
+
+model RewardRedemption {
+  id              String @id @default(cuid())
+  rewardId        String
+  userId          String
+  bookingId       String?
+
+  // Redemption details
+  status          String @default("PENDING") // PENDING, APPROVED, USED, EXPIRED, CANCELLED
+  pointsUsed      Int
+  discountApplied Float?
+  originalAmount  Float?
+  finalAmount     Float?
+
+  // Usage tracking
+  redeemedAt      DateTime @default(now())
+  usedAt          DateTime?
+  expiresAt       DateTime?
+
+  // Metadata
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  reward          LoyaltyReward @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+  user            User @relation("UserRewardRedemptions", fields: [userId], references: [id], onDelete: Cascade)
+  booking         Booking? @relation("BookingRewardRedemptions", fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([rewardId, status])
+  @@index([status, expiresAt])
+  @@map("reward_redemptions")
 }

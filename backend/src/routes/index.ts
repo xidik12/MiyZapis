@@ -20,6 +20,7 @@ import adminRoutes from './admin';
 import loyaltyRoutes from './loyalty';
 import adminLoyaltyRoutes from './admin-loyalty';
 import userLoyaltyFixRoutes from './user-loyalty-fix';
+import rewardsRoutes from './rewards';
 import availabilityRoutes from './availability';
 import analyticsEnhancedRoutes from './analytics-enhanced';
 import telegramEnhancedRoutes from './telegram-enhanced';
@@ -55,6 +56,7 @@ router.use('/admin', adminRoutes);
 router.use('/loyalty', loyaltyRoutes);
 router.use('/admin/loyalty', adminLoyaltyRoutes);
 router.use('/user/loyalty', userLoyaltyFixRoutes);
+router.use('/rewards', rewardsRoutes);
 router.use('/', availabilityRoutes);  // Mount availability routes at root to match /specialists/:id/slots pattern
 router.use('/analytics-enhanced', analyticsEnhancedRoutes);
 router.use('/telegram', telegramEnhancedRoutes);

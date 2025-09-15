@@ -3,6 +3,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { loyaltyService, UserLoyalty, LoyaltyTransaction, LoyaltyTier, LoyaltyStats } from '@/services/loyalty.service';
+import { RewardsService, LoyaltyReward, CreateRewardData } from '@/services/rewards.service';
 import { formatPoints as utilFormatPoints } from '@/utils/formatPoints';
 import { toast } from 'react-toastify';
 import {
@@ -20,6 +21,10 @@ import {
   FireIcon,
   BriefcaseIcon,
   EyeIcon,
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import {
   StarIcon as StarIconSolid,
@@ -39,9 +44,22 @@ const SpecialistLoyalty: React.FC = () => {
   const [tiers, setTiers] = useState<LoyaltyTier[]>([]);
   const [activeTab, setActiveTab] = useState<'overview' | 'history' | 'tiers' | 'rewards'>('overview');
 
+  // Rewards management state
+  const [rewards, setRewards] = useState<LoyaltyReward[]>([]);
+  const [showCreateReward, setShowCreateReward] = useState(false);
+  const [editingReward, setEditingReward] = useState<LoyaltyReward | null>(null);
+  const [rewardsLoading, setRewardsLoading] = useState(false);
+
   useEffect(() => {
     fetchLoyaltyData();
+    fetchRewards();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'rewards') {
+      fetchRewards();
+    }
+  }, [activeTab]);
 
   const fetchLoyaltyData = async () => {
     try {
@@ -62,6 +80,72 @@ const SpecialistLoyalty: React.FC = () => {
       toast.error('Failed to load loyalty program data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Rewards management functions
+  const fetchRewards = async () => {
+    try {
+      setRewardsLoading(true);
+      const rewards = await RewardsService.getSpecialistRewards(undefined, true);
+      setRewards(rewards);
+    } catch (error) {
+      console.error('Error fetching rewards:', error);
+      toast.error('Failed to load rewards');
+    } finally {
+      setRewardsLoading(false);
+    }
+  };
+
+  const handleCreateReward = async (data: CreateRewardData) => {
+    try {
+      await RewardsService.createReward(data);
+      toast.success('Reward created successfully');
+      setShowCreateReward(false);
+      fetchRewards();
+    } catch (error) {
+      console.error('Error creating reward:', error);
+      toast.error('Failed to create reward');
+    }
+  };
+
+  const handleUpdateReward = async (rewardId: string, data: Partial<CreateRewardData>) => {
+    try {
+      await RewardsService.updateReward(rewardId, data);
+      toast.success('Reward updated successfully');
+      setEditingReward(null);
+      fetchRewards();
+    } catch (error) {
+      console.error('Error updating reward:', error);
+      toast.error('Failed to update reward');
+    }
+  };
+
+  const handleDeleteReward = async (rewardId: string) => {
+    if (!window.confirm('Are you sure you want to delete this reward?')) {
+      return;
+    }
+
+    try {
+      await RewardsService.deleteReward(rewardId);
+      toast.success('Reward deleted successfully');
+      fetchRewards();
+    } catch (error) {
+      console.error('Error deleting reward:', error);
+      toast.error('Failed to delete reward');
+    }
+  };
+
+  const handleToggleRewardStatus = async (reward: LoyaltyReward) => {
+    try {
+      await RewardsService.updateReward(reward.id, {
+        isActive: !reward.isActive
+      });
+      toast.success(`Reward ${reward.isActive ? 'deactivated' : 'activated'} successfully`);
+      fetchRewards();
+    } catch (error) {
+      console.error('Error toggling reward status:', error);
+      toast.error('Failed to update reward status');
     }
   };
 
@@ -481,15 +565,571 @@ const SpecialistLoyalty: React.FC = () => {
 
             {/* Rewards Tab */}
             {activeTab === 'rewards' && (
-              <div className="text-center py-12">
-                <GiftIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Specialist Rewards Coming Soon</h4>
-                <p className="text-gray-600 dark:text-gray-400">
-                  We're working on exciting rewards and benefits exclusively for our specialist community
-                </p>
+              <div className="space-y-4 sm:space-y-6">
+                {/* Rewards Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                      Your Loyalty Rewards
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      Create rewards for customers to redeem with their loyalty points
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowCreateReward(true)}
+                    className="inline-flex items-center px-3 sm:px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                  >
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    Create Reward
+                  </button>
+                </div>
+
+                {/* Rewards Grid */}
+                {rewardsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary-500 border-t-transparent"></div>
+                  </div>
+                ) : rewards.length === 0 ? (
+                  <div className="text-center py-12">
+                    <GiftIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Rewards Yet</h4>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">
+                      Create your first loyalty reward to engage customers
+                    </p>
+                    <button
+                      onClick={() => setShowCreateReward(true)}
+                      className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                    >
+                      <PlusIcon className="h-4 w-4 mr-2" />
+                      Create Your First Reward
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid gap-4 sm:gap-6">
+                    {rewards.map((reward) => (
+                      <div key={reward.id} className={`p-4 sm:p-6 rounded-xl border-2 transition-colors ${
+                        reward.isActive
+                          ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
+                          : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'
+                      }`}>
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-3">
+                              <div>
+                                <h5 className="text-lg font-bold text-gray-900 dark:text-white">
+                                  {reward.title}
+                                </h5>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                  {reward.description}
+                                </p>
+                              </div>
+                              <div className="flex items-center space-x-2 ml-4">
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  reward.isActive
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                                    : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+                                }`}>
+                                  {reward.isActive ? 'Active' : 'Inactive'}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                              <div className="flex items-center">
+                                <StarIcon className="h-4 w-4 mr-1 text-primary-600" />
+                                {formatPoints(reward.pointsRequired)} points required
+                              </div>
+                              <div className="flex items-center">
+                                <GiftIcon className="h-4 w-4 mr-1 text-purple-600" />
+                                {RewardsService.getRewardValue(reward)}
+                              </div>
+                              <div className="flex items-center">
+                                <UsersIcon className="h-4 w-4 mr-1 text-blue-600" />
+                                {reward.currentRedemptions} / {reward.maxRedemptions || '∞'} redeemed
+                              </div>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2">
+                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                                {RewardsService.getRewardTypeLabel(reward.type)}
+                              </span>
+                              {reward.usageLimit !== 'UNLIMITED' && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
+                                  {reward.usageLimit.replace('_', ' ').toLowerCase()}
+                                </span>
+                              )}
+                              {reward.validUntil && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
+                                  Expires {new Date(reward.validUntil).toLocaleDateString()}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => setEditingReward(reward)}
+                              className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                              title="Edit reward"
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleToggleRewardStatus(reward)}
+                              className={`p-2 rounded-lg transition-colors ${
+                                reward.isActive
+                                  ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-100 dark:hover:bg-yellow-900/20'
+                                  : 'text-green-600 hover:text-green-700 hover:bg-green-100 dark:hover:bg-green-900/20'
+                              }`}
+                              title={reward.isActive ? 'Deactivate reward' : 'Activate reward'}
+                            >
+                              {reward.isActive ? (
+                                <XMarkIcon className="h-4 w-4" />
+                              ) : (
+                                <StarIcon className="h-4 w-4" />
+                              )}
+                            </button>
+                            <button
+                              onClick={() => handleDeleteReward(reward.id)}
+                              className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                              title="Delete reward"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
+        </div>
+
+        {/* Create Reward Modal */}
+        {showCreateReward && (
+          <CreateRewardModal
+            onClose={() => setShowCreateReward(false)}
+            onSubmit={handleCreateReward}
+          />
+        )}
+
+        {/* Edit Reward Modal */}
+        {editingReward && (
+          <EditRewardModal
+            reward={editingReward}
+            onClose={() => setEditingReward(null)}
+            onSubmit={(data) => handleUpdateReward(editingReward.id, data)}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Create Reward Modal Component
+interface CreateRewardModalProps {
+  onClose: () => void;
+  onSubmit: (data: CreateRewardData) => void;
+}
+
+const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit }) => {
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    type: 'PERCENTAGE_OFF' as const,
+    pointsRequired: 100,
+    discountPercent: 10,
+    discountAmount: 5,
+    usageLimit: 'UNLIMITED' as const,
+    maxRedemptions: '',
+    validUntil: '',
+    termsConditions: '',
+    minimumTier: ''
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const data: CreateRewardData = {
+        title: formData.title,
+        description: formData.description,
+        type: formData.type,
+        pointsRequired: formData.pointsRequired,
+        ...(formData.type === 'PERCENTAGE_OFF' && { discountPercent: formData.discountPercent }),
+        ...(formData.type === 'DISCOUNT_VOUCHER' && { discountAmount: formData.discountAmount }),
+        ...(formData.type === 'SERVICE_CREDIT' && { discountAmount: formData.discountAmount }),
+        usageLimit: formData.usageLimit,
+        ...(formData.usageLimit === 'LIMITED_TOTAL' && formData.maxRedemptions && {
+          maxRedemptions: parseInt(formData.maxRedemptions)
+        }),
+        ...(formData.validUntil && { validUntil: new Date(formData.validUntil) }),
+        ...(formData.termsConditions && { termsConditions: formData.termsConditions }),
+        ...(formData.minimumTier && { minimumTier: formData.minimumTier })
+      };
+
+      await onSubmit(data);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose}></div>
+
+        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+          <form onSubmit={handleSubmit} className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="sm:flex sm:items-start">
+              <div className="w-full">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
+                  Create New Reward
+                </h3>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Title
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="e.g., 10% Off Next Service"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Description
+                    </label>
+                    <textarea
+                      required
+                      rows={3}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      placeholder="Describe what customers get with this reward..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Reward Type
+                    </label>
+                    <select
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      value={formData.type}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                    >
+                      <option value="PERCENTAGE_OFF">Percentage Off</option>
+                      <option value="DISCOUNT_VOUCHER">Fixed Amount Off</option>
+                      <option value="SERVICE_CREDIT">Service Credit</option>
+                      <option value="FREE_SERVICE">Free Service</option>
+                    </select>
+                  </div>
+
+                  {formData.type === 'PERCENTAGE_OFF' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Discount Percentage
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        required
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        value={formData.discountPercent}
+                        onChange={(e) => setFormData({ ...formData, discountPercent: parseInt(e.target.value) })}
+                      />
+                    </div>
+                  )}
+
+                  {(formData.type === 'DISCOUNT_VOUCHER' || formData.type === 'SERVICE_CREDIT') && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Discount Amount ($)
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        step="0.01"
+                        required
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        value={formData.discountAmount}
+                        onChange={(e) => setFormData({ ...formData, discountAmount: parseFloat(e.target.value) })}
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Points Required
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      required
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      value={formData.pointsRequired}
+                      onChange={(e) => setFormData({ ...formData, pointsRequired: parseInt(e.target.value) })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Usage Limit
+                    </label>
+                    <select
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      value={formData.usageLimit}
+                      onChange={(e) => setFormData({ ...formData, usageLimit: e.target.value as any })}
+                    >
+                      <option value="UNLIMITED">Unlimited</option>
+                      <option value="ONCE_PER_USER">Once per user</option>
+                      <option value="LIMITED_TOTAL">Limited total redemptions</option>
+                    </select>
+                  </div>
+
+                  {formData.usageLimit === 'LIMITED_TOTAL' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Max Total Redemptions
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        required
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        value={formData.maxRedemptions}
+                        onChange={(e) => setFormData({ ...formData, maxRedemptions: e.target.value })}
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Expiration Date (optional)
+                    </label>
+                    <input
+                      type="date"
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      value={formData.validUntil}
+                      onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
+                      min={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+              >
+                {isSubmitting ? 'Creating...' : 'Create Reward'}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:text-gray-400"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Edit Reward Modal Component (similar structure, pre-populated with existing data)
+interface EditRewardModalProps {
+  reward: LoyaltyReward;
+  onClose: () => void;
+  onSubmit: (data: Partial<CreateRewardData>) => void;
+}
+
+const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSubmit }) => {
+  const [formData, setFormData] = useState({
+    title: reward.title,
+    description: reward.description,
+    type: reward.type as CreateRewardData['type'],
+    pointsRequired: reward.pointsRequired,
+    discountPercent: reward.discountPercent || 10,
+    discountAmount: reward.discountAmount || 5,
+    usageLimit: reward.usageLimit as CreateRewardData['usageLimit'],
+    maxRedemptions: reward.maxRedemptions?.toString() || '',
+    validUntil: reward.validUntil ? new Date(reward.validUntil).toISOString().split('T')[0] : '',
+    termsConditions: reward.termsConditions || '',
+    minimumTier: reward.minimumTier || ''
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const data: Partial<CreateRewardData> = {
+        title: formData.title,
+        description: formData.description,
+        type: formData.type,
+        pointsRequired: formData.pointsRequired,
+        ...(formData.type === 'PERCENTAGE_OFF' && { discountPercent: formData.discountPercent }),
+        ...(formData.type === 'DISCOUNT_VOUCHER' && { discountAmount: formData.discountAmount }),
+        ...(formData.type === 'SERVICE_CREDIT' && { discountAmount: formData.discountAmount }),
+        usageLimit: formData.usageLimit,
+        ...(formData.usageLimit === 'LIMITED_TOTAL' && formData.maxRedemptions && {
+          maxRedemptions: parseInt(formData.maxRedemptions)
+        }),
+        ...(formData.validUntil && { validUntil: new Date(formData.validUntil) }),
+        ...(formData.termsConditions && { termsConditions: formData.termsConditions }),
+        ...(formData.minimumTier && { minimumTier: formData.minimumTier })
+      };
+
+      await onSubmit(data);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose}></div>
+
+        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+          <form onSubmit={handleSubmit} className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="sm:flex sm:items-start">
+              <div className="w-full">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
+                  Edit Reward: {reward.title}
+                </h3>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Title
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Description
+                    </label>
+                    <textarea
+                      required
+                      rows={3}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Points Required
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      required
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      value={formData.pointsRequired}
+                      onChange={(e) => setFormData({ ...formData, pointsRequired: parseInt(e.target.value) })}
+                    />
+                  </div>
+
+                  {formData.type === 'PERCENTAGE_OFF' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Discount Percentage
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        required
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        value={formData.discountPercent}
+                        onChange={(e) => setFormData({ ...formData, discountPercent: parseInt(e.target.value) })}
+                      />
+                    </div>
+                  )}
+
+                  {(formData.type === 'DISCOUNT_VOUCHER' || formData.type === 'SERVICE_CREDIT') && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Discount Amount ($)
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        step="0.01"
+                        required
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        value={formData.discountAmount}
+                        onChange={(e) => setFormData({ ...formData, discountAmount: parseFloat(e.target.value) })}
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Expiration Date (optional)
+                    </label>
+                    <input
+                      type="date"
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      value={formData.validUntil}
+                      onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
+                      min={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+              >
+                {isSubmitting ? 'Updating...' : 'Update Reward'}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:text-gray-400"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
