@@ -881,13 +881,36 @@ export class LoyaltyService {
       
       if (!user) return null;
       
-      // Calculate total points from transactions (more accurate than user.loyaltyPoints field)
-      const pointsAggregate = await prisma.loyaltyTransaction.aggregate({
-        _sum: { points: true },
-        where: { userId }
-      });
-      
-      const totalPoints = pointsAggregate._sum.points || 0;
+      // Calculate total points from transactions with safeguards
+      // Exclude erroneously-attributed provider points:
+      // - For entries with reason 'BOOKING_COMPLETED', only include when the user was the booking's customer
+      const allTx = await prisma.loyaltyTransaction.findMany({ where: { userId } });
+      const bookingIds = allTx
+        .filter(tx => tx.reason === 'BOOKING_COMPLETED' && !!tx.referenceId)
+        .map(tx => tx.referenceId!) as string[];
+
+      let bookingById: Record<string, { customerId: string }> = {};
+      if (bookingIds.length > 0) {
+        const bookings = await prisma.booking.findMany({
+          where: { id: { in: bookingIds } },
+          select: { id: true, customerId: true }
+        });
+        bookingById = bookings.reduce((acc, b) => {
+          acc[b.id] = { customerId: b.customerId };
+          return acc;
+        }, {} as Record<string, { customerId: string }>);
+      }
+
+      const totalPoints = allTx.reduce((sum, tx) => {
+        // Only gate positive points
+        if (tx.points > 0 && tx.reason === 'BOOKING_COMPLETED' && tx.referenceId) {
+          const b = bookingById[tx.referenceId];
+          if (!b || b.customerId !== userId) {
+            return sum; // skip provider-attributed booking points
+          }
+        }
+        return sum + tx.points;
+      }, 0);
       
       // Determine current tier based on calculated points
       let tier = 'BRONZE';

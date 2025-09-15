@@ -41,24 +41,30 @@ router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const yearStart = new Date(now.getFullYear(), 0, 1);
 
-    const [monthlyAgg, yearlyAgg, totalSpentAgg] = await Promise.all([
-      prisma.loyaltyTransaction.aggregate({
-        _sum: { points: true },
-        where: { userId, createdAt: { gte: monthStart }, points: { gt: 0 } }
-      }),
-      prisma.loyaltyTransaction.aggregate({
-        _sum: { points: true },
-        where: { userId, createdAt: { gte: yearStart }, points: { gt: 0 } }
-      }),
-      // Calculate total loyalty points spent (redeemed) - points are negative for redemptions
-      prisma.loyaltyTransaction.aggregate({
-        _sum: { points: true },
-        where: { userId, type: 'REDEEMED' }
-      })
+    // Load transactions in periods to apply provider safeguard filter
+    const [txMonth, txYear, totalSpentAgg] = await Promise.all([
+      prisma.loyaltyTransaction.findMany({ where: { userId, createdAt: { gte: monthStart } } }),
+      prisma.loyaltyTransaction.findMany({ where: { userId, createdAt: { gte: yearStart } } }),
+      prisma.loyaltyTransaction.aggregate({ _sum: { points: true }, where: { userId, type: 'REDEEMED' } })
     ]);
 
-    const monthlyPoints = monthlyAgg._sum.points || 0;
-    const yearlyPoints = yearlyAgg._sum.points || 0;
+    const filterTx = async (txs: any[]) => {
+      const bookingIds = txs.filter(t => t.reason === 'BOOKING_COMPLETED' && !!t.referenceId).map(t => t.referenceId as string);
+      let bookingById: Record<string, { customerId: string }> = {};
+      if (bookingIds.length > 0) {
+        const bookings = await prisma.booking.findMany({ where: { id: { in: bookingIds } }, select: { id: true, customerId: true } });
+        bookingById = bookings.reduce((acc, b) => { acc[b.id] = { customerId: b.customerId }; return acc; }, {} as any);
+      }
+      return txs.reduce((sum, t) => {
+        if (t.points > 0 && t.reason === 'BOOKING_COMPLETED' && t.referenceId) {
+          const b = bookingById[t.referenceId];
+          if (!b || b.customerId !== userId) return sum;
+        }
+        return sum + (t.points > 0 ? t.points : 0);
+      }, 0);
+    };
+
+    const [monthlyPoints, yearlyPoints] = await Promise.all([filterTx(txMonth), filterTx(txYear)]);
     const totalSpentPoints = Math.abs(totalSpentAgg._sum.points || 0); // Convert to positive number
 
     // Determine current and next tier from configured tiers and/or DB tiers
