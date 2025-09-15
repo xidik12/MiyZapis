@@ -1,6 +1,101 @@
 import { logger } from '../../utils/logger';
 import { prisma } from '@/config/database';
 
+let schemaEnsured = false;
+async function ensureLoyaltySchema() {
+  if (schemaEnsured) return;
+  try {
+    // Create rewards table
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "loyalty_rewards" (
+        "id" TEXT PRIMARY KEY,
+        "specialistId" TEXT NOT NULL,
+        "title" TEXT NOT NULL,
+        "description" TEXT NOT NULL,
+        "type" TEXT NOT NULL,
+        "pointsRequired" INTEGER NOT NULL,
+        "discountPercent" DOUBLE PRECISION,
+        "discountAmount" DOUBLE PRECISION,
+        "serviceIds" TEXT,
+        "maxRedemptions" INTEGER,
+        "currentRedemptions" INTEGER NOT NULL DEFAULT 0,
+        "usageLimit" TEXT NOT NULL DEFAULT 'UNLIMITED',
+        "isActive" BOOLEAN NOT NULL DEFAULT TRUE,
+        "validFrom" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        "validUntil" TIMESTAMPTZ,
+        "termsConditions" TEXT,
+        "minimumTier" TEXT,
+        "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `);
+    await prisma.$executeRawUnsafe(`
+      DO $$ BEGIN
+        ALTER TABLE "loyalty_rewards" ADD CONSTRAINT "loyalty_rewards_specialistId_fkey"
+          FOREIGN KEY ("specialistId") REFERENCES "users" ("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+    `);
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX IF NOT EXISTS "loyalty_rewards_specialist_active_idx" ON "loyalty_rewards" ("specialistId", "isActive");
+    `);
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX IF NOT EXISTS "loyalty_rewards_active_valid_idx" ON "loyalty_rewards" ("isActive", "validFrom", "validUntil");
+    `);
+
+    // Create redemptions table
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "reward_redemptions" (
+        "id" TEXT PRIMARY KEY,
+        "rewardId" TEXT NOT NULL,
+        "userId" TEXT NOT NULL,
+        "bookingId" TEXT,
+        "status" TEXT NOT NULL DEFAULT 'PENDING',
+        "pointsUsed" INTEGER NOT NULL,
+        "discountApplied" DOUBLE PRECISION,
+        "originalAmount" DOUBLE PRECISION,
+        "finalAmount" DOUBLE PRECISION,
+        "redeemedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        "usedAt" TIMESTAMPTZ,
+        "expiresAt" TIMESTAMPTZ,
+        "notes" TEXT,
+        "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `);
+    await prisma.$executeRawUnsafe(`
+      DO $$ BEGIN
+        ALTER TABLE "reward_redemptions" ADD CONSTRAINT "reward_redemptions_rewardId_fkey"
+          FOREIGN KEY ("rewardId") REFERENCES "loyalty_rewards" ("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+    `);
+    await prisma.$executeRawUnsafe(`
+      DO $$ BEGIN
+        ALTER TABLE "reward_redemptions" ADD CONSTRAINT "reward_redemptions_userId_fkey"
+          FOREIGN KEY ("userId") REFERENCES "users" ("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+    `);
+    await prisma.$executeRawUnsafe(`
+      DO $$ BEGIN
+        ALTER TABLE "reward_redemptions" ADD CONSTRAINT "reward_redemptions_bookingId_fkey"
+          FOREIGN KEY ("bookingId") REFERENCES "bookings" ("id") ON DELETE SET NULL;
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+    `);
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX IF NOT EXISTS "reward_redemptions_user_status_idx" ON "reward_redemptions" ("userId", "status");
+    `);
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX IF NOT EXISTS "reward_redemptions_reward_status_idx" ON "reward_redemptions" ("rewardId", "status");
+    `);
+    await prisma.$executeRawUnsafe(`
+      CREATE INDEX IF NOT EXISTS "reward_redemptions_status_expires_idx" ON "reward_redemptions" ("status", "expiresAt");
+    `);
+
+    schemaEnsured = true;
+  } catch (e: any) {
+    logger.warn('Failed to ensure loyalty schema (will retry on next call)', { error: e?.message || e });
+  }
+}
+
 // Types
 export interface CreateRewardData {
   title: string;
@@ -82,6 +177,7 @@ export class RewardsService {
   // Create a new reward (for specialists)
   static async createReward(specialistId: string, data: CreateRewardData): Promise<LoyaltyReward> {
     try {
+      await ensureLoyaltySchema();
       logger.info('Creating loyalty reward', { specialistId, title: data.title });
 
       const reward = await prisma.loyaltyReward.create({
@@ -119,6 +215,7 @@ export class RewardsService {
   // Update a reward
   static async updateReward(rewardId: string, specialistId: string, data: UpdateRewardData): Promise<LoyaltyReward> {
     try {
+      await ensureLoyaltySchema();
       logger.info('Updating loyalty reward', { rewardId, specialistId });
 
       // Verify the reward belongs to the specialist
@@ -156,6 +253,7 @@ export class RewardsService {
   // Delete a reward
   static async deleteReward(rewardId: string, specialistId: string): Promise<void> {
     try {
+      await ensureLoyaltySchema();
       logger.info('Deleting loyalty reward', { rewardId, specialistId });
 
       // Verify the reward belongs to the specialist
@@ -181,6 +279,7 @@ export class RewardsService {
   // Get rewards for a specialist
   static async getSpecialistRewards(specialistId: string, includeInactive = false): Promise<LoyaltyReward[]> {
     try {
+      await ensureLoyaltySchema();
       const rewards = await prisma.loyaltyReward.findMany({
         where: {
           specialistId,
@@ -204,6 +303,7 @@ export class RewardsService {
   // Get available rewards for a customer
   static async getAvailableRewards(userId: string, specialistId?: string): Promise<LoyaltyReward[]> {
     try {
+      await ensureLoyaltySchema();
       // Get user's loyalty tier and points
       const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -271,6 +371,7 @@ export class RewardsService {
   // Redeem a reward
   static async redeemReward(data: RedeemRewardData): Promise<RewardRedemption> {
     try {
+      await ensureLoyaltySchema();
       logger.info('Redeeming loyalty reward', data);
 
       // Get reward details
@@ -423,6 +524,7 @@ export class RewardsService {
   // Get user's reward redemptions
   static async getUserRedemptions(userId: string): Promise<RewardRedemption[]> {
     try {
+      await ensureLoyaltySchema();
       const redemptions = await prisma.rewardRedemption.findMany({
         where: { userId },
         include: {
@@ -514,6 +616,7 @@ export class RewardsService {
   // Get reward by ID
   static async getRewardById(rewardId: string): Promise<LoyaltyReward | null> {
     try {
+      await ensureLoyaltySchema();
       const reward = await prisma.loyaltyReward.findUnique({
         where: { id: rewardId },
         include: {
