@@ -9,6 +9,7 @@ import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { specialistService, serviceService, bookingService } from '../../services';
 import { loyaltyService, UserLoyalty } from '@/services/loyalty.service';
+import { RewardsService, type RewardRedemption, type LoyaltyReward } from '@/services/rewards.service';
 import {
   CalendarIcon,
   ClockIcon,
@@ -58,6 +59,8 @@ const BookingFlow: React.FC = () => {
   const [conflictHint, setConflictHint] = useState<{ active: boolean; lastTried?: string }>({ active: false });
   const [loyaltyData, setLoyaltyData] = useState<UserLoyalty | null>(null);
   const [pointsToEarn, setPointsToEarn] = useState<number>(0);
+  const [redemptions, setRedemptions] = useState<RewardRedemption[]>([]);
+  const [selectedRedemptionId, setSelectedRedemptionId] = useState<string>('');
 
   const steps: BookingStep[] = [
     { id: 'service', title: t('booking.selectService'), completed: false },
@@ -153,6 +156,38 @@ const BookingFlow: React.FC = () => {
 
     fetchLoyaltyData();
   }, [user, service]);
+
+  // Fetch user's approved redemptions and filter for this specialist/service
+  useEffect(() => {
+    const fetchRedemptions = async () => {
+      if (!service) return;
+      try {
+        const items = await RewardsService.getUserRedemptions();
+        const currentSpecialistId = service?.specialistId || service?.specialist?.id;
+        const approved = items.filter(r => r.status === 'APPROVED');
+        const applicable = approved.filter(r => {
+          // Specialist match
+          if (currentSpecialistId && r.reward.specialistId !== currentSpecialistId) return false;
+
+          // Service restriction
+          if (r.reward.serviceIds) {
+            try {
+              const allowed = JSON.parse(r.reward.serviceIds as any);
+              if (Array.isArray(allowed) && allowed.length > 0 && !allowed.includes(service.id)) return false;
+            } catch (_) {}
+          }
+
+          // Not expired
+          if (r.expiresAt && new Date(r.expiresAt) < new Date()) return false;
+          return true;
+        });
+        setRedemptions(applicable);
+      } catch (e) {
+        // non-fatal
+      }
+    };
+    fetchRedemptions();
+  }, [service]);
 
   useEffect(() => {
     // Fetch available dates when specialist is loaded
@@ -273,13 +308,17 @@ const BookingFlow: React.FC = () => {
       const scheduledAt = new Date(selectedDate);
       scheduledAt.setHours(hours, minutes, 0, 0);
       
-      const bookingData = {
+      const bookingData: any = {
         serviceId: service.id,
         scheduledAt: scheduledAt.toISOString(),
         duration: service.duration || 60, // Default to 60 minutes if not specified
         customerNotes: bookingNotes || undefined,
         loyaltyPointsUsed: 0, // Default to 0
       };
+
+      if (selectedRedemptionId) {
+        bookingData.rewardRedemptionId = selectedRedemptionId;
+      }
       
       console.log('📤 BookingFlow: Sending booking data:', bookingData);
       const result = await bookingService.createBooking(bookingData);
@@ -692,6 +731,29 @@ const BookingFlow: React.FC = () => {
                 </div>
               )}
               
+              {/* Reward Redemption Selection */}
+              {redemptions.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
+                    <GiftIcon className="w-5 h-5 mr-2 text-purple-600" />
+                    {t('booking.applyReward') || 'Apply a reward'}
+                  </h4>
+                  <select
+                    value={selectedRedemptionId}
+                    onChange={(e) => setSelectedRedemptionId(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="">{t('booking.noRewardSelected') || 'No reward selected'}</option>
+                    {redemptions.map(r => (
+                      <option key={r.id} value={r.id}>
+                        {r.reward.title} • {r.reward.type === 'PERCENTAGE_OFF' && r.reward.discountPercent ? `${r.reward.discountPercent}%` : r.reward.type === 'DISCOUNT_VOUCHER' && r.reward.discountAmount ? `-$${r.reward.discountAmount}` : r.reward.type === 'FREE_SERVICE' ? t('booking.freeService') || 'Free service' : t('booking.reward') || 'Reward'}
+                        {r.expiresAt ? ` • ${t('booking.expires') || 'Expires'} ${new Date(r.expiresAt).toLocaleDateString()}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="text-center py-4 mb-6">
                 <p className="text-gray-600 dark:text-gray-400 mb-2">
                   {t('booking.paymentIntegrationPending')}

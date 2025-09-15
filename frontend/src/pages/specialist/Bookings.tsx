@@ -1586,10 +1586,31 @@ const SpecialistBookings: React.FC = () => {
           id: selectedBooking?.id || '',
           service: selectedBooking?.service,
           serviceName: selectedBooking?.service?.name,
-          specialist: selectedBooking?.specialist,
-          specialistName: selectedBooking?.specialist 
-            ? `${selectedBooking.specialist.firstName || ''} ${selectedBooking.specialist.lastName || ''}`.trim()
-            : undefined
+          specialist: selectedBooking?.specialist
+            ? {
+                id: (selectedBooking.specialist as any).id,
+                firstName:
+                  (selectedBooking.specialist as any).firstName ||
+                  (selectedBooking.specialist as any).user?.firstName ||
+                  '',
+                lastName:
+                  (selectedBooking.specialist as any).lastName ||
+                  (selectedBooking.specialist as any).user?.lastName ||
+                  '',
+              }
+            : undefined,
+          specialistName:
+            selectedBooking?.specialist
+              ? `${
+                  (selectedBooking.specialist as any).firstName ||
+                  (selectedBooking.specialist as any).user?.firstName ||
+                  ''
+                } ${
+                  (selectedBooking.specialist as any).lastName ||
+                  (selectedBooking.specialist as any).user?.lastName ||
+                  ''
+                }`.trim() || selectedBooking?.specialistName
+              : selectedBooking?.specialistName
         }}
         loading={reviewLoading}
       />
