@@ -228,6 +228,54 @@ const SpecialistLoyalty: React.FC = () => {
     return Math.max(0, Math.min(100, progress));
   };
 
+  // Tier skin mapping for gamified look
+  const getTierSkin = (name?: string) => {
+    const n = (name || '').toUpperCase();
+    switch (n) {
+      case 'SILVER':
+        return {
+          summaryGradient: 'from-slate-100 to-gray-50 dark:from-slate-900/20 dark:to-gray-900/20',
+          donutStroke: 'stroke-slate-500',
+          accentText: 'text-slate-700 dark:text-slate-300',
+          chipBg: 'bg-slate-600 text-white',
+          benefitCheck: 'bg-slate-100 dark:bg-slate-900/30 text-slate-700 dark:text-slate-300',
+          currentCard: 'border-slate-400 bg-slate-50 dark:bg-slate-900/20',
+          nextCard: 'border-gray-300 bg-gray-50 dark:bg-gray-900/20',
+        };
+      case 'GOLD':
+        return {
+          summaryGradient: 'from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20',
+          donutStroke: 'stroke-yellow-500',
+          accentText: 'text-yellow-700 dark:text-yellow-300',
+          chipBg: 'bg-yellow-600 text-white',
+          benefitCheck: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300',
+          currentCard: 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20',
+          nextCard: 'border-amber-400 bg-amber-50 dark:bg-amber-900/20',
+        };
+      case 'PLATINUM':
+        return {
+          summaryGradient: 'from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20',
+          donutStroke: 'stroke-indigo-500',
+          accentText: 'text-indigo-700 dark:text-indigo-300',
+          chipBg: 'bg-indigo-600 text-white',
+          benefitCheck: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300',
+          currentCard: 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20',
+          nextCard: 'border-purple-400 bg-purple-50 dark:bg-purple-900/20',
+        };
+      case 'BRONZE':
+      default:
+        return {
+          summaryGradient: 'from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20',
+          donutStroke: 'stroke-amber-500',
+          accentText: 'text-amber-700 dark:text-amber-300',
+          chipBg: 'bg-amber-600 text-white',
+          benefitCheck: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
+          currentCard: 'border-amber-500 bg-amber-50 dark:bg-amber-900/20',
+          nextCard: 'border-orange-400 bg-orange-50 dark:bg-orange-900/20',
+        };
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -531,55 +579,72 @@ const SpecialistLoyalty: React.FC = () => {
               <div className="space-y-4 sm:space-y-6">
                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('loyalty.specialistMembershipTiers') || 'Specialist Membership Tiers'}</h4>
                 {/* Summary card */}
-                <div className="p-4 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-gradient-to-r from-primary-50 to-blue-50 dark:from-gray-800 dark:to-gray-800">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-gray-600 dark:text-gray-400">{t('loyalty.currentTier') || 'Your current tier'}</p>
-                      <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                        {loyaltyStats?.currentTier?.name || 'BRONZE'}
-                      </p>
-                      <div className="mt-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/60 dark:bg-gray-700/60 text-gray-800 dark:text-gray-200">
-                        {(() => {
-                          const nextName = loyaltyStats?.nextTier?.name;
-                          const nextMin = loyaltyStats?.nextTier?.minPoints || 0;
-                          const curPts = loyaltyProfile?.currentPoints || 0;
-                          const toNext = Math.max(0, nextMin - curPts);
-                          return nextName ? `${formatPoints(toNext)} ${t('loyalty.points') || 'points'} ${t('loyalty.next') || 'Next'}: ${nextName}` : t('common.notAvailable') || 'N/A';
-                        })()}
+                {(() => {
+                  const skin = getTierSkin(loyaltyStats?.currentTier?.name || 'BRONZE');
+                  return (
+                    <div className={`p-4 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-gradient-to-r ${skin.summaryGradient}`}>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-gray-600 dark:text-gray-400">{t('loyalty.currentTier') || 'Your current tier'}</p>
+                          <div className="flex items-center space-x-2">
+                            <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                              {loyaltyStats?.currentTier?.name || 'BRONZE'}
+                            </p>
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-semibold ${skin.chipBg}`}>
+                              <TrophyIconSolid className="h-3 w-3 mr-1" />
+                              {t('nav.level') || 'Level'}
+                            </span>
+                          </div>
+                          <div className="mt-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/60 dark:bg-gray-700/60 text-gray-800 dark:text-gray-200">
+                            {(() => {
+                              const nextName = loyaltyStats?.nextTier?.name;
+                              const nextMin = loyaltyStats?.nextTier?.minPoints || 0;
+                              const curPts = loyaltyProfile?.currentPoints || 0;
+                              const toNext = Math.max(0, nextMin - curPts);
+                              return nextName ? `${formatPoints(toNext)} ${t('loyalty.points') || 'points'} ${t('loyalty.next') || 'Next'}: ${nextName}` : t('common.notAvailable') || 'N/A';
+                            })()}
+                          </div>
+                        </div>
+                        <div className="justify-self-center">
+                          {/* Donut progress */}
+                          {(() => {
+                            const progress = getTierProgress();
+                            const size = 96;
+                            const stroke = 10;
+                            const radius = (size - stroke) / 2;
+                            const circumference = 2 * Math.PI * radius;
+                            const dash = (progress / 100) * circumference;
+                            const ring = getTierSkin(loyaltyStats?.currentTier?.name || 'BRONZE').donutStroke;
+                            return (
+                              <svg width={size} height={size} className="rotate-[-90deg]">
+                                <circle cx={size/2} cy={size/2} r={radius} strokeWidth={stroke} className="fill-none stroke-gray-200 dark:stroke-gray-700"/>
+                                <circle cx={size/2} cy={size/2} r={radius} strokeWidth={stroke} className={`fill-none ${ring}`} strokeDasharray={`${dash} ${circumference}`} strokeLinecap="round"/>
+                                <text x="50%" y="50%" className="rotate-[90deg] fill-gray-900 dark:fill-gray-100 text-xs" textAnchor="middle" dominantBaseline="middle">{Math.round(progress)}%</text>
+                              </svg>
+                            );
+                          })()}
+                        </div>
+                        <div>
+                          {(() => {
+                            const accent = getTierSkin(loyaltyStats?.currentTier?.name || 'BRONZE').accentText;
+                            return (
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="p-2 rounded-lg bg-white/60 dark:bg-gray-700/60">
+                                  <p className="text-xs text-gray-600 dark:text-gray-300">{t('labels.amount') || 'Amount'}</p>
+                                  <p className={`font-semibold ${accent}`}>{formatPoints(loyaltyProfile?.currentPoints || 0)} {t('loyalty.points') || 'points'}</p>
+                                </div>
+                                <div className="p-2 rounded-lg bg-white/60 dark:bg-gray-700/60">
+                                  <p className="text-xs text-gray-600 dark:text-gray-300">{t('labels.spent') || 'Spent'}</p>
+                                  <p className={`font-semibold ${accent}`}>{formatPoints(loyaltyStats?.totalSpentPoints || 0)} {t('loyalty.pointsShort') || 'pts'}</p>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
                       </div>
                     </div>
-                    <div className="justify-self-center">
-                      {/* Donut progress */}
-                      {(() => {
-                        const progress = getTierProgress();
-                        const size = 96;
-                        const stroke = 10;
-                        const radius = (size - stroke) / 2;
-                        const circumference = 2 * Math.PI * radius;
-                        const dash = (progress / 100) * circumference;
-                        return (
-                          <svg width={size} height={size} className="rotate-[-90deg]">
-                            <circle cx={size/2} cy={size/2} r={radius} strokeWidth={stroke} className="fill-none stroke-gray-200 dark:stroke-gray-700"/>
-                            <circle cx={size/2} cy={size/2} r={radius} strokeWidth={stroke} className="fill-none stroke-primary-500" strokeDasharray={`${dash} ${circumference}`} strokeLinecap="round"/>
-                            <text x="50%" y="50%" className="rotate-[90deg] fill-gray-900 dark:fill-gray-100 text-xs" textAnchor="middle" dominantBaseline="middle">{Math.round(progress)}%</text>
-                          </svg>
-                        );
-                      })()}
-                    </div>
-                    <div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="p-2 rounded-lg bg-white/60 dark:bg-gray-700/60">
-                          <p className="text-xs text-gray-600 dark:text-gray-300">{t('bookings.amount') || 'Amount'}</p>
-                          <p className="font-semibold text-gray-900 dark:text-white">{formatPoints(loyaltyProfile?.currentPoints || 0)} {t('loyalty.points') || 'points'}</p>
-                        </div>
-                        <div className="p-2 rounded-lg bg-white/60 dark:bg-gray-700/60">
-                          <p className="text-xs text-gray-600 dark:text-gray-300">{t('labels.spent') || 'Spent'}</p>
-                          <p className="font-semibold text-gray-900 dark:text-white">{formatPoints(loyaltyStats?.totalSpentPoints || 0)} {t('loyalty.pointsShort') || 'pts'}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  );
+                })()}
 
                 {/* Tiers chart */}
                 {tiers.length > 0 && (
@@ -621,13 +686,14 @@ const SpecialistLoyalty: React.FC = () => {
                   {tiers.map((tier) => {
                     const isCurrentTier = loyaltyStats?.currentTier?.id === tier.id;
                     const isNextTier = loyaltyStats?.nextTier?.id === tier.id;
+                    const skin = getTierSkin(tier.name);
                     
                     return (
                       <div key={tier.id} className={`p-4 sm:p-6 rounded-xl border-2 relative overflow-hidden ${
                         isCurrentTier
-                          ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                          ? skin.currentCard
                           : isNextTier
-                          ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20'
+                          ? skin.nextCard
                           : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800'
                       }`}>
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between">
@@ -662,7 +728,7 @@ const SpecialistLoyalty: React.FC = () => {
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {tier.benefits.map((benefit, index) => (
                                   <div key={index} className="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                                    <span className="h-5 w-5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 flex items-center justify-center mr-2">✓</span>
+                                    <span className={`h-5 w-5 rounded-full ${skin.benefitCheck} flex items-center justify-center mr-2`}>✓</span>
                                     <span className="break-words">{benefit}</span>
                                   </div>
                                 ))}
