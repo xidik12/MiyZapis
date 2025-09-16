@@ -817,11 +817,7 @@ const CustomerLoyalty: React.FC = () => {
                             return (
                               <div
                                 key={reward.id}
-                                className={`p-4 rounded-lg border transition-colors ${
-                                  canAfford && isAvailable
-                                    ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
-                                    : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800'
-                                }`}
+                                className="p-4 rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 transition-colors"
                               >
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                   <div className="flex-1">
