@@ -30,7 +30,7 @@ import {
 
 const CustomerLoyalty: React.FC = () => {
   const { theme } = useTheme();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { currency } = useCurrency();
 
   const [loading, setLoading] = useState(true);
@@ -180,11 +180,38 @@ const CustomerLoyalty: React.FC = () => {
   const formatPoints = utilFormatPoints;
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    const locale = language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US';
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const interpolate = (tpl: string, vars: Record<string, string | number>) =>
+    (tpl || '').replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
+
+  const getTransactionDescription = (tx: LoyaltyTransaction) => {
+    if (!tx) return '';
+    if (tx.type === 'REDEEMED') {
+      const rewardText = (tx.description || tx.reference || '').replace(/^Redeemed:\s*/i, '');
+      const tpl = t('loyalty.tx.redeemedPoints') || 'Redeemed: {reward}';
+      return interpolate(tpl, { reward: rewardText || '-' });
+    }
+
+    let reason = '';
+    const desc = (tx.description || '').toLowerCase();
+    if (tx.bookingId) {
+      const tpl = t('loyalty.tx.completingBooking') || 'completing booking {bookingId}';
+      reason = interpolate(tpl, { bookingId: tx.bookingId });
+    } else if (desc.includes('writing a review')) {
+      reason = t('loyalty.tx.writingReview') || 'writing a review';
+    } else {
+      reason = getTransactionTypeLabel(tx.type);
+    }
+
+    const tpl = t('loyalty.tx.earnedPoints') || 'Earned {points} points for {reason}';
+    return interpolate(tpl, { points: tx.points, reason });
   };
 
   const getTransactionIcon = (type: string) => {
@@ -535,7 +562,7 @@ const CustomerLoyalty: React.FC = () => {
                         <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
                           {getTransactionIcon(transaction.type)}
                           <div className="min-w-0 flex-1">
-                            <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{transaction.description}</p>
+                            <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{getTransactionDescription(transaction)}</p>
                             <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{formatDate(transaction.createdAt)}</p>
                           </div>
                         </div>
@@ -565,7 +592,7 @@ const CustomerLoyalty: React.FC = () => {
                       <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
                         {getTransactionIcon(transaction.type)}
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{transaction.description}</p>
+                          <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{getTransactionDescription(transaction)}</p>
                           <div className="flex items-center space-x-2 mt-1">
                             <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{formatDate(transaction.createdAt)}</p>
                             <span className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium ${
