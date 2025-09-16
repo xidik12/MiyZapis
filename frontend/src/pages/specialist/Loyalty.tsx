@@ -302,6 +302,7 @@ const SpecialistLoyalty: React.FC = () => {
     if (b.includes('10%')) return t('loyalty.benefit.bonusPoints10') || benefit;
     if (b.includes('exclusive services')) return t('loyalty.benefit.exclusiveServices') || benefit;
     if (b.includes('free cancellation')) return t('loyalty.benefit.freeCancellation') || benefit;
+    if (b.includes('vip support')) return t('loyalty.benefit.vipSupport') || benefit;
     return benefit;
   };
 
@@ -840,7 +841,7 @@ const SpecialistLoyalty: React.FC = () => {
                       {t('loyalty.yourRewards') || 'Your Loyalty Rewards'}
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      Create rewards for customers to redeem with their loyalty points
+                      {t('loyalty.createRewardsDescription')}
                     </p>
                   </div>
                   <button
