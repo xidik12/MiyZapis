@@ -18,7 +18,8 @@
     <meta property="og:title" content="МійЗапис - Professional Service Booking" />
     <meta property="og:description" content="Book specialists, manage appointments, and grow your business with МійЗапис - comprehensive booking platform" />
     <meta property="og:image" content="/og-image.png" />
-    <meta property="og:url" content="https://bookingplatform.com" />
+    <link rel="canonical" href="https://miyzapis.com/" />
+    <meta property="og:url" content="https://miyzapis.com/" />
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -37,6 +38,54 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <title>МійЗапис - Professional Service Booking</title>
+    
+    <!-- Structured Data: Organization + Logo -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "МійЗапис",
+      "url": "https://miyzapis.com/",
+      "logo": "https://miyzapis.com/miyzapis_logo.png"
+    }
+    </script>
+
+    <!-- Structured Data: WebSite with Sitelinks SearchBox -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "МійЗапис",
+      "url": "https://miyzapis.com/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://miyzapis.com/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <!-- Structured Data: SiteNavigationElement for key links -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "itemListElement": [
+        {
+          "@type": "SiteNavigationElement",
+          "position": 1,
+          "name": "Home",
+          "url": "https://miyzapis.com/"
+        },
+        {
+          "@type": "SiteNavigationElement",
+          "position": 2,
+          "name": "Register",
+          "url": "https://miyzapis.com/auth/register"
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
