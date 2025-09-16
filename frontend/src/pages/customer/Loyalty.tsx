@@ -844,7 +844,7 @@ const CustomerLoyalty: React.FC = () => {
                                       {reward.specialist && (
                                         <div className="flex items-center text-blue-600 dark:text-blue-400">
                                           <UsersIcon className="h-4 w-4 mr-1" />
-                                          {reward.specialist.user.firstName} {reward.specialist.user.lastName}
+                                          {reward.specialist.firstName} {reward.specialist.lastName}
                                         </div>
                                       )}
                                     </div>

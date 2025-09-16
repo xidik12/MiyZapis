@@ -22,10 +22,8 @@ export interface LoyaltyReward {
   updatedAt: string;
   specialist?: {
     id: string;
-    user: {
-      firstName: string;
-      lastName: string;
-    };
+    firstName: string;
+    lastName: string;
   };
 }
 
