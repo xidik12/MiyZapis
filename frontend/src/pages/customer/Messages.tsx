@@ -50,7 +50,7 @@ const CustomerMessages: React.FC = () => {
       setConversations(response.conversations || []);
     } catch (error) {
       console.error('Error fetching conversations:', error);
-      toast.error('Failed to load conversations');
+      toast.error(t('messages.loadConversationsError') || 'Failed to load conversations');
     } finally {
       setLoading(false);
     }
@@ -72,7 +72,7 @@ const CustomerMessages: React.FC = () => {
       ));
     } catch (error) {
       console.error('Error fetching messages:', error);
-      toast.error('Failed to load messages');
+      toast.error(t('messages.loadMessagesError') || 'Failed to load messages');
     }
   };
 
@@ -109,7 +109,7 @@ const CustomerMessages: React.FC = () => {
       ));
     } catch (error) {
       console.error('Error sending message:', error);
-      toast.error('Failed to send message');
+      toast.error(t('messages.sendError') || 'Failed to send message');
     } finally {
       setSendingMessage(false);
     }
@@ -412,4 +412,3 @@ const CustomerMessages: React.FC = () => {
 };
 
 export default CustomerMessages;
-

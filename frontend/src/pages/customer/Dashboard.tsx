@@ -297,7 +297,7 @@ const CustomerDashboard: React.FC = () => {
       }
     } catch {
       navigate('/customer/messages');
-      toast.error('Failed to start conversation');
+      toast.error(t('messages.startConversationError') || 'Failed to start conversation');
     }
   };
 

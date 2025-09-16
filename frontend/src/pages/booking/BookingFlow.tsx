@@ -281,7 +281,7 @@ const BookingFlow: React.FC = () => {
         console.error('❌ BookingFlow: Error fetching available slots:', error);
         // Don't show any slots if there's an error - better to show empty than incorrect availability
         setAvailableSlots([]);
-        toast.error('Unable to load available time slots. Please try again.');
+        toast.error(t('booking.loadSlotsError') || 'Unable to load available time slots. Please try again.');
       }
     };
 
@@ -359,12 +359,12 @@ const BookingFlow: React.FC = () => {
       const code = error?.apiError?.code;
       const status = error?.response?.status || error?.apiError?.status;
       if (code === 'BOOKING_CONFLICT' || status === 409 || error?.message?.includes('time slot')) {
-        toast.warning('This time slot was just booked by someone else. Please choose another.');
+        toast.warning(t('booking.slotConflict') || 'This time slot was just booked by someone else. Please choose another.');
         await refreshSlots();
         setCurrentStep(1); // Ensure user stays on time selection
         setConflictHint({ active: true, lastTried: selectedTime });
       } else {
-        toast.error('Failed to create booking. Please try again.');
+        toast.error(t('booking.createFailed') || 'Failed to create booking. Please try again.');
       }
     }
   };

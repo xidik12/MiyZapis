@@ -673,9 +673,8 @@ router.get('/config', async (req: Request, res: Response) => {
         requiredBookings: LOYALTY_CONFIG.STREAK_REQUIRED_BOOKINGS
       },
       reviewRewards: {
-        rating: LOYALTY_CONFIG.RATING_POINTS,
-        comment: LOYALTY_CONFIG.REVIEW_COMMENT_POINTS,
-        photo: LOYALTY_CONFIG.REVIEW_PHOTO_POINTS,
+        customerPoints: LOYALTY_CONFIG.CUSTOMER_REVIEW_POINTS,
+        specialistPointsPerStar: LOYALTY_CONFIG.SPECIALIST_POINTS_PER_STAR,
         monthlyLimit: LOYALTY_CONFIG.MAX_REVIEW_REWARDS_PER_MONTH,
         minCommentLength: LOYALTY_CONFIG.MIN_REVIEW_COMMENT_LENGTH
       },

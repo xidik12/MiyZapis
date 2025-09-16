@@ -50,7 +50,7 @@ const CustomerReferrals: React.FC = () => {
       setUserReferrals(referrals);
     } catch (error) {
       console.error('Error fetching referral data:', error);
-      toast.error('Failed to load referral data');
+      toast.error(t('referrals.loadError') || 'Failed to load referral data');
     } finally {
       setLoading(false);
     }
@@ -61,10 +61,10 @@ const CustomerReferrals: React.FC = () => {
       setCreating(true);
       const newProgram = await loyaltyService.createReferralCode();
       setReferralProgram(newProgram);
-      toast.success('Referral code created successfully!');
+      toast.success(t('referrals.createSuccess') || 'Referral code created successfully!');
     } catch (error) {
       console.error('Error creating referral code:', error);
-      toast.error('Failed to create referral code');
+      toast.error(t('referrals.createError') || 'Failed to create referral code');
     } finally {
       setCreating(false);
     }
@@ -73,9 +73,9 @@ const CustomerReferrals: React.FC = () => {
   const copyToClipboard = async (text: string, type: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success(`${type} copied to clipboard!`);
+      toast.success(t('clipboard.copied') || 'Copied to clipboard');
     } catch (error) {
-      toast.error('Failed to copy to clipboard');
+      toast.error(t('clipboard.copyError') || 'Failed to copy to clipboard');
     }
   };
 

@@ -251,6 +251,51 @@ const translations: Translations = {
   'loyalty.success.deactivateReward': { en: 'Reward deactivated successfully', uk: 'Винагороду успішно деактивовано', ru: 'Награда успешно деактивирована' },
   'loyalty.error.updateRewardStatus': { en: 'Failed to update reward status', uk: 'Не вдалося оновити статус винагороди', ru: 'Не удалось обновить статус награды' },
   'loyalty.confirmDeleteReward': { en: 'Are you sure you want to delete this reward?', uk: 'Ви впевнені, що хочете видалити цю винагороду?', ru: 'Вы уверены, что хотите удалить эту награду?' },
+
+  // Booking toasts
+  'booking.loadSlotsError': { en: 'Unable to load available time slots. Please try again.', uk: 'Не вдається завантажити доступні часові слоти. Спробуйте ще раз.', ru: 'Не удается загрузить доступные временные слоты. Повторите попытку.' },
+  'booking.slotConflict': { en: 'This time slot was just booked by someone else. Please choose another.', uk: 'Цей часовий слот щойно забронювали. Будь ласка, виберіть інший.', ru: 'Это время только что забронировали. Пожалуйста, выберите другое.' },
+  'booking.createFailed': { en: 'Failed to create booking. Please try again.', uk: 'Не вдалося створити бронювання. Спробуйте ще раз.', ru: 'Не удалось создать бронирование. Повторите попытку.' },
+
+  // Bookings (customer)
+  'bookings.cancelFailed': { en: 'Failed to cancel booking. Please try again.', uk: 'Не вдалося скасувати бронювання. Спробуйте ще раз.', ru: 'Не удалось отменить бронирование. Повторите попытку.' },
+
+  // Badges
+  'badges.loadError': { en: 'Failed to load badges', uk: 'Не вдалося завантажити бейджі', ru: 'Не удалось загрузить значки' },
+
+  // Referrals
+  'referrals.loadError': { en: 'Failed to load referral data', uk: 'Не вдалося завантажити дані рефералів', ru: 'Не удалось загрузить данные рефералов' },
+  'referrals.createSuccess': { en: 'Referral code created successfully!', uk: 'Реферальний код успішно створено!', ru: 'Реферальный код успешно создан!' },
+  'referrals.createError': { en: 'Failed to create referral code', uk: 'Не вдалося створити реферальний код', ru: 'Не удалось создать реферальный код' },
+
+  // Clipboard
+  'clipboard.copied': { en: 'Copied to clipboard', uk: 'Скопійовано до буфера обміну', ru: 'Скопировано в буфер обмена' },
+  'clipboard.copyError': { en: 'Failed to copy to clipboard', uk: 'Не вдалося скопіювати в буфер обміну', ru: 'Не удалось скопировать в буфер обмена' },
+
+  // Messages
+  'messages.loadConversationsError': { en: 'Failed to load conversations', uk: 'Не вдалося завантажити розмови', ru: 'Не удалось загрузить беседы' },
+  'messages.loadMessagesError': { en: 'Failed to load messages', uk: 'Не вдалося завантажити повідомлення', ru: 'Не удалось загрузить сообщения' },
+  'messages.sendError': { en: 'Failed to send message', uk: 'Не вдалося надіслати повідомлення', ru: 'Не удалось отправить сообщение' },
+  'messages.startConversationError': { en: 'Failed to start conversation', uk: 'Не вдалося розпочати розмову', ru: 'Не удалось начать беседу' },
+
+  // Auth toasts + texts
+  'auth.signedIn': { en: 'Successfully signed in!', uk: 'Вхід виконано успішно!', ru: 'Вход выполнен успешно!' },
+  'auth.missingTokens': { en: 'Authentication failed - missing tokens', uk: 'Помилка автентифікації - відсутні токени', ru: 'Сбой аутентификации - отсутствуют токены' },
+  'auth.failed': { en: 'Authentication failed', uk: 'Помилка автентифікації', ru: 'Сбой аутентификации' },
+  'auth.failedTryAgain': { en: 'Authentication failed. Please try again.', uk: 'Помилка автентифікації. Спробуйте ще раз.', ru: 'Сбой аутентификации. Повторите попытку.' },
+  'auth.googleFailed': { en: 'Google authentication failed. Please try again.', uk: 'Помилка автентифікації Google. Спробуйте ще раз.', ru: 'Сбой аутентификации Google. Повторите попытку.' },
+  'auth.accessDenied': { en: 'Access denied. Please grant the required permissions.', uk: 'Доступ заборонено. Будь ласка, надайте необхідні дозволи.', ru: 'Доступ запрещен. Пожалуйста, предоставьте необходимые разрешения.' },
+  'auth.completingSignIn': { en: 'Completing sign in...', uk: 'Завершення входу...', ru: 'Завершение входа...' },
+  'auth.pleaseWait': { en: 'Please wait while we complete your authentication.', uk: 'Зачекайте, будь ласка, поки ми завершуємо автентифікацію.', ru: 'Пожалуйста, подождите, пока мы завершим аутентификацию.' },
+  'auth.passwordChanged': { en: 'Password changed successfully!', uk: 'Пароль успішно змінено!', ru: 'Пароль успешно изменен!' },
+  'auth.passwordChangeFailed': { en: 'Failed to change password. Please try again.', uk: 'Не вдалося змінити пароль. Спробуйте ще раз.', ru: 'Не удалось изменить пароль. Повторите попытку.' },
+  'auth.passwordSet': { en: 'Password set successfully! You can now use all security features.', uk: 'Пароль успішно встановлено! Тепер ви можете використовувати всі функції безпеки.', ru: 'Пароль успешно установлен! Теперь вы можете использовать все функции безопасности.' },
+  'auth.passwordSetFailed': { en: 'Failed to set password. Please try again.', uk: 'Не вдалося встановити пароль. Спробуйте ще раз.', ru: 'Не удалось установить пароль. Повторите попытку.' },
+
+  // Specialist favorites
+  'specialist.favorites.conflict': { en: 'You cannot favorite your own profile or this specialist is already in your favorites.', uk: 'Ви не можете додати до улюблених власний профіль або цього спеціаліста вже додано.', ru: 'Вы не можете добавить в избранное свой профиль или этот специалист уже в избранном.' },
+  'specialist.favorites.loginRequired': { en: 'Please log in to add favorites.', uk: 'Увійдіть, щоб додати до улюблених.', ru: 'Войдите, чтобы добавить в избранное.' },
+  'specialist.favorites.updateError': { en: 'Failed to update favorites. Please try again.', uk: 'Не вдалося оновити обране. Спробуйте ще раз.', ru: 'Не удалось обновить избранное. Повторите попытку.' },
   // Loyalty - general labels
   'loyalty.currentPoints': { en: 'Current Points', uk: 'Поточні бали', ru: 'Текущие баллы' },
   'loyalty.lifetimePoints': { en: 'Lifetime Points', uk: 'Усього балів', ru: 'Баллы за всё время' },

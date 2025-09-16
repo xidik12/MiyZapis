@@ -118,13 +118,13 @@ const SpecialistProfilePage: React.FC = () => {
       if (error.response?.status === 409) {
         console.log('🚫 Conflict error - likely trying to favorite own profile or already favorited');
         // Show user-friendly message
-        toast.info('You cannot favorite your own profile or this specialist is already in your favorites.');
+        toast.info(t('specialist.favorites.conflict') || 'You cannot favorite your own profile or this specialist is already in your favorites.');
       } else if (error.response?.status === 401) {
         console.log('🔒 Authentication required');
-        toast.info('Please log in to add favorites.');
+        toast.info(t('specialist.favorites.loginRequired') || 'Please log in to add favorites.');
       } else {
         console.log('❌ Generic favorites error:', error.message);
-        toast.error('Failed to update favorites. Please try again.');
+        toast.error(t('specialist.favorites.updateError') || 'Failed to update favorites. Please try again.');
       }
       
       // The Redux slice will automatically revert optimistic updates on error

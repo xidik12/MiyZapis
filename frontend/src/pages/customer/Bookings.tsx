@@ -579,7 +579,7 @@ const CustomerBookings: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to cancel booking:', error);
-      toast.error('Failed to cancel booking. Please try again.');
+      toast.error(t('bookings.cancelFailed') || 'Failed to cancel booking. Please try again.');
     }
   };
 

@@ -53,7 +53,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
       // Call the set initial password API endpoint
       await authService.setInitialPassword(data.password);
 
-      toast.success('Password set successfully! You can now use all security features.');
+      toast.success(t('auth.passwordSet') || 'Password set successfully! You can now use all security features.');
 
       // Reset form and close modal
       reset();
@@ -65,7 +65,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
       }
     } catch (error: any) {
       console.error('Set password failed:', error);
-      toast.error(error.message || 'Failed to set password. Please try again.');
+      toast.error(error.message || (t('auth.passwordSetFailed') || 'Failed to set password. Please try again.'));
     } finally {
       setIsLoading(false);
     }

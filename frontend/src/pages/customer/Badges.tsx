@@ -74,7 +74,7 @@ const CustomerBadges: React.FC = () => {
       setBadges(badgesWithStatus);
     } catch (error) {
       console.error('Error fetching badges:', error);
-      toast.error('Failed to load badges');
+      toast.error(t('badges.loadError') || 'Failed to load badges');
     } finally {
       setLoading(false);
     }

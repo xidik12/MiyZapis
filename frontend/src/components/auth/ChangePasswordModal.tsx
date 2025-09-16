@@ -55,7 +55,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       // Call the change password API endpoint
       await authService.changePassword(data.currentPassword, data.newPassword);
 
-      toast.success('Password changed successfully!');
+      toast.success(t('auth.passwordChanged') || 'Password changed successfully!');
 
       // Reset form and close modal
       reset();
@@ -67,7 +67,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
       }
     } catch (error: any) {
       console.error('Change password failed:', error);
-      toast.error(error.message || 'Failed to change password. Please try again.');
+      toast.error(error.message || t('auth.passwordChangeFailed') || 'Failed to change password. Please try again.');
     } finally {
       setIsLoading(false);
     }

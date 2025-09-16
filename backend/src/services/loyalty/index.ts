@@ -10,15 +10,14 @@ export const LOYALTY_CONFIG = {
   STREAK_REQUIRED_BOOKINGS: 3,
   
   // Review rewards
-  RATING_POINTS: 10,
-  REVIEW_COMMENT_POINTS: 30,
-  REVIEW_PHOTO_POINTS: 50,
+  CUSTOMER_REVIEW_POINTS: 5, // Points for writing a review
+  SPECIALIST_POINTS_PER_STAR: 1, // Points per star for specialist receiving review
   MAX_REVIEW_REWARDS_PER_MONTH: 3,
   MIN_REVIEW_COMMENT_LENGTH: 20,
-  
+
   // Referral rewards
-  REFERRER_POINTS: 200,
-  REFERRED_POINTS: 200,
+  REFERRER_POINTS: 50, // Updated to 50 points for referrer
+  REFERRED_POINTS: 50, // Updated to 50 points for referred user
   
   // Discounts
   DISCOUNT_TIERS: [
@@ -299,7 +298,23 @@ export class LoyaltyService {
   // Review rewards
   static async processReviewReward(reviewId: string, bookingId: string, customerId: string, rating: number, comment?: string, hasPhoto?: boolean): Promise<void> {
     try {
-      // Check monthly review reward cap
+      // Get booking to find specialist info
+      const booking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        include: {
+          specialist: {
+            include: { user: true }
+          }
+        }
+      });
+
+      if (!booking) {
+        throw new Error('Booking not found for review reward');
+      }
+
+      const specialistId = booking.specialist.userId;
+
+      // Check monthly review reward cap for customer
       const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
       const monthlyRewards = await prisma.reviewReward.count({
         where: {
@@ -307,49 +322,53 @@ export class LoyaltyService {
           monthYear: currentMonth
         }
       });
-      
+
       if (monthlyRewards >= LOYALTY_CONFIG.MAX_REVIEW_REWARDS_PER_MONTH) {
         logger.info('Monthly review reward cap reached', { customerId, monthlyRewards });
         return;
       }
-      
-      // Calculate reward points
-      let points = LOYALTY_CONFIG.RATING_POINTS;
-      let rewardType = 'RATING_ONLY';
-      
-      if (comment && comment.length >= LOYALTY_CONFIG.MIN_REVIEW_COMMENT_LENGTH) {
-        points += LOYALTY_CONFIG.REVIEW_COMMENT_POINTS;
-        rewardType = 'WITH_COMMENT';
-      }
-      
-      if (hasPhoto) {
-        points += LOYALTY_CONFIG.REVIEW_PHOTO_POINTS;
-        rewardType = 'WITH_PHOTO';
-      }
-      
+
+      // Customer gets 5 points for writing any review
+      const customerPoints = LOYALTY_CONFIG.CUSTOMER_REVIEW_POINTS;
+      let rewardType = 'CUSTOMER_REVIEW';
+
+      // Specialist gets points based on rating (1 point per star)
+      const specialistPoints = rating * LOYALTY_CONFIG.SPECIALIST_POINTS_PER_STAR;
+
       await prisma.$transaction(async (tx) => {
-        // Create review reward record
+        // Create review reward record for customer
         await tx.reviewReward.create({
           data: {
             userId: customerId,
             reviewId,
             bookingId,
-            pointsEarned: points,
+            pointsEarned: customerPoints,
             rewardType,
             monthYear: currentMonth,
             verified: true,
             verifiedAt: new Date()
           }
         });
-        
-        // Award points
+
+        // Award points to customer (5 points for writing review)
         await this.earnPoints({
           userId: customerId,
-          points,
+          points: customerPoints,
           reason: 'REVIEW_SUBMITTED',
-          description: `Earned ${points} points for ${rewardType.toLowerCase().replace('_', ' ')} review`,
+          description: `Earned ${customerPoints} points for writing a review`,
           referenceId: reviewId
         });
+
+        // Award points to specialist (1 point per star received)
+        if (specialistPoints > 0) {
+          await this.earnPoints({
+            userId: specialistId,
+            points: specialistPoints,
+            reason: 'REVIEW_RECEIVED',
+            description: `Earned ${specialistPoints} points for receiving ${rating}-star review`,
+            referenceId: reviewId
+          });
+        }
       });
       
     } catch (error) {

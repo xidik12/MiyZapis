@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { prisma } from '@/config/database';
 import { authenticateToken, requireOwnership } from '@/middleware/auth/jwt';
 import { validationResult } from 'express-validator';
+import LoyaltyService from '@/services/loyalty';
 import {
   validateCreateReview,
   validateUpdateReview,
@@ -392,26 +393,15 @@ router.post('/', authenticateToken, validateCreateReview, async (req: Request, r
       }
     });
 
-    // Award loyalty points for writing review
-    const loyaltyPointsEarned = 50; // 50 points for writing a review
-
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        loyaltyPoints: { increment: loyaltyPointsEarned }
-      }
-    });
-
-    await prisma.loyaltyTransaction.create({
-      data: {
-        userId,
-        type: 'EARNED',
-        points: loyaltyPointsEarned,
-        reason: 'Review submission',
-        description: `Earned ${loyaltyPointsEarned} points for writing a review`,
-        referenceId: review.id
-      }
-    });
+    // Award loyalty points using the new system (5 for customer, 1 per star for specialist)
+    // Use the loyalty service which handles both customer and specialist rewards
+    await LoyaltyService.processReviewReward(
+      review.id,
+      bookingId,
+      userId,
+      rating,
+      comment
+    );
 
     // Create notification for specialist
     await prisma.notification.create({
@@ -603,9 +593,9 @@ router.delete('/:id', authenticateToken, validateReviewId, requireOwnership('rev
       data: {
         userId: review.customerId,
         type: 'REDEEMED',
-        points: -50,
+        points: -5, // Deduct the new amount (5 points)
         reason: 'Review deletion',
-        description: 'Deducted 50 points for deleted review',
+        description: 'Deducted 5 points for deleted review',
         referenceId: id
       }
     });
