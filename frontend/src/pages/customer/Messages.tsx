@@ -58,15 +58,15 @@ const CustomerMessages: React.FC = () => {
 
   const fetchConversationMessages = async (conversationId: string) => {
     try {
-      const response = await messagesService.getConversationMessages(conversationId);
+      const response = await messagesService.getConversation(conversationId);
       setMessages(response.messages || []);
-      
+
       // Mark messages as read
-      await messagesService.markMessagesAsRead(conversationId);
-      
+      await messagesService.markAsRead(conversationId);
+
       // Update conversation unread count
-      setConversations(prev => prev.map(conv => 
-        conv.id === conversationId 
+      setConversations(prev => prev.map(conv =>
+        conv.id === conversationId
           ? { ...conv, unreadCount: 0 }
           : conv
       ));
