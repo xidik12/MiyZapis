@@ -684,7 +684,7 @@ Performance:
           }
           
           return {
-            revenue: limitedData.map(d => d.revenue),
+            revenue: limitedData.map(d => Math.round(d.revenue * 100) / 100),
             bookings: limitedData.map(d => d.bookings),
             labels: formatChartLabels(period, limitedData)
           };
