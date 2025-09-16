@@ -1096,7 +1096,7 @@ const SpecialistServices: React.FC = () => {
 
               {/* Loyalty Points Pricing */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Loyalty Points Pricing</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('serviceForm.loyaltyPointsPricing')}</h3>
 
                 {/* Enable Loyalty Points */}
                 <div className="mb-4">
@@ -1113,7 +1113,7 @@ const SpecialistServices: React.FC = () => {
                       className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                     />
                     <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
-                      Allow customers to book with loyalty points
+                      {t('serviceForm.allowLoyaltyBooking')}
                     </span>
                   </label>
                 </div>
@@ -1174,7 +1174,7 @@ const SpecialistServices: React.FC = () => {
 
               {/* Service Discounts */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Service Discounts</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('serviceForm.serviceDiscounts')}</h3>
 
                 {/* Enable Discounts */}
                 <div className="mb-4">
@@ -1194,7 +1194,7 @@ const SpecialistServices: React.FC = () => {
                       className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                     />
                     <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
-                      Enable promotional discount for this service
+                      {t('serviceForm.enablePromotionalDiscount')}
                     </span>
                   </label>
                 </div>

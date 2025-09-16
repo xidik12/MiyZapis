@@ -1130,6 +1130,10 @@ const translations: Translations = {
   'serviceForm.addCustomCategory': { en: 'Add Custom Category', uk: 'Додати власну категорію', ru: 'Добавить пользовательскую категорию' },
   'serviceForm.enterCustomCategory': { en: 'Enter custom category', uk: 'Введіть власну категорію', ru: 'Введите пользовательскую категорию' },
   'serviceForm.customCategoryHint': { en: 'You can add a custom category if none of the existing ones fit your service', uk: 'Ви можете додати власну категорію, якщо жодна з наявних не підходить для вашої послуги', ru: 'Вы можете добавить пользовательскую категорию, если ни одна из существующих не подходит для вашей услуги' },
+  'serviceForm.loyaltyPointsPricing': { en: 'Loyalty Points Pricing', uk: 'Ціноутворення балами лояльності', ru: 'Ценообразование баллами лояльности' },
+  'serviceForm.allowLoyaltyBooking': { en: 'Allow customers to book with loyalty points', uk: 'Дозволити клієнтам бронювати за бали лояльності', ru: 'Разрешить клиентам бронировать за баллы лояльности' },
+  'serviceForm.serviceDiscounts': { en: 'Service Discounts', uk: 'Знижки на послуги', ru: 'Скидки на услуги' },
+  'serviceForm.enablePromotionalDiscount': { en: 'Enable promotional discount for this service', uk: 'Увімкнути промо-знижку для цієї послуги', ru: 'Включить промо-скидку для этой услуги' },
   
   // Specialist Profile Page
   'specialist.about': { en: 'About', uk: 'Про спеціаліста', ru: 'О специалисте' },
