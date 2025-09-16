@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { notificationService } from '../../services/notification.service';
 import { Notification, NotificationType } from '../../types';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   BellIcon, 
   CheckIcon, 
@@ -31,6 +32,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   onClose, 
   className = '' 
 }) => {
+  const { t, language } = useLanguage();
   const panelRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -193,10 +195,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const deleteAllNotifications = async () => {
     const { confirm } = await import('../ui/Confirm');
     const ok = await confirm({
-      title: 'Delete all notifications?',
-      message: 'This cannot be undone.',
-      confirmText: 'Delete all',
-      cancelText: 'Cancel',
+      title: t('notifications.clearConfirm.title') || 'Delete all notifications?',
+      message: t('notifications.clearConfirm.message') || 'This cannot be undone.',
+      confirmText: t('notifications.clearConfirm.confirm') || 'Delete all',
+      cancelText: t('notifications.clearConfirm.cancel') || 'Cancel',
       variant: 'destructive'
     });
     if (!ok) return;
@@ -256,11 +258,74 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
+    if (diffMins < 1) return t('notifications.time.justNow') || 'Just now';
+    if (diffMins < 60) {
+      const tpl = t('notifications.time.minutesAgo') || '{n}m ago';
+      return tpl.replace('{n}', String(diffMins));
+    }
+    if (diffHours < 24) {
+      const tpl = t('notifications.time.hoursAgo') || '{n}h ago';
+      return tpl.replace('{n}', String(diffHours));
+    }
+    if (diffDays < 7) {
+      const tpl = t('notifications.time.daysAgo') || '{n}d ago';
+      return tpl.replace('{n}', String(diffDays));
+    }
+    const locale = language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US';
+    return date.toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  const interp = (tpl: string, vars: Record<string, string | number>) =>
+    (tpl || '').replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
+
+  const localizeNotification = (n: Notification): { title: string; message: string } => {
+    const service = n.data?.serviceName || '';
+    const date = n.data?.date || '';
+    switch (n.type) {
+      case 'booking_confirmed':
+        return {
+          title: t('notifications.bookingConfirmed.title') || 'Booking confirmed',
+          message: interp(t('notifications.bookingConfirmed.message') || 'You have confirmed the booking for {service} on {date}.', { service, date })
+        };
+      case 'new_booking':
+        return {
+          title: t('notifications.newBooking.title') || 'New booking request requires confirmation',
+          message: interp(t('notifications.newBooking.message') || 'New booking request for {service} on {date} - requires your confirmation.', { service, date })
+        };
+      case 'booking_cancelled':
+        return {
+          title: t('notifications.bookingCancelled.title') || 'Booking cancelled',
+          message: interp(t('notifications.bookingCancelled.message') || 'The booking for {service} on {date} was cancelled.', { service, date })
+        };
+      case 'booking_reminder':
+        return {
+          title: t('notifications.bookingReminder.title') || 'Booking reminder',
+          message: interp(t('notifications.bookingReminder.message') || 'Reminder: {service} on {date}.', { service, date })
+        };
+      case 'payment_received':
+        return {
+          title: t('notifications.paymentReceived.title') || 'Payment received',
+          message: t('notifications.paymentReceived.message') || 'Payment completed successfully.'
+        };
+      case 'payment_failed':
+        return {
+          title: t('notifications.paymentFailed.title') || 'Payment failed',
+          message: t('notifications.paymentFailed.message') || 'Payment failed. Please try again.'
+        };
+      case 'review_received':
+        return {
+          title: t('notifications.reviewReceived.title') || 'New Review Received',
+          message: interp(t('notifications.reviewReceived.message') || 'You received a {rating}-star review for "{service}"', { rating: n.data?.rating || '', service })
+        };
+      case 'booking_updated':
+        return {
+          title: t('notifications.bookingUpdated.title') || 'Booking updated',
+          message: interp(t('notifications.bookingUpdated.message') || 'Your booking for {service} on {date} has been updated.', { service, date })
+        };
+      case 'system_announcement':
+      default:
+        return { title: n.title, message: n.message };
+    }
   };
 
   if (!isOpen) return null;
@@ -311,7 +376,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
             <BellIcon className="h-6 w-6 text-gray-700 dark:text-gray-200" />
-            <h2 className="text-lg font-semibold">Notifications</h2>
+            <h2 className="text-lg font-semibold">{t('notifications.title') || 'Notifications'}</h2>
             {unreadCount > 0 && (
               <span className="bg-red-600 text-white text-xs px-2 py-1 rounded-full">
                 {unreadCount}
@@ -321,11 +386,11 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           <button 
             onClick={onClose}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
-            aria-label="Close notifications"
+            aria-label={t('notifications.close') || 'Close notifications'}
           >
             <XMarkIcon className="h-5 w-5" />
           </button>
-          <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">Swipe right or press Esc to close</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">{t('notifications.swipeHint') || 'Swipe right or press Esc to close'}</span>
         </div>
 
         {/* Service Status removed per UX request */}
@@ -344,7 +409,11 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                 }`}
               >
-                {filter}
+                {filter === 'all' ? (t('notifications.filter.all') || 'All')
+                  : filter === 'booking' ? (t('notifications.filter.booking') || 'Bookings')
+                  : filter === 'payment' ? (t('notifications.filter.payment') || 'Payments')
+                  : filter === 'review' ? (t('notifications.filter.review') || 'Reviews')
+                  : (t('notifications.filter.system') || 'System')}
               </button>
             ))}
           </div>
@@ -358,7 +427,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                   className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
                 >
                   <CheckIcon className="h-4 w-4" />
-                  Mark all read
+                  {t('notifications.markAllRead') || 'Mark all read'}
                 </button>
               )}
               {notifications.length > 0 && (
@@ -367,7 +436,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                   className="flex items-center gap-1 text-sm text-red-600 hover:text-red-700"
                 >
                   <TrashIcon className="h-4 w-4" />
-                  Clear all
+                  {t('notifications.clearAll') || 'Clear all'}
                 </button>
               )}
             </div>
@@ -396,8 +465,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center text-gray-500 dark:text-gray-400">
               <BellIcon className="h-12 w-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
-              <p className="text-lg font-medium text-gray-800 dark:text-gray-200">No notifications</p>
-              <p className="text-sm">You're all caught up!</p>
+              <p className="text-lg font-medium text-gray-800 dark:text-gray-200">{t('notifications.empty') || 'No notifications'}</p>
+              <p className="text-sm">{t('notifications.caughtUp') || "You're all caught up!"}</p>
             </div>
           ) : (
             (() => {
@@ -428,10 +497,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                       <h4 className={`text-sm font-medium ${
                         !notification.isRead ? 'text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'
                       }`}>
-                        {notification.title}
+                        {localizeNotification(notification).title}
                       </h4>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {notification.message}
+                        {localizeNotification(notification).message}
                       </p>
                       <p className="text-xs text-gray-400 mt-1">
                         {formatTime(notification.createdAt)}
@@ -444,7 +513,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                         <button
                           onClick={() => markAsRead(notification.id)}
                           className="p-1 text-blue-600 hover:text-blue-700"
-                          title="Mark as read"
+                          title={t('notifications.markRead') || 'Mark as read'}
                         >
                           <CheckIcon className="h-4 w-4" />
                         </button>
@@ -452,7 +521,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                       <button
                         onClick={() => deleteNotification(notification.id)}
                         className="p-1 text-red-600 hover:text-red-500"
-                        title="Delete"
+                        title={t('notifications.delete') || 'Delete'}
                       >
                         <TrashIcon className="h-4 w-4" />
                       </button>
