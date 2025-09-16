@@ -36,6 +36,12 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
     return PROFESSIONS;
   }, [category]);
 
+  // Check if current value is a custom profession (not in predefined list)
+  const isCustomProfession = useMemo(() => {
+    if (!value) return false;
+    return !availableProfessions.find(prof => prof.id === value);
+  }, [value, availableProfessions]);
+
   const filteredProfessions = useMemo(() => {
     if (!searchTerm) return availableProfessions;
     return searchProfessions(searchTerm, language as 'en' | 'uk' | 'ru');
@@ -227,10 +233,17 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
               {placeholderLabel}
             </option>
         
+        {/* Show current custom profession if it exists */}
+        {isCustomProfession && (
+          <option value={value} selected>
+            {value} (Custom)
+          </option>
+        )}
+
         <option value="search" className="font-semibold text-primary-600">
           🔍 {t('professionForm.searchProfessions') || '🔍 Search professions...'}
         </option>
-        
+
         {/* Group professions by category */}
         {Object.entries(groupedProfessions).map(([categoryId, professions]) => (
           <optgroup key={categoryId} label={getCategoryDisplayName(categoryId)}>
@@ -241,7 +254,7 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
             ))}
           </optgroup>
         ))}
-        
+
         {allowCustom && (
           <option value="custom" className="font-semibold text-primary-600">
             + {t('professionForm.addCustomProfession') || '+ Add Custom Profession'}

@@ -827,17 +827,17 @@ Performance:
   
   // Calculate current period stats and growth
   const getCurrentPeriodStats = () => {
-    const currentRevenue = currentPeriodData.revenue.reduce((sum, val) => sum + val, 0);
+    const currentRevenue = Math.round(currentPeriodData.revenue.reduce((sum, val) => sum + val, 0) * 100) / 100;
     const currentBookings = currentPeriodData.bookings.reduce((sum, val) => sum + val, 0);
-    const avgRevenue = currentPeriodData.revenue.length > 0 ? currentRevenue / currentPeriodData.revenue.length : 0;
+    const avgRevenue = currentPeriodData.revenue.length > 0 ? Math.round((currentRevenue / currentPeriodData.revenue.length) * 100) / 100 : 0;
     const avgBookings = currentPeriodData.bookings.length > 0 ? currentBookings / currentPeriodData.bookings.length : 0;
     
     // Calculate growth by comparing current period to previous period
     const dataLength = currentPeriodData.revenue.length;
     const midPoint = Math.floor(dataLength / 2);
     
-    const recentRevenue = currentPeriodData.revenue.slice(midPoint).reduce((sum, val) => sum + val, 0);
-    const previousRevenue = currentPeriodData.revenue.slice(0, midPoint).reduce((sum, val) => sum + val, 0);
+    const recentRevenue = Math.round(currentPeriodData.revenue.slice(midPoint).reduce((sum, val) => sum + val, 0) * 100) / 100;
+    const previousRevenue = Math.round(currentPeriodData.revenue.slice(0, midPoint).reduce((sum, val) => sum + val, 0) * 100) / 100;
     const recentBookings = currentPeriodData.bookings.slice(midPoint).reduce((sum, val) => sum + val, 0);
     const previousBookings = currentPeriodData.bookings.slice(0, midPoint).reduce((sum, val) => sum + val, 0);
     
