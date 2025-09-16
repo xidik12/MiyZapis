@@ -1074,6 +1074,7 @@ interface CreateRewardModalProps {
 }
 
 const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit }) => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -1302,6 +1303,7 @@ interface EditRewardModalProps {
 }
 
 const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSubmit }) => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     title: reward.title,
     description: reward.description,

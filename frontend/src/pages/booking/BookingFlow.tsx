@@ -62,6 +62,31 @@ const BookingFlow: React.FC = () => {
   const [redemptions, setRedemptions] = useState<RewardRedemption[]>([]);
   const [selectedRedemptionId, setSelectedRedemptionId] = useState<string>('');
 
+  // Calculate discount preview
+  const calculateDiscount = () => {
+    if (!selectedRedemptionId) return 0;
+
+    const selectedRedemption = redemptions.find(r => r.id === selectedRedemptionId);
+    if (!selectedRedemption) return 0;
+
+    const basePrice = service.price || service.basePrice || 0;
+    const reward = selectedRedemption.reward;
+
+    switch (reward.type) {
+      case 'PERCENTAGE_OFF':
+        return reward.discountPercent ? (basePrice * reward.discountPercent) / 100 : 0;
+      case 'DISCOUNT_VOUCHER':
+        return Math.min(reward.discountAmount || 0, basePrice);
+      case 'FREE_SERVICE':
+        return basePrice;
+      default:
+        return 0;
+    }
+  };
+
+  const discount = calculateDiscount();
+  const finalPrice = Math.max(0, (service.price || service.basePrice || 0) - discount);
+
   const steps: BookingStep[] = [
     { id: 'service', title: t('booking.selectService'), completed: false },
     { id: 'datetime', title: t('booking.selectDateTime'), completed: false },
@@ -622,10 +647,28 @@ const BookingFlow: React.FC = () => {
                 </div>
                 
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
+                  {/* Show discount breakdown if reward is selected */}
+                  {discount > 0 && (
+                    <>
+                      <div className="flex justify-between mb-2">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{t('booking.originalPrice') || 'Original Price'}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          {formatPrice(service.price || service.basePrice || 0, service.currency)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between mb-2">
+                        <span className="text-sm text-green-600 dark:text-green-400">{t('booking.discount') || 'Reward Discount'}</span>
+                        <span className="text-sm text-green-600 dark:text-green-400">
+                          -{formatPrice(discount, service.currency)}
+                        </span>
+                      </div>
+                      <div className="border-t border-gray-100 dark:border-gray-800 pt-2 mb-2"></div>
+                    </>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-lg font-bold text-gray-900 dark:text-white">{t('booking.total')}</span>
                     <span className="text-lg font-bold text-gray-900 dark:text-white">
-                      {formatPrice(service.price || service.basePrice || 0, service.currency)}
+                      {formatPrice(discount > 0 ? finalPrice : (service.price || service.basePrice || 0), service.currency)}
                     </span>
                   </div>
                   
@@ -675,9 +718,23 @@ const BookingFlow: React.FC = () => {
                 <div className="flex justify-between items-center mb-3">
                   <span className="font-medium text-gray-900 dark:text-white">{service.name}</span>
                   <span className="font-bold text-gray-900 dark:text-white">
-                    {formatPrice(service.price || service.basePrice || 0, service.currency)}
+                    {formatPrice(discount > 0 ? finalPrice : (service.price || service.basePrice || 0), service.currency)}
                   </span>
                 </div>
+
+                {/* Show discount breakdown in order summary */}
+                {discount > 0 && (
+                  <div className="text-sm space-y-1 mb-3 pb-3 border-b border-gray-200 dark:border-gray-600">
+                    <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                      <span>Original Price:</span>
+                      <span>{formatPrice(service.price || service.basePrice || 0, service.currency)}</span>
+                    </div>
+                    <div className="flex justify-between text-green-600 dark:text-green-400">
+                      <span>Reward Discount:</span>
+                      <span>-{formatPrice(discount, service.currency)}</span>
+                    </div>
+                  </div>
+                )}
                 
                 <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                   <div className="flex justify-between">
@@ -741,7 +798,11 @@ const BookingFlow: React.FC = () => {
                   <select
                     value={selectedRedemptionId}
                     onChange={(e) => setSelectedRedemptionId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className={`w-full px-3 py-2 border rounded-lg ${
+                      selectedRedemptionId
+                        ? 'border-green-300 bg-green-50 dark:border-green-600 dark:bg-green-900/20'
+                        : 'border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700'
+                    } text-gray-900 dark:text-white`}
                   >
                     <option value="">{t('booking.noRewardSelected') || 'No reward selected'}</option>
                     {redemptions.map(r => (
@@ -751,6 +812,27 @@ const BookingFlow: React.FC = () => {
                       </option>
                     ))}
                   </select>
+
+                  {/* Show confirmation when reward is selected */}
+                  {selectedRedemptionId && discount > 0 && (
+                    <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                            {t('booking.rewardApplied') || 'Reward Applied!'}
+                          </p>
+                          <p className="text-sm text-green-700 dark:text-green-300">
+                            {t('booking.youSave') || 'You save'} {formatPrice(discount, service.currency)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
