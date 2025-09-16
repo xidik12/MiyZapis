@@ -346,10 +346,10 @@ const SearchPage: React.FC = () => {
     return (
     <div
       key={service.id}
-      className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-5 sm:p-6 border border-gray-200 dark:border-gray-700"
+      className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-6 border border-white/20 dark:border-gray-700/20"
     >
-      <div className="flex items-start space-x-4">
-        <div className="relative">
+      <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
+        <div className="relative flex-shrink-0 self-center sm:self-start">
           <Avatar
             src={service.specialist.user.avatar}
             alt={`${service.specialist.user.firstName} ${service.specialist.user.lastName}`}
@@ -378,9 +378,9 @@ const SearchPage: React.FC = () => {
           )}
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+        <div className="flex-1 min-w-0 text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2 sm:gap-0">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
               {service.name}
             </h3>
             <div className="flex items-center space-x-1">
@@ -395,7 +395,7 @@ const SearchPage: React.FC = () => {
             {translateProfession(service.specialist.businessName, t)} • {service.specialist.user.firstName} {service.specialist.user.lastName}
           </p>
 
-          <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-4 mt-3 text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center">
               <MapPinIcon className="w-4 h-4 mr-1" />
               <span className="truncate">{service.location}</span>
@@ -415,8 +415,8 @@ const SearchPage: React.FC = () => {
             {service.description}
           </p>
 
-          <div className="flex items-center justify-between mt-3 sm:mt-4">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-3 sm:gap-0 mt-4">
+            <div className="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">
               {(service.specialist.completedBookings ?? (service as any).specialist?.completedJobs ?? service._count?.bookings ?? 0)} {t('specialist.completedJobs')} • {service.specialist.experience}
               {typeof service.specialist.responseTime === 'number' && (
                 <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
@@ -424,7 +424,7 @@ const SearchPage: React.FC = () => {
                 </span>
               )}
             </div>
-            <div className="text-right">
+            <div className="text-center sm:text-right">
               <div className={`text-xs px-2 py-1 rounded-full mb-1 ${service.isAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                 {service.isAvailable ? t('service.available') : t('service.unavailable')}
               </div>
@@ -434,17 +434,17 @@ const SearchPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4">
+          <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Link
               to={`/specialist/${service.specialist.id}`}
-              className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-center h-10 inline-flex items-center justify-center px-4 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+              className="bg-primary-50 hover:bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:hover:bg-primary-900/30 dark:text-primary-300 text-center h-10 inline-flex items-center justify-center px-4 rounded-lg font-medium transition-colors duration-200"
             >
               {t('actions.viewProfile')}
             </Link>
             {isOwnService ? (
               <button
                 disabled
-                className={`flex-1 text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-lg text-sm font-medium bg-gray-400 cursor-not-allowed`}
+                className="text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-lg font-medium bg-gray-400 cursor-not-allowed"
                 title={t('booking.cannotBookOwn') || "You can't book your own service"}
               >
                 {t('actions.book')}
@@ -452,9 +452,9 @@ const SearchPage: React.FC = () => {
             ) : (
               <Link
                 to={`/booking/${service.id}`}
-                className={`flex-1 text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-lg transition-colors text-sm font-medium ${
-                  service.isAvailable 
-                    ? 'bg-primary-600 hover:bg-primary-700' 
+                className={`text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-lg transition-colors font-medium ${
+                  service.isAvailable
+                    ? 'bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 shadow-lg hover:shadow-xl'
                     : 'bg-gray-400 cursor-not-allowed'
                 }`}
                 onClick={(e) => !service.isAvailable && e.preventDefault()}
@@ -467,15 +467,17 @@ const SearchPage: React.FC = () => {
               const phone = (service as any)?.specialist?.user?.phone || (service as any)?.specialist?.phone;
               const locationStr = service.location;
               return (
-                <div className="flex gap-2 sm:w-auto w-full">
+                <div className="flex gap-2">
                   {phone && (
                     <a
                       href={`tel:${phone}`}
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
                       aria-label="Call"
                     >
-                      <PhoneIcon className="w-4 h-4" />
-                      <span className="hidden sm:inline">{t('actions.call') || 'Call'}</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                      {t('actions.call') || 'Call'}
                     </a>
                   )}
                   {locationStr && (
@@ -483,11 +485,11 @@ const SearchPage: React.FC = () => {
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationStr)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
                       aria-label="Directions"
                     >
                       <MapPinIcon className="w-4 h-4" />
-                      <span className="hidden sm:inline">{t('actions.directions') || 'Directions'}</span>
+                      {t('actions.directions') || 'Directions'}
                     </a>
                   )}
                 </div>
@@ -601,9 +603,9 @@ const SearchPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setSortBy('reviews')}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all whitespace-nowrap ${
-                  sortBy === 'reviews' 
-                    ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-sm dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-300' 
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
+                  sortBy === 'reviews'
+                    ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-sm dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-300'
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               >
@@ -612,9 +614,9 @@ const SearchPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setSortBy('distance')}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all whitespace-nowrap ${
-                  sortBy === 'distance' 
-                    ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-sm dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-300' 
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
+                  sortBy === 'distance'
+                    ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-sm dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-300'
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               >
@@ -626,15 +628,15 @@ const SearchPage: React.FC = () => {
 
           {/* Rating Filters Row */}
           <div className="mb-4">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">
               {t('search.ratingFilter') || 'Filter by Rating'}
             </h4>
-            <div className="flex items-center gap-2 overflow-x-auto pb-2">
+            <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-1 sm:pb-2">
               <button
                 onClick={() => setSelectedRating(selectedRating === 5 ? 0 : 5)}
-                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
-                  selectedRating === 5 
-                    ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300' 
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
+                  selectedRating === 5
+                    ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300'
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               >
@@ -643,9 +645,9 @@ const SearchPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setSelectedRating(selectedRating === 4 ? 0 : 4)}
-                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
-                  selectedRating === 4 
-                    ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300' 
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
+                  selectedRating === 4
+                    ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300'
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               >
@@ -654,9 +656,9 @@ const SearchPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setSelectedRating(selectedRating === 3 ? 0 : 3)}
-                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
-                  selectedRating === 3 
-                    ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300' 
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
+                  selectedRating === 3
+                    ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300'
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               >
@@ -997,7 +999,7 @@ const SearchPage: React.FC = () => {
 
         {/* Results */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                 <div className="flex items-start space-x-4">
@@ -1016,9 +1018,9 @@ const SearchPage: React.FC = () => {
             ))}
           </div>
         ) : getFilteredServices().length > 0 ? (
-          <div className={`grid gap-6 ${
-            viewMode === 'grid' 
-              ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
+          <div className={`grid gap-4 sm:gap-6 ${
+            viewMode === 'grid'
+              ? 'grid-cols-1 lg:grid-cols-2'
               : 'grid-cols-1'
           }`}>
             {getFilteredServices().map(renderServiceCard)}
