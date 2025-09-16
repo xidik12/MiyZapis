@@ -1138,7 +1138,7 @@ Performance:
                   <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300">
                     <div className="flex items-center">
                       <div className="w-3 h-3 rounded-full bg-green-600 mr-2"></div>
-                      <span>Revenue: {formatPrice(currentPeriodData.revenue.reduce((sum, val) => sum + val, 0), currency)}</span>
+                      <span>Revenue: {formatPrice(Math.round(currentPeriodData.revenue.reduce((sum, val) => sum + val, 0) * 100) / 100, currency)}</span>
                     </div>
                     <div className="flex items-center">
                       <div className="w-3 h-3 rounded-full bg-blue-600 mr-2"></div>

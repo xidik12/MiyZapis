@@ -268,7 +268,7 @@ export class SpecialistService {
         const updatedSpecialist = await tx.specialist.update({
         where: { userId },
         data: {
-          ...(data.businessName && { businessName: data.businessName }),
+          ...(data.businessName !== undefined && { businessName: data.businessName }),
           ...(data.bio !== undefined && { bio: data.bio }),
           ...(data.bioUk !== undefined && { bioUk: data.bioUk }),
           ...(data.bioRu !== undefined && { bioRu: data.bioRu }),

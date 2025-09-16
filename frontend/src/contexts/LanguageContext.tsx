@@ -537,6 +537,8 @@ const translations: Translations = {
   // Profession Form
   'professionForm.searchProfessions': { en: 'Search professions...', uk: 'Пошук професій...', ru: 'Поиск профессий...' },
   'professionForm.addCustomProfession': { en: 'Add Custom Profession', uk: 'Додати власну професію', ru: 'Добавить свою профессию' },
+  'professionForm.enterCustomProfession': { en: 'Enter custom profession', uk: 'Введіть власну професію', ru: 'Введите свою профессию' },
+  'professionForm.customProfessionHint': { en: 'e.g., Yoga Instructor, Pet Groomer, etc.', uk: 'наприклад, Інструктор йоги, Грумер тварин і т.д.', ru: 'например, Инструктор йоги, Грумер животных и т.д.' },
 
   // Location Names (for examples - in real app these would come from API)
   'location.newYork': { en: 'New York, NY', uk: 'Нью-Йорк, США', ru: 'Нью-Йорк, США' },
@@ -1194,6 +1196,7 @@ const translations: Translations = {
   'common.remove': { en: 'Remove', uk: 'Видалити', ru: 'Удалить' },
   'common.close': { en: 'Close', uk: 'Закрити', ru: 'Закрыть' },
   'common.cancel': { en: 'Cancel', uk: 'Скасувати', ru: 'Отменить' },
+  'common.back': { en: 'Back', uk: 'Назад', ru: 'Назад' },
   'common.save': { en: 'Save', uk: 'Зберегти', ru: 'Сохранить' },
   'common.send': { en: 'Send', uk: 'Надіслати', ru: 'Отправить' },
   'common.book': { en: 'Book', uk: 'Забронювати', ru: 'Забронировать' },

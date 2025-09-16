@@ -153,19 +153,19 @@ const SpecialistDashboard: React.FC = () => {
               currency: b.service?.currency
             })));
             
-            const totalRevenue = completedBookings.reduce((sum, booking) => {
+            const totalRevenue = Math.round(completedBookings.reduce((sum, booking) => {
               const amount = booking.totalAmount || 0;
               const bookingCurrency = getBookingCurrency(booking);
-              
+
               console.log(`🔍 Adding booking ${booking.id} (${booking.service?.name}): ${amount} ${bookingCurrency}`);
-              
+
               // Convert to user's preferred currency for consistent total
               const convertedAmount = convertPrice(amount, bookingCurrency);
-              
+
               console.log(`💱 Converted ${amount} ${bookingCurrency} → ${convertedAmount} (user currency)`);
-              
-              return sum + Math.round(convertedAmount * 100) / 100;
-            }, 0);
+
+              return sum + convertedAmount;
+            }, 0) * 100) / 100;
             
             console.log('🔍 Dashboard: Calculated total revenue:', totalRevenue);
             
