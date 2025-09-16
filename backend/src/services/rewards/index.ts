@@ -322,8 +322,9 @@ export class RewardsService {
         OR: [
           { validUntil: null },
           { validUntil: { gte: new Date() } }
-        ],
-        pointsRequired: { lte: user.loyaltyPoints }
+        ]
+        // Removed pointsRequired filter - show all rewards regardless of user points
+        // Frontend will handle showing which ones can be redeemed
       };
 
       // Filter by specialist if provided
@@ -338,10 +339,23 @@ export class RewardsService {
 
         if (userTierIndex >= 0) {
           const eligibleTiers = tierHierarchy.slice(0, userTierIndex + 1);
-          whereClause.OR = [
-            { minimumTier: null },
-            { minimumTier: { in: eligibleTiers } }
+          // Add tier filtering to AND condition, preserving existing OR clause for expiry
+          whereClause.AND = [
+            {
+              OR: [
+                { validUntil: null },
+                { validUntil: { gte: new Date() } }
+              ]
+            },
+            {
+              OR: [
+                { minimumTier: null },
+                { minimumTier: { in: eligibleTiers } }
+              ]
+            }
           ];
+          // Remove the top-level OR since we moved it to AND
+          delete whereClause.OR;
         }
       } else {
         // User has no tier, only show rewards with no tier requirement
