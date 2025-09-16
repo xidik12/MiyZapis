@@ -67,9 +67,9 @@ const BookingFlow: React.FC = () => {
     if (!selectedRedemptionId) return 0;
 
     const selectedRedemption = redemptions.find(r => r.id === selectedRedemptionId);
-    if (!selectedRedemption) return 0;
+    if (!selectedRedemption || !service) return 0;
 
-    const basePrice = service.price || service.basePrice || 0;
+    const basePrice = (service?.price ?? service?.basePrice ?? 0);
     const reward = selectedRedemption.reward;
 
     switch (reward.type) {
@@ -85,7 +85,7 @@ const BookingFlow: React.FC = () => {
   };
 
   const discount = calculateDiscount();
-  const finalPrice = Math.max(0, (service.price || service.basePrice || 0) - discount);
+  const finalPrice = Math.max(0, ((service?.price ?? service?.basePrice ?? 0) - discount));
 
   const steps: BookingStep[] = [
     { id: 'service', title: t('booking.selectService'), completed: false },
