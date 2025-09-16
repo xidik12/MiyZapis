@@ -290,6 +290,7 @@ const SpecialistProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [justSaved, setJustSaved] = useState(false); // Flag to prevent reload immediately after save
   
   // Success/Error message states
   const [successMessage, setSuccessMessage] = useState('');
@@ -380,6 +381,12 @@ const SpecialistProfile: React.FC = () => {
 
   // Load profile data
   useEffect(() => {
+    // Skip loading if we just saved to prevent unnecessary reload
+    if (justSaved) {
+      setJustSaved(false);
+      return;
+    }
+
     const loadProfile = async () => {
       try {
         console.log('📥 Starting profile load, user:', user);
@@ -465,7 +472,7 @@ const SpecialistProfile: React.FC = () => {
     };
 
     loadProfile();
-  }, [user, language]);
+  }, [user?.id, language]); // Only depend on user ID, not the entire user object
 
   // Handle profile changes
   const handleProfileChange = (field: string, value: any) => {
@@ -693,7 +700,8 @@ const SpecialistProfile: React.FC = () => {
       setIsEditing(false);
       setHasUnsavedChanges(false);
       setValidationErrors({});
-      
+      setJustSaved(true); // Prevent unnecessary reload after save
+
       showSuccessNotification(
         language === 'uk' 
           ? 'Профіль успішно збережено!'

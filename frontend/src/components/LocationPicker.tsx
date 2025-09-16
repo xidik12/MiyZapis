@@ -64,7 +64,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         setMapError(true);
       };
       document.head.appendChild(script);
-    } else if (window.google) {
+    } else if (window.google && window.google.maps) {
       setMapLoaded(true);
     }
   }, []);
@@ -86,7 +86,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   }, []);
 
   const initializeMap = () => {
-    if (!window.google || !mapRef.current) return;
+    if (!window.google || !window.google.maps || !mapRef.current) return;
 
     // Default location (center of world or user's current location)
     const defaultCenter = { lat: 0, lng: 0 };
