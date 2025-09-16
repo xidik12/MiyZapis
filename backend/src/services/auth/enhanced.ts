@@ -5,7 +5,8 @@ import { config } from '@/config';
 import { prisma } from '@/config/database';
 import { cacheUtils } from '@/config/redis';
 import { logger } from '@/utils/logger';
-import { emailService } from '@/services/email';
+// Use enhanced email service with localization support
+import { emailService as templatedEmailService } from '@/services/email/enhanced-email';
 import { 
   LoginRequest, 
   RegisterRequest, 
@@ -195,10 +196,7 @@ export class EnhancedAuthService {
         firstName: user.firstName
       });
 
-      emailService.sendVerificationEmail(user.email, {
-        firstName: user.firstName,
-        verificationLink,
-      }).then((emailSent) => {
+      templatedEmailService.sendEmailVerification(user.id, verificationToken, user.language || 'en').then((emailSent) => {
         if (!emailSent) {
           logger.error('💥 Verification email failed to send', { 
             userId: user.id, 
@@ -344,7 +342,7 @@ export class EnhancedAuthService {
       });
 
       // Send welcome email
-      await emailService.sendWelcomeEmail(updatedUser.email, updatedUser.firstName);
+        await templatedEmailService.sendWelcomeEmail(updatedUser.id, updatedUser.language || 'en');
 
       // Create auth tokens
       const tokens = await this.createTokens(updatedUser);
@@ -631,8 +629,8 @@ export class EnhancedAuthService {
           });
         }
 
-        // Send welcome email for new users
-        await emailService.sendWelcomeEmail(user.email, user.firstName);
+        // Send localized welcome email for new users
+        await templatedEmailService.sendWelcomeEmail(user.id, user.language || 'en');
       } else {
         // Existing user - check available roles
         const hasCustomerRole = user.userType === 'CUSTOMER' || user.userType === 'ADMIN';

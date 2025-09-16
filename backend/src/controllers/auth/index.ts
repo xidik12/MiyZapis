@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { EnhancedAuthService as AuthService } from '@/services/auth/enhanced';
-import { EmailService } from '@/services/email';
+import { emailService as templatedEmailService } from '@/services/email/enhanced-email';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { ErrorCodes, LoginRequest, RegisterRequest, TelegramAuthRequest, JwtPayload } from '@/types';
@@ -628,15 +628,9 @@ export class AuthController {
         }
       });
 
-      // Send password reset email
-      const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
-      
+      // Send localized password reset email
       try {
-        const emailService = new EmailService();
-        await emailService.sendPasswordResetEmail(user.email, {
-          firstName: user.firstName,
-          resetLink: resetUrl
-        });
+        await templatedEmailService.sendPasswordReset(user.id, token, user.language || 'en');
       } catch (emailError) {
         logger.error('Failed to send password reset email:', emailError);
         // Don't fail the request if email sending fails
