@@ -128,7 +128,7 @@ const SpecialistLoyalty: React.FC = () => {
       setTiers(normalizeTiers(allTiers));
     } catch (error) {
       console.error('Error fetching loyalty data:', error);
-      toast.error('Failed to load loyalty program data');
+      toast.error(t('loyalty.error.loadProgram') || 'Failed to load loyalty program data');
     } finally {
       setLoading(false);
     }
@@ -142,7 +142,7 @@ const SpecialistLoyalty: React.FC = () => {
       setRewards(rewards);
     } catch (error) {
       console.error('Error fetching rewards:', error);
-      toast.error('Failed to load rewards');
+      toast.error(t('loyalty.error.loadRewards') || 'Failed to load rewards');
     } finally {
       setRewardsLoading(false);
     }
@@ -164,39 +164,39 @@ const SpecialistLoyalty: React.FC = () => {
   const handleCreateReward = async (data: CreateRewardData) => {
     try {
       await RewardsService.createReward(data);
-      toast.success('Reward created successfully');
+      toast.success(t('loyalty.success.createReward') || 'Reward created successfully');
       setShowCreateReward(false);
       fetchRewards();
     } catch (error) {
       console.error('Error creating reward:', error);
-      toast.error('Failed to create reward');
+      toast.error(t('loyalty.error.createReward') || 'Failed to create reward');
     }
   };
 
   const handleUpdateReward = async (rewardId: string, data: Partial<CreateRewardData>) => {
     try {
       await RewardsService.updateReward(rewardId, data);
-      toast.success('Reward updated successfully');
+      toast.success(t('loyalty.success.updateReward') || 'Reward updated successfully');
       setEditingReward(null);
       fetchRewards();
     } catch (error) {
       console.error('Error updating reward:', error);
-      toast.error('Failed to update reward');
+      toast.error(t('loyalty.error.updateReward') || 'Failed to update reward');
     }
   };
 
   const handleDeleteReward = async (rewardId: string) => {
-    if (!window.confirm('Are you sure you want to delete this reward?')) {
+    if (!window.confirm(t('loyalty.confirmDeleteReward') || 'Are you sure you want to delete this reward?')) {
       return;
     }
 
     try {
       await RewardsService.deleteReward(rewardId);
-      toast.success('Reward deleted successfully');
+      toast.success(t('loyalty.success.deleteReward') || 'Reward deleted successfully');
       fetchRewards();
     } catch (error) {
       console.error('Error deleting reward:', error);
-      toast.error('Failed to delete reward');
+      toast.error(t('loyalty.error.deleteReward') || 'Failed to delete reward');
     }
   };
 
@@ -205,11 +205,15 @@ const SpecialistLoyalty: React.FC = () => {
       await RewardsService.updateReward(reward.id, {
         isActive: !reward.isActive
       });
-      toast.success(`Reward ${reward.isActive ? 'deactivated' : 'activated'} successfully`);
+      toast.success(
+        reward.isActive
+          ? (t('loyalty.success.deactivateReward') || 'Reward deactivated successfully')
+          : (t('loyalty.success.activateReward') || 'Reward activated successfully')
+      );
       fetchRewards();
     } catch (error) {
       console.error('Error toggling reward status:', error);
-      toast.error('Failed to update reward status');
+      toast.error(t('loyalty.error.updateRewardStatus') || 'Failed to update reward status');
     }
   };
 
@@ -217,11 +221,11 @@ const SpecialistLoyalty: React.FC = () => {
     try {
       setRedeemingId(rewardId);
       await RewardsService.redeemReward(rewardId);
-      toast.success('Reward redeemed');
+      toast.success(t('loyalty.success.redeem') || 'Reward redeemed successfully');
       await fetchRedeemData();
     } catch (error: any) {
       console.error('Failed to redeem reward:', error);
-      const message = error?.apiError?.message || 'Failed to redeem reward';
+      const message = error?.apiError?.message || (t('loyalty.error.redeem') || 'Failed to redeem reward');
       toast.error(message);
     } finally {
       setRedeemingId(null);
@@ -359,7 +363,7 @@ const SpecialistLoyalty: React.FC = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading loyalty program...</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('loyalty.loading') || 'Loading loyalty program...'}</p>
         </div>
       </div>
     );

@@ -117,7 +117,7 @@ const CustomerLoyalty: React.FC = () => {
       setTiers(normalizeTiers(allTiers));
     } catch (error) {
       console.error('Error fetching loyalty data:', error);
-      toast.error('Failed to load loyalty program data');
+      toast.error(t('loyalty.error.loadProgram') || 'Failed to load loyalty program data');
     } finally {
       setLoading(false);
     }
@@ -135,7 +135,7 @@ const CustomerLoyalty: React.FC = () => {
       setMyRedemptions(redemptions);
     } catch (error) {
       console.error('Error fetching rewards:', error);
-      toast.error('Failed to load rewards');
+      toast.error(t('loyalty.error.loadRewards') || 'Failed to load rewards');
     } finally {
       setRewardsLoading(false);
     }
@@ -161,7 +161,7 @@ const CustomerLoyalty: React.FC = () => {
     try {
       setRedeemingId(rewardId);
       await RewardsService.redeemReward(rewardId);
-      toast.success('Reward redeemed successfully!');
+      toast.success(t('loyalty.success.redeem') || 'Reward redeemed successfully!');
 
       // Refresh both loyalty data and rewards
       await Promise.all([
@@ -170,7 +170,7 @@ const CustomerLoyalty: React.FC = () => {
       ]);
     } catch (error: any) {
       console.error('Error redeeming reward:', error);
-      const message = error?.apiError?.message || 'Failed to redeem reward';
+      const message = error?.apiError?.message || (t('loyalty.error.redeem') || 'Failed to redeem reward');
       toast.error(message);
     } finally {
       setRedeemingId(null);
@@ -306,7 +306,7 @@ const CustomerLoyalty: React.FC = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading loyalty program...</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('loyalty.loading') || 'Loading loyalty program...'}</p>
         </div>
       </div>
     );
