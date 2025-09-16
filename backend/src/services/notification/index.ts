@@ -37,6 +37,38 @@ export class NotificationService {
     this.emailService = new EmailService();
   }
 
+  private getTranslatedText(key: string, language: string = 'en'): string {
+    const translations: Record<string, Record<string, string>> = {
+      'greeting': {
+        en: 'Hi',
+        uk: 'Привіт',
+        ru: 'Привет'
+      },
+      'bookingDetails': {
+        en: 'Booking Details:',
+        uk: 'Деталі бронювання:',
+        ru: 'Детали бронирования:'
+      },
+      'manageBookings': {
+        en: 'You can view and manage your bookings by logging into your MiyZapis account.',
+        uk: 'Ви можете переглядати та керувати своїми бронюваннями, увійшовши до свого акаунта МійЗапис.',
+        ru: 'Вы можете просматривать и управлять своими бронированиями, войдя в свой аккаунт МояЗапись.'
+      },
+      'copyright': {
+        en: '© 2024 MiyZapis. All rights reserved.',
+        uk: '© 2024 МійЗапис. Всі права захищені.',
+        ru: '© 2024 МояЗапись. Все права защищены.'
+      },
+      'automatedEmail': {
+        en: 'This is an automated email, please do not reply.',
+        uk: 'Це автоматичне повідомлення, будь ласка, не відповідайте.',
+        ru: 'Это автоматическое письмо, пожалуйста, не отвечайте.'
+      }
+    };
+
+    return translations[key]?.[language] || translations[key]?.['en'] || key;
+  }
+
   async sendNotification(userId: string, data: NotificationData): Promise<Notification> {
     try {
       logger.info('🔔 Starting notification send process', {
@@ -203,7 +235,14 @@ export class NotificationService {
 
       // Use specific email methods based on notification type
       if (data.type === 'BOOKING_CONFIRMED' || data.type === 'BOOKING_PENDING' || data.type === 'BOOKING_REQUEST') {
-        // Create a simple booking notification email
+        // Create a simple booking notification email with proper language support
+        const userLanguage = user.language || 'en';
+        const greeting = this.getTranslatedText('greeting', userLanguage);
+        const bookingDetailsLabel = this.getTranslatedText('bookingDetails', userLanguage);
+        const manageBookingsText = this.getTranslatedText('manageBookings', userLanguage);
+        const copyrightText = this.getTranslatedText('copyright', userLanguage);
+        const automatedEmailText = this.getTranslatedText('automatedEmail', userLanguage);
+
         const html = `
         <!DOCTYPE html>
         <html>
@@ -225,21 +264,21 @@ export class NotificationService {
               <h1>${data.title}</h1>
             </div>
             <div class="content">
-              <h2>Hi ${user.firstName}!</h2>
+              <h2>${greeting} ${user.firstName}!</h2>
               <p>${data.message}</p>
-              
+
               <div class="booking-details">
-                <h3>Booking Details:</h3>
-                ${data.data ? Object.entries(data.data).map(([key, value]) => 
+                <h3>${bookingDetailsLabel}</h3>
+                ${data.data ? Object.entries(data.data).map(([key, value]) =>
                   `<p><strong>${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:</strong> ${value}</p>`
                 ).join('') : ''}
               </div>
-              
-              <p>You can view and manage your bookings by logging into your MiyZapis account.</p>
+
+              <p>${manageBookingsText}</p>
             </div>
             <div class="footer">
-              <p>© 2024 MiyZapis. All rights reserved.</p>
-              <p>This is an automated email, please do not reply.</p>
+              <p>${copyrightText}</p>
+              <p>${automatedEmailText}</p>
             </div>
           </div>
         </body>
