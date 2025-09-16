@@ -47,6 +47,36 @@ class ErrorBoundary extends React.Component<
     if (environment.ENABLE_ANALYTICS) {
       // Analytics logging would go here
     }
+
+    // Handle stale chunk errors by forcing a clean reload
+    const msg = String(error?.message || '').toLowerCase();
+    const isChunkLoadError =
+      msg.includes('failed to fetch dynamically imported module') ||
+      msg.includes('importing a module script failed') ||
+      msg.includes('chunkloaderror') ||
+      msg.includes('loading chunk');
+
+    if (isChunkLoadError) {
+      // Attempt to unregister service workers and clear caches, then hard-reload
+      (async () => {
+        try {
+          if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map((r) => r.unregister()));
+          }
+          if ('caches' in window) {
+            const names = await caches.keys();
+            await Promise.all(names.map((n) => caches.delete(n)));
+          }
+        } catch (e) {
+          console.warn('Chunk error recovery encountered an issue:', e);
+        } finally {
+          const url = new URL(window.location.href);
+          url.searchParams.set('v', Date.now().toString());
+          window.location.replace(url.toString());
+        }
+      })();
+    }
   }
 
   render() {
