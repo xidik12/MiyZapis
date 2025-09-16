@@ -904,7 +904,7 @@ const CustomerLoyalty: React.FC = () => {
                         <div className="text-center py-6 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                           <TrophyIcon className="h-10 w-10 text-gray-400 mx-auto mb-2" />
                           <p className="text-gray-600 dark:text-gray-400 text-sm">
-                            {t('loyalty.noRedemptionsYet') || 'You haven't redeemed any rewards yet.'}
+                            {t('loyalty.noRedemptionsYet') || 'You haven\'t redeemed any rewards yet.'}
                           </p>
                         </div>
                       ) : (
