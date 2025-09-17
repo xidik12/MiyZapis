@@ -10,6 +10,9 @@ import { fileUploadService } from '../../services/fileUpload.service';
 import { userService } from '../../services/user.service';
 import { toast } from 'react-toastify';
 import { Avatar } from '../../components/ui/Avatar';
+import { LocationPicker } from '../../components/LocationPicker';
+import SetPasswordModal from '../../components/auth/SetPasswordModal';
+import ChangePasswordModal from '../../components/auth/ChangePasswordModal';
 import { 
   UserCircleIcon,
   BellIcon,
@@ -33,9 +36,12 @@ interface Address {
   label: string;
   street: string;
   city: string;
+  region?: string;
   postalCode: string;
   country: string;
   isDefault: boolean;
+  latitude?: number;
+  longitude?: number;
 }
 
 const CustomerSettings: React.FC = () => {
@@ -83,13 +89,45 @@ const CustomerSettings: React.FC = () => {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Addresses - start with empty array for new users
+  // Addresses - persisted per-user in localStorage until backend endpoint exists
   const [addresses, setAddresses] = useState<Address[]>([]);
+  const addressesStorageKey = currentUser?.id ? `mz.addresses.${currentUser.id}` : null;
+
+  // Load saved addresses on mount/user change
+  useEffect(() => {
+    if (!addressesStorageKey) return;
+    
+    try {
+      const raw = localStorage.getItem(addressesStorageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          setAddresses(parsed);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load saved addresses:', e);
+    }
+  }, [addressesStorageKey]);
+
+  // Persist addresses to localStorage on change
+  useEffect(() => {
+    if (!addressesStorageKey) return;
+    
+    try {
+      localStorage.setItem(addressesStorageKey, JSON.stringify(addresses));
+    } catch (e) {
+      console.warn('Failed to save addresses:', e);
+    }
+  }, [addresses, addressesStorageKey]);
 
   const [activeSection, setActiveSection] = useState('account');
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
+  const [newAddressLocation, setNewAddressLocation] = useState<{ address: string; city: string; region: string; country: string; postalCode?: string; latitude?: number; longitude?: number; }>({ address: '', city: '', region: '', country: '' });
 
   // Load payment methods when component mounts
   useEffect(() => {
@@ -130,10 +168,10 @@ const CustomerSettings: React.FC = () => {
       setLoading(true);
       await PaymentMethodsService.deletePaymentMethod(id);
       setPaymentMethods(prev => prev.filter(pm => pm.id !== id));
-      toast.success(language === 'uk' ? 'Спосіб оплати видалено' : language === 'ru' ? 'Способ оплаты удален' : 'Payment method removed');
+      toast.success(t('settings.payment.removed') || 'Payment method removed');
     } catch (error) {
       console.error('Failed to remove payment method:', error);
-      toast.error(language === 'uk' ? 'Помилка видалення способу оплати' : language === 'ru' ? 'Ошибка удаления способа оплаты' : 'Failed to remove payment method');
+      toast.error(t('settings.payment.removeError') || 'Failed to remove payment method');
     } finally {
       setLoading(false);
     }
@@ -165,10 +203,10 @@ const CustomerSettings: React.FC = () => {
       
       setPaymentMethods(prev => [...prev, newMethod]);
       setShowAddPaymentModal(false);
-      toast.success(language === 'uk' ? 'Спосіб оплати додано' : language === 'ru' ? 'Способ оплаты добавлен' : 'Payment method added');
+      toast.success(t('settings.payment.added') || 'Payment method added');
     } catch (error) {
       console.error('Failed to add payment method:', error);
-      toast.error(language === 'uk' ? 'Помилка додавання способу оплати' : language === 'ru' ? 'Ошибка добавления способа оплаты' : 'Failed to add payment method');
+      toast.error(t('settings.payment.addError') || 'Failed to add payment method');
     } finally {
       setLoading(false);
     }
@@ -178,16 +216,20 @@ const CustomerSettings: React.FC = () => {
     // TODO: Integrate with address API when backend is ready
     const newAddress: Address = {
       id: Date.now().toString(),
-      type: addressData.type,
-      label: addressData.label,
-      street: addressData.street,
-      city: addressData.city,
-      postalCode: addressData.postalCode,
-      country: addressData.country,
+      type: addressData.type as 'home' | 'work' | 'other',
+      label: String(addressData.label || ''),
+      street: String(addressData.street || newAddressLocation.address || ''),
+      city: String(addressData.city || newAddressLocation.city || ''),
+      region: String(addressData.region || newAddressLocation.region || ''),
+      postalCode: String(addressData.postalCode || newAddressLocation.postalCode || ''),
+      country: String(addressData.country || newAddressLocation.country || ''),
       isDefault: addresses.length === 0, // First address becomes default
+      latitude: newAddressLocation.latitude,
+      longitude: newAddressLocation.longitude,
     };
     setAddresses(prev => [...prev, newAddress]);
     setShowAddAddressModal(false);
+    setNewAddressLocation({ address: '', city: '', region: '', country: '' });
   };
 
   // Handle profile image upload
@@ -369,10 +411,7 @@ const CustomerSettings: React.FC = () => {
                               disabled={isUploadingImage}
                             />
                             <CameraIcon className="w-4 h-4 inline mr-2" />
-                            {isUploadingImage ? 
-                              (language === 'uk' ? 'Завантаження...' : language === 'ru' ? 'Загрузка...' : 'Uploading...') :
-                              (language === 'uk' ? 'Змінити фото' : language === 'ru' ? 'Изменить фото' : 'Change Photo')
-                            }
+                            {isUploadingImage ? (t('settings.upload.uploading') || 'Uploading...') : (t('settings.upload.changePhoto') || 'Change Photo')}
                           </label>
                           
                           {user.avatar && (
@@ -382,7 +421,7 @@ const CustomerSettings: React.FC = () => {
                               className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600"
                             >
                               <TrashIcon className="w-4 h-4 inline mr-2" />
-                              {language === 'uk' ? 'Видалити' : language === 'ru' ? 'Удалить' : 'Remove'}
+                              {t('actions.remove') || 'Remove'}
                             </button>
                           )}
                         </div>
@@ -494,45 +533,89 @@ const CustomerSettings: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Change Password */}
+                  {/* Password & Security */}
                   <div className="border-t pt-6">
-                    <button
-                      onClick={() => setShowChangePassword(!showChangePassword)}
-                      className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
-                    >
-                      {t('customer.settings.changePassword')}
-                    </button>
-                    {showChangePassword && (
-                      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {t('profile.currentPassword')}
-                          </label>
-                          <input
-                            type="password"
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {t('profile.newPassword')}
-                          </label>
-                          <input
-                            type="password"
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {t('profile.confirmPassword')}
-                          </label>
-                          <input
-                            type="password"
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                          />
+                    <h4 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                      <ShieldCheckIcon className="w-4 h-4 mr-2" />
+                      Password & Security
+                    </h4>
+
+                    {/* Google OAuth Users - Set Password */}
+                    {/* Debug logging - remove in production */}
+                    {console.log('🔍 Customer Settings Blue Box Auth Debug:', {
+                      authProvider: currentUser?.authProvider,
+                      hasPassword: currentUser?.hasPassword,
+                      condition: currentUser?.authProvider === 'google' && !currentUser?.hasPassword
+                    })}
+                    {(!currentUser?.passwordLastChanged && currentUser?.authProvider === 'google') && (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+                        <div className="flex items-start space-x-3">
+                          <ShieldCheckIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                          <div className="flex-1">
+                            <h5 className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                              Set up password for your account
+                            </h5>
+                            <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                              You signed up with Google. Set a password to enable password reset and additional security options.
+                            </p>
+                            <button
+                              onClick={() => setShowSetPasswordModal(true)}
+                              className="inline-flex items-center mt-3 px-3 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700 transition-colors"
+                            >
+                              Set Password
+                            </button>
+                          </div>
                         </div>
                       </div>
                     )}
+
+                    {/* Regular Users - Change Password */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          Password
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Last changed: {currentUser?.passwordLastChanged ? new Date(currentUser.passwordLastChanged).toLocaleDateString() : 'Never'}
+                        </p>
+                      </div>
+                      {/* Debug logging - remove in production */}
+                      {console.log('🔍 Customer Settings Auth Debug:', {
+                        authProvider: currentUser?.authProvider,
+                        hasPassword: currentUser?.hasPassword,
+                        passwordLastChanged: currentUser?.passwordLastChanged,
+                        condition: currentUser?.authProvider === 'google' && !currentUser?.hasPassword
+                      })}
+                      {(!currentUser?.passwordLastChanged && currentUser?.authProvider === 'google') ? (
+                        <button
+                          onClick={() => setShowSetPasswordModal(true)}
+                          className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
+                        >
+                          Set Password
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setShowChangePasswordModal(true)}
+                          className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
+                        >
+                          {t('customer.settings.changePassword')}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Password Requirements */}
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                      <p className="font-medium mb-2">Password requirements:</p>
+                      <ul className="space-y-1 text-xs">
+                        <li>• At least 8 characters long</li>
+                        <li>• One uppercase letter (A-Z)</li>
+                        <li>• One lowercase letter (a-z)</li>
+                        <li>• One number (0-9)</li>
+                        <li>• One symbol (!@#$%^&*)</li>
+                        <li>• English characters only</li>
+                      </ul>
+                    </div>
+
                   </div>
 
                   <div className="flex justify-end mt-6">
@@ -690,6 +773,7 @@ const CustomerSettings: React.FC = () => {
                   </h2>
 
                   <div className="space-y-6">
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Language
@@ -978,13 +1062,37 @@ const CustomerSettings: React.FC = () => {
               handleSaveAddress({
                 type: formData.get('addressType'),
                 label: formData.get('label'),
-                street: formData.get('street'),
-                city: formData.get('city'),
-                postalCode: formData.get('postalCode'),
-                country: formData.get('country') || 'Ukraine'
+                street: formData.get('street') || newAddressLocation.address,
+                city: formData.get('city') || newAddressLocation.city,
+                region: formData.get('region') || newAddressLocation.region,
+                postalCode: formData.get('postalCode') || newAddressLocation.postalCode,
+                country: formData.get('country') || newAddressLocation.country || 'Ukraine'
               });
             }}>
               <div className="space-y-5">
+                {/* Pick on Map */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                    {language === 'uk' ? 'Вибрати на карті' : language === 'ru' ? 'Выбрать на карте' : 'Pick on Map'}
+                  </label>
+                  <LocationPicker
+                    location={{
+                      address: newAddressLocation.address,
+                      city: newAddressLocation.city,
+                      region: newAddressLocation.region,
+                      country: newAddressLocation.country,
+                      postalCode: newAddressLocation.postalCode,
+                      latitude: newAddressLocation.latitude,
+                      longitude: newAddressLocation.longitude,
+                    }}
+                    onLocationChange={(loc) => setNewAddressLocation(loc)}
+                  />
+                  {(!import.meta.env.VITE_GOOGLE_MAPS_API_KEY) && (
+                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      Google Maps key not configured; manual entry only.
+                    </p>
+                  )}
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
                     {language === 'uk' ? 'Тип адреси' : language === 'ru' ? 'Тип адреса' : 'Address Type'}
@@ -1017,6 +1125,7 @@ const CustomerSettings: React.FC = () => {
                   <input
                     type="text"
                     name="street"
+                    defaultValue={newAddressLocation.address}
                     placeholder={language === 'uk' ? 'вул. Хрещатик, 1' : language === 'ru' ? 'ул. Крещатик, 1' : '123 Main Street'}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                     required
@@ -1030,6 +1139,7 @@ const CustomerSettings: React.FC = () => {
                     <input
                       type="text"
                       name="city"
+                      defaultValue={newAddressLocation.city}
                       placeholder={language === 'uk' ? 'Київ' : language === 'ru' ? 'Киев' : 'Kyiv'}
                       className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                       required
@@ -1042,6 +1152,7 @@ const CustomerSettings: React.FC = () => {
                     <input
                       type="text"
                       name="postalCode"
+                      defaultValue={newAddressLocation.postalCode}
                       placeholder="01001"
                       className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                       required
@@ -1050,11 +1161,23 @@ const CustomerSettings: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                    {language === 'uk' ? 'Регіон / Область' : language === 'ru' ? 'Регион / Область' : 'Region / State'}
+                  </label>
+                  <input
+                    type="text"
+                    name="region"
+                    defaultValue={newAddressLocation.region}
+                    placeholder={language === 'uk' ? 'Київська область' : language === 'ru' ? 'Киевская область' : 'Kyiv Oblast'}
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
                     {language === 'uk' ? 'Країна' : language === 'ru' ? 'Страна' : 'Country'}
                   </label>
                   <select 
                     name="country"
-                    defaultValue="Ukraine"
+                    defaultValue={newAddressLocation.country || 'Ukraine'}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   >
                     <option value="Ukraine">{language === 'uk' ? 'Україна' : language === 'ru' ? 'Украина' : 'Ukraine'}</option>
@@ -1083,6 +1206,26 @@ const CustomerSettings: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Set Password Modal */}
+      <SetPasswordModal
+        isOpen={showSetPasswordModal}
+        onClose={() => setShowSetPasswordModal(false)}
+        onSuccess={() => {
+          // Refresh user data after successful password set
+          window.location.reload();
+        }}
+      />
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+        onSuccess={() => {
+          // Refresh user data after successful password change
+          window.location.reload();
+        }}
+      />
     </div>
   );
 };

@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useAppSelector } from '@/hooks/redux';
 import { selectUser } from '@/store/slices/authSlice';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { bookingService } from '@/services/booking.service';
+import { favoritesService } from '@/services/favorites.service';
+import { reviewsService } from '@/services/reviews.service';
+import { messagesService } from '@/services/messages.service';
+import { loyaltyService, UserLoyalty, LoyaltyStats } from '@/services/loyalty.service';
+import { translateProfession } from '@/utils/profession';
+import { formatPoints } from '@/utils/formatPoints';
 // Status colors for bookings
 const statusColors = {
   confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -44,6 +52,10 @@ import {
 interface CustomerStats {
   totalSpent: number;
   loyaltyPoints: number;
+  lifetimePoints: number;
+  currentTier: string;
+  nextTierPoints: number;
+  monthlyPoints: number;
   savedAmount: number;
   servicesUsed: number;
   completedBookings: number;
@@ -77,6 +89,8 @@ interface FavoriteSpecialist {
   service: string;
   rating: number;
   bookings: number;
+  specialistUserId?: string;
+  specialistId?: string;
 }
 
 interface SpecialOffer {
@@ -92,6 +106,7 @@ const CustomerDashboard: React.FC = () => {
   const { formatPrice } = useCurrency();
   const { t, language } = useLanguage();
   const { theme } = useTheme();
+  const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(new Date());
   
   // State management for dashboard data
@@ -100,6 +115,12 @@ const CustomerDashboard: React.FC = () => {
   const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
   const [favoriteSpecialists, setFavoriteSpecialists] = useState<FavoriteSpecialist[]>([]);
   const [specialOffers, setSpecialOffers] = useState<SpecialOffer[]>([]);
+  const [unreadMessages, setUnreadMessages] = useState<number>(0);
+  const [loyaltyData, setLoyaltyData] = useState<UserLoyalty | null>(null);
+  const [loyaltyStats, setLoyaltyStats] = useState<LoyaltyStats | null>(null);
+  const [favoritesPage, setFavoritesPage] = useState(1);
+  const [favoritesHasMore, setFavoritesHasMore] = useState(false);
+  const [favoritesLoading, setFavoritesLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -111,38 +132,98 @@ const CustomerDashboard: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch dashboard data
+  // Fetch dashboard data (customer)
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!user) return;
-      
       try {
         setLoading(true);
         setError(null);
-        
-        // TODO: Replace with actual API calls when backend is ready
-        // For now, we'll show empty states for new users
-        
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Set empty initial data for new users
+
+        // Fetch customer's bookings and loyalty data
+        const [upcomingRes, completedRes, allRes, favoritesCount, myReviews, favSpecs, unread, loyaltyProfile, loyaltyStatsData] = await Promise.all([
+          bookingService.getBookings({ limit: 10, status: 'confirmed,pending,inProgress' as any }, 'customer'),
+          bookingService.getBookings({ limit: 5, status: 'COMPLETED' as any }, 'customer'),
+          bookingService.getBookings({ limit: 1 }, 'customer'),
+          favoritesService.getFavoritesCount().catch(() => ({ specialists: 0, services: 0 })),
+          reviewsService.getMyReviews(1, 100).catch(() => ({ reviews: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 100, hasNext: false, hasPrev: false } } as any)),
+          favoritesService.getFavoriteSpecialists(1, 6).catch(() => ({ specialists: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 6, hasNext: false, hasPrev: false } } as any)),
+          messagesService.getUnreadCount().catch(() => ({ count: 0 })),
+          loyaltyService.getUserLoyalty().catch(() => null),
+          loyaltyService.getLoyaltyStats().catch(() => null),
+        ]);
+
+        // Set loyalty data
+        setLoyaltyData(loyaltyProfile);
+        setLoyaltyStats(loyaltyStatsData);
+
+        // Next appointment (earliest upcoming)
+        const upcomingSorted = [...upcomingRes.bookings].sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
+        const next = upcomingSorted[0];
+        setNextAppointment(next ? {
+          serviceName: next.service?.name || next.serviceName || 'Service',
+          specialistName: next.specialist ? `${next.specialist.firstName || ''} ${next.specialist.lastName || ''}`.trim() : next.specialistName || 'Specialist',
+          date: new Date(next.scheduledAt).toLocaleDateString(),
+          time: new Date(next.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          type: next.meetingLink ? 'online' : 'offline',
+          location: next.location || undefined,
+        } : null);
+
+        // Recent completed bookings
+        const recent = completedRes.bookings.map((b) => ({
+          id: b.id,
+          specialistName: b.specialist ? `${b.specialist.firstName || ''} ${b.specialist.lastName || ''}`.trim() : b.specialistName || 'Specialist',
+          serviceName: b.service?.name || b.serviceName || 'Service',
+          date: new Date(b.scheduledAt).toLocaleDateString(),
+          status: 'completed' as const,
+          amount: b.totalAmount,
+        }));
+        setRecentBookings(recent);
+
+        // Stats (basic derived)
+        const totalSpent = completedRes.bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+        const servicesUsed = new Set(completedRes.bookings.map((b) => b.service?.id || b.serviceId)).size;
+        // Reviews written and average rating from my reviews endpoint
+        const myReviewsList = (myReviews as any)?.reviews || [];
+        const reviewsWritten = myReviewsList.length;
+        const averageRating = reviewsWritten > 0 ? (myReviewsList.reduce((s: number, r: any) => s + (r.rating || 0), 0) / reviewsWritten) : 0;
         setStats({
-          totalSpent: 0,
-          loyaltyPoints: 0,
+          totalSpent,
+          loyaltyPoints: loyaltyProfile?.currentPoints || 0,
+          lifetimePoints: loyaltyProfile?.lifetimePoints || 0,
+          currentTier: loyaltyStatsData?.currentTier?.name || 'Bronze',
+          nextTierPoints: loyaltyStatsData?.pointsToNextTier || 0,
+          monthlyPoints: loyaltyStatsData?.monthlyPoints || 0,
           savedAmount: 0,
-          servicesUsed: 0,
-          completedBookings: 0,
-          totalBookings: 0,
-          averageRating: 0,
-          favoriteSpecialists: 0,
-          reviewsWritten: 0
+          servicesUsed,
+          completedBookings: completedRes.bookings.length,
+          totalBookings: allRes.pagination?.total || completedRes.bookings.length + upcomingRes.bookings.length,
+          averageRating,
+          favoriteSpecialists: (favoritesCount as any).specialists || 0,
+          reviewsWritten,
         });
-        setNextAppointment(null);
-        setRecentBookings([]);
-        setFavoriteSpecialists([]);
+
+        // Map first page of favorite specialists
+        const favPage = favSpecs as any;
+        const favSimple = (favPage.specialists || []).map((fs: any) => {
+          const s = fs.specialist;
+          const fullName = `${s?.user?.firstName || ''} ${s?.user?.lastName || ''}`.trim();
+          return {
+            id: s?.id || fs.id,
+            name: fullName || translateProfession(s?.businessName, t) || (s?.businessName || 'Specialist'),
+            service: translateProfession(s?.businessName, t) || (s?.businessName || ''),
+            rating: s?.rating || 0,
+            bookings: s?.reviewCount || 0,
+            specialistUserId: s?.user?.id,
+            specialistId: s?.id,
+          } as FavoriteSpecialist;
+        });
+        setFavoriteSpecialists(favSimple);
+        setFavoritesPage(favPage.pagination?.currentPage || 1);
+        setFavoritesHasMore(Boolean(favPage.pagination?.hasNext || (favPage.pagination?.currentPage || 1) < (favPage.pagination?.totalPages || 1)));
         setSpecialOffers([]);
-        
+        // Unread messages
+        setUnreadMessages((unread as any).count || 0);
       } catch (err) {
         console.error('Failed to fetch dashboard data:', err);
         setError('Failed to load dashboard data');
@@ -150,9 +231,75 @@ const CustomerDashboard: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchDashboardData();
   }, [user]);
+
+  const loadFavoritesPage = async (page: number) => {
+    try {
+      setFavoritesLoading(true);
+      const res = await favoritesService.getFavoriteSpecialists(page, 6);
+      const favSimple = res.specialists.map((fs: any) => {
+        const s = fs.specialist;
+        const fullName = `${s?.user?.firstName || ''} ${s?.user?.lastName || ''}`.trim();
+        return {
+          id: s?.id || fs.id,
+          name: fullName || s?.businessName || 'Specialist',
+          service: s?.businessName || '',
+          rating: s?.rating || 0,
+          bookings: s?.reviewCount || 0,
+          specialistUserId: s?.user?.id,
+          specialistId: s?.id,
+        } as FavoriteSpecialist;
+      });
+      setFavoriteSpecialists(prev => page === 1 ? favSimple : [...prev, ...favSimple]);
+      setFavoritesPage(res.pagination.currentPage);
+      setFavoritesHasMore(Boolean(res.pagination.hasNext || res.pagination.currentPage < res.pagination.totalPages));
+    } catch (e) {
+      // noop
+    } finally {
+      setFavoritesLoading(false);
+    }
+  };
+
+  const handleLoadMoreFavorites = async () => {
+    if (favoritesHasMore && !favoritesLoading) {
+      await loadFavoritesPage(favoritesPage + 1);
+    } else {
+      navigate('/customer/favorites');
+    }
+  };
+
+  const handleMessageFavorite = async (fav: FavoriteSpecialist) => {
+    try {
+      if (!fav.specialistUserId) {
+        navigate('/customer/messages');
+        return;
+      }
+      // Create or reuse conversation, then navigate with query to focus it
+      let conversationId: string | null = null;
+      try {
+        const conv = await messagesService.createConversation({ participantId: fav.specialistUserId });
+        conversationId = conv.id;
+      } catch (err) {
+        // Fallback: find existing
+        try {
+          const list = await messagesService.getConversations(1, 50);
+          const existing = list.conversations.find(c => c.specialist?.id === fav.specialistUserId);
+          if (existing) conversationId = existing.id;
+        } catch {}
+      }
+      if (conversationId) {
+        navigate(`/customer/messages?conversationId=${conversationId}`);
+        toast.success(t('specialistProfile.sendMessage') || 'Message');
+      } else {
+        navigate('/customer/messages');
+        toast.info(t('messages.noConversations') || 'No conversations yet');
+      }
+    } catch {
+      navigate('/customer/messages');
+      toast.error(t('messages.startConversationError') || 'Failed to start conversation');
+    }
+  };
 
   const getGreeting = () => {
     const hour = currentTime.getHours();
@@ -279,12 +426,13 @@ const CustomerDashboard: React.FC = () => {
             />
             <StatCard
               title={t('dashboard.customer.loyaltyPoints')}
-              value={stats ? stats.loyaltyPoints : 0}
-              change={`+340 ${t('dashboard.specialist.thisMonthImprovement')}`}
+              value={stats ? stats.loyaltyPoints.toLocaleString() : '0'}
+              change={`+${stats?.monthlyPoints || 0} this month`}
               changeType="positive"
               icon={GiftIconSolid}
-              iconBg="bg-gradient-to-br from-success-500 to-success-600"
-              description={`${stats ? formatPrice(stats.savedAmount, 'UAH') : '₴0'} ${t('dashboard.customer.savedAmount').toLowerCase()}`}
+              iconBg="bg-gradient-to-br from-purple-500 to-purple-600"
+              description={`${stats?.currentTier || 'Bronze'} Tier • ${stats?.nextTierPoints || 0} to next`}
+              onClick={() => navigate('/loyalty')}
             />
             <StatCard
               title={t('dashboard.customer.servicesUsed')}
@@ -295,51 +443,62 @@ const CustomerDashboard: React.FC = () => {
               iconBg="bg-gradient-to-br from-warning-500 to-warning-600"
               description={`${stats ? stats.averageRating : 0}/5.0 ${t('dashboard.customer.averageRating').toLowerCase()}`}
             />
+          <StatCard
+            title={t('dashboard.customer.favoriteSpecialists')}
+            value={stats ? stats.favoriteSpecialists : 0}
+            change={`${stats ? stats.reviewsWritten : 0} ${t('dashboard.nav.reviews').toLowerCase()}`}
+            changeType="positive"
+            icon={HeartIconSolid}
+            iconBg="bg-gradient-to-br from-info-500 to-info-600"
+            description={`${t('dashboard.customer.memberSince')} 2024`}
+          />
             <StatCard
-              title={t('dashboard.customer.favoriteSpecialists')}
-              value={stats ? stats.favoriteSpecialists : 0}
-              change={`${stats ? stats.reviewsWritten : 0} ${t('dashboard.nav.reviews').toLowerCase()}`}
+              title={t('dashboard.customer.unreadMessages')}
+              value={unreadMessages}
+              change={undefined}
               changeType="positive"
-              icon={HeartIconSolid}
-              iconBg="bg-gradient-to-br from-info-500 to-info-600"
-              description={`${t('dashboard.customer.memberSince')} 2024`}
+              icon={ChatBubbleLeftRightIcon}
+              iconBg="bg-gradient-to-br from-secondary-500 to-secondary-600"
+              description={t('dashboard.specialist.allTime')}
             />
-          </div>
+        </div>
 
           {/* Next Appointment Banner */}
           {nextAppointment && (
-            <div className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl p-6 text-white shadow-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">{t('dashboard.customer.nextAppointment')}</h3>
+            <div className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white shadow-lg">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <h3 className="text-base sm:text-lg font-semibold mb-2">{t('dashboard.customer.nextAppointment')}</h3>
                   <div className="space-y-1">
-                    <p className="text-primary-100">{nextAppointment.serviceName}</p>
-                    <p className="text-sm text-primary-200">
+                    <p className="text-primary-100 text-sm sm:text-base">{nextAppointment.serviceName}</p>
+                    <p className="text-xs sm:text-sm text-primary-200">
                       {language === 'uk' ? 'з' : language === 'ru' ? 'с' : 'with'} {nextAppointment.specialistName}
                     </p>
-                    <div className="flex items-center space-x-4 text-sm text-primary-200">
-                      <span className="flex items-center">
-                        <CalendarIcon className="w-4 h-4 mr-1" />
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-primary-200">
+                      <span className="flex items-center whitespace-nowrap">
+                        <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                         {nextAppointment.date}
                       </span>
-                      <span className="flex items-center">
-                        <ClockIcon className="w-4 h-4 mr-1" />
+                      <span className="flex items-center whitespace-nowrap">
+                        <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                         {nextAppointment.time}
                       </span>
                       <span className="flex items-center">
-                        <MapPinIcon className="w-4 h-4 mr-1" />
-                        {nextAppointment.type === 'online' 
-                          ? t('dashboard.specialist.online')
-                          : nextAppointment.location
-                        }
+                        <MapPinIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                        <span className="truncate max-w-[120px] sm:max-w-none">
+                          {nextAppointment.type === 'online' 
+                            ? t('dashboard.specialist.online')
+                            : nextAppointment.location
+                          }
+                        </span>
                       </span>
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="sm:text-right">
                   <Link
                     to="/customer/bookings"
-                    className="inline-flex items-center px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors font-medium"
+                    className="inline-flex items-center justify-center w-full sm:w-auto px-3 sm:px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors font-medium text-sm sm:text-base"
                   >
                     {t('dashboard.viewAll')}
                   </Link>
@@ -349,40 +508,40 @@ const CustomerDashboard: React.FC = () => {
           )}
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Recent Bookings */}
-            <div className="bg-surface rounded-2xl p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.customer.recentBookings')}</h3>
-                <Link 
-                  to="/customer/history"
+            <div className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.customer.recentBookings')}</h3>
+                <Link
+                  to="/customer/bookings"
                   className="text-primary-600 hover:text-primary-700 text-sm font-medium"
                 >
                   {t('dashboard.viewAll')}
                 </Link>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {recentBookings.slice(0, 4).map((booking) => (
                   <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
-                        <span className="text-white font-semibold text-sm">
+                    <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-semibold text-xs sm:text-sm">
                           {booking.specialistName?.split(' ').map(n => n[0]).join('')}
                         </span>
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{booking.specialistName}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{booking.serviceName}</p>
-                        <p className="text-xs text-gray-400">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{booking.specialistName}</p>
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">{booking.serviceName}</p>
+                        <p className="text-xs text-gray-400 truncate">
                           {booking.date} {language === 'uk' ? 'о' : language === 'ru' ? 'в' : 'at'} {booking.time}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-gray-900 dark:text-white">
+                    <div className="text-right flex-shrink-0">
+                      <p className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
                         {formatPrice(booking.amount, booking.currency)}
                       </p>
-                      <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
+                      <span className={`inline-block px-2 py-0.5 sm:py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
                         {getStatusText(booking.status)}
                       </span>
                     </div>
@@ -406,19 +565,20 @@ const CustomerDashboard: React.FC = () => {
             </div>
 
             {/* Favorite Specialists */}
-            <div className="bg-surface rounded-2xl p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.customer.favoriteSpecialists')}</h3>
-                <Link 
-                  to="/customer/favorites"
-                  className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+            <div className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.customer.favoriteSpecialists')}</h3>
+                <button
+                  onClick={handleLoadMoreFavorites}
+                  disabled={favoritesLoading}
+                  className="text-primary-600 hover:text-primary-700 text-sm font-medium disabled:opacity-50"
                 >
                   {t('dashboard.viewAll')}
-                </Link>
+                </button>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {favoriteSpecialists.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <div className="text-center py-6 sm:py-8 text-gray-500 dark:text-gray-400">
                   <HeartIconSolid className="w-12 h-12 mx-auto mb-3 opacity-50" />
                   <p>{t('customer.favorites.noSpecialists')}</p>
                   <Link 
@@ -429,47 +589,124 @@ const CustomerDashboard: React.FC = () => {
                   </Link>
                 </div>
               ) : (
-                favoriteSpecialists.slice(0, 3).map((specialist) => (
+                favoriteSpecialists.map((specialist) => (
                   <div key={specialist.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center">
-                        <span className="text-white font-semibold text-sm">
+                    <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-semibold text-xs sm:text-sm">
                           {specialist.name.split(' ').map(n => n[0]).join('')}
                         </span>
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{specialist.name}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{specialist.profession}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{specialist.name}</p>
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">{specialist.service}</p>
                         <div className="flex items-center space-x-2 text-xs text-gray-400">
                           <span className="flex items-center">
                             <StarIcon className="w-3 h-3 mr-1 text-warning-500" />
                             {specialist.rating}
                           </span>
                           <span>•</span>
-                          <span>{formatPrice(specialist.priceFrom, specialist.currency)} {t('currency.from')}</span>
+                          <span>{specialist.bookings} {t('dashboard.nav.reviews').toLowerCase()}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex space-x-2">
+                    <div className="flex space-x-1 sm:space-x-2 flex-shrink-0">
                       <Link
                         to={`/specialist/${specialist.id}`}
-                        className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-lg transition-colors"
+                        className="p-1 sm:p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-lg transition-colors"
                       >
-                        <EyeIcon className="w-4 h-4" />
+                        <EyeIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Link>
-                      <Link
-                        to="/search"
-                        className="p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      <button
+                        onClick={() => handleMessageFavorite(specialist)}
+                        className="p-1 sm:p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        title={t('specialistProfile.sendMessage')}
                       >
-                        <CalendarIcon className="w-4 h-4" />
-                      </Link>
+                        <ChatBubbleLeftRightIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                      </button>
                     </div>
                   </div>
                 ))
               )}
+              {favoritesLoading && (
+                <div className="text-center py-3 text-sm text-gray-500">Loading...</div>
+              )}
               </div>
             </div>
           </div>
+
+          {/* Loyalty Progress */}
+          {loyaltyData && loyaltyStats && (
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-purple-200 dark:border-purple-700">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <GiftIconSolid className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Loyalty Progress</h3>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                      {loyaltyStats.currentTier?.name || 'Bronze'} Member
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  to="/loyalty"
+                  className="inline-flex items-center justify-center w-full sm:w-auto px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs sm:text-sm font-medium"
+                >
+                  View Details
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-lg">
+                  <p className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
+                    {formatPoints(loyaltyData?.currentPoints || 0)}
+                  </p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Current Points</p>
+                </div>
+                
+                <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-lg">
+                  <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
+                    {formatPoints(loyaltyStats.monthlyPoints)}
+                  </p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">This Month</p>
+                </div>
+                
+                <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-lg">
+                  <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {formatPoints(loyaltyData?.lifetimePoints || 0)}
+                  </p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Lifetime Points</p>
+                </div>
+              </div>
+
+              {loyaltyStats.nextTier && (
+                <div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-1">
+                    <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Progress to {loyaltyStats.nextTier.name}
+                    </span>
+                    <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                      {loyaltyStats.pointsToNextTier} points needed
+                    </span>
+                  </div>
+                  <div className="overflow-hidden h-3 mb-2 text-xs flex rounded-full bg-purple-200 dark:bg-purple-800">
+                    <div 
+                      style={{ 
+                        width: `${Math.min(100, (((loyaltyData?.profile?.totalPoints || 0) - (loyaltyStats?.currentTier?.minPoints || 0)) / ((loyaltyStats?.nextTier?.minPoints || 0) - (loyaltyStats?.currentTier?.minPoints || 0))) * 100)}%` 
+                      }}
+                      className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-500"
+                    ></div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                    <span className="truncate">{loyaltyStats.currentTier?.name}</span>
+                    <span className="truncate">{loyaltyStats.nextTier.name}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Special Offers */}
           {specialOffers && specialOffers.length > 0 && (

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { socketService } from '../../services/socket.service';
+import { translateProfession } from '@/utils/profession';
 import { toast } from 'react-toastify';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -6,6 +8,8 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { specialistService, serviceService, bookingService } from '../../services';
+import { loyaltyService, UserLoyalty } from '@/services/loyalty.service';
+import { RewardsService, type RewardRedemption, type LoyaltyReward } from '@/services/rewards.service';
 import {
   CalendarIcon,
   ClockIcon,
@@ -14,6 +18,8 @@ import {
   CheckCircleIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
+  GiftIcon,
+  StarIcon,
 } from '@heroicons/react/24/outline';
 
 interface BookingStep {
@@ -50,6 +56,36 @@ const BookingFlow: React.FC = () => {
   }>>([]);
   const [bookingNotes, setBookingNotes] = useState('');
   const [bookingResult, setBookingResult] = useState<any>(null);
+  const [conflictHint, setConflictHint] = useState<{ active: boolean; lastTried?: string }>({ active: false });
+  const [loyaltyData, setLoyaltyData] = useState<UserLoyalty | null>(null);
+  const [pointsToEarn, setPointsToEarn] = useState<number>(0);
+  const [redemptions, setRedemptions] = useState<RewardRedemption[]>([]);
+  const [selectedRedemptionId, setSelectedRedemptionId] = useState<string>('');
+
+  // Calculate discount preview
+  const calculateDiscount = () => {
+    if (!selectedRedemptionId) return 0;
+
+    const selectedRedemption = redemptions.find(r => r.id === selectedRedemptionId);
+    if (!selectedRedemption || !service) return 0;
+
+    const basePrice = (service?.price ?? service?.basePrice ?? 0);
+    const reward = selectedRedemption.reward;
+
+    switch (reward.type) {
+      case 'PERCENTAGE_OFF':
+        return reward.discountPercent ? (basePrice * reward.discountPercent) / 100 : 0;
+      case 'DISCOUNT_VOUCHER':
+        return Math.min(reward.discountAmount || 0, basePrice);
+      case 'FREE_SERVICE':
+        return basePrice;
+      default:
+        return 0;
+    }
+  };
+
+  const discount = calculateDiscount();
+  const finalPrice = Math.max(0, ((service?.price ?? service?.basePrice ?? 0) - discount));
 
   const steps: BookingStep[] = [
     { id: 'service', title: t('booking.selectService'), completed: false },
@@ -125,6 +161,59 @@ const BookingFlow: React.FC = () => {
     fetchBookingData();
   }, [specialistId, serviceId]);
 
+  // Fetch loyalty data and calculate points to earn
+  useEffect(() => {
+    const fetchLoyaltyData = async () => {
+      if (!user || !service) return;
+      
+      try {
+        const loyalty = await loyaltyService.getUserLoyalty().catch(() => null);
+        setLoyaltyData(loyalty);
+
+        // Calculate points to earn (typically 1% of service price)
+        const servicePrice = service.price || service.basePrice || 0;
+        const earnedPoints = Math.floor(servicePrice * 0.01); // 1 point per 1 currency unit spent
+        setPointsToEarn(earnedPoints);
+      } catch (error) {
+        console.error('Error fetching loyalty data:', error);
+      }
+    };
+
+    fetchLoyaltyData();
+  }, [user, service]);
+
+  // Fetch user's approved redemptions and filter for this specialist/service
+  useEffect(() => {
+    const fetchRedemptions = async () => {
+      if (!service) return;
+      try {
+        const items = await RewardsService.getUserRedemptions();
+        const currentSpecialistId = service?.specialistId || service?.specialist?.id;
+        const approved = items.filter(r => r.status === 'APPROVED');
+        const applicable = approved.filter(r => {
+          // Specialist match
+          if (currentSpecialistId && r.reward.specialistId !== currentSpecialistId) return false;
+
+          // Service restriction
+          if (r.reward.serviceIds) {
+            try {
+              const allowed = JSON.parse(r.reward.serviceIds as any);
+              if (Array.isArray(allowed) && allowed.length > 0 && !allowed.includes(service.id)) return false;
+            } catch (_) {}
+          }
+
+          // Not expired
+          if (r.expiresAt && new Date(r.expiresAt) < new Date()) return false;
+          return true;
+        });
+        setRedemptions(applicable);
+      } catch (e) {
+        // non-fatal
+      }
+    };
+    fetchRedemptions();
+  }, [service]);
+
   useEffect(() => {
     // Fetch available dates when specialist is loaded
     const fetchAvailableDates = async () => {
@@ -147,6 +236,29 @@ const BookingFlow: React.FC = () => {
     };
 
     fetchAvailableDates();
+
+    // Subscribe to availability updates (if backend emits)
+    const sid = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
+    if (sid) {
+      try { socketService.subscribeToAvailability(sid); } catch {}
+    }
+    const onAvail = (data: any) => {
+      const sidData = data?.specialistId || data?.id;
+      if (!sid || sidData !== sid) return;
+      // If current selected date matches update, refresh slots/dates
+      try {
+        if (selectedDate) {
+          refreshSlots();
+        }
+      } catch {}
+    };
+    socketService.on('availability:updated', onAvail as any);
+    return () => {
+      socketService.off('availability:updated', onAvail as any);
+      if (sid) {
+        try { socketService.unsubscribeFromAvailability(sid); } catch {}
+      }
+    };
   }, [specialist, service, specialistId]);
 
   useEffect(() => {
@@ -167,13 +279,9 @@ const BookingFlow: React.FC = () => {
         setAvailableSlots(slots || []);
       } catch (error) {
         console.error('❌ BookingFlow: Error fetching available slots:', error);
-        // For now, provide some default time slots for testing
-        const defaultSlots = [
-          '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-          '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
-        ];
-        console.log('🕰️ BookingFlow: Using default slots:', defaultSlots);
-        setAvailableSlots(defaultSlots);
+        // Don't show any slots if there's an error - better to show empty than incorrect availability
+        setAvailableSlots([]);
+        toast.error(t('booking.loadSlotsError') || 'Unable to load available time slots. Please try again.');
       }
     };
 
@@ -225,13 +333,17 @@ const BookingFlow: React.FC = () => {
       const scheduledAt = new Date(selectedDate);
       scheduledAt.setHours(hours, minutes, 0, 0);
       
-      const bookingData = {
+      const bookingData: any = {
         serviceId: service.id,
         scheduledAt: scheduledAt.toISOString(),
         duration: service.duration || 60, // Default to 60 minutes if not specified
         customerNotes: bookingNotes || undefined,
         loyaltyPointsUsed: 0, // Default to 0
       };
+
+      if (selectedRedemptionId) {
+        bookingData.rewardRedemptionId = selectedRedemptionId;
+      }
       
       console.log('📤 BookingFlow: Sending booking data:', bookingData);
       const result = await bookingService.createBooking(bookingData);
@@ -247,11 +359,12 @@ const BookingFlow: React.FC = () => {
       const code = error?.apiError?.code;
       const status = error?.response?.status || error?.apiError?.status;
       if (code === 'BOOKING_CONFLICT' || status === 409 || error?.message?.includes('time slot')) {
-        toast.warning('This time slot was just booked by someone else. Please choose another.');
+        toast.warning(t('booking.slotConflict') || 'This time slot was just booked by someone else. Please choose another.');
         await refreshSlots();
         setCurrentStep(1); // Ensure user stays on time selection
+        setConflictHint({ active: true, lastTried: selectedTime });
       } else {
-        toast.error('Failed to create booking. Please try again.');
+        toast.error(t('booking.createFailed') || 'Failed to create booking. Please try again.');
       }
     }
   };
@@ -285,6 +398,47 @@ const BookingFlow: React.FC = () => {
           <button
             onClick={() => navigate(-1)}
             className="text-primary-600 hover:text-primary-700 font-medium"
+          >
+            {t('navigation.goBack')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Prevent specialists from booking their own services (client-side UX guard)
+  const isOwnService = Boolean(
+    user?.userType === 'specialist' &&
+    user?.id &&
+    (
+      specialist?.user?.id === user.id ||
+      service?.specialist?.user?.id === user.id
+    )
+  );
+  
+  // Debug logging for specialists
+  if (user?.userType === 'specialist' && (specialist || service)) {
+    console.log('🔍 BookingFlow: Specialist booking check:', {
+      userId: user.id,
+      specialistUserId: specialist?.user?.id,
+      serviceSpecialistUserId: service?.specialist?.user?.id,
+      isOwnService
+    });
+  }
+
+  if (isOwnService) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+            {t('booking.cannotBookOwn') || "You can't book your own service"}
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            {t('booking.cannotBookOwnDesc') || 'Please ask a customer to book this service.'}
+          </p>
+          <button
+            onClick={() => navigate(-1)}
+            className="bg-primary-600 text-white py-2 px-6 rounded-lg hover:bg-primary-700 transition-colors"
           >
             {t('navigation.goBack')}
           </button>
@@ -342,7 +496,7 @@ const BookingFlow: React.FC = () => {
                     <button
                       key={date.toISOString()}
                       onClick={() => setSelectedDate(date)}
-                      className={`p-2 text-sm rounded-lg border transition-colors ${
+                      className={`p-2 text-sm rounded-lg border transition-colors relative ${
                         selectedDate?.toDateString() === date.toDateString()
                           ? 'bg-primary-600 text-white border-primary-600'
                           : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300'
@@ -358,6 +512,9 @@ const BookingFlow: React.FC = () => {
                           {dateInfo.availableSlots} slots
                         </div>
                       </div>
+                      {dateInfo.availableSlots === 1 && (
+                        <span className="absolute -top-2 -right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">Only 1</span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -378,22 +535,47 @@ const BookingFlow: React.FC = () => {
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
                   {t('booking.selectTime')}
                 </h3>
+                {conflictHint.active && (
+                  <div className="flex items-center justify-between bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-2 rounded-lg mb-4">
+                    <div className="text-sm">{t('booking.timeConflict') || 'That time just got booked. Try next available?'}</div>
+                    <button
+                      onClick={() => {
+                        if (!availableSlots || availableSlots.length === 0) return;
+                        const idx = conflictHint.lastTried ? availableSlots.indexOf(conflictHint.lastTried) : -1;
+                        const next = idx >= 0 && idx < availableSlots.length - 1 ? availableSlots[idx + 1] : availableSlots[0];
+                        setSelectedTime(next);
+                        setConflictHint({ active: false });
+                        setTimeout(() => handleBookingSubmit(), 50);
+                      }}
+                      className="btn btn-error btn-sm text-white"
+                    >
+                      {t('booking.tryNextAvailable') || 'Try next available'}
+                    </button>
+                  </div>
+                )}
                 
                 {availableSlots.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {availableSlots.map((time) => (
-                      <button
-                        key={time}
-                        onClick={() => setSelectedTime(time)}
-                        className={`p-3 text-sm rounded-lg border transition-colors ${
-                          selectedTime === time
-                            ? 'bg-primary-600 text-white border-primary-600'
-                            : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300'
-                        }`}
-                      >
-                        {time}
-                      </button>
-                    ))}
+                  <div className="flex flex-wrap gap-2">
+                    {availableSlots.map((slot: any) => {
+                      const time = typeof slot === 'string' ? slot : slot.time;
+                      const count = typeof slot === 'string' ? undefined : slot.count;
+                      return (
+                        <button
+                          key={time}
+                          onClick={() => setSelectedTime(time)}
+                          className={`relative px-3 py-1.5 text-sm rounded-full border transition-colors ${
+                            selectedTime === time
+                              ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
+                              : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300'
+                          }`}
+                        >
+                          {time}
+                          {count === 1 && (
+                            <span className="absolute -top-2 -right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">1</span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="text-gray-500 dark:text-gray-400 text-center py-8">
@@ -428,6 +610,56 @@ const BookingFlow: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* Reward Selection */}
+            {redemptions.length > 0 && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <GiftIcon className="w-6 h-6 mr-3 text-purple-600" />
+                  {t('booking.applyReward') || 'Apply a Reward'}
+                </h4>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('booking.selectReward') || 'Choose a reward to apply'}
+                    </label>
+                    <select
+                      value={selectedRedemptionId}
+                      onChange={(e) => setSelectedRedemptionId(e.target.value)}
+                      className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 ${
+                        selectedRedemptionId ? 'bg-green-50 border-green-300 dark:bg-green-900/20 dark:border-green-700' : ''
+                      } text-gray-900 dark:text-white`}
+                    >
+                      <option value="">{t('booking.noRewardSelected') || 'No reward selected'}</option>
+                      {redemptions.map(r => (
+                        <option key={r.id} value={r.id}>
+                          {r.reward.title} • {r.reward.type === 'PERCENTAGE_OFF' && r.reward.discountPercent ? `${r.reward.discountPercent}%` : r.reward.type === 'DISCOUNT_VOUCHER' && r.reward.discountAmount ? `-$${r.reward.discountAmount}` : r.reward.type === 'FREE_SERVICE' ? t('booking.freeService') || 'Free service' : t('booking.reward') || 'Reward'}
+                          {r.expiresAt ? ` • ${t('booking.expires') || 'Expires'} ${new Date(r.expiresAt).toLocaleDateString()}` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Show confirmation when reward is selected */}
+                  {selectedRedemptionId && discount > 0 && (
+                    <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                      <div className="flex items-center">
+                        <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
+                        <div className="ml-3">
+                          <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                            {t('booking.rewardApplied') || 'Reward Applied!'}
+                          </p>
+                          <p className="text-sm text-green-700 dark:text-green-300">
+                            {t('booking.youSave') || 'You save'} {formatPrice(discount, service.currency)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Booking Summary */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
@@ -465,12 +697,57 @@ const BookingFlow: React.FC = () => {
                 </div>
                 
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
+                  {/* Show discount breakdown if reward is selected */}
+                  {discount > 0 && (
+                    <>
+                      <div className="flex justify-between mb-2">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{t('booking.originalPrice') || 'Original Price'}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          {formatPrice(service.price || service.basePrice || 0, service.currency)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between mb-2">
+                        <span className="text-sm text-green-600 dark:text-green-400">{t('booking.discount') || 'Reward Discount'}</span>
+                        <span className="text-sm text-green-600 dark:text-green-400">
+                          -{formatPrice(discount, service.currency)}
+                        </span>
+                      </div>
+                      <div className="border-t border-gray-100 dark:border-gray-800 pt-2 mb-2"></div>
+                    </>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-lg font-bold text-gray-900 dark:text-white">{t('booking.total')}</span>
                     <span className="text-lg font-bold text-gray-900 dark:text-white">
-                      {formatPrice(service.price || service.basePrice || 0, service.currency)}
+                      {formatPrice(discount > 0 ? finalPrice : (service.price || service.basePrice || 0), service.currency)}
                     </span>
                   </div>
+                  
+                  {/* Loyalty Points to Earn */}
+                  {loyaltyData && pointsToEarn > 0 && (
+                    <div className="flex justify-between mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                      <div className="flex items-center space-x-2">
+                        <GiftIcon className="h-4 w-4 text-purple-500" />
+                        <span className="text-sm text-purple-600 dark:text-purple-400 font-medium">
+                          Points you'll earn
+                        </span>
+                      </div>
+                      <span className="text-sm font-bold text-purple-600 dark:text-purple-400">
+                        +{pointsToEarn} points
+                      </span>
+                    </div>
+                  )}
+                  
+                  {/* Current Loyalty Points */}
+                  {loyaltyData && (
+                    <div className="flex justify-between mt-1">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        Your current points
+                      </span>
+                      <span className="text-xs text-gray-600 dark:text-gray-300">
+                        {loyaltyData?.currentPoints?.toLocaleString() || '0'}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -480,14 +757,143 @@ const BookingFlow: React.FC = () => {
       case 3: // Payment
         return (
           <div className="space-y-6">
+            {/* Payment Summary */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">
                 {t('booking.payment')}
               </h3>
               
-              <p className="text-gray-600 dark:text-gray-400 text-center py-8">
-                {t('booking.paymentIntegrationPending')}
-              </p>
+              {/* Order Summary */}
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="font-medium text-gray-900 dark:text-white">{service.name}</span>
+                  <span className="font-bold text-gray-900 dark:text-white">
+                    {formatPrice(discount > 0 ? finalPrice : (service.price || service.basePrice || 0), service.currency)}
+                  </span>
+                </div>
+
+                {/* Show discount breakdown in order summary */}
+                {discount > 0 && (
+                  <div className="text-sm space-y-1 mb-3 pb-3 border-b border-gray-200 dark:border-gray-600">
+                    <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                      <span>Original Price:</span>
+                      <span>{formatPrice(service.price || service.basePrice || 0, service.currency)}</span>
+                    </div>
+                    <div className="flex justify-between text-green-600 dark:text-green-400">
+                      <span>Reward Discount:</span>
+                      <span>-{formatPrice(discount, service.currency)}</span>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                  <div className="flex justify-between">
+                    <span>Duration:</span>
+                    <span>{service.duration} minutes</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Date:</span>
+                    <span>{selectedDate?.toLocaleDateString()} at {selectedTime}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Specialist:</span>
+                    <span>{specialist.user?.firstName} {specialist.user?.lastName}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Loyalty Benefits */}
+              {loyaltyData && (
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-4 mb-6">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="h-8 w-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                      <GiftIcon className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">Loyalty Rewards</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {loyaltyData.tier?.name || 'Bronze'} Member Benefits
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
+                      <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                        +{pointsToEarn}
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Points to earn</p>
+                    </div>
+                    <div className="text-center p-2 bg-white dark:bg-gray-800 rounded">
+                      <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                        {loyaltyData?.currentPoints?.toLocaleString() || '0'}
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Current points</p>
+                    </div>
+                  </div>
+                  
+                  <p className="text-xs text-purple-600 dark:text-purple-400 text-center mt-3">
+                    After this booking: {((loyaltyData?.currentPoints || 0) + pointsToEarn).toLocaleString()} points
+                  </p>
+                </div>
+              )}
+              
+              {/* Reward Redemption Selection */}
+              {redemptions.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
+                    <GiftIcon className="w-5 h-5 mr-2 text-purple-600" />
+                    {t('booking.applyReward') || 'Apply a reward'}
+                  </h4>
+                  <select
+                    value={selectedRedemptionId}
+                    onChange={(e) => setSelectedRedemptionId(e.target.value)}
+                    className={`w-full px-3 py-2 border rounded-lg ${
+                      selectedRedemptionId
+                        ? 'border-green-300 bg-green-50 dark:border-green-600 dark:bg-green-900/20'
+                        : 'border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700'
+                    } text-gray-900 dark:text-white`}
+                  >
+                    <option value="">{t('booking.noRewardSelected') || 'No reward selected'}</option>
+                    {redemptions.map(r => (
+                      <option key={r.id} value={r.id}>
+                        {r.reward.title} • {r.reward.type === 'PERCENTAGE_OFF' && r.reward.discountPercent ? `${r.reward.discountPercent}%` : r.reward.type === 'DISCOUNT_VOUCHER' && r.reward.discountAmount ? `-$${r.reward.discountAmount}` : r.reward.type === 'FREE_SERVICE' ? t('booking.freeService') || 'Free service' : t('booking.reward') || 'Reward'}
+                        {r.expiresAt ? ` • ${t('booking.expires') || 'Expires'} ${new Date(r.expiresAt).toLocaleDateString()}` : ''}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Show confirmation when reward is selected */}
+                  {selectedRedemptionId && discount > 0 && (
+                    <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                            {t('booking.rewardApplied') || 'Reward Applied!'}
+                          </p>
+                          <p className="text-sm text-green-700 dark:text-green-300">
+                            {t('booking.youSave') || 'You save'} {formatPrice(discount, service.currency)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="text-center py-4 mb-6">
+                <p className="text-gray-600 dark:text-gray-400 mb-2">
+                  {t('booking.paymentIntegrationPending')}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-500">
+                  Complete booking to earn your loyalty points
+                </p>
+              </div>
               
               <button
                 onClick={handleBookingSubmit}
@@ -520,6 +926,34 @@ const BookingFlow: React.FC = () => {
                   : t('booking.manualBookingMessage')
                 }
               </p>
+
+              {/* Loyalty Points Earned Notification */}
+              {loyaltyData && pointsToEarn > 0 && isAutoBooked && (
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-4 mb-6">
+                  <div className="flex items-center justify-center space-x-3 mb-2">
+                    <div className="h-10 w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <GiftIcon className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-semibold text-purple-600 dark:text-purple-400">
+                        🎉 You earned {pointsToEarn} loyalty points!
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        New balance: {((loyaltyData?.currentPoints || 0) + pointsToEarn).toLocaleString()} points
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <button
+                      onClick={() => window.open('/loyalty', '_blank')}
+                      className="inline-flex items-center px-3 py-1.5 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
+                    >
+                      <StarIcon className="h-4 w-4 mr-1" />
+                      View Loyalty Dashboard
+                    </button>
+                  </div>
+                </div>
+              )}
               
               {isPending && (
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
@@ -547,7 +981,7 @@ const BookingFlow: React.FC = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">{t('booking.bookingId')}</span>
                   <span className="font-medium text-gray-900 dark:text-white">
-                    {booking?.id || 'N/A'}
+                    {booking?.id || t('common.notAvailable') || 'N/A'}
                   </span>
                 </div>
                 
@@ -606,7 +1040,7 @@ const BookingFlow: React.FC = () => {
           </h1>
           
           <p className="text-gray-600 dark:text-gray-400 mt-2">
-            {specialist.user?.firstName} {specialist.user?.lastName} - {specialist.businessName}
+            {specialist.user?.firstName} {specialist.user?.lastName} - {translateProfession(specialist.businessName, t)}
           </p>
         </div>
 

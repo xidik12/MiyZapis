@@ -1,9 +1,9 @@
 import { PrismaClient, User, Notification } from '@prisma/client';
-import nodemailer from 'nodemailer';
+import { emailService as templatedEmailService } from '@/services/email/enhanced-email';
 import { logger } from '@/utils/logger';
 import { config } from '@/config';
 import { redis } from '@/config/redis';
-import { EmailService } from '@/services/email';
+import { resolveLanguage } from '@/utils/language';
 import axios from 'axios';
 
 interface NotificationData {
@@ -30,11 +30,43 @@ interface SMSOptions {
 
 export class NotificationService {
   private prisma: PrismaClient;
-  private emailService: EmailService;
+  // Use enhanced templated email service (singleton)
 
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
-    this.emailService = new EmailService();
+    // no-op: using templatedEmailService singleton
+  }
+
+  private getTranslatedText(key: string, language: string = 'en'): string {
+    const translations: Record<string, Record<string, string>> = {
+      'greeting': {
+        en: 'Hi',
+        uk: 'Привіт',
+        ru: 'Привет'
+      },
+      'bookingDetails': {
+        en: 'Booking Details:',
+        uk: 'Деталі бронювання:',
+        ru: 'Детали бронирования:'
+      },
+      'manageBookings': {
+        en: 'You can view and manage your bookings by logging into your MiyZapis account.',
+        uk: 'Ви можете переглядати та керувати своїми бронюваннями, увійшовши до свого акаунта МійЗапис.',
+        ru: 'Вы можете просматривать и управлять своими бронированиями, войдя в свой аккаунт МояЗапись.'
+      },
+      'copyright': {
+        en: '© 2024 MiyZapis. All rights reserved.',
+        uk: '© 2024 МійЗапис. Всі права захищені.',
+        ru: '© 2024 МояЗапись. Все права защищены.'
+      },
+      'automatedEmail': {
+        en: 'This is an automated email, please do not reply.',
+        uk: 'Це автоматичне повідомлення, будь ласка, не відповідайте.',
+        ru: 'Это автоматическое письмо, пожалуйста, не отвечайте.'
+      }
+    };
+
+    return translations[key]?.[language] || translations[key]?.['en'] || key;
   }
 
   async sendNotification(userId: string, data: NotificationData): Promise<Notification> {
@@ -201,96 +233,67 @@ export class NotificationService {
 
       let emailSent = false;
 
-      // Use specific email methods based on notification type
-      if (data.type === 'BOOKING_CONFIRMED' || data.type === 'BOOKING_PENDING' || data.type === 'BOOKING_REQUEST') {
-        // Create a simple booking notification email
-        const html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>${data.title}</title>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #007bff; color: white; padding: 20px; text-align: center; }
-            .content { padding: 30px 20px; }
-            .booking-details { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
-            .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>${data.title}</h1>
-            </div>
-            <div class="content">
-              <h2>Hi ${user.firstName}!</h2>
-              <p>${data.message}</p>
-              
-              <div class="booking-details">
-                <h3>Booking Details:</h3>
-                ${data.data ? Object.entries(data.data).map(([key, value]) => 
-                  `<p><strong>${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:</strong> ${value}</p>`
-                ).join('') : ''}
-              </div>
-              
-              <p>You can view and manage your bookings by logging into your MiyZapis account.</p>
-            </div>
-            <div class="footer">
-              <p>© 2024 MiyZapis. All rights reserved.</p>
-              <p>This is an automated email, please do not reply.</p>
-            </div>
-          </div>
-        </body>
-        </html>
-        `;
+      // If booking confirmed and we have bookingId, use dedicated templates
+      if (data.type === 'BOOKING_CONFIRMED' && data.data?.bookingId) {
+        try {
+          const booking = await this.prisma.booking.findUnique({
+            where: { id: data.data.bookingId },
+            select: { id: true, customerId: true, specialistId: true }
+          });
+          if (booking) {
+            const lang = user.language || 'en';
+            if (user.id === booking.customerId) {
+              emailSent = await templatedEmailService.sendBookingConfirmation(booking.id, lang);
+            } else if (user.id === booking.specialistId) {
+              emailSent = await templatedEmailService.sendSpecialistBookingNotification(booking.id, lang);
+            }
+          }
+        } catch (e) {
+          // Fallthrough to generic template if something goes wrong
+          emailSent = false;
+        }
+      }
 
-        emailSent = await this.emailService.sendEmail({
+      // Use specific email methods based on notification type
+      if (!emailSent && (data.type === 'BOOKING_CONFIRMED' || data.type === 'BOOKING_PENDING' || data.type === 'BOOKING_REQUEST')) {
+        // Create a simple booking notification email with proper language support
+        const userLanguage = user.language || 'en';
+        const greeting = this.getTranslatedText('greeting', userLanguage);
+        const bookingDetailsLabel = this.getTranslatedText('bookingDetails', userLanguage);
+        const manageBookingsText = this.getTranslatedText('manageBookings', userLanguage);
+        const copyrightText = this.getTranslatedText('copyright', userLanguage);
+        const automatedEmailText = this.getTranslatedText('automatedEmail', userLanguage);
+
+        const detailsHtml = data.data ? `<div style="background:#f9fafb;padding:16px;border-radius:8px;margin:12px 0;">` +
+          Object.entries(data.data).map(([k, v]) => `<p><strong>${k.replace(/([A-Z])/g,' $1').replace(/^./,s=>s.toUpperCase())}:</strong> ${v as any}</p>`).join('') +
+          `</div>` : '';
+
+        emailSent = await templatedEmailService.sendTemplateEmail({
           to: user.email,
-          subject: data.title,
-          html,
-          text: `${data.title}\n\nHi ${user.firstName}!\n\n${data.message}\n\nBooking Details:\n${data.data ? Object.entries(data.data).map(([key, value]) => `${key}: ${value}`).join('\n') : ''}`
+          templateKey: 'notificationGeneric',
+          language: user.language || 'en',
+          data: {
+            firstName: user.firstName,
+            title: data.title,
+            message: data.message,
+            detailsHtml,
+          }
         });
       } else {
-        // Fallback for other notification types
-        const html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>${data.title}</title>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #007bff; color: white; padding: 20px; text-align: center; }
-            .content { padding: 30px 20px; }
-            .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>${data.title}</h1>
-            </div>
-            <div class="content">
-              <h2>Hi ${user.firstName}!</h2>
-              <p>${data.message}</p>
-            </div>
-            <div class="footer">
-              <p>© 2024 MiyZapis. All rights reserved.</p>
-              <p>This is an automated email, please do not reply.</p>
-            </div>
-          </div>
-        </body>
-        </html>
-        `;
-
-        emailSent = await this.emailService.sendEmail({
+        // Other types: generic template
+        const detailsHtml = data.data ? `<div style="background:#f9fafb;padding:16px;border-radius:8px;margin:12px 0;">` +
+          Object.entries(data.data).map(([k, v]) => `<p><strong>${k.replace(/([A-Z])/g,' $1').replace(/^./,s=>s.toUpperCase())}:</strong> ${v as any}</p>`).join('') +
+          `</div>` : '';
+        emailSent = await templatedEmailService.sendTemplateEmail({
           to: user.email,
-          subject: data.title,
-          html,
-          text: `${data.title}\n\nHi ${user.firstName}!\n\n${data.message}`
+          templateKey: 'notificationGeneric',
+          language: user.language || 'en',
+          data: {
+            firstName: user.firstName,
+            title: data.title,
+            message: data.message,
+            detailsHtml,
+          }
         });
       }
 
@@ -561,9 +564,17 @@ export class NotificationService {
         total
       });
 
+      // Calculate actual unread count
+      const unreadCount = await this.prisma.notification.count({
+        where: {
+          userId,
+          isRead: false,
+        },
+      });
+
       return {
         notifications,
-        unreadCount: total, // This should actually be unread count, but for now return total
+        unreadCount,
         pagination: {
           page,
           limit,

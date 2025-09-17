@@ -139,7 +139,11 @@ const SpecialistNotifications: React.FC = () => {
           notif.id === id ? { ...notif, isRead: true } : notif
         )
       );
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      setUnreadCount(prev => {
+        const next = Math.max(0, prev - 1);
+        try { window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: next } })); } catch {}
+        return next;
+      });
     } catch (err) {
       console.error('Failed to mark notification as read:', err);
     }
@@ -152,6 +156,7 @@ const SpecialistNotifications: React.FC = () => {
         prev.map(notif => ({ ...notif, isRead: true }))
       );
       setUnreadCount(0);
+      try { window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: 0 } })); } catch {}
     } catch (err) {
       console.error('Failed to mark all notifications as read:', err);
     }
@@ -164,7 +169,11 @@ const SpecialistNotifications: React.FC = () => {
         const filtered = prev.filter(notif => notif.id !== id);
         const deletedNotif = prev.find(notif => notif.id === id);
         if (deletedNotif && !deletedNotif.isRead) {
-          setUnreadCount(count => Math.max(0, count - 1));
+          setUnreadCount(count => {
+            const next = Math.max(0, count - 1);
+            try { window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: next } })); } catch {}
+            return next;
+          });
         }
         return filtered;
       });

@@ -166,6 +166,298 @@ export const emailTemplates = {
     }
   },
 
+  // Booking cancelled
+  bookingCancelled: {
+    en: {
+      subject: 'Booking Cancelled - {{serviceName}}',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2>Booking Cancelled</h2>
+          <p>Hello {{name}},</p>
+          <p>Your booking for <strong>{{serviceName}}</strong> on <strong>{{bookingDateTime}}</strong> has been cancelled.</p>
+          {{#if reason}}<p><strong>Reason:</strong> {{reason}}</p>{{/if}}
+        </div>
+      `,
+      text: `
+        Booking Cancelled
+        Hello {{name}},
+        Your booking for {{serviceName}} on {{bookingDateTime}} has been cancelled.
+        {{#if reason}}Reason: {{reason}}{{/if}}
+      `
+    },
+    uk: {
+      subject: 'Бронювання скасовано - {{serviceName}}',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2>Бронювання скасовано</h2>
+          <p>Привіт {{name}},</p>
+          <p>Ваше бронювання <strong>{{serviceName}}</strong> на <strong>{{bookingDateTime}}</strong> було скасовано.</p>
+          {{#if reason}}<p><strong>Причина:</strong> {{reason}}</p>{{/if}}
+        </div>
+      `,
+      text: `
+        Бронювання скасовано
+        Привіт {{name}},
+        Ваше бронювання {{serviceName}} на {{bookingDateTime}} було скасовано.
+        {{#if reason}}Причина: {{reason}}{{/if}}
+      `
+    },
+    ru: {
+      subject: 'Бронирование отменено - {{serviceName}}',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2>Бронирование отменено</h2>
+          <p>Привет {{name}},</p>
+          <p>Ваше бронирование <strong>{{serviceName}}</strong> на <strong>{{bookingDateTime}}</strong> было отменено.</p>
+          {{#if reason}}<p><strong>Причина:</strong> {{reason}}</p>{{/if}}
+        </div>
+      `,
+      text: `
+        Бронирование отменено
+        Привет {{name}},
+        Ваше бронирование {{serviceName}} на {{bookingDateTime}} было отменено.
+        {{#if reason}}Причина: {{reason}}{{/if}}
+      `
+    }
+  },
+
+  // Booking updated
+  bookingUpdated: {
+    en: {
+      subject: 'Booking Updated - {{serviceName}}',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2>Booking Updated</h2>
+          <p>Hello {{name}},</p>
+          <p>Your booking has been updated. Here are the latest details:</p>
+          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Service:</strong> {{serviceName}}</p>
+            <p><strong>Specialist:</strong> {{specialistName}}</p>
+            <p><strong>Date & Time:</strong> {{bookingDateTime}}</p>
+          </div>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="{{bookingUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">View Booking</a>
+          </div>
+        </div>
+      `,
+      text: `
+        Booking Updated
+        Hello {{name}},
+        Your booking has been updated.
+        - Service: {{serviceName}}
+        - Specialist: {{specialistName}}
+        - Date & Time: {{bookingDateTime}}
+        View your booking: {{bookingUrl}}
+      `
+    },
+    uk: {
+      subject: 'Бронювання оновлено - {{serviceName}}',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2>Бронювання оновлено</h2>
+          <p>Привіт {{name}},</p>
+          <p>Ваше бронювання було оновлено. Останні деталі:</p>
+          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Послуга:</strong> {{serviceName}}</p>
+            <p><strong>Спеціаліст:</strong> {{specialistName}}</p>
+            <p><strong>Дата і час:</strong> {{bookingDateTime}}</p>
+          </div>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="{{bookingUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Переглянути запис</a>
+          </div>
+        </div>
+      `,
+      text: `
+        Бронювання оновлено
+        Привіт {{name}},
+        Ваше бронювання було оновлено.
+        - Послуга: {{serviceName}}
+        - Спеціаліст: {{specialistName}}
+        - Дата і час: {{bookingDateTime}}
+        Переглянути запис: {{bookingUrl}}
+      `
+    },
+    ru: {
+      subject: 'Бронирование обновлено - {{serviceName}}',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2>Бронирование обновлено</h2>
+          <p>Привет {{name}},</p>
+          <p>Ваше бронирование было обновлено. Последние детали:</p>
+          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Услуга:</strong> {{serviceName}}</p>
+            <p><strong>Специалист:</strong> {{specialistName}}</p>
+            <p><strong>Дата и время:</strong> {{bookingDateTime}}</p>
+          </div>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="{{bookingUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Посмотреть запись</a>
+          </div>
+        </div>
+      `,
+      text: `
+        Бронирование обновлено
+        Привет {{name}},
+        Ваше бронирование было обновлено.
+        - Услуга: {{serviceName}}
+        - Специалист: {{specialistName}}
+        - Дата и время: {{bookingDateTime}}
+        Посмотреть запись: {{bookingUrl}}
+      `
+    }
+  },
+
+  // Booking reminder (24h)
+  bookingReminder: {
+    en: {
+      subject: 'Booking Reminder - {{serviceName}} on {{bookingDateTime}}',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2>Booking Reminder</h2>
+          <p>Hello {{customerName}},</p>
+          <p>This is a reminder that you have a booking tomorrow:</p>
+          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Service:</strong> {{serviceName}}</p>
+            <p><strong>Specialist:</strong> {{specialistName}}</p>
+            <p><strong>Date & Time:</strong> {{bookingDateTime}}</p>
+          </div>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="{{bookingUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">View Booking</a>
+          </div>
+        </div>
+      `,
+      text: `
+        Booking Reminder
+
+        Hello {{customerName}},
+
+        This is a reminder that you have a booking tomorrow:
+        - Service: {{serviceName}}
+        - Specialist: {{specialistName}}
+        - Date & Time: {{bookingDateTime}}
+
+        View your booking: {{bookingUrl}}
+      `
+    },
+    uk: {
+      subject: 'Нагадування про запис - {{serviceName}} {{bookingDateTime}}',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2>Нагадування про ваш запис</h2>
+          <p>Привіт {{customerName}},</p>
+          <p>Нагадуємо, що у вас є запис завтра:</p>
+          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Послуга:</strong> {{serviceName}}</p>
+            <p><strong>Спеціаліст:</strong> {{specialistName}}</p>
+            <p><strong>Дата і час:</strong> {{bookingDateTime}}</p>
+          </div>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="{{bookingUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Переглянути запис</a>
+          </div>
+        </div>
+      `,
+      text: `
+        Нагадування про запис
+
+        Привіт {{customerName}},
+
+        Нагадуємо, що у вас є запис завтра:
+        - Послуга: {{serviceName}}
+        - Спеціаліст: {{specialistName}}
+        - Дата і час: {{bookingDateTime}}
+
+        Переглянути запис: {{bookingUrl}}
+      `
+    },
+    ru: {
+      subject: 'Напоминание о записи - {{serviceName}} {{bookingDateTime}}',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2>Напоминание о вашей записи</h2>
+          <p>Привет {{customerName}},</p>
+          <p>Напоминаем, что у вас есть запись завтра:</p>
+          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Услуга:</strong> {{serviceName}}</p>
+            <p><strong>Специалист:</strong> {{specialistName}}</p>
+            <p><strong>Дата и время:</strong> {{bookingDateTime}}</p>
+          </div>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="{{bookingUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Посмотреть запись</a>
+          </div>
+        </div>
+      `,
+      text: `
+        Напоминание о записи
+
+        Привет {{customerName}},
+
+        Напоминаем, что у вас есть запись завтра:
+        - Услуга: {{serviceName}}
+        - Специалист: {{specialistName}}
+        - Дата и время: {{bookingDateTime}}
+
+        Посмотреть запись: {{bookingUrl}}
+      `
+    }
+  },
+
+  // Generic notification
+  notificationGeneric: {
+    en: {
+      subject: '{{title}}',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 20px;"><h1>{{title}}</h1></div>
+          <p>Hello {{firstName}}!</p>
+          <p>{{message}}</p>
+          {{detailsHtml}}
+        </div>
+      `,
+      text: `
+        {{title}}
+        
+        Hello {{firstName}}!
+        
+        {{message}}
+      `
+    },
+    uk: {
+      subject: '{{title}}',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 20px;"><h1>{{title}}</h1></div>
+          <p>Привіт {{firstName}}!</p>
+          <p>{{message}}</p>
+          {{detailsHtml}}
+        </div>
+      `,
+      text: `
+        {{title}}
+        
+        Привіт {{firstName}}!
+        
+        {{message}}
+      `
+    },
+    ru: {
+      subject: '{{title}}',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 20px;"><h1>{{title}}</h1></div>
+          <p>Привет {{firstName}}!</p>
+          <p>{{message}}</p>
+          {{detailsHtml}}
+        </div>
+      `,
+      text: `
+        {{title}}
+        
+        Привет {{firstName}}!
+        
+        {{message}}
+      `
+    }
+  },
+
   // Email verification
   emailVerification: {
     en: {

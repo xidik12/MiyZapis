@@ -177,27 +177,8 @@ export class PaymentService {
         data: { status: newBookingStatus },
       });
 
-      // Award loyalty points (5% of payment amount)
-      const loyaltyPoints = Math.floor(payment.amount * 0.05);
-      if (loyaltyPoints > 0) {
-        await prisma.user.update({
-          where: { id: booking.customerId },
-          data: {
-            loyaltyPoints: { increment: loyaltyPoints },
-          },
-        });
-
-        await prisma.loyaltyTransaction.create({
-          data: {
-            userId: booking.customerId,
-            type: 'EARNED',
-            points: loyaltyPoints,
-            reason: 'Booking payment',
-            description: `Earned ${loyaltyPoints} points for booking payment`,
-            referenceId: booking.id,
-          },
-        });
-      }
+      // Loyalty points will be awarded when booking is completed, not at payment
+      // This prevents duplicate point awards for the same booking
 
       logger.info('Payment processed successfully', {
         paymentId: payment.id,

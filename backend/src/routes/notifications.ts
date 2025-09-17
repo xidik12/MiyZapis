@@ -37,14 +37,14 @@ router.put('/:id/read', [
 // Mark all notifications as read
 router.put('/read-all', authenticateToken, NotificationController.markAllAsRead);
 
-// Delete notification
+// Delete all notifications (must be before ":id" route)
+router.delete('/all', authenticateToken, NotificationController.deleteAllNotifications);
+
+// Delete notification by id
 router.delete('/:id', [
   param('id').notEmpty().withMessage('Notification ID is required'),
   authenticateToken
 ], NotificationController.deleteNotification);
-
-// Delete all notifications
-router.delete('/all', authenticateToken, NotificationController.deleteAllNotifications);
 
 // Get notification preferences
 router.get('/settings', authenticateToken, NotificationController.getPreferences);

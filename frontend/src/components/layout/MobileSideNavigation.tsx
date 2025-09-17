@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, selectIsAuthenticated, logout } from '@/store/slices/authSlice';
@@ -32,6 +32,12 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
   isOpen,
   onClose,
 }) => {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const [translateX, setTranslateX] = useState(0);
+  const swiping = useRef(false);
+  const previouslyFocused = useRef<HTMLElement | null>(null);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   
   const location = useLocation();
@@ -55,6 +61,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isOpen) {
+      previouslyFocused.current = document.activeElement as HTMLElement;
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -62,7 +69,38 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
     
     return () => {
       document.body.style.overflow = 'unset';
+      // Restore focus to the previously focused element when closing
+      if (!isOpen && previouslyFocused.current) {
+        setTimeout(() => previouslyFocused.current?.focus(), 0);
+      }
     };
+  }, [isOpen]);
+
+  // Close on Esc
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
+
+  // Focus trap
+  useEffect(() => {
+    if (!isOpen) return;
+    const panel = panelRef.current;
+    if (!panel) return;
+    const getFocusable = () => Array.from(panel.querySelectorAll<HTMLElement>('a,button,input,select,textarea,[tabindex]:not([tabindex="-1"])')).filter(el => !el.hasAttribute('disabled'));
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const items = getFocusable();
+      if (items.length === 0) return;
+      const first = items[0]; const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    panel.addEventListener('keydown', handleKey as any);
+    setTimeout(() => (getFocusable()[0] || panel).focus(), 0);
+    return () => panel.removeEventListener('keydown', handleKey as any);
   }, [isOpen]);
 
   const handleLogout = async () => {
@@ -154,7 +192,33 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
           backgroundColor: 'rgb(var(--bg-primary) / 0.98)',
           backdropFilter: 'blur(24px)',
           borderLeft: '1px solid rgb(var(--border-primary) / 0.2)',
+          transform: `translateX(${translateX}px)`
         }}
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
+        onTouchStart={(e) => {
+          const t = e.touches[0];
+          touchStartX.current = t.clientX;
+          touchStartY.current = t.clientY;
+          swiping.current = true;
+        }}
+        onTouchMove={(e) => {
+          if (!swiping.current) return;
+          const t = e.touches[0];
+          const dx = t.clientX - (touchStartX.current || 0);
+          const dy = t.clientY - (touchStartY.current || 0);
+          if (Math.abs(dx) > Math.abs(dy) && dx > 0) {
+            setTranslateX(dx);
+          }
+        }}
+        onTouchEnd={() => {
+          if (!swiping.current) return;
+          swiping.current = false;
+          if (translateX > 80) { onClose(); setTranslateX(0); } else { setTranslateX(0); }
+        }}
+        tabIndex={-1}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200/20 dark:border-gray-700/20">

@@ -219,6 +219,55 @@ export class AuthService {
     return response.data;
   }
 
+  // Set initial password for Google OAuth users
+  async setInitialPassword(password: string): Promise<{ message: string }> {
+    // Try the dedicated endpoint first, fallback to change password without current password
+    try {
+      const response = await apiClient.post<{ message: string }>('/auth/set-initial-password', {
+        password
+      });
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Failed to set initial password');
+      }
+      return response.data;
+    } catch (error: any) {
+      // If 404, try different endpoints that might be available
+      if (error.response?.status === 404) {
+        console.log('Fallback: Trying alternative password setup methods');
+
+        // Try change-password endpoint
+        try {
+          const response = await apiClient.post<{ message: string }>('/auth/change-password', {
+            newPassword: password
+          });
+          if (!response.success || !response.data) {
+            throw new Error(response.error?.message || 'Failed to set initial password');
+          }
+          return response.data;
+        } catch (changeError: any) {
+          if (changeError.response?.status === 404) {
+            console.log('Change password endpoint also not found, trying profile update approach');
+            // Last resort: Try updating user profile with password field
+            try {
+              const response = await apiClient.put<{ message: string }>('/users/profile', {
+                password: password
+              });
+              if (!response.success || !response.data) {
+                throw new Error(response.error?.message || 'Failed to set initial password');
+              }
+              return { message: 'Password set successfully' };
+            } catch (profileError: any) {
+              console.error('All password setup methods failed:', profileError);
+              throw new Error('Unable to set password. Please contact support or try using the forgot password option.');
+            }
+          }
+          throw changeError;
+        }
+      }
+      throw error;
+    }
+  }
+
   // Verify email
   async verifyEmail(token: string): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>(API_ENDPOINTS.AUTH.VERIFY_EMAIL, { token });
@@ -244,7 +293,14 @@ export class AuthService {
       if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Failed to get user profile');
       }
-      return this.transformUserFromBackend(response.data.user);
+      console.log('🔍 getCurrentUser raw response:', response.data);
+      const transformedUser = this.transformUserFromBackend(response.data.user);
+      console.log('🔍 getCurrentUser transformed result:', {
+        authProvider: transformedUser.authProvider,
+        hasPassword: transformedUser.hasPassword,
+        passwordLastChanged: transformedUser.passwordLastChanged
+      });
+      return transformedUser;
     } catch (error: any) {
       // Extract error message from API response
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to get user profile';
@@ -321,6 +377,15 @@ export class AuthService {
 
   // Helper method to transform backend user format to frontend format
   private transformUserFromBackend(backendUser: any): User {
+    // Debug: Log the raw backend user data
+    console.log('🔍 Raw backend user data:', {
+      authProvider: backendUser.authProvider,
+      provider: backendUser.provider,
+      hasPassword: backendUser.hasPassword,
+      passwordLastChanged: backendUser.passwordLastChanged,
+      allKeys: Object.keys(backendUser)
+    });
+
     // Ensure avatar URL is properly formatted - all avatars should now be stored in backend
     let avatarUrl = backendUser.avatar;
     console.log('🔄 Transforming user avatar from backend:', avatarUrl);
@@ -347,6 +412,10 @@ export class AuthService {
       ...backendUser,
       userType: backendUser.userType === 'CUSTOMER' ? 'customer' : backendUser.userType === 'SPECIALIST' ? 'specialist' : backendUser.userType === 'ADMIN' ? 'admin' : backendUser.userType.toLowerCase(),
       avatar: avatarUrl, // Use the transformed avatar URL
+      // Preserve authentication-related fields
+      authProvider: backendUser.authProvider || backendUser.provider,
+      hasPassword: backendUser.hasPassword !== undefined ? backendUser.hasPassword : true,
+      passwordLastChanged: backendUser.passwordLastChanged,
       // Set default values for missing frontend properties
       totalBookings: backendUser.totalBookings || 0,
       memberSince: backendUser.createdAt || backendUser.memberSince,

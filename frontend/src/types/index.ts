@@ -137,6 +137,13 @@ export interface SpecialistLocation {
   country?: string;
   latitude?: number;
   longitude?: number;
+  // Detailed contact information for confirmed bookings
+  preciseAddress?: string;
+  businessPhone?: string;
+  whatsappNumber?: string;
+  locationNotes?: string;
+  parkingInfo?: string;
+  accessInstructions?: string;
 }
 
 // Service Types
@@ -155,6 +162,17 @@ export interface Service extends BaseEntity {
   specialist?: Specialist;
   images?: string[];
   tags?: string[];
+  // Loyalty Points pricing
+  loyaltyPointsEnabled?: boolean;
+  loyaltyPointsPrice?: number;
+  loyaltyPointsOnly?: boolean;
+  // Service Discounts
+  discountEnabled?: boolean;
+  discountType?: string;
+  discountValue?: number;
+  discountValidFrom?: string;
+  discountValidUntil?: string;
+  discountDescription?: string;
 }
 
 export interface ServiceCategory {
@@ -193,6 +211,18 @@ export interface Booking extends BaseEntity {
   cancellationReason?: string;
   rescheduleHistory?: RescheduleRecord[];
   
+  // Review information for completed bookings
+  review?: {
+    id: string;
+    rating: number;
+    comment?: string;
+    tags?: string;
+    isPublic: boolean;
+    isVerified: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+  
   // Flattened fields for frontend convenience (added by backend transform)
   customerName: string;
   customerEmail?: string;  
@@ -219,6 +249,8 @@ export interface CreateBookingRequest {
   duration: number;
   notes?: string;
   paymentMethodId?: string;
+  loyaltyPointsUsed?: number;
+  rewardRedemptionId?: string;
 }
 
 // Payment Types

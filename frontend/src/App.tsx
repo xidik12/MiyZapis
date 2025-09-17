@@ -37,8 +37,10 @@ const CustomerProfile = React.lazy(() => import('./pages/customer/Profile'));
 const CustomerLoyalty = React.lazy(() => import('./pages/customer/Loyalty'));
 const CustomerFavorites = React.lazy(() => import('./pages/customer/Favorites'));
 const CustomerSettings = React.lazy(() => import('./pages/customer/Settings'));
-const CustomerHelpSupport = React.lazy(() => import('./pages/customer/HelpSupport'));
-const PaymentMethods = React.lazy(() => import('./pages/customer/PaymentMethods'));
+  const CustomerHelpSupport = React.lazy(() => import('./pages/customer/HelpSupport'));
+  const PaymentMethods = React.lazy(() => import('./pages/customer/PaymentMethods'));
+  const CustomerMessages = React.lazy(() => import('./pages/customer/Messages'));
+  const CustomerReferrals = React.lazy(() => import('./pages/customer/Referrals'));
 
 // Specialist pages
 const SpecialistDashboard = React.lazy(() => import('./pages/specialist/Dashboard'));
@@ -49,7 +51,11 @@ const SpecialistAnalytics = React.lazy(() => import('./pages/specialist/Analytic
 const SpecialistSchedule = React.lazy(() => import('./pages/specialist/Schedule'));
 const SpecialistEarnings = React.lazy(() => import('./pages/specialist/Earnings'));
 const SpecialistReviews = React.lazy(() => import('./pages/specialist/Reviews'));
+const SpecialistLoyalty = React.lazy(() => import('./pages/specialist/Loyalty'));
 const SpecialistMessages = React.lazy(() => import('./pages/specialist/Messages'));
+
+// Customer pages
+const CustomerReviews = React.lazy(() => import('./pages/customer/Reviews'));
 const SpecialistSettings = React.lazy(() => import('./pages/specialist/Settings'));
 const SpecialistNotifications = React.lazy(() => import('./pages/specialist/Notifications'));
 
@@ -101,6 +107,7 @@ const usePageTitle = () => {
       '/specialist/schedule': 'Schedule - МійЗапис',
       '/specialist/earnings': 'Earnings - МійЗапис',
       '/specialist/reviews': 'Reviews - МійЗапис',
+      '/specialist/loyalty': 'Loyalty Program - МійЗапис',
       '/specialist/messages': 'Messages - МійЗапис',
       '/specialist/settings': 'Settings - МійЗапис',
       '/specialist/notifications': 'Notifications - МійЗапис',
@@ -281,6 +288,18 @@ function App() {
             }
           />
           <Route
+            path="/specialist/loyalty"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistLoyalty />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/specialist/messages"
             element={
               <ProtectedRoute requiredUserType="specialist">
@@ -325,6 +344,18 @@ function App() {
                 <CustomerLayout>
                   <Suspense fallback={<SuspenseLoader />}>
                     <CustomerDashboard />
+                  </Suspense>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/messages"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerMessages />
                   </Suspense>
                 </CustomerLayout>
               </ProtectedRoute>
@@ -402,28 +433,13 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/customer/history"
-            element={
-              <ProtectedRoute requiredUserType="customer">
-                <CustomerLayout>
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">Booking History</h1>
-                    <p className="text-gray-600 mt-2">View your past bookings and service history</p>
-                  </div>
-                </CustomerLayout>
-              </ProtectedRoute>
-            }
-          />
+          {/* Removed redundant customer history route (use /customer/bookings) */}
           <Route
             path="/customer/reviews"
             element={
               <ProtectedRoute requiredUserType="customer">
                 <CustomerLayout>
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">My Reviews</h1>
-                    <p className="text-gray-600 mt-2">Manage your reviews and ratings</p>
-                  </div>
+                  <CustomerReviews />
                 </CustomerLayout>
               </ProtectedRoute>
             }
@@ -449,6 +465,18 @@ function App() {
                     <h1 className="text-2xl font-bold">Notifications</h1>
                     <p className="text-gray-600 mt-2">View your notifications and alerts</p>
                   </div>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/referrals"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerReferrals />
+                  </Suspense>
                 </CustomerLayout>
               </ProtectedRoute>
             }
@@ -557,10 +585,7 @@ function App() {
             element={
               <ProtectedRoute requiredUserType="customer">
                 <CustomerLayout>
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">My Reviews</h1>
-                    <p className="text-gray-600 mt-2">Manage your reviews and ratings</p>
-                  </div>
+                  <CustomerReviews />
                 </CustomerLayout>
               </ProtectedRoute>
             }

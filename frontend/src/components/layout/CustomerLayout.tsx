@@ -27,6 +27,8 @@ import {
   CreditCardIcon,
   MagnifyingGlassIcon,
   ArrowRightOnRectangleIcon,
+  ChatBubbleLeftEllipsisIcon,
+  UsersIcon,
 } from '@heroicons/react/24/outline';
 import { HomeIcon as HomeIconSolid } from '@heroicons/react/24/solid';
 
@@ -67,13 +69,6 @@ const navigation: SidebarNavItem[] = [
     iconActive: CalendarIcon,
   },
   {
-    name: 'History',
-    nameKey: 'customer.nav.history',
-    href: '/history',
-    icon: ClockIcon,
-    iconActive: ClockIcon,
-  },
-  {
     name: 'Favorites',
     nameKey: 'customer.nav.favorites',
     href: '/favorites',
@@ -88,6 +83,13 @@ const navigation: SidebarNavItem[] = [
     iconActive: StarIcon,
   },
   {
+    name: 'Messages',
+    nameKey: 'customer.nav.messages',
+    href: '/customer/messages',
+    icon: ChatBubbleLeftEllipsisIcon,
+    iconActive: ChatBubbleLeftEllipsisIcon,
+  },
+  {
     name: 'Payments',
     nameKey: 'customer.nav.payments',
     href: '/payments',
@@ -100,6 +102,13 @@ const navigation: SidebarNavItem[] = [
     href: '/loyalty',
     icon: GiftIcon,
     iconActive: GiftIcon,
+  },
+  {
+    name: 'Referrals',
+    nameKey: 'customer.nav.referrals',
+    href: '/customer/referrals',
+    icon: UsersIcon,
+    iconActive: UsersIcon,
   },
   {
     name: 'Profile',
@@ -319,19 +328,20 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
 
         {/* Bottom controls */}
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
-          {/* Theme toggle */}
+          {/* Theme toggle (larger touch target on mobile) */}
           <button
             onClick={toggleTheme}
             className={`
-              flex items-center w-full px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200
-              text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700
+              flex items-center w-full px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
+              text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 mobile-touch-target
               ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
             `}
+            aria-label={theme === 'dark' ? t('theme.light') : t('theme.dark')}
           >
             {theme === 'dark' ? (
-              <SunIcon className="w-5 h-5" />
+              <SunIcon className="w-7 h-7 sm:w-6 sm:h-6" />
             ) : (
-              <MoonIcon className="w-5 h-5" />
+              <MoonIcon className="w-7 h-7 sm:w-6 sm:h-6" />
             )}
             {!isCollapsed && (
               <span>{theme === 'dark' ? t('theme.light') : t('theme.dark')}</span>
@@ -356,16 +366,16 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
             </div>
           )}
 
-          {/* Logout button */}
+          {/* Logout button (larger touch target on mobile) */}
           <button
             onClick={handleLogout}
             className={`
-              flex items-center w-full px-3 py-2 text-sm font-medium rounded-xl transition-all duration-200
-              text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20
+              flex items-center w-full px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
+              text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 mobile-touch-target
               ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
             `}
           >
-            <ArrowRightOnRectangleIcon className="w-5 h-5" />
+            <ArrowRightOnRectangleIcon className="w-7 h-7 sm:w-6 sm:h-6" />
             {!isCollapsed && (
               <span>{t('auth.logout')}</span>
             )}
@@ -379,7 +389,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 lg:px-6">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="lg:hidden p-3 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <Bars3Icon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
           </button>
@@ -391,7 +401,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
             {/* Settings */}
             <Link 
               to="/settings"
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="p-3 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <Cog6ToothIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
             </Link>

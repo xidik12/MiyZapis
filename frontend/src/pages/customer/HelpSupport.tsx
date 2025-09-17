@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { helpService, FAQ, ContactMethod } from '../../services/help.service';
@@ -81,7 +82,7 @@ const CustomerHelpSupport: React.FC = () => {
     try {
       await helpService.submitFeedback(feedbackForm);
       
-      alert(t('feedback.thankYou'));
+      toast.success(t('feedback.thankYou'));
       setFeedbackForm({
         subject: '',
         message: '',
@@ -90,7 +91,7 @@ const CustomerHelpSupport: React.FC = () => {
       });
     } catch (error: any) {
       console.error('Failed to submit feedback:', error);
-      alert(error.message || 'Failed to submit feedback. Please try again.');
+      toast.error(error.message || 'Failed to submit feedback. Please try again.');
     }
   };
 
@@ -104,7 +105,7 @@ const CustomerHelpSupport: React.FC = () => {
         break;
       case 'chat':
         // In a real app, this would open a chat widget
-        alert(t('action.liveChatAlert'));
+        toast.info(t('action.liveChatAlert'));
         break;
     }
   };

@@ -20,6 +20,7 @@ import {
   MagnifyingGlassIcon,
   LifebuoyIcon,
   GiftIcon,
+  ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline';
 import {
   HomeIcon as HomeIconSolid,
@@ -33,6 +34,7 @@ import {
   MagnifyingGlassIcon as MagnifyingGlassIconSolid,
   LifebuoyIcon as LifebuoyIconSolid,
   GiftIcon as GiftIconSolid,
+  ChatBubbleLeftRightIcon as ChatBubbleLeftRightIconSolid,
 } from '@heroicons/react/24/solid';
 
 interface CustomerSidebarProps {
@@ -78,6 +80,13 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       iconSolid: HomeIconSolid,
     },
     {
+      name: 'Messages',
+      translationKey: 'dashboard.nav.messages',
+      href: '/customer/messages',
+      icon: ChatBubbleLeftRightIcon,
+      iconSolid: ChatBubbleLeftRightIconSolid,
+    },
+    {
       name: 'Search Services',
       translationKey: 'search.title',
       href: '/search',
@@ -95,7 +104,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
     {
       name: 'Booking History',
       translationKey: 'dashboard.nav.history',
-      href: '/customer/history',
+      href: '/customer/bookings',
       icon: ClockIcon,
       iconSolid: ClockIconSolid,
     },

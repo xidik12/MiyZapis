@@ -138,3 +138,30 @@ export const validatePasswordReset = [
       return true;
     }),
 ];
+
+// Change password validation
+export const validateChangePassword = [
+  body('currentPassword')
+    .optional()  // Optional for Google OAuth users who don't have a current password
+    .isLength({ min: 1 })
+    .withMessage('Current password is required if you have one set'),
+
+  body('newPassword')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters long')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?])/)
+    .withMessage('Password must contain at least one lowercase letter, one uppercase letter, one number, and one symbol')
+    .matches(/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|;:,.<>?]*$/)
+    .withMessage('Password must contain only English characters and symbols'),
+];
+
+// Set initial password validation
+export const validateSetInitialPassword = [
+  body('password')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters long')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?])/)
+    .withMessage('Password must contain at least one lowercase letter, one uppercase letter, one number, and one symbol')
+    .matches(/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{}|;:,.<>?]*$/)
+    .withMessage('Password must contain only English characters and symbols'),
+];

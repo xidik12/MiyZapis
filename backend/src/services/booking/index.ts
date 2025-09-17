@@ -1,6 +1,9 @@
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
 import { NotificationService } from '@/services/notification';
+import { emailService as templatedEmailService } from '@/services/email/enhanced-email';
+import { resolveLanguage } from '@/utils/language';
+import LoyaltyService from '@/services/loyalty';
 import { Booking, User, Service, Specialist } from '@prisma/client';
 
 interface CreateBookingData {
@@ -10,6 +13,7 @@ interface CreateBookingData {
   duration?: number; // Optional - will use service duration if not provided
   customerNotes?: string;
   loyaltyPointsUsed?: number;
+  rewardRedemptionId?: string;
 }
 
 interface UpdateBookingData {
@@ -106,6 +110,12 @@ export class BookingService {
 
       if (!service.isActive) {
         throw new Error('SERVICE_NOT_ACTIVE');
+      }
+
+      // Prevent specialists from booking their own services
+      // service.specialist.userId is the User ID of the specialist who owns the service
+      if (data.customerId === service.specialist.userId) {
+        throw new Error('CANNOT_BOOK_OWN_SERVICE');
       }
 
       // Use service duration if not provided, or validate provided duration
@@ -211,7 +221,105 @@ export class BookingService {
         const baseAmount = service.basePrice;
         const loyaltyPointsUsed = data.loyaltyPointsUsed || 0;
         const loyaltyDiscount = loyaltyPointsUsed * 0.01; // 1 point = $0.01
-        const totalAmount = Math.max(0, baseAmount - loyaltyDiscount);
+        let subtotalAfterPoints = Math.max(0, baseAmount - loyaltyDiscount);
+
+        // Optional: apply approved reward redemption
+        let rewardDiscount = 0;
+        let rewardRedemptionId: string | undefined = data.rewardRedemptionId;
+
+        const now = new Date();
+        if (rewardRedemptionId) {
+          const redemption = await tx.rewardRedemption.findUnique({
+            where: { id: rewardRedemptionId },
+            include: { reward: true }
+          });
+
+          if (!redemption) {
+            throw new Error('REWARD_REDEMPTION_NOT_FOUND');
+          }
+          if (redemption.userId !== data.customerId) {
+            throw new Error('REWARD_REDEMPTION_NOT_OWNED');
+          }
+          if (redemption.status !== 'APPROVED') {
+            throw new Error('REWARD_REDEMPTION_NOT_APPROVED');
+          }
+          if (redemption.expiresAt && redemption.expiresAt < new Date()) {
+            throw new Error('REWARD_REDEMPTION_EXPIRED');
+          }
+
+          // Validate specialist match
+          if (redemption.reward.specialistId !== service.specialist.userId) {
+            throw new Error('REWARD_NOT_FOR_THIS_SPECIALIST');
+          }
+
+          // Validate service applicability if serviceIds restriction exists
+          if (redemption.reward.serviceIds) {
+            try {
+              const allowed: string[] = JSON.parse(redemption.reward.serviceIds);
+              if (Array.isArray(allowed) && allowed.length > 0 && !allowed.includes(data.serviceId)) {
+                throw new Error('REWARD_NOT_APPLICABLE_TO_SERVICE');
+              }
+            } catch (_e) {
+              // If parsing fails, treat as not restricted
+            }
+          }
+
+          // Compute reward discount
+          if (redemption.reward.type === 'PERCENTAGE_OFF' && redemption.reward.discountPercent) {
+            rewardDiscount = (subtotalAfterPoints * redemption.reward.discountPercent) / 100;
+          } else if (redemption.reward.type === 'DISCOUNT_VOUCHER' && redemption.reward.discountAmount) {
+            rewardDiscount = Math.min(redemption.reward.discountAmount, subtotalAfterPoints);
+          } else if (redemption.reward.type === 'FREE_SERVICE') {
+            rewardDiscount = subtotalAfterPoints;
+          }
+
+          subtotalAfterPoints = Math.max(0, subtotalAfterPoints - rewardDiscount);
+        } else {
+          // Attempt auto-apply: find an applicable approved redemption for this specialist/service
+          const candidate = await tx.rewardRedemption.findFirst({
+            where: {
+              userId: data.customerId,
+              status: 'APPROVED',
+              OR: [
+                { expiresAt: null },
+                { expiresAt: { gte: now } }
+              ],
+              reward: {
+                specialistId: service.specialist.userId,
+                isActive: true
+              }
+            },
+            include: { reward: true },
+            orderBy: { expiresAt: 'asc' }
+          });
+
+          if (candidate) {
+            // Validate service applicability
+            let applicable = true;
+            if (candidate.reward.serviceIds) {
+              try {
+                const allowed: string[] = JSON.parse(candidate.reward.serviceIds);
+                if (Array.isArray(allowed) && allowed.length > 0 && !allowed.includes(data.serviceId)) {
+                  applicable = false;
+                }
+              } catch (_e) { /* ignore */ }
+            }
+
+            if (applicable) {
+              rewardRedemptionId = candidate.id;
+              if (candidate.reward.type === 'PERCENTAGE_OFF' && candidate.reward.discountPercent) {
+                rewardDiscount = (subtotalAfterPoints * candidate.reward.discountPercent) / 100;
+              } else if (candidate.reward.type === 'DISCOUNT_VOUCHER' && candidate.reward.discountAmount) {
+                rewardDiscount = Math.min(candidate.reward.discountAmount, subtotalAfterPoints);
+              } else if (candidate.reward.type === 'FREE_SERVICE') {
+                rewardDiscount = subtotalAfterPoints;
+              }
+              subtotalAfterPoints = Math.max(0, subtotalAfterPoints - rewardDiscount);
+            }
+          }
+        }
+
+        const totalAmount = subtotalAfterPoints;
         const depositAmount = totalAmount * 0.2; // 20% deposit
         const remainingAmount = totalAmount - depositAmount;
 
@@ -254,6 +362,7 @@ export class BookingService {
               isPhoneVerified: true,
               isActive: true,
               loyaltyPoints: true,
+              loyaltyTierId: true,
               language: true,
               currency: true,
               timezone: true,
@@ -274,6 +383,7 @@ export class BookingService {
               isPhoneVerified: true,
               isActive: true,
               loyaltyPoints: true,
+              loyaltyTierId: true,
               language: true,
               currency: true,
               timezone: true,
@@ -310,6 +420,21 @@ export class BookingService {
               description: `Redeemed ${loyaltyPointsUsed} points for booking`,
               referenceId: createdBooking.id,
             },
+          });
+        }
+
+        // Mark reward redemption as used and link to booking
+        if (rewardRedemptionId && rewardDiscount > 0) {
+          await tx.rewardRedemption.update({
+            where: { id: rewardRedemptionId },
+            data: {
+              bookingId: createdBooking.id,
+              originalAmount: Math.max(0, baseAmount - loyaltyDiscount),
+              discountApplied: rewardDiscount,
+              finalAmount: totalAmount,
+              status: 'USED',
+              usedAt: new Date(),
+            }
           });
         }
 
@@ -391,6 +516,13 @@ export class BookingService {
             smsTemplate: 'specialist_booking_request_sms'
           });
         }
+
+        // Attempt to send reminder if within 24 hours (method will self-check)
+        try {
+          await templatedEmailService.sendBookingReminder(booking.id, booking.customer.language || 'en');
+        } catch (e) {
+          logger.warn('Booking reminder send attempt skipped/failed', { bookingId: booking.id });
+        }
       } catch (notificationError) {
         logger.error('Failed to send booking notifications:', notificationError);
         // Don't throw error as booking was successful
@@ -431,6 +563,7 @@ export class BookingService {
               isPhoneVerified: true,
               isActive: true,
               loyaltyPoints: true,
+              loyaltyTierId: true,
               language: true,
               currency: true,
               timezone: true,
@@ -451,6 +584,7 @@ export class BookingService {
               isPhoneVerified: true,
               isActive: true,
               loyaltyPoints: true,
+              loyaltyTierId: true,
               language: true,
               currency: true,
               timezone: true,
@@ -560,6 +694,7 @@ export class BookingService {
               isPhoneVerified: true,
               isActive: true,
               loyaltyPoints: true,
+              loyaltyTierId: true,
               language: true,
               currency: true,
               timezone: true,
@@ -580,6 +715,7 @@ export class BookingService {
               isPhoneVerified: true,
               isActive: true,
               loyaltyPoints: true,
+              loyaltyTierId: true,
               language: true,
               currency: true,
               timezone: true,
@@ -633,30 +769,10 @@ export class BookingService {
         // Don't throw error as booking update was successful
       }
 
-      // Award loyalty points when booking is completed
+      // Award loyalty points when booking is completed using centralized service
       if (data.status === 'COMPLETED') {
-        const pointsEarned = Math.floor(booking.totalAmount * 0.1); // 10% of total amount as points
-        
-        await prisma.user.update({
-          where: { id: booking.customerId },
-          data: {
-            loyaltyPoints: {
-              increment: pointsEarned,
-            },
-          },
-        });
-
-        // Create loyalty transaction record
-        await prisma.loyaltyTransaction.create({
-          data: {
-            userId: booking.customerId,
-            type: 'EARNED',
-            points: pointsEarned,
-            reason: 'Booking completion',
-            description: `Earned ${pointsEarned} points for completing booking ${booking.id}`,
-            referenceId: booking.id,
-          },
-        });
+        // Use centralized loyalty service for consistent point calculation
+        await LoyaltyService.processBookingCompletion(booking.id);
 
         // Update specialist metrics
         await prisma.specialist.update({
@@ -740,6 +856,7 @@ export class BookingService {
               isPhoneVerified: true,
               isActive: true,
               loyaltyPoints: true,
+              loyaltyTierId: true,
               language: true,
               currency: true,
               timezone: true,
@@ -760,6 +877,7 @@ export class BookingService {
               isPhoneVerified: true,
               isActive: true,
               loyaltyPoints: true,
+              loyaltyTierId: true,
               language: true,
               currency: true,
               timezone: true,
@@ -774,6 +892,74 @@ export class BookingService {
           },
         },
       });
+
+      // Send localized emails for key changes
+      try {
+        const langCustomer = resolveLanguage(updatedBooking.customer?.language, undefined);
+        const langSpecialist = updatedBooking.specialist?.language || 'en';
+        const bookingUrlCustomer = `${process.env.FRONTEND_URL || 'https://miyzapis.com'}/bookings/${updatedBooking.id}`;
+        const bookingUrlSpecialist = `${process.env.FRONTEND_URL || 'https://miyzapis.com'}/specialist/bookings/${updatedBooking.id}`;
+
+        // If status changed to CANCELLED
+        if (data.status === 'CANCELLED') {
+          const dateStr = new Intl.DateTimeFormat(langCustomer === 'uk' ? 'uk-UA' : langCustomer === 'ru' ? 'ru-RU' : 'en-US', {
+            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
+            timeZone: updatedBooking.customer.timezone
+          }).format(new Date(updatedBooking.scheduledAt));
+          await templatedEmailService.sendTemplateEmail({
+            to: updatedBooking.customer.email!,
+            templateKey: 'bookingCancelled',
+            language: langCustomer,
+            data: { name: updatedBooking.customer.firstName, serviceName: updatedBooking.service.name, bookingDateTime: dateStr, reason: data.cancellationReason || '' }
+          });
+          const dateStrSpec = new Intl.DateTimeFormat(langSpecialist === 'uk' ? 'uk-UA' : langSpecialist === 'ru' ? 'ru-RU' : 'en-US', {
+            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
+            timeZone: updatedBooking.specialist.timezone
+          }).format(new Date(updatedBooking.scheduledAt));
+          await templatedEmailService.sendTemplateEmail({
+            to: updatedBooking.specialist.email!,
+            templateKey: 'bookingCancelled',
+            language: langSpecialist,
+            data: { name: updatedBooking.specialist.firstName, serviceName: updatedBooking.service.name, bookingDateTime: dateStrSpec, reason: data.cancellationReason || '' }
+          });
+        } else if (data.status || data.scheduledAt) {
+          // Any status/time update → bookingUpdated for both
+          const dateStrCust = new Intl.DateTimeFormat(langCustomer === 'uk' ? 'uk-UA' : langCustomer === 'ru' ? 'ru-RU' : 'en-US', {
+            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
+            timeZone: updatedBooking.customer.timezone
+          }).format(new Date(updatedBooking.scheduledAt));
+          await templatedEmailService.sendTemplateEmail({
+            to: updatedBooking.customer.email!,
+            templateKey: 'bookingUpdated',
+            language: langCustomer,
+            data: {
+              name: updatedBooking.customer.firstName,
+              serviceName: updatedBooking.service.name,
+              specialistName: `${updatedBooking.specialist.firstName} ${updatedBooking.specialist.lastName}`,
+              bookingDateTime: dateStrCust,
+              bookingUrl: bookingUrlCustomer,
+            }
+          });
+          const dateStrSpec2 = new Intl.DateTimeFormat(langSpecialist === 'uk' ? 'uk-UA' : langSpecialist === 'ru' ? 'ru-RU' : 'en-US', {
+            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
+            timeZone: updatedBooking.specialist.timezone
+          }).format(new Date(updatedBooking.scheduledAt));
+          await templatedEmailService.sendTemplateEmail({
+            to: updatedBooking.specialist.email!,
+            templateKey: 'bookingUpdated',
+            language: langSpecialist,
+            data: {
+              name: updatedBooking.specialist.firstName,
+              serviceName: updatedBooking.service.name,
+              specialistName: `${updatedBooking.specialist.firstName} ${updatedBooking.specialist.lastName}`,
+              bookingDateTime: dateStrSpec2,
+              bookingUrl: bookingUrlSpecialist,
+            }
+          });
+        }
+      } catch (e) {
+        // non-blocking
+      }
 
       // Refund loyalty points if they were used
       if (booking.loyaltyPointsUsed > 0) {
@@ -907,6 +1093,19 @@ export class BookingService {
                 createdAt: true,
                 updatedAt: true,
                 specialist: true,
+              },
+            },
+            // Include review information for completed bookings
+            review: {
+              select: {
+                id: true,
+                rating: true,
+                comment: true,
+                tags: true,
+                isPublic: true,
+                isVerified: true,
+                createdAt: true,
+                updatedAt: true,
               },
             },
           },

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Disallow non-HTML build assets
+Disallow: /assets/
+
+# Sitemap
+Sitemap: https://miyzapis.com/sitemap.xml
+

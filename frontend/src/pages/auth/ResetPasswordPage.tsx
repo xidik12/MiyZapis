@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import PasswordStrengthIndicator from '@/components/ui/PasswordStrengthIndicator';
 import { ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { authService } from '@/services/auth.service';
+import { getPasswordValidationRules, getConfirmPasswordValidationRules } from '@/utils/passwordValidation';
 
 interface ResetPasswordFormData {
   password: string;
@@ -165,17 +167,7 @@ const ResetPasswordPage: React.FC = () => {
             {t('auth.resetPassword.newPasswordLabel')}
           </label>
           <input
-            {...register('password', {
-              required: t('auth.error.passwordRequired'),
-              minLength: {
-                value: 8,
-                message: t('auth.error.passwordMinLength'),
-              },
-              pattern: {
-                value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-                message: t('auth.error.passwordPattern'),
-              },
-            })}
+            {...register('password', getPasswordValidationRules(t))}
             type="password"
             autoComplete="new-password"
             className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 ${
@@ -194,6 +186,16 @@ const ResetPasswordPage: React.FC = () => {
               theme === 'dark' ? 'text-red-400' : 'text-red-600'
             }`}>{errors.password.message}</p>
           )}
+
+          {/* Password Strength Indicator */}
+          {watchedPassword && (
+            <div className="mt-3">
+              <PasswordStrengthIndicator
+                password={watchedPassword}
+                showRequirements={true}
+              />
+            </div>
+          )}
         </div>
 
         <div>
@@ -203,11 +205,7 @@ const ResetPasswordPage: React.FC = () => {
             {t('auth.resetPassword.confirmPasswordLabel')}
           </label>
           <input
-            {...register('confirmPassword', {
-              required: t('auth.error.confirmPasswordRequired'),
-              validate: (value) =>
-                value === watchedPassword || t('auth.error.passwordsNotMatch'),
-            })}
+            {...register('confirmPassword', getConfirmPasswordValidationRules(watchedPassword, t))}
             type="password"
             autoComplete="new-password"
             className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 ${

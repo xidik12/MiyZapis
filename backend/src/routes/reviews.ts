@@ -3,11 +3,13 @@ import { Request, Response } from 'express';
 import { prisma } from '@/config/database';
 import { authenticateToken, requireOwnership } from '@/middleware/auth/jwt';
 import { validationResult } from 'express-validator';
+import LoyaltyService from '@/services/loyalty';
 import {
   validateCreateReview,
   validateUpdateReview,
   validateGetServiceReviews,
   validateGetSpecialistReviews,
+  validateGetMyReviews,
   validateReviewId,
   validateMarkReviewHelpful,
   validateReportReview,
@@ -19,6 +21,80 @@ import { logger } from '@/utils/logger';
 import { ReviewController } from '@/controllers/reviews';
 
 const router = Router();
+
+// Get user's own reviews (as a customer)
+router.get('/my-reviews', authenticateToken, validateGetMyReviews, async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json(
+        createErrorResponse(
+          ErrorCodes.VALIDATION_ERROR,
+          'Invalid query parameters',
+          req.headers['x-request-id'] as string,
+          formatValidationErrors(errors.array())
+        )
+      );
+    }
+
+    const userId = (req as AuthenticatedRequest).user?.id;
+    const {
+      page = 1,
+      limit = 20,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = req.query;
+
+    const { skip, take } = calculatePaginationOffset(Number(page), Number(limit));
+
+    // Build order by clause
+    let orderBy: any = { createdAt: 'desc' };
+    if (sortBy === 'rating') {
+      orderBy = { rating: sortOrder };
+    }
+
+    // Get total count
+    const totalCount = await prisma.review.count({
+      where: { customerId: userId }
+    });
+
+    // Get user's reviews - simple customer view
+    const reviews = await prisma.review.findMany({
+      where: { customerId: userId },
+      orderBy,
+      skip,
+      take
+    });
+
+    // Format response data for customer dashboard
+    const formattedReviews = reviews.map(review => ({
+      id: review.id,
+      rating: review.rating,
+      comment: review.comment,
+      tags: review.tags ? JSON.parse(review.tags) : [],
+      isVerified: review.isVerified,
+      isPublic: review.isPublic,
+      createdAt: review.createdAt,
+      updatedAt: review.updatedAt
+    }));
+
+    const paginationMeta = createPaginationMeta(Number(page), Number(limit), totalCount);
+
+    res.json(createSuccessResponse({
+      reviews: formattedReviews,
+      pagination: paginationMeta
+    }));
+  } catch (error) {
+    logger.error('Get my reviews error:', error);
+    res.status(500).json(
+      createErrorResponse(
+        ErrorCodes.INTERNAL_SERVER_ERROR,
+        'Failed to get your reviews',
+        req.headers['x-request-id'] as string
+      )
+    );
+  }
+});
 
 // Get service reviews
 router.get('/service/:id', validateGetServiceReviews, async (req: Request, res: Response) => {
@@ -317,26 +393,15 @@ router.post('/', authenticateToken, validateCreateReview, async (req: Request, r
       }
     });
 
-    // Award loyalty points for writing review
-    const loyaltyPointsEarned = 50; // 50 points for writing a review
-
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        loyaltyPoints: { increment: loyaltyPointsEarned }
-      }
-    });
-
-    await prisma.loyaltyTransaction.create({
-      data: {
-        userId,
-        type: 'EARNED',
-        points: loyaltyPointsEarned,
-        reason: 'Review submission',
-        description: `Earned ${loyaltyPointsEarned} points for writing a review`,
-        referenceId: review.id
-      }
-    });
+    // Award loyalty points using the new system (5 for customer, 1 per star for specialist)
+    // Use the loyalty service which handles both customer and specialist rewards
+    await LoyaltyService.processReviewReward(
+      review.id,
+      bookingId,
+      userId,
+      rating,
+      comment
+    );
 
     // Create notification for specialist
     await prisma.notification.create({
@@ -361,7 +426,7 @@ router.post('/', authenticateToken, validateCreateReview, async (req: Request, r
       tags: JSON.parse(review.tags),
       isPublic: review.isPublic,
       isVerified: review.isVerified,
-      loyaltyPointsEarned,
+      loyaltyPointsEarned: 5,
       createdAt: review.createdAt,
       customer: {
         firstName: review.customer.firstName,
@@ -528,9 +593,9 @@ router.delete('/:id', authenticateToken, validateReviewId, requireOwnership('rev
       data: {
         userId: review.customerId,
         type: 'REDEEMED',
-        points: -50,
+        points: -5, // Deduct the new amount (5 points)
         reason: 'Review deletion',
-        description: 'Deducted 50 points for deleted review',
+        description: 'Deducted 5 points for deleted review',
         referenceId: id
       }
     });

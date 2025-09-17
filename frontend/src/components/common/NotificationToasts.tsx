@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectNotifications, markAsRead } from '@/store/slices/notificationSlice';
 import { toast } from 'react-toastify';
@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 export const NotificationToasts: React.FC = () => {
   const dispatch = useAppDispatch();
   const notifications = useAppSelector(selectNotifications);
+  const [liveMessage, setLiveMessage] = useState('');
 
   useEffect(() => {
     // Show toast notifications for new unread notifications
@@ -29,8 +30,15 @@ export const NotificationToasts: React.FC = () => {
           dispatch(markAsRead(notification.id));
         },
       });
+
+      // Update aria-live region for screen readers
+      setLiveMessage(notification.message);
     });
   }, [notifications, dispatch]);
 
-  return null; // This component doesn't render anything visible
+  return (
+    <div aria-live="polite" aria-atomic="true" className="sr-only" role="status">
+      {liveMessage}
+    </div>
+  );
 };

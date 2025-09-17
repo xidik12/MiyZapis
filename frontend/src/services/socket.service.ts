@@ -159,11 +159,58 @@ class SocketService {
     });
 
     // Notification events
+    // Backend may emit a generic 'notification' event
+    this.socket.on('notification', (data: any) => {
+      if (import.meta.env.VITE_DEBUG === 'true') {
+        console.log('[Socket] Notification:', data);
+      }
+      // Normalize to 'notification:new'
+      this.emit('notification:new', data);
+    });
+
     this.socket.on('notification:new', (data: NotificationSocketEvent['data']) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
         console.log('[Socket] New notification:', data);
       }
       this.emit('notification:new', data);
+    });
+
+    // Optional notification read events (if server emits)
+    // Underscore variant from backend
+    this.socket.on('notification_read', (data: any) => {
+      if (import.meta.env.VITE_DEBUG === 'true') {
+        console.log('[Socket] Notification read:', data);
+      }
+      this.emit('notification:read', data);
+    });
+
+    this.socket.on('notification:read', (data: any) => {
+      if (import.meta.env.VITE_DEBUG === 'true') {
+        console.log('[Socket] Notification read:', data);
+      }
+      this.emit('notification:read', data);
+    });
+
+    this.socket.on('notification:mark_all_read', (data: any) => {
+      if (import.meta.env.VITE_DEBUG === 'true') {
+        console.log('[Socket] Notifications mark all read:', data);
+      }
+      this.emit('notification:mark_all_read', data);
+    });
+
+    this.socket.on('notification:deleted', (data: any) => {
+      if (import.meta.env.VITE_DEBUG === 'true') {
+        console.log('[Socket] Notification deleted:', data);
+      }
+      this.emit('notification:deleted', data);
+    });
+
+    // Server initial unread notifications count
+    this.socket.on('unread_notifications', (data: any) => {
+      if (import.meta.env.VITE_DEBUG === 'true') {
+        console.log('[Socket] Unread notifications count:', data);
+      }
+      this.emit('unread_notifications', data);
     });
 
     // Specialist availability events

@@ -290,6 +290,7 @@ const SpecialistProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [justSaved, setJustSaved] = useState(false); // Flag to prevent reload immediately after save
   
   // Success/Error message states
   const [successMessage, setSuccessMessage] = useState('');
@@ -380,6 +381,12 @@ const SpecialistProfile: React.FC = () => {
 
   // Load profile data
   useEffect(() => {
+    // Skip loading if we just saved to prevent unnecessary reload
+    if (justSaved) {
+      setJustSaved(false);
+      return;
+    }
+
     const loadProfile = async () => {
       try {
         console.log('📥 Starting profile load, user:', user);
@@ -465,7 +472,7 @@ const SpecialistProfile: React.FC = () => {
     };
 
     loadProfile();
-  }, [user, language]);
+  }, [user?.id, language]); // Only depend on user ID, not the entire user object
 
   // Handle profile changes
   const handleProfileChange = (field: string, value: any) => {
@@ -693,7 +700,8 @@ const SpecialistProfile: React.FC = () => {
       setIsEditing(false);
       setHasUnsavedChanges(false);
       setValidationErrors({});
-      
+      setJustSaved(true); // Prevent unnecessary reload after save
+
       showSuccessNotification(
         language === 'uk' 
           ? 'Профіль успішно збережено!'
@@ -723,11 +731,13 @@ const SpecialistProfile: React.FC = () => {
 
     // Warn user if they're replacing a Google avatar
     if (user?.avatar && (user.avatar.includes('googleusercontent.com') || user.avatar.includes('google.com'))) {
-      const confirmed = window.confirm(
-        language === 'uk' ? 'Ви впевнені, що хочете замінити аватар з Google?' :
-        language === 'ru' ? 'Вы уверены, что хотите заменить аватар из Google?' :
-        'Are you sure you want to replace your Google avatar?'
-      );
+      const { confirm } = await import('../../components/ui/Confirm');
+      const confirmed = await confirm({
+        title: language === 'uk' ? 'Замінити аватар?' : language === 'ru' ? 'Заменить аватар?' : 'Replace avatar?',
+        message: language === 'uk' ? 'Ви впевнені, що хочете замінити аватар з Google?' : language === 'ru' ? 'Вы уверены, что хотите заменить аватар из Google?' : 'Are you sure you want to replace your Google avatar?',
+        confirmText: language === 'uk' ? 'Замінити' : language === 'ru' ? 'Заменить' : 'Replace',
+        cancelText: language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отмена' : 'Cancel',
+      });
       if (!confirmed) {
         event.target.value = ''; // Reset file input
         return;
@@ -859,15 +869,16 @@ const SpecialistProfile: React.FC = () => {
   };
 
   // Handle cancel editing
-  const handleCancelEdit = () => {
+  const handleCancelEdit = async () => {
     if (hasUnsavedChanges) {
-      if (window.confirm(
-        language === 'uk' 
-          ? 'У вас є незбережені зміни. Скасувати редагування?' 
-          : language === 'ru' 
-          ? 'У вас есть несохраненные изменения. Отменить редактирование?' 
-          : 'You have unsaved changes. Cancel editing?'
-      )) {
+      const { confirm } = await import('../../components/ui/Confirm');
+      const ok = await confirm({
+        title: language === 'uk' ? 'Скасувати редагування?' : language === 'ru' ? 'Отменить редактирование?' : 'Cancel editing?',
+        message: language === 'uk' ? 'У вас є незбережені зміни.' : language === 'ru' ? 'У вас есть несохраненные изменения.' : 'You have unsaved changes.',
+        confirmText: language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Discard',
+        cancelText: language === 'uk' ? 'Повернутися' : language === 'ru' ? 'Назад' : 'Go back',
+      });
+      if (ok) {
         setProfile(originalProfile);
         setHasUnsavedChanges(false);
         setIsEditing(false);
@@ -980,7 +991,7 @@ const SpecialistProfile: React.FC = () => {
                       {profile.firstName} {profile.lastName}
                     </h1>
                     <p className="text-xl text-primary-600 dark:text-primary-400 font-medium mb-3">
-                      {profile.profession || (language === 'uk' ? 'Професія не вказана' : language === 'ru' ? 'Профессия не указана' : 'Profession not specified')}
+                      {profile.profession || t('specialist.professionNotSpecified') || 'Profession not specified'}
                     </p>
                   </div>
                 </div>
@@ -995,7 +1006,7 @@ const SpecialistProfile: React.FC = () => {
                       ></div>
                     </div>
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {completionPercentage}% {language === 'uk' ? 'завершено' : language === 'ru' ? 'завершено' : 'complete'}
+                      {completionPercentage}% {t('profile.complete') || 'complete'}
                     </span>
                   </div>
                   
@@ -1004,7 +1015,7 @@ const SpecialistProfile: React.FC = () => {
                     <div className="flex items-center gap-2 px-4 py-2 bg-success-50 text-success-700 dark:bg-success-900/20 dark:text-success-300 rounded-xl border border-success-200 dark:border-success-800">
                       <DocumentCheckIcon className="h-5 w-5" />
                       <span className="font-medium text-sm">
-                        {language === 'uk' ? 'Підтверджено' : language === 'ru' ? 'Подтверждено' : 'Verified'}
+                        {t('specialist.verified') || 'Verified'}
                       </span>
                       {formatVerificationDate(profile.verification?.verifiedDate) && (
                         <span className="text-xs opacity-75 ml-1">
@@ -1019,7 +1030,7 @@ const SpecialistProfile: React.FC = () => {
                     <div className="flex items-center gap-2 px-4 py-2 bg-warning-50 text-warning-700 dark:bg-warning-900/20 dark:text-warning-300 rounded-xl border border-warning-200 dark:border-warning-800">
                       <ExclamationTriangleIcon className="h-5 w-5" />
                       <span className="font-medium text-sm">
-                        {language === 'uk' ? 'Незбережені зміни' : language === 'ru' ? 'Несохраненные изменения' : 'Unsaved changes'}
+                        {t('profile.unsavedChanges') || 'Unsaved changes'}
                       </span>
                     </div>
                   )}
@@ -1318,6 +1329,147 @@ const SpecialistProfile: React.FC = () => {
                         </div>
                       )}
                     </div>
+
+                    {/* Contact Information for Confirmed Bookings */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Precise Address (Shown only to confirmed customers)
+                        </label>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={profile.preciseAddress || ''}
+                            onChange={(e) => handleProfileChange('preciseAddress', e.target.value)}
+                            placeholder="Apt 5B, Building A, 123 Main Street"
+                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          />
+                        ) : (
+                          <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
+                            <div className="flex items-center space-x-2">
+                              <BuildingOfficeIcon className="h-5 w-5 text-gray-400" />
+                              <span>{profile.preciseAddress || 'Not specified'}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Business Phone
+                        </label>
+                        {isEditing ? (
+                          <input
+                            type="tel"
+                            value={profile.businessPhone || ''}
+                            onChange={(e) => handleProfileChange('businessPhone', e.target.value)}
+                            placeholder="+1 (555) 123-4567"
+                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          />
+                        ) : (
+                          <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
+                            <div className="flex items-center space-x-2">
+                              <PhoneIcon className="h-5 w-5 text-gray-400" />
+                              <span>{profile.businessPhone || 'Not specified'}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          WhatsApp Number (Optional)
+                        </label>
+                        {isEditing ? (
+                          <input
+                            type="tel"
+                            value={profile.whatsappNumber || ''}
+                            onChange={(e) => handleProfileChange('whatsappNumber', e.target.value)}
+                            placeholder="+1 (555) 123-4567"
+                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          />
+                        ) : (
+                          <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
+                            <div className="flex items-center space-x-2">
+                              <PhoneIcon className="h-5 w-5 text-green-500" />
+                              <span>{profile.whatsappNumber || 'Not specified'}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Location Notes
+                        </label>
+                        {isEditing ? (
+                          <textarea
+                            value={profile.locationNotes || ''}
+                            onChange={(e) => handleProfileChange('locationNotes', e.target.value)}
+                            placeholder="Special instructions for finding the location..."
+                            rows={3}
+                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          />
+                        ) : (
+                          <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
+                            <span>{profile.locationNotes || 'No special instructions'}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Parking Information
+                        </label>
+                        {isEditing ? (
+                          <textarea
+                            value={profile.parkingInfo || ''}
+                            onChange={(e) => handleProfileChange('parkingInfo', e.target.value)}
+                            placeholder="Parking instructions, costs, restrictions..."
+                            rows={3}
+                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          />
+                        ) : (
+                          <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
+                            <span>{profile.parkingInfo || 'No parking information provided'}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Access Instructions
+                        </label>
+                        {isEditing ? (
+                          <textarea
+                            value={profile.accessInstructions || ''}
+                            onChange={(e) => handleProfileChange('accessInstructions', e.target.value)}
+                            placeholder="Building access codes, buzzer instructions, etc..."
+                            rows={3}
+                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          />
+                        ) : (
+                          <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
+                            <span>{profile.accessInstructions || 'No access instructions provided'}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                      <div className="flex items-start">
+                        <ShieldCheckIcon className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
+                        <div>
+                          <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                            Privacy Notice
+                          </h4>
+                          <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                            This detailed contact information will only be shared with customers after their booking is confirmed.
+                            Public profiles will only show your general city/area for privacy protection.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1340,14 +1492,14 @@ const SpecialistProfile: React.FC = () => {
                     {/* Profession */}
                     <div>
                       <label htmlFor="profession" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {language === 'uk' ? 'Професія *' : language === 'ru' ? 'Профессия *' : 'Profession *'}
+                        {t('specialist.profession') || 'Profession *'}
                       </label>
                       {isEditing ? (
                         <ProfessionDropdown
                           value={profile.profession || ''}
                           onChange={(value) => handleProfileChange('profession', value)}
                           onCustomProfession={(customValue) => handleProfileChange('profession', customValue)}
-                          placeholder={language === 'uk' ? 'Оберіть професію' : language === 'ru' ? 'Выберите профессию' : 'Select a profession'}
+                          placeholder={t('professionForm.selectProfession') || 'Select a profession'}
                           error={validationErrors.profession}
                           allowCustom={true}
                         />
@@ -1361,7 +1513,7 @@ const SpecialistProfile: React.FC = () => {
                             value={profile.profession || ''}
                             disabled={true}
                             className="w-full pl-11 pr-4 py-3 rounded-xl border bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:cursor-not-allowed dark:border-gray-600 border-gray-300"
-                            placeholder={language === 'uk' ? 'Професія не вказана' : language === 'ru' ? 'Профессия не указана' : 'Profession not specified'}
+                            placeholder={t('specialist.professionNotSpecified') || 'Profession not specified'}
                           />
                         </div>
                       )}

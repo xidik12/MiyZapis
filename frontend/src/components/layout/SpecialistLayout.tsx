@@ -29,6 +29,7 @@ import {
   ArrowRightOnRectangleIcon,
   HomeIcon,
   PresentationChartLineIcon,
+  GiftIcon,
 } from '@heroicons/react/24/outline';
 import { ChartBarIcon as ChartBarIconSolid } from '@heroicons/react/24/solid';
 
@@ -102,6 +103,13 @@ const navigation: SidebarNavItem[] = [
     href: '/specialist/reviews',
     icon: StarIcon,
     iconActive: StarIcon,
+  },
+  {
+    name: 'Loyalty',
+    nameUk: 'Лояльність',
+    href: '/specialist/loyalty',
+    icon: GiftIcon,
+    iconActive: GiftIcon,
   },
   {
     name: 'Messages',

@@ -11,6 +11,8 @@ import {
   validateEmailVerification,
   validatePasswordResetRequest,
   validatePasswordReset,
+  validateChangePassword,
+  validateSetInitialPassword,
 } from '@/middleware/validation/auth';
 
 const router = Router();
@@ -55,6 +57,10 @@ router.post('/verify-email', validateEmailVerification, AuthController.verifyEma
 // Password reset
 router.post('/request-password-reset', validatePasswordResetRequest, AuthController.requestPasswordReset);
 router.post('/reset-password', validatePasswordReset, AuthController.resetPassword);
+
+// Password management (authenticated routes)
+router.post('/change-password', authenticateToken, validateChangePassword, AuthController.changePassword);
+router.post('/set-initial-password', authenticateToken, validateSetInitialPassword, AuthController.setInitialPassword);
 
 // Protected routes
 router.get('/me', authenticateToken, AuthController.me);

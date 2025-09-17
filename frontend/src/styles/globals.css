@@ -6,6 +6,39 @@
 @tailwind utilities;
 
 @layer base {
+  /* Design tokens */
+  :root {
+    --color-bg: 255 255 255;
+    --color-bg-elev: 248 250 252;
+    --color-fg: 17 24 39;
+    --color-fg-muted: 75 85 99;
+    --color-border: 229 231 235;
+    --color-primary: 59 130 246;
+    --color-secondary: 14 165 233;
+    --color-success: 22 163 74;
+    --color-danger: 220 38 38;
+    --color-warning: 234 179 8;
+    --radius-sm: 0.375rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 20px -2px rgb(0 0 0 / 0.06);
+    --shadow-lg: 0 10px 30px -6px rgb(0 0 0 / 0.20);
+    --motion-fast: 120ms;
+    --motion-normal: 200ms;
+    --motion-slow: 300ms;
+    --easing: cubic-bezier(0.2, 0.6, 0.2, 1);
+  }
+
+  .dark {
+    --color-bg: 10 12 16;
+    --color-bg-elev: 17 24 39;
+    --color-fg: 243 244 246;
+    --color-fg-muted: 156 163 175;
+    --color-border: 55 65 81;
+    --color-primary: 96 165 250;
+    --color-secondary: 56 189 248;
+  }
   :root {
     /* Custom CSS Variables for Design System */
     --radius: 0.5rem;
@@ -23,6 +56,41 @@
     --text-tertiary: 148 163 184;
     --border-primary: 226 232 240;
     --border-secondary: 241 245 249;
+
+    /* Semantic roles */
+    --role-surface: var(--bg-primary);
+    --role-surface-elevated: var(--bg-secondary);
+    --role-border: var(--border-primary);
+    --role-subtle: 241 245 249;
+    --role-emphasis: 15 23 42;
+    --role-info: 6 182 212;
+
+    /* 8pt spacing scale */
+    --space-0: 0px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+
+    /* Density + Controls */
+    --control-h-sm: 32px;
+    --control-h-md: 40px;
+    --control-h-lg: 48px;
+    --control-px: 16px;
+    --control-py: 8px;
+
+    /* Motion + Z-index */
+    --ease-out: cubic-bezier(0.2, 0.6, 0.2, 1);
+    --ease-in: cubic-bezier(0.4, 0.0, 1, 1);
+    --z-sticky: 20;
+    --z-dropdown: 30;
+    --z-modal: 50;
+    --z-toast: 60;
   }
 
   .dark {
@@ -41,6 +109,14 @@
     --shadow-secondary: 0 4px 14px 0 rgb(255 196 31 / 0.25);
     --shadow-success: 0 4px 14px 0 rgb(34 197 94 / 0.25);
     --shadow-error: 0 4px 14px 0 rgb(239 68 68 / 0.25);
+
+    /* Dark semantic roles */
+    --role-surface: var(--bg-primary);
+    --role-surface-elevated: var(--bg-secondary);
+    --role-border: var(--border-primary);
+    --role-subtle: 30 41 59;
+    --role-emphasis: 248 250 252;
+    --role-info: 14 116 144;
   }
 
   * {
@@ -59,6 +135,9 @@
   body {
     background-color: rgb(var(--bg-secondary));
     color: rgb(var(--text-primary));
+    /* Apply token-based fallbacks */
+    background-color: rgb(var(--color-bg));
+    color: rgb(var(--color-fg));
     @apply font-sans antialiased transition-colors duration-300;
     font-feature-settings: "rlig" 1, "calt" 1;
     /* Prevent horizontal scroll and ensure proper mobile scaling */
@@ -115,6 +194,9 @@
     @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
   }
 
+  /* Sticky controls helper */
+  .sticky-controls { position: sticky; top: 64px; z-index: var(--z-sticky); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-bottom: 1px solid rgb(var(--color-border) / 0.6); background-color: rgb(var(--color-bg) / 0.8); }
+
   /* Loading animation */
   @keyframes shimmer {
     0% {
@@ -133,9 +215,43 @@
 }
 
 @layer components {
+  /* Skip link (visible on focus) */
+  .skip-link {
+    position: absolute;
+    left: 8px;
+    top: -40px;
+    background: #1f2937;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    z-index: 1000;
+    transform: translateY(-10px);
+  }
+  .skip-link:focus {
+    top: 8px;
+    transform: translateY(0);
+    outline: 2px solid #3b82f6;
+  }
+  /* Focus-visible enhancements */
+  :root {
+    --focus-ring: 2px;
+  }
+  .focus-visible-ring:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 var(--focus-ring) rgb(59 130 246 / 0.6);
+  }
+  .focus-visible-offset:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 var(--focus-ring) rgb(59 130 246 / 0.6), 0 0 0 calc(var(--focus-ring) + 2px) rgb(255 255 255 / 0.8);
+  }
+  /* Density toggles */
+  .density-comfortable { --control-px: 16px; --control-py: 10px; }
+  .density-compact { --control-px: 12px; --control-py: 6px; }
+
   /* Button Components */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-all duration-200 active:scale-95 disabled:pointer-events-none disabled:opacity-50;
+    padding: var(--control-py) var(--control-px);
   }
 
   .btn-primary {
@@ -167,21 +283,15 @@
   }
 
   /* Button Sizes */
-  .btn-sm {
-    @apply px-3 py-1.5 text-xs;
-  }
-
-  .btn-lg {
-    @apply px-6 py-3 text-base;
-  }
-
-  .btn-xl {
-    @apply px-8 py-4 text-lg font-semibold;
-  }
+  .btn-sm { @apply text-xs; height: var(--control-h-sm); }
+  .btn-lg { @apply text-base; height: var(--control-h-lg); }
+  .btn-xl { @apply text-lg font-semibold; height: calc(var(--control-h-lg) + 8px); }
 
   /* Input Components */
   .input {
-    @apply w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-50 dark:disabled:bg-gray-900;
+    @apply w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-50 dark:disabled:bg-gray-900;
+    padding: var(--control-py) var(--control-px);
+    height: var(--control-h-md);
   }
 
   .input-error {
@@ -874,6 +984,16 @@
   @media print {
     .print-hidden {
       display: none !important;
+    }
+  }
+
+  /* Motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
     }
   }
 }

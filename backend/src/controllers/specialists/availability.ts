@@ -812,7 +812,7 @@ export class AvailabilityController {
 
       const existingBookings = await prisma.booking.findMany({
         where: {
-          specialistId: specialist.id,
+          specialistId: specialist.userId,
           scheduledAt: {
             gte: startOfDay,
             lt: endOfDay
@@ -1044,7 +1044,7 @@ export class AvailabilityController {
 
             const existingBookings = await prisma.booking.findMany({
               where: {
-                specialistId: specialist.id,
+                specialistId: specialist.userId,
                 scheduledAt: {
                   gte: startOfDay,
                   lt: endOfDay

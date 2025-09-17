@@ -6,6 +6,7 @@ interface Location {
   city: string;
   region: string;
   country: string;
+  postalCode?: string;
   latitude?: number;
   longitude?: number;
 }
@@ -63,7 +64,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         setMapError(true);
       };
       document.head.appendChild(script);
-    } else if (window.google) {
+    } else if (window.google && window.google.maps) {
       setMapLoaded(true);
     }
   }, []);
@@ -85,7 +86,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   }, []);
 
   const initializeMap = () => {
-    if (!window.google || !mapRef.current) return;
+    if (!window.google || !window.google.maps || !mapRef.current) return;
 
     // Default location (center of world or user's current location)
     const defaultCenter = { lat: 0, lng: 0 };
@@ -213,6 +214,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     let city = '';
     let region = '';
     let country = '';
+    let postalCode = '';
     
     // Extract address components with improved logic
     addressComponents.forEach((component: any) => {
@@ -230,6 +232,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         region = component.long_name;
       } else if (types.includes('country')) {
         country = component.long_name;
+      } else if (types.includes('postal_code')) {
+        postalCode = component.long_name;
       }
     });
 
@@ -245,6 +249,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       city: city || '',
       region: region || '',
       country: country || '',
+      postalCode: postalCode || '',
     };
 
     console.log('📍 Location extracted:', location);

@@ -4,6 +4,8 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
+import { LoyaltyService, UserLoyalty, LoyaltyStats } from '../../services/loyalty.service';
+import { calculateTier, formatPoints } from '../../utils/formatPoints';
 import { 
   PencilSquareIcon,
   MapPinIcon,
@@ -46,7 +48,7 @@ interface LoyaltyInfo {
 }
 
 const CustomerProfile: React.FC = () => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const currentUser = useAppSelector(selectUser);
   
   // Default data - will be replaced with API calls
@@ -59,28 +61,91 @@ const CustomerProfile: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
-  const [addresses] = useState<Address[]>([
-    {
-      id: '1',
-      type: 'home',
-      label: language === 'uk' ? 'Домашня адреса' : language === 'ru' ? 'Домашний адрес' : 'Home Address',
-      street: 'вул. Індепенденс, 15, кв. 42',
-      city: 'Київ',
-      region: 'Київська область',
-      postalCode: '01001',
-      country: 'Україна',
-      isDefault: true,
-    },
-  ]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [userLoyalty, setUserLoyalty] = useState<UserLoyalty | null>(null);
+  const [loyaltyStats, setLoyaltyStats] = useState<LoyaltyStats | null>(null);
+  const [loadingLoyalty, setLoadingLoyalty] = useState(true);
   
-  const [loyalty] = useState<LoyaltyInfo>({
-    points: 1240,
-    tier: 'silver',
-    nextTierPoints: 760,
-    memberSince: '2024-03-15',
-    totalSpent: 15600,
-    discountsUsed: 8,
-  });
+  const loyaltyService = new LoyaltyService();
+
+  // Load saved addresses from localStorage (persisted in Settings)
+  useEffect(() => {
+    const key = currentUser?.id ? `mz.addresses.${currentUser.id}` : null;
+    if (!key) return;
+    
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          // Filter out invalid addresses more safely
+          const validAddresses = parsed.filter(addr => 
+            addr && 
+            typeof addr === 'object' && 
+            addr.id && 
+            addr.label
+          );
+          setAddresses(validAddresses);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load addresses for profile:', e);
+    }
+  }, [currentUser?.id]);
+
+  // Load loyalty data
+  useEffect(() => {
+    const loadLoyaltyData = async () => {
+      if (!currentUser?.id) return;
+      
+      try {
+        setLoadingLoyalty(true);
+        const [loyaltyProfile, stats] = await Promise.all([
+          loyaltyService.getUserLoyalty(),
+          loyaltyService.getLoyaltyStats()
+        ]);
+        
+        setUserLoyalty(loyaltyProfile);
+        setLoyaltyStats(stats);
+      } catch (error) {
+        console.error('Failed to load loyalty data:', error);
+        // Keep the component working with fallback data if API fails
+        setUserLoyalty({
+          id: 'fallback',
+          userId: currentUser.id,
+          currentPoints: 0,
+          lifetimePoints: 0,
+          createdAt: currentUser.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+        setLoyaltyStats({
+          totalPoints: 0,
+          totalTransactions: 0,
+          totalBadges: 0,
+          totalReferrals: 0,
+          currentTier: null,
+          nextTier: null,
+          pointsToNextTier: 0,
+          monthlyPoints: 0,
+          yearlyPoints: 0
+        });
+      } finally {
+        setLoadingLoyalty(false);
+      }
+    };
+
+    loadLoyaltyData();
+  }, [currentUser?.id]);
+  
+  // Convert loyalty data to the format expected by the UI
+  const loyalty: LoyaltyInfo = {
+    points: loyaltyStats?.totalPoints || userLoyalty?.currentPoints || 0,
+    tier: loyaltyStats?.currentTier?.slug || userLoyalty?.tier?.slug || calculateTier(loyaltyStats?.totalPoints || userLoyalty?.currentPoints || 0),
+    nextTierPoints: loyaltyStats?.pointsToNextTier || 0,
+    memberSince: userLoyalty?.createdAt || loyaltyStats?.memberSince || currentUser?.createdAt || '',
+    totalSpent: 0, // This would need to be calculated from bookings
+    discountsUsed: 0, // This would need to be tracked separately
+  };
   
   // Success/Error message handlers
   const showSuccessNotification = (message: string) => {
@@ -215,7 +280,7 @@ const CustomerProfile: React.FC = () => {
                       {currentUser?.firstName} {currentUser?.lastName}
                     </h1>
                     <p className="text-xl text-primary-600 dark:text-primary-400 font-medium mb-3">
-                      {language === 'uk' ? 'Клієнт' : language === 'ru' ? 'Клиент' : 'Customer'}
+                      {t('profile.customer') || 'Customer'}
                     </p>
                   </div>
                 </div>
@@ -233,7 +298,7 @@ const CustomerProfile: React.FC = () => {
                   <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-xl">
                     <CalendarIcon className="h-5 w-5 text-gray-500" />
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {language === 'uk' ? 'Учасник з' : language === 'ru' ? 'Участник с' : 'Member since'} {formatMemberDate(currentUser?.createdAt || '')}
+                      {t('profile.memberSince') || 'Member since'} {formatMemberDate(currentUser?.createdAt || '')}
                     </span>
                   </div>
                   
@@ -241,7 +306,7 @@ const CustomerProfile: React.FC = () => {
                   <div className="flex items-center gap-2 px-4 py-2 bg-success-50 text-success-700 dark:bg-success-900/20 dark:text-success-300 rounded-xl">
                     <div className="w-2 h-2 bg-success-400 rounded-full animate-pulse"></div>
                     <span className="text-sm font-medium">
-                      {language === 'uk' ? 'Онлайн' : language === 'ru' ? 'Онлайн' : 'Online'}
+                      {t('common.online') || 'Online'}
                     </span>
                   </div>
                 </div>
@@ -253,7 +318,7 @@ const CustomerProfile: React.FC = () => {
               {!isEditing && (
                 <button className="px-6 py-3 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2">
                   <EyeIcon className="h-4 w-4" />
-                  {language === 'uk' ? 'Перегляд' : language === 'ru' ? 'Просмотр' : 'Preview'}
+                  {t('actions.preview') || 'Preview'}
                 </button>
               )}
               <Link
@@ -385,7 +450,7 @@ const CustomerProfile: React.FC = () => {
                     </Link>
                   </div>
                 ) : (
-                  addresses.filter(address => address && address.id).map((address) => (
+                  addresses.map((address) => (
                     <div key={address.id} className="border border-gray-200 dark:border-gray-600 rounded-2xl p-6 hover:border-primary-200 dark:hover:border-primary-800 hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-all duration-200">
                       <div className="flex items-start gap-4">
                         <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -393,17 +458,17 @@ const CustomerProfile: React.FC = () => {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
-                            <h3 className="font-semibold text-gray-900 dark:text-white">{address?.label || 'Address'}</h3>
-                            {address?.isDefault && (
+                            <h3 className="font-semibold text-gray-900 dark:text-white">{address.label || 'Address'}</h3>
+                            {address.isDefault && (
                               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-300 border border-success-200 dark:border-success-800">
                                 <DocumentCheckIcon className="h-3 w-3 mr-1" />
                                 {language === 'uk' ? 'Основна' : language === 'ru' ? 'Основной' : 'Default'}
                               </span>
                             )}
                           </div>
-                          <p className="text-gray-700 dark:text-gray-300 font-medium mb-1">{address?.street || ''}</p>
+                          <p className="text-gray-700 dark:text-gray-300 font-medium mb-1">{address.street || ''}</p>
                           <p className="text-gray-600 dark:text-gray-400">
-                            {address?.city || ''}{address?.city && address?.postalCode ? ', ' : ''}{address?.postalCode || ''}{(address?.city || address?.postalCode) && address?.country ? ', ' : ''}{address?.country || ''}
+                            {address.city || ''}{address.city && address.postalCode ? ', ' : ''}{address.postalCode || ''}{(address.city || address.postalCode) && address.country ? ', ' : ''}{address.country || ''}
                           </p>
                         </div>
                       </div>
@@ -418,15 +483,22 @@ const CustomerProfile: React.FC = () => {
           <div className="space-y-6">
             {/* Loyalty Program Card */}
             <div className="bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-gray-800 dark:to-gray-800 rounded-2xl shadow-sm border border-primary-200 dark:border-gray-700 p-8">
-              <div className="text-center mb-6">
-                <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                  <StarIcon className="h-12 w-12 text-white" />
+              {loadingLoyalty ? (
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
+                  <p className="text-gray-600 dark:text-gray-400">Loading loyalty data...</p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{getTierName(loyalty.tier)}</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  {language === 'uk' ? `Учасник з ${formatMemberDate(currentUser?.createdAt || '')}` : language === 'ru' ? `Участник с ${formatMemberDate(currentUser?.createdAt || '')}` : `Member since ${formatMemberDate(currentUser?.createdAt || '')}`}
-                </p>
-              </div>
+              ) : (
+                <>
+                  <div className="text-center mb-6">
+                    <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                      <StarIcon className="h-12 w-12 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{getTierName(loyalty.tier)}</h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      {language === 'uk' ? `Учасник з ${formatMemberDate(loyalty.memberSince)}` : language === 'ru' ? `Участник с ${formatMemberDate(loyalty.memberSince)}` : `Member since ${formatMemberDate(loyalty.memberSince)}`}
+                    </p>
+                  </div>
 
               <div className="grid grid-cols-1 gap-6 mb-6">
                 <div className="text-center p-4 bg-white dark:bg-gray-700 rounded-xl">
@@ -469,6 +541,8 @@ const CustomerProfile: React.FC = () => {
                   ></div>
                 </div>
               </div>
+                </>
+              )}
             </div>
 
             {/* Quick Actions Card */}

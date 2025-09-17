@@ -8,6 +8,7 @@ import { isFeatureEnabled } from '../../config/features';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
 import { FloatingElements, UkrainianOrnament } from '../../components/ui/UkrainianElements';
 import { CategoryDropdown } from '../../components/ui/CategoryDropdown';
+import { getCategoryName } from '@/data/serviceCategories';
 import { ServiceCategory } from '../../types';
 import { specialistService } from '../../services/specialist.service';
 import { reviewsService } from '../../services/reviews.service';
@@ -33,6 +34,17 @@ interface Service {
   requiresApproval?: boolean;
   maxAdvanceBooking?: number;
   minAdvanceBooking?: number;
+  // Loyalty Points pricing
+  loyaltyPointsEnabled?: boolean;
+  loyaltyPointsPrice?: number;
+  loyaltyPointsOnly?: boolean;
+  // Service Discounts
+  discountEnabled?: boolean;
+  discountType?: string;
+  discountValue?: number;
+  discountValidFrom?: string;
+  discountValidUntil?: string;
+  discountDescription?: string;
 }
 
 const sampleServices: Service[] = [
@@ -170,6 +182,17 @@ const SpecialistServices: React.FC = () => {
     currency: 'UAH', // Default to UAH
     duration: '',
     isActive: true,
+    // Loyalty Points pricing
+    loyaltyPointsEnabled: false,
+    loyaltyPointsPrice: undefined as number | undefined,
+    loyaltyPointsOnly: false,
+    // Service Discounts
+    discountEnabled: false,
+    discountType: 'PERCENTAGE',
+    discountValue: '',
+    discountValidFrom: '',
+    discountValidUntil: '',
+    discountDescription: '',
     availability: {
       monday: false,
       tuesday: false,
@@ -183,8 +206,9 @@ const SpecialistServices: React.FC = () => {
   });
   const [customCategory, setCustomCategory] = useState('');
   const [showCustomCategory, setShowCustomCategory] = useState(false);
-  
+
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
   // Form handling functions
   const resetForm = () => {
@@ -209,11 +233,23 @@ const SpecialistServices: React.FC = () => {
         saturday: false,
         sunday: false,
       },
-      timeSlots: ['']
+      timeSlots: [''],
+      // Loyalty Points pricing
+      loyaltyPointsEnabled: false,
+      loyaltyPointsPrice: '',
+      loyaltyPointsOnly: false,
+      // Service Discounts
+      discountEnabled: false,
+      discountType: 'PERCENTAGE',
+      discountValue: '',
+      discountValidFrom: '',
+      discountValidUntil: '',
+      discountDescription: ''
     });
     setCustomCategory('');
     setShowCustomCategory(false);
     setFormErrors({});
+    setHasAttemptedSubmit(false);
   };
 
   const openAddModal = () => {
@@ -230,12 +266,37 @@ const SpecialistServices: React.FC = () => {
     
     const formDataToSet = {
       name: service.name,
+      nameUk: '', // These localized fields aren't used in the backend yet
+      nameRu: '',
       description: service.description,
+      descriptionUk: '',
+      descriptionRu: '',
       category: existingCategory ? existingCategory.id : '',
       price: service.basePrice?.toString() || service.price?.toString() || '',
       currency: service.currency || 'UAH',
       duration: service.duration.toString(),
-      isActive: service.isActive
+      isActive: service.isActive,
+      availability: {
+        monday: false,
+        tuesday: false,
+        wednesday: false,
+        thursday: false,
+        friday: false,
+        saturday: false,
+        sunday: false,
+      },
+      timeSlots: [''],
+      // Loyalty Points pricing
+      loyaltyPointsEnabled: service.loyaltyPointsEnabled || false,
+      loyaltyPointsPrice: service.loyaltyPointsPrice?.toString() || '',
+      loyaltyPointsOnly: service.loyaltyPointsOnly || false,
+      // Service Discounts
+      discountEnabled: service.discountEnabled || false,
+      discountType: service.discountType || 'PERCENTAGE',
+      discountValue: service.discountValue?.toString() || '',
+      discountValidFrom: service.discountValidFrom ? service.discountValidFrom.split('T')[0] : '',
+      discountValidUntil: service.discountValidUntil ? service.discountValidUntil.split('T')[0] : '',
+      discountDescription: service.discountDescription || '',
     };
     
     console.log('📝 Form data being set:', formDataToSet);
@@ -263,18 +324,37 @@ const SpecialistServices: React.FC = () => {
   };
 
   const validateForm = () => {
+    // Only run validation if user has attempted to submit
+    if (!hasAttemptedSubmit) {
+      console.log('🔒 Validation skipped - user has not attempted submit yet');
+      return true;
+    }
+
     const errors: {[key: string]: string} = {};
-    
+
     if (!formData.name.trim()) {
       errors.name = t('serviceForm.required');
     }
-    
+
     if (!formData.description.trim()) {
       errors.description = t('serviceForm.required');
     }
-    
-    if (!formData.category || (showCustomCategory && !categoriesError && !customCategory.trim())) {
+
+    // Check category validation - formData.category should always contain the value (custom or regular)
+    console.log('🔍 Category validation:', {
+      showCustomCategory,
+      customCategory: customCategory.trim(),
+      formDataCategory: formData.category,
+      hasCustomValue: !!customCategory.trim(),
+      hasRegularValue: !!formData.category
+    });
+
+    // Always check formData.category since both regular and custom categories are stored there
+    if (!formData.category) {
       errors.category = t('serviceForm.required');
+      console.log('❌ Category validation failed - no category in formData.category');
+    } else {
+      console.log('✅ Category validation passed:', formData.category);
     }
     
     const price = parseFloat(formData.price);
@@ -286,9 +366,41 @@ const SpecialistServices: React.FC = () => {
     if (!formData.duration || isNaN(duration) || duration < 15) {
       errors.duration = t('serviceForm.durationMin');
     }
-    
+
+    // Loyalty Points validation
+    if (formData.loyaltyPointsEnabled) {
+      if (!formData.loyaltyPointsPrice || formData.loyaltyPointsPrice < 1) {
+        errors.loyaltyPointsPrice = 'Loyalty points price must be at least 1';
+      }
+    }
+
+    // Discount validation
+    if (formData.discountEnabled) {
+      const discountValue = parseFloat(formData.discountValue);
+      if (!formData.discountValue || isNaN(discountValue) || discountValue <= 0) {
+        errors.discountValue = 'Discount value must be greater than 0';
+      } else if (formData.discountType === 'PERCENTAGE' && discountValue > 100) {
+        errors.discountValue = 'Percentage discount cannot exceed 100%';
+      }
+
+      // Validate dates if provided
+      if (formData.discountValidFrom && formData.discountValidUntil) {
+        const fromDate = new Date(formData.discountValidFrom);
+        const untilDate = new Date(formData.discountValidUntil);
+        if (fromDate >= untilDate) {
+          errors.discountValidUntil = 'End date must be after start date';
+        }
+      }
+    }
+
     // Removed availability and timeSlots validation as they're not part of backend schema
     
+    console.log('🔍 Validation result:', {
+      hasErrors: Object.keys(errors).length > 0,
+      errors,
+      totalErrors: Object.keys(errors).length
+    });
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -296,7 +408,9 @@ const SpecialistServices: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    setHasAttemptedSubmit(true);
+
     if (!validateForm()) {
       return;
     }
@@ -307,12 +421,18 @@ const SpecialistServices: React.FC = () => {
       return;
     }
     
-    // For category, use the custom category if it's set (and not in error mode), otherwise use the selected category
-    const finalCategory = (showCustomCategory && !categoriesError && customCategory.trim()) 
+    // For category, use the custom category if it's set, otherwise use the selected category
+    const finalCategory = (showCustomCategory && customCategory.trim())
       ? customCategory.trim()
       : formData.category;
 
     console.log('📋 Form data before submission:', formData);
+    console.log('🏷️ Category data:', {
+      originalCategory: formData.category,
+      showCustomCategory,
+      customCategory,
+      finalCategory
+    });
     console.log('⏰ Duration from form:', formData.duration, typeof formData.duration);
     console.log('⏰ Duration parsed as int:', parseInt(formData.duration));
     
@@ -329,7 +449,18 @@ const SpecialistServices: React.FC = () => {
       images: [], // Empty for now, can be extended later
       requiresApproval: true,
       maxAdvanceBooking: 30,
-      minAdvanceBooking: 1
+      minAdvanceBooking: 1,
+      // Loyalty Points pricing
+      loyaltyPointsEnabled: formData.loyaltyPointsEnabled,
+      loyaltyPointsPrice: formData.loyaltyPointsEnabled ? parseInt(formData.loyaltyPointsPrice || '0') : undefined,
+      loyaltyPointsOnly: formData.loyaltyPointsOnly,
+      // Service Discounts
+      discountEnabled: formData.discountEnabled,
+      discountType: formData.discountEnabled ? formData.discountType : undefined,
+      discountValue: formData.discountEnabled ? parseFloat(formData.discountValue) : undefined,
+      discountValidFrom: formData.discountEnabled && formData.discountValidFrom ? formData.discountValidFrom : undefined,
+      discountValidUntil: formData.discountEnabled && formData.discountValidUntil ? formData.discountValidUntil : undefined,
+      discountDescription: formData.discountEnabled && formData.discountDescription ? formData.discountDescription : undefined
     };
     
     console.log('🚀 Service data being sent to backend:', serviceData);
@@ -375,7 +506,15 @@ const SpecialistServices: React.FC = () => {
       return;
     }
     
-    if (!confirm('Are you sure you want to delete this service? This action cannot be undone.')) return;
+    const { confirm } = await import('../../components/ui/Confirm');
+    const ok = await confirm({
+      title: 'Delete service?',
+      message: 'This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'destructive'
+    });
+    if (!ok) return;
     
     // Show loading state
     setLoading(true);
@@ -429,7 +568,7 @@ const SpecialistServices: React.FC = () => {
       // If we reach here, deletion was actually successful
       setServices(refreshedServices); // Use fresh data from backend
       console.log('✅ Service deletion verified: Service no longer exists on backend');
-      alert('Service deleted successfully and verified!');
+      // toast.success('Service deleted successfully and verified!');
       
     } catch (err: any) {
       console.error('❌ Service deletion failed:', {
@@ -444,7 +583,7 @@ const SpecialistServices: React.FC = () => {
         console.log('🔄 Service already deleted (404), removing from local state');
         // Remove the service from local state since it's already deleted on backend
         setServices(prevServices => prevServices.filter(s => s.id !== serviceId));
-        alert('Service was already deleted. Refreshing the list.');
+        // toast.info('Service was already deleted. Refreshing the list.');
         return; // Exit early, don't show error
       }
       
@@ -465,7 +604,8 @@ const SpecialistServices: React.FC = () => {
       }
       
       setError(errorMessage);
-      alert(`Deletion failed: ${errorMessage}`);
+      // Prefer toast but leave developer console logs
+      // toast.error(`Deletion failed: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -540,13 +680,13 @@ const SpecialistServices: React.FC = () => {
               <svg className="w-4 h-4 text-secondary-500" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
               </svg>
-              {service.rating && !isNaN(service.rating) ? service.rating.toFixed(1) : 'N/A'}
+              {service.rating && !isNaN(service.rating) ? service.rating.toFixed(1) : (t('common.notAvailable') || 'N/A')}
             </span>
           </div>
         </div>
         <div className="text-right ml-4">
           <div className="text-2xl font-bold text-primary-600 mb-2">
-            {service.basePrice && !isNaN(service.basePrice) ? formatPrice(service.basePrice, getServiceCurrency(service)) : 'N/A'}
+            {service.basePrice && !isNaN(service.basePrice) ? formatPrice(service.basePrice, getServiceCurrency(service)) : (t('common.notAvailable') || 'N/A')}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">
             {getLocalizedText(service, 'category')}
@@ -764,7 +904,7 @@ const SpecialistServices: React.FC = () => {
                   </option>
                   {!categoriesLoading && categories.map((category) => (
                     <option key={category.id} value={category.id}>
-                      {category.name}
+                      {getCategoryName?.(category.id, language as 'en' | 'uk' | 'ru') || category.name}
                     </option>
                   ))}
                   {categoriesError && (
@@ -790,10 +930,10 @@ const SpecialistServices: React.FC = () => {
                         const freshServices = await specialistService.getServices();
                         console.log('📦 Fresh services from backend:', freshServices.map(s => ({ id: s.id, name: s.name })));
                         setServices(freshServices);
-                        alert(`Refreshed! Found ${freshServices.length} services on backend`);
+                        // toast.success(`Refreshed! Found ${freshServices.length} services on backend`);
                       } catch (error) {
                         console.error('❌ Refresh failed:', error);
-                        alert('Refresh failed - check console');
+                        // toast.error('Refresh failed - check console');
                       }
                     }}
                     className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
@@ -915,11 +1055,27 @@ const SpecialistServices: React.FC = () => {
                       setFormData(prev => ({ ...prev, category: value }));
                       setShowCustomCategory(false);
                       setCustomCategory('');
+                      // Clear any existing category errors since we now have a selected category
+                      if (value) {
+                        setFormErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.category;
+                          return newErrors;
+                        });
+                      }
                     }}
                     onCustomCategory={(customValue) => {
+                      console.log('📝 Services.tsx: onCustomCategory called with:', customValue);
                       setFormData(prev => ({ ...prev, category: customValue }));
                       setCustomCategory(customValue);
                       setShowCustomCategory(true);
+                      // Clear any existing category errors since we now have a custom category
+                      setFormErrors(prev => {
+                        const newErrors = { ...prev };
+                        delete newErrors.category;
+                        return newErrors;
+                      });
+                      console.log('📝 Services.tsx: States updated - showCustomCategory: true, customCategory:', customValue);
                     }}
                     placeholder={t('serviceForm.selectCategory') || 'Select a category'}
                     error={formErrors.category}
@@ -987,6 +1143,237 @@ const SpecialistServices: React.FC = () => {
                     {formErrors.duration && <p className="mt-1 text-sm text-red-500">{formErrors.duration}</p>}
                   </div>
                 </div>
+              </div>
+
+              {/* Loyalty Points Pricing */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('serviceForm.loyaltyPointsPricing')}</h3>
+
+                {/* Enable Loyalty Points */}
+                <div className="mb-4">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.loyaltyPointsEnabled || false}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        loyaltyPointsEnabled: e.target.checked,
+                        // If disabling, also clear the points-only setting
+                        loyaltyPointsOnly: e.target.checked ? prev.loyaltyPointsOnly : false
+                      }))}
+                      className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    />
+                    <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                      {t('serviceForm.allowLoyaltyBooking')}
+                    </span>
+                  </label>
+                </div>
+
+                {/* Loyalty Points Options */}
+                {formData.loyaltyPointsEnabled && (
+                  <div className="space-y-4 pl-8 border-l-2 border-primary-200 dark:border-primary-800">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Points Required *
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.loyaltyPointsPrice || ''}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          loyaltyPointsPrice: e.target.value ? parseInt(e.target.value) : undefined
+                        }))}
+                        min="1"
+                        step="1"
+                        placeholder="e.g., 500 points"
+                        className={`w-full px-4 py-3 rounded-xl border ${formErrors.loyaltyPointsPrice ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
+                      />
+                      {formErrors.loyaltyPointsPrice && <p className="mt-1 text-sm text-red-500">{formErrors.loyaltyPointsPrice}</p>}
+                    </div>
+
+                    <div>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.loyaltyPointsOnly || false}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            loyaltyPointsOnly: e.target.checked
+                          }))}
+                          className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                        />
+                        <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                          Only bookable with loyalty points (no cash payment option)
+                        </span>
+                      </label>
+                    </div>
+
+                    {formData.loyaltyPointsPrice && (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                        <p className="text-sm text-blue-700 dark:text-blue-300">
+                          💰 This service will be bookable for <strong>{formData.loyaltyPointsPrice} loyalty points</strong>
+                          {formData.loyaltyPointsOnly
+                            ? ' (points only - no cash payment option)'
+                            : ` or ${formatPrice(parseFloat(formData.price || '0'), getServiceCurrency(formData as any))} (customers can choose)`
+                          }
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Service Discounts */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('serviceForm.serviceDiscounts')}</h3>
+
+                {/* Enable Discounts */}
+                <div className="mb-4">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.discountEnabled || false}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        discountEnabled: e.target.checked,
+                        // Clear discount fields if disabling
+                        discountValue: e.target.checked ? prev.discountValue : '',
+                        discountValidFrom: e.target.checked ? prev.discountValidFrom : '',
+                        discountValidUntil: e.target.checked ? prev.discountValidUntil : '',
+                        discountDescription: e.target.checked ? prev.discountDescription : ''
+                      }))}
+                      className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    />
+                    <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                      {t('serviceForm.enablePromotionalDiscount')}
+                    </span>
+                  </label>
+                </div>
+
+                {/* Discount Options */}
+                {formData.discountEnabled && (
+                  <div className="space-y-4 pl-8 border-l-2 border-primary-200 dark:border-primary-800">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Discount Type *
+                        </label>
+                        <select
+                          value={formData.discountType}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            discountType: e.target.value,
+                            discountValue: '' // Clear value when changing type
+                          }))}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                        >
+                          <option value="PERCENTAGE">Percentage (%) Discount</option>
+                          <option value="FIXED_AMOUNT">Fixed Amount Discount</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Discount Value *
+                        </label>
+                        <div className="flex items-center">
+                          {formData.discountType === 'PERCENTAGE' && (
+                            <span className="mr-2 text-gray-500 dark:text-gray-400">%</span>
+                          )}
+                          {formData.discountType === 'FIXED_AMOUNT' && (
+                            <span className="mr-2 text-gray-500 dark:text-gray-400">{formData.currency === 'UAH' ? '₴' : formData.currency === 'USD' ? '$' : '€'}</span>
+                          )}
+                          <input
+                            type="number"
+                            value={formData.discountValue}
+                            onChange={(e) => setFormData(prev => ({ ...prev, discountValue: e.target.value }))}
+                            min="0"
+                            max={formData.discountType === 'PERCENTAGE' ? "100" : undefined}
+                            step={formData.discountType === 'PERCENTAGE' ? "1" : "0.01"}
+                            placeholder={formData.discountType === 'PERCENTAGE' ? 'e.g., 20' : 'e.g., 50'}
+                            className={`w-full px-4 py-3 rounded-xl border ${
+                              formErrors.discountValue ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                            } focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
+                          />
+                        </div>
+                        {formErrors.discountValue && <p className="mt-1 text-sm text-red-500">{formErrors.discountValue}</p>}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Valid From (Optional)
+                        </label>
+                        <input
+                          type="date"
+                          value={formData.discountValidFrom}
+                          onChange={(e) => setFormData(prev => ({ ...prev, discountValidFrom: e.target.value }))}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Valid Until (Optional)
+                        </label>
+                        <input
+                          type="date"
+                          value={formData.discountValidUntil}
+                          onChange={(e) => setFormData(prev => ({ ...prev, discountValidUntil: e.target.value }))}
+                          className={`w-full px-4 py-3 rounded-xl border ${
+                            formErrors.discountValidUntil ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                          } focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
+                        />
+                        {formErrors.discountValidUntil && <p className="mt-1 text-sm text-red-500">{formErrors.discountValidUntil}</p>}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Discount Description (Optional)
+                      </label>
+                      <textarea
+                        value={formData.discountDescription}
+                        onChange={(e) => setFormData(prev => ({ ...prev, discountDescription: e.target.value }))}
+                        placeholder="e.g., Early bird special, Limited time offer, etc."
+                        rows={2}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
+
+                    {formData.discountValue && (
+                      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                        <p className="text-sm text-green-700 dark:text-green-300">
+                          🎉 <strong>Discount Preview:</strong> {' '}
+                          {formData.discountType === 'PERCENTAGE'
+                            ? `${formData.discountValue}% off`
+                            : `${formData.currency === 'UAH' ? '₴' : formData.currency === 'USD' ? '$' : '€'}${formData.discountValue} off`
+                          }
+                          {' '}
+                          {formData.price && (
+                            <span>
+                              (New price: {' '}
+                              {formData.discountType === 'PERCENTAGE'
+                                ? formatPrice(
+                                    parseFloat(formData.price) * (1 - parseFloat(formData.discountValue) / 100),
+                                    formData.currency as 'USD' | 'EUR' | 'UAH'
+                                  )
+                                : formatPrice(
+                                    parseFloat(formData.price) - parseFloat(formData.discountValue),
+                                    formData.currency as 'USD' | 'EUR' | 'UAH'
+                                  )
+                              })
+                            </span>
+                          )}
+                          {formData.discountValidFrom && formData.discountValidUntil && (
+                            <span className="block mt-1">
+                              📅 Valid from {formData.discountValidFrom} to {formData.discountValidUntil}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Removed availability and timeSlots form sections as they're not part of backend schema */}

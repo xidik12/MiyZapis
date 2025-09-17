@@ -50,9 +50,12 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
 
   const handleCustomSubmit = () => {
     if (customValue.trim()) {
+      console.log('🏷️ Submitting custom category:', customValue.trim());
+      console.log('🏷️ Calling onCustomCategory callback with:', customValue.trim());
       onCustomCategory(customValue.trim());
       setShowCustomInput(false);
       setCustomValue('');
+      console.log('🏷️ Custom category submission completed');
     }
   };
 
@@ -63,21 +66,26 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
     }
   };
 
-  const selectedCategoryName = value ? getCategoryName(value, language as 'en' | 'uk' | 'ru') : '';
+  // Check if the value is a known category ID or a custom category string
+  const isKnownCategory = allCategories.some(cat => cat.id === value);
+  const selectedCategoryName = isKnownCategory
+    ? getCategoryName(value, language as 'en' | 'uk' | 'ru')
+    : value; // For custom categories, show the value directly
+  const placeholderLabel = t('serviceForm.selectCategory') || placeholder || 'Select a category';
 
   return (
     <div className="relative">
       {!showCustomInput ? (
         <div className="relative">
           <select
-            value={value}
+            value={isKnownCategory ? value : ''}
             onChange={(e) => handleSelectCategory(e.target.value)}
             className={`w-full px-4 py-3 rounded-xl border ${
               error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
             } focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white appearance-none ${className}`}
           >
             <option value="">
-              {placeholder}
+              {value && !isKnownCategory ? `✨ ${value} (Custom)` : placeholderLabel}
             </option>
             
             {/* Main Categories */}
@@ -101,11 +109,27 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
             )}
           </select>
           
-          {/* Custom dropdown arrow */}
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+          {/* Custom dropdown arrow or edit button for custom categories */}
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+            {value && !isKnownCategory ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCustomInput(true);
+                  setCustomValue(value);
+                }}
+                className="text-primary-600 hover:text-primary-700 transition-colors duration-200"
+                title={t('common.edit') || 'Edit custom category'}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+            ) : (
+              <svg className="w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            )}
           </div>
         </div>
       ) : (

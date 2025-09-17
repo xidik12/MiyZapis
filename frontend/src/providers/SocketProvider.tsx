@@ -5,6 +5,7 @@ import { addNotification } from '@/store/slices/notificationSlice';
 import { updateBookingStatus } from '@/store/slices/bookingSlice';
 import { socketService } from '@/services/socket.service';
 import { environment } from '@/config/environment';
+import { notificationService } from '@/services/notification.service';
 import type { 
   SocketEvent, 
   BookingSocketEvent, 
@@ -93,6 +94,33 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   useEffect(() => {
     if (!isConnected) return;
 
+    // Helper: broadcast latest unread count to sync bell badge immediately
+    const broadcastUnreadCount = async () => {
+      try {
+        const { unreadCount } = await notificationService.getUnreadCount();
+        try {
+          window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount } }));
+        } catch {}
+      } catch (e) {
+        if (environment.DEBUG) console.warn('Failed to refresh unread count:', e);
+      }
+    };
+
+    // Optimistic increment then reconcile after short delay
+    let reconcileTimer: number | null = null;
+    const optimisticIncrement = (delta: number = 1) => {
+      try {
+        window.dispatchEvent(new CustomEvent('notifications:update', { detail: { delta } }));
+      } catch {}
+      if (reconcileTimer) {
+        window.clearTimeout(reconcileTimer);
+      }
+      reconcileTimer = window.setTimeout(() => {
+        broadcastUnreadCount();
+        reconcileTimer = null;
+      }, 1000);
+    };
+
     // Handle booking events
     const handleBookingStatusChanged = (event: BookingSocketEvent) => {
       if (environment.DEBUG) {
@@ -126,6 +154,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }));
+        // Optimistically bump the bell, then reconcile
+        optimisticIncrement(1);
       }
     };
 
@@ -147,6 +177,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }));
+        optimisticIncrement(1);
       }
     };
 
@@ -169,6 +200,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       }
 
       dispatch(addNotification(event.data.notification));
+      optimisticIncrement(1);
     };
 
     // Handle payment events
@@ -201,6 +233,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }));
+        optimisticIncrement(1);
       }
     };
 
@@ -209,7 +242,31 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
     socketService.on('booking:new', handleNewBooking);
     socketService.on('booking:updated', handleBookingUpdated);
     socketService.on('notification:new', handleNewNotification);
+    // Decrement optimistically on notification read or bulk read events if emitted by server
+    const handleNotificationRead = (_data: any) => {
+      optimisticIncrement(-1);
+    };
+    const handleNotificationMarkAll = (_data: any) => {
+      try { window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: 0 } })); } catch {}
+      // Reconcile to be sure
+      broadcastUnreadCount();
+    };
+    const handleNotificationDeleted = (_data: any) => {
+      // If server indicates deletion of an unread notification, decrement; else reconcile
+      optimisticIncrement(-1);
+    };
+    socketService.on('notification:read', handleNotificationRead);
+    socketService.on('notification:mark_all_read', handleNotificationMarkAll);
+    socketService.on('notification:deleted', handleNotificationDeleted);
     socketService.on('payment:status_changed', handlePaymentStatusChanged);
+    // Exact unread count from backend initial payload
+    const handleUnreadNotifications = (data: any) => {
+      const count = typeof data?.count === 'number' ? data.count : undefined;
+      if (count !== undefined) {
+        try { window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: count } })); } catch {}
+      }
+    };
+    socketService.on('unread_notifications', handleUnreadNotifications);
 
     // Handle connection status
     socketService.on('connect', () => {
@@ -232,7 +289,11 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       socketService.off('booking:new', handleNewBooking);
       socketService.off('booking:updated', handleBookingUpdated);
       socketService.off('notification:new', handleNewNotification);
+      socketService.off('notification:read', handleNotificationRead);
+      socketService.off('notification:mark_all_read', handleNotificationMarkAll);
+      socketService.off('notification:deleted', handleNotificationDeleted);
       socketService.off('payment:status_changed', handlePaymentStatusChanged);
+      socketService.off('unread_notifications', handleUnreadNotifications);
     };
   }, [isConnected, user, dispatch]);
 

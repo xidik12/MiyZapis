@@ -8,6 +8,7 @@ const router = Router();
 router.get('/', ServiceController.searchServices);
 router.get('/categories', ServiceController.getCategories);
 router.get('/popular', ServiceController.getPopularServices);
+router.get('/loyalty-points', ServiceController.getLoyaltyPointsServices);
 router.get('/:serviceId', ServiceController.getService);
 
 // Protected routes - require authentication

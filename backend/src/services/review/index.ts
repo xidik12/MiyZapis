@@ -1,6 +1,7 @@
 import { Review, Specialist } from '@prisma/client';
 import { logger } from '@/utils/logger';
 import { prisma } from '@/config/database';
+import LoyaltyService from '@/services/loyalty';
 
 export interface CreateReviewData {
   bookingId: string;
@@ -104,6 +105,28 @@ export class ReviewService {
 
       // Update specialist rating
       await this.updateSpecialistRating(booking.service.specialist.id);
+
+      // Award specialist 1-5 points based on rating received
+      try {
+        const specialistUserId = booking.service.specialist.userId;
+        if (specialistUserId) {
+          const ratingPoints = Math.max(1, Math.min(5, data.rating));
+          await LoyaltyService.earnPoints({
+            userId: specialistUserId,
+            points: ratingPoints,
+            reason: 'REVIEW_RECEIVED',
+            description: `Received ${ratingPoints}-star review for booking ${data.bookingId}`,
+            referenceId: data.bookingId,
+          });
+        }
+      } catch (awardErr) {
+        // Non-fatal: log and continue
+        logger.warn('Failed to award specialist review points', {
+          error: awardErr instanceof Error ? awardErr.message : awardErr,
+          bookingId: data.bookingId,
+          rating: data.rating,
+        });
+      }
 
       logger.info(`Review created: ${review.id} for booking ${data.bookingId}`);
       return review;

@@ -431,8 +431,10 @@ export class ServiceController {
               businessName: service.specialist.businessName,
               rating: service.specialist.rating,
               reviewCount: service.specialist.reviewCount,
+              completedBookings: service.specialist.completedBookings, // expose completed jobs count
               isVerified: service.specialist.isVerified,
               user: {
+                id: service.specialist.user.id,
                 firstName: service.specialist.user.firstName,
                 lastName: service.specialist.user.lastName,
                 avatar: service.specialist.user.avatar,
@@ -575,6 +577,33 @@ export class ServiceController {
         createErrorResponse(
           ErrorCodes.INTERNAL_SERVER_ERROR,
           'Failed to migrate service currency data',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Get services available for loyalty points
+  static async getLoyaltyPointsServices(req: Request, res: Response): Promise<void> {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const specialistId = req.query.specialistId as string;
+
+      const result = await ServiceService.getLoyaltyPointsServices(page, limit, specialistId);
+
+      res.status(200).json(
+        createSuccessResponse(
+          result,
+          { message: 'Loyalty points services retrieved successfully' }
+        )
+      );
+    } catch (error: any) {
+      logger.error('Error getting loyalty points services:', error);
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get loyalty points services',
           req.headers['x-request-id'] as string
         )
       );

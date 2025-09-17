@@ -6,6 +6,8 @@ import { MobileSideNavigation } from './MobileSideNavigation';
 import { MobileHeader } from './MobileHeader';
 import { NotificationToasts } from '../common/NotificationToasts';
 import { useNavigation } from '@/hooks/useNavigation';
+import { useAppSelector } from '@/hooks/redux';
+import { selectDensity } from '@/store/slices/uiSlice';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -22,9 +24,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     toggleMobileMenu,
     closeMobileMenu,
   } = useNavigation();
+  const density = useAppSelector(selectDensity);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex w-full overflow-x-hidden prevent-overflow">
+    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 flex w-full overflow-x-hidden prevent-overflow ${density === 'compact' ? 'density-compact' : 'density-comfortable'}`}>
+      <a href="#main-content" className="skip-link">Skip to content</a>
       {/* Desktop/Tablet Side Navigation */}
       {(isDesktop || isTablet) && (
         <SideNavigation
@@ -59,7 +63,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         )}
 
         {/* Main Content */}
-        <main className="flex-1 w-full overflow-x-hidden prevent-overflow mobile-safe-area">
+        <main id="main-content" className="flex-1 w-full overflow-x-hidden prevent-overflow mobile-safe-area">
           <div className="w-full prevent-overflow">
             {children}
           </div>

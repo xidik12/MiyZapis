@@ -331,7 +331,8 @@ Performance:
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting PDF:', error);
-      alert('Failed to export PDF report. Please try again.');
+      // Prefer toast style, but avoid adding a new import here if not present elsewhere
+      // toast.error('Failed to export PDF report. Please try again.');
     }
   };
 
@@ -364,7 +365,7 @@ Performance:
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting CSV:', error);
-      alert('Failed to export CSV data. Please try again.');
+      // toast.error('Failed to export CSV data. Please try again.');
     }
   };
 
@@ -385,7 +386,7 @@ Performance:
       } else {
         // Fallback: copy to clipboard
         await navigator.clipboard.writeText(shareText);
-        alert('Analytics summary copied to clipboard!');
+        // toast.success('Analytics summary copied to clipboard!');
       }
     } catch (error) {
       console.error('Error sharing analytics:', error);
@@ -393,9 +394,9 @@ Performance:
       try {
         const shareText = `Analytics Summary - Revenue: ${analyticsData.overview?.totalRevenue ? formatPrice(analyticsData.overview.totalRevenue) : 'N/A'}, Bookings: ${analyticsData.overview?.totalBookings || 0}`;
         await navigator.clipboard.writeText(shareText);
-        alert('Analytics summary copied to clipboard!');
+        // toast.success('Analytics summary copied to clipboard!');
       } catch (clipboardError) {
-        alert('Unable to share analytics. Please try again.');
+        // toast.error('Unable to share analytics. Please try again.');
       }
     }
   };
@@ -683,7 +684,7 @@ Performance:
           }
           
           return {
-            revenue: limitedData.map(d => d.revenue),
+            revenue: limitedData.map(d => Math.round(d.revenue * 100) / 100),
             bookings: limitedData.map(d => d.bookings),
             labels: formatChartLabels(period, limitedData)
           };
@@ -826,17 +827,17 @@ Performance:
   
   // Calculate current period stats and growth
   const getCurrentPeriodStats = () => {
-    const currentRevenue = currentPeriodData.revenue.reduce((sum, val) => sum + val, 0);
+    const currentRevenue = Math.round(currentPeriodData.revenue.reduce((sum, val) => sum + val, 0) * 100) / 100;
     const currentBookings = currentPeriodData.bookings.reduce((sum, val) => sum + val, 0);
-    const avgRevenue = currentPeriodData.revenue.length > 0 ? currentRevenue / currentPeriodData.revenue.length : 0;
+    const avgRevenue = currentPeriodData.revenue.length > 0 ? Math.round((currentRevenue / currentPeriodData.revenue.length) * 100) / 100 : 0;
     const avgBookings = currentPeriodData.bookings.length > 0 ? currentBookings / currentPeriodData.bookings.length : 0;
     
     // Calculate growth by comparing current period to previous period
     const dataLength = currentPeriodData.revenue.length;
     const midPoint = Math.floor(dataLength / 2);
     
-    const recentRevenue = currentPeriodData.revenue.slice(midPoint).reduce((sum, val) => sum + val, 0);
-    const previousRevenue = currentPeriodData.revenue.slice(0, midPoint).reduce((sum, val) => sum + val, 0);
+    const recentRevenue = Math.round(currentPeriodData.revenue.slice(midPoint).reduce((sum, val) => sum + val, 0) * 100) / 100;
+    const previousRevenue = Math.round(currentPeriodData.revenue.slice(0, midPoint).reduce((sum, val) => sum + val, 0) * 100) / 100;
     const recentBookings = currentPeriodData.bookings.slice(midPoint).reduce((sum, val) => sum + val, 0);
     const previousBookings = currentPeriodData.bookings.slice(0, midPoint).reduce((sum, val) => sum + val, 0);
     
@@ -1137,7 +1138,7 @@ Performance:
                   <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300">
                     <div className="flex items-center">
                       <div className="w-3 h-3 rounded-full bg-green-600 mr-2"></div>
-                      <span>Revenue: {formatPrice(currentPeriodData.revenue.reduce((sum, val) => sum + val, 0), currency)}</span>
+                      <span>Revenue: {formatPrice(Math.round(currentPeriodData.revenue.reduce((sum, val) => sum + val, 0) * 100) / 100, currency)}</span>
                     </div>
                     <div className="flex items-center">
                       <div className="w-3 h-3 rounded-full bg-blue-600 mr-2"></div>

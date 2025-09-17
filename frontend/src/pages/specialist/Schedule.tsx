@@ -524,7 +524,7 @@ const SpecialistSchedule: React.FC = () => {
           startDateTime,
           endDateTime,
           isAvailable: newSlot.isAvailable,
-          reason: newSlot.reason || (newSlot.isAvailable ? 'Available time' : 'Blocked time'),
+          reason: newSlot.reason || (newSlot.isAvailable ? t('schedule.availableTime') || 'Available time' : t('schedule.blockedTime') || 'Blocked time'),
           recurring: newSlot.isRecurring,
           recurringDays: newSlot.recurringDays || [],
         }),
@@ -596,7 +596,7 @@ const SpecialistSchedule: React.FC = () => {
           startDateTime,
           endDateTime,
           isAvailable: updatedSlot.isAvailable,
-          reason: updatedSlot.reason || (updatedSlot.isAvailable ? 'Available time' : 'Blocked time'),
+          reason: updatedSlot.reason || (updatedSlot.isAvailable ? t('schedule.availableTime') || 'Available time' : t('schedule.blockedTime') || 'Blocked time'),
           recurring: updatedSlot.isRecurring,
           recurringDays: updatedSlot.recurringDays || [],
         }),
@@ -637,9 +637,15 @@ const SpecialistSchedule: React.FC = () => {
     }
     
     // Add confirmation dialog
-    if (!window.confirm('Are you sure you want to delete this time slot?')) {
-      return;
-    }
+    const { confirm } = await import('../../components/ui/Confirm');
+    const ok = await confirm({
+      title: 'Delete time slot?',
+      message: 'This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'destructive'
+    });
+    if (!ok) return;
     
     setOperationInProgress(true);
     try {

@@ -36,6 +36,12 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
     return PROFESSIONS;
   }, [category]);
 
+  // Check if current value is a custom profession (not in predefined list)
+  const isCustomProfession = useMemo(() => {
+    if (!value) return false;
+    return !availableProfessions.find(prof => prof.id === value);
+  }, [value, availableProfessions]);
+
   const filteredProfessions = useMemo(() => {
     if (!searchTerm) return availableProfessions;
     return searchProfessions(searchTerm, language as 'en' | 'uk' | 'ru');
@@ -83,6 +89,7 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
   };
 
   const selectedProfessionName = value ? getProfessionName(value, language as 'en' | 'uk' | 'ru') : '';
+  const placeholderLabel = t('professionForm.selectProfession') || placeholder || 'Select a profession';
 
   const getCategoryDisplayName = (categoryId: string) => {
     const categoryNames = {
@@ -215,21 +222,28 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
 
   return (
     <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => handleSelectProfession(e.target.value)}
-        className={`w-full px-4 py-3 rounded-xl border ${
-          error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-        } focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white appearance-none ${className}`}
-      >
-        <option value="">
-          {placeholder}
-        </option>
+          <select
+            value={value}
+            onChange={(e) => handleSelectProfession(e.target.value)}
+            className={`w-full px-4 py-3 rounded-xl border ${
+              error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+            } focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white appearance-none ${className}`}
+          >
+            <option value="">
+              {placeholderLabel}
+            </option>
         
+        {/* Show current custom profession if it exists */}
+        {isCustomProfession && (
+          <option value={value} selected>
+            {value} (Custom)
+          </option>
+        )}
+
         <option value="search" className="font-semibold text-primary-600">
           🔍 {t('professionForm.searchProfessions') || '🔍 Search professions...'}
         </option>
-        
+
         {/* Group professions by category */}
         {Object.entries(groupedProfessions).map(([categoryId, professions]) => (
           <optgroup key={categoryId} label={getCategoryDisplayName(categoryId)}>
@@ -240,7 +254,7 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
             ))}
           </optgroup>
         ))}
-        
+
         {allowCustom && (
           <option value="custom" className="font-semibold text-primary-600">
             + {t('professionForm.addCustomProfession') || '+ Add Custom Profession'}

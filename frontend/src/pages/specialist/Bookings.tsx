@@ -7,18 +7,22 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { RootState, AppDispatch } from '../../store';
 import { fetchBookings, updateBookingStatus, cancelBooking } from '../../store/slices/bookingSlice';
 import { Booking, BookingStatus } from '../../types';
-import { 
-  EyeIcon, 
-  CheckCircleIcon, 
+import {
+  EyeIcon,
+  CheckCircleIcon,
   CheckIcon,
   StarIcon,
-  XMarkIcon
+  XMarkIcon,
+  MapPinIcon,
+  PhoneIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import ReviewModal from '../../components/modals/ReviewModal';
 import { reviewsService } from '../../services/reviews.service';
 import { validateReviewTags } from '../../constants/reviewTags';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { messagesService } from '../../services/messages.service';
+import TierBadge from '@/components/common/TierBadge';
 
 // Status colors for bookings (matching backend status values)
 const statusColors = {
@@ -51,7 +55,6 @@ interface BookingDetailModalProps {
   onClose: () => void;
   onStatusChange: (bookingId: string, newStatus: keyof typeof statusColors) => void;
   getTranslatedServiceName: (serviceName: string) => string;
-  getTranslatedDuration: (duration: string | number) => string;
   activeTab: 'provider' | 'customer';
 }
 
@@ -68,7 +71,6 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   onClose, 
   onStatusChange,
   getTranslatedServiceName,
-  getTranslatedDuration,
   activeTab
 }) => {
   const { t } = useLanguage();
@@ -122,8 +124,13 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         const conversation = await messagesService.createConversation({
           participantId,
           bookingId: booking.id,
+          initialMessage: text,
         });
         conversationId = conversation.id;
+        // Initial message already sent by backend when initialMessage is provided
+        setMessage('');
+        toast.success('Message sent');
+        return;
       } catch (createErr: any) {
         console.warn('Create conversation failed, attempting to find existing one:', createErr?.response?.data || createErr?.message);
         // Fallback: fetch conversations and find one matching this booking
@@ -156,7 +163,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-2 sm:p-4"
       onClick={(e) => {
         // Close modal when clicking on overlay
         if (e.target === e.currentTarget) {
@@ -165,12 +172,12 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       }}
     >
       <div 
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{t('bookingDetails.title')}</h3>
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">{t('bookingDetails.title')}</h3>
           <button
             onClick={onClose}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -182,34 +189,46 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         </div>
         
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           {/* Customer Info (for provider view) or Specialist Info (for customer view) */}
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
             <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
               {activeTab === 'provider' ? t('bookingDetails.customerInfo') : t('bookingDetails.specialistInfo')}
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.name')}</label>
-                <p className="font-medium text-gray-900 dark:text-white">
-                  {activeTab === 'provider' 
-                    ? (booking.customer 
-                        ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
-                        : (booking.customerName || 'Unknown Customer')
-                      )
-                    : (booking.specialist
-                        ? `${booking.specialist.firstName || ''} ${booking.specialist.lastName || ''}`.trim()
-                        : (booking.specialistName || 'Unknown Specialist')
-                      )
-                  }
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-gray-900 dark:text-white">
+                    {activeTab === 'provider' 
+                      ? (booking.customer 
+                          ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
+                          : (booking.customerName || 'Unknown Customer')
+                        )
+                      : (booking.specialist
+                          ? `${booking.specialist.user?.firstName || ''} ${booking.specialist.user?.lastName || ''}`.trim() || 'Unknown Specialist'
+                          : 'Unknown Specialist'
+                        )
+                    }
+                  </p>
+                  {/* Tier badge for the other participant */}
+                  {activeTab === 'provider' ? (
+                    booking.customer?.loyaltyPoints != null && (
+                      <TierBadge points={booking.customer.loyaltyPoints} size="sm" />
+                    )
+                  ) : (
+                    booking.specialist?.user?.loyaltyPoints != null && (
+                      <TierBadge points={booking.specialist.user.loyaltyPoints} size="sm" />
+                    )
+                  )}
+                </div>
               </div>
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.contact')}</label>
                 <p className="font-medium text-gray-900 dark:text-white">
                   {activeTab === 'provider'
                     ? (booking.customer?.phoneNumber || booking.customer?.email || booking.customerEmail || booking.customerPhone || t('bookingDetails.contactNotAvailable'))
-                    : (booking.specialist?.phoneNumber || booking.specialist?.email || t('bookingDetails.contactNotAvailable'))
+                    : (booking.specialist?.user?.phoneNumber || booking.specialist?.user?.email || t('bookingDetails.contactNotAvailable'))
                   }
                 </p>
               </div>
@@ -219,7 +238,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           {/* Service Info */}
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
             <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.serviceInfo')}</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.service')}</label>
                 <p className="font-medium text-gray-900 dark:text-white">
@@ -252,7 +271,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           {/* Appointment Details */}
           <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
             <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.appointmentDetails')}</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.date')}</label>
                 <p className="font-medium text-gray-900 dark:text-white">
@@ -281,14 +300,134 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               </div>
             )}
           </div>
-          
+
+          {/* Contact Information - Only show for confirmed bookings where specialist info is available */}
+          {booking.status === 'CONFIRMED' && booking.specialist?.location && activeTab === 'customer' && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3 flex items-center">
+                <MapPinIcon className="w-5 h-5 mr-2" />
+                {t('bookings.contactInformation')}
+              </h4>
+              <div className="space-y-3 text-sm">
+                {/* Precise Address */}
+                {booking.specialist.location.preciseAddress && (
+                  <div className="flex items-start space-x-3">
+                    <MapPinIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                        {t('bookings.address')}:
+                      </span>
+                      <p className="text-blue-800 dark:text-blue-200 break-words">
+                        {booking.specialist.location.preciseAddress}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Business Phone */}
+                {booking.specialist.location.businessPhone && (
+                  <div className="flex items-start space-x-3">
+                    <PhoneIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                        {t('bookings.phone')}:
+                      </span>
+                      <a
+                        href={`tel:${booking.specialist.location.businessPhone}`}
+                        className="text-blue-800 dark:text-blue-200 hover:underline ml-1"
+                      >
+                        {booking.specialist.location.businessPhone}
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {/* WhatsApp Number */}
+                {booking.specialist.location.whatsappNumber && (
+                  <div className="flex items-start space-x-3">
+                    <ChatBubbleLeftRightIcon className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                        {t('bookings.whatsapp')}:
+                      </span>
+                      <a
+                        href={`https://wa.me/${booking.specialist.location.whatsappNumber.replace(/[^0-9]/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-700 dark:text-green-300 hover:underline ml-1"
+                      >
+                        {booking.specialist.location.whatsappNumber}
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {/* Location Notes */}
+                {booking.specialist.location.locationNotes && (
+                  <div className="flex items-start space-x-3">
+                    <MapPinIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                        {t('bookings.locationNotes')}:
+                      </span>
+                      <p className="text-blue-800 dark:text-blue-200 break-words">
+                        {booking.specialist.location.locationNotes}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Parking Information */}
+                {booking.specialist.location.parkingInfo && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0">
+                      🚗
+                    </div>
+                    <div>
+                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                        {t('bookings.parking')}:
+                      </span>
+                      <p className="text-blue-800 dark:text-blue-200 break-words">
+                        {booking.specialist.location.parkingInfo}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Access Instructions */}
+                {booking.specialist.location.accessInstructions && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0">
+                      🔑
+                    </div>
+                    <div>
+                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                        {t('bookings.accessInstructions')}:
+                      </span>
+                      <p className="text-blue-800 dark:text-blue-200 break-words">
+                        {booking.specialist.location.accessInstructions}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Privacy Notice */}
+                <div className="mt-4 pt-3 border-t border-blue-200 dark:border-blue-700">
+                  <p className="text-xs text-blue-700 dark:text-blue-300 italic">
+                    ℹ️ {t('bookings.contactInfoNote')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Status Management and Quick Message - Only show for provider view */}
           {activeTab === 'provider' && (
             <>
               {/* Status Management */}
               <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.statusManagement')}</h4>
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-1 sm:gap-2 mb-4">
                   {['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'IN_PROGRESS', 'NO_SHOW'].map((status) => (
                     <label key={status} className="flex items-center cursor-pointer">
                       <input
@@ -299,7 +438,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                         onChange={(e) => setSelectedStatus(e.target.value as BookingStatus)}
                         className="sr-only"
                       />
-                      <span className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      <span className={`px-2 sm:px-3 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                         selectedStatus === status
                           ? 'bg-blue-600 text-white'
                           : 'bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -324,18 +463,18 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={t('bookingDetails.messagePlaceholder')}
-                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
+                  className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700 text-sm sm:text-base"
                   rows={3}
                 />
                 <div className="flex space-x-2 mt-3">
                   <button
                     onClick={handleSendMessage}
                     disabled={!message.trim()}
-                    className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors"
+                    className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-2 px-3 sm:px-4 rounded-lg transition-colors text-sm sm:text-base"
                   >
                     {t('bookingDetails.sendMessageButton')}
                   </button>
-                  <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+                  <button className="px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm sm:text-base">
                     {t('bookingDetails.template')}
                   </button>
                 </div>
@@ -351,8 +490,16 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 {/* Cancel booking if allowed */}
                 {(booking.status === 'PENDING' || booking.status === 'CONFIRMED') && (
                   <button
-                    onClick={() => {
-                      if (confirm(t('bookings.confirmCancel'))) {
+                    onClick={async () => {
+                      const { confirm } = await import('../../components/ui/Confirm');
+                      const ok = await confirm({
+                        title: t('bookings.confirmCancelTitle') || 'Cancel booking?',
+                        message: t('bookings.confirmCancel') || 'Are you sure you want to cancel this booking?',
+                        confirmText: t('actions.cancel') || 'Cancel',
+                        cancelText: t('actions.back') || 'Back',
+                        variant: 'destructive'
+                      });
+                      if (ok) {
                         // Handle cancellation
                         onClose();
                       }
@@ -431,7 +578,7 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Payment Confirmation</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{t('bookings.paymentConfirmation') || 'Payment Confirmation'}</h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100 transition-colors"
@@ -451,21 +598,21 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
               </svg>
             </div>
             <h4 className="text-lg font-medium text-gray-900 dark:text-white text-center mb-2">
-              Complete Booking
+              {t('bookings.completeBooking') || 'Complete Booking'}
             </h4>
             <p className="text-gray-600 dark:text-gray-300 text-center">
-              Has the customer paid for this service?
+              {t('bookings.hasCustomerPaid') || 'Has the customer paid for this service?'}
             </p>
           </div>
 
           {/* Booking Details */}
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-600 dark:text-gray-300">Service:</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.service') || 'Service'}:</span>
               <span className="font-medium dark:text-white">{booking.service?.name || booking.serviceName}</span>
             </div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-600 dark:text-gray-300">Customer:</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">{t('labels.customer') || 'Customer'}:</span>
               <span className="font-medium dark:text-white">
                 {booking.customer 
                   ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
@@ -474,7 +621,7 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600 dark:text-gray-300">Amount:</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">{t('labels.amount') || 'Amount'}:</span>
               <span className="font-bold text-green-600">{formatPrice(booking.totalAmount, getBookingCurrency(booking))}</span>
             </div>
           </div>
@@ -507,19 +654,19 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                 </svg>
               )}
-              Yes, Payment Received
+              {t('bookings.yesPaymentReceived') || 'Yes, Payment Received'}
             </button>
             <button
               onClick={handleDeclinePayment}
               disabled={isSubmitting}
               className="flex-1 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-3 px-4 rounded-lg font-medium transition-colors"
             >
-              No, Not Paid Yet
+              {t('bookings.noNotPaidYet') || 'No, Not Paid Yet'}
             </button>
           </div>
 
           <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
-            Only complete the booking if payment has been received from the customer.
+            {t('bookings.onlyCompleteIfPaid') || 'Only complete the booking if payment has been received from the customer.'}
           </p>
         </div>
       </div>
@@ -693,7 +840,7 @@ const SpecialistBookings: React.FC = () => {
       
       if (!paymentConfirmed) {
         // Show a message that payment must be received first
-        alert('Please ensure payment is received before completing the booking.');
+        toast.info('Please ensure payment is received before completing the booking.');
         return;
       }
 
@@ -711,7 +858,7 @@ const SpecialistBookings: React.FC = () => {
       
     } catch (error: any) {
       console.error('❌ Failed to complete booking with payment confirmation:', error);
-      alert(`Failed to complete booking: ${error.message}`);
+      toast.error(`Failed to complete booking: ${error.message}`);
     }
   };
   
@@ -782,7 +929,7 @@ const SpecialistBookings: React.FC = () => {
       
       // Show user-friendly error message
       const errorMessage = error?.message || 'Failed to submit review. Please try again.';
-      alert(`Review submission failed: ${errorMessage}`);
+      toast.error(`Review submission failed: ${errorMessage}`);
       
       // Keep the modal open so user can try again
     } finally {
@@ -1073,11 +1220,14 @@ const SpecialistBookings: React.FC = () => {
                       }
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
+                      <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
                         {booking.customer 
                           ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
                           : (booking.customerName || 'Unknown Customer')
                         }
+                        {booking.customer?.loyaltyPoints != null && (
+                          <TierBadge points={booking.customer.loyaltyPoints} size="sm" />
+                        )}
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         ID: #{booking.id}
@@ -1213,7 +1363,7 @@ const SpecialistBookings: React.FC = () => {
                                   : (booking.customerName ? booking.customerName.split(' ').map(n => n[0]).join('') : 'UC')
                                 )
                                 : (booking.specialist
-                                  ? `${booking.specialist.firstName?.[0] || ''}${booking.specialist.lastName?.[0] || ''}`
+                                ? `${booking.specialist.user?.firstName?.[0] || ''}${booking.specialist.user?.lastName?.[0] || ''}`
                                   : 'US'
                                 )
                               }
@@ -1221,17 +1371,28 @@ const SpecialistBookings: React.FC = () => {
                           </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {activeTab === 'provider'
-                              ? (booking.customer 
-                                ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
-                                : (booking.customerName || 'Unknown Customer')
+                          <div className="flex items-center gap-2">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {activeTab === 'provider'
+                                ? (booking.customer 
+                                  ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
+                                  : (booking.customerName || 'Unknown Customer')
+                                )
+                                : (booking.specialist
+                                  ? `${booking.specialist.user?.firstName || ''} ${booking.specialist.user?.lastName || ''}`.trim()
+                                  : 'Unknown Specialist'
+                                )
+                              }
+                            </div>
+                            {activeTab === 'provider' ? (
+                              booking.customer?.loyaltyPoints != null && (
+                                <TierBadge points={booking.customer.loyaltyPoints} size="sm" />
                               )
-                              : (booking.specialist
-                                ? `${booking.specialist.firstName || ''} ${booking.specialist.lastName || ''}`.trim()
-                                : 'Unknown Specialist'
+                            ) : (
+                              booking.specialist?.user?.loyaltyPoints != null && (
+                                <TierBadge points={booking.specialist.user.loyaltyPoints} size="sm" />
                               )
-                            }
+                            )}
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">ID: #{booking.id}</div>
                         </div>
@@ -1423,7 +1584,6 @@ const SpecialistBookings: React.FC = () => {
         onClose={() => setShowDetailModal(false)}
         onStatusChange={handleStatusChange}
         getTranslatedServiceName={getTranslatedServiceName}
-        getTranslatedDuration={getTranslatedDuration}
         activeTab={activeTab}
       />
 
@@ -1450,10 +1610,27 @@ const SpecialistBookings: React.FC = () => {
           id: selectedBooking?.id || '',
           service: selectedBooking?.service,
           serviceName: selectedBooking?.service?.name,
-          specialist: selectedBooking?.specialist,
-          specialistName: selectedBooking?.specialist 
-            ? `${selectedBooking.specialist.firstName || ''} ${selectedBooking.specialist.lastName || ''}`.trim()
-            : undefined
+          specialist: selectedBooking?.specialist
+            ? {
+                id: (selectedBooking.specialist as any).id,
+                firstName:
+                  (selectedBooking.specialist as any).firstName ||
+                  (selectedBooking.specialist as any).user?.firstName ||
+                  '',
+                lastName:
+                  (selectedBooking.specialist as any).lastName ||
+                  (selectedBooking.specialist as any).user?.lastName ||
+                  '',
+              }
+            : undefined,
+          specialistName:
+            selectedBooking?.specialist
+              ? `${
+                  (selectedBooking.specialist as any).user?.firstName || ''
+                } ${
+                  (selectedBooking.specialist as any).user?.lastName || ''
+                }`.trim()
+              : undefined
         }}
         loading={reviewLoading}
       />

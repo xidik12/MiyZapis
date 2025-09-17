@@ -16,6 +16,17 @@ interface CreateServiceData {
   requiresApproval?: boolean;
   maxAdvanceBooking?: number;
   minAdvanceBooking?: number;
+  // Loyalty Points pricing
+  loyaltyPointsEnabled?: boolean;
+  loyaltyPointsPrice?: number;
+  loyaltyPointsOnly?: boolean;
+  // Service Discounts
+  discountEnabled?: boolean;
+  discountType?: string;
+  discountValue?: number;
+  discountValidFrom?: string;
+  discountValidUntil?: string;
+  discountDescription?: string;
 }
 
 interface UpdateServiceData {
@@ -32,6 +43,17 @@ interface UpdateServiceData {
   requiresApproval?: boolean;
   maxAdvanceBooking?: number;
   minAdvanceBooking?: number;
+  // Loyalty Points pricing
+  loyaltyPointsEnabled?: boolean;
+  loyaltyPointsPrice?: number;
+  loyaltyPointsOnly?: boolean;
+  // Service Discounts
+  discountEnabled?: boolean;
+  discountType?: string;
+  discountValue?: number;
+  discountValidFrom?: string;
+  discountValidUntil?: string;
+  discountDescription?: string;
 }
 
 interface ServiceWithDetails extends Service {
@@ -76,6 +98,17 @@ export class ServiceService {
           requiresApproval: data.requiresApproval !== undefined ? data.requiresApproval : true,
           maxAdvanceBooking: data.maxAdvanceBooking || 30,
           minAdvanceBooking: data.minAdvanceBooking || 1,
+          // Loyalty Points pricing
+          loyaltyPointsEnabled: data.loyaltyPointsEnabled || false,
+          loyaltyPointsPrice: data.loyaltyPointsPrice || null,
+          loyaltyPointsOnly: data.loyaltyPointsOnly || false,
+          // Service Discounts
+          discountEnabled: data.discountEnabled || false,
+          discountType: data.discountType || null,
+          discountValue: data.discountValue || null,
+          discountValidFrom: data.discountValidFrom ? new Date(data.discountValidFrom) : null,
+          discountValidUntil: data.discountValidUntil ? new Date(data.discountValidUntil) : null,
+          discountDescription: data.discountDescription || null,
         },
         include: {
           specialist: {
@@ -169,6 +202,17 @@ export class ServiceService {
       if (data.requiresApproval !== undefined) updateData.requiresApproval = data.requiresApproval;
       if (data.maxAdvanceBooking !== undefined) updateData.maxAdvanceBooking = data.maxAdvanceBooking;
       if (data.minAdvanceBooking !== undefined) updateData.minAdvanceBooking = data.minAdvanceBooking;
+      // Loyalty Points pricing
+      if (data.loyaltyPointsEnabled !== undefined) updateData.loyaltyPointsEnabled = data.loyaltyPointsEnabled;
+      if (data.loyaltyPointsPrice !== undefined) updateData.loyaltyPointsPrice = data.loyaltyPointsPrice;
+      if (data.loyaltyPointsOnly !== undefined) updateData.loyaltyPointsOnly = data.loyaltyPointsOnly;
+      // Service Discounts
+      if (data.discountEnabled !== undefined) updateData.discountEnabled = data.discountEnabled;
+      if (data.discountType !== undefined) updateData.discountType = data.discountType;
+      if (data.discountValue !== undefined) updateData.discountValue = data.discountValue;
+      if (data.discountValidFrom !== undefined) updateData.discountValidFrom = data.discountValidFrom ? new Date(data.discountValidFrom) : null;
+      if (data.discountValidUntil !== undefined) updateData.discountValidUntil = data.discountValidUntil ? new Date(data.discountValidUntil) : null;
+      if (data.discountDescription !== undefined) updateData.discountDescription = data.discountDescription;
 
       console.log('📤 Final updateData being sent to DB:', updateData);
       console.log('⏰ Duration in updateData:', updateData.duration);
@@ -926,5 +970,131 @@ export class ServiceService {
       logger.error('Error migrating currency data:', error);
       throw error;
     }
+  }
+
+  // Get services available for loyalty points
+  static async getLoyaltyPointsServices(
+    page: number = 1,
+    limit: number = 20,
+    specialistId?: string
+  ) {
+    try {
+      const skip = (page - 1) * limit;
+
+      const where: any = {
+        isActive: true,
+        isDeleted: false,
+        loyaltyPointsEnabled: true,
+      };
+
+      if (specialistId) {
+        where.specialist = { userId: specialistId };
+      }
+
+      const [services, total] = await Promise.all([
+        prisma.service.findMany({
+          where,
+          include: {
+            specialist: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    email: true,
+                    firstName: true,
+                    lastName: true,
+                    avatar: true,
+                    userType: true,
+                    phoneNumber: true,
+                    isEmailVerified: true,
+                    isPhoneVerified: true,
+                    isActive: true,
+                    loyaltyPoints: true,
+                    language: true,
+                    currency: true,
+                    timezone: true,
+                    createdAt: true,
+                    updatedAt: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            loyaltyPointsPrice: 'asc', // Sort by points required (cheapest first)
+          },
+          skip,
+          take: limit,
+        }),
+        prisma.service.count({ where }),
+      ]);
+
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        services: services as ServiceWithDetails[],
+        total,
+        page,
+        totalPages,
+      };
+    } catch (error) {
+      logger.error('Error getting loyalty points services:', error);
+      throw error;
+    }
+  }
+
+  // Utility function to calculate discounted price
+  static calculateDiscountedPrice(
+    basePrice: number,
+    discountEnabled: boolean,
+    discountType?: string | null,
+    discountValue?: number | null,
+    discountValidFrom?: Date | null,
+    discountValidUntil?: Date | null
+  ): { originalPrice: number; discountedPrice: number; hasActiveDiscount: boolean; discountAmount: number; discountPercentage: number } {
+    const now = new Date();
+
+    // Check if discount is active
+    const hasActiveDiscount = discountEnabled &&
+      discountType &&
+      discountValue &&
+      discountValue > 0 &&
+      (!discountValidFrom || now >= discountValidFrom) &&
+      (!discountValidUntil || now <= discountValidUntil);
+
+    if (!hasActiveDiscount) {
+      return {
+        originalPrice: basePrice,
+        discountedPrice: basePrice,
+        hasActiveDiscount: false,
+        discountAmount: 0,
+        discountPercentage: 0
+      };
+    }
+
+    let discountedPrice = basePrice;
+    let discountAmount = 0;
+    let discountPercentage = 0;
+
+    if (discountType === 'PERCENTAGE') {
+      discountPercentage = Math.min(discountValue, 100);
+      discountAmount = (basePrice * discountPercentage) / 100;
+      discountedPrice = basePrice - discountAmount;
+    } else if (discountType === 'FIXED_AMOUNT') {
+      discountAmount = Math.min(discountValue, basePrice);
+      discountedPrice = basePrice - discountAmount;
+      discountPercentage = (discountAmount / basePrice) * 100;
+    }
+
+    // Ensure price doesn't go negative
+    discountedPrice = Math.max(0, discountedPrice);
+
+    return {
+      originalPrice: basePrice,
+      discountedPrice,
+      hasActiveDiscount: true,
+      discountAmount,
+      discountPercentage
+    };
   }
 }

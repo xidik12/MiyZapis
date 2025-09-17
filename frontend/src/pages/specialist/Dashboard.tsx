@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
@@ -152,19 +153,19 @@ const SpecialistDashboard: React.FC = () => {
               currency: b.service?.currency
             })));
             
-            const totalRevenue = completedBookings.reduce((sum, booking) => {
+            const totalRevenue = Math.round(completedBookings.reduce((sum, booking) => {
               const amount = booking.totalAmount || 0;
               const bookingCurrency = getBookingCurrency(booking);
-              
+
               console.log(`🔍 Adding booking ${booking.id} (${booking.service?.name}): ${amount} ${bookingCurrency}`);
-              
+
               // Convert to user's preferred currency for consistent total
               const convertedAmount = convertPrice(amount, bookingCurrency);
-              
+
               console.log(`💱 Converted ${amount} ${bookingCurrency} → ${convertedAmount} (user currency)`);
-              
-              return sum + Math.round(convertedAmount * 100) / 100;
-            }, 0);
+
+              return sum + convertedAmount;
+            }, 0) * 100) / 100;
             
             console.log('🔍 Dashboard: Calculated total revenue:', totalRevenue);
             
@@ -284,7 +285,7 @@ const SpecialistDashboard: React.FC = () => {
               .map(booking => {
                 // Format date nicely instead of raw ISO format
                 const rawDate = booking.completedAt || booking.scheduledAt || booking.createdAt;
-                let formattedDate = 'N/A';
+                let formattedDate = t('common.notAvailable') || 'N/A';
                 try {
                   if (rawDate) {
                     const date = new Date(rawDate);
@@ -448,57 +449,57 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting dashboard report:', error);
-      alert('Failed to export dashboard report. Please try again.');
+      toast.error('Failed to export dashboard report. Please try again.');
     }
   };
 
   const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description }: any) => (
-    <div className="bg-surface rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+    <div className="bg-surface rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300">
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{title}</p>
+          <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1 truncate">{title}</p>
           {loading ? (
             <div className="mb-2">
               <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-24"></div>
             </div>
           ) : (
-            <p className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{value}</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">{value}</p>
           )}
           {description && !loading && (
-            <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{description}</p>
           )}
           {loading && (
             <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-16"></div>
           )}
           {change && !loading && (
-            <div className={`flex items-center mt-2 text-sm ${
+            <div className={`flex items-center mt-2 text-xs sm:text-sm ${
               changeType === 'positive' ? 'text-success-600' : 'text-error-600'
             }`}>
               {changeType === 'positive' ? (
-                <ArrowUpIcon className="w-4 h-4 mr-1" />
+                <ArrowUpIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
               ) : (
-                <ArrowDownIcon className="w-4 h-4 mr-1" />
+                <ArrowDownIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
               )}
               <span>{change}</span>
             </div>
           )}
         </div>
-        <div className={`p-3 rounded-xl ${iconBg}`}>
-          <Icon className="w-6 h-6 text-white" />
+        <div className={`p-2 sm:p-3 rounded-xl ${iconBg} flex-shrink-0`}>
+          <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
         </div>
       </div>
     </div>
   );
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
             {getGreeting()}, {user?.firstName}! 👋
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             {t('dashboard.today')} {currentTime.toLocaleDateString(
               language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
               { 
@@ -510,26 +511,26 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
             )}
           </p>
         </div>
-        <div className="mt-4 lg:mt-0 flex space-x-3">
+        <div className="mt-4 lg:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
           <Link
             to="/specialist/services"
-            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl hover:from-primary-700 hover:to-secondary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+            className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl hover:from-primary-700 hover:to-secondary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
           >
-            <PlusIcon className="w-5 h-5 mr-2" />
+            <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             {t('dashboard.specialist.addService')}
           </Link>
           <button 
             onClick={handleExportReport}
-            className="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
+            className="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-sm sm:text-base"
           >
-            <ArrowDownTrayIcon className="w-5 h-5 mr-2" />
+            <ArrowDownTrayIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             {t('dashboard.specialist.exportReport')}
           </button>
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatCard
           title={t('dashboard.specialist.totalBookings')}
           value={dashboardData.stats.totalBookings}
@@ -569,7 +570,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
       </div>
 
       {/* Additional Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.profileActivity')}</h3>
