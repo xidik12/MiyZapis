@@ -1,6 +1,6 @@
 import express from 'express';
 import { paymentController } from '@/controllers/payment.controller';
-import { authenticateToken } from '@/middleware/auth';
+import { authenticateToken } from '@/middleware/auth/jwt';
 import { validateRequest } from '@/middleware/validation';
 
 const router = express.Router();
