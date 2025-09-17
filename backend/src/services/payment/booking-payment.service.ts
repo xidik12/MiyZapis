@@ -614,6 +614,56 @@ export class BookingPaymentService {
       ...completionData,
     });
   }
+
+  async getPaymentOptions(userId: string, amount: number): Promise<{
+    supportedMethods: Array<{
+      id: string;
+      name: string;
+      description: string;
+      isAvailable: boolean;
+    }>;
+    depositConfiguration: {
+      amountUSD: number;
+      amountUAH: number;
+      currency: string;
+      description: string;
+    };
+  }> {
+    // Get deposit configuration
+    const depositConfig = {
+      amountUSD: 1.0,
+      amountUAH: 40.0,
+      currency: 'USD',
+      description: 'Secure booking deposit required for confirmation'
+    };
+
+    // Define supported payment methods
+    const supportedMethods = [
+      {
+        id: 'AUTO',
+        name: 'Smart Payment',
+        description: 'Use wallet balance first, then crypto/fiat as needed',
+        isAvailable: true
+      },
+      {
+        id: 'CRYPTO_ONLY',
+        name: 'Cryptocurrency',
+        description: 'Pay directly with supported cryptocurrencies',
+        isAvailable: true
+      },
+      {
+        id: 'FIAT_TO_CRYPTO',
+        name: 'Fiat to Crypto',
+        description: 'Pay with bank card/transfer, auto-convert to crypto',
+        isAvailable: true
+      }
+    ];
+
+    return {
+      supportedMethods,
+      depositConfiguration: depositConfig
+    };
+  }
 }
 
 export const bookingPaymentService = new BookingPaymentService();

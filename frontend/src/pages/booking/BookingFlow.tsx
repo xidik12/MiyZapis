@@ -8,6 +8,7 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { specialistService, serviceService, bookingService } from '../../services';
+import { paymentService } from '../../services/payment.service';
 import { loyaltyService, UserLoyalty } from '@/services/loyalty.service';
 import { RewardsService, type RewardRedemption, type LoyaltyReward } from '@/services/rewards.service';
 import {
@@ -61,6 +62,15 @@ const BookingFlow: React.FC = () => {
   const [pointsToEarn, setPointsToEarn] = useState<number>(0);
   const [redemptions, setRedemptions] = useState<RewardRedemption[]>([]);
   const [selectedRedemptionId, setSelectedRedemptionId] = useState<string>('');
+
+  // Payment states
+  const [paymentMethod, setPaymentMethod] = useState<'AUTO' | 'CRYPTO_ONLY' | 'FIAT_TO_CRYPTO'>('AUTO');
+  const [userWalletAddress, setUserWalletAddress] = useState<string>('');
+  const [useWalletFirst, setUseWalletFirst] = useState<boolean>(true);
+  const [paymentLoading, setPaymentLoading] = useState<boolean>(false);
+  const [paymentResult, setPaymentResult] = useState<any>(null);
+  const [showQRCode, setShowQRCode] = useState<boolean>(false);
+  const [paymentOptions, setPaymentOptions] = useState<any>(null);
 
   // Calculate discount preview
   const calculateDiscount = () => {
@@ -214,6 +224,21 @@ const BookingFlow: React.FC = () => {
     fetchRedemptions();
   }, [service]);
 
+  // Fetch payment options
+  useEffect(() => {
+    const fetchPaymentOptions = async () => {
+      if (!service) return;
+      try {
+        const servicePrice = finalPrice > 0 ? finalPrice : (service.price || service.basePrice || 0);
+        const options = await paymentService.getPaymentOptions(servicePrice);
+        setPaymentOptions(options);
+      } catch (error) {
+        console.error('Failed to fetch payment options:', error);
+      }
+    };
+    fetchPaymentOptions();
+  }, [service, finalPrice]);
+
   useEffect(() => {
     // Fetch available dates when specialist is loaded
     const fetchAvailableDates = async () => {
@@ -312,7 +337,7 @@ const BookingFlow: React.FC = () => {
 
   const handleBookingSubmit = async () => {
     const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
-    
+
     console.log('📋 BookingFlow: Attempting to create booking...');
     console.log('🔍 BookingFlow: Booking data check:', {
       specialist: !!specialist,
@@ -321,18 +346,20 @@ const BookingFlow: React.FC = () => {
       selectedTime: selectedTime,
       currentSpecialistId
     });
-    
+
     if (!specialist || !service || !selectedDate || !selectedTime) {
       console.error('❌ BookingFlow: Missing required booking data');
       return;
     }
 
     try {
+      setPaymentLoading(true);
+
       // Combine date and time into scheduledAt DateTime
       const [hours, minutes] = selectedTime.split(':').map(Number);
       const scheduledAt = new Date(selectedDate);
       scheduledAt.setHours(hours, minutes, 0, 0);
-      
+
       const bookingData: any = {
         serviceId: service.id,
         scheduledAt: scheduledAt.toISOString(),
@@ -344,28 +371,45 @@ const BookingFlow: React.FC = () => {
       if (selectedRedemptionId) {
         bookingData.rewardRedemptionId = selectedRedemptionId;
       }
-      
+
       console.log('📤 BookingFlow: Sending booking data:', bookingData);
       const result = await bookingService.createBooking(bookingData);
       console.log('✅ BookingFlow: Booking created successfully:', result);
-      
-      // Store booking result for confirmation step
+
+      // Now process the deposit payment
+      console.log('💳 BookingFlow: Processing deposit payment...');
+      const paymentData = {
+        bookingId: result.id,
+        useWalletFirst,
+        paymentMethod,
+        userAddress: userWalletAddress || undefined
+      };
+
+      const depositResult = await paymentService.createBookingDeposit(paymentData);
+      console.log('✅ BookingFlow: Deposit payment processed:', depositResult);
+
+      // Store results for confirmation step
       setBookingResult(result);
-      
+      setPaymentResult(depositResult);
+
       // Navigate to confirmation step
       setCurrentStep(steps.length - 1);
+
     } catch (error: any) {
-      console.error('❌ BookingFlow: Error creating booking:', error);
+      console.error('❌ BookingFlow: Error in booking/payment flow:', error);
       const code = error?.apiError?.code;
       const status = error?.response?.status || error?.apiError?.status;
+
       if (code === 'BOOKING_CONFLICT' || status === 409 || error?.message?.includes('time slot')) {
         toast.warning(t('booking.slotConflict') || 'This time slot was just booked by someone else. Please choose another.');
         await refreshSlots();
         setCurrentStep(1); // Ensure user stays on time selection
         setConflictHint({ active: true, lastTried: selectedTime });
       } else {
-        toast.error(t('booking.createFailed') || 'Failed to create booking. Please try again.');
+        toast.error(error?.message || t('booking.createFailed') || 'Failed to create booking. Please try again.');
       }
+    } finally {
+      setPaymentLoading(false);
     }
   };
 
@@ -886,46 +930,235 @@ const BookingFlow: React.FC = () => {
                 </div>
               )}
 
-              <div className="text-center py-4 mb-6">
-                <p className="text-gray-600 dark:text-gray-400 mb-2">
-                  {t('booking.paymentIntegrationPending')}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-500">
-                  Complete booking to earn your loyalty points
-                </p>
+              {/* Payment Method Selection */}
+              <div className="mb-6">
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <CreditCardIcon className="w-5 h-5 mr-2 text-blue-600" />
+                  Payment Method
+                </h4>
+
+                <div className="space-y-3">
+                  <label className="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="AUTO"
+                      checked={paymentMethod === 'AUTO'}
+                      onChange={(e) => setPaymentMethod(e.target.value as 'AUTO')}
+                      className="text-blue-600"
+                    />
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900 dark:text-white">Smart Payment (Recommended)</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Use wallet balance first, then crypto/fiat as needed</div>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="CRYPTO_ONLY"
+                      checked={paymentMethod === 'CRYPTO_ONLY'}
+                      onChange={(e) => setPaymentMethod(e.target.value as 'CRYPTO_ONLY')}
+                      className="text-blue-600"
+                    />
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900 dark:text-white">Crypto Only</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Pay directly with cryptocurrency</div>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="FIAT_TO_CRYPTO"
+                      checked={paymentMethod === 'FIAT_TO_CRYPTO'}
+                      onChange={(e) => setPaymentMethod(e.target.value as 'FIAT_TO_CRYPTO')}
+                      className="text-blue-600"
+                    />
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900 dark:text-white">Fiat to Crypto</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Pay with bank card/transfer, auto-convert to crypto</div>
+                    </div>
+                  </label>
+                </div>
               </div>
-              
+
+              {/* Wallet Address for FIAT_TO_CRYPTO */}
+              {paymentMethod === 'FIAT_TO_CRYPTO' && (
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Your Wallet Address (for receiving crypto)
+                  </label>
+                  <input
+                    type="text"
+                    value={userWalletAddress}
+                    onChange={(e) => setUserWalletAddress(e.target.value)}
+                    placeholder="0x742d35Cc8390077c8ac1b2e0B83D0E7EFB84a8C2"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    This is where the converted crypto will be sent
+                  </p>
+                </div>
+              )}
+
+              {/* Wallet First Option */}
+              <div className="mb-6">
+                <label className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    checked={useWalletFirst}
+                    onChange={(e) => setUseWalletFirst(e.target.checked)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    Use my wallet balance first (if available)
+                  </span>
+                </label>
+              </div>
+
+              {/* Payment Information */}
+              {paymentOptions && (
+                <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                  <div className="text-sm">
+                    <div className="font-medium text-blue-900 dark:text-blue-100 mb-2">Payment Information</div>
+                    <div className="space-y-1 text-blue-800 dark:text-blue-200">
+                      <div>Deposit Amount: ${paymentOptions.depositConfiguration.amountUSD} / ₴{paymentOptions.depositConfiguration.amountUAH}</div>
+                      <div>Currency: {paymentOptions.depositConfiguration.currency}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <button
                 onClick={handleBookingSubmit}
-                className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center"
+                disabled={paymentLoading || (paymentMethod === 'FIAT_TO_CRYPTO' && !userWalletAddress)}
+                className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
               >
-                <CreditCardIcon className="w-5 h-5 mr-2" />
-                {t('booking.confirmBooking')}
+                {paymentLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <CreditCardIcon className="w-5 h-5 mr-2" />
+                    {t('booking.confirmBooking')}
+                  </>
+                )}
               </button>
             </div>
           </div>
         );
 
       case 4: // Confirmation
-        const booking = bookingResult?.booking;
+        const booking = bookingResult?.booking || bookingResult;
         const isAutoBooked = booking?.status === 'CONFIRMED';
         const isPending = booking?.status === 'PENDING';
-        
+        const needsPayment = paymentResult?.requiresPayment;
+        const hasPaymentUrl = paymentResult?.paymentUrl;
+        const hasOnrampSession = paymentResult?.onrampSession;
+
         return (
           <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 text-center">
               <CheckCircleIcon className={`w-16 h-16 mx-auto mb-4 ${isAutoBooked ? 'text-green-600' : 'text-yellow-600'}`} />
-              
+
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 {isAutoBooked ? t('booking.bookingConfirmed') : t('booking.bookingRequested')}
               </h3>
-              
+
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {isAutoBooked 
-                  ? t('booking.autoBookingConfirmed') 
+                {isAutoBooked
+                  ? t('booking.autoBookingConfirmed')
                   : t('booking.manualBookingMessage')
                 }
               </p>
+
+              {/* Payment Required Section */}
+              {needsPayment && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-6">
+                  <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
+                    💳 Payment Required
+                  </h4>
+
+                  {paymentResult?.message && (
+                    <p className="text-sm text-blue-800 dark:text-blue-200 mb-4">
+                      {paymentResult.message}
+                    </p>
+                  )}
+
+                  {hasPaymentUrl && (
+                    <div className="space-y-3">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Amount: ${paymentResult.finalAmount || 'N/A'}
+                      </p>
+                      <a
+                        href={paymentResult.paymentUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        <CreditCardIcon className="w-4 h-4 mr-2" />
+                        Complete Payment
+                      </a>
+                    </div>
+                  )}
+
+                  {hasOnrampSession && (
+                    <div className="space-y-3">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Fiat-to-Crypto Session Created
+                      </p>
+                      <a
+                        href={paymentResult.onrampSession.onrampURL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        💰 Complete Fiat Payment
+                      </a>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Session expires: {new Date(paymentResult.onrampSession.expiresAt).toLocaleString()}
+                      </p>
+                    </div>
+                  )}
+
+                  {paymentResult?.qrCodeData && (
+                    <div className="mt-4">
+                      <button
+                        onClick={() => setShowQRCode(!showQRCode)}
+                        className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                      >
+                        {showQRCode ? 'Hide' : 'Show'} QR Code
+                      </button>
+                      {showQRCode && (
+                        <div className="mt-2 flex justify-center">
+                          <img
+                            src={paymentResult.qrCodeData}
+                            alt="Payment QR Code"
+                            className="max-w-48 h-auto border border-gray-200 rounded"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Payment Complete Section */}
+              {!needsPayment && paymentResult && (
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4 mb-6">
+                  <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">
+                    ✅ Payment Complete
+                  </h4>
+                  <p className="text-sm text-green-800 dark:text-green-200">
+                    {paymentResult.message || 'Payment processed successfully'}
+                  </p>
+                </div>
+              )}
 
               {/* Loyalty Points Earned Notification */}
               {loyaltyData && pointsToEarn > 0 && isAutoBooked && (
