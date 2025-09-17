@@ -1,6 +1,7 @@
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
 import { coinbaseCommerceService } from './coinbase.service';
+import { coinbaseOnrampService } from './coinbase-onramp.service';
 import { walletService } from './wallet.service';
 
 export interface CreateDepositPaymentParams {
@@ -11,10 +12,12 @@ export interface CreateDepositPaymentParams {
   redirectUrl?: string;
   cancelUrl?: string;
   useWalletFirst?: boolean;
+  paymentMethod?: 'AUTO' | 'CRYPTO_ONLY' | 'FIAT_TO_CRYPTO';
+  userAddress?: string;
 }
 
 export interface DepositPaymentResult {
-  paymentMethod: 'CRYPTO' | 'WALLET' | 'MIXED';
+  paymentMethod: 'CRYPTO' | 'WALLET' | 'MIXED' | 'FIAT_TO_CRYPTO';
   cryptoPayment?: {
     id: string;
     paymentUrl: string;
@@ -22,13 +25,21 @@ export interface DepositPaymentResult {
     expiresAt: Date;
     amount: number;
   };
+  onrampSession?: {
+    sessionId: string;
+    onrampURL: string;
+    expiresAt: Date;
+    amount: number;
+    currency: string;
+    supportedAssets: string[];
+  };
   walletTransaction?: {
     id: string;
     amount: number;
   };
   totalPaid: number;
   remainingAmount: number;
-  status: 'COMPLETED' | 'PENDING_CRYPTO' | 'FAILED';
+  status: 'COMPLETED' | 'PENDING_CRYPTO' | 'PENDING_ONRAMP' | 'FAILED';
 }
 
 export class BookingPaymentService {
@@ -45,6 +56,8 @@ export class BookingPaymentService {
       redirectUrl,
       cancelUrl,
       useWalletFirst = true,
+      paymentMethod = 'AUTO',
+      userAddress,
     } = params;
 
     logger.info('Creating deposit payment', {
@@ -77,6 +90,7 @@ export class BookingPaymentService {
       let remainingAmount = depositAmount;
       let walletTransaction: any = undefined;
       let cryptoPayment: any = undefined;
+      let onrampSession: any = undefined;
 
       // Step 1: Try to use wallet balance first if requested
       if (useWalletFirst && remainingAmount > 0) {
@@ -107,61 +121,88 @@ export class BookingPaymentService {
         }
       }
 
-      // Step 2: Create crypto payment for remaining amount if needed
+      // Step 2: Handle remaining payment based on method preference
       if (remainingAmount > 0) {
-        const charge = await coinbaseCommerceService.createCharge({
-          amount: remainingAmount,
-          currency,
-          name: `Booking Deposit - ${booking.service.name}`,
-          description: `Deposit payment for booking with ${booking.customer.firstName} ${booking.customer.lastName}`,
-          metadata: {
-            bookingId,
+        if (paymentMethod === 'FIAT_TO_CRYPTO') {
+          // Create onramp session for fiat-to-crypto conversion
+          const onrampResult = await coinbaseOnrampService.createOnrampSession({
             userId,
-            type: 'DEPOSIT',
-            originalAmount: depositAmount,
-            walletAmountUsed: totalPaid,
-          },
-          redirectUrl,
-          cancelUrl,
-        });
-
-        // Create crypto payment record
-        cryptoPayment = await prisma.cryptoPayment.create({
-          data: {
-            userId,
-            bookingId,
-            coinbaseChargeId: charge.chargeId,
-            coinbaseChargeCode: charge.code,
-            status: 'PENDING',
-            type: 'DEPOSIT',
+            userAddress,
             amount: remainingAmount,
             currency,
-            paymentUrl: charge.paymentUrl,
-            qrCodeUrl: charge.qrCodeUrl,
-            expiresAt: charge.expiresAt,
-            metadata: JSON.stringify({
-              bookingId,
+            purpose: 'BOOKING_DEPOSIT',
+            bookingId,
+            metadata: {
               depositAmount,
               walletAmountUsed: totalPaid,
-            }),
-          },
-        });
+              originalBookingId: bookingId,
+            },
+          });
 
-        logger.info('Crypto payment created for deposit', {
-          bookingId,
-          cryptoPaymentId: cryptoPayment.id,
-          amount: remainingAmount,
-          chargeId: charge.chargeId,
-        });
+          onrampSession = onrampResult;
+
+          logger.info('Onramp session created for deposit', {
+            bookingId,
+            sessionId: onrampResult.sessionId,
+            amount: remainingAmount,
+            onrampURL: onrampResult.onrampURL,
+          });
+        } else {
+          // Create direct crypto payment (AUTO or CRYPTO_ONLY)
+          const charge = await coinbaseCommerceService.createCharge({
+            amount: remainingAmount,
+            currency,
+            name: `Booking Deposit - ${booking.service.name}`,
+            description: `Deposit payment for booking with ${booking.customer.firstName} ${booking.customer.lastName}`,
+            metadata: {
+              bookingId,
+              userId,
+              type: 'DEPOSIT',
+              originalAmount: depositAmount,
+              walletAmountUsed: totalPaid,
+            },
+            redirectUrl,
+            cancelUrl,
+          });
+
+          // Create crypto payment record
+          cryptoPayment = await prisma.cryptoPayment.create({
+            data: {
+              userId,
+              bookingId,
+              coinbaseChargeId: charge.chargeId,
+              coinbaseChargeCode: charge.code,
+              status: 'PENDING',
+              type: 'DEPOSIT',
+              amount: remainingAmount,
+              currency,
+              paymentUrl: charge.paymentUrl,
+              qrCodeUrl: charge.qrCodeUrl,
+              expiresAt: charge.expiresAt,
+              metadata: JSON.stringify({
+                bookingId,
+                depositAmount,
+                walletAmountUsed: totalPaid,
+              }),
+            },
+          });
+
+          logger.info('Crypto payment created for deposit', {
+            bookingId,
+            cryptoPaymentId: cryptoPayment.id,
+            amount: remainingAmount,
+            chargeId: charge.chargeId,
+          });
+        }
       }
 
       // Determine payment method and status
-      let paymentMethod: 'CRYPTO' | 'WALLET' | 'MIXED';
-      let status: 'COMPLETED' | 'PENDING_CRYPTO' | 'FAILED';
+      let resultPaymentMethod: 'CRYPTO' | 'WALLET' | 'MIXED' | 'FIAT_TO_CRYPTO';
+      let status: 'COMPLETED' | 'PENDING_CRYPTO' | 'PENDING_ONRAMP' | 'FAILED';
 
       if (totalPaid === depositAmount) {
         // Fully paid with wallet
-        paymentMethod = 'WALLET';
+        resultPaymentMethod = 'WALLET';
         status = 'COMPLETED';
 
         // Update booking status
@@ -173,18 +214,27 @@ export class BookingPaymentService {
             status: 'CONFIRMED',
           },
         });
+      } else if (onrampSession) {
+        // Onramp session created
+        if (totalPaid === 0) {
+          resultPaymentMethod = 'FIAT_TO_CRYPTO';
+          status = 'PENDING_ONRAMP';
+        } else {
+          resultPaymentMethod = 'MIXED';
+          status = 'PENDING_ONRAMP';
+        }
       } else if (totalPaid === 0) {
         // Fully crypto payment
-        paymentMethod = 'CRYPTO';
+        resultPaymentMethod = 'CRYPTO';
         status = 'PENDING_CRYPTO';
       } else {
-        // Mixed payment
-        paymentMethod = 'MIXED';
+        // Mixed payment with crypto
+        resultPaymentMethod = 'MIXED';
         status = 'PENDING_CRYPTO';
       }
 
       const result: DepositPaymentResult = {
-        paymentMethod,
+        paymentMethod: resultPaymentMethod,
         totalPaid,
         remainingAmount,
         status,
@@ -197,6 +247,16 @@ export class BookingPaymentService {
             amount: cryptoPayment.amount,
           },
         }),
+        ...(onrampSession && {
+          onrampSession: {
+            sessionId: onrampSession.sessionId,
+            onrampURL: onrampSession.onrampURL,
+            expiresAt: onrampSession.expiresAt,
+            amount: onrampSession.amount,
+            currency: onrampSession.currency,
+            supportedAssets: onrampSession.supportedAssets,
+          },
+        }),
         ...(walletTransaction && {
           walletTransaction: {
             id: walletTransaction.id,
@@ -207,10 +267,12 @@ export class BookingPaymentService {
 
       logger.info('Deposit payment created successfully', {
         bookingId,
-        paymentMethod,
+        paymentMethod: resultPaymentMethod,
         totalPaid,
         remainingAmount,
         status,
+        hasOnrampSession: !!onrampSession,
+        hasCryptoPayment: !!cryptoPayment,
       });
 
       return result;
@@ -501,6 +563,55 @@ export class BookingPaymentService {
       depositAmount: cryptoPayment.amount,
       currency: cryptoPayment.currency,
       useWalletFirst: true,
+    });
+  }
+
+  async getPaymentOptions(userId: string, amount: number): Promise<{
+    directCrypto: boolean;
+    onrampAvailable: boolean;
+    walletBalance: number;
+    recommendedMethod: 'CRYPTO_ONLY' | 'FIAT_TO_CRYPTO' | 'AUTO';
+    supportedAssets: string[];
+    estimatedFees: Record<string, number>;
+  }> {
+    try {
+      // Get user's wallet balance
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          walletBalance: true,
+          walletCurrency: true,
+        },
+      });
+
+      const walletBalance = user?.walletBalance || 0;
+      const hassufficientWallet = walletBalance >= amount;
+
+      // Get payment options from onramp service
+      const onrampOptions = await coinbaseOnrampService.getPaymentOptions(userId, amount);
+
+      return {
+        directCrypto: true, // Always available
+        onrampAvailable: onrampOptions.onrampRequired || true, // Available for fiat users
+        walletBalance,
+        recommendedMethod: hassufficientWallet ? 'AUTO' : 'FIAT_TO_CRYPTO',
+        supportedAssets: onrampOptions.recommendedAssets,
+        estimatedFees: onrampOptions.estimatedFees,
+      };
+    } catch (error) {
+      logger.error('Failed to get payment options:', error);
+      throw new Error('Failed to get payment options');
+    }
+  }
+
+  async getOnrampSession(sessionId: string): Promise<any> {
+    return await coinbaseOnrampService.getOnrampSession(sessionId);
+  }
+
+  async processOnrampCompletion(sessionId: string, completionData: any): Promise<void> {
+    await coinbaseOnrampService.processOnrampCompletion({
+      sessionId,
+      ...completionData,
     });
   }
 }

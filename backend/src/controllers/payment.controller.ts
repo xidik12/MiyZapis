@@ -5,6 +5,7 @@ import { bookingPaymentService } from '@/services/payment/booking-payment.servic
 import { walletService } from '@/services/payment/wallet.service';
 import { specialistSubscriptionService } from '@/services/payment/subscription.service';
 import { coinbaseCommerceService } from '@/services/payment/coinbase.service';
+import { coinbaseOnrampService } from '@/services/payment/coinbase-onramp.service';
 import { logger } from '@/utils/logger';
 
 // Request validation schemas
@@ -13,6 +14,8 @@ const createDepositPaymentSchema = z.object({
   useWalletFirst: z.boolean().optional().default(true),
   redirectUrl: z.string().url().optional(),
   cancelUrl: z.string().url().optional(),
+  paymentMethod: z.enum(['AUTO', 'CRYPTO_ONLY', 'FIAT_TO_CRYPTO']).optional().default('AUTO'),
+  userAddress: z.string().optional(),
 });
 
 const cancelBookingSchema = z.object({
@@ -39,6 +42,28 @@ const webhookSchema = z.object({
   }),
 });
 
+const createOnrampSessionSchema = z.object({
+  bookingId: z.string().cuid().optional(),
+  amount: z.number().positive(),
+  currency: z.string().default('USD'),
+  userAddress: z.string().optional(),
+  purpose: z.enum(['BOOKING_DEPOSIT', 'WALLET_TOPUP', 'SUBSCRIPTION']).default('WALLET_TOPUP'),
+  metadata: z.record(z.any()).optional(),
+});
+
+const getPaymentOptionsSchema = z.object({
+  amount: z.number().positive(),
+});
+
+const completeOnrampSessionSchema = z.object({
+  status: z.enum(['COMPLETED', 'FAILED']),
+  cryptoAmount: z.number().positive().optional(),
+  cryptoCurrency: z.string().optional(),
+  blockchain: z.string().optional(),
+  transactionHash: z.string().optional(),
+  metadata: z.record(z.any()).optional(),
+});
+
 export class PaymentController {
   // Booking Deposit Endpoints
 
@@ -52,11 +77,18 @@ export class PaymentController {
 
       const validatedData = createDepositPaymentSchema.parse(req.body);
 
+      const depositConfig = await bookingPaymentService.getDepositConfiguration();
+
       const result = await bookingPaymentService.createDepositPayment({
-        ...validatedData,
+        bookingId: validatedData.bookingId,
         userId,
-        depositAmount: bookingPaymentService.getDepositConfiguration().amountUSD,
+        depositAmount: depositConfig.amountUSD,
         currency: 'USD',
+        redirectUrl: validatedData.redirectUrl,
+        cancelUrl: validatedData.cancelUrl,
+        useWalletFirst: validatedData.useWalletFirst,
+        paymentMethod: validatedData.paymentMethod,
+        userAddress: validatedData.userAddress,
       });
 
       res.status(200).json({
@@ -468,10 +500,16 @@ export class PaymentController {
         return;
       }
 
-      const webhookEvent = webhookSchema.parse(req.body);
+      const webhookData = req.body;
+
+      // Validate webhook structure
+      if (!webhookData.event || !webhookData.event.type || !webhookData.event.data) {
+        res.status(400).json({ error: 'Invalid webhook structure' });
+        return;
+      }
 
       // Process the webhook
-      await coinbaseCommerceService.processWebhook(webhookEvent);
+      await coinbaseCommerceService.processWebhook(webhookData);
 
       res.status(200).json({ received: true });
     } catch (error) {
@@ -491,6 +529,193 @@ export class PaymentController {
 
       res.status(500).json({
         error: error instanceof Error ? error.message : 'Failed to process webhook',
+      });
+    }
+  }
+
+  // Onramp Endpoints (Fiat-to-Crypto Conversion)
+
+  async getPaymentOptions(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      const validatedData = getPaymentOptionsSchema.parse(req.query);
+
+      const options = await bookingPaymentService.getPaymentOptions(
+        userId,
+        validatedData.amount
+      );
+
+      res.status(200).json({
+        success: true,
+        data: options,
+      });
+    } catch (error) {
+      logger.error('Failed to get payment options', {
+        error: error instanceof Error ? error.message : error,
+        userId: req.user?.id,
+      });
+
+      if (error instanceof z.ZodError) {
+        res.status(400).json({
+          error: 'Invalid request data',
+          details: error.errors,
+        });
+        return;
+      }
+
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to get payment options',
+      });
+    }
+  }
+
+  async createOnrampSession(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      const validatedData = createOnrampSessionSchema.parse(req.body);
+
+      const session = await coinbaseOnrampService.createOnrampSession({
+        userId,
+        userAddress: validatedData.userAddress,
+        amount: validatedData.amount,
+        currency: validatedData.currency,
+        purpose: validatedData.purpose,
+        bookingId: validatedData.bookingId,
+        metadata: validatedData.metadata,
+      });
+
+      res.status(200).json({
+        success: true,
+        data: session,
+      });
+    } catch (error) {
+      logger.error('Failed to create onramp session', {
+        error: error instanceof Error ? error.message : error,
+        userId: req.user?.id,
+        body: req.body,
+      });
+
+      if (error instanceof z.ZodError) {
+        res.status(400).json({
+          error: 'Invalid request data',
+          details: error.errors,
+        });
+        return;
+      }
+
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to create onramp session',
+      });
+    }
+  }
+
+  async getOnrampSession(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      const { sessionId } = req.params;
+
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      const session = await coinbaseOnrampService.getOnrampSession(sessionId);
+
+      if (!session) {
+        res.status(404).json({
+          error: 'Onramp session not found',
+        });
+        return;
+      }
+
+      // Verify user owns this session
+      if (session.userId !== userId) {
+        res.status(403).json({
+          error: 'Forbidden - not your session',
+        });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        data: session,
+      });
+    } catch (error) {
+      logger.error('Failed to get onramp session', {
+        error: error instanceof Error ? error.message : error,
+        userId: req.user?.id,
+        sessionId: req.params.sessionId,
+      });
+
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to get onramp session',
+      });
+    }
+  }
+
+  async completeOnrampSession(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      const { sessionId } = req.params;
+
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      const validatedData = completeOnrampSessionSchema.parse(req.body);
+
+      // First verify the session belongs to this user
+      const session = await coinbaseOnrampService.getOnrampSession(sessionId);
+      if (!session || session.userId !== userId) {
+        res.status(403).json({
+          error: 'Forbidden - session not found or not yours',
+        });
+        return;
+      }
+
+      await coinbaseOnrampService.processOnrampCompletion({
+        sessionId,
+        status: validatedData.status,
+        cryptoAmount: validatedData.cryptoAmount,
+        cryptoCurrency: validatedData.cryptoCurrency,
+        blockchain: validatedData.blockchain,
+        transactionHash: validatedData.transactionHash,
+        metadata: validatedData.metadata,
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Onramp session completed successfully',
+      });
+    } catch (error) {
+      logger.error('Failed to complete onramp session', {
+        error: error instanceof Error ? error.message : error,
+        userId: req.user?.id,
+        sessionId: req.params.sessionId,
+        body: req.body,
+      });
+
+      if (error instanceof z.ZodError) {
+        res.status(400).json({
+          error: 'Invalid request data',
+          details: error.errors,
+        });
+        return;
+      }
+
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to complete onramp session',
       });
     }
   }

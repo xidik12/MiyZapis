@@ -52,6 +52,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.882.0",
     "@aws-sdk/s3-request-presigner": "^3.882.0",
+    "@coinbase/onchainkit": "^1.0.2",
     "@prisma/client": "^5.22.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/compression": "^1.7.5",
@@ -78,6 +79,7 @@
     "google-auth-library": "^10.2.1",
     "helmet": "^7.1.0",
     "ioredis": "^5.3.2",
+    "iron-session": "^8.0.4",
     "joi": "^17.12.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",

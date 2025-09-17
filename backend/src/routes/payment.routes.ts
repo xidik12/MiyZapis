@@ -80,6 +80,31 @@ router.get(
   paymentController.getDepositConfiguration.bind(paymentController)
 );
 
+// Onramp Routes (fiat-to-crypto conversion)
+router.get(
+  '/onramp/options',
+  authenticateToken,
+  paymentController.getPaymentOptions.bind(paymentController)
+);
+
+router.post(
+  '/onramp/create-session',
+  authenticateToken,
+  paymentController.createOnrampSession.bind(paymentController)
+);
+
+router.get(
+  '/onramp/session/:sessionId',
+  authenticateToken,
+  paymentController.getOnrampSession.bind(paymentController)
+);
+
+router.post(
+  '/onramp/session/:sessionId/complete',
+  authenticateToken,
+  paymentController.completeOnrampSession.bind(paymentController)
+);
+
 // Webhooks (no authentication required)
 router.post(
   '/webhooks/coinbase',

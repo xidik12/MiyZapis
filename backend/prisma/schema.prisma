@@ -96,6 +96,7 @@ model User {
   walletTransactions   WalletTransaction[]
   cryptoPayments       CryptoPayment[]
   subscriptions        SpecialistSubscription[]
+  onrampSessions       OnrampSession[]
 
   // Indexes for performance
   @@index([email])
@@ -324,6 +325,7 @@ model Booking {
   // Crypto Payment Relations
   cryptoPayments    CryptoPayment[]
   walletTransactions WalletTransaction[]
+  onrampSessions    OnrampSession[]
 
   @@map("bookings")
 }
@@ -1444,4 +1446,50 @@ model PaymentWebhook {
   @@index([status, createdAt])
   @@index([eventId])
   @@map("payment_webhooks")
+}
+
+// Coinbase Onramp Sessions for fiat-to-crypto conversion
+model OnrampSession {
+  id                String @id @default(cuid())
+
+  // User information
+  userId            String
+  user              User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Session details
+  sessionToken      String @unique
+  status            String @default("PENDING") // PENDING, COMPLETED, FAILED, EXPIRED
+
+  // Payment amounts
+  amount            Float // Fiat amount
+  currency          String @default("USD") // Fiat currency
+  cryptoAmount      Float? // Actual crypto received
+  cryptoCurrency    String? // USDC, ETH, BTC, etc.
+  blockchain        String? // ethereum, base, bitcoin, etc.
+
+  // Transaction details
+  transactionHash   String? // Blockchain transaction hash
+  onrampURL         String // URL for the onramp widget
+
+  // Purpose and related entities
+  purpose           String // BOOKING_DEPOSIT, WALLET_TOPUP, SUBSCRIPTION
+  bookingId         String? // If for booking deposit
+  booking           Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  // Timing
+  expiresAt         DateTime
+  completedAt       DateTime?
+
+  // Metadata
+  metadata          String? // JSON string for additional data
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([status, expiresAt])
+  @@index([sessionToken])
+  @@index([purpose, status])
+  @@map("onramp_sessions")
 }
