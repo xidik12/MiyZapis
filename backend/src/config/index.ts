@@ -38,6 +38,10 @@ const envSchema = z.object({
   STRIPE_PUBLISHABLE_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
+  // Coinbase Commerce (optional for development)
+  COINBASE_COMMERCE_API_KEY: z.string().optional(),
+  COINBASE_COMMERCE_WEBHOOK_SECRET: z.string().optional(),
+
   // Telegram (optional for development)
   TELEGRAM_BOT_TOKEN: z.string().optional(),
   TELEGRAM_WEBHOOK_URL: z.string().optional(),
@@ -148,6 +152,13 @@ export const config = {
     secretKey: env.STRIPE_SECRET_KEY,
     publishableKey: env.STRIPE_PUBLISHABLE_KEY,
     webhookSecret: env.STRIPE_WEBHOOK_SECRET,
+  },
+
+  // Coinbase Commerce
+  coinbaseCommerce: {
+    apiKey: env.COINBASE_COMMERCE_API_KEY,
+    webhookSecret: env.COINBASE_COMMERCE_WEBHOOK_SECRET,
+    baseUrl: 'https://api.commerce.coinbase.com',
   },
 
   // Telegram

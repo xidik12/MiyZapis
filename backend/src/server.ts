@@ -197,6 +197,25 @@ logger.info('Static file serving configured', {
 // API routes
 app.use(`/api/${config.apiVersion}`, apiRoutes);
 
+// SEO: serve sitemap.xml and robots.txt if frontend static not serving
+app.get('/sitemap.xml', (req, res) => {
+  const base = config.frontend?.url || 'https://miyzapis.com';
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>${base}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>${base}/auth/register</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>${base}/search</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>${base}/loyalty</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+</urlset>`;
+  res.type('application/xml').send(xml);
+});
+
+app.get('/robots.txt', (req, res) => {
+  const base = config.frontend?.url || 'https://miyzapis.com';
+  const robots = `User-agent: *\nAllow: /\nDisallow: /assets/\nSitemap: ${base}/sitemap.xml\n`;
+  res.type('text/plain').send(robots);
+});
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
