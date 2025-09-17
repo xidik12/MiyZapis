@@ -386,39 +386,17 @@ export class EnhancedEmailService {
         hoursUntil: Math.round(hoursUntilBooking),
       };
 
-      const subject = language === 'uk' 
-        ? `Нагадування про запис завтра - ${booking.service.name}`
-        : language === 'ru'
-        ? `Напоминание о записи завтра - ${booking.service.name}`
-        : `Booking Reminder Tomorrow - ${booking.service.name}`;
-
-      const html = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2>${language === 'uk' ? 'Нагадування про ваш запис' : language === 'ru' ? 'Напоминание о вашей записи' : 'Booking Reminder'}</h2>
-          <p>${language === 'uk' ? 'Привіт' : language === 'ru' ? 'Привет' : 'Hello'} ${booking.customer.firstName},</p>
-          <p>${language === 'uk' 
-            ? `Нагадуємо, що у вас є запис завтра:`
-            : language === 'ru' 
-            ? `Напоминаем, что у вас есть запись завтра:`
-            : 'This is a reminder that you have a booking tomorrow:'
-          }</p>
-          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p><strong>${language === 'uk' ? 'Послуга' : language === 'ru' ? 'Услуга' : 'Service'}:</strong> ${booking.service.name}</p>
-            <p><strong>${language === 'uk' ? 'Спеціаліст' : language === 'ru' ? 'Специалист' : 'Specialist'}:</strong> ${reminderData.specialistName}</p>
-            <p><strong>${language === 'uk' ? 'Дата і час' : language === 'ru' ? 'Дата и время' : 'Date & Time'}:</strong> ${bookingDateTime}</p>
-          </div>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${bookingUrl}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
-              ${language === 'uk' ? 'Переглянути запис' : language === 'ru' ? 'Посмотреть запись' : 'View Booking'}
-            </a>
-          </div>
-        </div>
-      `;
-
-      return await this.sendEmail({
+      return await this.sendTemplateEmail({
         to: booking.customer.email,
-        subject,
-        html,
+        templateKey: 'bookingReminder',
+        language,
+        data: {
+          customerName: booking.customer.firstName,
+          serviceName: booking.service.name,
+          specialistName: `${booking.specialist.user.firstName} ${booking.specialist.user.lastName}`,
+          bookingDateTime,
+          bookingUrl,
+        }
       });
 
     } catch (error) {

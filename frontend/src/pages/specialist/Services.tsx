@@ -206,8 +206,9 @@ const SpecialistServices: React.FC = () => {
   });
   const [customCategory, setCustomCategory] = useState('');
   const [showCustomCategory, setShowCustomCategory] = useState(false);
-  
+
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
   // Form handling functions
   const resetForm = () => {
@@ -248,6 +249,7 @@ const SpecialistServices: React.FC = () => {
     setCustomCategory('');
     setShowCustomCategory(false);
     setFormErrors({});
+    setHasAttemptedSubmit(false);
   };
 
   const openAddModal = () => {
@@ -410,7 +412,9 @@ const SpecialistServices: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    setHasAttemptedSubmit(true);
+
     if (!validateForm()) {
       return;
     }
@@ -1055,12 +1059,26 @@ const SpecialistServices: React.FC = () => {
                       setFormData(prev => ({ ...prev, category: value }));
                       setShowCustomCategory(false);
                       setCustomCategory('');
+                      // Clear any existing category errors since we now have a selected category
+                      if (value) {
+                        setFormErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.category;
+                          return newErrors;
+                        });
+                      }
                     }}
                     onCustomCategory={(customValue) => {
                       console.log('📝 Services.tsx: onCustomCategory called with:', customValue);
                       setFormData(prev => ({ ...prev, category: customValue }));
                       setCustomCategory(customValue);
                       setShowCustomCategory(true);
+                      // Clear any existing category errors since we now have a custom category
+                      setFormErrors(prev => {
+                        const newErrors = { ...prev };
+                        delete newErrors.category;
+                        return newErrors;
+                      });
                       console.log('📝 Services.tsx: States updated - showCustomCategory: true, customCategory:', customValue);
                     }}
                     placeholder={t('serviceForm.selectCategory') || 'Select a category'}

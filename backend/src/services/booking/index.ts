@@ -1,6 +1,8 @@
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
 import { NotificationService } from '@/services/notification';
+import { emailService as templatedEmailService } from '@/services/email/enhanced-email';
+import { resolveLanguage } from '@/utils/language';
 import LoyaltyService from '@/services/loyalty';
 import { Booking, User, Service, Specialist } from '@prisma/client';
 
@@ -514,6 +516,13 @@ export class BookingService {
             smsTemplate: 'specialist_booking_request_sms'
           });
         }
+
+        // Attempt to send reminder if within 24 hours (method will self-check)
+        try {
+          await templatedEmailService.sendBookingReminder(booking.id, booking.customer.language || 'en');
+        } catch (e) {
+          logger.warn('Booking reminder send attempt skipped/failed', { bookingId: booking.id });
+        }
       } catch (notificationError) {
         logger.error('Failed to send booking notifications:', notificationError);
         // Don't throw error as booking was successful
@@ -883,6 +892,74 @@ export class BookingService {
           },
         },
       });
+
+      // Send localized emails for key changes
+      try {
+        const langCustomer = resolveLanguage(updatedBooking.customer?.language, undefined);
+        const langSpecialist = updatedBooking.specialist?.language || 'en';
+        const bookingUrlCustomer = `${process.env.FRONTEND_URL || 'https://miyzapis.com'}/bookings/${updatedBooking.id}`;
+        const bookingUrlSpecialist = `${process.env.FRONTEND_URL || 'https://miyzapis.com'}/specialist/bookings/${updatedBooking.id}`;
+
+        // If status changed to CANCELLED
+        if (data.status === 'CANCELLED') {
+          const dateStr = new Intl.DateTimeFormat(langCustomer === 'uk' ? 'uk-UA' : langCustomer === 'ru' ? 'ru-RU' : 'en-US', {
+            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
+            timeZone: updatedBooking.customer.timezone
+          }).format(new Date(updatedBooking.scheduledAt));
+          await templatedEmailService.sendTemplateEmail({
+            to: updatedBooking.customer.email!,
+            templateKey: 'bookingCancelled',
+            language: langCustomer,
+            data: { name: updatedBooking.customer.firstName, serviceName: updatedBooking.service.name, bookingDateTime: dateStr, reason: data.cancellationReason || '' }
+          });
+          const dateStrSpec = new Intl.DateTimeFormat(langSpecialist === 'uk' ? 'uk-UA' : langSpecialist === 'ru' ? 'ru-RU' : 'en-US', {
+            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
+            timeZone: updatedBooking.specialist.timezone
+          }).format(new Date(updatedBooking.scheduledAt));
+          await templatedEmailService.sendTemplateEmail({
+            to: updatedBooking.specialist.email!,
+            templateKey: 'bookingCancelled',
+            language: langSpecialist,
+            data: { name: updatedBooking.specialist.firstName, serviceName: updatedBooking.service.name, bookingDateTime: dateStrSpec, reason: data.cancellationReason || '' }
+          });
+        } else if (data.status || data.scheduledAt) {
+          // Any status/time update → bookingUpdated for both
+          const dateStrCust = new Intl.DateTimeFormat(langCustomer === 'uk' ? 'uk-UA' : langCustomer === 'ru' ? 'ru-RU' : 'en-US', {
+            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
+            timeZone: updatedBooking.customer.timezone
+          }).format(new Date(updatedBooking.scheduledAt));
+          await templatedEmailService.sendTemplateEmail({
+            to: updatedBooking.customer.email!,
+            templateKey: 'bookingUpdated',
+            language: langCustomer,
+            data: {
+              name: updatedBooking.customer.firstName,
+              serviceName: updatedBooking.service.name,
+              specialistName: `${updatedBooking.specialist.firstName} ${updatedBooking.specialist.lastName}`,
+              bookingDateTime: dateStrCust,
+              bookingUrl: bookingUrlCustomer,
+            }
+          });
+          const dateStrSpec2 = new Intl.DateTimeFormat(langSpecialist === 'uk' ? 'uk-UA' : langSpecialist === 'ru' ? 'ru-RU' : 'en-US', {
+            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
+            timeZone: updatedBooking.specialist.timezone
+          }).format(new Date(updatedBooking.scheduledAt));
+          await templatedEmailService.sendTemplateEmail({
+            to: updatedBooking.specialist.email!,
+            templateKey: 'bookingUpdated',
+            language: langSpecialist,
+            data: {
+              name: updatedBooking.specialist.firstName,
+              serviceName: updatedBooking.service.name,
+              specialistName: `${updatedBooking.specialist.firstName} ${updatedBooking.specialist.lastName}`,
+              bookingDateTime: dateStrSpec2,
+              bookingUrl: bookingUrlSpecialist,
+            }
+          });
+        }
+      } catch (e) {
+        // non-blocking
+      }
 
       // Refund loyalty points if they were used
       if (booking.loyaltyPointsUsed > 0) {

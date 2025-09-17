@@ -129,6 +129,7 @@ export class EnhancedAuthService {
           userType: data.userType,
           telegramId: data.telegramId,
           isEmailVerified: false, // Start as unverified
+          language: (data as any).language || 'en',
         },
         select: {
           id: true,
@@ -137,6 +138,7 @@ export class EnhancedAuthService {
           lastName: true,
           userType: true,
           isEmailVerified: true,
+          language: true,
         },
       });
 
