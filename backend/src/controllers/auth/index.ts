@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { EnhancedAuthService as AuthService } from '@/services/auth/enhanced';
 import { emailService as templatedEmailService } from '@/services/email/enhanced-email';
+import { resolveLanguage } from '@/utils/language';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { ErrorCodes, LoginRequest, RegisterRequest, TelegramAuthRequest, JwtPayload } from '@/types';
@@ -35,6 +36,10 @@ export class AuthController {
       }
 
       const data: RegisterRequest = req.body;
+      // Fallback language resolution from Accept-Language if not supplied
+      if (!data.language) {
+        data.language = resolveLanguage(undefined, req.headers['accept-language']);
+      }
       const result = await AuthService.register(data);
 
       // Enhanced service returns verification requirement
@@ -630,7 +635,8 @@ export class AuthController {
 
       // Send localized password reset email
       try {
-        await templatedEmailService.sendPasswordReset(user.id, token, user.language || 'en');
+        const lang = resolveLanguage(user.language, req.headers['accept-language']);
+        await templatedEmailService.sendPasswordReset(user.id, token, lang);
       } catch (emailError) {
         logger.error('Failed to send password reset email:', emailError);
         // Don't fail the request if email sending fails

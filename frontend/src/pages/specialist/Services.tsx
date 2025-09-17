@@ -324,16 +324,22 @@ const SpecialistServices: React.FC = () => {
   };
 
   const validateForm = () => {
+    // Only run validation if user has attempted to submit
+    if (!hasAttemptedSubmit) {
+      console.log('🔒 Validation skipped - user has not attempted submit yet');
+      return true;
+    }
+
     const errors: {[key: string]: string} = {};
-    
+
     if (!formData.name.trim()) {
       errors.name = t('serviceForm.required');
     }
-    
+
     if (!formData.description.trim()) {
       errors.description = t('serviceForm.required');
     }
-    
+
     // Check category validation - formData.category should always contain the value (custom or regular)
     console.log('🔍 Category validation:', {
       showCustomCategory,

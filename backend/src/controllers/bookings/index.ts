@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { BookingService } from '@/services/booking';
+import { emailService as templatedEmailService } from '@/services/email/enhanced-email';
+import { resolveLanguage } from '@/utils/language';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { ErrorCodes, AuthenticatedRequest } from '@/types';
@@ -392,6 +394,17 @@ export class BookingController {
       }
 
       const booking = await BookingService.confirmBooking(bookingId, req.user.id);
+
+      // Send confirmation emails and possible reminder
+      try {
+        const customerLang = resolveLanguage(booking.customer?.language, req.headers['accept-language']);
+        const specialistLang = booking.specialist?.language || 'en';
+        await templatedEmailService.sendBookingConfirmation(booking.id, customerLang);
+        await templatedEmailService.sendSpecialistBookingNotification(booking.id, specialistLang);
+        await templatedEmailService.sendBookingReminder(booking.id, customerLang);
+      } catch (e) {
+        // Don't block success on email errors
+      }
 
       res.json(
         createSuccessResponse({

@@ -26,6 +26,7 @@ import apiRoutes from '@/routes';
 // Telegram Bot
 import { bot } from '@/bot';
 import { enhancedTelegramBot } from '@/services/telegram/enhanced-bot';
+import { startBookingReminderWorker } from '@/workers/bookingReminderWorker';
 
 // Create Express app
 const app = express();
@@ -391,6 +392,14 @@ const startServer = async () => {
         } catch (error) {
           logger.warn('Failed to initialize enhanced Telegram bot:', error instanceof Error ? error.message : error);
         }
+      }
+
+      // Start background workers (stateless, safe to run once per instance)
+      try {
+        startBookingReminderWorker();
+        logger.info('⏰ Booking reminder worker started');
+      } catch (e) {
+        logger.warn('Failed to start booking reminder worker', { error: (e as any)?.message });
       }
     });
 
