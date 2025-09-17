@@ -332,8 +332,31 @@ const SpecialistServices: React.FC = () => {
       errors.description = t('serviceForm.required');
     }
     
-    if (!formData.category || (showCustomCategory && !customCategory.trim())) {
-      errors.category = t('serviceForm.required');
+    // Check category validation - either regular category or custom category must be provided
+    console.log('🔍 Category validation:', {
+      showCustomCategory,
+      customCategory: customCategory.trim(),
+      formDataCategory: formData.category,
+      hasCustomValue: !!customCategory.trim(),
+      hasRegularValue: !!formData.category
+    });
+
+    if (showCustomCategory) {
+      // If in custom category mode, check if custom category has value
+      if (!customCategory.trim()) {
+        errors.category = t('serviceForm.required');
+        console.log('❌ Custom category validation failed - no custom value');
+      } else {
+        console.log('✅ Custom category validation passed:', customCategory.trim());
+      }
+    } else {
+      // If in regular mode, check if regular category is selected
+      if (!formData.category) {
+        errors.category = t('serviceForm.required');
+        console.log('❌ Regular category validation failed - no category selected');
+      } else {
+        console.log('✅ Regular category validation passed:', formData.category);
+      }
     }
     
     const price = parseFloat(formData.price);
@@ -374,6 +397,12 @@ const SpecialistServices: React.FC = () => {
 
     // Removed availability and timeSlots validation as they're not part of backend schema
     
+    console.log('🔍 Validation result:', {
+      hasErrors: Object.keys(errors).length > 0,
+      errors,
+      totalErrors: Object.keys(errors).length
+    });
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -1028,9 +1057,11 @@ const SpecialistServices: React.FC = () => {
                       setCustomCategory('');
                     }}
                     onCustomCategory={(customValue) => {
+                      console.log('📝 Services.tsx: onCustomCategory called with:', customValue);
                       setFormData(prev => ({ ...prev, category: customValue }));
                       setCustomCategory(customValue);
                       setShowCustomCategory(true);
+                      console.log('📝 Services.tsx: States updated - showCustomCategory: true, customCategory:', customValue);
                     }}
                     placeholder={t('serviceForm.selectCategory') || 'Select a category'}
                     error={formErrors.category}

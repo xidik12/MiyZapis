@@ -51,9 +51,11 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   const handleCustomSubmit = () => {
     if (customValue.trim()) {
       console.log('🏷️ Submitting custom category:', customValue.trim());
+      console.log('🏷️ Calling onCustomCategory callback with:', customValue.trim());
       onCustomCategory(customValue.trim());
       setShowCustomInput(false);
       setCustomValue('');
+      console.log('🏷️ Custom category submission completed');
     }
   };
 
