@@ -334,7 +334,7 @@ const SpecialistServices: React.FC = () => {
       errors.description = t('serviceForm.required');
     }
     
-    // Check category validation - either regular category or custom category must be provided
+    // Check category validation - formData.category should always contain the value (custom or regular)
     console.log('🔍 Category validation:', {
       showCustomCategory,
       customCategory: customCategory.trim(),
@@ -343,22 +343,12 @@ const SpecialistServices: React.FC = () => {
       hasRegularValue: !!formData.category
     });
 
-    if (showCustomCategory) {
-      // If in custom category mode, check if custom category has value
-      if (!customCategory.trim()) {
-        errors.category = t('serviceForm.required');
-        console.log('❌ Custom category validation failed - no custom value');
-      } else {
-        console.log('✅ Custom category validation passed:', customCategory.trim());
-      }
+    // Always check formData.category since both regular and custom categories are stored there
+    if (!formData.category) {
+      errors.category = t('serviceForm.required');
+      console.log('❌ Category validation failed - no category in formData.category');
     } else {
-      // If in regular mode, check if regular category is selected
-      if (!formData.category) {
-        errors.category = t('serviceForm.required');
-        console.log('❌ Regular category validation failed - no category selected');
-      } else {
-        console.log('✅ Regular category validation passed:', formData.category);
-      }
+      console.log('✅ Category validation passed:', formData.category);
     }
     
     const price = parseFloat(formData.price);
