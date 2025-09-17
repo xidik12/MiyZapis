@@ -40,6 +40,7 @@ const CustomerSettings = React.lazy(() => import('./pages/customer/Settings'));
   const CustomerHelpSupport = React.lazy(() => import('./pages/customer/HelpSupport'));
   const PaymentMethods = React.lazy(() => import('./pages/customer/PaymentMethods'));
   const CustomerMessages = React.lazy(() => import('./pages/customer/Messages'));
+  const CustomerReferrals = React.lazy(() => import('./pages/customer/Referrals'));
 
 // Specialist pages
 const SpecialistDashboard = React.lazy(() => import('./pages/specialist/Dashboard'));
@@ -464,6 +465,18 @@ function App() {
                     <h1 className="text-2xl font-bold">Notifications</h1>
                     <p className="text-gray-600 mt-2">View your notifications and alerts</p>
                   </div>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customer/referrals"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerReferrals />
+                  </Suspense>
                 </CustomerLayout>
               </ProtectedRoute>
             }

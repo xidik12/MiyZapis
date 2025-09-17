@@ -332,7 +332,7 @@ const SpecialistServices: React.FC = () => {
       errors.description = t('serviceForm.required');
     }
     
-    if (!formData.category || (showCustomCategory && !categoriesError && !customCategory.trim())) {
+    if (!formData.category || (showCustomCategory && !customCategory.trim())) {
       errors.category = t('serviceForm.required');
     }
     
@@ -392,12 +392,18 @@ const SpecialistServices: React.FC = () => {
       return;
     }
     
-    // For category, use the custom category if it's set (and not in error mode), otherwise use the selected category
-    const finalCategory = (showCustomCategory && !categoriesError && customCategory.trim()) 
+    // For category, use the custom category if it's set, otherwise use the selected category
+    const finalCategory = (showCustomCategory && customCategory.trim())
       ? customCategory.trim()
       : formData.category;
 
     console.log('📋 Form data before submission:', formData);
+    console.log('🏷️ Category data:', {
+      originalCategory: formData.category,
+      showCustomCategory,
+      customCategory,
+      finalCategory
+    });
     console.log('⏰ Duration from form:', formData.duration, typeof formData.duration);
     console.log('⏰ Duration parsed as int:', parseInt(formData.duration));
     

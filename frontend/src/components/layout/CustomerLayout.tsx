@@ -28,6 +28,7 @@ import {
   MagnifyingGlassIcon,
   ArrowRightOnRectangleIcon,
   ChatBubbleLeftEllipsisIcon,
+  UsersIcon,
 } from '@heroicons/react/24/outline';
 import { HomeIcon as HomeIconSolid } from '@heroicons/react/24/solid';
 
@@ -101,6 +102,13 @@ const navigation: SidebarNavItem[] = [
     href: '/loyalty',
     icon: GiftIcon,
     iconActive: GiftIcon,
+  },
+  {
+    name: 'Referrals',
+    nameKey: 'customer.nav.referrals',
+    href: '/customer/referrals',
+    icon: UsersIcon,
+    iconActive: UsersIcon,
   },
   {
     name: 'Profile',

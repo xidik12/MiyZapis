@@ -426,7 +426,7 @@ router.post('/', authenticateToken, validateCreateReview, async (req: Request, r
       tags: JSON.parse(review.tags),
       isPublic: review.isPublic,
       isVerified: review.isVerified,
-      loyaltyPointsEarned,
+      loyaltyPointsEarned: 5,
       createdAt: review.createdAt,
       customer: {
         firstName: review.customer.firstName,

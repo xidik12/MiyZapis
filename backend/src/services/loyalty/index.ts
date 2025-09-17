@@ -26,12 +26,12 @@ export const LOYALTY_CONFIG = {
     { points: 2000, discount: 0.25 }   // 25%
   ],
   
-  // Tier thresholds
+  // Tier thresholds with point multipliers
   TIERS: {
-    BRONZE: { min: 0, max: 499 },
-    SILVER: { min: 500, max: 1499 },
-    GOLD: { min: 1500, max: 4999 },
-    PLATINUM: { min: 5000, max: null }
+    BRONZE: { min: 0, max: 499, multiplier: 1.0 },
+    SILVER: { min: 500, max: 1499, multiplier: 1.1 },
+    GOLD: { min: 1500, max: 4999, multiplier: 1.5 },
+    PLATINUM: { min: 5000, max: null, multiplier: 2.0 }
   },
   
   // Point expiration
@@ -94,43 +94,69 @@ export class LoyaltyService {
   // Core Points Management
   static async earnPoints(options: EarnPointsOptions): Promise<boolean> {
     const { userId, points, reason, description, referenceId, type = 'EARNED' } = options;
-    
+
     try {
+      // Get user's current tier to apply multiplier
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { loyaltyPoints: true }
+      });
+
+      if (!user) {
+        logger.error('User not found for points earning', { userId });
+        return false;
+      }
+
+      // Determine current tier multiplier
+      let tierMultiplier = 1.0;
+      if (user.loyaltyPoints >= LOYALTY_CONFIG.TIERS.PLATINUM.min) {
+        tierMultiplier = LOYALTY_CONFIG.TIERS.PLATINUM.multiplier;
+      } else if (user.loyaltyPoints >= LOYALTY_CONFIG.TIERS.GOLD.min) {
+        tierMultiplier = LOYALTY_CONFIG.TIERS.GOLD.multiplier;
+      } else if (user.loyaltyPoints >= LOYALTY_CONFIG.TIERS.SILVER.min) {
+        tierMultiplier = LOYALTY_CONFIG.TIERS.SILVER.multiplier;
+      } else {
+        tierMultiplier = LOYALTY_CONFIG.TIERS.BRONZE.multiplier;
+      }
+
+      // Apply tier multiplier only for regular earned points (not bonuses)
+      const finalPoints = type === 'EARNED' ? Math.floor(points * tierMultiplier) : points;
+
       const expiresAt = new Date();
       expiresAt.setMonth(expiresAt.getMonth() + LOYALTY_CONFIG.POINTS_EXPIRY_MONTHS);
-      
+
       await prisma.$transaction(async (tx) => {
         // Create loyalty transaction
         await tx.loyaltyTransaction.create({
           data: {
             userId,
             type,
-            points,
+            points: finalPoints,
             reason,
-            description,
+            description: description + (tierMultiplier > 1.0 ? ` (${tierMultiplier}x tier multiplier applied)` : ''),
             referenceId,
             expiresAt
           }
         });
-        
+
         // Update user's total loyalty points
         await tx.user.update({
           where: { id: userId },
           data: {
             loyaltyPoints: {
-              increment: points
+              increment: finalPoints
             }
           }
         });
-        
+
         // Check and update user tier
         await this.updateUserTier(userId, tx);
-        
+
         // Check for badge achievements
         await this.checkBadgeAchievements(userId, reason, tx);
       });
-      
-      logger.info('Points earned successfully', { userId, points, reason });
+
+      logger.info('Points earned successfully', { userId, points: finalPoints, originalPoints: points, tierMultiplier, reason });
       return true;
     } catch (error) {
       logger.error('Failed to earn points', { error, userId, points, reason });
@@ -487,7 +513,8 @@ export class LoyaltyService {
           maxPoints: LOYALTY_CONFIG.TIERS.BRONZE.max,
           benefits: JSON.stringify([
             'Basic customer support',
-            'Access to standard promotions'
+            'Access to standard promotions',
+            '1x points multiplier'
           ]),
           discountPercentage: 0,
           prioritySupport: false,
@@ -500,9 +527,9 @@ export class LoyaltyService {
           benefits: JSON.stringify([
             'Priority customer support',
             'Early access to new services',
-            '5% discount on bookings'
+            '1.1x points multiplier'
           ]),
-          discountPercentage: 5,
+          discountPercentage: 0,
           prioritySupport: true,
           exclusiveOffers: false
         },
@@ -513,10 +540,10 @@ export class LoyaltyService {
           benefits: JSON.stringify([
             'Premium customer support',
             'Exclusive service access',
-            '10% discount on bookings',
+            '1.5x points multiplier',
             'Free service upgrades'
           ]),
-          discountPercentage: 10,
+          discountPercentage: 0,
           prioritySupport: true,
           exclusiveOffers: true
         },
@@ -527,11 +554,11 @@ export class LoyaltyService {
           benefits: JSON.stringify([
             'VIP customer support',
             'Personal account manager',
-            '15% discount on bookings',
+            '2x points multiplier',
             'Free service upgrades',
             'Exclusive events and offers'
           ]),
-          discountPercentage: 15,
+          discountPercentage: 0,
           prioritySupport: true,
           exclusiveOffers: true
         }
@@ -730,48 +757,6 @@ export class LoyaltyService {
     return originalAmount * (1 - discountPercent);
   }
   
-  // Initialize default data
-  static async createDefaultTiers(tx?: any): Promise<void> {
-    const dbClient = tx || prisma;
-    
-    const defaultTiers = [
-      {
-        name: 'SILVER',
-        minPoints: 0,
-        maxPoints: 999,
-        color: '#C0C0C0',
-        icon: 'star',
-        benefits: JSON.stringify(['Basic support', 'Standard booking', 'Point earning'])
-      },
-      {
-        name: 'GOLD',
-        minPoints: 1000,
-        maxPoints: 4999,
-        color: '#FFD700',
-        icon: 'star-solid',
-        benefits: JSON.stringify(['Priority support', 'Early booking access', '5% bonus points'])
-      },
-      {
-        name: 'PLATINUM',
-        minPoints: 5000,
-        maxPoints: null,
-        color: '#E5E4E2',
-        icon: 'crown',
-        benefits: JSON.stringify(['VIP support', 'Exclusive services', '10% bonus points', 'Free cancellation'])
-      }
-    ];
-    
-    for (const tier of defaultTiers) {
-      try {
-        await dbClient.loyaltyTier.create({ data: tier });
-      } catch (error) {
-        // Ignore if already exists
-        if (error.code !== 'P2002') {
-          logger.error('Failed to create default tier', { error, tier: tier.name });
-        }
-      }
-    }
-  }
   
   static async createDefaultBadges(tx?: any): Promise<void> {
     const dbClient = tx || prisma;

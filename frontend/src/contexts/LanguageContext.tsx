@@ -1801,6 +1801,7 @@ const translations: Translations = {
   'customer.nav.messages': { en: 'Messages', uk: 'Повідомлення', ru: 'Сообщения' },
   'customer.nav.payments': { en: 'Payments', uk: 'Платежі', ru: 'Платежи' },
   'customer.nav.loyalty': { en: 'Loyalty Points', uk: 'Бали лояльності', ru: 'Баллы лояльности' },
+  'customer.nav.referrals': { en: 'Referrals', uk: 'Реферали', ru: 'Рефералы' },
   'customer.nav.profile': { en: 'Profile', uk: 'Профіль', ru: 'Профиль' },
   'customer.nav.settings': { en: 'Settings', uk: 'Налаштування', ru: 'Настройки' },
   'customer.nav.help': { en: 'Help & Support', uk: 'Допомога та підтримка', ru: 'Помощь и поддержка' },
