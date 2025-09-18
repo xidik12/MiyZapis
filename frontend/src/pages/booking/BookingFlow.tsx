@@ -64,8 +64,6 @@ const BookingFlow: React.FC = () => {
   const [selectedRedemptionId, setSelectedRedemptionId] = useState<string>('');
 
   // Payment states
-  const [paymentMethod, setPaymentMethod] = useState<'AUTO' | 'CRYPTO_ONLY' | 'FIAT_TO_CRYPTO'>('AUTO');
-  const [userWalletAddress, setUserWalletAddress] = useState<string>('');
   const [useWalletFirst, setUseWalletFirst] = useState<boolean>(true);
   const [paymentLoading, setPaymentLoading] = useState<boolean>(false);
   const [paymentResult, setPaymentResult] = useState<any>(null);
@@ -380,9 +378,7 @@ const BookingFlow: React.FC = () => {
       console.log('💳 BookingFlow: Processing deposit payment...');
       const paymentData = {
         bookingId: result.id,
-        useWalletFirst,
-        paymentMethod,
-        userAddress: userWalletAddress || undefined
+        useWalletFirst
       };
 
       const depositResult = await paymentService.createBookingDeposit(paymentData);
@@ -930,79 +926,25 @@ const BookingFlow: React.FC = () => {
                 </div>
               )}
 
-              {/* Payment Method Selection */}
+              {/* Payment Method Info */}
               <div className="mb-6">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                   <CreditCardIcon className="w-5 h-5 mr-2 text-blue-600" />
                   Payment Method
                 </h4>
 
-                <div className="space-y-3">
-                  <label className="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="AUTO"
-                      checked={paymentMethod === 'AUTO'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'AUTO')}
-                      className="text-blue-600"
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900 dark:text-white">Smart Payment (Recommended)</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">Use wallet balance first, then crypto/fiat as needed</div>
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                      <CreditCardIcon className="w-4 h-4 text-white" />
                     </div>
-                  </label>
-
-                  <label className="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="CRYPTO_ONLY"
-                      checked={paymentMethod === 'CRYPTO_ONLY'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'CRYPTO_ONLY')}
-                      className="text-blue-600"
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900 dark:text-white">Crypto Only</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">Pay directly with cryptocurrency</div>
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">Cryptocurrency Payment</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Secure payment via Coinbase Commerce</div>
                     </div>
-                  </label>
-
-                  <label className="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="FIAT_TO_CRYPTO"
-                      checked={paymentMethod === 'FIAT_TO_CRYPTO'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'FIAT_TO_CRYPTO')}
-                      className="text-blue-600"
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900 dark:text-white">Fiat to Crypto</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">Pay with bank card/transfer, auto-convert to crypto</div>
-                    </div>
-                  </label>
+                  </div>
                 </div>
               </div>
-
-              {/* Wallet Address for FIAT_TO_CRYPTO */}
-              {paymentMethod === 'FIAT_TO_CRYPTO' && (
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Your Wallet Address (for receiving crypto)
-                  </label>
-                  <input
-                    type="text"
-                    value={userWalletAddress}
-                    onChange={(e) => setUserWalletAddress(e.target.value)}
-                    placeholder="0x742d35Cc8390077c8ac1b2e0B83D0E7EFB84a8C2"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-                  />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    This is where the converted crypto will be sent
-                  </p>
-                </div>
-              )}
 
               {/* Wallet First Option */}
               <div className="mb-6">
@@ -1034,7 +976,7 @@ const BookingFlow: React.FC = () => {
 
               <button
                 onClick={handleBookingSubmit}
-                disabled={paymentLoading || (paymentMethod === 'FIAT_TO_CRYPTO' && !userWalletAddress)}
+                disabled={paymentLoading}
                 className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
               >
                 {paymentLoading ? (

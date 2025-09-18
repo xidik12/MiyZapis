@@ -10,23 +10,16 @@ import {
 } from '@/types';
 
 export class PaymentService {
-  // Create booking deposit using Coinbase payment system
+  // Create booking deposit using Coinbase Commerce
   async createBookingDeposit(data: {
     bookingId: string;
     useWalletFirst?: boolean;
-    paymentMethod?: 'AUTO' | 'CRYPTO_ONLY' | 'FIAT_TO_CRYPTO';
-    userAddress?: string;
   }): Promise<{
     success: boolean;
     requiresPayment: boolean;
     paymentUrl?: string;
     qrCodeData?: string;
     paymentId?: string;
-    onrampSession?: {
-      sessionId: string;
-      onrampURL: string;
-      expiresAt: string;
-    };
     message: string;
     booking: any;
     finalAmount: number;
@@ -38,19 +31,12 @@ export class PaymentService {
       paymentUrl?: string;
       qrCodeData?: string;
       paymentId?: string;
-      onrampSession?: {
-        sessionId: string;
-        onrampURL: string;
-        expiresAt: string;
-      };
       message: string;
       booking: any;
       finalAmount: number;
       usedWalletAmount: number;
     }>(`/crypto-payments/bookings/${data.bookingId}/deposit`, {
-      useWalletFirst: data.useWalletFirst,
-      paymentMethod: data.paymentMethod,
-      userAddress: data.userAddress
+      useWalletFirst: data.useWalletFirst
     });
 
     if (!response.success || !response.data) {
