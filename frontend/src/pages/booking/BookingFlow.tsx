@@ -222,20 +222,7 @@ const BookingFlow: React.FC = () => {
     fetchRedemptions();
   }, [service]);
 
-  // Fetch payment options
-  useEffect(() => {
-    const fetchPaymentOptions = async () => {
-      if (!service) return;
-      try {
-        const servicePrice = finalPrice > 0 ? finalPrice : (service.price || service.basePrice || 0);
-        const options = await paymentService.getPaymentOptions(servicePrice);
-        setPaymentOptions(options);
-      } catch (error) {
-        console.error('Failed to fetch payment options:', error);
-      }
-    };
-    fetchPaymentOptions();
-  }, [service, finalPrice]);
+  // Payment options removed - using direct Coinbase Commerce only
 
   useEffect(() => {
     // Fetch available dates when specialist is loaded
@@ -371,22 +358,46 @@ const BookingFlow: React.FC = () => {
       }
 
       console.log('📤 BookingFlow: Sending booking data:', bookingData);
-      const result = await bookingService.createBooking(bookingData);
-      console.log('✅ BookingFlow: Booking created successfully:', result);
+      let bookingResult = null;
 
-      // Now process the deposit payment
-      console.log('💳 BookingFlow: Processing deposit payment...');
-      const paymentData = {
-        bookingId: result.booking?.id || result.id,
-        useWalletFirst
-      };
+      try {
+        // Create booking first
+        bookingResult = await bookingService.createBooking(bookingData);
+        console.log('✅ BookingFlow: Booking created successfully:', bookingResult);
 
-      const depositResult = await paymentService.createBookingDeposit(paymentData);
-      console.log('✅ BookingFlow: Deposit payment processed:', depositResult);
+        // Now process the deposit payment
+        console.log('💳 BookingFlow: Processing deposit payment...');
+        const paymentData = {
+          bookingId: bookingResult.booking?.id || bookingResult.id,
+          useWalletFirst
+        };
 
-      // Store results for confirmation step
-      setBookingResult(result);
-      setPaymentResult(depositResult);
+        const depositResult = await paymentService.createBookingDeposit(paymentData);
+        console.log('✅ BookingFlow: Deposit payment processed:', depositResult);
+
+        // Store results for confirmation step
+        setBookingResult(bookingResult);
+        setPaymentResult(depositResult);
+
+        return { bookingResult, depositResult };
+      } catch (paymentError) {
+        console.error('❌ BookingFlow: Payment failed:', paymentError);
+
+        // Clean up the booking if payment failed
+        if (bookingResult?.booking?.id || bookingResult?.id) {
+          try {
+            const bookingId = bookingResult.booking?.id || bookingResult.id;
+            console.log('🧹 BookingFlow: Cleaning up failed booking:', bookingId);
+            await bookingService.cancelBooking(bookingId);
+            console.log('✅ BookingFlow: Failed booking cleaned up successfully');
+          } catch (cleanupError) {
+            console.error('❌ BookingFlow: Failed to cleanup booking:', cleanupError);
+          }
+        }
+
+        // Re-throw the original payment error
+        throw paymentError;
+      }
 
       // Navigate to confirmation step
       setCurrentStep(steps.length - 1);

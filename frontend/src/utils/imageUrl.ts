@@ -53,7 +53,7 @@ export function getAbsoluteImageUrl(url: string | undefined | null | any): strin
     // Convert S3 URLs to use backend proxy to handle CORS issues
     if (url.includes('miyzapis-storage.s3.ap-southeast-2.amazonaws.com')) {
       const s3Path = url.replace('https://miyzapis-storage.s3.ap-southeast-2.amazonaws.com/', '');
-      const proxyUrl = `https://miyzapis-backend-production.up.railway.app/api/v1/files/s3-proxy/${s3Path}`;
+      const proxyUrl = `http://localhost:3031/api/v1/files/s3-proxy/${s3Path}`;
       console.log('🔄 Converting S3 URL to proxy:', proxyUrl.substring(0, 80) + '...');
       return proxyUrl;
     }
@@ -66,7 +66,7 @@ export function getAbsoluteImageUrl(url: string | undefined | null | any): strin
   if (url.toLowerCase().includes('.webp')) {
     // For WebP images, ensure proper server handling
     if (url.startsWith('/uploads')) {
-      return `https://miyzapis-backend-production.up.railway.app${url}`;
+      return `http://localhost:3031${url}`;
     }
   }
   
