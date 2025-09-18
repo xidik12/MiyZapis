@@ -70,6 +70,17 @@ const BookingFlow: React.FC = () => {
   const [paymentResult, setPaymentResult] = useState<any>(null);
   const [showQRCode, setShowQRCode] = useState<boolean>(false);
   const [paymentOptions, setPaymentOptions] = useState<any>(null);
+  const [paymentTimeoutId, setPaymentTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const [paymentTimeRemaining, setPaymentTimeRemaining] = useState<number>(0);
+
+  // Cleanup timeouts on component unmount
+  useEffect(() => {
+    return () => {
+      if (paymentTimeoutId) {
+        clearTimeout(paymentTimeoutId);
+      }
+    };
+  }, [paymentTimeoutId]);
 
   // Calculate discount preview
   const calculateDiscount = () => {
@@ -331,10 +342,41 @@ const BookingFlow: React.FC = () => {
     } catch (e) {}
   };
 
+  // Handle payment timeout
+  const handlePaymentTimeout = async () => {
+    console.log('⏰ BookingFlow: Payment timeout reached');
+
+    try {
+      // Clear any existing timeouts
+      if (paymentTimeoutId) {
+        clearTimeout(paymentTimeoutId);
+        setPaymentTimeoutId(null);
+      }
+
+      setPaymentTimeRemaining(0);
+
+      // Show timeout message
+      toast.error('Payment time expired. Your booking slot has been released. Please start over.');
+
+      // Reset payment states
+      setPaymentResult(null);
+      setPaymentLoading(false);
+
+      // Go back to time selection to choose a new slot
+      setCurrentStep(1);
+
+      // Refresh available slots
+      await refreshSlots();
+
+    } catch (error) {
+      console.error('❌ BookingFlow: Error handling payment timeout:', error);
+    }
+  };
+
   const handleBookingSubmit = async () => {
     const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
 
-    console.log('📋 BookingFlow: Attempting to create booking...');
+    console.log('📋 BookingFlow: Starting booking process...');
     console.log('🔍 BookingFlow: Booking data check:', {
       specialist: !!specialist,
       service: !!service,
@@ -351,80 +393,170 @@ const BookingFlow: React.FC = () => {
     try {
       setPaymentLoading(true);
 
+      // Step 1: Check slot availability before starting payment process
+      console.log('🕒 BookingFlow: Checking slot availability...');
+      const currentSlots = await specialistService.getAvailableSlots(currentSpecialistId, selectedDate);
+      const serviceDuration = service.duration || 60;
+      const availableSlots = filterSlotsByDuration(currentSlots, serviceDuration);
+
+      if (!availableSlots.includes(selectedTime)) {
+        throw new Error('SLOT_NO_LONGER_AVAILABLE');
+      }
+      console.log('✅ BookingFlow: Slot still available, proceeding with payment...');
+
       // Combine date and time into scheduledAt DateTime
       const [hours, minutes] = selectedTime.split(':').map(Number);
       const scheduledAt = new Date(selectedDate);
       scheduledAt.setHours(hours, minutes, 0, 0);
 
-      const bookingData: any = {
-        serviceId: service.id,
-        scheduledAt: scheduledAt.toISOString(),
-        duration: service.duration || 60, // Default to 60 minutes if not specified
-        customerNotes: bookingNotes || undefined,
-        loyaltyPointsUsed: 0, // Default to 0
-      };
-
-      if (selectedRedemptionId) {
-        bookingData.rewardRedemptionId = selectedRedemptionId;
+      // Step 2: Start payment process (will check wallet first if useWalletFirst=true)
+      console.log('💳 BookingFlow: Creating payment intent...');
+      console.log('💰 BookingFlow: Wallet-first enabled:', useWalletFirst);
+      if (user?.walletBalance > 0) {
+        console.log('💰 BookingFlow: User wallet balance: $', user.walletBalance);
       }
 
-      console.log('📤 BookingFlow: Sending booking data:', bookingData);
-      let bookingResult = null;
+      const paymentData = {
+        serviceId: service.id,
+        scheduledAt: scheduledAt.toISOString(),
+        duration: service.duration || 60,
+        customerNotes: bookingNotes || undefined,
+        loyaltyPointsUsed: 0,
+        useWalletFirst
+      };
 
-      try {
-        // PAYMENT-FIRST APPROACH: Create payment intent first
-        console.log('💳 BookingFlow: Creating payment intent...');
-        const paymentData = {
+      const depositResult = await paymentService.createCryptoPaymentIntent(paymentData);
+      console.log('✅ BookingFlow: Payment intent created:', depositResult);
+
+      // Store payment result for UI
+      setPaymentResult(depositResult);
+
+      // Start payment timeout for external payments (15 minutes)
+      if (depositResult.requiresPayment) {
+        const timeoutDuration = 15 * 60 * 1000; // 15 minutes in milliseconds
+        setPaymentTimeRemaining(timeoutDuration);
+
+        // Start countdown timer
+        const countdownInterval = setInterval(() => {
+          setPaymentTimeRemaining(prev => {
+            if (prev <= 1000) {
+              clearInterval(countdownInterval);
+              handlePaymentTimeout();
+              return 0;
+            }
+            return prev - 1000;
+          });
+        }, 1000);
+
+        // Set main timeout
+        const timeoutId = setTimeout(() => {
+          clearInterval(countdownInterval);
+          handlePaymentTimeout();
+        }, timeoutDuration);
+
+        setPaymentTimeoutId(timeoutId);
+
+        // Listen for payment completion via socket
+        const handlePaymentCompleted = (paymentData: any) => {
+          console.log('💳 BookingFlow: Payment completed via socket:', paymentData);
+
+          if (paymentData.paymentId === depositResult.paymentId) {
+            // Clear timeout
+            if (paymentTimeoutId) {
+              clearTimeout(paymentTimeoutId);
+              setPaymentTimeoutId(null);
+            }
+            setPaymentTimeRemaining(0);
+
+            // Update payment result
+            setPaymentResult({
+              ...depositResult,
+              status: 'COMPLETED',
+              requiresPayment: false
+            });
+
+            // Booking should be created by webhook, fetch the booking result
+            if (paymentData.bookingId) {
+              bookingService.getBooking(paymentData.bookingId)
+                .then(booking => {
+                  console.log('✅ BookingFlow: Booking created via webhook:', booking);
+                  setBookingResult(booking);
+                  // Navigate to confirmation
+                  setCurrentStep(steps.length - 1);
+                  toast.success('Payment completed! Your booking is confirmed.');
+                })
+                .catch(err => {
+                  console.error('❌ BookingFlow: Error fetching booking after payment:', err);
+                  toast.error('Payment completed but booking details unavailable. Check your bookings page.');
+                });
+            } else {
+              // Navigate to confirmation even without booking details
+              setCurrentStep(steps.length - 1);
+              toast.success('Payment completed! Your booking is being processed.');
+            }
+
+            // Remove listener
+            socketService.off('payment:completed', handlePaymentCompleted);
+          }
+        };
+
+        socketService.on('payment:completed', handlePaymentCompleted);
+      }
+
+      // Step 3: Handle payment result
+      if (depositResult.status === 'COMPLETED') {
+        // Payment completed with wallet balance - create booking immediately
+        console.log('💰 BookingFlow: Payment completed with wallet, creating booking...');
+        const bookingData = {
           serviceId: service.id,
           scheduledAt: scheduledAt.toISOString(),
           duration: service.duration || 60,
           customerNotes: bookingNotes || undefined,
           loyaltyPointsUsed: 0,
-          useWalletFirst
+          rewardRedemptionId: selectedRedemptionId
         };
 
-        const depositResult = await paymentService.createCryptoPaymentIntent(paymentData);
-        console.log('✅ BookingFlow: Payment intent created:', depositResult);
+        const bookingResult = await bookingService.createBookingWithPayment({
+          ...bookingData,
+          paymentId: depositResult.paymentId
+        });
+        console.log('✅ BookingFlow: Booking created after wallet payment:', bookingResult);
+        setBookingResult(bookingResult);
 
-        // Store results for confirmation step
-        setPaymentResult(depositResult);
-
-        // For completed payments (wallet-only), create booking immediately
-        if (depositResult.status === 'COMPLETED') {
-          console.log('💰 BookingFlow: Payment completed with wallet, creating booking...');
-          bookingResult = await bookingService.createBookingWithPayment({
-            ...bookingData,
-            paymentId: depositResult.paymentId
-          });
-          console.log('✅ BookingFlow: Booking created after payment:', bookingResult);
-          setBookingResult(bookingResult);
-        } else {
-          // For crypto payments, booking will be created via webhook when payment is confirmed
-          console.log('⏳ BookingFlow: Crypto payment pending, booking will be created on confirmation');
-        }
-
-        // Navigate to confirmation step after successful payment intent creation
+        // Navigate to confirmation step
         setCurrentStep(steps.length - 1);
+      } else {
+        // Payment requires crypto/external payment - navigate to payment step to show payment interface
+        console.log('⏳ BookingFlow: External payment required, navigating to payment step');
+        console.log('💳 BookingFlow: Payment details:', {
+          amount: depositResult.finalAmount,
+          paymentUrl: depositResult.paymentUrl,
+          qrCode: !!depositResult.qrCodeData,
+          status: depositResult.status
+        });
 
-        return { bookingResult, depositResult };
-      } catch (paymentError) {
-        console.error('❌ BookingFlow: Payment failed:', paymentError);
-        // No cleanup needed since no booking was created
-        throw paymentError;
+        // Navigate to payment step (step 3) to show payment interface
+        setCurrentStep(3);
       }
 
+      return depositResult;
     } catch (error: any) {
       console.error('❌ BookingFlow: Error in booking/payment flow:', error);
       const code = error?.apiError?.code;
       const status = error?.response?.status || error?.apiError?.status;
 
-      if (code === 'BOOKING_CONFLICT' || status === 409 || error?.message?.includes('time slot')) {
+      if (error?.message === 'SLOT_NO_LONGER_AVAILABLE') {
         toast.warning(t('booking.slotConflict') || 'This time slot was just booked by someone else. Please choose another.');
         await refreshSlots();
-        setCurrentStep(1); // Ensure user stays on time selection
+        setCurrentStep(1); // Go back to time selection
+        setConflictHint({ active: true, lastTried: selectedTime });
+      } else if (code === 'BOOKING_CONFLICT' || status === 409 || error?.message?.includes('time slot')) {
+        toast.warning(t('booking.slotConflict') || 'This time slot was just booked by someone else. Please choose another.');
+        await refreshSlots();
+        setCurrentStep(1); // Go back to time selection
         setConflictHint({ active: true, lastTried: selectedTime });
       } else {
-        toast.error(error?.message || t('booking.createFailed') || 'Failed to create booking. Please try again.');
+        toast.error(error?.message || t('booking.createFailed') || 'Failed to process booking. Please try again.');
       }
     } finally {
       setPaymentLoading(false);
@@ -1004,23 +1136,130 @@ const BookingFlow: React.FC = () => {
                 </div>
               )}
 
-              <button
-                onClick={handleBookingSubmit}
-                disabled={paymentLoading}
-                className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-              >
-                {paymentLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <CreditCardIcon className="w-5 h-5 mr-2" />
-                    {t('booking.confirmBooking')}
-                  </>
-                )}
-              </button>
+              {/* Show payment interface if payment result exists and requires external payment */}
+              {paymentResult ? (
+                <div className="space-y-4">
+                  {/* Payment Required Section */}
+                  {paymentResult.requiresPayment && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                      <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
+                        💳 Complete Your Payment
+                      </h4>
+                      {paymentResult.message && (
+                        <p className="text-sm text-blue-800 dark:text-blue-200 mb-4">
+                          {paymentResult.message}
+                        </p>
+                      )}
+
+                      {/* Payment URL for direct crypto payments */}
+                      {paymentResult.paymentUrl && (
+                        <div className="mb-4">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Amount: ${paymentResult.finalAmount || 'N/A'}
+                          </p>
+                          <a
+                            href={paymentResult.paymentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                          >
+                            <CreditCardIcon className="w-4 h-4 mr-2" />
+                            Pay with Crypto
+                          </a>
+                        </div>
+                      )}
+
+                      {/* Coinbase Onramp Session */}
+                      {paymentResult.onrampSession && (
+                        <div className="mb-4">
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                            Don't have crypto? Buy and pay in one step:
+                          </p>
+                          <a
+                            href={paymentResult.onrampSession.onrampURL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                          >
+                            <CreditCardIcon className="w-4 h-4 mr-2" />
+                            Buy Crypto & Pay
+                          </a>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Session expires: {new Date(paymentResult.onrampSession.expiresAt).toLocaleString()}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* QR Code Display */}
+                      {paymentResult.qrCodeData && (
+                        <div className="mt-4">
+                          <button
+                            onClick={() => setShowQRCode(!showQRCode)}
+                            className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
+                          >
+                            {showQRCode ? 'Hide' : 'Show'} QR Code
+                          </button>
+                          {showQRCode && (
+                            <div className="mt-3 text-center">
+                              <img
+                                src={paymentResult.qrCodeData}
+                                alt="Payment QR Code"
+                                className="max-w-48 h-auto border border-gray-200 rounded mx-auto"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                        {paymentTimeRemaining > 0 && (
+                          <p className="font-medium text-orange-600 dark:text-orange-400">
+                            ⏱️ Time remaining: {Math.floor(paymentTimeRemaining / 60000)}:{String(Math.floor((paymentTimeRemaining % 60000) / 1000)).padStart(2, '0')}
+                          </p>
+                        )}
+                        <p>📧 You'll receive confirmation once payment is verified.</p>
+                        <p className="text-xs text-gray-400 mt-1">Your booking slot is temporarily reserved during payment.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Payment Complete Section */}
+                  {!paymentResult.requiresPayment && paymentResult.status === 'COMPLETED' && (
+                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
+                      <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">
+                        ✅ Payment Complete
+                      </h4>
+                      <p className="text-sm text-green-800 dark:text-green-200">
+                        {paymentResult.message || 'Payment processed successfully with wallet balance'}
+                      </p>
+                      <button
+                        onClick={() => setCurrentStep(steps.length - 1)}
+                        className="mt-3 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        View Booking Details
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={handleBookingSubmit}
+                  disabled={paymentLoading}
+                  className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                >
+                  {paymentLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCardIcon className="w-5 h-5 mr-2" />
+                      {t('booking.confirmBooking')}
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         );
