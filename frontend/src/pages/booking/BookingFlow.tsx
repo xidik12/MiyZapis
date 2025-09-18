@@ -383,7 +383,7 @@ const BookingFlow: React.FC = () => {
           useWalletFirst
         };
 
-        const depositResult = await paymentService.createPaymentIntent(paymentData);
+        const depositResult = await paymentService.createCryptoPaymentIntent(paymentData);
         console.log('✅ BookingFlow: Payment intent created:', depositResult);
 
         // Store results for confirmation step

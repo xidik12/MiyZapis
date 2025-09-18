@@ -47,8 +47,8 @@ export class PaymentService {
     return response.data;
   }
 
-  // Create payment intent first (payment-first approach)
-  async createPaymentIntent(data: {
+  // Create crypto payment intent first (payment-first approach)
+  async createCryptoPaymentIntent(data: {
     serviceId: string;
     scheduledAt: string;
     duration: number;
