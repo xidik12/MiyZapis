@@ -135,7 +135,7 @@ export class PaymentService {
     paymentType: PaymentType;
     loyaltyPointsUsed?: number;
   }): Promise<PaymentIntent> {
-    const response = await apiClient.post<PaymentIntent>('/payments/create-intent', data);
+    const response = await apiClient.post<PaymentIntent>('/payments/intent', data);
     
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to create payment intent');
@@ -151,7 +151,7 @@ export class PaymentService {
     const response = await apiClient.post<{
       payment: Payment;
       status: PaymentStatus;
-    }>('/payments/confirm-intent', {
+    }>('/payments/confirm', {
       paymentIntentId,
       paymentMethodId
     });

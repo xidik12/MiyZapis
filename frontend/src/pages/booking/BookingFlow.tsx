@@ -11,6 +11,7 @@ import { specialistService, serviceService, bookingService } from '../../service
 import { paymentService } from '../../services/payment.service';
 import { loyaltyService, UserLoyalty } from '@/services/loyalty.service';
 import { RewardsService, type RewardRedemption, type LoyaltyReward } from '@/services/rewards.service';
+import { filterSlotsByDuration, calculateEndTime } from '../../utils/timeSlotUtils';
 import {
   CalendarIcon,
   ClockIcon,
@@ -286,7 +287,13 @@ const BookingFlow: React.FC = () => {
         const dateStr = selectedDate.toISOString().split('T')[0];
         const slots = await specialistService.getAvailableSlots(currentSpecialistId, dateStr);
         console.log('✅ BookingFlow: Available slots received:', slots);
-        setAvailableSlots(slots || []);
+
+        // Filter slots based on service duration to ensure consecutive availability
+        const serviceDuration = service?.duration || 60;
+        const filteredSlots = filterSlotsByDuration(slots || [], serviceDuration);
+        console.log('🔍 BookingFlow: Filtered slots for duration', serviceDuration, 'minutes:', filteredSlots);
+
+        setAvailableSlots(filteredSlots);
       } catch (error) {
         console.error('❌ BookingFlow: Error fetching available slots:', error);
         // Don't show any slots if there's an error - better to show empty than incorrect availability
@@ -316,7 +323,11 @@ const BookingFlow: React.FC = () => {
       if (!currentSpecialistId || !selectedDate) return;
       const dateStr = selectedDate.toISOString().split('T')[0];
       const slots = await specialistService.getAvailableSlots(currentSpecialistId, dateStr);
-      setAvailableSlots(slots || []);
+
+      // Filter slots based on service duration
+      const serviceDuration = service?.duration || 60;
+      const filteredSlots = filterSlotsByDuration(slots || [], serviceDuration);
+      setAvailableSlots(filteredSlots);
     } catch (e) {}
   };
 
@@ -610,17 +621,25 @@ const BookingFlow: React.FC = () => {
                     {availableSlots.map((slot: any) => {
                       const time = typeof slot === 'string' ? slot : slot.time;
                       const count = typeof slot === 'string' ? undefined : slot.count;
+                      const serviceDuration = service?.duration || 60;
+                      const endTime = calculateEndTime(time, serviceDuration);
+
                       return (
                         <button
                           key={time}
                           onClick={() => setSelectedTime(time)}
-                          className={`relative px-3 py-1.5 text-sm rounded-full border transition-colors ${
+                          className={`relative px-3 py-1.5 text-sm rounded-lg border transition-colors ${
                             selectedTime === time
                               ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
                               : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300'
                           }`}
                         >
-                          {time}
+                          <div className="text-center">
+                            <div className="font-medium">{time}</div>
+                            {serviceDuration > 15 && (
+                              <div className="text-xs opacity-75">to {endTime}</div>
+                            )}
+                          </div>
                           {count === 1 && (
                             <span className="absolute -top-2 -right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">1</span>
                           )}

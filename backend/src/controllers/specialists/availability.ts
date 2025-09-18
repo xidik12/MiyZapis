@@ -832,14 +832,15 @@ export class AvailabilityController {
         const [slotHour, slotMinute] = slot.split(':').map(Number);
         const slotDateTime = new Date(targetDate);
         slotDateTime.setHours(slotHour, slotMinute, 0, 0);
-        
+        const slotEnd = new Date(slotDateTime.getTime() + (15 * 60 * 1000)); // 15-minute slots
+
         // Check if this slot conflicts with any existing booking
         return !existingBookings.some(booking => {
           const bookingStart = new Date(booking.scheduledAt);
           const bookingEnd = new Date(bookingStart.getTime() + (booking.duration * 60 * 1000));
-          
-          // Check if slot overlaps with booking
-          const slotEnd = new Date(slotDateTime.getTime() + (15 * 60 * 1000)); // 15-minute slots
+
+          // Two time ranges overlap if: start1 < end2 && start2 < end1
+          // This will block all 15-minute slots that overlap with the booking duration
           return (slotDateTime < bookingEnd && slotEnd > bookingStart);
         });
       });
@@ -1061,10 +1062,11 @@ export class AvailabilityController {
 
             // Check if at least one slot is available
             const hasAvailableSlot = daySlots.some(slotDateTime => {
+              const slotEnd = new Date(slotDateTime.getTime() + (15 * 60 * 1000));
               return !existingBookings.some(booking => {
                 const bookingStart = new Date(booking.scheduledAt);
                 const bookingEnd = new Date(bookingStart.getTime() + (booking.duration * 60 * 1000));
-                const slotEnd = new Date(slotDateTime.getTime() + (15 * 60 * 1000));
+                // Two time ranges overlap if: start1 < end2 && start2 < end1
                 return (slotDateTime < bookingEnd && slotEnd > bookingStart);
               });
             });
