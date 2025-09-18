@@ -5,8 +5,8 @@ import { config } from '@/config';
 import { prisma } from '@/config/database';
 import { cacheUtils } from '@/config/redis';
 import { logger } from '@/utils/logger';
-// Use enhanced email service with localization support
-import { emailService as templatedEmailService } from '@/services/email/enhanced-email';
+// Use basic email service for verification emails
+import { emailService } from '@/services/email';
 import { 
   LoginRequest, 
   RegisterRequest, 
@@ -198,7 +198,7 @@ export class EnhancedAuthService {
         firstName: user.firstName
       });
 
-      templatedEmailService.sendEmailVerification(user.id, verificationToken, user.language || 'en').then((emailSent) => {
+      emailService.sendEmailVerification(user.id, verificationToken, user.language || 'en').then((emailSent) => {
         if (!emailSent) {
           logger.error('💥 Verification email failed to send', { 
             userId: user.id, 
@@ -329,6 +329,11 @@ export class EnhancedAuthService {
           telegramNotifications: true,
           passwordLastChanged: true,
           authProvider: true,
+          walletBalance: true,
+          walletCurrency: true,
+          subscriptionStatus: true,
+          subscriptionValidUntil: true,
+          subscriptionEffectiveDate: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -344,7 +349,7 @@ export class EnhancedAuthService {
       });
 
       // Send welcome email
-        await templatedEmailService.sendWelcomeEmail(updatedUser.id, updatedUser.language || 'en');
+        await emailService.sendWelcomeEmail(updatedUser.id, updatedUser.language || 'en');
 
       // Create auth tokens
       const tokens = await this.createTokens(updatedUser);
@@ -632,7 +637,7 @@ export class EnhancedAuthService {
         }
 
         // Send localized welcome email for new users
-        await templatedEmailService.sendWelcomeEmail(user.id, user.language || 'en');
+        await emailService.sendWelcomeEmail(user.id, user.language || 'en');
       } else {
         // Existing user - check available roles
         const hasCustomerRole = user.userType === 'CUSTOMER' || user.userType === 'ADMIN';
@@ -751,6 +756,11 @@ export class EnhancedAuthService {
           telegramNotifications: true,
           passwordLastChanged: true,
           authProvider: true,
+          walletBalance: true,
+          walletCurrency: true,
+          subscriptionStatus: true,
+          subscriptionValidUntil: true,
+          subscriptionEffectiveDate: true,
           createdAt: true,
           updatedAt: true,
         },

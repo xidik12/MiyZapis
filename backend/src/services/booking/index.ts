@@ -4,6 +4,7 @@ import { NotificationService } from '@/services/notification';
 import { emailService as templatedEmailService } from '@/services/email/enhanced-email';
 import { resolveLanguage } from '@/utils/language';
 import LoyaltyService from '@/services/loyalty';
+import { specialistSubscriptionService } from '@/services/payment/subscription.service';
 import { Booking, User, Service, Specialist } from '@prisma/client';
 
 interface CreateBookingData {
@@ -773,6 +774,29 @@ export class BookingService {
       if (data.status === 'COMPLETED') {
         // Use centralized loyalty service for consistent point calculation
         await LoyaltyService.processBookingCompletion(booking.id);
+
+        // Process specialist subscription fees (PAY_PER_USE or MONTHLY_SUBSCRIPTION)
+        try {
+          const feeResult = await specialistSubscriptionService.processTransactionFee(
+            booking.specialistId,
+            booking.id
+          );
+
+          logger.info('Specialist subscription fee processed', {
+            bookingId: booking.id,
+            specialistId: booking.specialistId,
+            feeCharged: feeResult.feeCharged,
+            currency: feeResult.currency,
+            method: feeResult.method,
+          });
+        } catch (subscriptionError) {
+          logger.error('Failed to process specialist subscription fee:', {
+            error: subscriptionError,
+            bookingId: booking.id,
+            specialistId: booking.specialistId,
+          });
+          // Don't throw error as booking completion was successful
+        }
 
         // Update specialist metrics
         await prisma.specialist.update({

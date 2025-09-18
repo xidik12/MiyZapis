@@ -403,15 +403,15 @@ const BookingFlow: React.FC = () => {
           console.log('⏳ BookingFlow: Crypto payment pending, booking will be created on confirmation');
         }
 
+        // Navigate to confirmation step after successful payment intent creation
+        setCurrentStep(steps.length - 1);
+
         return { bookingResult, depositResult };
       } catch (paymentError) {
         console.error('❌ BookingFlow: Payment failed:', paymentError);
         // No cleanup needed since no booking was created
         throw paymentError;
       }
-
-      // Navigate to confirmation step
-      setCurrentStep(steps.length - 1);
 
     } catch (error: any) {
       console.error('❌ BookingFlow: Error in booking/payment flow:', error);

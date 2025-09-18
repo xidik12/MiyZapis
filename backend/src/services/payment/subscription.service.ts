@@ -47,7 +47,7 @@ export class SpecialistSubscriptionService {
   };
 
   async getSubscription(specialistId: string): Promise<any> {
-    let subscription = await prisma.specialistSubscription.findUnique({
+    let subscription = await prisma.specialistSubscription.findFirst({
       where: { specialistId },
     });
 
@@ -141,13 +141,19 @@ export class SpecialistSubscriptionService {
       };
     } else {
       // Schedule change for next billing period
-      await prisma.specialistSubscription.update({
+      const subscription = await prisma.specialistSubscription.findFirst({
         where: { specialistId },
-        data: {
-          pendingPlanType: newPlanType,
-          planChangeEffectiveDate: effectiveDate,
-        },
       });
+
+      if (subscription) {
+        await prisma.specialistSubscription.update({
+          where: { id: subscription.id },
+          data: {
+            pendingPlanType: newPlanType,
+            planChangeEffectiveDate: effectiveDate,
+          },
+        });
+      }
 
       return {
         success: true,
@@ -164,9 +170,15 @@ export class SpecialistSubscriptionService {
     const now = new Date();
 
     await prisma.$transaction(async (tx) => {
-      // Update subscription
-      await tx.specialistSubscription.update({
+      // Find and update subscription
+      const subscription = await tx.specialistSubscription.findFirst({
         where: { specialistId },
+      });
+
+      if (!subscription) return;
+
+      await tx.specialistSubscription.update({
+        where: { id: subscription.id },
         data: {
           planType: newPlanType,
           monthlyRate: newPlan.monthlyRate,
@@ -230,7 +242,7 @@ export class SpecialistSubscriptionService {
     const fee = subscription.transactionFee;
 
     await prisma.specialistSubscription.update({
-      where: { specialistId },
+      where: { id: subscription.id },
       data: {
         currentMonthTransactions: { increment: 1 },
         currentMonthFees: { increment: fee },
@@ -451,7 +463,7 @@ export class SpecialistSubscriptionService {
 
     for (const subscription of pendingChanges) {
       try {
-        await this.applyPlanChange(subscription.specialistId, subscription.pendingPlanType!);
+        await this.applyPlanChange(subscription.specialistId, subscription.pendingPlanType! as 'PAY_PER_USE' | 'MONTHLY_SUBSCRIPTION');
         changesProcessed++;
 
         logger.info('Pending plan change applied', {

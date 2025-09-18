@@ -27,6 +27,7 @@ import apiRoutes from '@/routes';
 import { bot } from '@/bot';
 import { enhancedTelegramBot } from '@/services/telegram/enhanced-bot';
 import { startBookingReminderWorker } from '@/workers/bookingReminderWorker';
+import { subscriptionWorker } from '@/workers/subscription.worker';
 
 // Create Express app
 const app = express();
@@ -285,6 +286,9 @@ const gracefulShutdown = async (signal: string) => {
         logger.warn('Enhanced bot stop error (bot may not have been running):', botError instanceof Error ? botError.message : botError);
       }
       
+      // Stop workers
+      subscriptionWorker.stop();
+
       // Close database connections
       await closeDatabaseConnection();
       await closeRedisConnection();
@@ -419,6 +423,14 @@ const startServer = async () => {
         logger.info('⏰ Booking reminder worker started');
       } catch (e) {
         logger.warn('Failed to start booking reminder worker', { error: (e as any)?.message });
+      }
+
+      // Start subscription worker
+      try {
+        subscriptionWorker.start();
+        logger.info('💳 Subscription worker started');
+      } catch (e) {
+        logger.warn('Failed to start subscription worker', { error: (e as any)?.message });
       }
     });
 

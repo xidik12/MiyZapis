@@ -1058,31 +1058,49 @@ model LoyaltyReferral {
   referrerId    String
   referredId    String?
   referralCode  String @unique
-  
+
+  // Enhanced referral type support
+  referralType  String @default("CUSTOMER_TO_CUSTOMER") // CUSTOMER_TO_CUSTOMER, SPECIALIST_TO_CUSTOMER, CUSTOMER_TO_SPECIALIST
+  targetUserType String? // CUSTOMER, SPECIALIST - who is being referred
+
   // Referral status
   status        String @default("PENDING") // PENDING, COMPLETED, EXPIRED
   completedAt   DateTime?
-  
+
   // Points tracking
   referrerPoints    Int @default(0)
   referredPoints    Int @default(0)
   pointsAwarded     Boolean @default(false)
-  
+
+  // Enhanced rewards tracking
+  referrerRewardType String? // POINTS, DISCOUNT, CREDIT, CUSTOM
+  referredRewardType String? // POINTS, DISCOUNT, CREDIT, CUSTOM
+  referrerRewardValue Float? // Monetary value or percentage for non-points rewards
+  referredRewardValue Float? // Monetary value or percentage for non-points rewards
+
   // Metadata
-  inviteChannel     String? // EMAIL, SMS, SOCIAL, DIRECT
+  inviteChannel     String? // EMAIL, SMS, SOCIAL, DIRECT, LINK
   firstBookingId    String? // First booking that completed the referral
-  
+  specialistId      String? // For specialist-related referrals
+  customMessage     String? // Personalized message from referrer
+
+  // Tracking
+  clickCount        Int @default(0) // How many times referral link was clicked
+  viewCount         Int @default(0) // How many times referral was viewed
+
   // Timestamps
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   expiresAt     DateTime
-  
+
   // Relations
   referrer      User     @relation("ReferrerRelation", fields: [referrerId], references: [id], onDelete: Cascade)
   referred      User?    @relation("ReferredRelation", fields: [referredId], references: [id], onDelete: Cascade)
-  
+
   @@index([referralCode])
   @@index([referrerId])
+  @@index([referralType])
+  @@index([targetUserType])
   @@map("loyalty_referrals")
 }
 
