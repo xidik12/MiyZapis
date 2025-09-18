@@ -377,7 +377,7 @@ const BookingFlow: React.FC = () => {
       // Now process the deposit payment
       console.log('💳 BookingFlow: Processing deposit payment...');
       const paymentData = {
-        bookingId: result.id,
+        bookingId: result.booking?.id || result.id,
         useWalletFirst
       };
 
