@@ -157,6 +157,7 @@ export class PaymentController {
       const cryptoPayment = await coinbaseCommerceService.createCharge({
         amount: depositConfig.amountUSD,
         currency: 'USD',
+        name: `${service.title} - Booking Deposit`,
         description: `Booking deposit for ${service.title}`,
         metadata: {
           serviceId: validatedData.serviceId,
