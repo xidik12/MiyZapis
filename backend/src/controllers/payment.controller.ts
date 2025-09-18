@@ -18,6 +18,19 @@ const createDepositPaymentSchema = z.object({
   userAddress: z.string().optional(),
 });
 
+const createPaymentIntentSchema = z.object({
+  serviceId: z.string().cuid(),
+  scheduledAt: z.string().datetime(),
+  duration: z.number().positive(),
+  customerNotes: z.string().optional(),
+  loyaltyPointsUsed: z.number().min(0).default(0),
+  useWalletFirst: z.boolean().optional().default(true),
+  redirectUrl: z.string().url().optional(),
+  cancelUrl: z.string().url().optional(),
+  paymentMethod: z.enum(['AUTO', 'CRYPTO_ONLY', 'FIAT_TO_CRYPTO']).optional().default('AUTO'),
+  userAddress: z.string().optional(),
+});
+
 const cancelBookingSchema = z.object({
   reason: z.string().optional(),
 });
@@ -65,6 +78,134 @@ const completeOnrampSessionSchema = z.object({
 });
 
 export class PaymentController {
+  // Payment Intent Endpoints (for payment-first booking flow)
+
+  async createPaymentIntent(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      const validatedData = createPaymentIntentSchema.parse(req.body);
+
+      // Get service details for pricing
+      const service = await prisma.service.findUnique({
+        where: { id: validatedData.serviceId },
+        include: {
+          specialist: {
+            include: {
+              user: true
+            }
+          }
+        }
+      });
+
+      if (!service) {
+        res.status(404).json({ error: 'Service not found' });
+        return;
+      }
+
+      const depositConfig = await bookingPaymentService.getDepositConfiguration();
+
+      // Create payment intent without creating booking first
+      // First check if wallet payment can cover the deposit
+      let walletResult = null;
+      if (validatedData.useWalletFirst) {
+        try {
+          walletResult = await walletService.processWalletPayment({
+            userId,
+            amount: depositConfig.amountUSD,
+            currency: 'USD',
+            description: `Booking deposit for ${service.title}`,
+            metadata: {
+              serviceId: validatedData.serviceId,
+              scheduledAt: validatedData.scheduledAt,
+              duration: validatedData.duration,
+              paymentFor: 'booking_deposit'
+            }
+          });
+
+          if (walletResult.success) {
+            // If wallet payment successful, return wallet payment result
+            const result = {
+              paymentId: walletResult.transactionId,
+              status: 'completed',
+              paymentMethod: 'wallet',
+              walletTransaction: walletResult,
+              totalPaid: depositConfig.amountUSD,
+              remainingAmount: 0,
+              message: 'Payment completed using wallet balance'
+            };
+
+            res.status(200).json({
+              success: true,
+              data: result,
+            });
+            return;
+          }
+        } catch (error) {
+          logger.warn('Wallet payment failed, proceeding with crypto payment', {
+            error: error instanceof Error ? error.message : error,
+            userId,
+          });
+        }
+      }
+
+      // If wallet payment failed or not requested, create crypto payment
+      const cryptoPayment = await coinbaseCommerceService.createCharge({
+        amount: depositConfig.amountUSD,
+        currency: 'USD',
+        description: `Booking deposit for ${service.title}`,
+        metadata: {
+          serviceId: validatedData.serviceId,
+          scheduledAt: validatedData.scheduledAt,
+          duration: validatedData.duration,
+          customerId: userId,
+          paymentFor: 'booking_deposit'
+        },
+        redirectUrl: validatedData.redirectUrl,
+        cancelUrl: validatedData.cancelUrl,
+      });
+
+      const result = {
+        paymentId: cryptoPayment.id,
+        status: cryptoPayment.status,
+        paymentMethod: 'crypto',
+        cryptoPayment: cryptoPayment,
+        totalPaid: 0,
+        remainingAmount: depositConfig.amountUSD,
+        paymentUrl: cryptoPayment.hosted_url,
+        qrCodeUrl: cryptoPayment.addresses?.bitcoin ? `bitcoin:${cryptoPayment.addresses.bitcoin}` : undefined,
+        message: 'Please complete crypto payment to proceed with booking'
+      };
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      logger.error('Failed to create payment intent', {
+        error: error instanceof Error ? error.message : error,
+        userId: req.user?.id,
+        body: req.body,
+      });
+
+      if (error instanceof z.ZodError) {
+        res.status(400).json({
+          error: 'Invalid request data',
+          details: error.errors,
+        });
+        return;
+      }
+
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to create payment intent',
+      });
+    }
+  }
+
   // Booking Deposit Endpoints
 
   async createBookingDeposit(req: Request, res: Response): Promise<void> {

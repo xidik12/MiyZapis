@@ -361,41 +361,41 @@ const BookingFlow: React.FC = () => {
       let bookingResult = null;
 
       try {
-        // Create booking first
-        bookingResult = await bookingService.createBooking(bookingData);
-        console.log('✅ BookingFlow: Booking created successfully:', bookingResult);
-
-        // Now process the deposit payment
-        console.log('💳 BookingFlow: Processing deposit payment...');
+        // PAYMENT-FIRST APPROACH: Create payment intent first
+        console.log('💳 BookingFlow: Creating payment intent...');
         const paymentData = {
-          bookingId: bookingResult.booking?.id || bookingResult.id,
+          serviceId: service.id,
+          scheduledAt: scheduledAt.toISOString(),
+          duration: service.duration || 60,
+          customerNotes: bookingNotes || undefined,
+          loyaltyPointsUsed: 0,
           useWalletFirst
         };
 
-        const depositResult = await paymentService.createBookingDeposit(paymentData);
-        console.log('✅ BookingFlow: Deposit payment processed:', depositResult);
+        const depositResult = await paymentService.createPaymentIntent(paymentData);
+        console.log('✅ BookingFlow: Payment intent created:', depositResult);
 
         // Store results for confirmation step
-        setBookingResult(bookingResult);
         setPaymentResult(depositResult);
+
+        // For completed payments (wallet-only), create booking immediately
+        if (depositResult.status === 'COMPLETED') {
+          console.log('💰 BookingFlow: Payment completed with wallet, creating booking...');
+          bookingResult = await bookingService.createBookingWithPayment({
+            ...bookingData,
+            paymentId: depositResult.paymentId
+          });
+          console.log('✅ BookingFlow: Booking created after payment:', bookingResult);
+          setBookingResult(bookingResult);
+        } else {
+          // For crypto payments, booking will be created via webhook when payment is confirmed
+          console.log('⏳ BookingFlow: Crypto payment pending, booking will be created on confirmation');
+        }
 
         return { bookingResult, depositResult };
       } catch (paymentError) {
         console.error('❌ BookingFlow: Payment failed:', paymentError);
-
-        // Clean up the booking if payment failed
-        if (bookingResult?.booking?.id || bookingResult?.id) {
-          try {
-            const bookingId = bookingResult.booking?.id || bookingResult.id;
-            console.log('🧹 BookingFlow: Cleaning up failed booking:', bookingId);
-            await bookingService.cancelBooking(bookingId);
-            console.log('✅ BookingFlow: Failed booking cleaned up successfully');
-          } catch (cleanupError) {
-            console.error('❌ BookingFlow: Failed to cleanup booking:', cleanupError);
-          }
-        }
-
-        // Re-throw the original payment error
+        // No cleanup needed since no booking was created
         throw paymentError;
       }
 

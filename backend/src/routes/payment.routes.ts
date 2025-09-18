@@ -5,6 +5,13 @@ import { validateRequest } from '@/middleware/validation';
 
 const router = express.Router();
 
+// Payment Intent Routes (for payment-first booking flow)
+router.post(
+  '/intent',
+  authenticateToken,
+  paymentController.createPaymentIntent.bind(paymentController)
+);
+
 // Booking Deposit Routes
 router.post(
   '/bookings/:bookingId/deposit',

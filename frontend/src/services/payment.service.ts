@@ -47,6 +47,52 @@ export class PaymentService {
     return response.data;
   }
 
+  // Create payment intent first (payment-first approach)
+  async createPaymentIntent(data: {
+    serviceId: string;
+    scheduledAt: string;
+    duration: number;
+    customerNotes?: string;
+    loyaltyPointsUsed: number;
+    useWalletFirst: boolean;
+  }): Promise<{
+    paymentId: string;
+    status: string;
+    paymentMethod: string;
+    cryptoPayment?: any;
+    walletTransaction?: any;
+    totalPaid: number;
+    remainingAmount: number;
+    paymentUrl?: string;
+    qrCodeUrl?: string;
+    message: string;
+  }> {
+    console.log('💳 PaymentService: Creating payment intent:', data);
+
+    const response = await apiClient.post<{
+      paymentId: string;
+      status: string;
+      paymentMethod: string;
+      cryptoPayment?: any;
+      walletTransaction?: any;
+      totalPaid: number;
+      remainingAmount: number;
+      paymentUrl?: string;
+      qrCodeUrl?: string;
+      message: string;
+    }>('/crypto-payments/intent', {
+      ...data,
+      paymentMethod: 'CRYPTO_ONLY'
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to create payment intent');
+    }
+
+    console.log('✅ PaymentService: Payment intent created successfully:', response.data);
+    return response.data;
+  }
+
   // Process deposit payment (legacy method for compatibility)
   async processDeposit(data: ProcessPaymentRequest): Promise<{
     paymentIntent: PaymentIntent;

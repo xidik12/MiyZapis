@@ -89,21 +89,42 @@ export class BookingService {
     return response.data;
   }
 
+  // Create booking after payment is confirmed (payment-first approach)
+  async createBookingWithPayment(data: CreateBookingRequest & { paymentId: string }): Promise<{ booking: Booking }> {
+    console.log('📤 BookingService: Creating booking with confirmed payment:', data);
+
+    try {
+      const response = await apiClient.post<{ booking: Booking }>('/bookings/with-payment', data);
+      console.log('📦 BookingService: Create booking with payment response:', response);
+
+      if (!response.success || !response.data) {
+        console.error('❌ BookingService: Failed to create booking with payment:', response.error);
+        throw new Error(response.error?.message || 'Failed to create booking');
+      }
+
+      console.log('✅ BookingService: Booking created with payment successfully');
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ BookingService: Booking with payment creation failed:', error);
+      throw error;
+    }
+  }
+
   // Complete booking with payment confirmation
-  async completeBookingWithPayment(bookingId: string, data: { 
-    paymentConfirmed: boolean; 
-    completionNotes?: string; 
-    specialistNotes?: string; 
+  async completeBookingWithPayment(bookingId: string, data: {
+    paymentConfirmed: boolean;
+    completionNotes?: string;
+    specialistNotes?: string;
   }): Promise<Booking> {
     console.log('📤 BookingService: Completing booking with payment:', bookingId, data);
     const response = await apiClient.post<Booking>(`/bookings/${bookingId}/complete`, data);
     console.log('📦 BookingService: Complete booking response:', response);
-    
+
     if (!response.success || !response.data) {
       console.error('❌ BookingService: Failed to complete booking:', response.error);
       throw new Error(response.error?.message || 'Failed to complete booking');
     }
-    
+
     console.log('✅ BookingService: Booking completed successfully');
     return response.data;
   }

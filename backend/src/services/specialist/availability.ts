@@ -534,24 +534,46 @@ export class AvailabilityService {
     endDateTime: Date
   ): Promise<boolean> {
     try {
-      // Check existing bookings
+      // Get specialist user ID
+      const specialist = await prisma.specialist.findUnique({
+        where: { id: specialistId },
+        select: { userId: true },
+      });
+
+      if (!specialist) {
+        return false;
+      }
+
+      // Check existing bookings with proper overlap detection
       const conflictingBookings = await prisma.booking.findMany({
         where: {
-          specialistId: (await prisma.specialist.findUnique({
-            where: { id: specialistId },
-            select: { userId: true },
-          }))?.userId,
-          scheduledAt: {
-            gte: startDateTime,
-            lt: endDateTime,
-          },
+          specialistId: specialist.userId,
           status: {
             in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'],
           },
+          // Use a broader range to check for overlaps
+          scheduledAt: {
+            gte: new Date(startDateTime.getTime() - (24 * 60 * 60 * 1000)), // 24 hours before
+            lte: new Date(endDateTime.getTime() + (24 * 60 * 60 * 1000)), // 24 hours after
+          }
+        },
+        select: {
+          id: true,
+          scheduledAt: true,
+          duration: true,
         },
       });
 
-      if (conflictingBookings.length > 0) {
+      // Check for time overlap with proper logic
+      const hasConflict = conflictingBookings.some(booking => {
+        const existingStart = new Date(booking.scheduledAt);
+        const existingEnd = new Date(existingStart.getTime() + (booking.duration * 60 * 1000));
+
+        // Two time ranges overlap if: start1 < end2 && start2 < end1
+        return startDateTime < existingEnd && existingStart < endDateTime;
+      });
+
+      if (hasConflict) {
         return false;
       }
 
@@ -649,17 +671,18 @@ export class AvailabilityService {
       const slotEnd = new Date(currentTime.getTime() + slotDuration * 60 * 1000);
       
       // Check if slot conflicts with unavailable blocks
-      const isBlocked = availabilityBlocks.some(block => 
+      const isBlocked = availabilityBlocks.some(block =>
         !block.isAvailable &&
-        block.startDateTime <= slotEnd &&
-        block.endDateTime >= currentTime
+        currentTime < block.endDateTime &&
+        block.startDateTime < slotEnd
       );
 
-      // Check if slot has a booking
+      // Check if slot has a booking with proper overlap detection
       const booking = bookings.find(b => {
         const bookingStart = new Date(b.scheduledAt);
         const bookingEnd = new Date(bookingStart.getTime() + b.duration * 60 * 1000);
-        return bookingStart <= slotEnd && bookingEnd >= currentTime;
+        // Two time ranges overlap if: start1 < end2 && start2 < end1
+        return currentTime < bookingEnd && bookingStart < slotEnd;
       });
 
       slots.push({
