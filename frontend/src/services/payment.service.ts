@@ -36,7 +36,9 @@ export class PaymentService {
       finalAmount: number;
       usedWalletAmount: number;
     }>(`/crypto-payments/bookings/${data.bookingId}/deposit`, {
-      useWalletFirst: data.useWalletFirst
+      bookingId: data.bookingId,
+      useWalletFirst: data.useWalletFirst,
+      paymentMethod: 'CRYPTO_ONLY'
     });
 
     if (!response.success || !response.data) {

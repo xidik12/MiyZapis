@@ -1,5 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 import { getAuthToken } from './api';
+import { environment } from '@/config/environment';
 import {
   BookingSocketEvent,
   NotificationSocketEvent,
@@ -31,7 +32,7 @@ class SocketService {
     }
 
     try {
-      this.socket = io(import.meta.env.VITE_WS_URL || 'ws://localhost:8000', {
+      this.socket = io(environment.WS_URL, {
         auth: {
           token
         },

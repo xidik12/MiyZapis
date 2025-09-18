@@ -1,7 +1,7 @@
 import { Environment } from '../types';
 
 export const environment: Environment = {
-  API_URL: 'http://localhost:3031/api/v1', // Temporarily hardcoded for local testing
+  API_URL: import.meta.env.VITE_API_URL || 'https://miyzapis-backend-production.up.railway.app/api/v1',
   WS_URL: import.meta.env.VITE_WS_URL || 'wss://miyzapis-backend-production.up.railway.app',
   STRIPE_PUBLISHABLE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || null,
   GOOGLE_MAPS_API_KEY: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
