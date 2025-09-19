@@ -72,6 +72,7 @@ const BookingFlow: React.FC = () => {
   const [paymentOptions, setPaymentOptions] = useState<any>(null);
   const [paymentTimeoutId, setPaymentTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const [paymentTimeRemaining, setPaymentTimeRemaining] = useState<number>(0);
+  const [slotsLoading, setSlotsLoading] = useState<boolean>(false);
 
   // Cleanup timeouts on component unmount
   useEffect(() => {
@@ -250,7 +251,20 @@ const BookingFlow: React.FC = () => {
         console.log('📅 BookingFlow: Fetching available dates for specialist:', currentSpecialistId);
         const dateData = await specialistService.getAvailableDates(currentSpecialistId);
         console.log('✅ BookingFlow: Available dates received:', dateData.availableDates);
-        setAvailableDates(dateData.availableDates || []);
+        const dates = dateData.availableDates || [];
+        setAvailableDates(dates);
+
+        // Auto-select the first available date if none is selected
+        if (!selectedDate && dates.length > 0) {
+          const firstDate = new Date(dates[0].date);
+          console.log('📅 BookingFlow: Auto-selecting first available date:', firstDate);
+          setSelectedDate(firstDate);
+
+          // Show a subtle notification about auto-selection
+          setTimeout(() => {
+            toast.info(`Auto-selected ${firstDate.toLocaleDateString()} - earliest available date`);
+          }, 1000);
+        }
       } catch (error) {
         console.error('❌ BookingFlow: Error fetching available dates:', error);
         setAvailableDates([]);
@@ -261,8 +275,12 @@ const BookingFlow: React.FC = () => {
 
     // Subscribe to availability updates (if backend emits)
     const sid = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
-    if (sid) {
-      try { socketService.subscribeToAvailability(sid); } catch {}
+    if (sid && socketService.isSocketConnected()) {
+      try {
+        socketService.subscribeToAvailability(sid);
+      } catch (error) {
+        console.warn('Failed to subscribe to availability updates:', error);
+      }
     }
     const onAvail = (data: any) => {
       const sidData = data?.specialistId || data?.id;
@@ -277,8 +295,12 @@ const BookingFlow: React.FC = () => {
     socketService.on('availability:updated', onAvail as any);
     return () => {
       socketService.off('availability:updated', onAvail as any);
-      if (sid) {
-        try { socketService.unsubscribeFromAvailability(sid); } catch {}
+      if (sid && socketService.isSocketConnected()) {
+        try {
+          socketService.unsubscribeFromAvailability(sid);
+        } catch (error) {
+          console.warn('Failed to unsubscribe from availability updates:', error);
+        }
       }
     };
   }, [specialist, service, specialistId]);
@@ -290,9 +312,11 @@ const BookingFlow: React.FC = () => {
       
       if (!currentSpecialistId || !selectedDate) {
         console.log('🔍 BookingFlow: Cannot fetch slots - specialistId:', currentSpecialistId, 'selectedDate:', selectedDate);
+        setSlotsLoading(false);
         return;
       }
 
+      setSlotsLoading(true);
       try {
         console.log('📅 BookingFlow: Fetching available slots for specialist:', currentSpecialistId, 'date:', selectedDate.toISOString().split('T')[0]);
         const dateStr = selectedDate.toISOString().split('T')[0];
@@ -310,6 +334,8 @@ const BookingFlow: React.FC = () => {
         // Don't show any slots if there's an error - better to show empty than incorrect availability
         setAvailableSlots([]);
         toast.error(t('booking.loadSlotsError') || 'Unable to load available time slots. Please try again.');
+      } finally {
+        setSlotsLoading(false);
       }
     };
 
@@ -500,7 +526,12 @@ const BookingFlow: React.FC = () => {
           }
         };
 
-        socketService.on('payment:completed', handlePaymentCompleted);
+        // Only set up socket listener if connected
+        if (socketService.isSocketConnected()) {
+          socketService.on('payment:completed', handlePaymentCompleted);
+        } else {
+          console.warn('Socket not connected, payment completion will rely on polling or manual refresh');
+        }
       }
 
       // Step 3: Handle payment result
