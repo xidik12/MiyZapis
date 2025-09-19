@@ -147,8 +147,11 @@ export class LoyaltyService {
           totalTransactions: 0
         }
       };
-    } catch (error) {
-      console.warn('Failed to fetch loyalty profile, using defaults:', error);
+    } catch (error: any) {
+      // Silently handle 404 errors as they're expected for new users or when backend is updating
+      if (error?.response?.status !== 404) {
+        console.warn('Failed to fetch loyalty profile, using defaults:', error);
+      }
       return this.getDefaultLoyaltyProfile();
     }
   }
@@ -175,14 +178,17 @@ export class LoyaltyService {
   async getLoyaltyStats(): Promise<LoyaltyStats> {
     try {
       const response = await apiClient.get<LoyaltyStats>('/loyalty/stats');
-      
+
       if (!response.success || !response.data) {
         return this.getDefaultLoyaltyStats();
       }
-      
+
       return response.data;
-    } catch (error) {
-      console.warn('Failed to fetch loyalty stats, using defaults:', error);
+    } catch (error: any) {
+      // Silently handle 404 errors as they're expected for new users or when backend is updating
+      if (error?.response?.status !== 404) {
+        console.warn('Failed to fetch loyalty stats, using defaults:', error);
+      }
       return this.getDefaultLoyaltyStats();
     }
   }

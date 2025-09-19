@@ -147,10 +147,15 @@ api.interceptors.response.use(
       const metadata = (originalRequest as any)?.metadata;
       const responseTime = metadata ? Date.now() - metadata.startTime : 0;
 
-      console.group(`❌ [API ERROR] ${metadata?.requestId || 'unknown'}`);
-      console.error(`Method: ${originalRequest?.method?.toUpperCase()}`);
-      console.error(`URL: ${originalRequest?.url}`);
-      console.error(`Response Time: ${responseTime}ms`);
+      // Don't log 404 errors for loyalty endpoints as they're expected for new users
+      const isExpectedError = originalRequest?.url?.includes('/loyalty/') &&
+                             error.response?.status === 404;
+
+      if (!isExpectedError) {
+        console.group(`❌ [API ERROR] ${metadata?.requestId || 'unknown'}`);
+        console.error(`Method: ${originalRequest?.method?.toUpperCase()}`);
+        console.error(`URL: ${originalRequest?.url}`);
+        console.error(`Response Time: ${responseTime}ms`);
 
       if (error.response) {
         console.error(`Status: ${error.response.status} ${error.response.statusText}`);
@@ -173,7 +178,8 @@ api.interceptors.response.use(
         console.error(`Request Setup Error:`, error.message);
       }
 
-      console.groupEnd();
+        console.groupEnd();
+      }
     }
 
     // Handle 401 Unauthorized - attempt token refresh
