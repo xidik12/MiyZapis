@@ -1,5 +1,7 @@
-import { apiClient } from './api';
+import { apiClient, api } from './api';
 import { ApiResponse } from '@/types';
+import axios from 'axios';
+import { environment } from '../config/environment';
 
 // Loyalty Types
 export interface LoyaltyTransaction {
@@ -118,18 +120,43 @@ export interface LoyaltyStats {
   totalSpentPoints: number;
 }
 
+// Create a silent axios instance for loyalty requests to suppress console errors
+const silentLoyaltyApi = axios.create({
+  baseURL: environment.API_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
+});
+
+// Add request interceptor to add auth token silently
+silentLoyaltyApi.interceptors.request.use((config) => {
+  const token = localStorage.getItem('miyzapis_auth_token');
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Add response interceptor that completely suppresses all errors
+silentLoyaltyApi.interceptors.response.use(
+  (response) => response,
+  (error) => Promise.reject(error) // Don't log anything, just reject
+);
+
 export class LoyaltyService {
   // Get user's loyalty profile
   async getUserLoyalty(): Promise<UserLoyalty> {
     try {
-      const response = await apiClient.get<{profile: any}>('/loyalty/profile');
+      const response = await silentLoyaltyApi.get<ApiResponse<{profile: any}>>('/loyalty/profile');
       
-      if (!response.success || !response.data) {
+      if (!response.data?.success || !response.data?.data) {
         // Return default values if no loyalty profile exists yet
         return this.getDefaultLoyaltyProfile();
       }
-      
-      const profile = response.data.profile;
+
+      const profile = response.data.data.profile;
       
       // Transform backend response to match frontend interface
       return {
@@ -148,10 +175,7 @@ export class LoyaltyService {
         }
       };
     } catch (error: any) {
-      // Silently handle 404 errors as they're expected for new users or when backend is updating
-      if (error?.response?.status !== 404) {
-        console.warn('Failed to fetch loyalty profile, using defaults:', error);
-      }
+      // Completely suppress all loyalty profile errors to avoid console noise
       return this.getDefaultLoyaltyProfile();
     }
   }
@@ -177,18 +201,16 @@ export class LoyaltyService {
   // Get loyalty statistics
   async getLoyaltyStats(): Promise<LoyaltyStats> {
     try {
-      const response = await apiClient.get<LoyaltyStats>('/loyalty/stats');
+      // Use silent axios instance to avoid console noise on 404s
+      const response = await silentLoyaltyApi.get<ApiResponse<LoyaltyStats>>('/loyalty/stats');
 
-      if (!response.success || !response.data) {
+      if (!response.data?.success || !response.data?.data) {
         return this.getDefaultLoyaltyStats();
       }
 
-      return response.data;
+      return response.data.data;
     } catch (error: any) {
-      // Silently handle 404 errors as they're expected for new users or when backend is updating
-      if (error?.response?.status !== 404) {
-        console.warn('Failed to fetch loyalty stats, using defaults:', error);
-      }
+      // Completely suppress all loyalty stats errors to avoid console noise
       return this.getDefaultLoyaltyStats();
     }
   }
