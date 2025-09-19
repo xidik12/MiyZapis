@@ -40,31 +40,44 @@ router.post('/init', authenticateToken, async (req: Request, res: Response) => {
       );
     }
 
-    // Initialize loyalty data if needed
-    const loyaltyStats = await LoyaltyService.getUserLoyaltyStats(userId);
-    if (!loyaltyStats) {
-      // User exists but no loyalty data - this is normal for new users
-      // Return default values
-      const defaultProfile = {
-        totalPoints: user.loyaltyPoints || 0,
-        lifetimePoints: user.loyaltyPoints || 0,
-        tier: 'Bronze',
-        badges: [],
-        nextTier: 'Silver',
-        progressToNext: 0,
-        availableDiscounts: [],
-        stats: {
-          totalBookings: 0,
-          totalReviews: 0,
-          successfulReferrals: 0,
-          totalTransactions: 0
-        }
-      };
+    // Always return user's actual loyalty points from the user table, even if no detailed stats exist
+    const defaultProfile = {
+      currentPoints: user.loyaltyPoints || 0,
+      lifetimePoints: user.loyaltyPoints || 0,
+      tier: user.loyaltyPoints >= 2000 ? 'Platinum' :
+            user.loyaltyPoints >= 1000 ? 'Gold' :
+            user.loyaltyPoints >= 500 ? 'Silver' : 'Bronze',
+      badges: [],
+      nextTier: user.loyaltyPoints >= 2000 ? null :
+                user.loyaltyPoints >= 1000 ? 'Platinum' :
+                user.loyaltyPoints >= 500 ? 'Gold' : 'Silver',
+      progressToNext: user.loyaltyPoints >= 2000 ? 100 :
+                      user.loyaltyPoints >= 1000 ? (user.loyaltyPoints - 1000) / 1000 * 100 :
+                      user.loyaltyPoints >= 500 ? (user.loyaltyPoints - 500) / 500 * 100 :
+                      user.loyaltyPoints / 500 * 100,
+      availableDiscounts: [],
+      stats: {
+        totalBookings: 0,
+        totalReviews: 0,
+        successfulReferrals: 0,
+        totalTransactions: 0
+      }
+    };
 
-      return res.json(createSuccessResponse({ profile: defaultProfile }));
+    // Try to get detailed loyalty stats
+    const loyaltyStats = await LoyaltyService.getUserLoyaltyStats(userId);
+    if (loyaltyStats) {
+      // If we have detailed stats, merge them with the user's points
+      return res.json(createSuccessResponse({
+        profile: {
+          ...loyaltyStats,
+          currentPoints: user.loyaltyPoints || 0,
+          lifetimePoints: user.loyaltyPoints || 0,
+        }
+      }));
     }
 
-    return res.json(createSuccessResponse({ profile: loyaltyStats }));
+    return res.json(createSuccessResponse({ profile: defaultProfile }));
   } catch (error) {
     logger.error('Error initializing user loyalty:', {
       error: error instanceof Error ? error.message : String(error),
@@ -111,10 +124,10 @@ router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
       );
     }
 
-    // Get loyalty stats or return defaults for new users
+    // Get loyalty stats or return defaults with actual points for new users
     const baseStats = await LoyaltyService.getUserLoyaltyStats(userId);
     if (!baseStats) {
-      // Return default stats for new users
+      // Return default stats for new users but with their actual loyalty points
       const defaultStats = {
         totalPoints: user.loyaltyPoints || 0,
         totalTransactions: 0,
@@ -123,7 +136,10 @@ router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
         totalServices: 0,
         currentTier: null,
         nextTier: null,
-        pointsToNextTier: 0,
+        pointsToNextTier: user.loyaltyPoints >= 2000 ? 0 :
+                          user.loyaltyPoints >= 1000 ? 2000 - user.loyaltyPoints :
+                          user.loyaltyPoints >= 500 ? 1000 - user.loyaltyPoints :
+                          500 - user.loyaltyPoints,
         monthlyPoints: 0,
         yearlyPoints: 0,
         totalSpentPoints: 0
@@ -131,6 +147,9 @@ router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
 
       return res.json(createSuccessResponse(defaultStats));
     }
+
+    // Ensure the stats include the actual points from the user table
+    baseStats.totalPoints = user.loyaltyPoints || 0;
 
     // Compute monthly and yearly earned points (sum of positive points)
     const now = new Date();
@@ -274,14 +293,22 @@ router.get('/profile', authenticateToken, async (req: Request, res: Response) =>
 
     const stats = await Promise.race([statsPromise, timeoutPromise]) as any;
     if (!stats) {
-      // User exists but has no loyalty data yet - create default profile
-      logger.info('Creating default loyalty profile for user:', userId);
+      // Get user's actual loyalty points from the user table
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { loyaltyPoints: true }
+      });
 
-      // Return default loyalty profile for new users
+      const userPoints = user?.loyaltyPoints || 0;
+
+      // User exists but has no loyalty data yet - create default profile with actual points
+      logger.info('Creating default loyalty profile for user:', userId, 'with points:', userPoints);
+
+      // Return default loyalty profile for new users with their actual points
       return res.json(createSuccessResponse({
         profile: {
-          currentPoints: 0,
-          totalEarned: 0,
+          currentPoints: userPoints,
+          totalEarned: userPoints,
           totalRedeemed: 0,
           totalTransactions: 0,
           totalBookings: 0,
