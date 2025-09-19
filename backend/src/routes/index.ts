@@ -22,6 +22,7 @@ import loyaltyRoutes from './loyalty';
 import adminLoyaltyRoutes from './admin-loyalty';
 import userLoyaltyFixRoutes from './user-loyalty-fix';
 import rewardsRoutes from './rewards';
+import referralRoutes from './referral';
 import availabilityRoutes from './availability';
 import analyticsEnhancedRoutes from './analytics-enhanced';
 import telegramEnhancedRoutes from './telegram-enhanced';

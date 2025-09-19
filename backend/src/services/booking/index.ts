@@ -5,6 +5,8 @@ import { emailService as templatedEmailService } from '@/services/email/enhanced
 import { resolveLanguage } from '@/utils/language';
 import LoyaltyService from '@/services/loyalty';
 import { specialistSubscriptionService } from '@/services/payment/subscription.service';
+import { ReferralService } from '@/services/referral';
+import { ReferralProcessingService } from '@/services/referral/processing.service';
 import { Booking, User, Service, Specialist } from '@prisma/client';
 
 interface CreateBookingData {
@@ -442,6 +444,53 @@ export class BookingService {
         return createdBooking;
       });
 
+      // Track referral activity for first booking (if applicable)
+      try {
+        // Check if this is the customer's first booking
+        const customerBookingCount = await prisma.booking.count({
+          where: {
+            customerId: data.customerId,
+            status: { not: 'CANCELLED' }
+          }
+        });
+
+        if (customerBookingCount === 1) {
+          // This is the first booking - check for any pending referrals for this customer
+          const pendingReferrals = await prisma.loyaltyReferral.findMany({
+            where: {
+              referredId: data.customerId,
+              status: 'PENDING'
+            }
+          });
+
+          // Update referrals with first booking ID
+          if (pendingReferrals.length > 0) {
+            await prisma.loyaltyReferral.updateMany({
+              where: {
+                referredId: data.customerId,
+                status: 'PENDING'
+              },
+              data: {
+                firstBookingId: booking.id
+              }
+            });
+
+            logger.info('Updated referrals with first booking ID', {
+              customerId: data.customerId,
+              bookingId: booking.id,
+              referralCount: pendingReferrals.length
+            });
+          }
+        }
+      } catch (error) {
+        // Don't fail booking creation if referral tracking fails
+        logger.error('Failed to track referral activity for booking', {
+          bookingId: booking.id,
+          customerId: data.customerId,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+
       // Send appropriate notifications based on auto-booking setting
       try {
         if (service.specialist.autoBooking) {
@@ -774,6 +823,17 @@ export class BookingService {
       if (data.status === 'COMPLETED') {
         // Use centralized loyalty service for consistent point calculation
         await LoyaltyService.processBookingCompletion(booking.id);
+
+        // Process referral completion (if this was a first booking)
+        try {
+          await ReferralProcessingService.processBookingCompletion(booking.id);
+        } catch (error) {
+          // Don't fail booking completion if referral processing fails
+          logger.error('Failed to process referral completion', {
+            bookingId: booking.id,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
 
         // Process specialist subscription fees (PAY_PER_USE or MONTHLY_SUBSCRIPTION)
         try {

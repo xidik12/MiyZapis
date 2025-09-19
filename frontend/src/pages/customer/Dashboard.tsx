@@ -140,11 +140,14 @@ const CustomerDashboard: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch customer's bookings and loyalty data
-        const [upcomingRes, completedRes, allRes, favoritesCount, myReviews, favSpecs, unread, loyaltyProfile, loyaltyStatsData] = await Promise.all([
+        // Fetch essential data first, then optional data with timeout protection
+        const essentialPromise = Promise.allSettled([
           bookingService.getBookings({ limit: 10, status: 'confirmed,pending,inProgress' as any }, 'customer'),
           bookingService.getBookings({ limit: 5, status: 'COMPLETED' as any }, 'customer'),
           bookingService.getBookings({ limit: 1 }, 'customer'),
+        ]);
+
+        const optionalPromise = Promise.allSettled([
           favoritesService.getFavoritesCount().catch(() => ({ specialists: 0, services: 0 })),
           reviewsService.getMyReviews(1, 100).catch(() => ({ reviews: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 100, hasNext: false, hasPrev: false } } as any)),
           favoritesService.getFavoriteSpecialists(1, 6).catch(() => ({ specialists: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 6, hasNext: false, hasPrev: false } } as any)),
@@ -152,6 +155,39 @@ const CustomerDashboard: React.FC = () => {
           loyaltyService.getUserLoyalty().catch(() => null),
           loyaltyService.getLoyaltyStats().catch(() => null),
         ]);
+
+        // Wait for essential data with timeout
+        const essentialResults = await Promise.race([
+          essentialPromise,
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Essential data timeout')), 10000))
+        ]);
+
+        const [upcomingResult, completedResult, allResult] = essentialResults;
+        const upcomingRes = upcomingResult.status === 'fulfilled' ? upcomingResult.value : { bookings: [] };
+        const completedRes = completedResult.status === 'fulfilled' ? completedResult.value : { bookings: [] };
+        const allRes = allResult.status === 'fulfilled' ? allResult.value : { pagination: { total: 0 } };
+
+        // Wait for optional data with timeout (don't fail if this times out)
+        const optionalResults = await Promise.race([
+          optionalPromise,
+          new Promise(resolve => setTimeout(() => resolve([
+            { status: 'rejected' as const, reason: 'timeout' },
+            { status: 'rejected' as const, reason: 'timeout' },
+            { status: 'rejected' as const, reason: 'timeout' },
+            { status: 'rejected' as const, reason: 'timeout' },
+            { status: 'rejected' as const, reason: 'timeout' },
+            { status: 'rejected' as const, reason: 'timeout' },
+          ]), 5000))
+        ]) as PromiseSettledResult<any>[];
+
+        const [favoritesCountResult, myReviewsResult, favSpecsResult, unreadResult, loyaltyProfileResult, loyaltyStatsResult] = optionalResults;
+
+        const favoritesCount = favoritesCountResult.status === 'fulfilled' ? favoritesCountResult.value : { specialists: 0, services: 0 };
+        const myReviews = myReviewsResult.status === 'fulfilled' ? myReviewsResult.value : { reviews: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 100, hasNext: false, hasPrev: false } };
+        const favSpecs = favSpecsResult.status === 'fulfilled' ? favSpecsResult.value : { specialists: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 6, hasNext: false, hasPrev: false } };
+        const unread = unreadResult.status === 'fulfilled' ? unreadResult.value : { count: 0 };
+        const loyaltyProfile = loyaltyProfileResult.status === 'fulfilled' ? loyaltyProfileResult.value : null;
+        const loyaltyStatsData = loyaltyStatsResult.status === 'fulfilled' ? loyaltyStatsResult.value : null;
 
         // Set loyalty data
         setLoyaltyData(loyaltyProfile);

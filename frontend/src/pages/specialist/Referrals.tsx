@@ -1,14 +1,14 @@
 import React from 'react';
 import { ReferralDashboard } from '../../components/referral';
 
-const CustomerReferrals: React.FC = () => {
+const SpecialistReferrals: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ReferralDashboard userType="customer" />
+        <ReferralDashboard userType="specialist" />
       </div>
     </div>
   );
 };
 
-export default CustomerReferrals;
+export default SpecialistReferrals;

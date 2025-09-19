@@ -587,4 +587,128 @@ export class ReferralService {
       throw error;
     }
   }
+
+  // Get referral analytics for a user
+  static async getReferralAnalytics(userId: string) {
+    try {
+      const [totalReferrals, completedReferrals, pendingReferrals, expiredReferrals, totalRewards] = await Promise.all([
+        // Total referrals created
+        prisma.loyaltyReferral.count({
+          where: { referrerId: userId }
+        }),
+
+        // Completed referrals
+        prisma.loyaltyReferral.count({
+          where: { referrerId: userId, status: 'COMPLETED' }
+        }),
+
+        // Pending referrals
+        prisma.loyaltyReferral.count({
+          where: { referrerId: userId, status: 'PENDING' }
+        }),
+
+        // Expired referrals
+        prisma.loyaltyReferral.count({
+          where: { referrerId: userId, status: 'EXPIRED' }
+        }),
+
+        // Total rewards earned
+        prisma.loyaltyReferral.aggregate({
+          where: {
+            referrerId: userId,
+            status: 'COMPLETED',
+            pointsAwarded: true
+          },
+          _sum: {
+            referrerPoints: true
+          }
+        })
+      ]);
+
+      // Get referrals by type
+      const referralsByType = await prisma.loyaltyReferral.groupBy({
+        by: ['referralType'],
+        where: { referrerId: userId },
+        _count: {
+          id: true
+        }
+      });
+
+      // Get conversion rates
+      const conversionRate = totalReferrals > 0 ? (completedReferrals / totalReferrals) * 100 : 0;
+
+      // Get recent activity (last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const recentActivity = await prisma.loyaltyReferral.findMany({
+        where: {
+          referrerId: userId,
+          createdAt: { gte: thirtyDaysAgo }
+        },
+        include: {
+          referred: {
+            select: {
+              firstName: true,
+              lastName: true,
+              userType: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 10
+      });
+
+      // Get top performing referral types
+      const topPerformingTypes = await prisma.loyaltyReferral.groupBy({
+        by: ['referralType'],
+        where: {
+          referrerId: userId,
+          status: 'COMPLETED'
+        },
+        _count: {
+          id: true
+        },
+        orderBy: {
+          _count: {
+            id: 'desc'
+          }
+        }
+      });
+
+      return {
+        overview: {
+          totalReferrals,
+          completedReferrals,
+          pendingReferrals,
+          expiredReferrals,
+          conversionRate: Math.round(conversionRate * 100) / 100,
+          totalPointsEarned: totalRewards._sum.referrerPoints || 0
+        },
+        byType: referralsByType.reduce((acc, item) => {
+          acc[item.referralType] = item._count.id;
+          return acc;
+        }, {} as Record<string, number>),
+        topPerformingTypes: topPerformingTypes.map(item => ({
+          type: item.referralType,
+          completedCount: item._count.id
+        })),
+        recentActivity: recentActivity.map(referral => ({
+          id: referral.id,
+          referralCode: referral.referralCode,
+          referralType: referral.referralType,
+          status: referral.status,
+          createdAt: referral.createdAt,
+          completedAt: referral.completedAt,
+          referred: referral.referred ? {
+            name: `${referral.referred.firstName} ${referral.referred.lastName}`,
+            userType: referral.referred.userType
+          } : null
+        }))
+      };
+    } catch (error) {
+      logger.error('Error getting referral analytics', { error, userId });
+      throw error;
+    }
+  }
 }

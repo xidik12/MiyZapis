@@ -1092,31 +1092,6 @@ const translations: Translations = {
   'admin.status.customer': { en: 'customer', uk: 'клієнт', ru: 'клиент' },
   'admin.status.specialist': { en: 'specialist', uk: 'спеціаліст', ru: 'специалист' },
 
-  // Notifications Page Translation Keys
-  'notifications.subtitle': { en: 'Stay updated with your latest activities', uk: 'Залишайтеся в курсі останніх подій', ru: 'Будьте в курсе последних событий' },
-  'notifications.unread': { en: 'unread', uk: 'непрочитано', ru: 'непрочитано' },
-  'notifications.markAllRead': { en: 'Mark All Read', uk: 'Позначити всі як прочитані', ru: 'Отметить все как прочитанные' },
-  'notifications.markAsRead': { en: 'Mark as read', uk: 'Позначити як прочитане', ru: 'Отметить как прочитанное' },
-  'notifications.markRead': { en: 'Mark Read', uk: 'Позначити прочитаним', ru: 'Отметить прочитанным' },
-  'notifications.delete': { en: 'Delete', uk: 'Видалити', ru: 'Удалить' },
-  'notifications.noNotifications': { en: 'No notifications', uk: 'Немає сповіщень', ru: 'Нет уведомлений' },
-  'notifications.noNotificationsDescription': { en: 'You are all caught up! Check back later for new updates.', uk: 'Ви прочитали все! Перевірте пізніше для нових оновлень.', ru: 'Вы все прочитали! Проверьте позже для новых обновлений.' },
-  'notifications.error.title': { en: 'Error Loading Notifications', uk: 'Помилка завантаження сповіщень', ru: 'Ошибка загрузки уведомлений' },
-
-  // Notification Types
-  'notifications.newBooking': { en: 'New Booking', uk: 'Нове бронювання', ru: 'Новое бронирование' },
-  'notifications.paymentReceived': { en: 'Payment Received', uk: 'Отримано оплату', ru: 'Получен платеж' },
-  'notifications.newReview': { en: 'New Review', uk: 'Новий відгук', ru: 'Новый отзыв' },
-  'notifications.upcomingAppointment': { en: 'Upcoming Appointment', uk: 'Майбутня зустріч', ru: 'Предстоящая встреча' },
-  'notifications.systemUpdate': { en: 'System Update', uk: 'Оновлення системи', ru: 'Обновление системы' },
-
-  // Notification Filters
-  'notifications.filter.all': { en: 'All', uk: 'Всі', ru: 'Все' },
-  'notifications.filter.unread': { en: 'Unread', uk: 'Непрочитані', ru: 'Непрочитанные' },
-  'notifications.filter.booking': { en: 'Bookings', uk: 'Бронювання', ru: 'Бронирования' },
-  'notifications.filter.payment': { en: 'Payments', uk: 'Платежі', ru: 'Платежи' },
-  'notifications.filter.review': { en: 'Reviews', uk: 'Відгуки', ru: 'Отзывы' },
-  'notifications.filter.system': { en: 'System', uk: 'Система', ru: 'Система' },
   
   // Notification dropdown
   'notifications.title': { en: 'Notifications', uk: 'Уведомления', ru: 'Уведомления' },
@@ -1848,13 +1823,6 @@ const translations: Translations = {
   'booking.additionalNotes': { en: 'Additional notes (optional)', uk: 'Додаткові примітки (необов\'язково)', ru: 'Дополнительные заметки (необязательно)' },
   'booking.online': { en: 'Online', uk: 'Онлайн', ru: 'Онлайн' },
   'booking.offline': { en: 'Offline', uk: 'Офлайн', ru: 'Офлайн' },
-  'booking.confirmBooking': { en: 'Confirm Booking', uk: 'Підтвердити бронювання', ru: 'Подтвердить бронирование' },
-  'booking.next': { en: 'Next', uk: 'Далі', ru: 'Далее' },
-  'booking.selectService': { en: 'Select Service', uk: 'Оберіть послугу', ru: 'Выберите услугу' },
-  'booking.selectDateTime': { en: 'Select Date & Time', uk: 'Оберіть дату та час', ru: 'Выберите дату и время' },
-  'booking.bookingDetails': { en: 'Booking Details', uk: 'Деталі бронювання', ru: 'Детали бронирования' },
-  'booking.payment': { en: 'Payment', uk: 'Оплата', ru: 'Оплата' },
-  'booking.confirmation': { en: 'Confirmation', uk: 'Підтвердження', ru: 'Подтверждение' },
 
   // Booking errors
   'errors.bookingDataNotFound': { en: 'Service not found or unavailable', uk: 'Послуга не знайдена або недоступна', ru: 'Услуга не найдена или недоступна' },

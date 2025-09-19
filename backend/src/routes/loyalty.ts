@@ -41,30 +41,32 @@ router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const yearStart = new Date(now.getFullYear(), 0, 1);
 
-    // Load transactions in periods to apply provider safeguard filter
-    const [txMonth, txYear, totalSpentAgg] = await Promise.all([
-      prisma.loyaltyTransaction.findMany({ where: { userId, createdAt: { gte: monthStart } } }),
-      prisma.loyaltyTransaction.findMany({ where: { userId, createdAt: { gte: yearStart } } }),
-      prisma.loyaltyTransaction.aggregate({ _sum: { points: true }, where: { userId, type: 'REDEEMED' } })
+    // Use aggregated queries instead of loading all transactions for better performance
+    const [monthlyAgg, yearlyAgg, totalSpentAgg] = await Promise.all([
+      prisma.loyaltyTransaction.aggregate({
+        _sum: { points: true },
+        where: {
+          userId,
+          createdAt: { gte: monthStart },
+          type: 'EARN' // Only count earning transactions for monthly
+        }
+      }),
+      prisma.loyaltyTransaction.aggregate({
+        _sum: { points: true },
+        where: {
+          userId,
+          createdAt: { gte: yearStart },
+          type: 'EARN' // Only count earning transactions for yearly
+        }
+      }),
+      prisma.loyaltyTransaction.aggregate({
+        _sum: { points: true },
+        where: { userId, type: 'REDEEMED' }
+      })
     ]);
 
-    const filterTx = async (txs: any[]) => {
-      const bookingIds = txs.filter(t => t.reason === 'BOOKING_COMPLETED' && !!t.referenceId).map(t => t.referenceId as string);
-      let bookingById: Record<string, { customerId: string }> = {};
-      if (bookingIds.length > 0) {
-        const bookings = await prisma.booking.findMany({ where: { id: { in: bookingIds } }, select: { id: true, customerId: true } });
-        bookingById = bookings.reduce((acc, b) => { acc[b.id] = { customerId: b.customerId }; return acc; }, {} as any);
-      }
-      return txs.reduce((sum, t) => {
-        if (t.points > 0 && t.reason === 'BOOKING_COMPLETED' && t.referenceId) {
-          const b = bookingById[t.referenceId];
-          if (!b || b.customerId !== userId) return sum;
-        }
-        return sum + (t.points > 0 ? t.points : 0);
-      }, 0);
-    };
-
-    const [monthlyPoints, yearlyPoints] = await Promise.all([filterTx(txMonth), filterTx(txYear)]);
+    const monthlyPoints = monthlyAgg._sum.points || 0;
+    const yearlyPoints = yearlyAgg._sum.points || 0;
     const totalSpentPoints = Math.abs(totalSpentAgg._sum.points || 0); // Convert to positive number
 
     // Determine current and next tier from configured tiers and/or DB tiers
@@ -168,7 +170,13 @@ router.get('/profile', authenticateToken, async (req: Request, res: Response) =>
       );
     }
 
-    const stats = await LoyaltyService.getUserLoyaltyStats(userId);
+    // Add timeout protection for the query
+    const statsPromise = LoyaltyService.getUserLoyaltyStats(userId);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Query timeout')), 8000)
+    );
+
+    const stats = await Promise.race([statsPromise, timeoutPromise]) as any;
     if (!stats) {
       // User exists but has no loyalty data yet - create default profile
       logger.info('Creating default loyalty profile for user:', userId);

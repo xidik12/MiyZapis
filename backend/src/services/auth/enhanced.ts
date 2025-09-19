@@ -7,15 +7,16 @@ import { cacheUtils } from '@/config/redis';
 import { logger } from '@/utils/logger';
 // Use basic email service for verification emails
 import { emailService } from '@/services/email';
-import { 
-  LoginRequest, 
-  RegisterRequest, 
+import {
+  LoginRequest,
+  RegisterRequest,
   TelegramAuthRequest,
-  JwtPayload, 
+  JwtPayload,
   RefreshTokenPayload,
   ErrorCodes,
-  UserType 
+  UserType
 } from '@/types';
+import { ReferralService } from '@/services/referral';
 import { User } from '@prisma/client';
 
 interface GoogleAuthData {
@@ -225,14 +226,60 @@ export class EnhancedAuthService {
         });
       });
 
-      logger.info('User registered successfully', { 
-        userId: user.id, 
-        email: user.email
+      // Process referral if provided
+      let referralProcessed = false;
+      if ((data as any).referralCode) {
+        try {
+          // Validate and process the referral
+          const referral = await ReferralService.getReferralByCode((data as any).referralCode);
+
+          // Check if the user type matches the referral target
+          const isSpecialist = data.userType === 'SPECIALIST';
+          if ((referral.targetUserType === 'SPECIALIST' && isSpecialist) ||
+              (referral.targetUserType === 'CUSTOMER' && !isSpecialist)) {
+
+            // Process referral completion
+            await ReferralService.processReferralCompletion({
+              referralCode: (data as any).referralCode,
+              referredUserId: user.id
+            });
+
+            referralProcessed = true;
+            logger.info('Referral processed during registration', {
+              userId: user.id,
+              referralCode: (data as any).referralCode,
+              referralType: referral.referralType
+            });
+          } else {
+            logger.warn('Referral user type mismatch during registration', {
+              userId: user.id,
+              referralCode: (data as any).referralCode,
+              expectedType: referral.targetUserType,
+              actualType: data.userType
+            });
+          }
+        } catch (error) {
+          // Don't fail registration if referral processing fails
+          logger.error('Failed to process referral during registration', {
+            userId: user.id,
+            referralCode: (data as any).referralCode,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+
+      logger.info('User registered successfully', {
+        userId: user.id,
+        email: user.email,
+        referralProcessed
       });
 
       return {
-        message: 'Registration successful. Please check your email to verify your account.',
+        message: referralProcessed
+          ? 'Registration successful! Your referral bonus has been applied. Please check your email to verify your account.'
+          : 'Registration successful. Please check your email to verify your account.',
         requiresVerification: true,
+        referralProcessed,
         user: {
           id: user.id,
           email: user.email,
