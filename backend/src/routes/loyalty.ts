@@ -170,9 +170,30 @@ router.get('/profile', authenticateToken, async (req: Request, res: Response) =>
 
     const stats = await LoyaltyService.getUserLoyaltyStats(userId);
     if (!stats) {
-      return res.status(404).json(
-        createErrorResponse(ErrorCodes.NOT_FOUND, 'User not found', req.headers['x-request-id'] as string)
-      );
+      // User exists but has no loyalty data yet - create default profile
+      logger.info('Creating default loyalty profile for user:', userId);
+
+      // Return default loyalty profile for new users
+      return res.json(createSuccessResponse({
+        profile: {
+          currentPoints: 0,
+          totalEarned: 0,
+          totalRedeemed: 0,
+          totalTransactions: 0,
+          totalBookings: 0,
+          totalSpent: 0,
+          totalSaved: 0,
+          currentTier: 'BRONZE',
+          tierName: 'Bronze',
+          nextTier: 'SILVER',
+          pointsToNextTier: LOYALTY_CONFIG.TIERS.SILVER.min,
+          progressToNext: 0,
+          memberSince: new Date().toISOString(),
+          badges: [],
+          availableDiscounts: [],
+          recentActivity: []
+        }
+      }));
     }
 
     const availableDiscounts = await LoyaltyService.getAvailableDiscounts(stats.totalPoints);
