@@ -10,6 +10,77 @@ import { prisma } from '@/config/database';
 
 const router = Router();
 
+// Initialize user loyalty profile (creates if doesn't exist)
+router.post('/init', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as AuthenticatedRequest).user?.id;
+    if (!userId) {
+      return res.status(401).json(
+        createErrorResponse(
+          ErrorCodes.UNAUTHORIZED,
+          'User not authenticated',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, loyaltyPoints: true, firstName: true, lastName: true }
+    });
+
+    if (!user) {
+      return res.status(404).json(
+        createErrorResponse(
+          ErrorCodes.NOT_FOUND,
+          'User not found',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+
+    // Initialize loyalty data if needed
+    const loyaltyStats = await LoyaltyService.getUserLoyaltyStats(userId);
+    if (!loyaltyStats) {
+      // User exists but no loyalty data - this is normal for new users
+      // Return default values
+      const defaultProfile = {
+        totalPoints: user.loyaltyPoints || 0,
+        lifetimePoints: user.loyaltyPoints || 0,
+        tier: 'Bronze',
+        badges: [],
+        nextTier: 'Silver',
+        progressToNext: 0,
+        availableDiscounts: [],
+        stats: {
+          totalBookings: 0,
+          totalReviews: 0,
+          successfulReferrals: 0,
+          totalTransactions: 0
+        }
+      };
+
+      return res.json(createSuccessResponse({ profile: defaultProfile }));
+    }
+
+    return res.json(createSuccessResponse({ profile: loyaltyStats }));
+  } catch (error) {
+    logger.error('Error initializing user loyalty:', {
+      error: error instanceof Error ? error.message : String(error),
+      userId: (req as AuthenticatedRequest).user?.id
+    });
+
+    return res.status(500).json(
+      createErrorResponse(
+        ErrorCodes.INTERNAL_ERROR,
+        'Failed to initialize loyalty profile',
+        req.headers['x-request-id'] as string
+      )
+    );
+  }
+});
+
 // Get loyalty program statistics (frontend expects flat stats object)
 router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
   try {
@@ -24,9 +95,13 @@ router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
       );
     }
 
-    // Base stats
-    const baseStats = await LoyaltyService.getUserLoyaltyStats(userId);
-    if (!baseStats) {
+    // Check if user exists first
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, loyaltyPoints: true }
+    });
+
+    if (!user) {
       return res.status(404).json(
         createErrorResponse(
           ErrorCodes.NOT_FOUND,
@@ -34,6 +109,27 @@ router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
           req.headers['x-request-id'] as string
         )
       );
+    }
+
+    // Get loyalty stats or return defaults for new users
+    const baseStats = await LoyaltyService.getUserLoyaltyStats(userId);
+    if (!baseStats) {
+      // Return default stats for new users
+      const defaultStats = {
+        totalPoints: user.loyaltyPoints || 0,
+        totalTransactions: 0,
+        totalBadges: 0,
+        totalReferrals: 0,
+        totalServices: 0,
+        currentTier: null,
+        nextTier: null,
+        pointsToNextTier: 0,
+        monthlyPoints: 0,
+        yearlyPoints: 0,
+        totalSpentPoints: 0
+      };
+
+      return res.json(createSuccessResponse(defaultStats));
     }
 
     // Compute monthly and yearly earned points (sum of positive points)

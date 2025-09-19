@@ -1,7 +1,5 @@
-import { apiClient, api } from './api';
+import { apiClient } from './api';
 import { ApiResponse } from '@/types';
-import axios from 'axios';
-import { environment } from '../config/environment';
 
 // Loyalty Types
 export interface LoyaltyTransaction {
@@ -120,43 +118,35 @@ export interface LoyaltyStats {
   totalSpentPoints: number;
 }
 
-// Create a silent axios instance for loyalty requests to suppress console errors
-const silentLoyaltyApi = axios.create({
-  baseURL: environment.API_URL,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  },
-});
-
-// Add request interceptor to add auth token silently
-silentLoyaltyApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('miyzapis_auth_token');
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Add response interceptor that completely suppresses all errors
-silentLoyaltyApi.interceptors.response.use(
-  (response) => response,
-  (error) => Promise.reject(error) // Don't log anything, just reject
-);
-
 export class LoyaltyService {
-  // Get user's loyalty profile
-  async getUserLoyalty(): Promise<UserLoyalty> {
+  // Initialize user loyalty profile (handles new users)
+  async initUserLoyalty(): Promise<UserLoyalty> {
     try {
-      const response = await silentLoyaltyApi.get<ApiResponse<{profile: any}>>('/loyalty/profile');
-      
-      if (!response.data?.success || !response.data?.data) {
-        // Return default values if no loyalty profile exists yet
+      const response = await apiClient.post<{profile: any}>('/loyalty/init');
+
+      if (!response.success || !response.data) {
         return this.getDefaultLoyaltyProfile();
       }
 
-      const profile = response.data.data.profile;
+      return response.data.profile;
+    } catch (error: any) {
+      console.warn('Failed to initialize loyalty profile:', error);
+      return this.getDefaultLoyaltyProfile();
+    }
+  }
+
+  // Get user's loyalty profile
+  async getUserLoyalty(): Promise<UserLoyalty> {
+    try {
+      // Try to get the profile first
+      const response = await apiClient.get<{profile: any}>('/loyalty/profile');
+
+      if (!response.success || !response.data) {
+        // If no profile exists, try to initialize it
+        return await this.initUserLoyalty();
+      }
+
+      const profile = response.data.profile;
       
       // Transform backend response to match frontend interface
       return {
@@ -175,8 +165,19 @@ export class LoyaltyService {
         }
       };
     } catch (error: any) {
-      // Completely suppress all loyalty profile errors to avoid console noise
-      return this.getDefaultLoyaltyProfile();
+      // If getting profile fails, try to initialize for new users
+      if (error?.response?.status === 401) {
+        console.warn('Loyalty profile authentication failed - user may need to re-login');
+        return this.getDefaultLoyaltyProfile();
+      }
+
+      try {
+        // Try initialization for new users
+        return await this.initUserLoyalty();
+      } catch (initError: any) {
+        console.warn('Failed to initialize loyalty profile:', initError);
+        return this.getDefaultLoyaltyProfile();
+      }
     }
   }
 
@@ -201,16 +202,18 @@ export class LoyaltyService {
   // Get loyalty statistics
   async getLoyaltyStats(): Promise<LoyaltyStats> {
     try {
-      // Use silent axios instance to avoid console noise on 404s
-      const response = await silentLoyaltyApi.get<ApiResponse<LoyaltyStats>>('/loyalty/stats');
+      const response = await apiClient.get<LoyaltyStats>('/loyalty/stats');
 
-      if (!response.data?.success || !response.data?.data) {
+      if (!response.success || !response.data) {
         return this.getDefaultLoyaltyStats();
       }
 
-      return response.data.data;
+      return response.data;
     } catch (error: any) {
-      // Completely suppress all loyalty stats errors to avoid console noise
+      // Check for authentication errors specifically
+      if (error?.response?.status === 401) {
+        console.warn('Loyalty stats authentication failed - user may need to re-login');
+      }
       return this.getDefaultLoyaltyStats();
     }
   }
