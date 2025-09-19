@@ -128,7 +128,24 @@ export class LoyaltyService {
         return this.getDefaultLoyaltyProfile();
       }
 
-      return response.data.profile;
+      const profile = response.data.profile;
+
+      // Transform backend response to match frontend interface
+      return {
+        currentPoints: profile.currentPoints || profile.totalPoints || 0,
+        lifetimePoints: profile.totalEarned || profile.currentPoints || profile.totalPoints || 0,
+        tier: profile.tier || profile.currentTier || 'Bronze',
+        badges: profile.badges || [],
+        nextTier: profile.nextTier,
+        progressToNext: profile.progressToNext || 0,
+        availableDiscounts: profile.availableDiscounts || [],
+        stats: profile.stats || {
+          totalBookings: 0,
+          totalReviews: 0,
+          successfulReferrals: 0,
+          totalTransactions: 0
+        }
+      };
     } catch (error: any) {
       console.warn('Failed to initialize loyalty profile:', error);
       return this.getDefaultLoyaltyProfile();
@@ -150,8 +167,8 @@ export class LoyaltyService {
       
       // Transform backend response to match frontend interface
       return {
-        currentPoints: profile.totalPoints || 0,
-        lifetimePoints: profile.totalPoints || 0, // Assuming current points is also lifetime for now
+        currentPoints: profile.currentPoints || profile.totalPoints || 0,
+        lifetimePoints: profile.totalEarned || profile.currentPoints || profile.totalPoints || 0,
         tier: profile.tier || 'Bronze',
         badges: profile.badges || [],
         nextTier: profile.nextTier,
