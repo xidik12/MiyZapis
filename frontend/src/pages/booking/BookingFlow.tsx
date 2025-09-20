@@ -343,6 +343,15 @@ const BookingFlow: React.FC = () => {
   }, [specialist, service, specialistId, selectedDate]);
 
   const handleNextStep = () => {
+    // Security check: Prevent bypassing payment step
+    if (currentStep === 3) {
+      // Step 3 is payment - user cannot proceed without completing payment
+      if (!paymentResult || (paymentResult.requiresPayment && paymentResult.status !== 'COMPLETED')) {
+        toast.error('Please complete payment before proceeding to confirmation.');
+        return;
+      }
+    }
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -1584,7 +1593,8 @@ const BookingFlow: React.FC = () => {
               onClick={handleNextStep}
               disabled={
                 (currentStep === 1 && (!selectedDate || !selectedTime)) ||
-                (currentStep === 2 && !service)
+                (currentStep === 2 && !service) ||
+                (currentStep === 3 && (!paymentResult || (paymentResult.requiresPayment && paymentResult.status !== 'COMPLETED')))
               }
               className="flex items-center px-4 sm:px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0"
             >
