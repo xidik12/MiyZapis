@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useCurrency } from '../../contexts/CurrencyContext';
 import { RootState, AppDispatch } from '../../store';
 import { fetchBookings } from '../../store/slices/bookingSlice';
 import { Booking } from '../../types';
