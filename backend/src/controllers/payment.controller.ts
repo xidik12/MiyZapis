@@ -110,24 +110,24 @@ export class PaymentController {
       const depositConfig = await bookingPaymentService.getDepositConfiguration();
 
       // Create payment intent without creating booking first
-      // First check if wallet payment can cover the deposit
+      // First check if wallet balance can cover the deposit
       let walletResult = null;
       if (validatedData.useWalletFirst) {
         try {
-          walletResult = await walletService.processWalletPayment({
-            userId,
-            amount: depositConfig.amountUSD,
-            currency: 'USD',
-            description: `Booking deposit for ${service.title}`,
-            metadata: {
-              serviceId: validatedData.serviceId,
-              scheduledAt: validatedData.scheduledAt,
-              duration: validatedData.duration,
-              paymentFor: 'booking_deposit'
-            }
-          });
+          const walletBalance = await walletService.getBalance(userId);
 
-          if (walletResult.success) {
+          if (walletBalance.balance >= depositConfig.amountUSD) {
+            // Wallet has sufficient balance - for payment-first flow, we'll indicate this
+            // but not actually debit until booking is created
+            walletResult = {
+              success: true,
+              transactionId: `wallet-${Date.now()}`,
+              amount: depositConfig.amountUSD,
+              availableBalance: walletBalance.balance
+            };
+          }
+
+          if (walletResult?.success) {
             // If wallet payment successful, return wallet payment result
             const result = {
               paymentId: walletResult.transactionId,
@@ -136,8 +136,18 @@ export class PaymentController {
               walletTransaction: walletResult,
               totalPaid: depositConfig.amountUSD,
               remainingAmount: 0,
+              finalAmount: depositConfig.amountUSD,
+              requiresPayment: false,
               message: 'Payment completed using wallet balance'
             };
+
+            logger.info('Payment intent completed with wallet', {
+              paymentId: walletResult.transactionId,
+              amount: depositConfig.amountUSD,
+              userId,
+              serviceId: validatedData.serviceId,
+              walletBalanceUsed: walletResult.amount || depositConfig.amountUSD,
+            });
 
             res.status(200).json({
               success: true,
@@ -154,11 +164,11 @@ export class PaymentController {
       }
 
       // If wallet payment failed or not requested, create crypto payment
-      const cryptoPayment = await coinbaseCommerceService.createCharge({
+      const charge = await coinbaseCommerceService.createCharge({
         amount: depositConfig.amountUSD,
         currency: 'USD',
-        name: `${service.title} - Booking Deposit`,
-        description: `Booking deposit for ${service.title}`,
+        name: `${service.name} - Booking Deposit`,
+        description: `Booking deposit for ${service.name}`,
         metadata: {
           serviceId: validatedData.serviceId,
           scheduledAt: validatedData.scheduledAt,
@@ -170,17 +180,58 @@ export class PaymentController {
         cancelUrl: validatedData.cancelUrl,
       });
 
+      // Create crypto payment record in database
+      const cryptoPayment = await prisma.cryptoPayment.create({
+        data: {
+          userId,
+          coinbaseChargeId: charge.chargeId,
+          coinbaseChargeCode: charge.code,
+          status: 'PENDING',
+          type: 'DEPOSIT',
+          amount: depositConfig.amountUSD,
+          currency: 'USD',
+          paymentUrl: charge.paymentUrl,
+          qrCodeUrl: charge.qrCodeUrl,
+          expiresAt: charge.expiresAt,
+          metadata: JSON.stringify({
+            serviceId: validatedData.serviceId,
+            scheduledAt: validatedData.scheduledAt,
+            duration: validatedData.duration,
+            paymentFor: 'booking_deposit'
+          }),
+        },
+      });
+
       const result = {
         paymentId: cryptoPayment.id,
-        status: cryptoPayment.status,
+        status: 'pending',
         paymentMethod: 'crypto',
-        cryptoPayment: cryptoPayment,
+        cryptoPayment: {
+          id: cryptoPayment.id,
+          paymentUrl: charge.paymentUrl,
+          qrCodeUrl: charge.qrCodeUrl,
+          expiresAt: charge.expiresAt,
+          amount: depositConfig.amountUSD,
+        },
         totalPaid: 0,
         remainingAmount: depositConfig.amountUSD,
-        paymentUrl: cryptoPayment.hosted_url,
-        qrCodeUrl: cryptoPayment.addresses?.bitcoin ? `bitcoin:${cryptoPayment.addresses.bitcoin}` : undefined,
+        paymentUrl: charge.paymentUrl,
+        qrCodeUrl: charge.qrCodeUrl,  // For payment service type compatibility
+        qrCodeData: charge.qrCodeUrl,  // For frontend UI usage
+        finalAmount: depositConfig.amountUSD,
+        requiresPayment: true,
         message: 'Please complete crypto payment to proceed with booking'
       };
+
+      logger.info('Payment intent created successfully', {
+        paymentId: cryptoPayment.id,
+        coinbaseChargeId: charge.chargeId,
+        amount: depositConfig.amountUSD,
+        userId,
+        serviceId: validatedData.serviceId,
+        hasQrCode: !!charge.qrCodeUrl,
+        paymentUrl: charge.paymentUrl,
+      });
 
       res.status(200).json({
         success: true,
@@ -189,19 +240,40 @@ export class PaymentController {
     } catch (error) {
       logger.error('Failed to create payment intent', {
         error: error instanceof Error ? error.message : error,
+        stack: error instanceof Error ? error.stack : undefined,
         userId: req.user?.id,
         body: req.body,
+        serviceId: req.body?.serviceId,
       });
 
       if (error instanceof z.ZodError) {
         res.status(400).json({
+          success: false,
           error: 'Invalid request data',
           details: error.errors,
         });
         return;
       }
 
+      // Handle specific payment service errors
+      if (error instanceof Error && error.message.includes('Service not found')) {
+        res.status(404).json({
+          success: false,
+          error: 'Service not found',
+        });
+        return;
+      }
+
+      if (error instanceof Error && error.message.includes('Coinbase Commerce')) {
+        res.status(502).json({
+          success: false,
+          error: 'Payment service temporarily unavailable. Please try again.',
+        });
+        return;
+      }
+
       res.status(500).json({
+        success: false,
         error: error instanceof Error ? error.message : 'Failed to create payment intent',
       });
     }
