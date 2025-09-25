@@ -15,6 +15,7 @@ router.post('/intent', authenticateToken, PaymentController.createPaymentIntent)
 router.post('/confirm', authenticateToken, PaymentController.confirmPayment);
 router.get('/my', authenticateToken, PaymentController.getUserPayments);
 router.get('/history', authenticateToken, validateGetPaymentHistory, PaymentController.getPaymentHistory);
+router.get('/:paymentId/status', authenticateToken, PaymentController.getPaymentStatus);
 router.get('/:paymentId', authenticateToken, PaymentController.getPaymentDetails);
 
 // Payment methods routes

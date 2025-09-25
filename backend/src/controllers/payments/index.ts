@@ -177,6 +177,61 @@ export class PaymentController {
     }
   }
 
+  // Get payment status (for polling)
+  static async getPaymentStatus(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { paymentId } = req.params;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (!paymentId) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Payment ID is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Import the new payment controller's functionality
+      const { paymentController } = await import('@/controllers/payment.controller');
+
+      // Cast the request to match the expected type for the new payment controller
+      const compatibleReq = req as any; // Cast to avoid type conflicts
+
+      // Use the new payment controller's getPaymentStatus method
+      return await paymentController.getPaymentStatus(compatibleReq, res);
+
+    } catch (error: any) {
+      logger.error('Get payment status error:', {
+        error: error.message,
+        paymentId: req.params.paymentId,
+        userId: req.user?.id,
+        stack: error.stack
+      });
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get payment status',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
   // Get payment details
   static async getPaymentDetails(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {

@@ -377,28 +377,94 @@ export class CoinbaseCommerceService {
       },
     });
 
-    // If this is for a booking deposit, update booking status
-    if (cryptoPayment.booking && cryptoPayment.type === 'DEPOSIT') {
-      await prisma.booking.update({
-        where: { id: cryptoPayment.booking.id },
-        data: {
-          depositStatus: 'PAID',
-          depositPaidAt: new Date(),
-          status: 'CONFIRMED', // Move booking to confirmed status
-        },
-      });
+    // Handle booking deposit payments
+    if (cryptoPayment.type === 'DEPOSIT') {
+      let bookingId: string;
 
-      logger.info('Booking deposit confirmed via crypto payment', {
-        bookingId: cryptoPayment.booking.id,
-        cryptoPaymentId,
-        chargeId: charge.id,
-      });
+      if (cryptoPayment.booking) {
+        // Existing booking - update status
+        bookingId = cryptoPayment.booking.id;
+        await prisma.booking.update({
+          where: { id: bookingId },
+          data: {
+            depositStatus: 'PAID',
+            depositPaidAt: new Date(),
+            status: 'CONFIRMED', // Move booking to confirmed status
+          },
+        });
+
+        logger.info('Existing booking deposit confirmed via crypto payment', {
+          bookingId,
+          cryptoPaymentId,
+          chargeId: charge.id,
+        });
+      } else {
+        // Payment-first flow: create booking from payment metadata
+        const metadata = JSON.parse(cryptoPayment.metadata || '{}');
+
+        if (metadata.paymentFor === 'booking_deposit' && metadata.serviceId && metadata.scheduledAt) {
+          // Get service details
+          const service = await prisma.service.findUnique({
+            where: { id: metadata.serviceId },
+            include: { specialist: true },
+          });
+
+          if (!service) {
+            throw new Error(`Service ${metadata.serviceId} not found for payment intent booking creation`);
+          }
+
+          // Create booking from payment intent metadata
+          const booking = await prisma.booking.create({
+            data: {
+              customerId: cryptoPayment.userId,
+              specialistId: service.specialistId,
+              serviceId: metadata.serviceId,
+              scheduledAt: new Date(metadata.scheduledAt),
+              duration: metadata.duration || 60, // default 1 hour
+              status: 'CONFIRMED',
+              depositStatus: 'PAID',
+              depositPaidAt: new Date(),
+              totalAmount: cryptoPayment.amount, // Use deposit amount for now
+              amountPaid: cryptoPayment.amount,
+              paymentStatus: 'PAID',
+              customerNotes: metadata.customerNotes || null,
+              bookingType: 'REGULAR',
+            },
+          });
+
+          bookingId = booking.id;
+
+          // Link the crypto payment to the newly created booking
+          await prisma.cryptoPayment.update({
+            where: { id: cryptoPaymentId },
+            data: { bookingId: booking.id },
+          });
+
+          logger.info('Booking created from payment intent after crypto payment confirmation', {
+            bookingId: booking.id,
+            cryptoPaymentId,
+            chargeId: charge.id,
+            serviceId: metadata.serviceId,
+            customerId: cryptoPayment.userId,
+          });
+        } else {
+          logger.warn('Cannot create booking: missing required metadata', {
+            cryptoPaymentId,
+            metadata,
+            chargeId: charge.id,
+          });
+          return; // Exit early if we can't create the booking
+        }
+      }
+
+      // Continue with existing WebSocket emission logic using bookingId
+      bookingId = bookingId!; // TypeScript assurance
 
       // Emit Socket.io events for real-time payment completion
       try {
         await WebSocketManager.emitPaymentComplete(cryptoPayment.userId, {
           paymentId: cryptoPaymentId,
-          bookingId: cryptoPayment.booking.id,
+          bookingId,
           status: 'PAID',
           amount: cryptoPayment.amount,
           currency: cryptoPayment.currency,
@@ -407,22 +473,30 @@ export class CoinbaseCommerceService {
           metadata: JSON.parse(cryptoPayment.metadata || '{}'),
         });
 
-        // Emit booking confirmation event
-        await WebSocketManager.emitBookingConfirmation(
-          cryptoPayment.booking.id,
-          cryptoPayment.userId,
-          cryptoPayment.booking.specialistId
-        );
+        // Get booking details for specialist ID
+        const booking = await prisma.booking.findUnique({
+          where: { id: bookingId },
+          select: { specialistId: true },
+        });
+
+        if (booking) {
+          // Emit booking confirmation event
+          await WebSocketManager.emitBookingConfirmation(
+            bookingId,
+            cryptoPayment.userId,
+            booking.specialistId
+          );
+        }
 
         logger.info('Real-time payment completion events emitted successfully', {
-          bookingId: cryptoPayment.booking.id,
+          bookingId,
           paymentId: cryptoPaymentId,
           userId: cryptoPayment.userId,
         });
       } catch (wsError) {
         logger.warn('Failed to emit WebSocket events for payment completion', {
           error: wsError instanceof Error ? wsError.message : wsError,
-          bookingId: cryptoPayment.booking.id,
+          bookingId,
           paymentId: cryptoPaymentId,
         });
       }
