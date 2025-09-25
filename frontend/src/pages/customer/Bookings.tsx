@@ -1,23 +1,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { RootState, AppDispatch } from '../../store';
-import { fetchBookings } from '../../store/slices/bookingSlice';
+import { fetchBookings, cancelBooking } from '../../store/slices/bookingSlice';
 import { Booking } from '../../types';
-import { CalendarIcon } from '@heroicons/react/24/outline';
+import { FilterState } from '../../types/booking';
+import { CalendarIcon, EyeIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { Avatar } from '../../components/ui/Avatar';
 import ReviewModal from '../../components/modals/ReviewModal';
 import BookingDetailModal from '../../components/modals/BookingDetailModal';
-import BookingFilters from '../../components/bookings/BookingFilters';
-import BookingTable from '../../components/bookings/BookingTable';
-import BookingCards from '../../components/bookings/BookingCards';
-import BookingPagination from '../../components/bookings/BookingPagination';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
-import { useBookingOperations } from '../../hooks/useBookingOperations';
-import { useReviewOperations } from '../../hooks/useReviewOperations';
-import { useBookingFilters } from '../../hooks/useBookingFilters';
-import { getTranslatedServiceName, getTranslatedDuration } from '../../utils/bookingUtils';
+import { getTranslatedServiceName, getTranslatedDuration, statusColors } from '../../utils/bookingUtils';
+import { validateReviewTags } from '../../constants/reviewTags';
+import { reviewsService } from '../../services/reviews.service';
 
 
 const CustomerBookings: React.FC = () => {
@@ -34,30 +32,6 @@ const CustomerBookings: React.FC = () => {
     dispatch(fetchBookings({ filters: {}, userType: 'customer' }));
   }, [dispatch]);
   
-  // Simple service name translation
-  const getTranslatedServiceName = (serviceName: string): string => {
-    const serviceMapping: { [key: string]: string } = {
-      'Консультація з психології': 'service.consultation',
-      'Індивідуальна терапія': 'service.individualTherapy',
-      'Сімейна консультація': 'service.familyConsultation',
-      'Групова терапія': 'service.groupTherapy',
-      'Експрес-консультація': 'service.expressConsultation',
-      'Підліткова психологія': 'service.teenPsychology',
-      'Терапія пар': 'service.coupleTherapy',
-      'Психологічна консультація': 'service.psychologyConsultation',
-    };
-    
-    return serviceMapping[serviceName] ? t(serviceMapping[serviceName]) : serviceName;
-  };
-  
-  // Duration translation function
-  const getTranslatedDuration = (duration: string | number): string => {
-    // Handle both string and number types
-    const durationStr = typeof duration === 'string' ? duration : `${duration} хв`;
-    // Replace Ukrainian abbreviation with translated one
-    return durationStr.replace(/\s*хв\s*$/i, ` ${t('time.minutes')}`);
-  };
-  
   const [filters, setFilters] = useState<FilterState>({
     status: 'all',
     dateRange: 'all',
@@ -65,7 +39,6 @@ const CustomerBookings: React.FC = () => {
     searchTerm: ''
   });
   
-  const [selectedBookings, setSelectedBookings] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'date' | 'amount' | 'status'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -135,7 +108,7 @@ const CustomerBookings: React.FC = () => {
     currentPage * itemsPerPage
   );
   
-  const handleRescheduleBooking = (bookingId: string) => {
+  const handleRescheduleBooking = (_bookingId: string) => {
     // In a real app, this would open a reschedule modal/flow
     toast.info(t('booking.rescheduleAlert'));
   };
@@ -402,10 +375,10 @@ const CustomerBookings: React.FC = () => {
                           <td className="px-6 py-4">
                             <div>
                               <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                {getTranslatedServiceName(booking.service?.name || booking.serviceName || 'Unknown Service')}
+                                {getTranslatedServiceName(booking.service?.name || booking.serviceName || 'Unknown Service', t)}
                               </div>
                               <div className="text-sm text-gray-500 dark:text-gray-400">
-                                {getTranslatedDuration(booking.duration || '60 min')}
+                                {getTranslatedDuration(booking.duration || '60 min', t)}
                               </div>
                             </div>
                           </td>
@@ -474,10 +447,10 @@ const CustomerBookings: React.FC = () => {
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1 min-w-0">
                           <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                            {getTranslatedServiceName(booking.service?.name || booking.serviceName || 'Unknown Service')}
+                            {getTranslatedServiceName(booking.service?.name || booking.serviceName || 'Unknown Service', t)}
                           </h3>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {getTranslatedDuration(booking.duration || '60 min')}
+                            {getTranslatedDuration(booking.duration || '60 min', t)}
                           </p>
                         </div>
                         <div className="flex items-center space-x-2 ml-3">
@@ -593,8 +566,8 @@ const CustomerBookings: React.FC = () => {
         onCancel={handleCancelBooking}
         onBookAgain={handleBookAgain}
         onLeaveReview={handleLeaveReview}
-        getTranslatedServiceName={getTranslatedServiceName}
-        getTranslatedDuration={getTranslatedDuration}
+        getTranslatedServiceName={(serviceName: string) => getTranslatedServiceName(serviceName, t)}
+        getTranslatedDuration={(duration: string | number) => getTranslatedDuration(duration, t)}
       />
 
       {/* Review Modal */}
@@ -613,7 +586,7 @@ const CustomerBookings: React.FC = () => {
               ? `${bookingToReview.specialist.firstName} ${bookingToReview.specialist.lastName}`
               : bookingToReview.specialistName || 'Unknown Specialist'
           }
-          serviceName={getTranslatedServiceName(bookingToReview.service?.name || bookingToReview.serviceName || 'Unknown Service')}
+          serviceName={getTranslatedServiceName(bookingToReview.service?.name || bookingToReview.serviceName || 'Unknown Service', t)}
         />
       )}
     </div>
