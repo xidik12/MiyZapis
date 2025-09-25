@@ -60,6 +60,7 @@ router.use('/loyalty', loyaltyRoutes);
 router.use('/admin/loyalty', adminLoyaltyRoutes);
 router.use('/user/loyalty', userLoyaltyFixRoutes);
 router.use('/rewards', rewardsRoutes);
+router.use('/referral', referralRoutes);
 router.use('/', availabilityRoutes);  // Mount availability routes at root to match /specialists/:id/slots pattern
 router.use('/analytics-enhanced', analyticsEnhancedRoutes);
 router.use('/telegram', telegramEnhancedRoutes);

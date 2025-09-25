@@ -35,6 +35,10 @@ router.get('/earnings/revenue', authenticateToken, requireSpecialist, validateRe
 // Admin routes
 router.post('/refund', authenticateToken, requireAdmin, PaymentController.processRefund);
 
+// Wallet routes
+router.get('/wallet/balance', authenticateToken, PaymentController.getWalletBalance);
+router.get('/wallet/transactions', authenticateToken, PaymentController.getWalletTransactions);
+
 // Development routes (for testing payments without Stripe)
 router.post('/mock/success', authenticateToken, PaymentController.mockPaymentSuccess);
 
