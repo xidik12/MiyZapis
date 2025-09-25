@@ -13,6 +13,7 @@ import { messagesService } from '@/services/messages.service';
 import { loyaltyService, UserLoyalty, LoyaltyStats } from '@/services/loyalty.service';
 import { translateProfession } from '@/utils/profession';
 import { formatPoints } from '@/utils/formatPoints';
+import WalletBalance from '@/components/wallet/WalletBalance';
 // Status colors for bookings
 const statusColors = {
   confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -544,7 +545,23 @@ const CustomerDashboard: React.FC = () => {
           )}
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            {/* Wallet Balance */}
+            <div className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Wallet</h3>
+                <Link
+                  to="/customer/wallet"
+                  className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                >
+                  View Details
+                </Link>
+              </div>
+              <WalletBalance
+                showTransactions={true}
+                onTransactionsClick={() => navigate('/customer/wallet')}
+              />
+            </div>
             {/* Recent Bookings */}
             <div className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
               <div className="flex items-center justify-between mb-4 sm:mb-6">
