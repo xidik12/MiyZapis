@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Card } from '../ui/Card';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 import { Loader2, Filter, RefreshCw, ArrowUpRight, ArrowDownLeft, RotateCcw, Coins } from 'lucide-react';
 import { walletService, WalletTransaction, TransactionFilters } from '../../services/wallet.service';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -108,10 +107,11 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
 
   return (
     <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-sm font-medium">
-          Transaction History {total > 0 && `(${total})`}
-        </CardTitle>
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-medium">
+            Transaction History {total > 0 && `(${total})`}
+          </h3>
         <div className="flex items-center gap-2">
           {showFilters && (
             <Button
@@ -133,27 +133,22 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
-      </CardHeader>
 
-      <CardContent className="space-y-4">
+        <div className="space-y-4">
         {/* Filter Panel */}
         {showFilterPanel && showFilters && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-            <Select
+            <select
               value={filters.type || ''}
-              onValueChange={(value) => handleFilterChange('type', value || undefined)}
+              onChange={(e) => handleFilterChange('type', e.target.value || undefined)}
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Types</SelectItem>
-                <SelectItem value="CREDIT">Credit</SelectItem>
-                <SelectItem value="DEBIT">Debit</SelectItem>
-                <SelectItem value="REFUND">Refund</SelectItem>
-                <SelectItem value="FORFEITURE_SPLIT">Forfeiture</SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="">All Types</option>
+              <option value="CREDIT">Credit</option>
+              <option value="DEBIT">Debit</option>
+              <option value="REFUND">Refund</option>
+              <option value="FORFEITURE_SPLIT">Forfeiture</option>
+            </select>
 
             <Input
               type="date"
@@ -240,7 +235,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
         {transactions.length < total && (
           <div className="text-center pt-4">
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={handleLoadMore}
               disabled={loading}
             >
@@ -251,7 +246,8 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
             </Button>
           </div>
         )}
-      </CardContent>
+        </div>
+      </div>
     </Card>
   );
 };

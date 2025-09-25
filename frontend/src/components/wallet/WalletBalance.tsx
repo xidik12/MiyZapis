@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
-import { Button } from '../ui/button';
+import { Card } from '../ui/Card';
+import { Button } from '../ui/Button';
 import { Loader2, Wallet, Eye, EyeOff, TrendingUp, TrendingDown } from 'lucide-react';
 import { walletService, WalletBalance as WalletBalanceType, WalletSummary } from '../../services/wallet.service';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -72,37 +72,38 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
 
   return (
     <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <Wallet className="h-4 w-4" />
-          Wallet Balance
-        </CardTitle>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowBalance(!showBalance)}
-            className="h-8 w-8 p-0"
-          >
-            {showBalance ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="h-8 w-8 p-0"
-          >
-            <Loader2 className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-          </Button>
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-medium flex items-center gap-2">
+            <Wallet className="h-4 w-4" />
+            Wallet Balance
+          </h3>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowBalance(!showBalance)}
+              className="h-8 w-8 p-0"
+            >
+              {showBalance ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="h-8 w-8 p-0"
+            >
+              <Loader2 className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
         </div>
-      </CardHeader>
 
-      <CardContent className="space-y-4">
+        <div className="space-y-4">
         {/* Main Balance */}
         <div className="text-center">
           <div className="text-3xl font-bold">
@@ -162,14 +163,15 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
         {/* View Transactions Button */}
         {showTransactions && (
           <Button
-            variant="outline"
+            variant="secondary"
             className="w-full"
             onClick={onTransactionsClick}
           >
             View Transaction History
           </Button>
         )}
-      </CardContent>
+        </div>
+      </div>
     </Card>
   );
 };
