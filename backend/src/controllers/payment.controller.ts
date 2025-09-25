@@ -697,52 +697,145 @@ export class PaymentController {
   // Webhooks
 
   async handleCoinbaseWebhook(req: Request, res: Response): Promise<void> {
+    const startTime = Date.now();
+    let webhookEventId: string | undefined;
+    let webhookEventType: string | undefined;
+    let chargeId: string | undefined;
+
     try {
       const signature = req.headers['x-cc-webhook-signature'] as string;
 
       if (!signature) {
+        logger.warn('Coinbase webhook received without signature', {
+          headers: req.headers,
+          userAgent: req.headers['user-agent'],
+          ip: req.ip,
+        });
         res.status(400).json({ error: 'Missing webhook signature' });
         return;
       }
 
-      const payload = JSON.stringify(req.body);
+      // Get raw payload for signature verification
+      const payload = req.rawBody ? req.rawBody.toString() : JSON.stringify(req.body);
+      const webhookData = req.body;
+
+      // Extract event info for logging
+      webhookEventId = webhookData?.event?.id;
+      webhookEventType = webhookData?.event?.type;
+      chargeId = webhookData?.event?.data?.id;
+
+      logger.info('Processing Coinbase Commerce webhook', {
+        eventId: webhookEventId,
+        eventType: webhookEventType,
+        chargeId,
+        attemptNumber: webhookData?.attempt_number,
+        timestamp: new Date().toISOString(),
+      });
 
       // Verify webhook signature
       const isValid = coinbaseCommerceService.verifyWebhookSignature(payload, signature);
       if (!isValid) {
+        logger.error('Invalid Coinbase webhook signature', {
+          eventId: webhookEventId,
+          eventType: webhookEventType,
+          chargeId,
+          signature: signature.substring(0, 20) + '...',
+          payloadLength: payload.length,
+        });
         res.status(401).json({ error: 'Invalid webhook signature' });
         return;
       }
 
-      const webhookData = req.body;
-
       // Validate webhook structure
       if (!webhookData.event || !webhookData.event.type || !webhookData.event.data) {
+        logger.error('Invalid Coinbase webhook structure', {
+          eventId: webhookEventId,
+          hasEvent: !!webhookData.event,
+          hasType: !!webhookData.event?.type,
+          hasData: !!webhookData.event?.data,
+          body: JSON.stringify(webhookData),
+        });
         res.status(400).json({ error: 'Invalid webhook structure' });
         return;
       }
 
-      // Process the webhook
-      await coinbaseCommerceService.processWebhook(webhookData);
+      // Process the webhook with detailed error handling
+      try {
+        await coinbaseCommerceService.processWebhook(webhookData);
 
-      res.status(200).json({ received: true });
+        const processingTime = Date.now() - startTime;
+        logger.info('Coinbase webhook processed successfully', {
+          eventId: webhookEventId,
+          eventType: webhookEventType,
+          chargeId,
+          processingTimeMs: processingTime,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (processingError) {
+        logger.error('Error during webhook processing', {
+          error: processingError instanceof Error ? processingError.message : processingError,
+          stack: processingError instanceof Error ? processingError.stack : undefined,
+          eventId: webhookEventId,
+          eventType: webhookEventType,
+          chargeId,
+          processingTimeMs: Date.now() - startTime,
+        });
+
+        // Still return 200 to prevent Coinbase from retrying if it's a business logic error
+        // Only return error for actual technical failures
+        if (processingError instanceof Error &&
+            (processingError.message.includes('not found') ||
+             processingError.message.includes('already processed'))) {
+          logger.warn('Webhook processing warning (returning success to prevent retry)', {
+            eventId: webhookEventId,
+            error: processingError.message,
+          });
+        } else {
+          throw processingError; // Re-throw for actual technical failures
+        }
+      }
+
+      res.status(200).json({
+        received: true,
+        eventId: webhookEventId,
+        eventType: webhookEventType,
+        processingTimeMs: Date.now() - startTime,
+      });
+
     } catch (error) {
+      const processingTime = Date.now() - startTime;
+
       logger.error('Failed to process Coinbase webhook', {
         error: error instanceof Error ? error.message : error,
-        headers: req.headers,
-        body: req.body,
+        stack: error instanceof Error ? error.stack : undefined,
+        eventId: webhookEventId,
+        eventType: webhookEventType,
+        chargeId,
+        headers: {
+          'content-type': req.headers['content-type'],
+          'user-agent': req.headers['user-agent'],
+          'x-cc-webhook-signature': req.headers['x-cc-webhook-signature'] ? 'present' : 'missing',
+        },
+        bodyType: typeof req.body,
+        bodySize: JSON.stringify(req.body).length,
+        processingTimeMs: processingTime,
+        timestamp: new Date().toISOString(),
       });
 
       if (error instanceof z.ZodError) {
         res.status(400).json({
           error: 'Invalid webhook data',
           details: error.errors,
+          eventId: webhookEventId,
         });
         return;
       }
 
+      // For webhook failures, we usually want to return 500 so Coinbase retries
       res.status(500).json({
         error: error instanceof Error ? error.message : 'Failed to process webhook',
+        eventId: webhookEventId,
+        processingTimeMs: processingTime,
       });
     }
   }

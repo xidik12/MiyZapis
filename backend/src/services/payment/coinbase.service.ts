@@ -4,6 +4,7 @@ import QRCode from 'qrcode';
 import { config } from '@/config';
 import { logger } from '@/utils/logger';
 import { prisma } from '@/config/database';
+import { WebSocketManager } from '@/services/websocket/websocket-manager';
 
 interface CoinbaseChargeRequest {
   name: string;
@@ -392,6 +393,39 @@ export class CoinbaseCommerceService {
         cryptoPaymentId,
         chargeId: charge.id,
       });
+
+      // Emit Socket.io events for real-time payment completion
+      try {
+        await WebSocketManager.emitPaymentComplete(cryptoPayment.userId, {
+          paymentId: cryptoPaymentId,
+          bookingId: cryptoPayment.booking.id,
+          status: 'PAID',
+          amount: cryptoPayment.amount,
+          currency: cryptoPayment.currency,
+          type: 'DEPOSIT',
+          confirmedAt: new Date(charge.confirmed_at || new Date().toISOString()),
+          metadata: JSON.parse(cryptoPayment.metadata || '{}'),
+        });
+
+        // Emit booking confirmation event
+        await WebSocketManager.emitBookingConfirmation(
+          cryptoPayment.booking.id,
+          cryptoPayment.userId,
+          cryptoPayment.booking.specialistId
+        );
+
+        logger.info('Real-time payment completion events emitted successfully', {
+          bookingId: cryptoPayment.booking.id,
+          paymentId: cryptoPaymentId,
+          userId: cryptoPayment.userId,
+        });
+      } catch (wsError) {
+        logger.warn('Failed to emit WebSocket events for payment completion', {
+          error: wsError instanceof Error ? wsError.message : wsError,
+          bookingId: cryptoPayment.booking.id,
+          paymentId: cryptoPaymentId,
+        });
+      }
     }
 
     // If this is for a subscription, update subscription status
@@ -403,6 +437,46 @@ export class CoinbaseCommerceService {
         cryptoPaymentId,
         chargeId: charge.id,
       });
+
+      // Emit Socket.io event for subscription payment
+      try {
+        await WebSocketManager.emitPaymentComplete(cryptoPayment.userId, {
+          paymentId: cryptoPaymentId,
+          status: 'PAID',
+          amount: cryptoPayment.amount,
+          currency: cryptoPayment.currency,
+          type: 'SUBSCRIPTION',
+          confirmedAt: new Date(charge.confirmed_at || new Date().toISOString()),
+          metadata: JSON.parse(cryptoPayment.metadata || '{}'),
+        });
+      } catch (wsError) {
+        logger.warn('Failed to emit WebSocket events for subscription payment', {
+          error: wsError instanceof Error ? wsError.message : wsError,
+          paymentId: cryptoPaymentId,
+          userId: cryptoPayment.userId,
+        });
+      }
+    }
+
+    // If this is for wallet top-up
+    if (cryptoPayment.type === 'WALLET_TOPUP') {
+      try {
+        await WebSocketManager.emitPaymentComplete(cryptoPayment.userId, {
+          paymentId: cryptoPaymentId,
+          status: 'PAID',
+          amount: cryptoPayment.amount,
+          currency: cryptoPayment.currency,
+          type: 'WALLET_TOPUP',
+          confirmedAt: new Date(charge.confirmed_at || new Date().toISOString()),
+          metadata: JSON.parse(cryptoPayment.metadata || '{}'),
+        });
+      } catch (wsError) {
+        logger.warn('Failed to emit WebSocket events for wallet top-up', {
+          error: wsError instanceof Error ? wsError.message : wsError,
+          paymentId: cryptoPaymentId,
+          userId: cryptoPayment.userId,
+        });
+      }
     }
 
     logger.info('Charge confirmed webhook processed', {
@@ -413,6 +487,11 @@ export class CoinbaseCommerceService {
   }
 
   private async handleChargeFailed(cryptoPaymentId: string, charge: CoinbaseCharge): Promise<void> {
+    const cryptoPayment = await prisma.cryptoPayment.findUnique({
+      where: { id: cryptoPaymentId },
+      include: { booking: true, user: true },
+    });
+
     await prisma.cryptoPayment.update({
       where: { id: cryptoPaymentId },
       data: {
@@ -425,6 +504,30 @@ export class CoinbaseCommerceService {
       cryptoPaymentId,
       chargeId: charge.id,
     });
+
+    // Emit Socket.io event for payment failure
+    if (cryptoPayment) {
+      try {
+        await WebSocketManager.emitPaymentStatusUpdate(cryptoPayment.userId, {
+          paymentId: cryptoPaymentId,
+          bookingId: cryptoPayment.booking?.id,
+          status: 'FAILED',
+          type: cryptoPayment.type as 'DEPOSIT' | 'SUBSCRIPTION' | 'WALLET_TOPUP',
+          updatedAt: new Date(),
+        });
+
+        logger.info('Payment failure event emitted successfully', {
+          paymentId: cryptoPaymentId,
+          userId: cryptoPayment.userId,
+        });
+      } catch (wsError) {
+        logger.warn('Failed to emit WebSocket events for payment failure', {
+          error: wsError instanceof Error ? wsError.message : wsError,
+          paymentId: cryptoPaymentId,
+          userId: cryptoPayment.userId,
+        });
+      }
+    }
   }
 
   private async handleChargeDelayed(cryptoPaymentId: string, charge: CoinbaseCharge): Promise<void> {

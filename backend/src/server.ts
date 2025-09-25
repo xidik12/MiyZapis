@@ -244,21 +244,13 @@ const io = new SocketIOServer(server, {
   transports: ['websocket', 'polling'],
 });
 
-// Socket.IO middleware and handlers
-io.use((socket, next) => {
-  next();
-});
+// Import and initialize enhanced WebSocket service
+import { EnhancedWebSocketService } from '@/services/websocket/enhanced-websocket';
+import { WebSocketManager } from '@/services/websocket/websocket-manager';
 
-io.on('connection', (socket) => {
-  logger.info('Client connected to WebSocket', { socketId: socket.id });
-
-  socket.on('disconnect', (reason) => {
-    logger.info('Client disconnected from WebSocket', { 
-      socketId: socket.id, 
-      reason 
-    });
-  });
-});
+// Initialize enhanced WebSocket service and singleton manager
+const enhancedWebSocketService = new EnhancedWebSocketService(io);
+WebSocketManager.initialize(enhancedWebSocketService);
 
 // Graceful shutdown
 const gracefulShutdown = async (signal: string) => {

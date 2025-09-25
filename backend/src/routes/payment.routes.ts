@@ -112,10 +112,23 @@ router.post(
   paymentController.completeOnrampSession.bind(paymentController)
 );
 
+// Middleware to capture raw body for webhook signature verification
+const captureRawBody = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  let data = '';
+  req.on('data', chunk => {
+    data += chunk;
+  });
+  req.on('end', () => {
+    req.rawBody = data;
+    next();
+  });
+};
+
 // Webhooks (no authentication required)
 router.post(
   '/webhooks/coinbase',
-  express.raw({ type: 'application/json' }),
+  captureRawBody,
+  express.json(),
   paymentController.handleCoinbaseWebhook.bind(paymentController)
 );
 
