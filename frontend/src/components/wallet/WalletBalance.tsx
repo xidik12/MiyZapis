@@ -48,9 +48,9 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
   if (loading) {
     return (
       <Card className="w-full">
-        <CardContent className="flex items-center justify-center p-8">
+        <div className="flex items-center justify-center p-8">
           <Loader2 className="h-8 w-8 animate-spin" />
-        </CardContent>
+        </div>
       </Card>
     );
   }
@@ -58,11 +58,11 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
   if (!summary) {
     return (
       <Card className="w-full">
-        <CardContent className="p-6">
+        <div className="p-6">
           <div className="text-center text-muted-foreground">
             Unable to load wallet information
           </div>
-        </CardContent>
+        </div>
       </Card>
     );
   }
