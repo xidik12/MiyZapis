@@ -726,6 +726,28 @@ export class PaymentService {
     }
     return response.data;
   }
+
+  // Get payment status for polling
+  async getPaymentStatus(paymentId: string): Promise<{
+    status: string;
+    bookingId?: string;
+    amount: number;
+    currency: string;
+    confirmedAt?: Date;
+  }> {
+    const response = await apiClient.get<{
+      status: string;
+      bookingId?: string;
+      amount: number;
+      currency: string;
+      confirmedAt?: Date;
+    }>(`/payments/${paymentId}/status`);
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get payment status');
+    }
+    return response.data;
+  }
 }
 
 export const paymentService = new PaymentService();

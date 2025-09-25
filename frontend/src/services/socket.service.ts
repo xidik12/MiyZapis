@@ -165,7 +165,16 @@ class SocketService {
       if (import.meta.env.VITE_DEBUG === 'true') {
         console.log('[Socket] Notification:', data);
       }
-      // Normalize to 'notification:new'
+
+      // Check if this is a payment completion notification
+      if (data.type === 'PAYMENT_COMPLETED') {
+        if (import.meta.env.VITE_DEBUG === 'true') {
+          console.log('[Socket] Payment completion notification:', data);
+        }
+        this.emit('payment:completed', data.data);
+      }
+
+      // Also emit as general notification
       this.emit('notification:new', data);
     });
 

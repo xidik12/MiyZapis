@@ -73,15 +73,22 @@ const BookingFlow: React.FC = () => {
   const [paymentTimeoutId, setPaymentTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const [paymentTimeRemaining, setPaymentTimeRemaining] = useState<number>(0);
   const [slotsLoading, setSlotsLoading] = useState<boolean>(false);
+  const [pollingIntervalId, setPollingIntervalId] = useState<NodeJS.Timeout | null>(null);
 
-  // Cleanup timeouts on component unmount
+  // Cleanup timeouts and socket listeners on component unmount
   useEffect(() => {
     return () => {
       if (paymentTimeoutId) {
         clearTimeout(paymentTimeoutId);
       }
+      if (pollingIntervalId) {
+        clearInterval(pollingIntervalId);
+      }
+      // Clean up any active socket listeners
+      socketService.off('payment:completed');
+      socketService.off('notification:new');
     };
-  }, [paymentTimeoutId]);
+  }, [paymentTimeoutId, pollingIntervalId]);
 
   // Calculate discount preview
   const calculateDiscount = () => {
@@ -530,17 +537,82 @@ const BookingFlow: React.FC = () => {
               toast.success('Payment completed! Your booking is being processed.');
             }
 
-            // Remove listener
+            // Remove listeners and clear polling
             socketService.off('payment:completed', handlePaymentCompleted);
+            socketService.off('notification:new', handleNotificationReceived);
+            if (pollingIntervalId) {
+              clearInterval(pollingIntervalId);
+              setPollingIntervalId(null);
+            }
+          }
+        };
+
+        // Also listen to notifications for payment completion (fallback)
+        const handleNotificationReceived = (notificationData: any) => {
+          console.log('💳 BookingFlow: Notification received via socket:', notificationData);
+
+          // Check if this is a payment completion notification
+          if (notificationData.type === 'PAYMENT_COMPLETED' && notificationData.data) {
+            const paymentData = notificationData.data;
+            handlePaymentCompleted(paymentData);
           }
         };
 
         // Only set up socket listener if connected
         if (socketService.isSocketConnected()) {
           socketService.on('payment:completed', handlePaymentCompleted);
+          socketService.on('notification:new', handleNotificationReceived);
         } else {
           console.warn('Socket not connected, payment completion will rely on polling or manual refresh');
         }
+
+        // Set up polling as fallback mechanism
+        const pollPaymentStatus = async () => {
+          try {
+            console.log('🔍 BookingFlow: Polling payment status for:', depositResult.paymentId);
+            const paymentStatus = await paymentService.getPaymentStatus(depositResult.paymentId);
+
+            if (paymentStatus.status === 'PAID' || paymentStatus.status === 'COMPLETED') {
+              console.log('✅ BookingFlow: Payment confirmed via polling:', paymentStatus);
+              handlePaymentCompleted({
+                paymentId: depositResult.paymentId,
+                bookingId: paymentStatus.bookingId,
+                status: 'PAID',
+                amount: paymentStatus.amount,
+                currency: paymentStatus.currency,
+                type: 'DEPOSIT',
+                confirmedAt: new Date(),
+              });
+              return true; // Stop polling
+            }
+          } catch (error) {
+            console.warn('🔍 BookingFlow: Error polling payment status:', error);
+          }
+          return false; // Continue polling
+        };
+
+        // Start polling every 10 seconds as fallback
+        const pollingInterval = setInterval(async () => {
+          const completed = await pollPaymentStatus();
+          if (completed) {
+            clearInterval(pollingInterval);
+            setPollingIntervalId(null);
+          }
+        }, 10000);
+
+        setPollingIntervalId(pollingInterval);
+
+        // Clear polling when component unmounts or payment times out
+        const originalTimeoutHandler = () => {
+          clearInterval(pollingInterval);
+          setPollingIntervalId(null);
+          handlePaymentTimeout();
+        };
+
+        // Update the timeout to clear polling
+        clearTimeout(timeoutId);
+        const newTimeoutId = setTimeout(originalTimeoutHandler, timeoutDuration);
+        setPaymentTimeoutId(newTimeoutId);
       }
 
       // Step 3: Handle payment result
