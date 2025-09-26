@@ -191,7 +191,8 @@
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" PORT=3031 npm run dev)",
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" COINBASE_COMMERCE_API_KEY=\"d872cba6-179b-4e9e-a5f2-1abaad7c1246\" COINBASE_COMMERCE_WEBHOOK_SECRET=\"bmH6oZ9tnRe6LeucqN9k0AacudflPHs33d7i4H2RLih7IBWTswg6KlUiEgbx3hErFWFffWpezynkr50s6gwsTA==\" PORT=3031 npm start)",
       "WebFetch(domain:docs.railway.com)",
-      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" PORT=3031 npm start)"
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" PORT=3031 npm start)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" PORT=3032 npm start)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
