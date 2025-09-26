@@ -32,6 +32,9 @@ class SocketService {
     }
 
     try {
+      console.log('[Socket] Connecting to:', environment.WS_URL);
+      console.log('[Socket] Token available:', !!token);
+
       this.socket = io(environment.WS_URL, {
         auth: {
           token
@@ -42,13 +45,12 @@ class SocketService {
         reconnectionAttempts: this.maxReconnectAttempts,
         reconnectionDelay: this.reconnectDelay,
         reconnectionDelayMax: 5000,
+        forceNew: true,
       });
 
       this.setupEventListeners();
-      
-      if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] Attempting to connect...');
-      }
+
+      console.log('[Socket] Attempting to connect to', environment.WS_URL);
     } catch (error) {
       console.error('[Socket] Connection error:', error);
     }
@@ -101,9 +103,17 @@ class SocketService {
 
     this.socket.on('connect_error', (error) => {
       this.reconnectAttempts++;
-      
+
       console.error('[Socket] Connection error:', error);
-      
+      console.error('[Socket] Error details:', {
+        message: error.message,
+        description: error.description,
+        context: error.context,
+        type: error.type
+      });
+      console.error('[Socket] WS_URL:', environment.WS_URL);
+      console.error('[Socket] Attempt #:', this.reconnectAttempts);
+
       if (this.reconnectAttempts >= this.maxReconnectAttempts) {
         console.error('[Socket] Max reconnection attempts reached');
         this.emit('socket:connection_failed', { error: error.message });
