@@ -48,6 +48,13 @@ router.post('/paypal/refund', authenticateToken, PaymentController.refundPayPalP
 // PayPal webhook (no authentication required)
 router.post('/webhooks/paypal', PaymentController.handlePayPalWebhook);
 
+// WayForPay routes
+router.post('/wayforpay/create-invoice', authenticateToken, PaymentController.createWayForPayInvoice);
+router.get('/wayforpay/status/:orderReference', authenticateToken, PaymentController.getWayForPayPaymentStatus);
+
+// WayForPay webhook (no authentication required)
+router.post('/webhooks/wayforpay', PaymentController.handleWayForPayWebhook);
+
 // Development routes (for testing payments without Stripe)
 router.post('/mock/success', authenticateToken, PaymentController.mockPaymentSuccess);
 

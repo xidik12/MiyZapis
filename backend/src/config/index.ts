@@ -48,6 +48,12 @@ const envSchema = z.object({
   PAYPAL_WEBHOOK_ID: z.string().optional(),
   PAYPAL_MODE: z.string().default('sandbox'), // 'sandbox' or 'live'
 
+  // WayForPay (optional for development)
+  WAYFORPAY_MERCHANT_ACCOUNT: z.string().optional(),
+  WAYFORPAY_MERCHANT_SECRET: z.string().optional(),
+  WAYFORPAY_MERCHANT_DOMAIN: z.string().optional(),
+  WAYFORPAY_MODE: z.string().default('test'), // 'test' or 'live'
+
   // Telegram (optional for development)
   TELEGRAM_BOT_TOKEN: z.string().optional(),
   TELEGRAM_WEBHOOK_URL: z.string().optional(),
@@ -176,6 +182,17 @@ export const config = {
     baseUrl: env.PAYPAL_MODE === 'live'
       ? 'https://api.paypal.com'
       : 'https://api.sandbox.paypal.com',
+  },
+
+  // WayForPay
+  wayforpay: {
+    merchantAccount: env.WAYFORPAY_MERCHANT_ACCOUNT,
+    merchantSecret: env.WAYFORPAY_MERCHANT_SECRET,
+    merchantDomain: env.WAYFORPAY_MERCHANT_DOMAIN,
+    mode: env.WAYFORPAY_MODE, // 'test' or 'live'
+    baseUrl: env.WAYFORPAY_MODE === 'live'
+      ? 'https://api.wayforpay.com/api'
+      : 'https://secure.wayforpay.com/pay',
   },
 
   // Telegram
