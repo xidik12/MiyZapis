@@ -53,6 +53,8 @@
     "@aws-sdk/client-s3": "^3.882.0",
     "@aws-sdk/s3-request-presigner": "^3.882.0",
     "@coinbase/onchainkit": "^1.0.2",
+    "@paypal/paypal-server-sdk": "^1.1.0",
+    "@paypal/react-paypal-js": "^8.9.1",
     "@prisma/client": "^5.22.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/compression": "^1.7.5",

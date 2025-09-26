@@ -748,6 +748,134 @@ export class PaymentService {
     }
     return response.data;
   }
+
+  // PayPal Payment Methods
+
+  // Create PayPal order for booking
+  async createPayPalOrder(data: {
+    bookingId: string;
+    amount: number;
+    currency: string;
+    description?: string;
+  }): Promise<{
+    order: {
+      id: string;
+      status: string;
+      links?: Array<{ rel: string; href: string }>;
+    };
+    approvalUrl: string;
+  }> {
+    const response = await apiClient.post<{
+      order: {
+        id: string;
+        status: string;
+        links?: Array<{ rel: string; href: string }>;
+      };
+      approvalUrl: string;
+    }>('/payments/paypal/create-order', {
+      bookingId: data.bookingId,
+      amount: data.amount,
+      currency: data.currency,
+      description: data.description || 'Booking payment'
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to create PayPal order');
+    }
+
+    return response.data;
+  }
+
+  // Capture PayPal order after user approval
+  async capturePayPalOrder(data: {
+    orderId: string;
+  }): Promise<{
+    order: {
+      id: string;
+      status: string;
+      captureId?: string;
+    };
+    captureId: string;
+  }> {
+    const response = await apiClient.post<{
+      order: {
+        id: string;
+        status: string;
+        captureId?: string;
+      };
+      captureId: string;
+    }>('/payments/paypal/capture-order', {
+      orderId: data.orderId
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to capture PayPal order');
+    }
+
+    return response.data;
+  }
+
+  // Get PayPal order details
+  async getPayPalOrderDetails(orderId: string): Promise<{
+    id: string;
+    status: string;
+    intent: string;
+    purchaseUnits?: any[];
+    paymentSource?: any;
+    createTime?: string;
+    updateTime?: string;
+  }> {
+    const response = await apiClient.get<{
+      order: {
+        id: string;
+        status: string;
+        intent: string;
+        purchaseUnits?: any[];
+        paymentSource?: any;
+        createTime?: string;
+        updateTime?: string;
+      };
+    }>(`/payments/paypal/order/${orderId}`);
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get PayPal order details');
+    }
+
+    return response.data.order;
+  }
+
+  // Refund PayPal payment
+  async refundPayPalPayment(data: {
+    captureId: string;
+    amount?: number;
+    currency?: string;
+    reason?: string;
+  }): Promise<{
+    refund: {
+      id: string;
+      status: string;
+      amount?: any;
+    };
+  }> {
+    const response = await apiClient.post<{
+      refund: {
+        id: string;
+        status: string;
+        amount?: any;
+      };
+    }>('/payments/paypal/refund', {
+      captureId: data.captureId,
+      amount: data.amount,
+      currency: data.currency,
+      reason: data.reason || 'Customer request'
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to process PayPal refund');
+    }
+
+    return response.data;
+  }
 }
 
 export const paymentService = new PaymentService();

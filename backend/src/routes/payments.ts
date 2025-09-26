@@ -39,6 +39,15 @@ router.post('/refund', authenticateToken, requireAdmin, PaymentController.proces
 router.get('/wallet/balance', authenticateToken, PaymentController.getWalletBalance);
 router.get('/wallet/transactions', authenticateToken, PaymentController.getWalletTransactions);
 
+// PayPal routes
+router.post('/paypal/create-order', authenticateToken, PaymentController.createPayPalOrder);
+router.post('/paypal/capture-order', authenticateToken, PaymentController.capturePayPalOrder);
+router.get('/paypal/order/:orderId', authenticateToken, PaymentController.getPayPalOrderDetails);
+router.post('/paypal/refund', authenticateToken, PaymentController.refundPayPalPayment);
+
+// PayPal webhook (no authentication required)
+router.post('/webhooks/paypal', PaymentController.handlePayPalWebhook);
+
 // Development routes (for testing payments without Stripe)
 router.post('/mock/success', authenticateToken, PaymentController.mockPaymentSuccess);
 

@@ -42,6 +42,12 @@ const envSchema = z.object({
   COINBASE_COMMERCE_API_KEY: z.string().optional(),
   COINBASE_COMMERCE_WEBHOOK_SECRET: z.string().optional(),
 
+  // PayPal (optional for development)
+  PAYPAL_CLIENT_ID: z.string().optional(),
+  PAYPAL_CLIENT_SECRET: z.string().optional(),
+  PAYPAL_WEBHOOK_ID: z.string().optional(),
+  PAYPAL_MODE: z.string().default('sandbox'), // 'sandbox' or 'live'
+
   // Telegram (optional for development)
   TELEGRAM_BOT_TOKEN: z.string().optional(),
   TELEGRAM_WEBHOOK_URL: z.string().optional(),
@@ -159,6 +165,17 @@ export const config = {
     apiKey: env.COINBASE_COMMERCE_API_KEY,
     webhookSecret: env.COINBASE_COMMERCE_WEBHOOK_SECRET,
     baseUrl: 'https://api.commerce.coinbase.com',
+  },
+
+  // PayPal
+  paypal: {
+    clientId: env.PAYPAL_CLIENT_ID,
+    clientSecret: env.PAYPAL_CLIENT_SECRET,
+    webhookId: env.PAYPAL_WEBHOOK_ID,
+    mode: env.PAYPAL_MODE, // 'sandbox' or 'live'
+    baseUrl: env.PAYPAL_MODE === 'live'
+      ? 'https://api.paypal.com'
+      : 'https://api.sandbox.paypal.com',
   },
 
   // Telegram

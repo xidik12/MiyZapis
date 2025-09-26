@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { PaymentService } from '@/services/payment';
+import { paypalService } from '@/services/payment/paypal.service';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { ErrorCodes, AuthenticatedRequest } from '@/types';
@@ -1378,6 +1379,394 @@ export class PaymentController {
           req.headers['x-request-id'] as string
         )
       );
+    }
+  }
+
+  // PayPal payment methods
+
+  // Create PayPal order for booking
+  static async createPayPalOrder(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid request data',
+            req.headers['x-request-id'] as string,
+            errors.array().map(error => ({
+              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              code: 'INVALID_VALUE',
+            }))
+          )
+        );
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { bookingId, amount, currency, description, metadata = {} } = req.body;
+
+      if (!bookingId || !amount || !currency) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Missing required fields: bookingId, amount, currency',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      logger.info('[PayPal] Creating PayPal order', {
+        bookingId,
+        amount,
+        currency,
+        userId: req.user.id
+      });
+
+      const paypalOrder = await paypalService.createOrder({
+        bookingId,
+        amount,
+        currency,
+        description,
+        metadata: {
+          ...metadata,
+          userId: req.user.id,
+          userEmail: req.user.email
+        }
+      });
+
+      res.status(201).json(
+        createSuccessResponse({
+          order: paypalOrder,
+          approvalUrl: paypalOrder.approvalUrl
+        }, req.headers['x-request-id'] as string)
+      );
+    } catch (error: any) {
+      logger.error('[PayPal] Failed to create PayPal order', {
+        userId: req.user?.id,
+        bookingId: req.body.bookingId,
+        error: error instanceof Error ? error.message : error,
+      });
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to create PayPal order',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Capture PayPal order after user approval
+  static async capturePayPalOrder(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid request data',
+            req.headers['x-request-id'] as string,
+            errors.array().map(error => ({
+              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              code: 'INVALID_VALUE',
+            }))
+          )
+        );
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { orderId, metadata = {} } = req.body;
+
+      if (!orderId) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Missing required field: orderId',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      logger.info('[PayPal] Capturing PayPal order', {
+        orderId,
+        userId: req.user.id
+      });
+
+      const capturedOrder = await paypalService.captureOrder({
+        orderId,
+        metadata: {
+          ...metadata,
+          userId: req.user.id,
+          userEmail: req.user.email
+        }
+      });
+
+      res.status(200).json(
+        createSuccessResponse({
+          order: capturedOrder,
+          captureId: capturedOrder.captureId
+        }, req.headers['x-request-id'] as string)
+      );
+    } catch (error: any) {
+      logger.error('[PayPal] Failed to capture PayPal order', {
+        userId: req.user?.id,
+        orderId: req.body.orderId,
+        error: error instanceof Error ? error.message : error,
+      });
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to capture PayPal order',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Get PayPal order details
+  static async getPayPalOrderDetails(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { orderId } = req.params;
+
+      if (!orderId) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Missing required parameter: orderId',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      logger.info('[PayPal] Getting PayPal order details', {
+        orderId,
+        userId: req.user.id
+      });
+
+      const orderDetails = await paypalService.getOrderDetails(orderId);
+
+      res.status(200).json(
+        createSuccessResponse({
+          order: orderDetails
+        }, req.headers['x-request-id'] as string)
+      );
+    } catch (error: any) {
+      logger.error('[PayPal] Failed to get PayPal order details', {
+        userId: req.user?.id,
+        orderId: req.params.orderId,
+        error: error instanceof Error ? error.message : error,
+      });
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get PayPal order details',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Refund PayPal payment
+  static async refundPayPalPayment(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid request data',
+            req.headers['x-request-id'] as string,
+            errors.array().map(error => ({
+              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              code: 'INVALID_VALUE',
+            }))
+          )
+        );
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { captureId, amount, currency, reason } = req.body;
+
+      if (!captureId) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Missing required field: captureId',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      logger.info('[PayPal] Processing PayPal refund', {
+        captureId,
+        amount,
+        currency,
+        reason,
+        userId: req.user.id
+      });
+
+      const refund = await paypalService.refundPayment({
+        captureId,
+        amount,
+        currency,
+        reason
+      });
+
+      res.status(200).json(
+        createSuccessResponse({
+          refund
+        }, req.headers['x-request-id'] as string)
+      );
+    } catch (error: any) {
+      logger.error('[PayPal] Failed to process PayPal refund', {
+        userId: req.user?.id,
+        captureId: req.body.captureId,
+        error: error instanceof Error ? error.message : error,
+      });
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to process PayPal refund',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Handle PayPal webhook
+  static async handlePayPalWebhook(req: Request, res: Response): Promise<void> {
+    try {
+      const signature = req.headers['paypal-transmission-sig'] as string;
+      const webhookId = req.headers['paypal-webhook-id'] as string;
+
+      logger.info('[PayPal] Webhook received', {
+        eventType: req.body.event_type,
+        resourceType: req.body.resource_type,
+        webhookId
+      });
+
+      // Verify webhook signature
+      const isValid = await paypalService.verifyWebhookSignature(
+        req.headers as Record<string, string>,
+        JSON.stringify(req.body),
+        webhookId
+      );
+
+      if (!isValid) {
+        logger.warn('[PayPal] Invalid webhook signature');
+        res.status(401).json({
+          error: 'Invalid webhook signature'
+        });
+        return;
+      }
+
+      const event = req.body;
+
+      // Handle different PayPal webhook events
+      switch (event.event_type) {
+        case 'CHECKOUT.ORDER.APPROVED':
+          logger.info('[PayPal] Order approved', {
+            orderId: event.resource?.id,
+            amount: event.resource?.purchase_units?.[0]?.amount
+          });
+          break;
+
+        case 'PAYMENT.CAPTURE.COMPLETED':
+          logger.info('[PayPal] Payment captured', {
+            captureId: event.resource?.id,
+            orderId: event.resource?.supplementary_data?.related_ids?.order_id,
+            amount: event.resource?.amount
+          });
+
+          // Here you would typically update your booking status, create payment record, etc.
+          // This is where you'd integrate with your booking system
+          break;
+
+        case 'PAYMENT.CAPTURE.DENIED':
+          logger.warn('[PayPal] Payment denied', {
+            captureId: event.resource?.id,
+            reason: event.resource?.status_details?.reason
+          });
+          break;
+
+        case 'PAYMENT.CAPTURE.REFUNDED':
+          logger.info('[PayPal] Payment refunded', {
+            captureId: event.resource?.id,
+            refundId: event.resource?.supplementary_data?.related_ids?.refund_id,
+            amount: event.resource?.amount
+          });
+          break;
+
+        default:
+          logger.info('[PayPal] Unhandled webhook event', {
+            eventType: event.event_type
+          });
+      }
+
+      res.status(200).json({ received: true });
+    } catch (error: any) {
+      logger.error('[PayPal] Webhook processing failed', {
+        error: error instanceof Error ? error.message : error,
+      });
+
+      res.status(500).json({
+        error: 'Webhook processing failed'
+      });
     }
   }
 }
