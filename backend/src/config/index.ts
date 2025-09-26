@@ -90,7 +90,7 @@ const envSchema = z.object({
 
   // WebSocket
   WEBSOCKET_PORT: z.string().transform(Number).default('3001'),
-  WEBSOCKET_CORS_ORIGIN: z.string().default('http://localhost:3000'),
+  WEBSOCKET_CORS_ORIGIN: z.string().default('http://localhost:3000,https://miyzapis.com,https://miyzapis-frontend.vercel.app'),
 
   // Monitoring
   SENTRY_DSN: z.string().optional(),
