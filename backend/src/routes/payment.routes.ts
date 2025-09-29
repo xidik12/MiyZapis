@@ -124,12 +124,50 @@ const captureRawBody = (req: express.Request, res: express.Response, next: expre
   });
 };
 
+// WayForPay Routes
+router.post(
+  '/wayforpay/create-invoice',
+  authenticateToken,
+  paymentController.createWayForPayInvoice.bind(paymentController)
+);
+
+router.get(
+  '/wayforpay/status/:orderReference',
+  authenticateToken,
+  paymentController.getWayForPayPaymentStatus.bind(paymentController)
+);
+
+// PayPal Routes
+router.post(
+  '/paypal/create-order',
+  authenticateToken,
+  paymentController.createPayPalOrder.bind(paymentController)
+);
+
+router.post(
+  '/paypal/capture-order',
+  authenticateToken,
+  paymentController.capturePayPalOrder.bind(paymentController)
+);
+
+router.get(
+  '/paypal/order/:orderId',
+  authenticateToken,
+  paymentController.getPayPalOrderDetails.bind(paymentController)
+);
+
 // Webhooks (no authentication required)
 router.post(
   '/webhooks/coinbase',
   captureRawBody,
   express.json(),
   paymentController.handleCoinbaseWebhook.bind(paymentController)
+);
+
+router.post(
+  '/webhooks/wayforpay',
+  express.json(),
+  paymentController.handleWayForPayWebhook.bind(paymentController)
 );
 
 export default router;

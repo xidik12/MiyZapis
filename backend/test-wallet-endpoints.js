@@ -9,7 +9,7 @@ const axios = require('axios');
 // Test locally first, then switch to production after deployment
 const LOCAL_URL = 'http://localhost:3002';
 const PRODUCTION_URL = 'https://miyzapis-backend-production.up.railway.app';
-const API_BASE = `${LOCAL_URL}/api/v1`; // Change to PRODUCTION_URL after deployment
+const API_BASE = `${PRODUCTION_URL}/api/v1`; // Using PRODUCTION_URL for testing
 
 class WalletEndpointTester {
   constructor() {
@@ -63,7 +63,7 @@ class WalletEndpointTester {
       const registerResponse = await axios.post(`${API_BASE}/auth/register`, registerData);
 
       if (registerResponse.data.success) {
-        this.authToken = registerResponse.data.data.token;
+        this.authToken = registerResponse.data.data.tokens.accessToken;
         this.userId = registerResponse.data.data.user.id;
         console.log('✅ Test user registered and authenticated successfully');
         console.log(`📱 User ID: ${this.userId}`);
@@ -78,7 +78,7 @@ class WalletEndpointTester {
     try {
       // Try to login with a test user
       const loginData = {
-        email: 'imagetest@example.com',
+        email: 'test@example.com',
         password: 'TestPassword123!'
       };
 
@@ -86,7 +86,7 @@ class WalletEndpointTester {
       const loginResponse = await axios.post(`${API_BASE}/auth/login`, loginData);
 
       if (loginResponse.data.success) {
-        this.authToken = loginResponse.data.data.token;
+        this.authToken = loginResponse.data.data.tokens.accessToken;
         this.userId = loginResponse.data.data.user.id;
         console.log('✅ Login successful');
         console.log(`📱 User ID: ${this.userId}`);

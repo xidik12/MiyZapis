@@ -6,6 +6,8 @@ import { walletService } from '@/services/payment/wallet.service';
 import { specialistSubscriptionService } from '@/services/payment/subscription.service';
 import { coinbaseCommerceService } from '@/services/payment/coinbase.service';
 import { coinbaseOnrampService } from '@/services/payment/coinbase-onramp.service';
+import { wayforpayService } from '@/services/payment/wayforpay.service';
+import { paypalService } from '@/services/payment/paypal.service';
 import { logger } from '@/utils/logger';
 
 // Request validation schemas
@@ -74,6 +76,31 @@ const completeOnrampSessionSchema = z.object({
   cryptoCurrency: z.string().optional(),
   blockchain: z.string().optional(),
   transactionHash: z.string().optional(),
+  metadata: z.record(z.any()).optional(),
+});
+
+// WayForPay schemas
+const createWayForPayInvoiceSchema = z.object({
+  bookingId: z.string().cuid(),
+  amount: z.number().positive(),
+  currency: z.string().default('UAH'),
+  description: z.string().optional(),
+  customerEmail: z.string().email().optional(),
+  customerPhone: z.string().optional(),
+  metadata: z.record(z.any()).optional(),
+});
+
+// PayPal schemas
+const createPayPalOrderSchema = z.object({
+  bookingId: z.string().cuid(),
+  amount: z.number().positive(),
+  currency: z.string().default('USD'),
+  description: z.string().optional(),
+  metadata: z.record(z.any()).optional(),
+});
+
+const capturePayPalOrderSchema = z.object({
+  orderId: z.string(),
   metadata: z.record(z.any()).optional(),
 });
 
@@ -1044,6 +1071,387 @@ export class PaymentController {
 
       res.status(500).json({
         error: error instanceof Error ? error.message : 'Failed to get deposit configuration',
+      });
+    }
+  }
+
+  // WayForPay Endpoints
+
+  async createWayForPayInvoice(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      const validatedData = createWayForPayInvoiceSchema.parse(req.body);
+
+      // Check if WayForPay is configured
+      if (!wayforpayService.constructor.isConfigured()) {
+        res.status(503).json({
+          error: 'WayForPay payment method is not available',
+        });
+        return;
+      }
+
+      // Get booking details
+      const booking = await prisma.booking.findUnique({
+        where: { id: validatedData.bookingId },
+        include: {
+          customer: { include: { user: true } },
+          service: true,
+        },
+      });
+
+      if (!booking) {
+        res.status(404).json({ error: 'Booking not found' });
+        return;
+      }
+
+      // Verify user owns this booking
+      if (booking.customerId !== userId) {
+        res.status(403).json({ error: 'Forbidden - not your booking' });
+        return;
+      }
+
+      const invoice = await wayforpayService.createInvoice({
+        bookingId: validatedData.bookingId,
+        amount: validatedData.amount,
+        currency: validatedData.currency,
+        description: validatedData.description || `Payment for ${booking.service.name}`,
+        customerEmail: validatedData.customerEmail || booking.customer.user.email,
+        customerPhone: validatedData.customerPhone,
+        metadata: validatedData.metadata,
+      });
+
+      logger.info('[WayForPay] Invoice created successfully', {
+        bookingId: validatedData.bookingId,
+        orderId: invoice.orderId,
+        amount: validatedData.amount,
+        userId,
+      });
+
+      res.status(200).json({
+        success: true,
+        data: invoice,
+      });
+    } catch (error) {
+      logger.error('Failed to create WayForPay invoice', {
+        error: error instanceof Error ? error.message : error,
+        userId: req.user?.id,
+        body: req.body,
+      });
+
+      if (error instanceof z.ZodError) {
+        res.status(400).json({
+          error: 'Invalid request data',
+          details: error.errors,
+        });
+        return;
+      }
+
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to create WayForPay invoice',
+      });
+    }
+  }
+
+  async handleWayForPayWebhook(req: Request, res: Response): Promise<void> {
+    try {
+      logger.info('[WayForPay] Processing webhook', {
+        body: req.body,
+        headers: req.headers,
+      });
+
+      // Check if WayForPay is configured
+      if (!wayforpayService.constructor.isConfigured()) {
+        res.status(503).json({
+          error: 'WayForPay payment method is not available',
+        });
+        return;
+      }
+
+      const result = await wayforpayService.processWebhook(req.body);
+
+      if (!result.isValid) {
+        res.status(400).json({
+          error: 'Invalid webhook signature',
+        });
+        return;
+      }
+
+      // Extract booking ID from order reference
+      const bookingId = result.orderReference.split('-')[1]; // Assumes format "booking-{bookingId}-{timestamp}"
+
+      if (bookingId) {
+        // Update booking payment status based on transaction status
+        if (result.transactionStatus === 'Approved') {
+          await prisma.booking.update({
+            where: { id: bookingId },
+            data: {
+              depositStatus: 'PAID',
+              status: 'CONFIRMED',
+            },
+          });
+
+          logger.info('[WayForPay] Payment approved, booking confirmed', {
+            bookingId,
+            orderReference: result.orderReference,
+            amount: result.amount,
+          });
+        } else if (result.transactionStatus === 'Declined') {
+          await prisma.booking.update({
+            where: { id: bookingId },
+            data: {
+              depositStatus: 'FAILED',
+              status: 'CANCELLED',
+            },
+          });
+
+          logger.info('[WayForPay] Payment declined, booking cancelled', {
+            bookingId,
+            orderReference: result.orderReference,
+          });
+        }
+      }
+
+      res.status(200).json({
+        received: true,
+        orderReference: result.orderReference,
+        transactionStatus: result.transactionStatus,
+      });
+    } catch (error) {
+      logger.error('Failed to process WayForPay webhook', {
+        error: error instanceof Error ? error.message : error,
+        body: req.body,
+      });
+
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to process webhook',
+      });
+    }
+  }
+
+  async getWayForPayPaymentStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const { orderReference } = req.params;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      // Check if WayForPay is configured
+      if (!wayforpayService.constructor.isConfigured()) {
+        res.status(503).json({
+          error: 'WayForPay payment method is not available',
+        });
+        return;
+      }
+
+      const status = await wayforpayService.getPaymentStatus(orderReference);
+
+      res.status(200).json({
+        success: true,
+        data: status,
+      });
+    } catch (error) {
+      logger.error('Failed to get WayForPay payment status', {
+        error: error instanceof Error ? error.message : error,
+        orderReference: req.params.orderReference,
+        userId: req.user?.id,
+      });
+
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to get payment status',
+      });
+    }
+  }
+
+  // PayPal Endpoints
+
+  async createPayPalOrder(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      const validatedData = createPayPalOrderSchema.parse(req.body);
+
+      // Check if PayPal is configured
+      if (!paypalService.constructor.isConfigured()) {
+        res.status(503).json({
+          error: 'PayPal payment method is not available',
+        });
+        return;
+      }
+
+      // Get booking details
+      const booking = await prisma.booking.findUnique({
+        where: { id: validatedData.bookingId },
+        include: {
+          customer: { include: { user: true } },
+          service: true,
+        },
+      });
+
+      if (!booking) {
+        res.status(404).json({ error: 'Booking not found' });
+        return;
+      }
+
+      // Verify user owns this booking
+      if (booking.customerId !== userId) {
+        res.status(403).json({ error: 'Forbidden - not your booking' });
+        return;
+      }
+
+      const order = await paypalService.createOrder({
+        bookingId: validatedData.bookingId,
+        amount: validatedData.amount,
+        currency: validatedData.currency,
+        description: validatedData.description || `Payment for ${booking.service.name}`,
+        metadata: validatedData.metadata,
+      });
+
+      logger.info('[PayPal] Order created successfully', {
+        bookingId: validatedData.bookingId,
+        orderId: order.id,
+        amount: validatedData.amount,
+        userId,
+      });
+
+      res.status(200).json({
+        success: true,
+        data: order,
+      });
+    } catch (error) {
+      logger.error('Failed to create PayPal order', {
+        error: error instanceof Error ? error.message : error,
+        userId: req.user?.id,
+        body: req.body,
+      });
+
+      if (error instanceof z.ZodError) {
+        res.status(400).json({
+          error: 'Invalid request data',
+          details: error.errors,
+        });
+        return;
+      }
+
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to create PayPal order',
+      });
+    }
+  }
+
+  async capturePayPalOrder(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      const validatedData = capturePayPalOrderSchema.parse(req.body);
+
+      // Check if PayPal is configured
+      if (!paypalService.constructor.isConfigured()) {
+        res.status(503).json({
+          error: 'PayPal payment method is not available',
+        });
+        return;
+      }
+
+      const result = await paypalService.captureOrder({
+        orderId: validatedData.orderId,
+        metadata: validatedData.metadata,
+      });
+
+      // Extract booking ID from order metadata
+      const orderDetails = await paypalService.getOrderDetails(validatedData.orderId);
+      const bookingId = orderDetails.metadata?.bookingId;
+
+      if (bookingId && result.status === 'COMPLETED') {
+        // Update booking payment status
+        await prisma.booking.update({
+          where: { id: bookingId },
+          data: {
+            depositStatus: 'PAID',
+            status: 'CONFIRMED',
+          },
+        });
+
+        logger.info('[PayPal] Payment captured, booking confirmed', {
+          bookingId,
+          orderId: validatedData.orderId,
+          captureId: result.captureId,
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      logger.error('Failed to capture PayPal order', {
+        error: error instanceof Error ? error.message : error,
+        userId: req.user?.id,
+        body: req.body,
+      });
+
+      if (error instanceof z.ZodError) {
+        res.status(400).json({
+          error: 'Invalid request data',
+          details: error.errors,
+        });
+        return;
+      }
+
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to capture PayPal order',
+      });
+    }
+  }
+
+  async getPayPalOrderDetails(req: Request, res: Response): Promise<void> {
+    try {
+      const { orderId } = req.params;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      // Check if PayPal is configured
+      if (!paypalService.constructor.isConfigured()) {
+        res.status(503).json({
+          error: 'PayPal payment method is not available',
+        });
+        return;
+      }
+
+      const orderDetails = await paypalService.getOrderDetails(orderId);
+
+      res.status(200).json({
+        success: true,
+        data: orderDetails,
+      });
+    } catch (error) {
+      logger.error('Failed to get PayPal order details', {
+        error: error instanceof Error ? error.message : error,
+        orderId: req.params.orderId,
+        userId: req.user?.id,
+      });
+
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to get order details',
       });
     }
   }
