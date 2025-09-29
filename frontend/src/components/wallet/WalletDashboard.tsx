@@ -49,17 +49,18 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
       <div className="space-y-6">
         {/* Tab Navigation */}
         <div className="border-b border-gray-200 dark:border-gray-700">
-          <nav className="-mb-px flex space-x-8">
+          <nav className="-mb-px flex space-x-2 sm:space-x-8 overflow-x-auto scrollbar-hide px-1">
             <button
               onClick={() => setActiveTab('overview')}
               className={`${
                 activeTab === 'overview'
                   ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
+              } whitespace-nowrap py-3 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1 sm:gap-2 flex-shrink-0 mobile-touch-target`}
             >
-              <Wallet className="h-4 w-4" />
-              Overview
+              <Wallet className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Overview</span>
+              <span className="xs:hidden">Main</span>
             </button>
             <button
               onClick={() => setActiveTab('transactions')}
@@ -67,10 +68,11 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
                 activeTab === 'transactions'
                   ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
+              } whitespace-nowrap py-3 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1 sm:gap-2 flex-shrink-0 mobile-touch-target`}
             >
-              <History className="h-4 w-4" />
-              Transactions
+              <History className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Transactions</span>
+              <span className="xs:hidden">History</span>
             </button>
             <button
               onClick={() => setActiveTab('earnings')}
@@ -78,10 +80,11 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
                 activeTab === 'earnings'
                   ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
+              } whitespace-nowrap py-3 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1 sm:gap-2 flex-shrink-0 mobile-touch-target`}
             >
-              <CreditCard className="h-4 w-4" />
-              Earnings
+              <CreditCard className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Earnings</span>
+              <span className="xs:hidden">Earn</span>
             </button>
           </nav>
         </div>
@@ -89,7 +92,7 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
         {/* Tab Content */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
             {/* Wallet Balance */}
             <div className="lg:col-span-1">
               <WalletBalance
@@ -102,9 +105,9 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
             <div className="lg:col-span-2 space-y-4">
               {/* Recent Activity */}
               <Card>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold mb-2">Recent Activity</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                <div className="p-4 sm:p-6">
+                  <h3 className="text-base sm:text-lg font-semibold mb-2">Recent Activity</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4">
                     Your latest wallet transactions
                   </p>
                   <WalletTransactionHistory
@@ -117,18 +120,18 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
 
               {/* Quick Actions */}
               <Card>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold mb-2">Quick Actions</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                <div className="p-4 sm:p-6">
+                  <h3 className="text-base sm:text-lg font-semibold mb-2">Quick Actions</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4">
                     Common wallet operations
                   </p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Button variant="secondary" className="h-20 flex flex-col gap-2">
-                      <Gift className="h-6 w-6" />
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    <Button variant="secondary" className="h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 text-xs sm:text-sm">
+                      <Gift className="h-4 w-4 sm:h-6 sm:w-6" />
                       <span>Redeem Rewards</span>
                     </Button>
-                    <Button variant="secondary" className="h-20 flex flex-col gap-2">
-                      <Users className="h-6 w-6" />
+                    <Button variant="secondary" className="h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 text-xs sm:text-sm">
+                      <Users className="h-4 w-4 sm:h-6 sm:w-6" />
                       <span>Refer Friends</span>
                     </Button>
                   </div>
@@ -205,7 +208,7 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
   const earnings = calculateEarnings();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
       {/* Total Earnings */}
       <Card>
         <div className="p-6">
@@ -267,9 +270,9 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
 
       {/* Earnings Breakdown */}
       <Card className="md:col-span-2 lg:col-span-3">
-        <div className="p-6">
-          <h3 className="text-lg font-semibold mb-2">Earnings Breakdown</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        <div className="p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold mb-2">Earnings Breakdown</h3>
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4">
             See how your earnings are distributed
           </p>
           <div className="space-y-4">
@@ -301,27 +304,27 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
             )}
 
             {/* Earnings Categories */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-center justify-between p-3 rounded-lg border">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+              <div className="flex items-center justify-between p-2 sm:p-3 rounded-lg border">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                  <span className="text-sm">Referral Bonuses</span>
+                  <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
+                  <span className="text-xs sm:text-sm truncate">Referral Bonuses</span>
                 </div>
-                <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded">{formatPrice(earnings.referralEarnings)}</span>
+                <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2">{formatPrice(earnings.referralEarnings)}</span>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg border">
+              <div className="flex items-center justify-between p-2 sm:p-3 rounded-lg border">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-sm">Loyalty Rewards</span>
+                  <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0"></div>
+                  <span className="text-xs sm:text-sm truncate">Loyalty Rewards</span>
                 </div>
-                <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded">{formatPrice(earnings.loyaltyEarnings)}</span>
+                <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2">{formatPrice(earnings.loyaltyEarnings)}</span>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg border">
+              <div className="flex items-center justify-between p-2 sm:p-3 rounded-lg border sm:col-span-2 md:col-span-1">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                  <span className="text-sm">Forfeiture Share</span>
+                  <div className="w-3 h-3 bg-purple-500 rounded-full flex-shrink-0"></div>
+                  <span className="text-xs sm:text-sm truncate">Forfeiture Share</span>
                 </div>
-                <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded">{formatPrice(earnings.forfeitureEarnings)}</span>
+                <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2">{formatPrice(earnings.forfeitureEarnings)}</span>
               </div>
             </div>
           </div>

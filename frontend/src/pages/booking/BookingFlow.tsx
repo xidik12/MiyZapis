@@ -822,20 +822,20 @@ const BookingFlow: React.FC = () => {
               </h3>
               
               {getDisplayDates().length > 0 ? (
-                <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
+                <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
                   {getDisplayDates().slice(0, 14).map(({ date, dateInfo }) => (
                     <button
                       key={date.toISOString()}
                       onClick={() => setSelectedDate(date)}
-                      className={`p-2 text-sm rounded-lg border transition-colors relative ${
+                      className={`p-2 sm:p-3 text-xs sm:text-sm rounded-lg border transition-colors relative mobile-touch-target ${
                         selectedDate?.toDateString() === date.toDateString()
                           ? 'bg-primary-600 text-white border-primary-600'
-                          : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300'
+                          : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300 active:scale-95'
                       }`}
                       title={`${dateInfo.availableSlots} available slots (${dateInfo.workingHours})`}
                     >
                       <div className="text-center">
-                        <div className="font-medium">{date.getDate()}</div>
+                        <div className="font-medium text-sm sm:text-base">{date.getDate()}</div>
                         <div className="text-xs opacity-75">
                           {date.toLocaleDateString(language || 'en', { weekday: 'short' })}
                         </div>
@@ -844,7 +844,7 @@ const BookingFlow: React.FC = () => {
                         </div>
                       </div>
                       {dateInfo.availableSlots === 1 && (
-                        <span className="absolute -top-2 -right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">Only 1</span>
+                        <span className="absolute -top-1 -right-1 text-[10px] px-1 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">1</span>
                       )}
                     </button>
                   ))}
@@ -886,7 +886,7 @@ const BookingFlow: React.FC = () => {
                 )}
                 
                 {availableSlots.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
                     {availableSlots.map((slot: any) => {
                       const time = typeof slot === 'string' ? slot : slot.time;
                       const count = typeof slot === 'string' ? undefined : slot.count;
@@ -897,10 +897,10 @@ const BookingFlow: React.FC = () => {
                         <button
                           key={time}
                           onClick={() => setSelectedTime(time)}
-                          className={`relative px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                          className={`relative px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm rounded-lg border transition-colors mobile-touch-target ${
                             selectedTime === time
                               ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
-                              : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300'
+                              : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300 active:scale-95'
                           }`}
                         >
                           <div className="text-center">
@@ -910,7 +910,7 @@ const BookingFlow: React.FC = () => {
                             )}
                           </div>
                           {count === 1 && (
-                            <span className="absolute -top-2 -right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">1</span>
+                            <span className="absolute -top-1 -right-1 text-[10px] px-1 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">1</span>
                           )}
                         </button>
                       );
@@ -1700,12 +1700,12 @@ const BookingFlow: React.FC = () => {
         </div>
 
         {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between overflow-x-auto pb-2">
+        <div className="mb-6 md:mb-8">
+          <div className="flex items-center justify-between overflow-x-auto pb-2 px-1">
             {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
+              <div key={step.id} className="flex items-center min-w-0">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
+                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium flex-shrink-0 ${
                     index <= currentStep
                       ? 'bg-primary-600 text-white'
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
@@ -1713,9 +1713,9 @@ const BookingFlow: React.FC = () => {
                 >
                   {index + 1}
                 </div>
-                <div className="ml-3 hidden md:block">
+                <div className="ml-2 sm:ml-3 hidden sm:block">
                   <p
-                    className={`text-sm font-medium whitespace-nowrap ${
+                    className={`text-xs sm:text-sm font-medium whitespace-nowrap ${
                       index <= currentStep
                         ? 'text-primary-600'
                         : 'text-gray-500 dark:text-gray-400'
@@ -1726,7 +1726,7 @@ const BookingFlow: React.FC = () => {
                 </div>
                 {index < steps.length - 1 && (
                   <div
-                    className={`w-8 sm:w-12 h-0.5 mx-2 sm:mx-4 flex-shrink-0 ${
+                    className={`w-4 sm:w-8 md:w-12 h-0.5 mx-1 sm:mx-2 md:mx-4 flex-shrink-0 ${
                       index < currentStep
                         ? 'bg-primary-600'
                         : 'bg-gray-200 dark:bg-gray-700'
@@ -1735,6 +1735,12 @@ const BookingFlow: React.FC = () => {
                 )}
               </div>
             ))}
+          </div>
+          {/* Mobile step indicator */}
+          <div className="sm:hidden mt-2 text-center">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}
+            </p>
           </div>
         </div>
 
@@ -1745,21 +1751,20 @@ const BookingFlow: React.FC = () => {
 
         {/* Navigation Buttons */}
         {currentStep < steps.length - 1 && (
-          <div className="flex justify-between gap-4">
+          <div className="flex justify-between gap-3 sm:gap-4 pb-safe-bottom">
             <button
               onClick={handlePrevStep}
               disabled={currentStep === 0}
-              className={`flex items-center px-4 sm:px-6 py-2 rounded-lg transition-colors flex-shrink-0 ${
+              className={`flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 rounded-lg transition-colors flex-shrink-0 mobile-touch-target ${
                 currentStep === 0
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 active:scale-95'
               }`}
             >
-              <ArrowLeftIcon className="w-5 h-5 mr-2" />
-              <span className="hidden sm:inline">{t('navigation.previous')}</span>
-              <span className="sm:hidden">{t('navigation.prev') || 'Prev'}</span>
+              <ArrowLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+              <span className="text-sm sm:text-base">{t('navigation.prev') || 'Prev'}</span>
             </button>
-            
+
             <button
               onClick={handleNextStep}
               disabled={
@@ -1767,11 +1772,10 @@ const BookingFlow: React.FC = () => {
                 (currentStep === 2 && !service) ||
                 (currentStep === 3 && (!paymentResult || (paymentResult.requiresPayment && paymentResult.status !== 'COMPLETED')))
               }
-              className="flex items-center px-4 sm:px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0"
+              className="flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0 mobile-touch-target active:scale-95"
             >
-              <span className="hidden sm:inline">{t('navigation.next')}</span>
-              <span className="sm:hidden">{t('navigation.next') || 'Next'}</span>
-              <ArrowRightIcon className="w-5 h-5 ml-2" />
+              <span className="text-sm sm:text-base">{t('navigation.next') || 'Next'}</span>
+              <ArrowRightIcon className="w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2" />
             </button>
           </div>
         )}
