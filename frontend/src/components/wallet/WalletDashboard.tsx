@@ -8,6 +8,8 @@ import { referralService } from '../../services/referral.service';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { walletService } from '../../services/wallet.service';
 import { ReferralAnalytics } from '../../types/referral';
+import { useAppSelector } from '../../hooks/redux';
+import { selectUser } from '../../store/slices/authSlice';
 
 interface WalletDashboardProps {
   className?: string;
@@ -17,6 +19,10 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
   const [activeTab, setActiveTab] = useState('overview');
   const [referralAnalytics, setReferralAnalytics] = useState<ReferralAnalytics | null>(null);
   const { formatPrice } = useCurrency();
+  const user = useAppSelector(selectUser);
+
+  // Only specialists should see earnings tab
+  const isSpecialist = user?.userType === 'specialist';
 
   useEffect(() => {
     const loadReferralAnalytics = async () => {
@@ -74,18 +80,20 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
               <span className="hidden xs:inline">Transactions</span>
               <span className="xs:hidden">History</span>
             </button>
-            <button
-              onClick={() => setActiveTab('earnings')}
-              className={`${
-                activeTab === 'earnings'
-                  ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              } whitespace-nowrap py-3 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1 sm:gap-2 flex-shrink-0 mobile-touch-target`}
-            >
-              <CreditCard className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Earnings</span>
-              <span className="xs:hidden">Earn</span>
-            </button>
+            {isSpecialist && (
+              <button
+                onClick={() => setActiveTab('earnings')}
+                className={`${
+                  activeTab === 'earnings'
+                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                } whitespace-nowrap py-3 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1 sm:gap-2 flex-shrink-0 mobile-touch-target`}
+              >
+                <CreditCard className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">Earnings</span>
+                <span className="xs:hidden">Earn</span>
+              </button>
+            )}
           </nav>
         </div>
 
@@ -148,7 +156,7 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
           </div>
         )}
 
-        {activeTab === 'earnings' && (
+        {activeTab === 'earnings' && isSpecialist && (
           <div className="space-y-6">
           <EarningsOverview referralAnalytics={referralAnalytics} formatPrice={formatPrice} />
           </div>
