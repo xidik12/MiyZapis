@@ -1093,9 +1093,8 @@ const translations: Translations = {
   'admin.status.customer': { en: 'customer', uk: 'клієнт', ru: 'клиент' },
   'admin.status.specialist': { en: 'specialist', uk: 'спеціаліст', ru: 'специалист' },
 
-  
+
   // Notification dropdown
-  'notifications.title': { en: 'Notifications', uk: 'Уведомления', ru: 'Уведомления' },
   'notifications.viewAll': { en: 'View all notifications', uk: 'Просмотреть все уведомления', ru: 'Просмотреть все уведомления' },
   
   // Notification messages
@@ -1418,19 +1417,8 @@ const translations: Translations = {
   'booking.payment': { en: 'Payment', uk: 'Оплата', ru: 'Оплата' },
   'booking.confirmation': { en: 'Confirmation', uk: 'Підтвердження', ru: 'Подтверждение' },
   'booking.additionalNotes': { en: 'Additional Notes', uk: 'Додаткові примітки', ru: 'Дополнительные заметки' },
-  'booking.notesPlaceholder': { en: 'Add any special requirements or notes...', uk: 'Додайте будь-які особливі вимоги або примітки...', ru: 'Добавьте любые особые требования или заметки...' },
-  'booking.summary': { en: 'Summary', uk: 'Підсумок', ru: 'Итого' },
-  'booking.specialist': { en: 'Specialist', uk: 'Спеціаліст', ru: 'Специалист' },
-  'booking.service': { en: 'Service', uk: 'Послуга', ru: 'Услуга' },
-  'booking.dateTime': { en: 'Date & Time', uk: 'Дата і час', ru: 'Дата и время' },
-  'booking.total': { en: 'Total', uk: 'Загалом', ru: 'Итого' },
   'booking.discount': { en: 'Discount', uk: 'Знижка', ru: 'Скидка' },
-  'booking.applyReward': { en: 'Apply a Reward', uk: 'Застосувати винагороду', ru: 'Применить награду' },
-  'booking.selectReward': { en: 'Choose a reward to apply', uk: 'Оберіть винагороду для застосування', ru: 'Выберите награду для применения' },
-  'booking.noRewardSelected': { en: 'No reward selected', uk: 'Винагороду не обрано', ru: 'Награда не выбрана' },
-  'booking.freeService': { en: 'Free service', uk: 'Безкоштовна послуга', ru: 'Бесплатная услуга' },
   'booking.reward': { en: 'Reward', uk: 'Винагорода', ru: 'Награда' },
-  'booking.expires': { en: 'Expires', uk: 'Діє до', ru: 'Истекает' },
   'booking.rewardApplied': { en: 'Reward Applied!', uk: 'Винагороду застосовано!', ru: 'Награда применена!' },
   'booking.youSave': { en: 'You save', uk: 'Ви економите', ru: 'Вы экономите' },
 
@@ -1821,7 +1809,6 @@ const translations: Translations = {
   'booking.step.payment': { en: 'Payment', uk: 'Оплата', ru: 'Оплата' },
   'booking.step.confirmation': { en: 'Confirmation', uk: 'Підтвердження', ru: 'Подтверждение' },
   'booking.videoCall': { en: 'Video call', uk: 'Відеозв\'язок', ru: 'Видеозвонок' },
-  'booking.additionalNotes': { en: 'Additional notes (optional)', uk: 'Додаткові примітки (необов\'язково)', ru: 'Дополнительные заметки (необязательно)' },
   'booking.online': { en: 'Online', uk: 'Онлайн', ru: 'Онлайн' },
   'booking.offline': { en: 'Offline', uk: 'Офлайн', ru: 'Офлайн' },
 

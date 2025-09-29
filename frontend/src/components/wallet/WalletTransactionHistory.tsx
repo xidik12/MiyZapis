@@ -133,6 +133,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
+        </div>
 
         <div className="space-y-4">
         {/* Filter Panel */}

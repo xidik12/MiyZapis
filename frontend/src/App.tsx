@@ -41,6 +41,7 @@ const CustomerSettings = React.lazy(() => import('./pages/customer/Settings'));
   const PaymentMethods = React.lazy(() => import('./pages/customer/PaymentMethods'));
   const CustomerMessages = React.lazy(() => import('./pages/customer/Messages'));
   const CustomerReferrals = React.lazy(() => import('./pages/customer/Referrals'));
+const CustomerWallet = React.lazy(() => import('./pages/customer/Wallet'));
 
 // Specialist pages
 const SpecialistDashboard = React.lazy(() => import('./pages/specialist/Dashboard'));
@@ -53,6 +54,8 @@ const SpecialistEarnings = React.lazy(() => import('./pages/specialist/Earnings'
 const SpecialistReviews = React.lazy(() => import('./pages/specialist/Reviews'));
 const SpecialistLoyalty = React.lazy(() => import('./pages/specialist/Loyalty'));
 const SpecialistMessages = React.lazy(() => import('./pages/specialist/Messages'));
+const SpecialistReferrals = React.lazy(() => import('./pages/specialist/Referrals'));
+const SpecialistWallet = React.lazy(() => import('./pages/specialist/Wallet'));
 
 // Customer pages
 const CustomerReviews = React.lazy(() => import('./pages/customer/Reviews'));
@@ -335,6 +338,30 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/specialist/referrals"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistReferrals />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/specialist/wallet"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistWallet />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
 
           {/* Customer protected routes with /customer prefix */}
           <Route
@@ -481,6 +508,18 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/customer/wallet"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerWallet />
+                  </Suspense>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
 
           {/* Legacy customer routes without /customer prefix for backward compatibility */}
           <Route
@@ -597,6 +636,18 @@ function App() {
                 <CustomerLayout>
                   <Suspense fallback={<SuspenseLoader />}>
                     <PaymentMethods />
+                  </Suspense>
+                </CustomerLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/wallet"
+            element={
+              <ProtectedRoute requiredUserType="customer">
+                <CustomerLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerWallet />
                   </Suspense>
                 </CustomerLayout>
               </ProtectedRoute>
