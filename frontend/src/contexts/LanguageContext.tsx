@@ -1763,6 +1763,7 @@ const translations: Translations = {
   'customer.nav.favorites': { en: 'Favorites', uk: 'Улюблені', ru: 'Избранные' },
   'customer.nav.reviews': { en: 'Reviews', uk: 'Відгуки', ru: 'Отзывы' },
   'customer.nav.messages': { en: 'Messages', uk: 'Повідомлення', ru: 'Сообщения' },
+  'customer.nav.wallet': { en: 'Wallet', uk: 'Гаманець', ru: 'Кошелек' },
   'customer.nav.payments': { en: 'Payments', uk: 'Платежі', ru: 'Платежи' },
   'customer.nav.loyalty': { en: 'Loyalty Points', uk: 'Бали лояльності', ru: 'Баллы лояльности' },
   'customer.nav.referrals': { en: 'Referrals', uk: 'Реферали', ru: 'Рефералы' },
