@@ -164,7 +164,7 @@ export class PayPalService {
         })
       };
 
-      const response = await this.ordersController.createOrder({
+      const response = await this.ordersController.ordersCreate({
         body: orderRequest,
         payPalRequestId: `${bookingId}-${Date.now()}`
       });
@@ -206,7 +206,7 @@ export class PayPalService {
     try {
       logger.info('[PayPal] Fetching order details', { orderId });
 
-      const response = await this.ordersController.getOrder({
+      const response = await this.ordersController.ordersGet({
         id: orderId
       });
 
@@ -240,14 +240,10 @@ export class PayPalService {
 
       logger.info('[PayPal] Capturing order', { orderId });
 
-      const response = await this.ordersController.captureOrder({
+      const response = await this.ordersController.ordersCapture({
         id: orderId,
         payPalRequestId: `capture-${orderId}-${Date.now()}`,
-        body: {
-          paymentSource: {
-            paypal: {}
-          }
-        }
+        body: {}
       });
 
       if (response.result && response.result.status === 'COMPLETED') {
@@ -301,7 +297,7 @@ export class PayPalService {
         noteToPayer: reason
       };
 
-      const response = await this.paymentsController.refundCapturedPayment({
+      const response = await this.paymentsController.capturesRefund({
         captureId,
         body: refundRequest,
         payPalRequestId: `refund-${captureId}-${Date.now()}`

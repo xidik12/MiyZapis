@@ -1436,9 +1436,10 @@ export class PaymentController {
         userId: req.user.id
       });
 
+      // PayPal expects amount in cents/smallest currency unit
       const paypalOrder = await paypalService.createOrder({
         bookingId,
-        amount,
+        amount: Math.round(amount * 100), // Convert to cents
         currency,
         description,
         metadata: {
@@ -1695,6 +1696,17 @@ export class PaymentController {
       const signature = req.headers['paypal-transmission-sig'] as string;
       const webhookId = req.headers['paypal-webhook-id'] as string;
 
+      if (!signature || !webhookId) {
+        logger.warn('[PayPal] Webhook received without required headers', {
+          hasSignature: !!signature,
+          hasWebhookId: !!webhookId,
+        });
+        res.status(400).json({
+          error: 'Missing required webhook headers'
+        });
+        return;
+      }
+
       logger.info('[PayPal] Webhook received', {
         eventType: req.body.event_type,
         resourceType: req.body.resource_type,
@@ -1709,7 +1721,10 @@ export class PaymentController {
       );
 
       if (!isValid) {
-        logger.warn('[PayPal] Invalid webhook signature');
+        logger.warn('[PayPal] Invalid webhook signature', {
+          eventType: req.body.event_type,
+          webhookId,
+        });
         res.status(401).json({
           error: 'Invalid webhook signature'
         });
@@ -1824,9 +1839,10 @@ export class PaymentController {
         userId: req.user.id
       });
 
+      // WayForPay expects amount in smallest currency unit (kopeks/cents)
       const wayforpayInvoice = await wayforpayService.createInvoice({
         bookingId,
-        amount,
+        amount: Math.round(amount * 100), // Convert to smallest unit
         currency,
         description,
         customerEmail,
@@ -1920,19 +1936,34 @@ export class PaymentController {
   // Handle WayForPay webhook
   static async handleWayForPayWebhook(req: Request, res: Response): Promise<void> {
     try {
-      logger.info('[WayForPay] Webhook received', {
-        merchantAccount: req.body.merchantAccount,
-        orderReference: req.body.orderReference,
-        transactionStatus: req.body.transactionStatus
-      });
-
       const webhookData = req.body;
+
+      if (!webhookData || !webhookData.merchantAccount || !webhookData.orderReference || !webhookData.merchantSignature) {
+        logger.warn('[WayForPay] Webhook received with missing required fields', {
+          hasMerchantAccount: !!webhookData?.merchantAccount,
+          hasOrderReference: !!webhookData?.orderReference,
+          hasSignature: !!webhookData?.merchantSignature,
+        });
+        res.status(400).json({
+          error: 'Missing required webhook fields'
+        });
+        return;
+      }
+
+      logger.info('[WayForPay] Webhook received', {
+        merchantAccount: webhookData.merchantAccount,
+        orderReference: webhookData.orderReference,
+        transactionStatus: webhookData.transactionStatus
+      });
 
       // Process the webhook
       const result = await wayforpayService.processWebhook(webhookData);
 
       if (!result.isValid) {
-        logger.warn('[WayForPay] Invalid webhook signature');
+        logger.warn('[WayForPay] Invalid webhook signature', {
+          orderReference: webhookData.orderReference,
+          transactionStatus: webhookData.transactionStatus,
+        });
         res.status(401).json({
           error: 'Invalid webhook signature'
         });

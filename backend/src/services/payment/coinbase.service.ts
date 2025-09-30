@@ -241,13 +241,38 @@ export class CoinbaseCommerceService {
         .update(payload, 'utf8')
         .digest('hex');
 
-      return crypto.timingSafeEqual(
-        Buffer.from(signature, 'hex'),
-        Buffer.from(expectedSignature, 'hex')
-      );
+      // Handle case where signature might not be hex-encoded
+      let signatureBuffer: Buffer;
+      let expectedBuffer: Buffer;
+
+      try {
+        signatureBuffer = Buffer.from(signature, 'hex');
+        expectedBuffer = Buffer.from(expectedSignature, 'hex');
+      } catch (bufferError) {
+        // If hex decoding fails, try comparing as strings
+        logger.warn('Signature not in hex format, comparing as strings', {
+          signatureLength: signature.length,
+          expectedLength: expectedSignature.length,
+        });
+        return signature === expectedSignature;
+      }
+
+      // Ensure buffers are same length before timing-safe comparison
+      if (signatureBuffer.length !== expectedBuffer.length) {
+        logger.warn('Signature length mismatch', {
+          receivedLength: signatureBuffer.length,
+          expectedLength: expectedBuffer.length,
+          signature: signature.substring(0, 20) + '...',
+          expectedSignature: expectedSignature.substring(0, 20) + '...',
+        });
+        return false;
+      }
+
+      return crypto.timingSafeEqual(signatureBuffer, expectedBuffer);
     } catch (error) {
       logger.error('Failed to verify webhook signature', {
         error: error instanceof Error ? error.message : error,
+        stack: error instanceof Error ? error.stack : undefined,
       });
       return false;
     }

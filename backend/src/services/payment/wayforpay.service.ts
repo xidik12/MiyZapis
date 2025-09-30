@@ -89,10 +89,7 @@ export class WayForPayService {
     try {
       const values: string[] = [];
 
-      // Add merchant account and secret key to the beginning
-      values.push(this.merchantAccount);
-
-      // Add specified fields in order
+      // Add specified fields in order (merchantAccount should be in fields array)
       fields.forEach(field => {
         if (data[field] !== undefined && data[field] !== null) {
           if (Array.isArray(data[field])) {
@@ -103,14 +100,13 @@ export class WayForPayService {
         }
       });
 
-      // Add merchant secret to the end
-      values.push(this.merchantSecret);
-
-      const signatureString = values.join(';');
+      // Signature string format: field1;field2;field3;merchantSecret
+      const signatureString = values.join(';') + ';' + this.merchantSecret;
       const signature = crypto.createHash('md5').update(signatureString).digest('hex');
 
       logger.debug('[WayForPay] Generated signature', {
         fields: fields,
+        valuesCount: values.length,
         signatureString: signatureString.replace(this.merchantSecret, '***'),
         signature
       });
@@ -118,7 +114,7 @@ export class WayForPayService {
       return signature;
     } catch (error) {
       logger.error('[WayForPay] Failed to generate signature', {
-        error: error.message,
+        error: error instanceof Error ? error.message : error,
         fields
       });
       throw error;
@@ -128,19 +124,16 @@ export class WayForPayService {
   // Verify webhook signature
   private verifySignature(data: WayForPayWebhookData): boolean {
     try {
+      // WayForPay webhook signature fields in exact order
       const fields = [
+        'merchantAccount',
         'orderReference',
         'amount',
         'currency',
         'authCode',
-        'email',
-        'phone',
-        'createdDate',
-        'processingDate',
         'cardPan',
-        'cardType',
-        'issuerBankCountry',
-        'issuerBankName'
+        'transactionStatus',
+        'reasonCode'
       ];
 
       const expectedSignature = this.generateSignature(data, fields);
@@ -149,13 +142,15 @@ export class WayForPayService {
       logger.info('[WayForPay] Webhook signature verification', {
         isValid,
         orderReference: data.orderReference,
-        transactionStatus: data.transactionStatus
+        transactionStatus: data.transactionStatus,
+        receivedSignature: data.merchantSignature?.substring(0, 10) + '...',
+        expectedSignature: expectedSignature.substring(0, 10) + '...',
       });
 
       return isValid;
     } catch (error) {
       logger.error('[WayForPay] Webhook signature verification failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : error,
         orderReference: data.orderReference
       });
       return false;
@@ -205,7 +200,9 @@ export class WayForPayService {
       }
 
       // Generate signature
+      // WayForPay invoice signature fields in exact order
       const signatureFields = [
+        'merchantAccount',
         'merchantDomainName',
         'orderReference',
         'orderDate',
@@ -264,6 +261,7 @@ export class WayForPayService {
     amount: number;
     currency: string;
     transactionId?: string;
+    data: WayForPayWebhookData;
   }> {
     try {
       logger.info('[WayForPay] Processing webhook', {
@@ -284,7 +282,8 @@ export class WayForPayService {
           transactionStatus: 'SIGNATURE_INVALID',
           orderReference: webhookData.orderReference,
           amount: webhookData.amount,
-          currency: webhookData.currency
+          currency: webhookData.currency,
+          data: webhookData
         };
       }
 
@@ -294,7 +293,8 @@ export class WayForPayService {
         orderReference: webhookData.orderReference,
         amount: webhookData.amount,
         currency: webhookData.currency,
-        transactionId: webhookData.authCode // Use authCode as transaction ID
+        transactionId: webhookData.authCode, // Use authCode as transaction ID
+        data: webhookData
       };
 
     } catch (error) {
@@ -316,7 +316,7 @@ export class WayForPayService {
         orderReference,
       };
 
-      const signatureFields = ['orderReference'];
+      const signatureFields = ['merchantAccount', 'orderReference'];
       const merchantSignature = this.generateSignature(requestData, signatureFields);
 
       const postData = {
