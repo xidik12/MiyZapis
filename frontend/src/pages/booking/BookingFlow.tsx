@@ -66,7 +66,7 @@ const BookingFlow: React.FC = () => {
 
   // Payment states
   const [useWalletFirst, setUseWalletFirst] = useState<boolean>(true);
-  const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'paypal'>('crypto');
+  const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'paypal' | 'wayforpay'>('crypto');
   const [paymentLoading, setPaymentLoading] = useState<boolean>(false);
   const [paymentResult, setPaymentResult] = useState<any>(null);
   const [showQRCode, setShowQRCode] = useState<boolean>(false);
@@ -1248,7 +1248,7 @@ const BookingFlow: React.FC = () => {
                       name="paymentMethod"
                       value="crypto"
                       checked={paymentMethod === 'crypto'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal')}
+                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal' | 'wayforpay')}
                       className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                     />
                     <div className="flex-1">
@@ -1272,7 +1272,7 @@ const BookingFlow: React.FC = () => {
                       name="paymentMethod"
                       value="paypal"
                       checked={paymentMethod === 'paypal'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal')}
+                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal' | 'wayforpay')}
                       className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                     />
                     <div className="flex-1">
@@ -1286,6 +1286,30 @@ const BookingFlow: React.FC = () => {
                           <div className="font-medium text-gray-900 dark:text-white">PayPal</div>
                           <div className="text-sm text-gray-600 dark:text-gray-400">Pay with PayPal, credit cards, or bank account</div>
                           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Fast and secure traditional payment</div>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+
+                  {/* WayForPay Payment Option */}
+                  <label className="flex items-start space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="wayforpay"
+                      checked={paymentMethod === 'wayforpay'}
+                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal' | 'wayforpay')}
+                      className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+                          <CreditCardIcon className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">WayForPay</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Ukrainian payment system with cards and banking</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Support for UAH and other local payment methods</div>
                         </div>
                       </div>
                     </div>

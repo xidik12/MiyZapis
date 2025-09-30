@@ -55,19 +55,21 @@ export class PaymentService {
     customerNotes?: string;
     loyaltyPointsUsed: number;
     useWalletFirst: boolean;
-    paymentMethod?: 'AUTO' | 'CRYPTO_ONLY' | 'PAYPAL';
+    paymentMethod?: 'AUTO' | 'CRYPTO_ONLY' | 'PAYPAL' | 'WAYFORPAY';
   }): Promise<{
     paymentId: string;
     status: string;
     paymentMethod: string;
     cryptoPayment?: any;
     paypalPayment?: any;
+    wayforpayPayment?: any;
     walletTransaction?: any;
     totalPaid: number;
     remainingAmount: number;
     paymentUrl?: string;
     qrCodeUrl?: string;
     approvalUrl?: string;
+    invoiceUrl?: string;
     message: string;
   }> {
     console.log('💳 PaymentService: Creating payment intent:', data);
@@ -78,12 +80,14 @@ export class PaymentService {
       paymentMethod: string;
       cryptoPayment?: any;
       paypalPayment?: any;
+      wayforpayPayment?: any;
       walletTransaction?: any;
       totalPaid: number;
       remainingAmount: number;
       paymentUrl?: string;
       qrCodeUrl?: string;
       approvalUrl?: string;
+      invoiceUrl?: string;
       message: string;
     }>('/crypto-payments/intent', {
       ...data,
