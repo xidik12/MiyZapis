@@ -465,7 +465,13 @@ const BookingFlow: React.FC = () => {
         duration: service.duration || 60,
         customerNotes: bookingNotes || undefined,
         loyaltyPointsUsed: 0,
-        useWalletFirst
+        useWalletFirst,
+        amount: finalPrice * 100, // Amount in cents
+        currency: service.currency || 'USD',
+        serviceName: service.name,
+        specialistName: specialist.user?.firstName && specialist.user?.lastName
+          ? `${specialist.user.firstName} ${specialist.user.lastName}`
+          : specialist.businessName || 'Specialist'
       };
 
       let depositResult;
@@ -476,7 +482,7 @@ const BookingFlow: React.FC = () => {
           bookingId: `booking-${Date.now()}`, // Temporary booking ID
           amount: finalPrice * 100, // Convert to cents
           currency: service.currency || 'USD',
-          description: `${service.name} - ${specialist.user?.firstName} ${specialist.user?.lastName}`
+          description: `${service.name} - ${paymentData.specialistName}`
         };
 
         const paypalResult = await paymentService.createPayPalOrder(paypalOrderData);
@@ -490,9 +496,10 @@ const BookingFlow: React.FC = () => {
           throw new Error('PayPal order created but no approval URL received');
         }
       } else {
-        // Handle crypto payment (existing logic)
+        // Handle crypto payment with Coinbase Commerce
+        console.log('💳 BookingFlow: Creating Coinbase Commerce charge...');
         depositResult = await paymentService.createCryptoPaymentIntent(paymentData);
-        console.log('✅ BookingFlow: Payment intent created:', depositResult);
+        console.log('✅ BookingFlow: Coinbase charge created:', depositResult);
       }
 
       // Store payment result for UI

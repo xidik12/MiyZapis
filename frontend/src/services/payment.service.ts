@@ -102,7 +102,7 @@ export class PaymentService {
     return response.data;
   }
 
-  // Legacy method for backward compatibility
+  // Create Coinbase Commerce charge for crypto payment
   async createCryptoPaymentIntent(data: {
     serviceId: string;
     scheduledAt: string;
@@ -110,22 +110,72 @@ export class PaymentService {
     customerNotes?: string;
     loyaltyPointsUsed: number;
     useWalletFirst: boolean;
+    amount: number; // Amount in cents
+    currency: string;
+    serviceName: string;
+    specialistName?: string;
   }): Promise<{
-    paymentId: string;
-    status: string;
-    paymentMethod: string;
+    paymentId?: string;
+    status?: string;
+    paymentMethod?: string;
     cryptoPayment?: any;
+    charge?: {
+      id: string;
+      code: string;
+      paymentUrl: string;
+      qrCodeUrl?: string;
+      expiresAt: Date;
+    };
     walletTransaction?: any;
-    totalPaid: number;
-    remainingAmount: number;
+    totalPaid?: number;
+    remainingAmount?: number;
     paymentUrl?: string;
     qrCodeUrl?: string;
-    message: string;
+    message?: string;
   }> {
-    return this.createPaymentIntent({
-      ...data,
-      paymentMethod: 'CRYPTO_ONLY'
+    console.log('💳 PaymentService: Creating Coinbase charge for crypto payment:', data);
+
+    // Create a temporary booking ID for Coinbase metadata
+    const tempBookingId = `temp-booking-${Date.now()}`;
+
+    const response = await apiClient.post<{
+      charge: {
+        id: string;
+        code: string;
+        paymentUrl: string;
+        qrCodeUrl?: string;
+        expiresAt: Date;
+      };
+    }>('/payments/coinbase/create-charge', {
+      bookingId: tempBookingId,
+      amount: data.amount / 100, // Convert cents to dollars for Coinbase
+      currency: data.currency,
+      name: data.serviceName,
+      description: data.specialistName
+        ? `${data.serviceName} - ${data.specialistName}`
+        : data.serviceName,
+      metadata: {
+        serviceId: data.serviceId,
+        scheduledAt: data.scheduledAt,
+        duration: data.duration,
+        customerNotes: data.customerNotes,
+        loyaltyPointsUsed: data.loyaltyPointsUsed,
+        useWalletFirst: data.useWalletFirst
+      }
     });
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to create Coinbase charge');
+    }
+
+    console.log('✅ PaymentService: Coinbase charge created:', response.data);
+
+    return {
+      charge: response.data.charge,
+      paymentUrl: response.data.charge.paymentUrl,
+      qrCodeUrl: response.data.charge.qrCodeUrl,
+      message: 'Crypto payment initiated'
+    };
   }
 
   // Process deposit payment (legacy method for compatibility)
