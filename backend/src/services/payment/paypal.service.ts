@@ -144,8 +144,8 @@ export class PayPalService {
           landingPage: 'BILLING',
           shippingPreference: 'NO_SHIPPING',
           userAction: 'PAY_NOW',
-          returnUrl: `${config.frontend.url}/booking/payment/success`,
-          cancelUrl: `${config.frontend.url}/booking/payment/cancel`
+          returnUrl: `${config.frontend.url || 'https://miyzapis.com'}/booking/payment/success`,
+          cancelUrl: `${config.frontend.url || 'https://miyzapis.com'}/booking/payment/cancel`
         },
         // Add custom metadata
         ...(Object.keys(metadata).length > 0 && {
@@ -164,9 +164,9 @@ export class PayPalService {
         })
       };
 
-      const response = await this.ordersController.ordersCreate({
+      const response = await this.ordersController.createOrder({
         body: orderRequest,
-        payPalRequestId: `${bookingId}-${Date.now()}`
+        paypalRequestId: `${bookingId}-${Date.now()}`
       });
 
       if (response.result && response.result.id) {
@@ -206,7 +206,7 @@ export class PayPalService {
     try {
       logger.info('[PayPal] Fetching order details', { orderId });
 
-      const response = await this.ordersController.ordersGet({
+      const response = await this.ordersController.getOrder({
         id: orderId
       });
 
@@ -240,9 +240,9 @@ export class PayPalService {
 
       logger.info('[PayPal] Capturing order', { orderId });
 
-      const response = await this.ordersController.ordersCapture({
+      const response = await this.ordersController.captureOrder({
         id: orderId,
-        payPalRequestId: `capture-${orderId}-${Date.now()}`,
+        paypalRequestId: `capture-${orderId}-${Date.now()}`,
         body: {}
       });
 
@@ -297,10 +297,10 @@ export class PayPalService {
         noteToPayer: reason
       };
 
-      const response = await this.paymentsController.capturesRefund({
+      const response = await this.paymentsController.refundCapturedPayment({
         captureId,
         body: refundRequest,
-        payPalRequestId: `refund-${captureId}-${Date.now()}`
+        paypalRequestId: `refund-${captureId}-${Date.now()}`
       });
 
       if (response.result) {
