@@ -205,7 +205,7 @@ export class PaymentController {
           metadata: {
             serviceId: validatedData.serviceId,
             scheduledAt: validatedData.scheduledAt,
-            duration: validatedData.duration,
+            duration: String(validatedData.duration),
             customerId: userId,
             paymentFor: 'booking_deposit',
             isPaymentIntent: 'true'
@@ -279,7 +279,7 @@ export class PaymentController {
           metadata: {
             serviceId: validatedData.serviceId,
             scheduledAt: validatedData.scheduledAt,
-            duration: validatedData.duration,
+            duration: String(validatedData.duration),
             customerId: userId,
             paymentFor: 'booking_deposit',
             isPaymentIntent: 'true'
