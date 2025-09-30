@@ -1260,7 +1260,7 @@ export class PaymentController {
       const booking = await prisma.booking.findUnique({
         where: { id: validatedData.bookingId },
         include: {
-          customer: { include: { user: true } },
+          customer: true, // customer is a User
           service: true,
         },
       });
@@ -1281,7 +1281,7 @@ export class PaymentController {
         amount: validatedData.amount,
         currency: validatedData.currency,
         description: validatedData.description || `Payment for ${booking.service.name}`,
-        customerEmail: validatedData.customerEmail || booking.customer.user.email,
+        customerEmail: validatedData.customerEmail || booking.customer.email,
         customerPhone: validatedData.customerPhone,
         metadata: validatedData.metadata,
       });
@@ -1538,7 +1538,7 @@ export class PaymentController {
         booking = await prisma.booking.findUnique({
           where: { id: validatedData.bookingId },
           include: {
-            customer: { include: { user: true } },
+            customer: true, // customer is a User
             service: true,
           },
         });
