@@ -283,6 +283,91 @@ class SocketService {
     this.eventHandlers.get(event)!.add(handler);
   }
 
+  // Enhanced subscription for payment events with auto-retry
+  subscribeToPayment(paymentId: string, handler: SocketEventHandler): () => void {
+    // Ensure connection is active
+    if (!this.isSocketConnected()) {
+      console.log('[Socket] Attempting to reconnect for payment subscription');
+      this.ensureConnection();
+    }
+
+    // Subscribe to both specific and general payment events
+    this.on('payment:completed', handler);
+    this.on('notification', (data: any) => {
+      if (data.type === 'PAYMENT_COMPLETED' && data.data?.paymentId === paymentId) {
+        handler(data.data);
+      }
+    });
+
+    // Join payment-specific room if connected
+    if (this.isSocketConnected()) {
+      this.send('payment:subscribe', { paymentId });
+    }
+
+    // Return unsubscribe function
+    return () => {
+      this.off('payment:completed', handler);
+      if (this.isSocketConnected()) {
+        this.send('payment:unsubscribe', { paymentId });
+      }
+    };
+  }
+
+  // Ensure WebSocket connection with retry
+  ensureConnection(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (this.isSocketConnected()) {
+        resolve(true);
+        return;
+      }
+
+      // Try to reconnect
+      const token = getAuthToken();
+      if (!token) {
+        console.warn('[Socket] No auth token for reconnection');
+        resolve(false);
+        return;
+      }
+
+      // Set up one-time connection listener
+      const onConnect = () => {
+        this.socket?.off('connect', onConnect);
+        this.socket?.off('connect_error', onError);
+        resolve(true);
+      };
+
+      const onError = () => {
+        this.socket?.off('connect', onConnect);
+        this.socket?.off('connect_error', onError);
+        resolve(false);
+      };
+
+      // Attempt reconnection
+      try {
+        if (!this.socket || this.socket.disconnected) {
+          this.connect();
+        } else {
+          this.socket.connect();
+        }
+
+        this.socket?.on('connect', onConnect);
+        this.socket?.on('connect_error', onError);
+
+        // Timeout after 5 seconds
+        setTimeout(() => {
+          this.socket?.off('connect', onConnect);
+          this.socket?.off('connect_error', onError);
+          if (!this.isSocketConnected()) {
+            resolve(false);
+          }
+        }, 5000);
+      } catch (error) {
+        console.error('[Socket] Error during reconnection:', error);
+        resolve(false);
+      }
+    });
+  }
+
   // Unsubscribe from socket events
   off<T = any>(event: string, handler: SocketEventHandler<T>): void {
     const handlers = this.eventHandlers.get(event);
@@ -439,5 +524,13 @@ export const onAvailabilityUpdate = (handler: SocketEventHandler<any>) => {
   socketService.on('availability:updated', handler);
   return () => socketService.off('availability:updated', handler);
 };
+
+// Enhanced payment subscription helper
+export const subscribeToPaymentUpdates = (paymentId: string, handler: SocketEventHandler<PaymentSocketEvent['data']>) => {
+  return socketService.subscribeToPayment(paymentId, handler);
+};
+
+// Connection helpers
+export const ensureSocketConnection = () => socketService.ensureConnection();
 
 export default socketService;

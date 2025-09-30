@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { socketService } from '../../services/socket.service';
+import { socketService, subscribeToPaymentUpdates, ensureSocketConnection } from '../../services/socket.service';
 import { translateProfession } from '@/utils/profession';
 import { toast } from 'react-toastify';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
@@ -562,9 +562,8 @@ const BookingFlow: React.FC = () => {
               toast.success('Payment completed! Your booking is being processed.');
             }
 
-            // Remove listeners and clear polling
-            socketService.off('payment:completed', handlePaymentCompleted);
-            socketService.off('notification:new', handleNotificationReceived);
+            // Clean up listeners and polling using enhanced cleanup
+            cleanupSocketListeners();
             if (pollingIntervalId) {
               clearInterval(pollingIntervalId);
               setPollingIntervalId(null);
@@ -583,13 +582,25 @@ const BookingFlow: React.FC = () => {
           }
         };
 
-        // Only set up socket listener if connected
-        if (socketService.isSocketConnected()) {
-          socketService.on('payment:completed', handlePaymentCompleted);
-          socketService.on('notification:new', handleNotificationReceived);
-        } else {
-          console.warn('Socket not connected, payment completion will rely on polling or manual refresh');
-        }
+        // Enhanced WebSocket subscription with auto-reconnection
+        console.log('💳 BookingFlow: Setting up enhanced payment subscription for payment:', depositResult.paymentId);
+        const unsubscribePayment = subscribeToPaymentUpdates(depositResult.paymentId, handlePaymentCompleted);
+
+        // Also listen to general notifications as fallback
+        socketService.on('notification:new', handleNotificationReceived);
+
+        // Store unsubscribe function for cleanup
+        const cleanupSocketListeners = () => {
+          unsubscribePayment();
+          socketService.off('notification:new', handleNotificationReceived);
+        };
+
+        // Update existing cleanup to use the new function
+        const originalHandlePaymentCompleted = handlePaymentCompleted;
+        const enhancedHandlePaymentCompleted = (paymentData: any) => {
+          originalHandlePaymentCompleted(paymentData);
+          cleanupSocketListeners();
+        };
 
         // Set up polling as fallback mechanism
         const pollPaymentStatus = async () => {
