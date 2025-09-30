@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { PaymentController } from '@/controllers/payments';
+import { PaymentController } from '@/controllers/payment.controller';
 import { authenticateToken, requireSpecialist, requireAdmin } from '@/middleware/auth/jwt';
 import { 
   validateGetPaymentHistory, 
