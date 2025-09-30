@@ -204,7 +204,11 @@
       "Bash(PORT=3038 npm start)",
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" PORT=3040 npm start)",
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" PORT=3041 npm start)",
-      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" PORT=3041 npm start)"
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKorazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" PORT=3041 npm start)",
+      "WebFetch(domain:developer.paypal.com)",
+      "WebFetch(domain:docs.cloud.coinbase.com)",
+      "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot/backend/test-payment-endpoints.sh)",
+      "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot/backend/test-payment-debug.sh)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

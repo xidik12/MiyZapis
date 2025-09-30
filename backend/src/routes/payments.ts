@@ -55,6 +55,13 @@ router.get('/wayforpay/status/:orderReference', authenticateToken, PaymentContro
 // WayForPay webhook (no authentication required)
 router.post('/webhooks/wayforpay', PaymentController.handleWayForPayWebhook);
 
+// Coinbase Commerce routes
+router.post('/coinbase/create-charge', authenticateToken, PaymentController.createCoinbaseCharge);
+router.get('/coinbase/charge/:chargeCode', authenticateToken, PaymentController.getCoinbaseChargeDetails);
+
+// Coinbase Commerce webhook (no authentication required)
+router.post('/webhooks/coinbase', PaymentController.handleCoinbaseWebhook);
+
 // Development routes (for testing payments without Stripe)
 router.post('/mock/success', authenticateToken, PaymentController.mockPaymentSuccess);
 

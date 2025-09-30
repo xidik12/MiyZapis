@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PaymentService } from '@/services/payment';
 import { paypalService } from '@/services/payment/paypal.service';
 import { wayforpayService } from '@/services/payment/wayforpay.service';
+import { coinbaseCommerceService } from '@/services/payment/coinbase.service';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { ErrorCodes, AuthenticatedRequest } from '@/types';
@@ -1436,10 +1437,10 @@ export class PaymentController {
         userId: req.user.id
       });
 
-      // PayPal expects amount in cents/smallest currency unit
+      // PayPal service handles amount conversion internally
       const paypalOrder = await paypalService.createOrder({
         bookingId,
-        amount: Math.round(amount * 100), // Convert to cents
+        amount, // Amount in cents (e.g., 1000 = $10.00)
         currency,
         description,
         metadata: {
@@ -1839,10 +1840,10 @@ export class PaymentController {
         userId: req.user.id
       });
 
-      // WayForPay expects amount in smallest currency unit (kopeks/cents)
+      // WayForPay service handles amount rounding internally
       const wayforpayInvoice = await wayforpayService.createInvoice({
         bookingId,
-        amount: Math.round(amount * 100), // Convert to smallest unit
+        amount, // Amount in smallest currency unit (e.g., 1000 kopeks = 10 UAH)
         currency,
         description,
         customerEmail,
@@ -2011,6 +2012,259 @@ export class PaymentController {
       });
     } catch (error: any) {
       logger.error('[WayForPay] Webhook processing failed', {
+        error: error instanceof Error ? error.message : error,
+      });
+
+      res.status(500).json({
+        error: 'Webhook processing failed'
+      });
+    }
+  }
+
+  // Coinbase Commerce payment methods
+
+  // Create Coinbase Commerce charge for crypto payment
+  static async createCoinbaseCharge(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid request data',
+            req.headers['x-request-id'] as string,
+            errors.array().map(error => ({
+              field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
+              message: 'msg' in error ? error.msg : (error as any).message || 'Validation error',
+              code: 'INVALID_VALUE',
+            }))
+          )
+        );
+        return;
+      }
+
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { bookingId, amount, currency, name, description, metadata = {} } = req.body;
+
+      if (!bookingId || !amount || !currency || !name) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Missing required fields: bookingId, amount, currency, name',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      logger.info('[Coinbase] Creating Coinbase Commerce charge', {
+        bookingId,
+        amount,
+        currency,
+        userId: req.user.id
+      });
+
+      // Coinbase expects amount in full units (e.g., 10.00 for $10)
+      const charge = await coinbaseCommerceService.createCharge({
+        amount, // Amount in full currency units
+        currency,
+        name,
+        description: description || `Payment for booking ${bookingId}`,
+        metadata: {
+          ...metadata,
+          bookingId,
+          userId: req.user.id,
+          userEmail: req.user.email
+        },
+        redirectUrl: `${process.env.FRONTEND_URL || 'https://miyzapis.com'}/booking/payment/success`,
+        cancelUrl: `${process.env.FRONTEND_URL || 'https://miyzapis.com'}/booking/payment/cancel`
+      });
+
+      res.status(201).json(
+        createSuccessResponse({
+          charge: {
+            id: charge.chargeId,
+            code: charge.code,
+            paymentUrl: charge.paymentUrl,
+            qrCodeUrl: charge.qrCodeUrl,
+            expiresAt: charge.expiresAt
+          }
+        }, req.headers['x-request-id'] as string)
+      );
+    } catch (error: any) {
+      logger.error('[Coinbase] Failed to create Coinbase Commerce charge', {
+        userId: req.user?.id,
+        bookingId: req.body.bookingId,
+        error: error instanceof Error ? error.message : error,
+      });
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          error instanceof Error ? error.message : 'Failed to create Coinbase Commerce charge',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Get Coinbase Commerce charge details
+  static async getCoinbaseChargeDetails(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { chargeCode } = req.params;
+
+      if (!chargeCode) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Missing required parameter: chargeCode',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      logger.info('[Coinbase] Getting Coinbase Commerce charge details', {
+        chargeCode,
+        userId: req.user.id
+      });
+
+      const charge = await coinbaseCommerceService.getCharge(chargeCode);
+
+      res.status(200).json(
+        createSuccessResponse({
+          charge
+        }, req.headers['x-request-id'] as string)
+      );
+    } catch (error: any) {
+      logger.error('[Coinbase] Failed to get Coinbase Commerce charge details', {
+        userId: req.user?.id,
+        chargeCode: req.params.chargeCode,
+        error: error instanceof Error ? error.message : error,
+      });
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get Coinbase Commerce charge details',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Handle Coinbase Commerce webhook
+  static async handleCoinbaseWebhook(req: Request, res: Response): Promise<void> {
+    try {
+      const signature = req.headers['x-cc-webhook-signature'] as string;
+      const rawBody = JSON.stringify(req.body);
+
+      if (!signature) {
+        logger.warn('[Coinbase] Webhook received without signature header');
+        res.status(400).json({ error: 'Missing webhook signature' });
+        return;
+      }
+
+      logger.info('[Coinbase] Webhook received', {
+        eventType: req.body.event?.type,
+        eventId: req.body.event?.id
+      });
+
+      // Verify webhook signature
+      const isValid = coinbaseCommerceService.verifyWebhookSignature(signature, rawBody);
+
+      if (!isValid) {
+        logger.warn('[Coinbase] Invalid webhook signature', {
+          eventType: req.body.event?.type
+        });
+        res.status(401).json({ error: 'Invalid webhook signature' });
+        return;
+      }
+
+      const event = req.body.event;
+
+      if (!event || !event.type || !event.data) {
+        logger.warn('[Coinbase] Webhook received with missing event data');
+        res.status(400).json({ error: 'Missing event data' });
+        return;
+      }
+
+      // Handle different Coinbase webhook events
+      switch (event.type) {
+        case 'charge:created':
+          logger.info('[Coinbase] Charge created', {
+            chargeId: event.data.id,
+            chargeCode: event.data.code
+          });
+          break;
+
+        case 'charge:confirmed':
+          logger.info('[Coinbase] Charge confirmed', {
+            chargeId: event.data.id,
+            chargeCode: event.data.code
+          });
+          // Here you would typically update your booking status, create payment record, etc.
+          break;
+
+        case 'charge:failed':
+          logger.warn('[Coinbase] Charge failed', {
+            chargeId: event.data.id,
+            chargeCode: event.data.code
+          });
+          break;
+
+        case 'charge:delayed':
+          logger.info('[Coinbase] Charge delayed (underpaid)', {
+            chargeId: event.data.id,
+            chargeCode: event.data.code
+          });
+          break;
+
+        case 'charge:pending':
+          logger.info('[Coinbase] Charge pending', {
+            chargeId: event.data.id,
+            chargeCode: event.data.code
+          });
+          break;
+
+        case 'charge:resolved':
+          logger.info('[Coinbase] Charge resolved', {
+            chargeId: event.data.id,
+            chargeCode: event.data.code
+          });
+          break;
+
+        default:
+          logger.info('[Coinbase] Unhandled webhook event', {
+            eventType: event.type
+          });
+      }
+
+      // Coinbase expects 200 OK response
+      res.status(200).json({ success: true });
+    } catch (error: any) {
+      logger.error('[Coinbase] Webhook processing failed', {
         error: error instanceof Error ? error.message : error,
       });
 
