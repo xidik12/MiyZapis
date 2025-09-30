@@ -528,11 +528,10 @@ const BookingFlow: React.FC = () => {
           console.log('💳 BookingFlow: Payment completed via socket:', paymentData);
 
           if (paymentData.paymentId === depositResult.paymentId) {
-            // Clear timeout
-            if (paymentTimeoutId) {
-              clearTimeout(paymentTimeoutId);
-              setPaymentTimeoutId(null);
-            }
+            // Clear timeout using fresh timeoutId reference
+            clearTimeout(timeoutId);
+            clearInterval(countdownInterval);
+            setPaymentTimeoutId(null);
             setPaymentTimeRemaining(0);
 
             // Update payment result
@@ -645,10 +644,8 @@ const BookingFlow: React.FC = () => {
           handlePaymentTimeout();
         };
 
-        // Update the timeout to clear polling
-        clearTimeout(timeoutId);
-        const newTimeoutId = setTimeout(originalTimeoutHandler, timeoutDuration);
-        setPaymentTimeoutId(newTimeoutId);
+        // Update the timeout to clear polling - but handlePaymentCompleted already clears it
+        // No need to recreate timeout since handlePaymentCompleted handles cleanup
       }
 
       // Step 3: Handle payment result

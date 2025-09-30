@@ -47,7 +47,58 @@ export class PaymentService {
     return response.data;
   }
 
-  // Create crypto payment intent first (payment-first approach)
+  // Create payment intent first (payment-first approach) - supports crypto and PayPal
+  async createPaymentIntent(data: {
+    serviceId: string;
+    scheduledAt: string;
+    duration: number;
+    customerNotes?: string;
+    loyaltyPointsUsed: number;
+    useWalletFirst: boolean;
+    paymentMethod?: 'AUTO' | 'CRYPTO_ONLY' | 'PAYPAL';
+  }): Promise<{
+    paymentId: string;
+    status: string;
+    paymentMethod: string;
+    cryptoPayment?: any;
+    paypalPayment?: any;
+    walletTransaction?: any;
+    totalPaid: number;
+    remainingAmount: number;
+    paymentUrl?: string;
+    qrCodeUrl?: string;
+    approvalUrl?: string;
+    message: string;
+  }> {
+    console.log('💳 PaymentService: Creating payment intent:', data);
+
+    const response = await apiClient.post<{
+      paymentId: string;
+      status: string;
+      paymentMethod: string;
+      cryptoPayment?: any;
+      paypalPayment?: any;
+      walletTransaction?: any;
+      totalPaid: number;
+      remainingAmount: number;
+      paymentUrl?: string;
+      qrCodeUrl?: string;
+      approvalUrl?: string;
+      message: string;
+    }>('/crypto-payments/intent', {
+      ...data,
+      paymentMethod: data.paymentMethod || 'AUTO'
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to create payment intent');
+    }
+
+    console.log('✅ PaymentService: Payment intent created successfully:', response.data);
+    return response.data;
+  }
+
+  // Legacy method for backward compatibility
   async createCryptoPaymentIntent(data: {
     serviceId: string;
     scheduledAt: string;
@@ -67,30 +118,10 @@ export class PaymentService {
     qrCodeUrl?: string;
     message: string;
   }> {
-    console.log('💳 PaymentService: Creating payment intent:', data);
-
-    const response = await apiClient.post<{
-      paymentId: string;
-      status: string;
-      paymentMethod: string;
-      cryptoPayment?: any;
-      walletTransaction?: any;
-      totalPaid: number;
-      remainingAmount: number;
-      paymentUrl?: string;
-      qrCodeUrl?: string;
-      message: string;
-    }>('/crypto-payments/intent', {
+    return this.createPaymentIntent({
       ...data,
       paymentMethod: 'CRYPTO_ONLY'
     });
-
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to create payment intent');
-    }
-
-    console.log('✅ PaymentService: Payment intent created successfully:', response.data);
-    return response.data;
   }
 
   // Process deposit payment (legacy method for compatibility)

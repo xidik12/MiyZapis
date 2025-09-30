@@ -8,6 +8,7 @@ import { coinbaseCommerceService } from '@/services/payment/coinbase.service';
 import { coinbaseOnrampService } from '@/services/payment/coinbase-onramp.service';
 import { wayforpayService } from '@/services/payment/wayforpay.service';
 import { paypalService } from '@/services/payment/paypal.service';
+import { WebSocketManager } from '@/services/websocket/websocket-manager';
 import { logger } from '@/utils/logger';
 
 // Request validation schemas
@@ -16,7 +17,7 @@ const createDepositPaymentSchema = z.object({
   useWalletFirst: z.boolean().optional().default(true),
   redirectUrl: z.string().url().optional(),
   cancelUrl: z.string().url().optional(),
-  paymentMethod: z.enum(['AUTO', 'CRYPTO_ONLY', 'FIAT_TO_CRYPTO']).optional().default('AUTO'),
+  paymentMethod: z.enum(['AUTO', 'CRYPTO_ONLY', 'FIAT_TO_CRYPTO', 'PAYPAL', 'WAYFORPAY']).optional().default('AUTO'),
   userAddress: z.string().optional(),
 });
 
@@ -29,7 +30,7 @@ const createPaymentIntentSchema = z.object({
   useWalletFirst: z.boolean().optional().default(true),
   redirectUrl: z.string().url().optional(),
   cancelUrl: z.string().url().optional(),
-  paymentMethod: z.enum(['AUTO', 'CRYPTO_ONLY', 'FIAT_TO_CRYPTO']).optional().default('AUTO'),
+  paymentMethod: z.enum(['AUTO', 'CRYPTO_ONLY', 'FIAT_TO_CRYPTO', 'PAYPAL', 'WAYFORPAY']).optional().default('AUTO'),
   userAddress: z.string().optional(),
 });
 
@@ -190,7 +191,158 @@ export class PaymentController {
         }
       }
 
-      // If wallet payment failed or not requested, create crypto payment
+      // Determine payment method - check if paymentMethod is specified
+      const preferredPaymentMethod = validatedData.paymentMethod || 'AUTO';
+
+      // If wallet payment failed or not requested, create external payment based on method
+      if (preferredPaymentMethod === 'PAYPAL') {
+        // Create PayPal order for payment intent
+        const paypalOrder = await paypalService.createOrder({
+          bookingId: `booking-${Date.now()}`, // Temporary booking ID
+          amount: depositConfig.amountUSD * 100, // PayPal expects cents
+          currency: 'USD',
+          description: `${service.name} - Booking Deposit`,
+          metadata: {
+            serviceId: validatedData.serviceId,
+            scheduledAt: validatedData.scheduledAt,
+            duration: validatedData.duration,
+            customerId: userId,
+            paymentFor: 'booking_deposit',
+            isPaymentIntent: 'true'
+          },
+        });
+
+        // Create PayPal payment record in database using existing Payment table
+        const paypalPayment = await prisma.payment.create({
+          data: {
+            userId,
+            status: 'PENDING',
+            type: 'DEPOSIT',
+            amount: depositConfig.amountUSD,
+            currency: 'USD',
+            paymentMethodType: 'paypal',
+            stripePaymentIntentId: paypalOrder.id, // Store PayPal order ID here
+            metadata: JSON.stringify({
+              serviceId: validatedData.serviceId,
+              scheduledAt: validatedData.scheduledAt,
+              duration: validatedData.duration,
+              paymentFor: 'booking_deposit',
+              paypalOrderId: paypalOrder.id,
+              approvalUrl: paypalOrder.approvalUrl,
+              paymentProvider: 'paypal'
+            }),
+          },
+        });
+
+        const result = {
+          paymentId: paypalPayment.id,
+          status: 'pending',
+          paymentMethod: 'paypal',
+          paypalPayment: {
+            id: paypalPayment.id,
+            approvalUrl: paypalOrder.approvalUrl,
+            orderId: paypalOrder.id,
+            amount: depositConfig.amountUSD,
+          },
+          totalPaid: 0,
+          remainingAmount: depositConfig.amountUSD,
+          approvalUrl: paypalOrder.approvalUrl,
+          finalAmount: depositConfig.amountUSD,
+          requiresPayment: true,
+          message: 'Please complete PayPal payment to proceed with booking'
+        };
+
+        logger.info('PayPal payment intent created successfully', {
+          paymentId: paypalPayment.id,
+          paypalOrderId: paypalOrder.id,
+          amount: depositConfig.amountUSD,
+          userId,
+          serviceId: validatedData.serviceId,
+          approvalUrl: paypalOrder.approvalUrl,
+        });
+
+        res.status(200).json({
+          success: true,
+          data: result,
+        });
+        return;
+      }
+
+      // Handle WayForPay payment intent
+      if (preferredPaymentMethod === 'WAYFORPAY') {
+        // Create WayForPay invoice for payment intent
+        const wayforpayInvoice = await wayforpayService.createInvoice({
+          bookingId: `booking-${Date.now()}`, // Temporary booking ID
+          amount: depositConfig.amountUSD * 100, // WayForPay expects cents
+          currency: 'UAH', // WayForPay typically uses UAH
+          description: `${service.name} - Booking Deposit`,
+          metadata: {
+            serviceId: validatedData.serviceId,
+            scheduledAt: validatedData.scheduledAt,
+            duration: validatedData.duration,
+            customerId: userId,
+            paymentFor: 'booking_deposit',
+            isPaymentIntent: 'true'
+          },
+        });
+
+        // Create WayForPay payment record in database using existing Payment table
+        const wayforpayPayment = await prisma.payment.create({
+          data: {
+            userId,
+            status: 'PENDING',
+            type: 'DEPOSIT',
+            amount: depositConfig.amountUSD,
+            currency: 'UAH',
+            paymentMethodType: 'wayforpay',
+            stripePaymentIntentId: wayforpayInvoice.orderId, // Store WayForPay order ID here
+            metadata: JSON.stringify({
+              serviceId: validatedData.serviceId,
+              scheduledAt: validatedData.scheduledAt,
+              duration: validatedData.duration,
+              paymentFor: 'booking_deposit',
+              wayforpayOrderId: wayforpayInvoice.orderId,
+              invoiceUrl: wayforpayInvoice.invoiceUrl,
+              paymentProvider: 'wayforpay'
+            }),
+          },
+        });
+
+        const result = {
+          paymentId: wayforpayPayment.id,
+          status: 'pending',
+          paymentMethod: 'wayforpay',
+          wayforpayPayment: {
+            id: wayforpayPayment.id,
+            invoiceUrl: wayforpayInvoice.invoiceUrl,
+            orderId: wayforpayInvoice.orderId,
+            amount: depositConfig.amountUSD,
+          },
+          totalPaid: 0,
+          remainingAmount: depositConfig.amountUSD,
+          invoiceUrl: wayforpayInvoice.invoiceUrl,
+          finalAmount: depositConfig.amountUSD,
+          requiresPayment: true,
+          message: 'Please complete WayForPay payment to proceed with booking'
+        };
+
+        logger.info('WayForPay payment intent created successfully', {
+          paymentId: wayforpayPayment.id,
+          wayforpayOrderId: wayforpayInvoice.orderId,
+          amount: depositConfig.amountUSD,
+          userId,
+          serviceId: validatedData.serviceId,
+          invoiceUrl: wayforpayInvoice.invoiceUrl,
+        });
+
+        res.status(200).json({
+          success: true,
+          data: result,
+        });
+        return;
+      }
+
+      // Default to crypto payment
       const charge = await coinbaseCommerceService.createCharge({
         amount: depositConfig.amountUSD,
         currency: 'USD',
@@ -1195,6 +1347,48 @@ export class PaymentController {
             },
           });
 
+          // Update payment record status and emit WebSocket event
+          const paymentRecord = await prisma.payment.findFirst({
+            where: {
+              stripePaymentIntentId: result.orderReference, // WayForPay order ID stored here
+              paymentMethodType: 'wayforpay',
+              status: 'PENDING'
+            }
+          });
+
+          if (paymentRecord) {
+            await prisma.payment.update({
+              where: { id: paymentRecord.id },
+              data: {
+                status: 'SUCCEEDED',
+                stripeChargeId: result.transactionId, // Store transaction ID here
+              },
+            });
+
+            // Emit WebSocket event for payment completion
+            await WebSocketManager.emitPaymentComplete(paymentRecord.userId, {
+              paymentId: paymentRecord.id,
+              bookingId,
+              status: 'SUCCEEDED',
+              amount: paymentRecord.amount,
+              currency: paymentRecord.currency,
+              type: paymentRecord.type as 'DEPOSIT' | 'SUBSCRIPTION' | 'WALLET_TOPUP',
+              confirmedAt: new Date(),
+              metadata: {
+                paymentMethod: 'wayforpay',
+                wayforpayOrderId: result.orderReference,
+                wayforpayTransactionId: result.transactionId,
+                transactionStatus: result.transactionStatus,
+              },
+            });
+
+            logger.info('[WayForPay] WebSocket payment completion emitted', {
+              paymentId: paymentRecord.id,
+              userId: paymentRecord.userId,
+              bookingId,
+            });
+          }
+
           logger.info('[WayForPay] Payment approved, booking confirmed', {
             bookingId,
             orderReference: result.orderReference,
@@ -1208,6 +1402,42 @@ export class PaymentController {
               status: 'CANCELLED',
             },
           });
+
+          // Update payment record status for declined payments
+          const paymentRecord = await prisma.payment.findFirst({
+            where: {
+              stripePaymentIntentId: result.orderReference,
+              paymentMethodType: 'wayforpay',
+              status: 'PENDING'
+            }
+          });
+
+          if (paymentRecord) {
+            await prisma.payment.update({
+              where: { id: paymentRecord.id },
+              data: {
+                status: 'FAILED',
+                stripeChargeId: result.transactionId,
+              },
+            });
+
+            // Emit WebSocket event for payment failure
+            await WebSocketManager.emitPaymentComplete(paymentRecord.userId, {
+              paymentId: paymentRecord.id,
+              bookingId,
+              status: 'FAILED',
+              amount: paymentRecord.amount,
+              currency: paymentRecord.currency,
+              type: paymentRecord.type as 'DEPOSIT' | 'SUBSCRIPTION' | 'WALLET_TOPUP',
+              confirmedAt: new Date(),
+              metadata: {
+                paymentMethod: 'wayforpay',
+                wayforpayOrderId: result.orderReference,
+                wayforpayTransactionId: result.transactionId,
+                transactionStatus: result.transactionStatus,
+              },
+            });
+          }
 
           logger.info('[WayForPay] Payment declined, booking cancelled', {
             bookingId,
@@ -1290,32 +1520,46 @@ export class PaymentController {
         return;
       }
 
-      // Get booking details
-      const booking = await prisma.booking.findUnique({
-        where: { id: validatedData.bookingId },
-        include: {
-          customer: { include: { user: true } },
-          service: true,
-        },
-      });
+      // For payment-first flow, bookingId might be a temporary identifier
+      // Try to find booking first, if not found, treat as payment intent
+      let booking = null;
+      let description = validatedData.description || 'Booking payment';
 
-      if (!booking) {
-        res.status(404).json({ error: 'Booking not found' });
-        return;
-      }
+      try {
+        booking = await prisma.booking.findUnique({
+          where: { id: validatedData.bookingId },
+          include: {
+            customer: { include: { user: true } },
+            service: true,
+          },
+        });
 
-      // Verify user owns this booking
-      if (booking.customerId !== userId) {
-        res.status(403).json({ error: 'Forbidden - not your booking' });
-        return;
+        if (booking) {
+          // Verify user owns this booking
+          if (booking.customerId !== userId) {
+            res.status(403).json({ error: 'Forbidden - not your booking' });
+            return;
+          }
+          description = validatedData.description || `Payment for ${booking.service.name}`;
+        }
+      } catch (error) {
+        // Booking not found, proceed with payment intent flow
+        logger.info('[PayPal] Booking not found, treating as payment intent', {
+          bookingId: validatedData.bookingId,
+          userId,
+        });
       }
 
       const order = await paypalService.createOrder({
         bookingId: validatedData.bookingId,
         amount: validatedData.amount,
         currency: validatedData.currency,
-        description: validatedData.description || `Payment for ${booking.service.name}`,
-        metadata: validatedData.metadata,
+        description,
+        metadata: {
+          ...validatedData.metadata,
+          userId,
+          isPaymentIntent: booking ? 'false' : 'true',
+        },
       });
 
       logger.info('[PayPal] Order created successfully', {
@@ -1386,6 +1630,47 @@ export class PaymentController {
             status: 'CONFIRMED',
           },
         });
+
+        // Update payment record status
+        const paymentRecord = await prisma.payment.findFirst({
+          where: {
+            stripePaymentIntentId: validatedData.orderId, // PayPal order ID stored here
+            paymentMethodType: 'paypal',
+            status: 'PENDING'
+          }
+        });
+
+        if (paymentRecord) {
+          await prisma.payment.update({
+            where: { id: paymentRecord.id },
+            data: {
+              status: 'SUCCEEDED',
+              stripeChargeId: result.captureId, // Store capture ID here
+            },
+          });
+
+          // Emit WebSocket event for payment completion
+          await WebSocketManager.emitPaymentComplete(paymentRecord.userId, {
+            paymentId: paymentRecord.id,
+            bookingId,
+            status: 'SUCCEEDED',
+            amount: paymentRecord.amount,
+            currency: paymentRecord.currency,
+            type: paymentRecord.type as 'DEPOSIT' | 'SUBSCRIPTION' | 'WALLET_TOPUP',
+            confirmedAt: new Date(),
+            metadata: {
+              paymentMethod: 'paypal',
+              paypalOrderId: validatedData.orderId,
+              paypalCaptureId: result.captureId,
+            },
+          });
+
+          logger.info('[PayPal] WebSocket payment completion emitted', {
+            paymentId: paymentRecord.id,
+            userId: paymentRecord.userId,
+            bookingId,
+          });
+        }
 
         logger.info('[PayPal] Payment captured, booking confirmed', {
           bookingId,
