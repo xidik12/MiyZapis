@@ -4,10 +4,10 @@ import { prisma } from '@/config/database';
 import { bookingPaymentService } from '@/services/payment/booking-payment.service';
 import { walletService } from '@/services/payment/wallet.service';
 import { specialistSubscriptionService } from '@/services/payment/subscription.service';
-import { coinbaseCommerceService } from '@/services/payment/coinbase.service';
+import { coinbaseCommerceService, CoinbaseCommerceService } from '@/services/payment/coinbase.service';
 import { coinbaseOnrampService } from '@/services/payment/coinbase-onramp.service';
-import { wayforpayService } from '@/services/payment/wayforpay.service';
-import { paypalService } from '@/services/payment/paypal.service';
+import { wayforpayService, WayForPayService } from '@/services/payment/wayforpay.service';
+import { paypalService, PayPalService } from '@/services/payment/paypal.service';
 import { WebSocketManager } from '@/services/websocket/websocket-manager';
 import { logger } from '@/utils/logger';
 
@@ -199,7 +199,7 @@ export class PaymentController {
         // Create PayPal order for payment intent
         const paypalOrder = await paypalService.createOrder({
           bookingId: `booking-${Date.now()}`, // Temporary booking ID
-          amount: depositConfig.amountUSD * 100, // PayPal expects cents
+          amount: Math.round(depositConfig.amountUSD * 100), // PayPal expects cents
           currency: 'USD',
           description: `${service.name} - Booking Deposit`,
           metadata: {
@@ -273,7 +273,7 @@ export class PaymentController {
         // Create WayForPay invoice for payment intent
         const wayforpayInvoice = await wayforpayService.createInvoice({
           bookingId: `booking-${Date.now()}`, // Temporary booking ID
-          amount: depositConfig.amountUSD * 100, // WayForPay expects cents
+          amount: Math.round(depositConfig.amountUSD * 40 * 100), // Convert USD to UAH (~40 UAH per USD), WayForPay expects cents
           currency: 'UAH', // WayForPay typically uses UAH
           description: `${service.name} - Booking Deposit`,
           metadata: {
@@ -343,6 +343,15 @@ export class PaymentController {
       }
 
       // Default to crypto payment
+      // Check if Coinbase Commerce is configured
+      if (!CoinbaseCommerceService.isConfigured()) {
+        res.status(503).json({
+          success: false,
+          error: 'Cryptocurrency payment method is not available. Please try PayPal or WayForPay.',
+        });
+        return;
+      }
+
       const charge = await coinbaseCommerceService.createCharge({
         amount: depositConfig.amountUSD,
         currency: 'USD',
@@ -1240,7 +1249,7 @@ export class PaymentController {
       const validatedData = createWayForPayInvoiceSchema.parse(req.body);
 
       // Check if WayForPay is configured
-      if (!wayforpayService.constructor.isConfigured()) {
+      if (!WayForPayService.isConfigured()) {
         res.status(503).json({
           error: 'WayForPay payment method is not available',
         });
@@ -1317,7 +1326,7 @@ export class PaymentController {
       });
 
       // Check if WayForPay is configured
-      if (!wayforpayService.constructor.isConfigured()) {
+      if (!WayForPayService.isConfigured()) {
         res.status(503).json({
           error: 'WayForPay payment method is not available',
         });
@@ -1474,7 +1483,7 @@ export class PaymentController {
       }
 
       // Check if WayForPay is configured
-      if (!wayforpayService.constructor.isConfigured()) {
+      if (!WayForPayService.isConfigured()) {
         res.status(503).json({
           error: 'WayForPay payment method is not available',
         });
@@ -1513,7 +1522,7 @@ export class PaymentController {
       const validatedData = createPayPalOrderSchema.parse(req.body);
 
       // Check if PayPal is configured
-      if (!paypalService.constructor.isConfigured()) {
+      if (!PayPalService.isConfigured()) {
         res.status(503).json({
           error: 'PayPal payment method is not available',
         });
@@ -1605,7 +1614,7 @@ export class PaymentController {
       const validatedData = capturePayPalOrderSchema.parse(req.body);
 
       // Check if PayPal is configured
-      if (!paypalService.constructor.isConfigured()) {
+      if (!PayPalService.isConfigured()) {
         res.status(503).json({
           error: 'PayPal payment method is not available',
         });
@@ -1715,7 +1724,7 @@ export class PaymentController {
       }
 
       // Check if PayPal is configured
-      if (!paypalService.constructor.isConfigured()) {
+      if (!PayPalService.isConfigured()) {
         res.status(503).json({
           error: 'PayPal payment method is not available',
         });

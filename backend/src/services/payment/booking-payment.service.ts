@@ -12,7 +12,7 @@ export interface CreateDepositPaymentParams {
   redirectUrl?: string;
   cancelUrl?: string;
   useWalletFirst?: boolean;
-  paymentMethod?: 'AUTO' | 'CRYPTO_ONLY' | 'FIAT_TO_CRYPTO';
+  paymentMethod?: 'AUTO' | 'CRYPTO_ONLY' | 'FIAT_TO_CRYPTO' | 'PAYPAL' | 'WAYFORPAY';
   userAddress?: string;
 }
 

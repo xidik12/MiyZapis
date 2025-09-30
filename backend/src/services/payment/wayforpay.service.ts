@@ -263,6 +263,7 @@ export class WayForPayService {
     orderReference: string;
     amount: number;
     currency: string;
+    transactionId?: string;
   }> {
     try {
       logger.info('[WayForPay] Processing webhook', {
@@ -292,7 +293,8 @@ export class WayForPayService {
         transactionStatus: webhookData.transactionStatus,
         orderReference: webhookData.orderReference,
         amount: webhookData.amount,
-        currency: webhookData.currency
+        currency: webhookData.currency,
+        transactionId: webhookData.authCode // Use authCode as transaction ID
       };
 
     } catch (error) {

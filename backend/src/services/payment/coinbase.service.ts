@@ -105,6 +105,20 @@ export class CoinbaseCommerceService {
     qrCodeUrl?: string;
     expiresAt: Date;
   }> {
+    // Check if Coinbase Commerce is properly configured
+    if (!this.apiKey || !this.webhookSecret) {
+      const missingCredentials = [];
+      if (!this.apiKey) missingCredentials.push('Coinbase Commerce API Key');
+      if (!this.webhookSecret) missingCredentials.push('Coinbase Commerce Webhook Secret');
+
+      logger.error('Missing required Coinbase Commerce credentials', {
+        missingCredentials,
+        hasApiKey: !!this.apiKey,
+        hasWebhookSecret: !!this.webhookSecret,
+      });
+      throw new Error(`Missing required credentials: ${missingCredentials.join(', ')}`);
+    }
+
     try {
       const chargeRequest: CoinbaseChargeRequest = {
         name: params.name,
@@ -641,6 +655,11 @@ export class CoinbaseCommerceService {
       cryptoPaymentId,
       chargeId: charge.id,
     });
+  }
+
+  // Check if Coinbase Commerce is configured
+  static isConfigured(): boolean {
+    return !!(config.coinbaseCommerce.apiKey && config.coinbaseCommerce.webhookSecret);
   }
 
   // Utility method to get payment status from Coinbase
