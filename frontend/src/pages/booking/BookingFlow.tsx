@@ -76,6 +76,22 @@ const BookingFlow: React.FC = () => {
   const [slotsLoading, setSlotsLoading] = useState<boolean>(false);
   const [pollingIntervalId, setPollingIntervalId] = useState<NodeJS.Timeout | null>(null);
 
+  // Reset payment state when payment method changes
+  useEffect(() => {
+    console.log(`🔄 BookingFlow: Payment method changed to ${paymentMethod}, resetting payment state`);
+    setPaymentResult(null);
+    setShowQRCode(false);
+    setPaymentTimeRemaining(0);
+    if (paymentTimeoutId) {
+      clearTimeout(paymentTimeoutId);
+      setPaymentTimeoutId(null);
+    }
+    if (pollingIntervalId) {
+      clearInterval(pollingIntervalId);
+      setPollingIntervalId(null);
+    }
+  }, [paymentMethod]);
+
   // Cleanup timeouts and socket listeners on component unmount
   useEffect(() => {
     return () => {
