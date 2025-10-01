@@ -192,10 +192,13 @@ export class PayPalService {
       }
     } catch (error) {
       logger.error('[PayPal] Order creation failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : JSON.stringify(error),
+        stack: error instanceof Error ? error.stack : undefined,
         bookingId: data.bookingId,
         amount: data.amount,
-        currency: data.currency
+        paypalAmount: (data.amount / 100).toFixed(2),
+        currency: data.currency,
+        errorDetails: error
       });
       throw error;
     }

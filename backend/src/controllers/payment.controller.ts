@@ -315,12 +315,15 @@ export class PaymentController {
           wayforpayPayment: {
             id: wayforpayPayment.id,
             invoiceUrl: wayforpayInvoice.invoiceUrl,
+            paymentUrl: wayforpayInvoice.paymentUrl,
             orderId: wayforpayInvoice.orderId,
             amount: depositConfig.amountUSD,
+            formData: wayforpayInvoice.formData, // Pass form data for POST submission
           },
           totalPaid: 0,
           remainingAmount: depositConfig.amountUSD,
           invoiceUrl: wayforpayInvoice.invoiceUrl,
+          paymentUrl: wayforpayInvoice.paymentUrl,
           finalAmount: depositConfig.amountUSD,
           requiresPayment: true,
           message: 'Please complete WayForPay payment to proceed with booking'

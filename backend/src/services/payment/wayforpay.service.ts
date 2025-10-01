@@ -37,6 +37,7 @@ interface WayForPayResponse {
   invoiceUrl?: string;
   paymentUrl?: string;
   orderId?: string;
+  formData?: any; // Form data for POST submission
   reasonCode?: number;
   reason?: string;
 }
@@ -231,13 +232,20 @@ export class WayForPayService {
         orderReference,
         amount: wayforpayAmount,
         currency: currency.toUpperCase(),
-        bookingId
+        bookingId,
+        invoiceData: {
+          ...invoiceData,
+          merchantSignature: invoiceData.merchantSignature?.substring(0, 10) + '...'
+        }
       });
 
+      // WayForPay requires POST form submission, not GET
+      // Return the invoice data for frontend to submit via POST form
       return {
         paymentUrl: this.baseUrl,
         orderId: orderReference,
-        invoiceUrl: `${this.baseUrl}?${formData.toString()}`,
+        invoiceUrl: this.baseUrl,
+        formData: invoiceData, // Return form data for POST submission
         reasonCode: 1100,
         reason: 'Invoice created successfully'
       };
