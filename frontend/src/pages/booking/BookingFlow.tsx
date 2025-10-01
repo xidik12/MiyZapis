@@ -525,11 +525,12 @@ const BookingFlow: React.FC = () => {
 
         // Store result for UI with proper structure
         depositResult = {
-          paymentUrl: wayforpayResult.paymentUrl,
+          paymentUrl: wayforpayResult.paymentUrl || wayforpayResult.invoice?.paymentUrl,
           finalAmount: depositAmount,
           status: 'PENDING',
           remainingAmount: depositAmount,
           paymentMethod: 'WAYFORPAY',
+          wayforpayPayment: wayforpayResult.invoice, // Include invoice with formData
           message: 'Complete your WayForPay payment'
         };
       } else {
@@ -1436,15 +1437,41 @@ const BookingFlow: React.FC = () => {
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                           Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, service.currency)}
                         </p>
-                        <a
-                          href={paymentResult.paymentUrl}
+                        <form
+                          id="wayforpayForm"
+                          action={paymentResult.paymentUrl}
+                          method="POST"
                           target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                         >
-                          <CreditCardIcon className="w-4 h-4 mr-2" />
-                          Pay with WayForPay
-                        </a>
+                          {/* Add form fields from wayforpayPayment.formData if available */}
+                          {paymentResult.wayforpayPayment?.formData && Object.entries(paymentResult.wayforpayPayment.formData).map(([key, value]: [string, any]) => {
+                            if (Array.isArray(value)) {
+                              return value.map((item: any, index: number) => (
+                                <input
+                                  key={`${key}-${index}`}
+                                  type="hidden"
+                                  name={`${key}[${index}]`}
+                                  value={String(item)}
+                                />
+                              ));
+                            }
+                            return (
+                              <input
+                                key={key}
+                                type="hidden"
+                                name={key}
+                                value={String(value)}
+                              />
+                            );
+                          })}
+                          <button
+                            type="submit"
+                            className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                          >
+                            <CreditCardIcon className="w-4 h-4 mr-2" />
+                            Pay with WayForPay
+                          </button>
+                        </form>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                           Click to complete your payment securely on WayForPay.
                         </p>

@@ -981,6 +981,7 @@ export class PaymentService {
     invoice: {
       orderReference: string;
       paymentUrl: string;
+      formData?: any; // Form data for POST submission
     };
     paymentUrl: string;
   }> {
@@ -990,6 +991,7 @@ export class PaymentService {
       invoice: {
         orderReference: string;
         paymentUrl: string;
+        formData?: any;
       };
       paymentUrl: string;
     }>('/payments/wayforpay/create-invoice', {
