@@ -188,8 +188,8 @@ export class WayForPayService {
         productPrice: [wayforpayAmount],
         productCount: [1],
         language: 'ua', // Ukrainian by default
-        returnUrl: `${config.frontend.url}/booking/payment/success`,
-        serviceUrl: `${config.frontend.url}/api/v1/payments/wayforpay/webhook`,
+        returnUrl: `${config.frontend.url}/booking/${bookingId}?payment=success`,
+        serviceUrl: `${config.backend.url}/api/v1/payments/wayforpay/webhook`,
       };
 
       // Add customer information if provided

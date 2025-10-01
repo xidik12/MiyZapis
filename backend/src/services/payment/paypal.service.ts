@@ -131,10 +131,6 @@ export class PayPalService {
             amount: {
               currencyCode: currency.toUpperCase(),
               value: paypalAmount
-            },
-            payee: {
-              // This should be set to your PayPal merchant account email if needed
-              // emailAddress: 'merchant@miyzapis.com'
             }
           }
         ],
@@ -144,8 +140,8 @@ export class PayPalService {
           landingPage: 'BILLING',
           shippingPreference: 'NO_SHIPPING',
           userAction: 'PAY_NOW',
-          returnUrl: `${config.frontend.url || 'https://miyzapis.com'}/booking/payment/success`,
-          cancelUrl: `${config.frontend.url || 'https://miyzapis.com'}/booking/payment/cancel`
+          returnUrl: `${config.frontend.url || 'https://miyzapis.com'}/booking/${bookingId}?payment=success`,
+          cancelUrl: `${config.frontend.url || 'https://miyzapis.com'}/booking/${bookingId}?payment=cancel`
         },
         // Add custom metadata
         ...(Object.keys(metadata).length > 0 && {
