@@ -43,9 +43,9 @@ export interface DepositPaymentResult {
 }
 
 export class BookingPaymentService {
-  // Standard deposit amount in UAH (₴40)
-  private readonly DEPOSIT_AMOUNT_UAH = 40;
-  private readonly DEPOSIT_AMOUNT_USD = 1; // ~$1 equivalent
+  // Standard deposit amount - stored in smallest currency unit
+  private readonly DEPOSIT_AMOUNT_UAH = 4000; // 40 UAH (in kopecks)
+  private readonly DEPOSIT_AMOUNT_USD = 100; // $1 USD (in cents)
 
   async createDepositPayment(params: CreateDepositPaymentParams): Promise<DepositPaymentResult> {
     const {

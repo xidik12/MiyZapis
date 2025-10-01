@@ -199,7 +199,7 @@ export class PaymentController {
         // Create PayPal order for payment intent
         const paypalOrder = await paypalService.createOrder({
           bookingId: `booking-${Date.now()}`, // Temporary booking ID
-          amount: Math.round(depositConfig.amountUSD * 100), // PayPal expects cents
+          amount: depositConfig.amountUSD, // Amount already in cents
           currency: 'USD',
           description: `${service.name} - Booking Deposit`,
           metadata: {
@@ -273,7 +273,7 @@ export class PaymentController {
         // Create WayForPay invoice for payment intent
         const wayforpayInvoice = await wayforpayService.createInvoice({
           bookingId: `booking-${Date.now()}`, // Temporary booking ID
-          amount: Math.round(depositConfig.amountUSD * 40 * 100), // Convert USD to UAH (~40 UAH per USD), WayForPay expects cents
+          amount: Math.round(depositConfig.amountUSD * 40), // Convert USD cents to UAH cents (~40 UAH per USD)
           currency: 'UAH', // WayForPay typically uses UAH
           description: `${service.name} - Booking Deposit`,
           metadata: {
@@ -356,7 +356,7 @@ export class PaymentController {
       }
 
       const charge = await coinbaseCommerceService.createCharge({
-        amount: depositConfig.amountUSD,
+        amount: depositConfig.amountUSD / 100, // Convert cents to dollars for Coinbase
         currency: 'USD',
         name: `${service.name} - Booking Deposit`,
         description: `Booking deposit for ${service.name}`,
