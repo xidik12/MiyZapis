@@ -459,6 +459,9 @@ const BookingFlow: React.FC = () => {
         console.log('💰 BookingFlow: User wallet balance: $', user.walletBalance);
       }
 
+      // Deposit amount is $1 = 100 cents (finalPrice is already in cents)
+      const depositAmount = 100; // $1 deposit in cents
+
       const paymentData = {
         serviceId: service.id,
         scheduledAt: scheduledAt.toISOString(),
@@ -466,7 +469,7 @@ const BookingFlow: React.FC = () => {
         customerNotes: bookingNotes || undefined,
         loyaltyPointsUsed: 0,
         useWalletFirst,
-        amount: finalPrice * 100, // Amount in cents
+        amount: depositAmount, // $1 deposit in cents
         currency: service.currency || 'USD',
         serviceName: service.name,
         specialistName: specialist.user?.firstName && specialist.user?.lastName
@@ -480,7 +483,7 @@ const BookingFlow: React.FC = () => {
         console.log('💳 BookingFlow: Creating PayPal order...');
         const paypalOrderData = {
           bookingId: `booking-${Date.now()}`, // Temporary booking ID
-          amount: finalPrice * 100, // Convert to cents
+          amount: depositAmount, // $1 deposit in cents
           currency: service.currency || 'USD',
           description: `${service.name} - ${paymentData.specialistName}`
         };
@@ -496,9 +499,9 @@ const BookingFlow: React.FC = () => {
           // Store result for UI with proper structure
           depositResult = {
             paymentUrl: paypalResult.approvalUrl,
-            finalAmount: finalPrice * 100,
+            finalAmount: depositAmount,
             status: 'PENDING',
-            remainingAmount: finalPrice * 100,
+            remainingAmount: depositAmount,
             paymentMethod: 'PAYPAL',
             message: 'Complete your PayPal payment in the new window'
           };
@@ -510,7 +513,7 @@ const BookingFlow: React.FC = () => {
         console.log('💳 BookingFlow: Creating WayForPay invoice...');
         const wayforpayInvoiceData = {
           bookingId: `booking-${Date.now()}`, // Temporary booking ID
-          amount: finalPrice * 100, // Convert to cents
+          amount: depositAmount, // $1 deposit in cents
           currency: service.currency || 'UAH',
           description: `${service.name} - ${paymentData.specialistName}`,
           customerEmail: '', // Will be filled from user context if available
@@ -523,9 +526,9 @@ const BookingFlow: React.FC = () => {
         // Store result for UI with proper structure
         depositResult = {
           paymentUrl: wayforpayResult.paymentUrl,
-          finalAmount: finalPrice * 100,
+          finalAmount: depositAmount,
           status: 'PENDING',
-          remainingAmount: finalPrice * 100,
+          remainingAmount: depositAmount,
           paymentMethod: 'WAYFORPAY',
           message: 'Complete your WayForPay payment'
         };
@@ -1408,7 +1411,7 @@ const BookingFlow: React.FC = () => {
                     {paymentMethod === 'paypal' && paymentResult.paymentUrl && (
                       <div className="mb-4">
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                          Amount: {formatPrice(finalPrice, service.currency)}
+                          Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, service.currency)}
                         </p>
                         <a
                           href={paymentResult.paymentUrl}
@@ -1431,7 +1434,7 @@ const BookingFlow: React.FC = () => {
                     {paymentMethod === 'wayforpay' && paymentResult.paymentUrl && (
                       <div className="mb-4">
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                          Amount: {formatPrice(finalPrice, service.currency)}
+                          Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, service.currency)}
                         </p>
                         <a
                           href={paymentResult.paymentUrl}
@@ -1454,8 +1457,8 @@ const BookingFlow: React.FC = () => {
                           {/* Payment URL for direct crypto payments */}
                           {paymentResult.paymentUrl && (
                             <div className="mb-4">
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Amount: ${paymentResult.finalAmount || 'N/A'}
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, service.currency)}
                               </p>
                               <a
                                 href={paymentResult.paymentUrl}
