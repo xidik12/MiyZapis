@@ -170,10 +170,15 @@ export class PaymentService {
 
     console.log('✅ PaymentService: Coinbase charge created:', response.data);
 
+    // Return structure matching what BookingFlow expects
     return {
       charge: response.data.charge,
       paymentUrl: response.data.charge.paymentUrl,
       qrCodeUrl: response.data.charge.qrCodeUrl,
+      finalAmount: data.amount, // Amount in cents
+      status: 'PENDING', // Initial status for external payment
+      remainingAmount: data.amount,
+      paymentMethod: 'CRYPTO',
       message: 'Crypto payment initiated'
     };
   }
@@ -212,8 +217,8 @@ export class PaymentService {
     return response.data;
   }
 
-  // Create payment intent for Stripe
-  async createPaymentIntent(data: {
+  // Create payment intent for Stripe (legacy method)
+  async createStripePaymentIntent(data: {
     amount: number;
     currency: string;
     bookingId: string;
@@ -221,7 +226,7 @@ export class PaymentService {
     loyaltyPointsUsed?: number;
   }): Promise<PaymentIntent> {
     const response = await apiClient.post<PaymentIntent>('/payments/intent', data);
-    
+
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to create payment intent');
     }
@@ -957,6 +962,74 @@ export class PaymentService {
 
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to process PayPal refund');
+    }
+
+    return response.data;
+  }
+
+  // WayForPay payment methods
+
+  // Create WayForPay invoice for booking
+  async createWayForPayInvoice(data: {
+    bookingId: string;
+    amount: number;
+    currency: string;
+    description?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+  }): Promise<{
+    invoice: {
+      orderReference: string;
+      paymentUrl: string;
+    };
+    paymentUrl: string;
+  }> {
+    console.log('💳 PaymentService: Creating WayForPay invoice:', data);
+
+    const response = await apiClient.post<{
+      invoice: {
+        orderReference: string;
+        paymentUrl: string;
+      };
+      paymentUrl: string;
+    }>('/payments/wayforpay/create-invoice', {
+      bookingId: data.bookingId,
+      amount: data.amount,
+      currency: data.currency,
+      description: data.description || 'Booking payment',
+      customerEmail: data.customerEmail,
+      customerPhone: data.customerPhone
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to create WayForPay invoice');
+    }
+
+    console.log('✅ PaymentService: WayForPay invoice created:', response.data);
+
+    return response.data;
+  }
+
+  // Get WayForPay payment status
+  async getWayForPayPaymentStatus(orderReference: string): Promise<{
+    status: {
+      transactionStatus: string;
+      orderReference: string;
+      amount?: number;
+      currency?: string;
+    };
+  }> {
+    const response = await apiClient.get<{
+      status: {
+        transactionStatus: string;
+        orderReference: string;
+        amount?: number;
+        currency?: string;
+      };
+    }>(`/payments/wayforpay/status/${orderReference}`);
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get WayForPay payment status');
     }
 
     return response.data;

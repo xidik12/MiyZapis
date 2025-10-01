@@ -488,13 +488,47 @@ const BookingFlow: React.FC = () => {
         const paypalResult = await paymentService.createPayPalOrder(paypalOrderData);
         console.log('✅ BookingFlow: PayPal order created:', paypalResult);
 
-        // For PayPal, we need to redirect to PayPal for approval
+        // For PayPal, open approval URL in new window or redirect
         if (paypalResult.approvalUrl) {
-          window.location.href = paypalResult.approvalUrl;
-          return;
+          // Open PayPal in new window
+          window.open(paypalResult.approvalUrl, '_blank');
+
+          // Store result for UI with proper structure
+          depositResult = {
+            paymentUrl: paypalResult.approvalUrl,
+            finalAmount: finalPrice * 100,
+            status: 'PENDING',
+            remainingAmount: finalPrice * 100,
+            paymentMethod: 'PAYPAL',
+            message: 'Complete your PayPal payment in the new window'
+          };
         } else {
           throw new Error('PayPal order created but no approval URL received');
         }
+      } else if (paymentMethod === 'wayforpay') {
+        // Handle WayForPay payment
+        console.log('💳 BookingFlow: Creating WayForPay invoice...');
+        const wayforpayInvoiceData = {
+          bookingId: `booking-${Date.now()}`, // Temporary booking ID
+          amount: finalPrice * 100, // Convert to cents
+          currency: service.currency || 'UAH',
+          description: `${service.name} - ${paymentData.specialistName}`,
+          customerEmail: '', // Will be filled from user context if available
+          customerPhone: ''
+        };
+
+        const wayforpayResult = await paymentService.createWayForPayInvoice(wayforpayInvoiceData);
+        console.log('✅ BookingFlow: WayForPay invoice created:', wayforpayResult);
+
+        // Store result for UI with proper structure
+        depositResult = {
+          paymentUrl: wayforpayResult.paymentUrl,
+          finalAmount: finalPrice * 100,
+          status: 'PENDING',
+          remainingAmount: finalPrice * 100,
+          paymentMethod: 'WAYFORPAY',
+          message: 'Complete your WayForPay payment'
+        };
       } else {
         // Handle crypto payment with Coinbase Commerce
         console.log('💳 BookingFlow: Creating Coinbase Commerce charge...');
@@ -1352,43 +1386,67 @@ const BookingFlow: React.FC = () => {
                 </div>
               )}
 
-              {/* Show payment interface if payment result exists and requires external payment */}
+              {/* Show payment interface if payment result exists */}
               {paymentResult ? (
                 <div className="space-y-4">
-                  {/* Payment Required Section */}
-                  {paymentResult.requiresPayment && (
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
-                      <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
-                        💳 Complete Your {paymentMethod === 'paypal' ? 'PayPal' : 'Cryptocurrency'} Payment
-                      </h4>
-                      {paymentResult.message && (
-                        <p className="text-sm text-blue-800 dark:text-blue-200 mb-4">
-                          {paymentResult.message}
-                        </p>
-                      )}
+                  {/* Payment Section for all external payments */}
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                    <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
+                      💳 Complete Your {
+                        paymentMethod === 'paypal' ? 'PayPal' :
+                        paymentMethod === 'wayforpay' ? 'WayForPay' :
+                        'Cryptocurrency'
+                      } Payment
+                    </h4>
+                    {paymentResult.message && (
+                      <p className="text-sm text-blue-800 dark:text-blue-200 mb-4">
+                        {paymentResult.message}
+                      </p>
+                    )}
 
-                      {/* PayPal Payment Interface */}
-                      {paymentMethod === 'paypal' && paymentResult.approvalUrl && (
-                        <div className="mb-4">
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                            Amount: {formatPrice(finalPrice, service.currency)}
-                          </p>
-                          <a
-                            href={paymentResult.approvalUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                          >
-                            <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h8.418c2.508 0 4.514.893 5.835 2.598 1.206 1.557 1.747 3.675 1.567 6.129-.346 4.73-3.558 8.889-8.781 11.378h4.985c.534 0 1.021-.304 1.258-.786l6.097-12.417c.235-.479-.013-1.059-.533-1.249L14.27 1.986c-.52-.19-1.099.055-1.249.533L7.076 21.337z"/>
-                            </svg>
-                            Pay with PayPal
-                          </a>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                            You'll be redirected to PayPal to complete your payment securely.
-                          </p>
-                        </div>
-                      )}
+                    {/* PayPal Payment Interface */}
+                    {paymentMethod === 'paypal' && paymentResult.paymentUrl && (
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                          Amount: {formatPrice(finalPrice, service.currency)}
+                        </p>
+                        <a
+                          href={paymentResult.paymentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                        >
+                          <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h8.418c2.508 0 4.514.893 5.835 2.598 1.206 1.557 1.747 3.675 1.567 6.129-.346 4.73-3.558 8.889-8.781 11.378h4.985c.534 0 1.021-.304 1.258-.786l6.097-12.417c.235-.479-.013-1.059-.533-1.249L14.27 1.986c-.52-.19-1.099.055-1.249.533L7.076 21.337z"/>
+                          </svg>
+                          Pay with PayPal
+                        </a>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                          Click to complete your payment securely on PayPal.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* WayForPay Payment Interface */}
+                    {paymentMethod === 'wayforpay' && paymentResult.paymentUrl && (
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                          Amount: {formatPrice(finalPrice, service.currency)}
+                        </p>
+                        <a
+                          href={paymentResult.paymentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        >
+                          <CreditCardIcon className="w-4 h-4 mr-2" />
+                          Pay with WayForPay
+                        </a>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                          Click to complete your payment securely on WayForPay.
+                        </p>
+                      </div>
+                    )}
 
                       {/* Crypto Payment Interface (existing logic) */}
                       {paymentMethod === 'crypto' && (
@@ -1464,8 +1522,7 @@ const BookingFlow: React.FC = () => {
                           </div>
                         </>
                       )}
-                    </div>
-                  )}
+                  </div>
 
                   {/* Payment Complete Section */}
                   {!paymentResult.requiresPayment && paymentResult.status === 'COMPLETED' && (
