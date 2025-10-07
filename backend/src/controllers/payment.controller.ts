@@ -86,8 +86,8 @@ const createWayForPayInvoiceSchema = z.object({
   amount: z.number().positive(),
   currency: z.string().default('UAH'),
   description: z.string().optional(),
-  customerEmail: z.string().email().optional().or(z.literal('')), // Allow empty string
-  customerPhone: z.string().optional().or(z.literal('')), // Allow empty string
+  customerEmail: z.union([z.string().email(), z.literal('')]).optional(), // Allow email or empty string
+  customerPhone: z.string().optional(), // Allow any string or undefined
   metadata: z.record(z.any()).optional(),
 });
 
