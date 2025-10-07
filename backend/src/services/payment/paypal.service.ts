@@ -152,27 +152,12 @@ export class PayPalService {
         applicationContext: {
           brandName: 'MiyZapis',
           locale: 'en-US',
-          landingPage: 'BILLING',
+          landingPage: 'NO_PREFERENCE',
           shippingPreference: 'NO_SHIPPING',
           userAction: 'PAY_NOW',
           returnUrl: `${config.frontend.url || 'https://miyzapis.com'}/booking/${bookingId}?payment=success`,
           cancelUrl: `${config.frontend.url || 'https://miyzapis.com'}/booking/${bookingId}?payment=cancel`
-        },
-        // Add custom metadata
-        ...(Object.keys(metadata).length > 0 && {
-          paymentSource: {
-            paypal: {
-              experienceContext: {
-                paymentMethodPreference: 'IMMEDIATE_PAYMENT_REQUIRED',
-                brandName: 'MiyZapis',
-                locale: 'en-US',
-                landingPage: 'LOGIN',
-                shippingPreference: 'NO_SHIPPING',
-                userAction: 'PAY_NOW'
-              }
-            }
-          }
-        })
+        }
       };
 
       const response = await this.ordersController!.createOrder({
