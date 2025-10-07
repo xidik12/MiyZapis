@@ -1,6 +1,6 @@
 {
   "name": "booking-platform-backend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Production-ready backend API for booking platform supporting web, Telegram bot, and mini app clients",
   "main": "dist/server.js",
   "scripts": {
