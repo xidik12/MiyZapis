@@ -1659,7 +1659,7 @@ const BookingFlow: React.FC = () => {
                   {hasPaymentUrl && (
                     <div className="space-y-3">
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Amount: ${paymentResult.finalAmount || 'N/A'}
+                        Amount: ${paymentResult.finalAmount ? (paymentResult.finalAmount / 100).toFixed(2) : 'N/A'}
                       </p>
                       <a
                         href={paymentResult.paymentUrl}
