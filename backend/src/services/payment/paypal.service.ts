@@ -77,37 +77,52 @@ interface RefundRequest {
 }
 
 export class PayPalService {
-  private client: Client;
-  private ordersController: OrdersController;
-  private paymentsController: PaymentsController;
+  private client?: Client;
+  private ordersController?: OrdersController;
+  private paymentsController?: PaymentsController;
 
   constructor() {
-    // Initialize PayPal client
-    this.client = new Client({
-      clientCredentialsAuthCredentials: {
-        oAuthClientId: config.paypal.clientId || '',
-        oAuthClientSecret: config.paypal.clientSecret || ''
-      },
-      timeout: 0,
-      environment: config.paypal.mode === 'live' ? Environment.Live : Environment.Sandbox,
-      logging: {
-        logLevel: LogLevel.Info,
-        logRequest: { logBody: true },
-        logResponse: { logHeaders: true }
-      }
-    });
+    // Don't initialize client in constructor - do it lazily when needed
+    if (PayPalService.isConfigured()) {
+      this.initializeClient();
+    }
+  }
 
-    this.ordersController = new OrdersController(this.client);
-    this.paymentsController = new PaymentsController(this.client);
+  private initializeClient() {
+    if (!this.client) {
+      // Initialize PayPal client
+      this.client = new Client({
+        clientCredentialsAuthCredentials: {
+          oAuthClientId: config.paypal.clientId!,
+          oAuthClientSecret: config.paypal.clientSecret!
+        },
+        timeout: 0,
+        environment: config.paypal.mode === 'live' ? Environment.Live : Environment.Sandbox,
+        logging: {
+          logLevel: LogLevel.Info,
+          logRequest: { logBody: true },
+          logResponse: { logHeaders: true }
+        }
+      });
 
-    logger.info('[PayPal] Service initialized', {
-      mode: config.paypal.mode,
-      baseUrl: config.paypal.baseUrl
-    });
+      this.ordersController = new OrdersController(this.client);
+      this.paymentsController = new PaymentsController(this.client);
+
+      logger.info('[PayPal] Service initialized', {
+        mode: config.paypal.mode,
+        baseUrl: config.paypal.baseUrl
+      });
+    }
   }
 
   // Create PayPal order for booking payment
   async createOrder(data: PayPalOrderData): Promise<any> {
+    if (!PayPalService.isConfigured()) {
+      throw new Error('PayPal is not configured. Please set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET');
+    }
+
+    this.initializeClient();
+
     try {
       const { bookingId, amount, currency, description = 'Booking payment', metadata = {} } = data;
 
@@ -160,7 +175,7 @@ export class PayPalService {
         })
       };
 
-      const response = await this.ordersController.createOrder({
+      const response = await this.ordersController!.createOrder({
         body: orderRequest,
         paypalRequestId: `${bookingId}-${Date.now()}`
       });
@@ -205,7 +220,7 @@ export class PayPalService {
     try {
       logger.info('[PayPal] Fetching order details', { orderId });
 
-      const response = await this.ordersController.getOrder({
+      const response = await this.ordersController!.getOrder({
         id: orderId
       });
 
@@ -239,7 +254,7 @@ export class PayPalService {
 
       logger.info('[PayPal] Capturing order', { orderId });
 
-      const response = await this.ordersController.captureOrder({
+      const response = await this.ordersController!.captureOrder({
         id: orderId,
         paypalRequestId: `capture-${orderId}-${Date.now()}`,
         body: {}
@@ -296,7 +311,7 @@ export class PayPalService {
         noteToPayer: reason
       };
 
-      const response = await this.paymentsController.refundCapturedPayment({
+      const response = await this.paymentsController!.refundCapturedPayment({
         captureId,
         body: refundRequest,
         paypalRequestId: `refund-${captureId}-${Date.now()}`
