@@ -82,18 +82,18 @@ const completeOnrampSessionSchema = z.object({
 
 // WayForPay schemas
 const createWayForPayInvoiceSchema = z.object({
-  bookingId: z.string().cuid(),
+  bookingId: z.string().min(1), // Accept any non-empty string for payment-first flow
   amount: z.number().positive(),
   currency: z.string().default('UAH'),
   description: z.string().optional(),
-  customerEmail: z.string().email().optional(),
-  customerPhone: z.string().optional(),
+  customerEmail: z.string().email().optional().or(z.literal('')), // Allow empty string
+  customerPhone: z.string().optional().or(z.literal('')), // Allow empty string
   metadata: z.record(z.any()).optional(),
 });
 
 // PayPal schemas
 const createPayPalOrderSchema = z.object({
-  bookingId: z.string().cuid(),
+  bookingId: z.string().min(1), // Accept any non-empty string for payment-first flow
   amount: z.number().positive(),
   currency: z.string().default('USD'),
   description: z.string().optional(),
@@ -1259,34 +1259,52 @@ export class PaymentController {
         return;
       }
 
-      // Get booking details
-      const booking = await prisma.booking.findUnique({
-        where: { id: validatedData.bookingId },
-        include: {
-          customer: true, // customer is a User
-          service: true,
-        },
-      });
+      // For payment-first flow, bookingId might be a temporary identifier
+      // Try to find booking first, if not found, treat as payment intent
+      let booking = null;
+      let description = validatedData.description || 'Booking payment';
+      let customerEmail = validatedData.customerEmail;
+      let customerPhone = validatedData.customerPhone;
 
-      if (!booking) {
-        res.status(404).json({ error: 'Booking not found' });
-        return;
-      }
+      try {
+        booking = await prisma.booking.findUnique({
+          where: { id: validatedData.bookingId },
+          include: {
+            customer: true, // customer is a User
+            service: true,
+          },
+        });
 
-      // Verify user owns this booking
-      if (booking.customerId !== userId) {
-        res.status(403).json({ error: 'Forbidden - not your booking' });
-        return;
+        if (booking) {
+          // Verify user owns this booking
+          if (booking.customerId !== userId) {
+            res.status(403).json({ error: 'Forbidden - not your booking' });
+            return;
+          }
+          description = validatedData.description || `Payment for ${booking.service.name}`;
+          customerEmail = validatedData.customerEmail || booking.customer.email;
+          customerPhone = validatedData.customerPhone || booking.customer.phoneNumber;
+        }
+      } catch (error) {
+        // Booking not found, proceed with payment intent flow
+        logger.info('[WayForPay] Booking not found, treating as payment intent', {
+          bookingId: validatedData.bookingId,
+          userId,
+        });
       }
 
       const invoice = await wayforpayService.createInvoice({
         bookingId: validatedData.bookingId,
         amount: validatedData.amount,
         currency: validatedData.currency,
-        description: validatedData.description || `Payment for ${booking.service.name}`,
-        customerEmail: validatedData.customerEmail || booking.customer.email,
-        customerPhone: validatedData.customerPhone,
-        metadata: validatedData.metadata,
+        description,
+        customerEmail: customerEmail || undefined,
+        customerPhone: customerPhone || undefined,
+        metadata: {
+          ...validatedData.metadata,
+          userId,
+          isPaymentIntent: booking ? 'false' : 'true',
+        },
       });
 
       logger.info('[WayForPay] Invoice created successfully', {
