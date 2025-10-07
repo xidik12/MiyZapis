@@ -1542,6 +1542,13 @@ export class PaymentController {
 
       const validatedData = createPayPalOrderSchema.parse(req.body);
 
+      // DEBUG: Log incoming request
+      logger.info('[PayPal] REQUEST RECEIVED - Version 1.0.7+', {
+        currency: validatedData.currency,
+        amount: validatedData.amount,
+        bookingId: validatedData.bookingId
+      });
+
       // Check if PayPal is configured
       if (!PayPalService.isConfigured()) {
         res.status(503).json({
