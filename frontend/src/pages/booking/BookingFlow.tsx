@@ -527,10 +527,12 @@ const BookingFlow: React.FC = () => {
       } else if (paymentMethod === 'wayforpay') {
         // Handle WayForPay payment
         console.log('💳 BookingFlow: Creating WayForPay invoice...');
+        // Convert USD cents to UAH kopecks (1 USD = 40 UAH, so 100 cents = 4000 kopecks)
+        const wayforpayAmount = depositAmount * 40; // Convert $1 (100 cents) to 40 UAH (4000 kopecks)
         const wayforpayInvoiceData = {
           bookingId: `booking-${Date.now()}`, // Temporary booking ID
-          amount: depositAmount, // $1 deposit in cents
-          currency: service.currency || 'UAH',
+          amount: wayforpayAmount, // Amount in UAH kopecks
+          currency: 'UAH',
           description: `${service.name} - ${paymentData.specialistName}`,
           customerEmail: '', // Will be filled from user context if available
           customerPhone: ''

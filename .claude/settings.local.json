@@ -208,7 +208,8 @@
       "WebFetch(domain:developer.paypal.com)",
       "WebFetch(domain:docs.cloud.coinbase.com)",
       "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot/backend/test-payment-endpoints.sh)",
-      "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot/backend/test-payment-debug.sh)"
+      "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot/backend/test-payment-debug.sh)",
+      "Bash(PORT=3045 DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npm start)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
