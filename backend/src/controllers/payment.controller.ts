@@ -1585,7 +1585,15 @@ export class PaymentController {
       let paypalAmount = validatedData.amount;
       let paypalCurrency = validatedData.currency;
 
-      if (validatedData.currency === 'UAH') {
+      logger.info('[PayPal] Currency check', {
+        receivedCurrency: validatedData.currency,
+        receivedAmount: validatedData.amount,
+        currencyType: typeof validatedData.currency,
+        isUAH: validatedData.currency === 'UAH',
+        uppercaseMatch: validatedData.currency.toUpperCase() === 'UAH'
+      });
+
+      if (validatedData.currency.toUpperCase() === 'UAH') {
         // Convert UAH kopecks to USD cents (4000 kopecks = 40 UAH = 1 USD = 100 cents)
         paypalAmount = Math.round(validatedData.amount / 40); // 4000 / 40 = 100 cents = $1
         paypalCurrency = 'USD';
