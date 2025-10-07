@@ -391,7 +391,12 @@ export class WayForPayService {
 
   // Check if WayForPay is configured
   static isConfigured(): boolean {
-    return !!(config.wayforpay.merchantAccount && config.wayforpay.merchantSecret);
+    return !!(
+      config.wayforpay.merchantAccount &&
+      config.wayforpay.merchantSecret &&
+      config.wayforpay.merchantAccount.trim() !== '' &&
+      config.wayforpay.merchantSecret.trim() !== ''
+    );
   }
 
   // Get supported currencies

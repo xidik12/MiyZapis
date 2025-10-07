@@ -370,7 +370,12 @@ export class PayPalService {
 
   // Check if PayPal is configured
   static isConfigured(): boolean {
-    return !!(config.paypal.clientId && config.paypal.clientSecret);
+    return !!(
+      config.paypal.clientId &&
+      config.paypal.clientSecret &&
+      config.paypal.clientId.trim() !== '' &&
+      config.paypal.clientSecret.trim() !== ''
+    );
   }
 
   // Get supported currencies
