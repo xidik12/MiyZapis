@@ -1580,15 +1580,34 @@ export class PaymentController {
         });
       }
 
+      // PayPal only supports certain currencies (USD, EUR, GBP, etc.)
+      // Convert UAH to USD if needed (1 USD = 40 UAH)
+      let paypalAmount = validatedData.amount;
+      let paypalCurrency = validatedData.currency;
+
+      if (validatedData.currency === 'UAH') {
+        // Convert UAH kopecks to USD cents (4000 kopecks = 40 UAH = 1 USD = 100 cents)
+        paypalAmount = Math.round(validatedData.amount / 40); // 4000 / 40 = 100 cents = $1
+        paypalCurrency = 'USD';
+        logger.info('[PayPal] Converting UAH to USD', {
+          originalAmount: validatedData.amount,
+          originalCurrency: 'UAH',
+          convertedAmount: paypalAmount,
+          convertedCurrency: 'USD'
+        });
+      }
+
       const order = await paypalService.createOrder({
         bookingId: validatedData.bookingId,
-        amount: validatedData.amount,
-        currency: validatedData.currency,
+        amount: paypalAmount,
+        currency: paypalCurrency,
         description,
         metadata: {
           ...validatedData.metadata,
           userId,
           isPaymentIntent: booking ? 'false' : 'true',
+          originalCurrency: validatedData.currency,
+          originalAmount: validatedData.amount,
         },
       });
 

@@ -401,8 +401,10 @@ export class WayForPayService {
     return !!(
       config.wayforpay.merchantAccount &&
       config.wayforpay.merchantSecret &&
+      config.wayforpay.merchantDomain &&
       config.wayforpay.merchantAccount.trim() !== '' &&
-      config.wayforpay.merchantSecret.trim() !== ''
+      config.wayforpay.merchantSecret.trim() !== '' &&
+      config.wayforpay.merchantDomain.trim() !== ''
     );
   }
 

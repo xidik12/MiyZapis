@@ -19,7 +19,7 @@ export function startBookingReminderWorker() {
         },
         include: {
           customer: true,
-          specialist: { include: { user: true } },
+          specialist: true, // specialist is already a User, no need to include user
           service: true,
         },
       });
