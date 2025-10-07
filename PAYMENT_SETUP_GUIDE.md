@@ -3,12 +3,19 @@
 ## Current Status
 
 ✅ **Coinbase Commerce (Crypto)** - Working
-❌ **PayPal** - Not configured (500 errors)
-❌ **WayForPay** - Not configured (500 errors)
+⚠️ **PayPal** - Requires API credentials (will show clear error if not configured)
+⚠️ **WayForPay** - Requires API credentials (will show clear error if not configured)
 
-## Why PayPal and WayForPay Are Failing
+## Latest Fixes Applied (Just Now)
 
-The 500 errors occur because these payment providers **require valid API credentials** that are not currently set in Railway environment variables. The code is trying to call their APIs with missing or invalid credentials.
+✅ **Lazy Initialization**: Payment services only initialize when credentials are configured
+✅ **Clear Error Messages**: Returns "PayPal/WayForPay is not configured" instead of cryptic 500 errors
+✅ **Credential Validation**: Checks for empty strings, not just undefined values
+✅ **Safe Failure**: Services gracefully handle missing credentials without crashing
+
+## Why PayPal and WayForPay Need Configuration
+
+These payment providers **require valid API credentials** to function. Without these credentials set in Railway environment variables, the payment methods will return clear error messages instead of processing payments.
 
 ## Required Environment Variables
 
