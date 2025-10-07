@@ -65,24 +65,27 @@ interface WayForPayWebhookData {
 }
 
 export class WayForPayService {
-  private merchantAccount: string;
-  private merchantSecret: string;
-  private merchantDomain: string;
-  private baseUrl: string;
-  private mode: string;
+  private merchantAccount?: string;
+  private merchantSecret?: string;
+  private merchantDomain?: string;
+  private baseUrl?: string;
+  private mode?: string;
 
   constructor() {
-    this.merchantAccount = config.wayforpay.merchantAccount || '';
-    this.merchantSecret = config.wayforpay.merchantSecret || '';
-    this.merchantDomain = config.wayforpay.merchantDomain || '';
-    this.mode = config.wayforpay.mode || 'test';
-    this.baseUrl = config.wayforpay.baseUrl || 'https://secure.wayforpay.com/pay';
+    // Only initialize if configured
+    if (WayForPayService.isConfigured()) {
+      this.merchantAccount = config.wayforpay.merchantAccount;
+      this.merchantSecret = config.wayforpay.merchantSecret;
+      this.merchantDomain = config.wayforpay.merchantDomain;
+      this.mode = config.wayforpay.mode || 'test';
+      this.baseUrl = config.wayforpay.baseUrl || 'https://secure.wayforpay.com/pay';
 
-    logger.info('[WayForPay] Service initialized', {
-      mode: this.mode,
-      baseUrl: this.baseUrl,
-      merchantAccount: this.merchantAccount ? 'configured' : 'not configured'
-    });
+      logger.info('[WayForPay] Service initialized', {
+        mode: this.mode,
+        baseUrl: this.baseUrl,
+        merchantAccount: this.merchantAccount ? 'configured' : 'not configured'
+      });
+    }
   }
 
   // Generate merchant signature for WayForPay requests
@@ -102,13 +105,13 @@ export class WayForPayService {
       });
 
       // Signature string format: field1;field2;field3;merchantSecret
-      const signatureString = values.join(';') + ';' + this.merchantSecret;
+      const signatureString = values.join(';') + ';' + this.merchantSecret!;
       const signature = crypto.createHash('md5').update(signatureString).digest('hex');
 
       logger.debug('[WayForPay] Generated signature', {
         fields: fields,
         valuesCount: values.length,
-        signatureString: signatureString.replace(this.merchantSecret, '***'),
+        signatureString: signatureString.replace(this.merchantSecret!, '***'),
         signature
       });
 
@@ -160,6 +163,10 @@ export class WayForPayService {
 
   // Create payment invoice
   async createInvoice(data: WayForPayOrderData): Promise<WayForPayResponse> {
+    if (!WayForPayService.isConfigured()) {
+      throw new Error('WayForPay is not configured. Please set WAYFORPAY_MERCHANT_ACCOUNT and WAYFORPAY_MERCHANT_SECRET');
+    }
+
     try {
       const { bookingId, amount, currency, description = 'Booking payment', customerEmail, customerPhone, metadata = {} } = data;
 
@@ -177,8 +184,8 @@ export class WayForPayService {
       const orderDate = Math.floor(Date.now() / 1000);
 
       const invoiceData: Partial<WayForPayInvoiceData> = {
-        merchantAccount: this.merchantAccount,
-        merchantDomainName: this.merchantDomain,
+        merchantAccount: this.merchantAccount!,
+        merchantDomainName: this.merchantDomain!,
         merchantTransactionSecureType: 'AUTO',
         orderReference,
         orderDate,
