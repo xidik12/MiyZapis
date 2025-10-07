@@ -2085,9 +2085,9 @@ export class PaymentController {
           bookingId,
           userId: req.user.id,
           userEmail: req.user.email
-        },
-        redirectUrl: `${process.env.FRONTEND_URL || 'https://miyzapis.com'}/booking/payment/success`,
-        cancelUrl: `${process.env.FRONTEND_URL || 'https://miyzapis.com'}/booking/payment/cancel`
+        }
+        // Don't set redirectUrl/cancelUrl - Coinbase will show "Return to merchant" button
+        // Frontend handles completion via webhook notifications and socket events
       });
 
       res.status(201).json(
