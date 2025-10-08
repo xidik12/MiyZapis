@@ -498,26 +498,12 @@ const BookingFlow: React.FC = () => {
         // Handle PayPal payment
         console.log('💳 BookingFlow: Creating PayPal order...');
 
-        // PayPal doesn't support UAH - convert to USD (1 USD = 40 UAH)
-        let paypalAmount = depositAmount;
-        let paypalCurrency = service.currency || 'USD';
-
-        if ((service.currency || 'USD').toUpperCase() === 'UAH') {
-          // Convert UAH kopecks to USD cents (4000 kopecks = 40 UAH = $1 = 100 cents)
-          paypalAmount = Math.round(depositAmount / 40);
-          paypalCurrency = 'USD';
-          console.log('💱 BookingFlow: Converting UAH to USD for PayPal', {
-            originalAmount: depositAmount,
-            originalCurrency: 'UAH',
-            convertedAmount: paypalAmount,
-            convertedCurrency: 'USD'
-          });
-        }
-
+        // Deposit is always $1 USD (100 cents) regardless of service currency
+        // PayPal doesn't support UAH, so always use USD for deposits
         const paypalOrderData = {
           bookingId: `booking-${Date.now()}`, // Temporary booking ID
-          amount: paypalAmount,
-          currency: paypalCurrency,
+          amount: depositAmount, // Always 100 cents = $1.00 USD
+          currency: 'USD', // Always USD for deposits
           description: `${service.name} - ${paymentData.specialistName}`
         };
 
