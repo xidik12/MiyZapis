@@ -2304,11 +2304,13 @@ export class PaymentController {
         hasRawBody: !!(req as any).rawBody,
         rawBodyLength: (req as any).rawBody?.length || 0,
         bodyLength: JSON.stringify(req.body).length,
-        usingFallback: !(req as any).rawBody
+        usingFallback: !(req as any).rawBody,
+        signatureHeader: signature?.substring(0, 20) + '...',
+        signatureLength: signature?.length || 0
       });
 
-      // Verify webhook signature
-      const isValid = coinbaseCommerceService.verifyWebhookSignature(signature, rawBody);
+      // Verify webhook signature (payload, signature)
+      const isValid = coinbaseCommerceService.verifyWebhookSignature(rawBody, signature);
 
       if (!isValid) {
         logger.warn('[Coinbase] Invalid webhook signature', {
