@@ -1417,7 +1417,7 @@ export class PaymentController {
         return;
       }
 
-      const { bookingId, amount, currency, description, metadata = {} } = req.body;
+      const { bookingId, amount, currency, description, metadata = {}, bookingData } = req.body;
 
       if (!bookingId || !amount || !currency) {
         res.status(400).json(
@@ -1434,7 +1434,8 @@ export class PaymentController {
         bookingId,
         amount,
         currency,
-        userId: req.user.id
+        userId: req.user.id,
+        hasBookingData: !!bookingData
       });
 
       // PayPal service handles amount conversion internally
@@ -1446,7 +1447,9 @@ export class PaymentController {
         metadata: {
           ...metadata,
           userId: req.user.id,
-          userEmail: req.user.email
+          userEmail: req.user.email,
+          // Include full booking data for webhook processing
+          bookingData: bookingData || metadata.bookingData
         }
       });
 
@@ -1696,6 +1699,8 @@ export class PaymentController {
     try {
       const signature = req.headers['paypal-transmission-sig'] as string;
       const webhookId = req.headers['paypal-webhook-id'] as string;
+      // Use the raw body preserved by webhookRawBodyParser middleware
+      const rawBody = (req as any).rawBody || JSON.stringify(req.body);
 
       if (!signature || !webhookId) {
         logger.warn('[PayPal] Webhook received without required headers', {
@@ -1711,13 +1716,14 @@ export class PaymentController {
       logger.info('[PayPal] Webhook received', {
         eventType: req.body.event_type,
         resourceType: req.body.resource_type,
-        webhookId
+        webhookId,
+        hasRawBody: !!(req as any).rawBody
       });
 
       // Verify webhook signature
       const isValid = await paypalService.verifyWebhookSignature(
         req.headers as Record<string, string>,
-        JSON.stringify(req.body),
+        rawBody,
         webhookId
       );
 
