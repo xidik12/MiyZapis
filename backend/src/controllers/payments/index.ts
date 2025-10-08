@@ -2298,10 +2298,13 @@ export class PaymentController {
         return;
       }
 
-      logger.info('[Coinbase] Webhook received', {
+      logger.info('[Coinbase] Webhook received DEBUG', {
         eventType: req.body.event?.type,
         eventId: req.body.event?.id,
-        hasRawBody: !!(req as any).rawBody
+        hasRawBody: !!(req as any).rawBody,
+        rawBodyLength: (req as any).rawBody?.length || 0,
+        bodyLength: JSON.stringify(req.body).length,
+        usingFallback: !(req as any).rawBody
       });
 
       // Verify webhook signature

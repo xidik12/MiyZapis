@@ -242,9 +242,13 @@ export class CoinbaseCommerceService {
         .update(payload, 'utf8')
         .digest('hex');
 
-      logger.info('[Coinbase] Signature verification', {
-        receivedSig: signature.substring(0, 20) + '...',
-        expectedSig: expectedSignature.substring(0, 20) + '...',
+      logger.info('[Coinbase] Signature verification DEBUG', {
+        receivedSig: signature,
+        expectedSig: expectedSignature,
+        payloadLength: payload.length,
+        payloadPreview: payload.substring(0, 100) + '...',
+        secretLength: this.webhookSecret.length,
+        secretPreview: this.webhookSecret.substring(0, 10) + '...',
         match: signature === expectedSignature
       });
 
