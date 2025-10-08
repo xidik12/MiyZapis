@@ -504,7 +504,18 @@ const BookingFlow: React.FC = () => {
           bookingId: `booking-${Date.now()}`, // Temporary booking ID
           amount: depositAmount, // Always 100 cents = $1.00 USD
           currency: 'USD', // Always USD for deposits
-          description: `${service.name} - ${paymentData.specialistName}`
+          description: `${service.name} - ${paymentData.specialistName}`,
+          bookingData: {
+            serviceId: service.id,
+            specialistId: currentSpecialistId,
+            scheduledAt: scheduledAt.toISOString(),
+            duration: service.duration || 60,
+            customerNotes: bookingNotes || undefined,
+            serviceName: service.name,
+            specialistName: paymentData.specialistName,
+            servicePrice: service.price,
+            serviceCurrency: service.currency || 'USD'
+          }
         };
 
         const paypalResult = await paymentService.createPayPalOrder(paypalOrderData);
@@ -537,8 +548,19 @@ const BookingFlow: React.FC = () => {
           amount: wayforpayAmount, // Amount in UAH kopecks
           currency: 'UAH',
           description: `${service.name} - ${paymentData.specialistName}`,
-          customerEmail: '', // Will be filled from user context if available
-          customerPhone: ''
+          customerEmail: user?.email || '', // Will be filled from user context if available
+          customerPhone: user?.phone || '',
+          bookingData: {
+            serviceId: service.id,
+            specialistId: currentSpecialistId,
+            scheduledAt: scheduledAt.toISOString(),
+            duration: service.duration || 60,
+            customerNotes: bookingNotes || undefined,
+            serviceName: service.name,
+            specialistName: paymentData.specialistName,
+            servicePrice: service.price,
+            serviceCurrency: service.currency || 'USD'
+          }
         };
 
         const wayforpayResult = await paymentService.createWayForPayInvoice(wayforpayInvoiceData);

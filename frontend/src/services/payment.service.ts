@@ -847,6 +847,17 @@ export class PaymentService {
     amount: number;
     currency: string;
     description?: string;
+    bookingData?: {
+      serviceId: string;
+      specialistId: string;
+      scheduledAt: string;
+      duration: number;
+      customerNotes?: string;
+      serviceName: string;
+      specialistName: string;
+      servicePrice: number;
+      serviceCurrency: string;
+    };
   }): Promise<{
     order: {
       id: string;
@@ -866,7 +877,8 @@ export class PaymentService {
       bookingId: data.bookingId,
       amount: data.amount,
       currency: data.currency,
-      description: data.description || 'Booking payment'
+      description: data.description || 'Booking payment',
+      bookingData: data.bookingData
     });
 
     if (!response.success || !response.data) {
@@ -977,6 +989,17 @@ export class PaymentService {
     description?: string;
     customerEmail?: string;
     customerPhone?: string;
+    bookingData?: {
+      serviceId: string;
+      specialistId: string;
+      scheduledAt: string;
+      duration: number;
+      customerNotes?: string;
+      serviceName: string;
+      specialistName: string;
+      servicePrice: number;
+      serviceCurrency: string;
+    };
   }): Promise<{
     invoice: {
       orderReference: string;
@@ -1000,7 +1023,8 @@ export class PaymentService {
       currency: data.currency,
       description: data.description || 'Booking payment',
       customerEmail: data.customerEmail,
-      customerPhone: data.customerPhone
+      customerPhone: data.customerPhone,
+      bookingData: data.bookingData
     });
 
     if (!response.success || !response.data) {

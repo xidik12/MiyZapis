@@ -1453,6 +1453,29 @@ export class PaymentController {
         }
       });
 
+      // Store pending payment record with booking metadata for webhook processing
+      const prisma = (await import('@/config/database')).prisma;
+      await prisma.payment.create({
+        data: {
+          userId: req.user.id,
+          status: 'PENDING',
+          type: 'DEPOSIT',
+          amount: amount / 100, // Convert cents to dollars
+          currency,
+          paymentMethodType: 'paypal',
+          metadata: JSON.stringify({
+            paypalOrderId: paypalOrder.id,
+            tempBookingId: bookingId,
+            bookingData: bookingData || metadata.bookingData
+          })
+        }
+      });
+
+      logger.info('[PayPal] Payment record created for order', {
+        orderId: paypalOrder.id,
+        userId: req.user.id
+      });
+
       res.status(201).json(
         createSuccessResponse({
           order: paypalOrder,
@@ -1756,8 +1779,86 @@ export class PaymentController {
             amount: event.resource?.amount
           });
 
-          // Here you would typically update your booking status, create payment record, etc.
-          // This is where you'd integrate with your booking system
+          // Process the payment and create booking
+          try {
+            const orderId = event.resource?.supplementary_data?.related_ids?.order_id;
+            const customId = event.resource?.custom_id;
+
+            if (!orderId) {
+              logger.error('[PayPal] No order ID found in webhook');
+              break;
+            }
+
+            // Find the payment record with booking data
+            const prisma = (await import('@/config/database')).prisma;
+            const paymentRecord = await prisma.payment.findFirst({
+              where: {
+                metadata: {
+                  contains: orderId
+                },
+                status: 'PENDING'
+              }
+            });
+
+            if (!paymentRecord || !paymentRecord.metadata) {
+              logger.error('[PayPal] Payment record not found for order', { orderId });
+              break;
+            }
+
+            const metadata = JSON.parse(paymentRecord.metadata);
+            const bookingData = metadata.bookingData;
+
+            if (!bookingData) {
+              logger.error('[PayPal] No booking data found in payment metadata');
+              break;
+            }
+
+            // Create the booking
+            const { BookingService } = await import('@/services/booking');
+            const booking = await BookingService.createBooking({
+              customerId: paymentRecord.userId,
+              serviceId: bookingData.serviceId,
+              specialistId: bookingData.specialistId,
+              scheduledAt: new Date(bookingData.scheduledAt),
+              duration: bookingData.duration,
+              customerNotes: bookingData.customerNotes,
+              loyaltyPointsUsed: 0
+            });
+
+            // Update payment record with booking ID and mark as paid
+            await prisma.payment.update({
+              where: { id: paymentRecord.id },
+              data: {
+                bookingId: booking.id,
+                status: 'SUCCEEDED',
+                metadata: JSON.stringify({
+                  ...metadata,
+                  paypalCaptureId: event.resource.id
+                })
+              }
+            });
+
+            logger.info('[PayPal] Booking created from webhook', {
+              bookingId: booking.id,
+              orderId,
+              userId: paymentRecord.userId
+            });
+
+            // Emit socket event to notify frontend
+            const { WebSocketManager } = await import('@/services/websocket/websocket-manager');
+            const wsManager = WebSocketManager.getInstance();
+            wsManager.emitToUser(paymentRecord.userId, 'payment:completed', {
+              paymentId: paymentRecord.id,
+              bookingId: booking.id,
+              status: 'COMPLETED'
+            });
+
+          } catch (error) {
+            logger.error('[PayPal] Error processing payment webhook', {
+              error: error instanceof Error ? error.message : error,
+              orderId: event.resource?.supplementary_data?.related_ids?.order_id
+            });
+          }
           break;
 
         case 'PAYMENT.CAPTURE.DENIED':
@@ -1826,7 +1927,7 @@ export class PaymentController {
         return;
       }
 
-      const { bookingId, amount, currency, description, customerEmail, customerPhone, metadata = {} } = req.body;
+      const { bookingId, amount, currency, description, customerEmail, customerPhone, metadata = {}, bookingData } = req.body;
 
       if (!bookingId || !amount || !currency) {
         res.status(400).json(
@@ -1843,7 +1944,8 @@ export class PaymentController {
         bookingId,
         amount,
         currency,
-        userId: req.user.id
+        userId: req.user.id,
+        hasBookingData: !!bookingData
       });
 
       // WayForPay service handles amount rounding internally
@@ -1857,7 +1959,9 @@ export class PaymentController {
         metadata: {
           ...metadata,
           userId: req.user.id,
-          userEmail: req.user.email
+          userEmail: req.user.email,
+          // Include full booking data for webhook processing
+          bookingData: bookingData || metadata.bookingData
         }
       });
 
