@@ -40,13 +40,41 @@ app.use(securityHeaders);
 app.use(cors(corsOptions));
 app.use(requestId);
 
-// Raw body preservation for webhook signature verification
-// This must come BEFORE express.json() middleware
-import { webhookRawBodyParser } from '@/middleware/rawBody';
-app.use(webhookRawBodyParser);
+// Body parsing middleware with raw body preservation for webhooks
+// For webhook routes, we need the raw body for signature verification
+app.use((req, res, next) => {
+  if (req.path.includes('/webhooks/')) {
+    // For webhooks, capture raw body before parsing
+    let data = '';
+    req.setEncoding('utf8');
+    req.on('data', (chunk) => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      (req as any).rawBody = data;
+      try {
+        req.body = JSON.parse(data);
+      } catch (error) {
+        req.body = {};
+      }
+      next();
+    });
+  } else {
+    // For non-webhooks, use standard JSON parsing
+    next();
+  }
+});
 
-// Body parsing middleware (will be skipped for webhook routes)
-app.use(express.json({ limit: '10mb' }));
+// Apply express.json() only for non-webhook routes
+app.use((req, res, next) => {
+  if (req.path.includes('/webhooks/')) {
+    // Skip express.json() for webhooks - already parsed above
+    next();
+  } else {
+    express.json({ limit: '10mb' })(req, res, next);
+  }
+});
+
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Compression middleware
