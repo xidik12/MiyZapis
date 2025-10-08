@@ -2178,7 +2178,9 @@ export class PaymentController {
   static async handleCoinbaseWebhook(req: Request, res: Response): Promise<void> {
     try {
       const signature = req.headers['x-cc-webhook-signature'] as string;
-      const rawBody = JSON.stringify(req.body);
+      // Use the raw body preserved by rawBodySaver middleware
+      // This is critical for signature verification - we need the EXACT bytes Coinbase sent
+      const rawBody = (req as any).rawBody || JSON.stringify(req.body);
 
       if (!signature) {
         logger.warn('[Coinbase] Webhook received without signature header');
@@ -2188,7 +2190,8 @@ export class PaymentController {
 
       logger.info('[Coinbase] Webhook received', {
         eventType: req.body.event?.type,
-        eventId: req.body.event?.id
+        eventId: req.body.event?.id,
+        hasRawBody: !!(req as any).rawBody
       });
 
       // Verify webhook signature

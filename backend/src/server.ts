@@ -40,7 +40,12 @@ app.use(securityHeaders);
 app.use(cors(corsOptions));
 app.use(requestId);
 
-// Body parsing middleware
+// Raw body preservation for webhook signature verification
+// This must come BEFORE express.json() middleware
+import { webhookRawBodyParser } from '@/middleware/rawBody';
+app.use(webhookRawBodyParser);
+
+// Body parsing middleware (will be skipped for webhook routes)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
