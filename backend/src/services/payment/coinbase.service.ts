@@ -236,39 +236,20 @@ export class CoinbaseCommerceService {
     }
 
     try {
+      // Coinbase sends signature as hex string
       const expectedSignature = crypto
         .createHmac('sha256', this.webhookSecret)
         .update(payload, 'utf8')
         .digest('hex');
 
-      // Handle case where signature might not be hex-encoded
-      let signatureBuffer: Buffer;
-      let expectedBuffer: Buffer;
+      logger.info('[Coinbase] Signature verification', {
+        receivedSig: signature.substring(0, 20) + '...',
+        expectedSig: expectedSignature.substring(0, 20) + '...',
+        match: signature === expectedSignature
+      });
 
-      try {
-        signatureBuffer = Buffer.from(signature, 'hex');
-        expectedBuffer = Buffer.from(expectedSignature, 'hex');
-      } catch (bufferError) {
-        // If hex decoding fails, try comparing as strings
-        logger.warn('Signature not in hex format, comparing as strings', {
-          signatureLength: signature.length,
-          expectedLength: expectedSignature.length,
-        });
-        return signature === expectedSignature;
-      }
-
-      // Ensure buffers are same length before timing-safe comparison
-      if (signatureBuffer.length !== expectedBuffer.length) {
-        logger.warn('Signature length mismatch', {
-          receivedLength: signatureBuffer.length,
-          expectedLength: expectedBuffer.length,
-          signature: signature.substring(0, 20) + '...',
-          expectedSignature: expectedSignature.substring(0, 20) + '...',
-        });
-        return false;
-      }
-
-      return crypto.timingSafeEqual(signatureBuffer, expectedBuffer);
+      // Direct string comparison for hex signatures
+      return signature === expectedSignature;
     } catch (error) {
       logger.error('Failed to verify webhook signature', {
         error: error instanceof Error ? error.message : error,
