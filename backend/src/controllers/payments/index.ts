@@ -2204,6 +2204,13 @@ export class PaymentController {
       const prisma = (await import('@/config/database')).prisma;
       const bookingData = metadata.bookingData;
 
+      const paymentMetadata = {
+        coinbaseChargeId: charge.chargeId,
+        coinbaseChargeCode: charge.code,
+        tempBookingId: bookingId,
+        bookingData: bookingData || metadata.bookingData
+      };
+
       await prisma.payment.create({
         data: {
           userId: req.user.id,
@@ -2212,17 +2219,17 @@ export class PaymentController {
           amount: amount,
           currency,
           paymentMethodType: 'crypto',
-          metadata: JSON.stringify({
-            coinbaseChargeId: charge.chargeId,
-            tempBookingId: bookingId,
-            bookingData: bookingData || metadata.bookingData
-          })
+          metadata: JSON.stringify(paymentMetadata)
         }
       });
 
       logger.info('[Coinbase] Payment record created for charge', {
         chargeId: charge.chargeId,
-        userId: req.user.id
+        chargeCode: charge.code,
+        userId: req.user.id,
+        hasBookingData: !!bookingData,
+        bookingDataKeys: bookingData ? Object.keys(bookingData) : [],
+        metadataStored: paymentMetadata
       });
 
       res.status(201).json(
@@ -2371,17 +2378,58 @@ export class PaymentController {
           // Create booking from payment metadata
           try {
             const chargeId = event.data.id;
+            const chargeCode = event.data.code;
 
             const prisma = (await import('@/config/database')).prisma;
-            const paymentRecord = await prisma.payment.findFirst({
+
+            // Try to find by charge ID first, then by charge code
+            let paymentRecord = await prisma.payment.findFirst({
               where: {
                 metadata: { contains: chargeId },
                 status: 'PENDING'
               }
             });
 
+            if (!paymentRecord && chargeCode) {
+              paymentRecord = await prisma.payment.findFirst({
+                where: {
+                  metadata: { contains: chargeCode },
+                  status: 'PENDING'
+                }
+              });
+            }
+
             if (!paymentRecord || !paymentRecord.metadata) {
-              logger.error('[Coinbase] Payment record not found for charge', { chargeId });
+              logger.error('[Coinbase] Payment record not found for charge', {
+                chargeId,
+                chargeCode,
+                attemptedSearch: 'both ID and code'
+              });
+
+              // Debug: List all pending crypto payments
+              const allPending = await prisma.payment.findMany({
+                where: {
+                  status: 'PENDING',
+                  paymentMethodType: 'crypto'
+                },
+                select: {
+                  id: true,
+                  metadata: true,
+                  createdAt: true
+                },
+                orderBy: { createdAt: 'desc' },
+                take: 5
+              });
+
+              logger.info('[Coinbase] Recent pending crypto payments for debugging', {
+                count: allPending.length,
+                payments: allPending.map(p => ({
+                  id: p.id,
+                  metadata: p.metadata,
+                  createdAt: p.createdAt
+                }))
+              });
+
               break;
             }
 
