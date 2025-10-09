@@ -516,6 +516,7 @@ const BookingFlow: React.FC = () => {
 
       const paymentData = {
         serviceId: service.id,
+        specialistId: currentSpecialistId,
         scheduledAt: scheduledAt.toISOString(),
         duration: service.duration || 60,
         customerNotes: bookingNotes || undefined,

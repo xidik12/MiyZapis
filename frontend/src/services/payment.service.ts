@@ -105,6 +105,7 @@ export class PaymentService {
   // Create Coinbase Commerce charge for crypto payment
   async createCryptoPaymentIntent(data: {
     serviceId: string;
+    specialistId: string;
     scheduledAt: string;
     duration: number;
     customerNotes?: string;
@@ -155,12 +156,15 @@ export class PaymentService {
         ? `${data.serviceName} - ${data.specialistName}`
         : data.serviceName,
       metadata: {
-        serviceId: data.serviceId,
-        scheduledAt: data.scheduledAt,
-        duration: data.duration,
-        customerNotes: data.customerNotes,
-        loyaltyPointsUsed: data.loyaltyPointsUsed,
-        useWalletFirst: data.useWalletFirst
+        bookingData: {
+          serviceId: data.serviceId,
+          specialistId: data.specialistId, // Add specialistId
+          scheduledAt: data.scheduledAt,
+          duration: data.duration,
+          customerNotes: data.customerNotes,
+          loyaltyPointsUsed: data.loyaltyPointsUsed,
+          useWalletFirst: data.useWalletFirst
+        }
       }
     });
 
