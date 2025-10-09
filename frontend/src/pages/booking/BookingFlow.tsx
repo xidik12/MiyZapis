@@ -121,15 +121,23 @@ const BookingFlow: React.FC = () => {
 
               // Find the most recent booking (should be the one we just paid for)
               const recentBooking = bookings.bookings?.[0];
-              if (recentBooking && recentBooking.status === 'CONFIRMED') {
+              // Accept both CONFIRMED and PENDING status (PENDING means awaiting specialist approval)
+              if (recentBooking && (recentBooking.status === 'CONFIRMED' || recentBooking.status === 'PENDING')) {
                 console.log('✅ Booking found:', recentBooking);
                 clearInterval(pollInterval);
                 setBookingResult(recentBooking);
+
+                const isPending = recentBooking.status === 'PENDING';
                 setPaymentResult({
                   status: 'success',
-                  message: 'Booking created successfully!'
+                  message: isPending
+                    ? 'Payment successful! Your booking is awaiting specialist confirmation.'
+                    : 'Booking created successfully!'
                 });
-                toast.success(t('booking.success'));
+                toast.success(isPending
+                  ? 'Payment received! Awaiting specialist confirmation.'
+                  : t('booking.success')
+                );
               } else if (attempts >= maxAttempts) {
                 clearInterval(pollInterval);
                 setPaymentResult({
@@ -180,16 +188,24 @@ const BookingFlow: React.FC = () => {
             });
 
             const recentBooking = bookings.bookings?.[0];
-            if (recentBooking && recentBooking.status === 'CONFIRMED') {
+            // Accept both CONFIRMED and PENDING status (PENDING means awaiting specialist approval)
+            if (recentBooking && (recentBooking.status === 'CONFIRMED' || recentBooking.status === 'PENDING')) {
               console.log('✅ Booking found:', recentBooking);
               clearInterval(pollInterval);
               setBookingResult(recentBooking);
+
+              const isPending = recentBooking.status === 'PENDING';
               setPaymentResult({
                 status: 'success',
-                message: 'Booking created successfully!'
+                message: isPending
+                  ? 'Payment successful! Your booking is awaiting specialist confirmation.'
+                  : 'Booking created successfully!'
               });
               setPaymentLoading(false);
-              toast.success(t('booking.success'));
+              toast.success(isPending
+                ? 'Payment received! Awaiting specialist confirmation.'
+                : t('booking.success')
+              );
             } else if (attempts >= maxAttempts) {
               clearInterval(pollInterval);
               setPaymentResult({
