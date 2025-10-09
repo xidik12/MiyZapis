@@ -77,17 +77,23 @@ const BookingFlow: React.FC = () => {
   const [slotsLoading, setSlotsLoading] = useState<boolean>(false);
   const [pollingIntervalId, setPollingIntervalId] = useState<NodeJS.Timeout | null>(null);
 
-  // Handle PayPal return callback
+  // Handle PayPal/Crypto return callback
   useEffect(() => {
-    const handlePayPalCallback = async () => {
+    const handlePaymentCallback = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token'); // PayPal order ID
       const payerId = urlParams.get('PayerID');
+
+      // Check if user is returning from crypto payment
+      const pendingCrypto = localStorage.getItem('pendingCryptoPayment');
+      const cryptoTimestamp = localStorage.getItem('cryptoPaymentTimestamp');
+      const isRecentCrypto = cryptoTimestamp && (Date.now() - parseInt(cryptoTimestamp)) < 600000; // Within 10 minutes
 
       if (token && payerId) {
         console.log('🔄 PayPal callback detected, capturing order:', token);
         try {
           setPaymentLoading(true);
+          setCurrentStep(4); // Move to confirmation step
           const result = await paypalService.captureOrder({ orderId: token });
           console.log('✅ PayPal order captured:', result);
 
@@ -100,16 +106,111 @@ const BookingFlow: React.FC = () => {
           // Clean URL
           window.history.replaceState({}, '', window.location.pathname);
 
+          // Poll for booking creation (webhook should create it)
+          let attempts = 0;
+          const maxAttempts = 30; // 30 seconds
+          const pollInterval = setInterval(async () => {
+            attempts++;
+            try {
+              // Fetch recent bookings to find the one just created
+              const bookings = await bookingService.getUserBookings({
+                page: 1,
+                limit: 5,
+                userType: 'customer'
+              });
+
+              // Find the most recent booking (should be the one we just paid for)
+              const recentBooking = bookings.bookings?.[0];
+              if (recentBooking && recentBooking.status === 'CONFIRMED') {
+                console.log('✅ Booking found:', recentBooking);
+                clearInterval(pollInterval);
+                setBookingResult(recentBooking);
+                setPaymentResult({
+                  status: 'success',
+                  message: 'Booking created successfully!'
+                });
+                toast.success(t('booking.success'));
+              } else if (attempts >= maxAttempts) {
+                clearInterval(pollInterval);
+                setPaymentResult({
+                  status: 'warning',
+                  message: 'Payment successful but booking is still processing. Please check your bookings page.'
+                });
+                toast.warning('Payment successful. Your booking is being processed.');
+              }
+            } catch (error) {
+              console.error('Error polling for booking:', error);
+              if (attempts >= maxAttempts) {
+                clearInterval(pollInterval);
+              }
+            }
+          }, 1000);
+
         } catch (error) {
           console.error('❌ Failed to capture PayPal order:', error);
           toast.error('Failed to process payment. Please contact support.');
         } finally {
           setPaymentLoading(false);
         }
+      } else if (pendingCrypto && isRecentCrypto) {
+        // User returned from crypto payment
+        console.log('🔄 Crypto payment return detected from localStorage');
+
+        // Clear the localStorage flags
+        localStorage.removeItem('pendingCryptoPayment');
+        localStorage.removeItem('cryptoPaymentTimestamp');
+
+        setPaymentLoading(true);
+        setCurrentStep(4);
+        setPaymentResult({
+          status: 'success',
+          message: 'Payment processing. Please wait while we confirm your transaction...'
+        });
+
+        // Poll for booking creation
+        let attempts = 0;
+        const maxAttempts = 60; // 60 seconds for crypto (can take longer)
+        const pollInterval = setInterval(async () => {
+          attempts++;
+          try {
+            const bookings = await bookingService.getUserBookings({
+              page: 1,
+              limit: 5,
+              userType: 'customer'
+            });
+
+            const recentBooking = bookings.bookings?.[0];
+            if (recentBooking && recentBooking.status === 'CONFIRMED') {
+              console.log('✅ Booking found:', recentBooking);
+              clearInterval(pollInterval);
+              setBookingResult(recentBooking);
+              setPaymentResult({
+                status: 'success',
+                message: 'Booking created successfully!'
+              });
+              setPaymentLoading(false);
+              toast.success(t('booking.success'));
+            } else if (attempts >= maxAttempts) {
+              clearInterval(pollInterval);
+              setPaymentResult({
+                status: 'warning',
+                message: 'Payment is being confirmed. Please check your bookings page shortly.'
+              });
+              setPaymentLoading(false);
+              toast.warning('Payment confirmation in progress. Please check your bookings page.');
+            }
+          } catch (error) {
+            console.error('Error polling for booking:', error);
+            if (attempts >= maxAttempts) {
+              clearInterval(pollInterval);
+              setPaymentLoading(false);
+            }
+          }
+        }, 1000);
       }
     };
 
-    handlePayPalCallback();
+    handlePaymentCallback();
   }, []);
 
   // Reset payment state when payment method changes
@@ -1571,11 +1672,19 @@ const BookingFlow: React.FC = () => {
                                 href={paymentResult.paymentUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                onClick={() => {
+                                  // Set a flag in localStorage so we know to poll when user returns
+                                  localStorage.setItem('pendingCryptoPayment', 'true');
+                                  localStorage.setItem('cryptoPaymentTimestamp', Date.now().toString());
+                                }}
                                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                               >
                                 <CreditCardIcon className="w-4 h-4 mr-2" />
                                 Pay with Crypto
                               </a>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                After completing payment, return to this page to see your booking confirmation.
+                              </p>
                             </div>
                           )}
 
