@@ -9,6 +9,7 @@ import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { specialistService, serviceService, bookingService } from '../../services';
 import { paymentService } from '../../services/payment.service';
+import { paypalService } from '../../services/paypal.service';
 import { loyaltyService, UserLoyalty } from '@/services/loyalty.service';
 import { RewardsService, type RewardRedemption, type LoyaltyReward } from '@/services/rewards.service';
 import { filterSlotsByDuration, calculateEndTime } from '../../utils/timeSlotUtils';
@@ -75,6 +76,41 @@ const BookingFlow: React.FC = () => {
   const [paymentTimeRemaining, setPaymentTimeRemaining] = useState<number>(0);
   const [slotsLoading, setSlotsLoading] = useState<boolean>(false);
   const [pollingIntervalId, setPollingIntervalId] = useState<NodeJS.Timeout | null>(null);
+
+  // Handle PayPal return callback
+  useEffect(() => {
+    const handlePayPalCallback = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token'); // PayPal order ID
+      const payerId = urlParams.get('PayerID');
+
+      if (token && payerId) {
+        console.log('🔄 PayPal callback detected, capturing order:', token);
+        try {
+          setPaymentLoading(true);
+          const result = await paypalService.captureOrder({ orderId: token });
+          console.log('✅ PayPal order captured:', result);
+
+          // Show success and poll for booking creation
+          setPaymentResult({
+            status: 'success',
+            message: 'Payment captured successfully! Creating your booking...'
+          });
+
+          // Clean URL
+          window.history.replaceState({}, '', window.location.pathname);
+
+        } catch (error) {
+          console.error('❌ Failed to capture PayPal order:', error);
+          toast.error('Failed to process payment. Please contact support.');
+        } finally {
+          setPaymentLoading(false);
+        }
+      }
+    };
+
+    handlePayPalCallback();
+  }, []);
 
   // Reset payment state when payment method changes
   useEffect(() => {
