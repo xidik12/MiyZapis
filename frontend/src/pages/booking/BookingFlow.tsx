@@ -163,23 +163,30 @@ const BookingFlow: React.FC = () => {
       } else if (pendingCrypto && isRecentCrypto) {
         // User returned from crypto payment
         console.log('🔄 Crypto payment return detected from localStorage');
+        console.log('📊 Current state:', { currentStep, service, specialist });
 
         // Clear the localStorage flags
         localStorage.removeItem('pendingCryptoPayment');
         localStorage.removeItem('cryptoPaymentTimestamp');
 
         setPaymentLoading(true);
-        setCurrentStep(4);
         setPaymentResult({
-          status: 'success',
+          status: 'pending',
           message: 'Payment processing. Please wait while we confirm your transaction...'
         });
+
+        // Move to confirmation step after a brief delay to ensure state updates
+        setTimeout(() => {
+          console.log('📍 Moving to confirmation step (step 4)');
+          setCurrentStep(4);
+        }, 100);
 
         // Poll for booking creation
         let attempts = 0;
         const maxAttempts = 60; // 60 seconds for crypto (can take longer)
         const pollInterval = setInterval(async () => {
           attempts++;
+          console.log(`🔍 Polling attempt ${attempts}/${maxAttempts}...`);
           try {
             const bookings = await bookingService.getUserBookings({
               page: 1,
@@ -187,10 +194,19 @@ const BookingFlow: React.FC = () => {
               userType: 'customer'
             });
 
+            console.log('📦 Bookings received:', bookings.bookings?.length || 0);
             const recentBooking = bookings.bookings?.[0];
+            if (recentBooking) {
+              console.log('📋 Most recent booking:', {
+                id: recentBooking.id,
+                status: recentBooking.status,
+                createdAt: recentBooking.createdAt
+              });
+            }
+
             // Accept both CONFIRMED and PENDING status (PENDING means awaiting specialist approval)
             if (recentBooking && (recentBooking.status === 'CONFIRMED' || recentBooking.status === 'PENDING')) {
-              console.log('✅ Booking found:', recentBooking);
+              console.log('✅ Booking found and accepted!', recentBooking.id);
               clearInterval(pollInterval);
               setBookingResult(recentBooking);
 
@@ -202,6 +218,8 @@ const BookingFlow: React.FC = () => {
                   : 'Booking created successfully!'
               });
               setPaymentLoading(false);
+              console.log('🎉 Setting current step to 4 (confirmation)');
+              setCurrentStep(4);
               toast.success(isPending
                 ? 'Payment received! Awaiting specialist confirmation.'
                 : t('booking.success')
