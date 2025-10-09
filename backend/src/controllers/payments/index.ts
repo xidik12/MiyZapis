@@ -2200,6 +2200,31 @@ export class PaymentController {
         // Frontend handles completion via webhook notifications and socket events
       });
 
+      // Create payment record with booking data for webhook processing
+      const prisma = (await import('@/config/database')).prisma;
+      const bookingData = metadata.bookingData;
+
+      await prisma.payment.create({
+        data: {
+          userId: req.user.id,
+          status: 'PENDING',
+          type: 'DEPOSIT',
+          amount: amount,
+          currency,
+          paymentMethodType: 'crypto',
+          metadata: JSON.stringify({
+            coinbaseChargeId: charge.chargeId,
+            tempBookingId: bookingId,
+            bookingData: bookingData || metadata.bookingData
+          })
+        }
+      });
+
+      logger.info('[Coinbase] Payment record created for charge', {
+        chargeId: charge.chargeId,
+        userId: req.user.id
+      });
+
       res.status(201).json(
         createSuccessResponse({
           charge: {
@@ -2342,7 +2367,80 @@ export class PaymentController {
             chargeId: event.data.id,
             chargeCode: event.data.code
           });
-          // Here you would typically update your booking status, create payment record, etc.
+
+          // Create booking from payment metadata
+          try {
+            const chargeId = event.data.id;
+
+            const prisma = (await import('@/config/database')).prisma;
+            const paymentRecord = await prisma.payment.findFirst({
+              where: {
+                metadata: { contains: chargeId },
+                status: 'PENDING'
+              }
+            });
+
+            if (!paymentRecord || !paymentRecord.metadata) {
+              logger.error('[Coinbase] Payment record not found for charge', { chargeId });
+              break;
+            }
+
+            const metadata = JSON.parse(paymentRecord.metadata);
+            const bookingData = metadata.bookingData;
+
+            if (!bookingData) {
+              logger.error('[Coinbase] No booking data found in payment metadata');
+              break;
+            }
+
+            logger.info('[Coinbase] Creating booking from confirmed payment', {
+              chargeId,
+              userId: paymentRecord.userId,
+              serviceId: bookingData.serviceId
+            });
+
+            const { BookingService } = await import('@/services/booking');
+            const booking = await BookingService.createBooking({
+              customerId: paymentRecord.userId,
+              serviceId: bookingData.serviceId,
+              specialistId: bookingData.specialistId,
+              scheduledAt: new Date(bookingData.scheduledAt),
+              duration: bookingData.duration,
+              customerNotes: bookingData.customerNotes,
+              loyaltyPointsUsed: 0
+            });
+
+            await prisma.payment.update({
+              where: { id: paymentRecord.id },
+              data: {
+                bookingId: booking.id,
+                status: 'SUCCEEDED',
+                metadata: JSON.stringify({
+                  ...metadata,
+                  coinbaseChargeId: chargeId
+                })
+              }
+            });
+
+            logger.info('[Coinbase] Booking created successfully', {
+              bookingId: booking.id,
+              chargeId,
+              userId: paymentRecord.userId
+            });
+
+            const { WebSocketManager } = await import('@/services/websocket/websocket-manager');
+            const wsManager = WebSocketManager.getInstance();
+            wsManager.emitToUser(paymentRecord.userId, 'payment:completed', {
+              paymentId: paymentRecord.id,
+              bookingId: booking.id,
+              status: 'COMPLETED'
+            });
+          } catch (error) {
+            logger.error('[Coinbase] Error creating booking from confirmed payment', {
+              error: error instanceof Error ? error.message : error,
+              chargeId: event.data.id
+            });
+          }
           break;
 
         case 'charge:failed':
