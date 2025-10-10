@@ -1763,6 +1763,13 @@ export class PaymentController {
 
       const event = req.body;
 
+      logger.info('[PayPal] Processing webhook event', {
+        eventType: event.event_type,
+        eventId: event.id,
+        resourceType: event.resource_type,
+        summary: event.summary
+      });
+
       // Handle different PayPal webhook events
       switch (event.event_type) {
         case 'CHECKOUT.ORDER.APPROVED':
