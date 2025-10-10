@@ -1791,13 +1791,50 @@ export class PaymentController {
             const orderId = event.resource?.supplementary_data?.related_ids?.order_id;
             const customId = event.resource?.custom_id;
 
+            logger.info('[PayPal] Webhook payment data', {
+              orderId,
+              customId,
+              captureId: event.resource?.id,
+              hasSupplementaryData: !!event.resource?.supplementary_data,
+              supplementaryData: event.resource?.supplementary_data
+            });
+
             if (!orderId) {
-              logger.error('[PayPal] No order ID found in webhook');
+              logger.error('[PayPal] No order ID found in webhook', {
+                resourceKeys: Object.keys(event.resource || {}),
+                resource: event.resource
+              });
               break;
             }
 
             // Find the payment record with booking data
             const prisma = (await import('@/config/database')).prisma;
+
+            // Debug: List all pending PayPal payments
+            const allPending = await prisma.payment.findMany({
+              where: {
+                status: 'PENDING',
+                paymentMethodType: 'paypal'
+              },
+              select: {
+                id: true,
+                metadata: true,
+                createdAt: true
+              },
+              orderBy: { createdAt: 'desc' },
+              take: 5
+            });
+
+            logger.info('[PayPal] Recent pending PayPal payments for debugging', {
+              searchingFor: orderId,
+              pendingCount: allPending.length,
+              payments: allPending.map(p => ({
+                id: p.id,
+                metadata: p.metadata,
+                createdAt: p.createdAt
+              }))
+            });
+
             const paymentRecord = await prisma.payment.findFirst({
               where: {
                 metadata: {
@@ -1808,7 +1845,11 @@ export class PaymentController {
             });
 
             if (!paymentRecord || !paymentRecord.metadata) {
-              logger.error('[PayPal] Payment record not found for order', { orderId });
+              logger.error('[PayPal] Payment record not found for order', {
+                orderId,
+                searchedMetadata: `metadata contains "${orderId}"`,
+                pendingPaymentsCount: allPending.length
+              });
               break;
             }
 
