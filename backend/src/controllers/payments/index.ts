@@ -1801,7 +1801,8 @@ export class PaymentController {
               customId,
               captureId: event.resource?.id,
               hasSupplementaryData: !!event.resource?.supplementary_data,
-              supplementaryData: event.resource?.supplementary_data
+              supplementaryData: event.resource?.supplementary_data,
+              fullEventResource: event.resource
             });
 
             if (!orderId) {
