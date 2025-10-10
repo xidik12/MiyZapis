@@ -529,15 +529,29 @@ const BookingFlow: React.FC = () => {
           // Open PayPal in new window
           window.open(paypalResult.approvalUrl, '_blank');
 
-          // Store result for UI with proper structure
-          depositResult = {
+          // Immediately show payment pending confirmation
+          setCurrentStep(4);
+          setBookingResult({
+            status: 'PENDING_PAYMENT',
+            paymentMethod: 'paypal',
+            service,
+            specialist,
+            scheduledAt: scheduledAt.toISOString(),
+            message: 'Payment link opened. Complete payment to confirm your booking.'
+          });
+
+          setPaymentResult({
             paymentUrl: paypalResult.approvalUrl,
             finalAmount: depositAmount,
-            status: 'PENDING',
+            status: 'pending',
             remainingAmount: depositAmount,
             paymentMethod: 'PAYPAL',
-            message: 'Complete your PayPal payment in the new window'
-          };
+            message: 'Payment processing. You will receive an email confirmation once payment is verified.'
+          });
+
+          setPaymentLoading(false);
+          // Return early - no need for timeout/socket logic since we're showing immediate confirmation
+          return;
         } else {
           throw new Error('PayPal order created but no approval URL received');
         }
