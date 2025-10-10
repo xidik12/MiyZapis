@@ -77,175 +77,6 @@ const BookingFlow: React.FC = () => {
   const [slotsLoading, setSlotsLoading] = useState<boolean>(false);
   const [pollingIntervalId, setPollingIntervalId] = useState<NodeJS.Timeout | null>(null);
 
-  // Handle PayPal/Crypto return callback
-  useEffect(() => {
-    const handlePaymentCallback = async () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const token = urlParams.get('token'); // PayPal order ID
-      const payerId = urlParams.get('PayerID');
-
-      // Check if user is returning from crypto payment
-      const pendingCrypto = localStorage.getItem('pendingCryptoPayment');
-      const cryptoTimestamp = localStorage.getItem('cryptoPaymentTimestamp');
-      const isRecentCrypto = cryptoTimestamp && (Date.now() - parseInt(cryptoTimestamp)) < 600000; // Within 10 minutes
-
-      if (token && payerId) {
-        console.log('🔄 PayPal callback detected, capturing order:', token);
-        try {
-          setPaymentLoading(true);
-          setCurrentStep(4); // Move to confirmation step
-          const result = await paypalService.captureOrder({ orderId: token });
-          console.log('✅ PayPal order captured:', result);
-
-          // Show success and poll for booking creation
-          setPaymentResult({
-            status: 'success',
-            message: 'Payment captured successfully! Creating your booking...'
-          });
-
-          // Clean URL
-          window.history.replaceState({}, '', window.location.pathname);
-
-          // Poll for booking creation (webhook should create it)
-          let attempts = 0;
-          const maxAttempts = 30; // 30 seconds
-          const pollInterval = setInterval(async () => {
-            attempts++;
-            try {
-              // Fetch recent bookings to find the one just created
-              const bookings = await bookingService.getUserBookings({
-                page: 1,
-                limit: 5,
-                userType: 'customer'
-              });
-
-              // Find the most recent booking (should be the one we just paid for)
-              const recentBooking = bookings.bookings?.[0];
-              // Accept both CONFIRMED and PENDING status (PENDING means awaiting specialist approval)
-              if (recentBooking && (recentBooking.status === 'CONFIRMED' || recentBooking.status === 'PENDING')) {
-                console.log('✅ Booking found:', recentBooking);
-                clearInterval(pollInterval);
-                setBookingResult(recentBooking);
-
-                const isPending = recentBooking.status === 'PENDING';
-                setPaymentResult({
-                  status: 'success',
-                  message: isPending
-                    ? 'Payment successful! Your booking is awaiting specialist confirmation.'
-                    : 'Booking created successfully!'
-                });
-                toast.success(isPending
-                  ? 'Payment received! Awaiting specialist confirmation.'
-                  : t('booking.success')
-                );
-              } else if (attempts >= maxAttempts) {
-                clearInterval(pollInterval);
-                setPaymentResult({
-                  status: 'warning',
-                  message: 'Payment successful but booking is still processing. Please check your bookings page.'
-                });
-                toast.warning('Payment successful. Your booking is being processed.');
-              }
-            } catch (error) {
-              console.error('Error polling for booking:', error);
-              if (attempts >= maxAttempts) {
-                clearInterval(pollInterval);
-              }
-            }
-          }, 1000);
-
-        } catch (error) {
-          console.error('❌ Failed to capture PayPal order:', error);
-          toast.error('Failed to process payment. Please contact support.');
-        } finally {
-          setPaymentLoading(false);
-        }
-      } else if (pendingCrypto && isRecentCrypto) {
-        // User returned from crypto payment
-        console.log('🔄 Crypto payment return detected from localStorage');
-        console.log('📊 Current state:', { currentStep, service, specialist });
-
-        // Clear the localStorage flags
-        localStorage.removeItem('pendingCryptoPayment');
-        localStorage.removeItem('cryptoPaymentTimestamp');
-
-        setPaymentLoading(true);
-        setPaymentResult({
-          status: 'pending',
-          message: 'Payment processing. Please wait while we confirm your transaction...'
-        });
-
-        // Move to confirmation step after a brief delay to ensure state updates
-        setTimeout(() => {
-          console.log('📍 Moving to confirmation step (step 4)');
-          setCurrentStep(4);
-        }, 100);
-
-        // Poll for booking creation
-        let attempts = 0;
-        const maxAttempts = 60; // 60 seconds for crypto (can take longer)
-        const pollInterval = setInterval(async () => {
-          attempts++;
-          console.log(`🔍 Polling attempt ${attempts}/${maxAttempts}...`);
-          try {
-            const bookings = await bookingService.getUserBookings({
-              page: 1,
-              limit: 5,
-              userType: 'customer'
-            });
-
-            console.log('📦 Bookings received:', bookings.bookings?.length || 0);
-            const recentBooking = bookings.bookings?.[0];
-            if (recentBooking) {
-              console.log('📋 Most recent booking:', {
-                id: recentBooking.id,
-                status: recentBooking.status,
-                createdAt: recentBooking.createdAt
-              });
-            }
-
-            // Accept both CONFIRMED and PENDING status (PENDING means awaiting specialist approval)
-            if (recentBooking && (recentBooking.status === 'CONFIRMED' || recentBooking.status === 'PENDING')) {
-              console.log('✅ Booking found and accepted!', recentBooking.id);
-              clearInterval(pollInterval);
-              setBookingResult(recentBooking);
-
-              const isPending = recentBooking.status === 'PENDING';
-              setPaymentResult({
-                status: 'success',
-                message: isPending
-                  ? 'Payment successful! Your booking is awaiting specialist confirmation.'
-                  : 'Booking created successfully!'
-              });
-              setPaymentLoading(false);
-              console.log('🎉 Setting current step to 4 (confirmation)');
-              setCurrentStep(4);
-              toast.success(isPending
-                ? 'Payment received! Awaiting specialist confirmation.'
-                : t('booking.success')
-              );
-            } else if (attempts >= maxAttempts) {
-              clearInterval(pollInterval);
-              setPaymentResult({
-                status: 'warning',
-                message: 'Payment is being confirmed. Please check your bookings page shortly.'
-              });
-              setPaymentLoading(false);
-              toast.warning('Payment confirmation in progress. Please check your bookings page.');
-            }
-          } catch (error) {
-            console.error('Error polling for booking:', error);
-            if (attempts >= maxAttempts) {
-              clearInterval(pollInterval);
-              setPaymentLoading(false);
-            }
-          }
-        }, 1000);
-      }
-    };
-
-    handlePaymentCallback();
-  }, []);
 
   // Reset payment state when payment method changes
   useEffect(() => {
@@ -1633,6 +1464,22 @@ const BookingFlow: React.FC = () => {
                           href={paymentResult.paymentUrl}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={() => {
+                            // Immediately show payment pending confirmation
+                            setCurrentStep(4);
+                            setBookingResult({
+                              status: 'PENDING_PAYMENT',
+                              paymentMethod: 'paypal',
+                              service,
+                              specialist,
+                              scheduledAt: `${selectedDate?.toISOString().split('T')[0]}T${selectedTime}`,
+                              message: 'Payment link opened. Complete payment to confirm your booking.'
+                            });
+                            setPaymentResult({
+                              status: 'pending',
+                              message: 'Payment processing. You will receive an email confirmation once payment is verified.'
+                            });
+                          }}
                           className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                         >
                           <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
@@ -1641,7 +1488,7 @@ const BookingFlow: React.FC = () => {
                           Pay with PayPal
                         </a>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                          Click to complete your payment securely on PayPal.
+                          You'll receive an email confirmation once payment is verified.
                         </p>
                       </div>
                     )}
@@ -1707,9 +1554,20 @@ const BookingFlow: React.FC = () => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={() => {
-                                  // Set a flag in localStorage so we know to poll when user returns
-                                  localStorage.setItem('pendingCryptoPayment', 'true');
-                                  localStorage.setItem('cryptoPaymentTimestamp', Date.now().toString());
+                                  // Immediately show payment pending confirmation
+                                  setCurrentStep(4);
+                                  setBookingResult({
+                                    status: 'PENDING_PAYMENT',
+                                    paymentMethod: 'crypto',
+                                    service,
+                                    specialist,
+                                    scheduledAt: `${selectedDate?.toISOString().split('T')[0]}T${selectedTime}`,
+                                    message: 'Payment link opened. Complete payment to confirm your booking.'
+                                  });
+                                  setPaymentResult({
+                                    status: 'pending',
+                                    message: 'Payment processing. You will receive an email confirmation once payment is verified.'
+                                  });
                                 }}
                                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                               >
@@ -1717,7 +1575,7 @@ const BookingFlow: React.FC = () => {
                                 Pay with Crypto
                               </a>
                               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                                After completing payment, return to this page to see your booking confirmation.
+                                You'll receive an email confirmation once payment is verified.
                               </p>
                             </div>
                           )}
@@ -1828,6 +1686,7 @@ const BookingFlow: React.FC = () => {
         const booking = bookingResult?.booking || bookingResult;
         const isAutoBooked = booking?.status === 'CONFIRMED';
         const isPending = booking?.status === 'PENDING';
+        const isPendingPayment = booking?.status === 'PENDING_PAYMENT';
         const needsPayment = paymentResult?.requiresPayment;
         const hasPaymentUrl = paymentResult?.paymentUrl;
         const hasOnrampSession = paymentResult?.onrampSession;
@@ -1835,15 +1694,17 @@ const BookingFlow: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 text-center">
-              <CheckCircleIcon className={`w-16 h-16 mx-auto mb-4 ${isAutoBooked ? 'text-green-600' : 'text-yellow-600'}`} />
+              <CheckCircleIcon className={`w-16 h-16 mx-auto mb-4 ${isAutoBooked ? 'text-green-600' : isPendingPayment ? 'text-blue-600' : 'text-yellow-600'}`} />
 
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                {isAutoBooked ? t('booking.bookingConfirmed') : t('booking.bookingRequested')}
+                {isAutoBooked ? t('booking.bookingConfirmed') : isPendingPayment ? 'Payment Processing' : t('booking.bookingRequested')}
               </h3>
 
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 {isAutoBooked
                   ? t('booking.autoBookingConfirmed')
+                  : isPendingPayment
+                  ? 'Your payment is being processed. You will receive an email confirmation once the payment is verified and your booking is confirmed.'
                   : t('booking.manualBookingMessage')
                 }
               </p>
@@ -1959,14 +1820,22 @@ const BookingFlow: React.FC = () => {
                 </div>
               )}
               
-              {isPending && (
+              {isPending && !isPendingPayment && (
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
                   <p className="text-sm text-yellow-800 dark:text-yellow-200">
                     {t('booking.waitingForSpecialistConfirmation')}
                   </p>
                 </div>
               )}
-              
+
+              {isPendingPayment && paymentResult?.message && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-6">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    {paymentResult.message}
+                  </p>
+                </div>
+              )}
+
               <button
                 onClick={() => navigate('/customer/bookings')}
                 className="bg-primary-600 text-white py-2 px-6 rounded-lg hover:bg-primary-700 transition-colors"
