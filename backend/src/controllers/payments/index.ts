@@ -1818,7 +1818,6 @@ export class PaymentController {
             const booking = await BookingService.createBooking({
               customerId: paymentRecord.userId,
               serviceId: bookingData.serviceId,
-              specialistId: bookingData.specialistId,
               scheduledAt: new Date(bookingData.scheduledAt),
               duration: bookingData.duration,
               customerNotes: bookingData.customerNotes,
@@ -2451,7 +2450,6 @@ export class PaymentController {
             const booking = await BookingService.createBooking({
               customerId: paymentRecord.userId,
               serviceId: bookingData.serviceId,
-              specialistId: bookingData.specialistId,
               scheduledAt: new Date(bookingData.scheduledAt),
               duration: bookingData.duration,
               customerNotes: bookingData.customerNotes,
