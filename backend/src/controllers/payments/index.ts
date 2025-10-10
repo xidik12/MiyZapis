@@ -1473,7 +1473,12 @@ export class PaymentController {
 
       logger.info('[PayPal] Payment record created for order', {
         orderId: paypalOrder.id,
-        userId: req.user.id
+        userId: req.user.id,
+        paymentMetadata: JSON.stringify({
+          paypalOrderId: paypalOrder.id,
+          tempBookingId: bookingId,
+          bookingData: bookingData || metadata.bookingData
+        })
       });
 
       res.status(201).json(
