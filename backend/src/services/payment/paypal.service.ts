@@ -90,6 +90,16 @@ export class PayPalService {
 
   private initializeClient() {
     if (!this.client) {
+      // Debug: Log credential info (masked)
+      logger.info('[PayPal] Initializing client with credentials', {
+        clientIdLength: config.paypal.clientId?.length,
+        clientIdPrefix: config.paypal.clientId?.substring(0, 10),
+        clientSecretLength: config.paypal.clientSecret?.length,
+        clientSecretPrefix: config.paypal.clientSecret?.substring(0, 10),
+        mode: config.paypal.mode,
+        environment: config.paypal.mode === 'live' ? 'Live' : 'Sandbox'
+      });
+
       // Initialize PayPal client
       this.client = new Client({
         clientCredentialsAuthCredentials: {

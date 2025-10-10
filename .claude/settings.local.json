@@ -211,7 +211,8 @@
       "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot/backend/test-payment-debug.sh)",
       "Bash(PORT=3045 DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npm start)",
       "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot/test-webhook-reachability.sh)",
-      "Read(//Users/salakhitdinovkhidayotullo/Downloads/**)"
+      "Read(//Users/salakhitdinovkhidayotullo/Downloads/**)",
+      "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot/test-paypal-webhook.sh)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
