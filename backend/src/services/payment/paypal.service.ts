@@ -131,6 +131,8 @@ export class PayPalService {
       throw new Error('PayPal is not configured. Please set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET');
     }
 
+    // Force re-initialize to get fresh credentials
+    this.client = undefined;
     this.initializeClient();
 
     try {
@@ -139,7 +141,9 @@ export class PayPalService {
       logger.info('[PayPal] Creating order', {
         bookingId,
         amount,
-        currency
+        currency,
+        hasClient: !!this.client,
+        hasOrdersController: !!this.ordersController
       });
 
       // Convert amount to PayPal format (ensure 2 decimal places)
@@ -196,7 +200,7 @@ export class PayPalService {
       } else {
         throw new Error('PayPal order creation failed: No order ID returned');
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('[PayPal] Order creation failed', {
         error: error instanceof Error ? error.message : JSON.stringify(error),
         stack: error instanceof Error ? error.stack : undefined,
@@ -204,7 +208,11 @@ export class PayPalService {
         amount: data.amount,
         paypalAmount: (data.amount / 100).toFixed(2),
         currency: data.currency,
-        errorDetails: error
+        errorName: error?.name,
+        errorCode: error?.code,
+        errorResponse: error?.response,
+        errorStatusCode: error?.statusCode,
+        fullError: JSON.stringify(error, Object.getOwnPropertyNames(error))
       });
       throw error;
     }
