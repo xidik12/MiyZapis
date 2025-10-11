@@ -101,13 +101,14 @@ export class PayPalService {
       });
 
       // Initialize PayPal client
+      // Note: Environment values are 'Production' and 'Sandbox', not 'Live' and 'Sandbox'
       this.client = new Client({
         clientCredentialsAuthCredentials: {
           oAuthClientId: config.paypal.clientId!,
           oAuthClientSecret: config.paypal.clientSecret!
         },
         timeout: 0,
-        environment: config.paypal.mode === 'live' ? Environment.Live : Environment.Sandbox,
+        environment: config.paypal.mode === 'live' ? Environment.Production : Environment.Sandbox,
         logging: {
           logLevel: LogLevel.Info,
           logRequest: { logBody: true },
