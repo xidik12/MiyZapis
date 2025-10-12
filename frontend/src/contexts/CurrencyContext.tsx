@@ -44,8 +44,6 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
     setCurrency(newCurrency);
     localStorage.setItem('booking-currency', newCurrency);
   };
-
-  // Convert price from one currency to another
   const convertPrice = (price: number, fromCurrency: Currency = 'USD'): number => {
     if (fromCurrency === currency) return price;
     
@@ -68,19 +66,17 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
     const symbol = getCurrencySymbol(currency);
     
     // Format numbers appropriately for each currency
-    // Always format to two decimals, rounding to nearest cent to avoid FP artifacts
-    const rounded = Math.round((convertedPrice + Number.EPSILON) * 100) / 100;
-    const withTwoDecimals = rounded.toFixed(2);
-
-    // For UAH, if amount is 1000+ use locale separators, still keep .00
     if (currency === 'UAH') {
-      const [intPart, fracPart] = withTwoDecimals.split('.');
-      const formattedInt = Number(intPart).toLocaleString('uk-UA');
-      return `${symbol}${formattedInt}.${fracPart}`;
+      // Ukrainian Hryvnia: show as whole numbers for larger amounts, with comma separators
+      return convertedPrice >= 1000 
+        ? `${symbol}${Math.round(convertedPrice).toLocaleString('uk-UA')}`
+        : `${symbol}${convertedPrice}`;
+    } else {
+      // USD/EUR: show with 2 decimal places for smaller amounts, whole numbers for larger
+      return convertedPrice >= 100
+        ? `${symbol}${Math.round(convertedPrice)}`
+        : `${symbol}${convertedPrice.toFixed(2)}`;
     }
-
-    // For USD/EUR return .00 style
-    return `${symbol}${withTwoDecimals}`;
   };
 
   const getCurrencySymbol = (targetCurrency?: Currency): string => {
