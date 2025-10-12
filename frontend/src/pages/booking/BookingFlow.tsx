@@ -366,7 +366,17 @@ const BookingFlow: React.FC = () => {
     };
 
     fetchAvailableSlots();
-  }, [specialist, service, specialistId, selectedDate]);
+
+    // Auto-refresh slots every 30 seconds to catch newly booked slots
+    const refreshInterval = setInterval(() => {
+      if (currentStep === 2 && selectedDate) {
+        console.log('🔄 BookingFlow: Auto-refreshing available slots...');
+        fetchAvailableSlots();
+      }
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(refreshInterval);
+  }, [specialist, service, specialistId, selectedDate, currentStep]);
 
   const handleNextStep = () => {
     // Security check: Prevent bypassing payment step
@@ -458,12 +468,16 @@ const BookingFlow: React.FC = () => {
       console.log('🕒 BookingFlow: Checking slot availability...');
       const currentSlots = await specialistService.getAvailableSlots(currentSpecialistId, selectedDate);
       const serviceDuration = service.duration || 60;
-      const availableSlots = filterSlotsByDuration(currentSlots, serviceDuration);
+      const filteredAvailableSlots = filterSlotsByDuration(currentSlots, serviceDuration);
 
-      if (!availableSlots.includes(selectedTime)) {
+      if (!filteredAvailableSlots.includes(selectedTime)) {
         throw new Error('SLOT_NO_LONGER_AVAILABLE');
       }
       console.log('✅ BookingFlow: Slot still available, proceeding with payment...');
+
+      // Optimistic UI update: Immediately remove the selected slot to prevent double booking
+      console.log('🔒 BookingFlow: Optimistically removing slot from UI');
+      setAvailableSlots(prev => prev.filter(slot => slot !== selectedTime));
 
       // Combine date and time into scheduledAt DateTime
       const [hours, minutes] = selectedTime.split(':').map(Number);
@@ -795,14 +809,16 @@ const BookingFlow: React.FC = () => {
       const code = error?.apiError?.code;
       const status = error?.response?.status || error?.apiError?.status;
 
+      // Refresh slots to show current availability after any error
+      console.log('🔄 BookingFlow: Refreshing slots after error');
+      await refreshSlots();
+
       if (error?.message === 'SLOT_NO_LONGER_AVAILABLE') {
         toast.warning(t('booking.slotConflict') || 'This time slot was just booked by someone else. Please choose another.');
-        await refreshSlots();
         setCurrentStep(1); // Go back to time selection
         setConflictHint({ active: true, lastTried: selectedTime });
       } else if (code === 'BOOKING_CONFLICT' || status === 409 || error?.message?.includes('time slot')) {
         toast.warning(t('booking.slotConflict') || 'This time slot was just booked by someone else. Please choose another.');
-        await refreshSlots();
         setCurrentStep(1); // Go back to time selection
         setConflictHint({ active: true, lastTried: selectedTime });
       } else {

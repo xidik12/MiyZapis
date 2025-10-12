@@ -673,13 +673,15 @@ export class SpecialistService {
   async getAvailableSlots(specialistId: string, date: string): Promise<string[]> {
     try {
       console.log('📅 API: Getting available slots for specialist:', specialistId, 'date:', date);
-      
+
       // Calculate start and end of the day for the availability query
       const startDate = `${date}T00:00:00.000Z`;
       const endDate = `${date}T23:59:59.999Z`;
-      
+
+      // Add cache-busting timestamp to ensure fresh data
+      const cacheBuster = Date.now();
       const response = await apiClient.get<{ availableSlots: string[] }>(
-        `/specialists/${specialistId}/slots?date=${date}`
+        `/specialists/${specialistId}/slots?date=${date}&_t=${cacheBuster}`
       );
       
       if (!response.success || !response.data) {
