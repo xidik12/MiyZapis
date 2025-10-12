@@ -219,33 +219,56 @@ router.get('/my-referrals', authenticateToken, async (req: Request, res: Respons
       );
     }
 
+    // Check if user exists first
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true }
+    });
+
+    if (!user) {
+      return res.status(404).json(
+        createErrorResponse(ErrorCodes.NOT_FOUND, 'User not found', req.headers['x-request-id'] as string)
+      );
+    }
+
     const { status, type, limit = '10', offset = '0' } = req.query;
 
     const whereClause: any = { referrerId: userId };
     if (status) whereClause.status = status;
     if (type) whereClause.referralType = type;
 
-    const [referrals, total] = await Promise.all([
-      prisma.loyaltyReferral.findMany({
-        where: whereClause,
-        include: {
-          referred: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-              userType: true,
-              createdAt: true
+    // Try to get referrals with graceful fallback
+    let referrals: any[] = [];
+    let total = 0;
+
+    try {
+      [referrals, total] = await Promise.all([
+        prisma.loyaltyReferral.findMany({
+          where: whereClause,
+          include: {
+            referred: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                userType: true,
+                createdAt: true
+              }
             }
-          }
-        },
-        orderBy: { createdAt: 'desc' },
-        take: parseInt(limit as string),
-        skip: parseInt(offset as string)
-      }),
-      prisma.loyaltyReferral.count({ where: whereClause })
-    ]);
+          },
+          orderBy: { createdAt: 'desc' },
+          take: parseInt(limit as string),
+          skip: parseInt(offset as string)
+        }),
+        prisma.loyaltyReferral.count({ where: whereClause })
+      ]);
+    } catch (dbError) {
+      logger.error('Database error fetching referrals:', dbError);
+      // Return empty result set instead of 500 error
+      referrals = [];
+      total = 0;
+    }
 
     const formattedReferrals = referrals.map(referral => ({
       id: referral.id,
