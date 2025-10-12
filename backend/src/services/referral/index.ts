@@ -591,26 +591,36 @@ export class ReferralService {
   // Get referral analytics for a user
   static async getReferralAnalytics(userId: string) {
     try {
+      // Check if user exists first
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true }
+      });
+
+      if (!user) {
+        throw new Error('USER_NOT_FOUND');
+      }
+
       const [totalReferrals, completedReferrals, pendingReferrals, expiredReferrals, totalRewards] = await Promise.all([
         // Total referrals created
         prisma.loyaltyReferral.count({
           where: { referrerId: userId }
-        }),
+        }).catch(() => 0),
 
         // Completed referrals
         prisma.loyaltyReferral.count({
           where: { referrerId: userId, status: 'COMPLETED' }
-        }),
+        }).catch(() => 0),
 
         // Pending referrals
         prisma.loyaltyReferral.count({
           where: { referrerId: userId, status: 'PENDING' }
-        }),
+        }).catch(() => 0),
 
         // Expired referrals
         prisma.loyaltyReferral.count({
           where: { referrerId: userId, status: 'EXPIRED' }
-        }),
+        }).catch(() => 0),
 
         // Total rewards earned
         prisma.loyaltyReferral.aggregate({
@@ -622,7 +632,7 @@ export class ReferralService {
           _sum: {
             referrerPoints: true
           }
-        })
+        }).catch(() => ({ _sum: { referrerPoints: 0 } }))
       ]);
 
       // Get referrals by type
@@ -632,7 +642,7 @@ export class ReferralService {
         _count: {
           id: true
         }
-      });
+      }).catch(() => []);
 
       // Get conversion rates
       const conversionRate = totalReferrals > 0 ? (completedReferrals / totalReferrals) * 100 : 0;
@@ -657,7 +667,7 @@ export class ReferralService {
         },
         orderBy: { createdAt: 'desc' },
         take: 10
-      });
+      }).catch(() => []);
 
       // Get top performing referral types
       const topPerformingTypes = await prisma.loyaltyReferral.groupBy({
@@ -674,7 +684,7 @@ export class ReferralService {
             id: 'desc'
           }
         }
-      });
+      }).catch(() => []);
 
       return {
         overview: {
