@@ -66,6 +66,7 @@ export interface RegisterRequest {
   phoneNumber?: string;
   userType: UserType;
   telegramId?: string;
+  referralCode?: string;
 }
 
 export interface TelegramAuthRequest {
