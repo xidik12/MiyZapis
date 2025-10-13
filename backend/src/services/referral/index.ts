@@ -42,16 +42,16 @@ export const REFERRAL_CONFIG = {
       referredRewardValue: 50,
     },
     SPECIALIST_TO_CUSTOMER: {
-      referrerRewardType: 'CREDIT' as RewardType,
-      referrerRewardValue: 10, // $10 credit
+      referrerRewardType: 'POINTS' as RewardType,
+      referrerRewardValue: 150, // 150 points for specialists referring customers
       referredRewardType: 'DISCOUNT' as RewardType,
       referredRewardValue: 15, // 15% discount on first booking
     },
     CUSTOMER_TO_SPECIALIST: {
       referrerRewardType: 'POINTS' as RewardType,
       referrerRewardValue: 200, // Higher reward for bringing specialists
-      referredRewardType: 'CREDIT' as RewardType,
-      referredRewardValue: 25, // $25 credit for joining specialist
+      referredRewardType: 'POINTS' as RewardType,
+      referredRewardValue: 300, // 300 points for new specialist joining
     },
   },
 
