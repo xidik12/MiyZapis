@@ -531,7 +531,9 @@ const BookingFlow: React.FC = () => {
             serviceName: service.name,
             specialistName: paymentData.specialistName,
             servicePrice: service.price,
-            serviceCurrency: service.currency || 'USD'
+            serviceCurrency: service.currency || 'USD',
+            loyaltyPointsUsed: 0,
+            rewardRedemptionId: selectedRedemptionId || undefined
           }
         };
 
@@ -590,7 +592,9 @@ const BookingFlow: React.FC = () => {
             serviceName: service.name,
             specialistName: paymentData.specialistName,
             servicePrice: service.price,
-            serviceCurrency: service.currency || 'USD'
+            serviceCurrency: service.currency || 'USD',
+            loyaltyPointsUsed: 0,
+            rewardRedemptionId: selectedRedemptionId || undefined
           }
         };
 

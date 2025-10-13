@@ -938,7 +938,7 @@ export class BookingController {
         paymentId, // Link to the confirmed payment
       };
 
-      const booking = await BookingService.createBookingWithPayment(bookingData);
+      const booking = await BookingService.createBooking(bookingData);
 
       logger.info('Booking created with payment successfully', {
         bookingId: booking.id,
@@ -950,8 +950,7 @@ export class BookingController {
       res.status(201).json(
         createSuccessResponse(
           { booking },
-          'Booking created successfully',
-          req.headers['x-request-id'] as string
+          { message: 'Booking created successfully' }
         )
       );
     } catch (error: any) {
