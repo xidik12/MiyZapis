@@ -397,16 +397,16 @@ const SpecialistSchedule: React.FC = () => {
         try {
           console.log('📅 Fetching existing bookings to block occupied slots...');
           const existingBookings = await retryRequest(
-            () => bookingService.getBookings({ 
-              limit: 100, 
-              startDate: startDate, 
-              endDate: endDate 
+            () => bookingService.getBookings({
+              limit: 100,
+              startDate: startDate,
+              endDate: endDate
             }, 'specialist'),
             2, // max retries
             1000 // initial delay
           );
-          
-          const bookingsData = existingBookings?.data || existingBookings || [];
+
+          const bookingsData = existingBookings?.bookings || [];
           console.log(`📅 Found ${bookingsData.length} existing bookings to check for conflicts`);
           
           // Block time slots that conflict with existing bookings

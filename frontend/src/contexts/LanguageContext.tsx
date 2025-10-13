@@ -712,6 +712,7 @@ const translations: Translations = {
   'dashboard.nav.profile': { en: 'Profile', uk: 'Профіль', ru: 'Профиль' },
   'dashboard.nav.reviews': { en: 'Reviews', uk: 'Відгуки', ru: 'Отзывы' },
   'dashboard.nav.loyalty': { en: 'Loyalty', uk: 'Лояльність', ru: 'Лояльность' },
+  'dashboard.nav.referrals': { en: 'Referrals', uk: 'Реферали', ru: 'Рефералы' },
   'dashboard.reviews': { en: 'Reviews', uk: 'Відгуки', ru: 'Отзывы' },
   'dashboard.nav.messages': { en: 'Messages', uk: 'Повідомлення', ru: 'Сообщения' },
   'dashboard.nav.settings': { en: 'Settings', uk: 'Налаштування', ru: 'Настройки' },
