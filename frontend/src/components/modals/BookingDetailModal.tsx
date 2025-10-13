@@ -180,6 +180,51 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             </div>
           </div>
 
+          {/* Service Location Information (for confirmed/paid bookings) */}
+          {booking.status === 'CONFIRMED' && booking.service?.serviceLocation && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 sm:p-4">
+              <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2 sm:mb-3 text-sm sm:text-base flex items-center">
+                <MapPinIcon className="w-4 h-4 mr-2" />
+                {t('bookings.serviceLocation') || 'Service Location'}
+              </h3>
+              <div className="space-y-2 text-xs sm:text-sm">
+                {/* Service Location */}
+                <div className="flex items-start space-x-2">
+                  <MapPinIcon className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <span className="font-medium text-blue-900 dark:text-blue-100">
+                      {t('bookings.address')}:
+                    </span>
+                    <p className="text-blue-800 dark:text-blue-200 break-words">
+                      {booking.service.serviceLocation}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Location Notes */}
+                {booking.service.locationNotes && (
+                  <div className="flex items-start space-x-2">
+                    <MapPinIcon className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium text-blue-900 dark:text-blue-100">
+                        {t('bookings.instructions') || 'Instructions'}:
+                      </span>
+                      <p className="text-blue-800 dark:text-blue-200 break-words">
+                        {booking.service.locationNotes}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-3 pt-2 border-t border-blue-200 dark:border-blue-700">
+                  <p className="text-xs text-blue-700 dark:text-blue-300 italic">
+                    ℹ️ {t('bookings.locationInfoNote') || 'This location information is available after payment confirmation'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Contact Information (for confirmed bookings) */}
           {booking.status === 'CONFIRMED' && booking.specialist?.location && (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 sm:p-4">

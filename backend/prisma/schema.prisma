@@ -214,7 +214,11 @@ model Service {
 
   // Service details
   duration       Int    // Duration in minutes
-  
+
+  // Location details (shown to customer after payment)
+  serviceLocation String? // Physical address or location details for this service
+  locationNotes   String? // Additional instructions for finding the location
+
   // Requirements and deliverables
   requirements  String // JSON string of requirements
   deliverables  String // JSON string of deliverables

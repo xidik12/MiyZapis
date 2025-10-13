@@ -22,6 +22,8 @@ interface Service {
   price?: number; // For backwards compatibility
   currency: string;
   duration: number;
+  serviceLocation?: string;
+  locationNotes?: string;
   isActive: boolean;
   bookings?: number;
   _count?: {
@@ -181,6 +183,8 @@ const SpecialistServices: React.FC = () => {
     price: '',
     currency: 'UAH', // Default to UAH
     duration: '',
+    serviceLocation: '',
+    locationNotes: '',
     isActive: true,
     // Loyalty Points pricing
     loyaltyPointsEnabled: false,
@@ -220,6 +224,8 @@ const SpecialistServices: React.FC = () => {
       descriptionUk: '',
       descriptionRu: '',
       category: '',
+      serviceLocation: '',
+      locationNotes: '',
       price: '',
       currency: 'UAH', // Default to UAH
       duration: '',
@@ -275,6 +281,8 @@ const SpecialistServices: React.FC = () => {
       price: service.basePrice?.toString() || service.price?.toString() || '',
       currency: service.currency || 'UAH',
       duration: service.duration.toString(),
+      serviceLocation: service.serviceLocation || '',
+      locationNotes: service.locationNotes || '',
       isActive: service.isActive,
       availability: {
         monday: false,
@@ -443,6 +451,8 @@ const SpecialistServices: React.FC = () => {
       basePrice: parseFloat(formData.price),
       currency: formData.currency,
       duration: parseInt(formData.duration),
+      serviceLocation: formData.serviceLocation || undefined,
+      locationNotes: formData.locationNotes || undefined,
       isActive: formData.isActive,
       requirements: [], // Empty for now, can be extended later
       deliverables: [], // Empty for now, can be extended later
@@ -1141,6 +1151,45 @@ const SpecialistServices: React.FC = () => {
                       className={`w-full px-4 py-3 rounded-xl border ${formErrors.duration ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
                     />
                     {formErrors.duration && <p className="mt-1 text-sm text-red-500">{formErrors.duration}</p>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Location Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  {language === 'uk' ? 'Місцезнаходження' : language === 'ru' ? 'Местоположение' : 'Location Information'}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  {language === 'uk' ? 'Ця інформація буде показана клієнтам після оплати' : language === 'ru' ? 'Эта информация будет показана клиентам после оплаты' : 'This information will be shown to customers after payment'}
+                </p>
+                <div className="grid grid-cols-1 gap-6">
+                  {/* Service Location */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'uk' ? 'Адреса або місце надання послуги' : language === 'ru' ? 'Адрес или место предоставления услуги' : 'Service Location Address'}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.serviceLocation}
+                      onChange={(e) => setFormData(prev => ({ ...prev, serviceLocation: e.target.value }))}
+                      placeholder={language === 'uk' ? 'напр. вул. Хрещатик 1, Київ' : language === 'ru' ? 'напр. ул. Крещатик 1, Киев' : 'e.g. 123 Main St, City'}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+
+                  {/* Location Notes */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'uk' ? 'Додаткові інструкції' : language === 'ru' ? 'Дополнительные инструкции' : 'Additional Instructions'}
+                    </label>
+                    <textarea
+                      value={formData.locationNotes}
+                      onChange={(e) => setFormData(prev => ({ ...prev, locationNotes: e.target.value }))}
+                      placeholder={language === 'uk' ? 'напр. Паркування позаду будівлі, домофон 15' : language === 'ru' ? 'напр. Парковка за зданием, домофон 15' : 'e.g. Parking behind building, buzzer #15'}
+                      rows={3}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                    />
                   </div>
                 </div>
               </div>

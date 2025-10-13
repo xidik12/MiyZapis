@@ -91,6 +91,8 @@ export class ServiceService {
           basePrice: data.basePrice,
           currency: data.currency || 'USD',
           duration: data.duration,
+          serviceLocation: data.serviceLocation || null,
+          locationNotes: data.locationNotes || null,
           requirements: JSON.stringify(data.requirements || []),
           deliverables: JSON.stringify(data.deliverables || []),
           images: JSON.stringify(data.images || []),
@@ -195,6 +197,8 @@ export class ServiceService {
         console.log('⏰ Setting duration in updateData:', data.duration);
         updateData.duration = data.duration;
       }
+      if (data.serviceLocation !== undefined) updateData.serviceLocation = data.serviceLocation;
+      if (data.locationNotes !== undefined) updateData.locationNotes = data.locationNotes;
       if (data.requirements !== undefined) updateData.requirements = JSON.stringify(data.requirements);
       if (data.deliverables !== undefined) updateData.deliverables = JSON.stringify(data.deliverables);
       if (data.images !== undefined) updateData.images = JSON.stringify(data.images);

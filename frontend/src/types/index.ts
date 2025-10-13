@@ -157,6 +157,8 @@ export interface Service extends BaseEntity {
   currency: string;
   category: string;
   isActive: boolean;
+  serviceLocation?: string; // Physical location for the service
+  locationNotes?: string; // Additional instructions for finding location
   requirements?: string[];
   deliverables?: string[];
   specialistId: string;
