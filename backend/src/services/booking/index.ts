@@ -916,10 +916,8 @@ export class BookingService {
       if (isSpecialistCancellation) {
         // If specialist cancels, customer gets FULL refund ($1) to wallet
         refundAmount = 100; // $1 in cents
-      } else if (booking.status === 'CONFIRMED') {
-        // If customer cancels, refund deposit minus cancellation fee (10%)
-        refundAmount = booking.depositAmount * 0.9;
       }
+      // If customer cancels, they lose the $1 deposit (no refund)
 
       // Use transaction to ensure atomic operation
       const updatedBooking = await prisma.$transaction(async (tx) => {
