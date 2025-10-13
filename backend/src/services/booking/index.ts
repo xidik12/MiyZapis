@@ -911,91 +911,152 @@ export class BookingService {
 
       // Calculate refund amount
       let refundAmount = 0;
-      if (booking.status === 'CONFIRMED') {
-        // Refund deposit minus cancellation fee (10%)
+      const isSpecialistCancellation = cancelledBy === booking.specialistId;
+
+      if (isSpecialistCancellation) {
+        // If specialist cancels, customer gets FULL refund ($1) to wallet
+        refundAmount = 100; // $1 in cents
+      } else if (booking.status === 'CONFIRMED') {
+        // If customer cancels, refund deposit minus cancellation fee (10%)
         refundAmount = booking.depositAmount * 0.9;
       }
 
-      const updatedBooking = await prisma.booking.update({
-        where: { id: bookingId },
-        data: {
-          status: 'CANCELLED',
-          cancelledAt: new Date(),
-          cancelledBy,
-          cancellationReason: reason,
-          refundAmount,
-          updatedAt: new Date(),
-        },
-        include: {
-          customer: {
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-              avatar: true,
-              userType: true,
-              phoneNumber: true,
-              isEmailVerified: true,
-              isPhoneVerified: true,
-              isActive: true,
-              loyaltyPoints: true,
-              loyaltyTierId: true,
-              language: true,
-              currency: true,
-              timezone: true,
-              createdAt: true,
-              updatedAt: true,
+      // Use transaction to ensure atomic operation
+      const updatedBooking = await prisma.$transaction(async (tx) => {
+        // Update booking status
+        const booking = await tx.booking.update({
+          where: { id: bookingId },
+          data: {
+            status: 'CANCELLED',
+            cancelledAt: new Date(),
+            cancelledBy,
+            cancellationReason: reason,
+            refundAmount,
+            updatedAt: new Date(),
+          },
+          include: {
+            customer: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                avatar: true,
+                userType: true,
+                phoneNumber: true,
+                isEmailVerified: true,
+                isPhoneVerified: true,
+                isActive: true,
+                loyaltyPoints: true,
+                loyaltyTierId: true,
+                language: true,
+                currency: true,
+                timezone: true,
+                walletBalance: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
+            specialist: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                avatar: true,
+                userType: true,
+                phoneNumber: true,
+                isEmailVerified: true,
+                isPhoneVerified: true,
+                isActive: true,
+                loyaltyPoints: true,
+                loyaltyTierId: true,
+                language: true,
+                currency: true,
+                timezone: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
+            service: {
+              include: {
+                specialist: true,
+              },
             },
           },
-          specialist: {
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-              avatar: true,
-              userType: true,
-              phoneNumber: true,
-              isEmailVerified: true,
-              isPhoneVerified: true,
-              isActive: true,
-              loyaltyPoints: true,
-              loyaltyTierId: true,
-              language: true,
-              currency: true,
-              timezone: true,
-              createdAt: true,
-              updatedAt: true,
-            },
-          },
-          service: {
-            include: {
-              specialist: true,
-            },
-          },
-        },
+        });
+
+        // If there's a refund amount, credit customer's wallet
+        if (refundAmount > 0 && booking.customerId) {
+          await tx.user.update({
+            where: { id: booking.customerId },
+            data: {
+              walletBalance: {
+                increment: refundAmount
+              }
+            }
+          });
+
+          // Create wallet transaction record
+          await tx.walletTransaction.create({
+            data: {
+              userId: booking.customerId,
+              amount: refundAmount,
+              type: 'REFUND',
+              description: isSpecialistCancellation
+                ? 'Booking cancellation refund (specialist cancelled)'
+                : 'Booking cancellation refund',
+              relatedBookingId: bookingId,
+              status: 'COMPLETED',
+              createdAt: new Date()
+            }
+          });
+
+          logger.info('Refund credited to customer wallet', {
+            bookingId,
+            customerId: booking.customerId,
+            refundAmount,
+            cancelledBy: isSpecialistCancellation ? 'specialist' : 'customer'
+          });
+        }
+
+        return booking;
       });
 
-      // Send localized emails for key changes
+      // Send localized emails for cancellation
       try {
         const langCustomer = resolveLanguage(updatedBooking.customer?.language, undefined);
         const langSpecialist = updatedBooking.specialist?.language || 'en';
-        const bookingUrlCustomer = `${process.env.FRONTEND_URL || 'https://miyzapis.com'}/bookings/${updatedBooking.id}`;
-        const bookingUrlSpecialist = `${process.env.FRONTEND_URL || 'https://miyzapis.com'}/specialist/bookings/${updatedBooking.id}`;
 
-        // If status changed to CANCELLED
-        if (data.status === 'CANCELLED') {
+        // Send cancellation email to customer
+        if (updatedBooking.customer?.email) {
           const dateStr = new Intl.DateTimeFormat(langCustomer === 'uk' ? 'uk-UA' : langCustomer === 'ru' ? 'ru-RU' : 'en-US', {
             year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
             timeZone: updatedBooking.customer.timezone
           }).format(new Date(updatedBooking.scheduledAt));
+
+          // Add refund notice to cancellation reason if applicable
+          let cancellationMessage = reason || '';
+          if (refundAmount > 0) {
+            const refundInDollars = (refundAmount / 100).toFixed(2);
+            cancellationMessage += cancellationMessage ? ` A refund of $${refundInDollars} has been credited to your wallet.` : `A refund of $${refundInDollars} has been credited to your wallet.`;
+          }
+
           await templatedEmailService.sendTemplateEmail({
             to: updatedBooking.customer.email!,
             templateKey: 'bookingCancelled',
             language: langCustomer,
-            data: { name: updatedBooking.customer.firstName, serviceName: updatedBooking.service.name, bookingDateTime: dateStr, reason: data.cancellationReason || '' }
+            data: {
+              name: updatedBooking.customer.firstName,
+              serviceName: updatedBooking.service.name,
+              bookingDateTime: dateStr,
+              reason: cancellationMessage
+            }
           });
+        }
+
+        // Send cancellation email to specialist
+        if (updatedBooking.specialist?.email) {
           const dateStrSpec = new Intl.DateTimeFormat(langSpecialist === 'uk' ? 'uk-UA' : langSpecialist === 'ru' ? 'ru-RU' : 'en-US', {
             year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
             timeZone: updatedBooking.specialist.timezone
@@ -1004,45 +1065,17 @@ export class BookingService {
             to: updatedBooking.specialist.email!,
             templateKey: 'bookingCancelled',
             language: langSpecialist,
-            data: { name: updatedBooking.specialist.firstName, serviceName: updatedBooking.service.name, bookingDateTime: dateStrSpec, reason: data.cancellationReason || '' }
-          });
-        } else if (data.status || data.scheduledAt) {
-          // Any status/time update → bookingUpdated for both
-          const dateStrCust = new Intl.DateTimeFormat(langCustomer === 'uk' ? 'uk-UA' : langCustomer === 'ru' ? 'ru-RU' : 'en-US', {
-            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
-            timeZone: updatedBooking.customer.timezone
-          }).format(new Date(updatedBooking.scheduledAt));
-          await templatedEmailService.sendTemplateEmail({
-            to: updatedBooking.customer.email!,
-            templateKey: 'bookingUpdated',
-            language: langCustomer,
-            data: {
-              name: updatedBooking.customer.firstName,
-              serviceName: updatedBooking.service.name,
-              specialistName: `${updatedBooking.specialist.firstName} ${updatedBooking.specialist.lastName}`,
-              bookingDateTime: dateStrCust,
-              bookingUrl: bookingUrlCustomer,
-            }
-          });
-          const dateStrSpec2 = new Intl.DateTimeFormat(langSpecialist === 'uk' ? 'uk-UA' : langSpecialist === 'ru' ? 'ru-RU' : 'en-US', {
-            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
-            timeZone: updatedBooking.specialist.timezone
-          }).format(new Date(updatedBooking.scheduledAt));
-          await templatedEmailService.sendTemplateEmail({
-            to: updatedBooking.specialist.email!,
-            templateKey: 'bookingUpdated',
-            language: langSpecialist,
             data: {
               name: updatedBooking.specialist.firstName,
               serviceName: updatedBooking.service.name,
-              specialistName: `${updatedBooking.specialist.firstName} ${updatedBooking.specialist.lastName}`,
-              bookingDateTime: dateStrSpec2,
-              bookingUrl: bookingUrlSpecialist,
+              bookingDateTime: dateStrSpec,
+              reason: reason || ''
             }
           });
         }
       } catch (e) {
         // non-blocking
+        logger.error('Failed to send cancellation emails', { bookingId, error: e });
       }
 
       // Refund loyalty points if they were used
