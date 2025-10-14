@@ -158,10 +158,10 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
       <div className="flex items-center justify-between p-4 border-b border-[rgba(223,214,207,0.35)] dark:border-[rgba(90,70,110,0.55)]">
         {!isCollapsed && (
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 vichea-gradient text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-primary group-hover:shadow-lg group-hover:-translate-y-0.5 transition-all duration-300">
+            <div className="w-9 h-9 bg-huddle-gradient text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-primary group-hover:shadow-lg group-hover:-translate-y-0.5 transition-all duration-300">
               H
             </div>
-            <span className="text-lg font-semibold vichea-text-gradient">
+            <span className="text-lg font-semibold bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
               {t('brand.name')}
             </span>
           </Link>
@@ -169,7 +169,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
 
         {isCollapsed && (
           <Link to="/" className="flex justify-center w-full">
-            <div className="w-9 h-9 vichea-gradient text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-primary hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+            <div className="w-9 h-9 bg-huddle-gradient text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-primary hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
               H
             </div>
           </Link>
@@ -300,7 +300,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
             </Link>
             <Link
               to="/auth/register"
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl vichea-gradient temple-shine text-white shadow-primary hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 ${
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl bg-huddle-gradient text-white shadow-primary hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 ${
                 isCollapsed ? 'justify-center' : ''
               }`}
             >
