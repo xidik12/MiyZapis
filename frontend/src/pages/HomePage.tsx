@@ -155,91 +155,107 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full prevent-overflow">
+    <div className="min-h-screen w-full prevent-overflow bg-white dark:bg-secondary-900">
       {/* Hero Section */}
-      <section className="relative ukraine-gradient text-white overflow-hidden min-h-[100vh] xs:min-h-[90vh] sm:min-h-[85vh] lg:min-h-[80vh] flex items-center w-full prevent-overflow">
-        <div className="absolute inset-0 bg-black bg-opacity-10"></div>
-        
-        {/* Animated background elements - hide some on mobile */}
-        <div className="hidden lg:block absolute top-20 right-20 w-32 h-32 rounded-full morph-shape opacity-20 float-animation"></div>
-        <div className="hidden lg:block absolute bottom-20 left-20 w-48 h-48 rounded-full bg-white/10 animate-pulse"></div>
-        <div className="hidden lg:block absolute top-1/2 right-1/4 w-16 h-16 ukraine-gradient rounded-full animate-bounce"></div>
-        
-        <div className="relative w-full max-w-7xl mx-auto mobile-container py-12 xs:py-16 sm:py-20 lg:py-24 prevent-overflow">
+      <section className="relative overflow-hidden min-h-[95vh] xs:min-h-[88vh] sm:min-h-[82vh] flex items-center w-full prevent-overflow bg-white dark:bg-secondary-900">
+        {/* Animated gradient orbs */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }}></div>
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-accent-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '2s' }}></div>
+
+        <div className="relative w-full max-w-7xl mx-auto mobile-container py-14 xs:py-18 sm:py-22 lg:py-24 prevent-overflow">
           <div className="text-center w-full prevent-overflow">
-            <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-6xl font-bold mb-4 xs:mb-6 leading-tight animate-fade-in px-2 xs:px-0">
+            {/* Badge with icon */}
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-huddle-gradient text-white text-xs font-bold tracking-wider uppercase mb-6 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:scale-105 transition-all duration-200">
+              <StarIcon className="w-4 h-4 animate-pulse" />
+              {t('hero.badge')}
+            </div>
+
+            {/* Main heading with better contrast */}
+            <h1 className="font-display text-3xl xs:text-4xl sm:text-5xl md:text-6xl leading-tight font-bold mb-6 xs:mb-8 animate-fade-in px-3 xs:px-6 text-secondary-900 dark:text-white">
               {t('hero.title1')}
-              <br />
-              <span className="text-secondary-200 shimmer">{t('hero.title2')}</span>
+              <span className="block mt-2 text-2xl xs:text-3xl sm:text-4xl md:text-5xl bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
+                {t('hero.title2')}
+              </span>
             </h1>
-            <p className="text-base xs:text-lg sm:text-xl md:text-2xl text-primary-100 mb-6 xs:mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-2 xs:px-0">
+
+            {/* Subtitle with better visibility */}
+            <p className="text-base xs:text-lg sm:text-xl md:text-2xl text-secondary-600 dark:text-secondary-300 mb-8 xs:mb-10 sm:mb-14 max-w-3xl mx-auto leading-relaxed px-3 xs:px-6 font-medium">
               {t('hero.subtitle')}
             </p>
 
             {/* Search Bar */}
-            <div className="w-full max-w-2xl mx-auto mb-8 px-4 sm:px-0">
-              <SearchBar
-                placeholder={t('hero.searchPlaceholder')}
-                onSearch={handleSearch}
-                className="text-base sm:text-lg"
-              />
+            <div className="w-full max-w-2xl mx-auto mb-10 px-4 sm:px-0">
+              <div className="glass-card rounded-2xl border border-[rgba(223,214,207,0.45)] dark:border-[rgba(90,70,110,0.55)] shadow-lg">
+                <SearchBar
+                  placeholder={t('hero.searchPlaceholder')}
+                  onSearch={handleSearch}
+                  className="text-base sm:text-lg"
+                />
+              </div>
             </div>
 
-            {/* Quick Actions */}
-            <div className="flex flex-wrap justify-center gap-2 xs:gap-3 sm:gap-4 mb-6 xs:mb-8 sm:mb-12 px-2 xs:px-0">
+            {/* Quick Actions with Icons */}
+            <div className="flex flex-wrap justify-center gap-2 xs:gap-3 sm:gap-4 mb-8 xs:mb-10 sm:mb-14 px-3 xs:px-6">
               <Link
                 to="/search?category=beauty-wellness"
-                className="glass-effect text-white px-3 xs:px-4 sm:px-6 py-2 xs:py-2 sm:py-3 rounded-full font-semibold hover:scale-105 transition-all duration-300 hover:glow-primary text-xs xs:text-sm sm:text-base whitespace-nowrap"
+                className="group relative inline-flex items-center gap-2 rounded-xl px-5 xs:px-6 sm:px-7 py-3 font-semibold text-white text-xs xs:text-sm sm:text-base whitespace-nowrap shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:-translate-y-1 hover:scale-105 transition-all duration-200 bg-primary-gradient overflow-hidden"
               >
-                {t('category.beautyWellness')}
+                <span className="text-lg">💄</span>
+                <span>{t('category.beautyWellness')}</span>
+                <ArrowRightIcon className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
               </Link>
               <Link
                 to="/search?category=health-fitness"
-                className="glass-effect text-white px-3 xs:px-4 sm:px-6 py-2 xs:py-2 sm:py-3 rounded-full font-semibold hover:scale-105 transition-all duration-300 hover:glow-primary text-xs xs:text-sm sm:text-base whitespace-nowrap"
+                className="group relative inline-flex items-center gap-2 rounded-xl px-5 xs:px-6 sm:px-7 py-3 font-semibold text-white text-xs xs:text-sm sm:text-base whitespace-nowrap shadow-lg shadow-accent-500/30 hover:shadow-xl hover:shadow-accent-500/40 hover:-translate-y-1 hover:scale-105 transition-all duration-200 bg-accent-gradient overflow-hidden"
               >
-                {t('category.healthFitness')}
+                <span className="text-lg">💪</span>
+                <span>{t('category.healthFitness')}</span>
+                <ArrowRightIcon className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
               </Link>
               <Link
                 to="/search?category=home-services"
-                className="glass-effect text-white px-3 xs:px-4 sm:px-6 py-2 xs:py-2 sm:py-3 rounded-full font-semibold hover:scale-105 transition-all duration-300 hover:glow-primary text-xs xs:text-sm sm:text-base whitespace-nowrap"
+                className="group relative inline-flex items-center gap-2 rounded-xl px-5 xs:px-6 sm:px-7 py-3 font-semibold text-secondary-900 dark:text-white text-xs xs:text-sm sm:text-base whitespace-nowrap shadow-lg backdrop-blur-xl bg-white/60 dark:bg-white/10 border border-white/20 dark:border-white/10 hover:bg-white/80 dark:hover:bg-white/20 hover:-translate-y-1 hover:scale-105 transition-all duration-200 overflow-hidden"
               >
-                {t('category.homeServices')}
+                <span className="text-lg">🏠</span>
+                <span>{t('category.homeServices')}</span>
+                <ArrowRightIcon className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
               </Link>
             </div>
 
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 xs:gap-4 sm:gap-6 max-w-4xl mx-auto px-2 xs:px-0">
-              {stats.map((stat, index) => (
-                <div
-                  key={index} 
-                  className="glass-effect text-center p-3 xs:p-4 sm:p-6 hover:scale-105 transition-all duration-300 rounded-lg border border-white/20"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.15)',
-                    backdropFilter: 'blur(20px)'
-                  }}
-                >
-                  <stat.icon className="w-6 h-6 xs:w-8 xs:h-8 sm:w-10 sm:h-10 mx-auto mb-2 xs:mb-2 sm:mb-3 text-secondary-200" />
-                  <div className="text-lg xs:text-xl sm:text-2xl font-bold mb-1 text-white drop-shadow-lg">{stat.value}</div>
-                  <div className="text-white/90 text-xs xs:text-xs sm:text-sm font-medium drop-shadow-md leading-tight">{stat.label}</div>
-                </div>
-              ))}
+              {stats.map((stat, index) => {
+                const isPrimary = index % 2 === 0;
+                return (
+                  <div
+                    key={index}
+                    className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 text-center p-5 xs:p-6 sm:p-7 hover:-translate-y-2 hover:shadow-xl transition-all duration-300 rounded-2xl group"
+                  >
+                    <div className={`w-12 h-12 xs:w-14 xs:h-14 mx-auto mb-4 rounded-xl flex items-center justify-center ${isPrimary ? 'bg-primary-500/10' : 'bg-accent-500/10'} group-hover:scale-110 transition-transform duration-300`}>
+                      <stat.icon className={`w-6 h-6 xs:w-7 xs:h-7 ${isPrimary ? 'text-primary-500' : 'text-accent-500'}`} />
+                    </div>
+                    <div className="text-2xl xs:text-3xl sm:text-4xl font-bold mb-2 text-secondary-900 dark:text-white">
+                      {stat.value}
+                    </div>
+                    <div className="text-sm xs:text-base font-medium text-secondary-600 dark:text-secondary-300">
+                      {stat.label}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
-
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-primary-500 opacity-20 transform translate-x-32 -translate-y-32"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-secondary-500 opacity-10 transform -translate-x-48 translate-y-48"></div>
       </section>
 
       {/* Service Categories */}
-      <section className="py-8 xs:py-12 sm:py-20 w-full prevent-overflow" style={{ backgroundColor: 'rgb(var(--bg-secondary))' }}>
+      <section className="py-12 xs:py-16 sm:py-24 w-full prevent-overflow bg-gray-50 dark:bg-gray-900">
         <div className="w-full max-w-7xl mx-auto mobile-container prevent-overflow">
-          <div className="text-center mb-8 xs:mb-12 sm:mb-16">
-            <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold ukraine-text-gradient mb-4 px-2 xs:px-0">
+          <div className="text-center mb-10 xs:mb-14 sm:mb-18">
+            <h2 className="font-display text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-4 px-2 xs:px-0">
               {t('categories.title')}
             </h2>
-            <p className="text-base xs:text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-2 xs:px-0">
+            <p className="text-base xs:text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto px-2 xs:px-0">
               {t('categories.subtitle')}
             </p>
           </div>
@@ -249,20 +265,26 @@ const HomePage: React.FC = () => {
               <Link
                 key={category.id}
                 to={category.href}
-                className="group glass-effect p-4 xs:p-6 sm:p-8 rounded-xl hover:scale-105 transition-all duration-300 block h-full"
+                className="group backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg p-6 xs:p-7 sm:p-8 rounded-2xl hover:-translate-y-1 hover:shadow-xl transition-all duration-300 block h-full"
               >
-                <div className="text-5xl mb-6 animate-bounce">{category.icon}</div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 group-hover:ukraine-text-gradient transition-all duration-300">
+                <div className="text-5xl mb-6 transition-transform duration-300 group-hover:scale-110">
+                  {category.icon}
+                </div>
+                <h3 className="text-xl font-semibold text-secondary-900 dark:text-white mb-3 group-hover:bg-gradient-to-r group-hover:from-primary-500 group-hover:to-accent-500 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
                   {category.name}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                <p className="text-secondary-600 dark:text-secondary-300 mb-6 leading-relaxed">
                   {category.description}
                 </p>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-primary-600 font-semibold px-3 py-1 bg-primary-50 dark:bg-primary-900/30 rounded-full">
+                  <span className={`font-semibold px-4 py-2 rounded-full shadow-sm ${
+                    index % 2 === 0
+                      ? 'text-white bg-primary-500 shadow-primary-500/30'
+                      : 'text-white bg-accent-500 shadow-accent-500/30'
+                  }`}>
                     {category.serviceCount} {t('services.count')}
                   </span>
-                  <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-all duration-300 group-hover:translate-x-1" />
+                  <ArrowRightIcon className="w-5 h-5 text-secondary-400 group-hover:text-accent-500 transition-all duration-300 group-hover:translate-x-1" />
                 </div>
               </Link>
             ))}
@@ -271,13 +293,13 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-8 xs:py-12 sm:py-16 lg:py-20 bg-gray-50 dark:bg-gray-800/50 w-full prevent-overflow">
+      <section id="how-it-works" className="py-12 xs:py-16 sm:py-20 lg:py-24 bg-white dark:bg-gray-800 w-full prevent-overflow">
         <div className="max-w-7xl mx-auto mobile-container prevent-overflow">
-          <div className="text-center mb-8 xs:mb-12 sm:mb-16">
-            <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4 px-2 xs:px-0">
+          <div className="text-center mb-10 xs:mb-14 sm:mb-18">
+            <h2 className="font-display text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-4 px-2 xs:px-0">
               {t('howItWorks.title')}
             </h2>
-            <p className="text-base xs:text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-2 xs:px-0">
+            <p className="text-base xs:text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto px-2 xs:px-0">
               {t('howItWorks.subtitle')}
             </p>
           </div>
@@ -286,17 +308,25 @@ const HomePage: React.FC = () => {
             {howItWorksSteps.map((step, index) => (
               <div key={step.step} className="text-center">
                 <div className="relative mb-6 xs:mb-8">
-                  <div className="w-12 h-12 xs:w-16 xs:h-16 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-4 relative">
-                    <step.icon className="w-6 h-6 xs:w-8 xs:h-8 text-white" />
-                    <div className="absolute -top-1 -right-1 xs:-top-2 xs:-right-2 bg-secondary-500 text-white w-6 h-6 xs:w-8 xs:h-8 rounded-full flex items-center justify-center text-xs xs:text-sm font-bold shadow-lg">
+                  <div className={`w-14 h-14 xs:w-18 xs:h-18 rounded-2xl flex items-center justify-center mx-auto mb-4 relative ${
+                    index % 2 === 0
+                      ? 'bg-primary-500'
+                      : 'bg-accent-500'
+                  }`}>
+                    <step.icon className="w-7 h-7 xs:w-9 xs:h-9 text-white" />
+                    <div className={`absolute -top-2 -right-2 w-8 h-8 xs:w-9 xs:h-9 rounded-full flex items-center justify-center text-sm xs:text-base font-bold shadow-lg border-3 ${
+                      index % 2 === 0
+                        ? 'bg-white text-accent-500 border-accent-500'
+                        : 'bg-white text-primary-500 border-primary-500'
+                    }`}>
                       {step.step}
                     </div>
                   </div>
                 </div>
-                <h3 className="text-lg xs:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                <h3 className="text-lg xs:text-xl font-bold text-secondary-900 dark:text-white mb-3">
                   {step.title}
                 </h3>
-                <p className="text-sm xs:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
+                <p className="text-sm xs:text-base text-secondary-600 dark:text-secondary-300 leading-relaxed">
                   {step.description}
                 </p>
               </div>
@@ -306,13 +336,13 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* Featured Specialists */}
-      <section className="py-8 xs:py-12 sm:py-16 lg:py-20 bg-white dark:bg-gray-900 w-full prevent-overflow">
+      <section className="py-10 xs:py-14 sm:py-18 lg:py-20 bg-gray-50 dark:bg-gray-900 w-full prevent-overflow">
         <div className="max-w-7xl mx-auto mobile-container prevent-overflow">
           <div className="text-center mb-8 xs:mb-12 sm:mb-16">
-            <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4 px-2 xs:px-0">
+            <h2 className="font-display text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-bold text-secondary-900 dark:text-white mb-4 px-2 xs:px-0">
               {t('featuredSpecialists.title')}
             </h2>
-            <p className="text-base xs:text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-2 xs:px-0">
+            <p className="text-base xs:text-lg sm:text-xl text-secondary-600 dark:text-secondary-300 max-w-3xl mx-auto px-2 xs:px-0">
               {t('featuredSpecialists.subtitle')}
             </p>
           </div>
@@ -322,11 +352,11 @@ const HomePage: React.FC = () => {
               <Link
                 key={specialist.id}
                 to={`/specialist/${specialist.id}`}
-                className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:shadow-lg hover:border-primary-200 dark:hover:border-primary-600 transition-all duration-300"
+                className="group backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
               >
                 <div className="aspect-w-16 aspect-h-12">
-                  <div className="relative w-full h-48 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                    <UserGroupIcon className="w-16 h-16 text-gray-400" />
+                  <div className="relative w-full h-48 bg-primary-500/5 dark:bg-accent-500/10 flex items-center justify-center">
+                    <UserGroupIcon className="w-16 h-16 text-primary-500/50" />
                     {/* Online indicator if available in data */}
                     { (specialist as any).isOnline && (
                       <span className="absolute top-3 right-3 inline-flex h-3.5 w-3.5">
@@ -337,30 +367,30 @@ const HomePage: React.FC = () => {
                   </div>
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-1 group-hover:text-primary-600">
+                  <h3 className="text-xl font-bold text-secondary-900 dark:text-white mb-1 group-hover:text-primary-500 transition-colors duration-300">
                     {specialist.name}
                   </h3>
-                  <p className="text-gray-600 mb-3">{specialist.specialty}</p>
+                  <p className="text-secondary-600 dark:text-secondary-300 mb-3">{specialist.specialty}</p>
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-1">
                       <StarIcon className="w-5 h-5 text-yellow-400 fill-current" />
-                      <span className="font-semibold">{specialist.rating}</span>
-                      <span className="text-gray-500 text-sm">({specialist.reviews})</span>
+                      <span className="font-semibold text-secondary-900 dark:text-white">{specialist.rating}</span>
+                      <span className="text-secondary-500 dark:text-secondary-400 text-sm">({specialist.reviews})</span>
                     </div>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-secondary-500 dark:text-secondary-400">
                       {specialist.location}
                       { (specialist as any).responseTime && (
-                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700">
+                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-accent-500/10 text-accent-500">
                           ~{(specialist as any).responseTime} {t('common.minutes') || 'min'}
                         </span>
                       )}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-lg font-semibold text-gray-900">
+                    <span className="text-lg font-semibold text-secondary-900 dark:text-white">
                       {t('currency.from')} {formatPrice(specialist.startingPrice)}
                     </span>
-                    <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-colors" />
+                    <ArrowRightIcon className="w-5 h-5 text-secondary-400 group-hover:text-primary-500 transition-colors" />
                   </div>
                 </div>
               </Link>
@@ -370,7 +400,7 @@ const HomePage: React.FC = () => {
           <div className="text-center mt-12">
             <Link
               to="/search"
-              className="inline-flex items-center bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
+              className="inline-flex items-center bg-accent-gradient text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg shadow-accent-500/30 hover:shadow-xl hover:shadow-accent-500/40 hover:-translate-y-0.5 transition-all duration-300"
             >
               {t('featuredSpecialists.viewAll')}
               <ArrowRightIcon className="w-5 h-5 ml-2" />
@@ -380,39 +410,39 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* For Specialists Section */}
-      <section id="for-specialists" className="py-8 xs:py-12 sm:py-16 lg:py-20 bg-primary-600 text-white w-full prevent-overflow">
-        <div className="max-w-7xl mx-auto mobile-container prevent-overflow">
+      <section id="for-specialists" className="relative py-12 xs:py-16 sm:py-20 lg:py-24 bg-primary-gradient text-white w-full prevent-overflow overflow-hidden">
+        <div className="relative max-w-7xl mx-auto mobile-container prevent-overflow">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 xs:gap-12 items-center">
             <div className="px-2 xs:px-0">
-              <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold mb-4 xs:mb-6">
+              <h2 className="font-display text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-semibold mb-4 xs:mb-6">
                 {t('forSpecialists.title')}
               </h2>
-              <p className="text-base xs:text-lg sm:text-xl text-primary-100 mb-6 xs:mb-8 leading-relaxed">
+              <p className="text-base xs:text-lg sm:text-xl text-white/90 mb-6 xs:mb-8 leading-relaxed">
                 {t('forSpecialists.subtitle')}
               </p>
 
               <div className="space-y-4 mb-8">
-                <div className="flex items-center space-x-3">
-                  <CheckBadgeIcon className="w-6 h-6 text-secondary-300" />
-                  <span className="text-lg">{t('forSpecialists.verifiedClients')}</span>
+                <div className="flex items-center gap-3">
+                  <CheckBadgeIcon className="w-6 h-6 text-white/90" />
+                  <span className="text-lg font-medium">{t('forSpecialists.verifiedClients')}</span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <ClockIcon className="w-6 h-6 text-secondary-300" />
-                  <span className="text-lg">{t('forSpecialists.flexibleScheduling')}</span>
+                <div className="flex items-center gap-3">
+                  <ClockIcon className="w-6 h-6 text-white/90" />
+                  <span className="text-lg font-medium">{t('forSpecialists.flexibleScheduling')}</span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <CreditCardIcon className="w-6 h-6 text-secondary-300" />
-                  <span className="text-lg">{t('forSpecialists.securePayments')}</span>
+                <div className="flex items-center gap-3">
+                  <CreditCardIcon className="w-6 h-6 text-white/90" />
+                  <span className="text-lg font-medium">{t('forSpecialists.securePayments')}</span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <ShieldCheckIcon className="w-6 h-6 text-secondary-300" />
-                  <span className="text-lg">{t('forSpecialists.professionalSupport')}</span>
+                <div className="flex items-center gap-3">
+                  <ShieldCheckIcon className="w-6 h-6 text-white/90" />
+                  <span className="text-lg font-medium">{t('forSpecialists.professionalSupport')}</span>
                 </div>
               </div>
 
               <Link
                 to="/auth/register?type=specialist"
-                className="inline-flex items-center bg-white text-primary-700 px-8 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors"
+                className="inline-flex items-center bg-white text-primary-500 px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
               >
                 {t('forSpecialists.joinButton')}
                 <ArrowRightIcon className="w-5 h-5 ml-2" />
@@ -420,24 +450,24 @@ const HomePage: React.FC = () => {
             </div>
 
             <div className="relative">
-              <div className="bg-white bg-opacity-10 rounded-xl p-8 backdrop-blur-sm">
+              <div className="bg-white/15 rounded-2xl p-8 backdrop-blur-md border border-white/10 shadow-xl">
                 <h3 className="text-2xl font-semibold mb-6 text-center">
                   {t('forSpecialists.benefitsTitle')}
                 </h3>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-white bg-opacity-10 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-white/15 rounded-xl">
                     <span>{t('forSpecialists.monthlyBookings')}</span>
                     <span className="font-bold">45+</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-white bg-opacity-10 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-white/15 rounded-xl">
                     <span>{t('forSpecialists.responseTime')}</span>
                     <span className="font-bold">&lt; 2 hours</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-white bg-opacity-10 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-white/15 rounded-xl">
                     <span>{t('forSpecialists.satisfaction')}</span>
                     <span className="font-bold">4.8/5 ⭐</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-white bg-opacity-10 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-white/15 rounded-xl">
                     <span>{t('forSpecialists.commission')}</span>
                     <span className="font-bold">{t('forSpecialists.commissionValue')}</span>
                   </div>
@@ -449,13 +479,13 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-8 xs:py-12 sm:py-16 lg:py-20 bg-white dark:bg-gray-900 w-full prevent-overflow">
+      <section className="py-12 xs:py-16 sm:py-20 lg:py-24 bg-gray-50 dark:bg-gray-900 w-full prevent-overflow">
         <div className="max-w-4xl mx-auto mobile-container prevent-overflow text-center">
-          <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4 px-2 xs:px-0">
+          <h2 className="font-display text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-bold text-secondary-900 dark:text-white mb-4 px-2 xs:px-0">
             {t('cta.title')}
           </h2>
-          <p className="text-base xs:text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-6 xs:mb-8 px-2 xs:px-0">
-            {user 
+          <p className="text-base xs:text-lg sm:text-xl text-secondary-600 dark:text-secondary-300 mb-6 xs:mb-8 px-2 xs:px-0">
+            {user
               ? t('cta.subtitle.loggedIn')
               : t('cta.subtitle.loggedOut')
             }
@@ -465,7 +495,7 @@ const HomePage: React.FC = () => {
             {user ? (
               <Link
                 to="/search"
-                className="ukraine-gradient text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl text-center"
+                className="bg-accent-gradient text-white px-12 py-5 rounded-full text-xl font-bold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl shadow-lg shadow-accent-500/30 hover:shadow-accent-500/40 text-center"
               >
                 {t('cta.browseServices')}
               </Link>
@@ -473,13 +503,13 @@ const HomePage: React.FC = () => {
               <>
                 <Link
                   to="/auth/register"
-                  className="ukraine-gradient text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl text-center"
+                  className="bg-accent-gradient text-white px-12 py-5 rounded-full text-xl font-bold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl shadow-lg shadow-accent-500/30 hover:shadow-accent-500/40 text-center"
                 >
                   {t('cta.signUpCustomer')}
                 </Link>
                 <Link
                   to="/auth/register?type=specialist"
-                  className="border-2 border-primary-500 text-primary-600 dark:text-primary-400 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all duration-300 text-center"
+                  className="bg-white border-3 border-primary-500 text-primary-500 px-12 py-5 rounded-full text-xl font-bold hover:bg-primary-500 hover:text-white transition-all duration-300 text-center shadow-lg"
                 >
                   {t('cta.joinSpecialist')}
                 </Link>

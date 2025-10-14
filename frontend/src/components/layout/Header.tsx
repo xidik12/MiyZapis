@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { clsx } from 'clsx';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, selectIsAuthenticated, logout } from '@/store/slices/authSlice';
 import { selectNotifications } from '@/store/slices/notificationSlice';
@@ -82,60 +83,41 @@ export const Header: React.FC = () => {
     { name: t('nav.forSpecialists'), href: '#for-specialists', current: false, isHashLink: true },
   ];
 
+  const navItemBase =
+    'flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 nav-item-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-secondary-400';
+
   return (
-    <header className="glass-effect sticky top-0 z-50 transition-all duration-300 w-full"
+    <header
+      className="sticky top-0 z-50 w-full border-b transition-all duration-200 backdrop-blur-xl bg-white/70 dark:bg-secondary-900/70"
       style={{
-        backgroundColor: 'rgb(var(--bg-primary) / 0.8)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgb(var(--border-primary) / 0.2)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        borderColor: 'rgb(var(--role-border) / 0.3)',
+        boxShadow: '0 4px 24px -8px rgba(0, 0, 0, 0.08)',
       }}
     >
       <div className="w-full max-w-7xl mx-auto mobile-container prevent-overflow">
         <div className="flex justify-between items-center h-14 xs:h-16 sm:h-16">
           {/* Logo and brand */}
           <div className="flex items-center">
-            <Link 
-              to="/" 
-              className="flex items-center space-x-2 group hover:opacity-90 transition-all duration-300"
+            <Link
+              to="/"
+              className="flex items-center gap-3 group hover:opacity-95 transition-all duration-300"
               onClick={() => {
                 // Force navigate to home page and scroll to top
                 window.scrollTo(0, 0);
               }}
             >
-              <img 
-                src="/miyzapis_logo.png" 
-                alt="МійЗапис Logo" 
-                className="w-8 h-8 xs:w-10 xs:h-10 group-hover:scale-110 transition-all duration-300"
-                onError={(e) => {
-                  const img = e.currentTarget as HTMLImageElement;
-                  const currentSrc = img.src;
-                  
-                  if (currentSrc.includes('miyzapis_logo.png')) {
-                    console.log('🖼️ Primary logo failed, trying SVG fallback');
-                    img.src = '/logo.svg';
-                  } else if (currentSrc.includes('logo.svg')) {
-                    console.log('🖼️ SVG logo failed, trying favicon fallback');
-                    img.src = '/favicon.svg';
-                  } else {
-                    console.log('🖼️ All logos failed, replacing with app name');
-                    img.style.display = 'none';
-                    // Add app name as fallback
-                    const parent = img.parentElement;
-                    if (parent && !parent.querySelector('.logo-fallback')) {
-                      const fallback = document.createElement('div');
-                      fallback.className = 'logo-fallback w-8 h-8 xs:w-10 xs:h-10 bg-blue-600 text-white rounded flex items-center justify-center text-xs font-bold';
-                      fallback.textContent = 'МЗ';
-                      parent.insertBefore(fallback, img);
-                    }
-                  }
-                }}
-                onLoad={() => console.log('✅ Logo loaded successfully')}
-              />
-              <div className="flex items-center space-x-2">
-                <span className="text-lg xs:text-xl font-bold ukraine-text-gradient hidden xs:block group-hover:text-primary-500 transition-colors duration-300">
-                  {environment.APP_NAME}
+              <div className="w-10 h-10 xs:w-12 xs:h-12 rounded-2xl flex items-center justify-center text-white font-bold text-xl xs:text-2xl bg-huddle-gradient shadow-lg shadow-primary-500/25 group-hover:shadow-xl group-hover:shadow-primary-500/40 group-hover:-translate-y-1 group-hover:rotate-3 transition-all duration-300">
+                <span className="font-display">H</span>
+              </div>
+              <div className="flex flex-col leading-tight">
+                <span className="text-lg xs:text-xl font-display font-bold bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent hidden xs:block group-hover:scale-[1.02] transition-transform duration-300">
+                  Huddle
                 </span>
-                {/* <UkrainianFlag className="hidden sm:block" animated /> */}
+                <span className="text-[10px] xs:text-xs font-medium text-secondary-500 dark:text-secondary-400 tracking-wide hidden sm:block">
+                  Connect & Book
+                </span>
               </div>
             </Link>
           </div>
@@ -150,25 +132,21 @@ export const Header: React.FC = () => {
                     href={item.href}
                     onClick={(e) => {
                       e.preventDefault();
-                      // Navigate to home page first if not already there
                       if (location.pathname !== '/') {
                         navigate('/');
-                        // Wait a bit for navigation, then scroll
                         setTimeout(() => {
                           const element = document.querySelector(item.href);
                           element?.scrollIntoView({ behavior: 'smooth' });
-                        }, 100);
+                        }, 150);
                       } else {
-                        // Already on home page, just scroll
                         const element = document.querySelector(item.href);
                         element?.scrollIntoView({ behavior: 'smooth' });
                       }
                     }}
-                    className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 hover:scale-105 ${
-                      item.current
-                        ? 'text-primary-600 glass-card shadow-lg'
-                        : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 hover:glass-effect'
-                    } cursor-pointer`}
+                    className={clsx(
+                      navItemBase,
+                      'cursor-pointer text-[rgb(92,83,77)] hover:text-[rgb(45,37,32)] hover:bg-white/60 dark:text-[rgb(206,199,216)] dark:hover:text-white dark:hover:bg-[rgba(147,197,253,0.12)]'
+                    )}
                   >
                     {item.icon && <item.icon className="w-4 h-4" />}
                     <span className={item.href === '/' ? 'hidden lg:inline' : ''}>{item.name}</span>
@@ -180,11 +158,12 @@ export const Header: React.FC = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 hover:scale-105 ${
+                  className={clsx(
+                    navItemBase,
                     item.current
-                      ? 'text-primary-600 glass-card shadow-lg'
-                      : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 hover:glass-effect'
-                  }`}
+                      ? 'text-white bg-primary-500 shadow-lg shadow-primary-500/30 hover:-translate-y-0.5'
+                      : 'text-secondary-600 hover:text-secondary-900 hover:bg-white/60 dark:text-secondary-300 dark:hover:text-white dark:hover:bg-white/10'
+                  )}
                 >
                   {item.icon && <item.icon className="w-4 h-4" />}
                   <span className={item.href === '/' ? 'hidden lg:inline' : ''}>{item.name}</span>
@@ -197,13 +176,14 @@ export const Header: React.FC = () => {
           {/* Right side actions */}
           <div className="flex items-center space-x-1 xs:space-x-2 sm:space-x-3">
             {/* Hide currency/language toggles on mobile and small tablets */}
-            <div className="hidden lg:flex items-center space-x-2">
+            <div className="hidden lg:flex items-center gap-3 bg-white/60 dark:bg-[rgba(28,23,41,0.75)] border border-[rgba(223,214,207,0.45)] dark:border-[rgba(90,70,110,0.55)] rounded-full px-3 py-1 shadow-sm">
               <CurrencyToggle />
+              <span className="h-4 w-px bg-[rgba(223,214,207,0.5)] dark:bg-[rgba(90,70,110,0.6)]" />
               <LanguageToggle />
             </div>
             
             {/* Theme toggle - larger on mobile for better touch targets */}
-            <ThemeToggle size="lg" className="sm:!h-10 sm:!w-10" />
+            <ThemeToggle size="lg" className="sm:!h-10 sm:!w-10 rounded-2xl shadow-md hover:-translate-y-0.5 transition-transform duration-300" />
 
             {isAuthenticated ? (
               <>
@@ -211,15 +191,15 @@ export const Header: React.FC = () => {
                 <div className="relative" ref={notificationRef}>
                   <button
                     onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                    className="p-2 sm:p-2 text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-gray-200 relative transition-all duration-300 mobile-touch-target"
+                    className="p-2.5 sm:p-2.5 rounded-2xl bg-white/60 dark:bg-[rgba(35,28,52,0.8)] border border-[rgba(223,214,207,0.45)] dark:border-[rgba(90,70,110,0.55)] text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)] hover:-translate-y-0.5 hover:shadow-primary transition-all duration-300 mobile-touch-target"
                   >
                     {unreadNotifications > 0 ? (
-                      <BellIconSolid className="w-7 h-7 sm:w-6 sm:h-6 text-primary-600" />
+                      <BellIconSolid className="w-7 h-7 sm:w-6 sm:h-6 text-primary-500" />
                     ) : (
                       <BellIcon className="w-7 h-7 sm:w-6 sm:h-6" />
                     )}
                     {unreadNotifications > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      <span className="absolute -top-1 -right-1 bg-primary-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shadow-primary">
                         {unreadNotifications > 9 ? '9+' : unreadNotifications}
                       </span>
                     )}
@@ -234,7 +214,7 @@ export const Header: React.FC = () => {
                 <div className="relative" ref={userMenuRef}>
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center space-x-2 p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 mobile-touch-target"
+                    className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-2xl bg-white/60 dark:bg-[rgba(35,28,52,0.85)] border border-[rgba(223,214,207,0.45)] dark:border-[rgba(90,70,110,0.55)] text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)] hover:-translate-y-0.5 hover:shadow-primary transition-all duration-300 mobile-touch-target"
                   >
                     {user?.avatar ? (
                       <img
@@ -245,7 +225,7 @@ export const Header: React.FC = () => {
                     ) : (
                       <UserCircleIcon className="w-9 h-9 sm:w-8 sm:h-8" />
                     )}
-                    <span className="hidden sm:block text-sm font-medium">
+                    <span className="hidden sm:block text-sm font-semibold">
                       {user?.firstName}
                     </span>
                     <ChevronDownIcon className="w-5 h-5 sm:w-4 sm:h-4" />
@@ -261,13 +241,13 @@ export const Header: React.FC = () => {
               <>
                 <Link
                   to="/auth/login"
-                  className="hidden sm:flex text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 px-3 py-2 rounded-lg transition-all duration-300 hover:glass-effect"
+                  className="hidden sm:flex text-sm font-semibold text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)] px-4 py-2 rounded-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/60 dark:hover:bg-[rgba(147,197,253,0.15)] hover:text-[rgb(45,37,32)] dark:hover:text-white"
                 >
                   {t('nav.signIn')}
                 </Link>
                 <Link
                   to="/auth/register"
-                  className="ukraine-gradient text-white px-3 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg shadow-primary whitespace-nowrap"
+                  className="bg-primary-gradient text-white px-3 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl shadow-lg shadow-primary-500/30 hover:shadow-primary-500/40 whitespace-nowrap"
                 >
                   {t('nav.getStarted')}
                 </Link>
@@ -277,7 +257,7 @@ export const Header: React.FC = () => {
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="sm:hidden mobile-touch-target p-2 text-gray-400 hover:text-primary-500 transition-all duration-300 rounded-lg hover:glass-effect mobile-touch"
+              className="sm:hidden mobile-touch-target p-2.5 rounded-2xl bg-white/60 dark:bg-[rgba(35,28,52,0.8)] border border-[rgba(223,214,207,0.45)] dark:border-[rgba(90,70,110,0.55)] text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-primary mobile-touch"
             >
               {isMobileMenuOpen ? (
                 <XMarkIcon className="w-7 h-7" />
@@ -292,10 +272,10 @@ export const Header: React.FC = () => {
 
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="sm:hidden glass-card border-t border-gray-200/20 dark:border-gray-700/20 w-full"
+        <div className="sm:hidden glass-card border-t border-[rgba(223,214,207,0.35)] dark:border-[rgba(90,70,110,0.55)] w-full"
           style={{
-            backgroundColor: 'rgb(var(--bg-primary) / 0.9)',
-            backdropFilter: 'blur(16px)',
+            background: 'rgba(var(--bg-primary), 0.85)',
+            backdropFilter: 'blur(18px)',
           }}
         >
           <div className="mobile-container py-4 space-y-3 mobile-scroll">

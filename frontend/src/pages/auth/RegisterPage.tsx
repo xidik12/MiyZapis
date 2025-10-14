@@ -146,7 +146,7 @@ const RegisterPage: React.FC = () => {
               <div className="w-full border-t border-gray-300 dark:border-gray-600" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400">Quick Registration</span>
+              <span className="px-2 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300">Quick Registration</span>
             </div>
           </div>
 
@@ -170,7 +170,7 @@ const RegisterPage: React.FC = () => {
               <div className="w-full border-t border-gray-300 dark:border-gray-600" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400">Or register with email</span>
+              <span className="px-2 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300">Or register with email</span>
             </div>
           </div>
         </div>
@@ -207,7 +207,7 @@ const RegisterPage: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             {t('auth.register.accountType')}
           </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <label className="relative">
               <input
                 {...register('userType', { required: t('auth.error.accountTypeRequired') })}
@@ -215,19 +215,25 @@ const RegisterPage: React.FC = () => {
                 value="customer"
                 className="sr-only"
               />
-              <div className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                watchUserType === 'customer' 
-                  ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20' 
-                  : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+              <div className={`p-5 border-2 rounded-xl cursor-pointer transition-all h-full ${
+                watchUserType === 'customer'
+                  ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20 shadow-md'
+                  : 'border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 hover:shadow-sm'
               }`}>
-                <div className="flex items-center">
-                  <div className={`w-4 h-4 rounded-full mr-3 ${
-                    watchUserType === 'customer' ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
-                  }`}></div>
-                  <div>
-                    <div className="font-medium text-gray-900 dark:text-gray-100">{t('auth.register.bookServices')}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">{t('auth.register.bookServicesDesc')}</div>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center ${
+                      watchUserType === 'customer' ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}>
+                      {watchUserType === 'customer' && (
+                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                    <div className="font-semibold text-gray-900 dark:text-gray-100">{t('auth.register.bookServices')}</div>
                   </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{t('auth.register.bookServicesDesc')}</div>
                 </div>
               </div>
             </label>
@@ -239,19 +245,55 @@ const RegisterPage: React.FC = () => {
                 value="specialist"
                 className="sr-only"
               />
-              <div className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                watchUserType === 'specialist' 
-                  ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20' 
-                  : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+              <div className={`p-5 border-2 rounded-xl cursor-pointer transition-all h-full ${
+                watchUserType === 'specialist'
+                  ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20 shadow-md'
+                  : 'border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 hover:shadow-sm'
               }`}>
-                <div className="flex items-center">
-                  <div className={`w-4 h-4 rounded-full mr-3 ${
-                    watchUserType === 'specialist' ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
-                  }`}></div>
-                  <div>
-                    <div className="font-medium text-gray-900 dark:text-gray-100">{t('auth.register.offerServices')}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">{t('auth.register.offerServicesDesc')}</div>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center ${
+                      watchUserType === 'specialist' ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}>
+                      {watchUserType === 'specialist' && (
+                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                    <div className="font-semibold text-gray-900 dark:text-gray-100">{t('auth.register.individualSpecialist')}</div>
                   </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{t('auth.register.individualSpecialistDesc')}</div>
+                </div>
+              </div>
+            </label>
+
+            <label className="relative">
+              <input
+                {...register('userType', { required: t('auth.error.accountTypeRequired') })}
+                type="radio"
+                value="business"
+                className="sr-only"
+              />
+              <div className={`p-5 border-2 rounded-xl cursor-pointer transition-all h-full ${
+                watchUserType === 'business'
+                  ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20 shadow-md'
+                  : 'border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 hover:shadow-sm'
+              }`}>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center ${
+                      watchUserType === 'business' ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}>
+                      {watchUserType === 'business' && (
+                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                    <div className="font-semibold text-gray-900 dark:text-gray-100">{t('auth.register.businessAccount')}</div>
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{t('auth.register.businessAccountDesc')}</div>
                 </div>
               </div>
             </label>
