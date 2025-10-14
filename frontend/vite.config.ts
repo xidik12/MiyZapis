@@ -64,7 +64,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: process.env.VITE_API_URL || 'https://miyzapis-backend-production.up.railway.app',
+        target: process.env.VITE_API_URL || 'https://huddle-backend-production.up.railway.app',
         changeOrigin: true,
         secure: true
       }
