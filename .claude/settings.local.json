@@ -212,7 +212,16 @@
       "Bash(PORT=3045 DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npm start)",
       "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot/test-webhook-reachability.sh)",
       "Read(//Users/salakhitdinovkhidayotullo/Downloads/**)",
-      "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot/test-paypal-webhook.sh)"
+      "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot/test-paypal-webhook.sh)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma migrate dev --name add-service-location-fields)",
+      "Bash(git reset:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" node test-service-location.js)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx tsx src/scripts/seed-subscription-plans.ts)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" PORT=3050 npm start)",
+      "Bash(VITE_API_URL=http://localhost:3050/api/v1 npm run dev)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

@@ -30,6 +30,8 @@ import diagnosticsRoutes from './diagnostics';
 import setupAdminRoutes from './setup-admin';
 import debugAdminRoutes from './debug-admin';
 import debugEmailRoutes from './debug-email';
+import advertisementRoutes from './advertisements';
+import premiumListingRoutes from './premium-listings';
 
 const router = Router();
 
@@ -65,6 +67,10 @@ router.use('/', availabilityRoutes);  // Mount availability routes at root to ma
 router.use('/analytics-enhanced', analyticsEnhancedRoutes);
 router.use('/telegram', telegramEnhancedRoutes);
 router.use('/diagnostics', diagnosticsRoutes);
+
+// Monetization routes
+router.use('/advertisements', advertisementRoutes);
+router.use('/premium-listings', premiumListingRoutes);
 
 // Admin setup routes (for initial setup only)
 router.use('/setup', setupAdminRoutes);

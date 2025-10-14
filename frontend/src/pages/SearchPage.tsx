@@ -17,6 +17,8 @@ import {
   Squares2X2Icon,
   FunnelIcon,
   HeartIcon,
+  BoltIcon,
+  PhoneIcon,
 } from '@heroicons/react/24/outline';
 import {
   StarIcon as StarIconSolid,
@@ -343,162 +345,255 @@ const SearchPage: React.FC = () => {
       service.specialist?.user?.id &&
       currentUser.id === service.specialist.user.id
     );
+
+    const completedJobs =
+      service.specialist.completedBookings ??
+      (service as any).specialist?.completedJobs ??
+      service._count?.bookings ??
+      0;
+
+    const responseMinutes = (() => {
+      const value = service.specialist.responseTime;
+      if (typeof value === 'number') return value;
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    })();
+
+    const locationLabel = language === 'kh' ? 'ទីតាំង' : t('search.location') || 'Location';
+    const durationLabel = language === 'kh' ? 'រយៈពេល' : 'Duration';
+    const experienceLabel = language === 'kh' ? 'បទពិសោធន៍' : 'Experience';
+    const responseLabel = language === 'kh' ? 'ពេលឆ្លើយតប' : 'Response time';
+    const distanceLabel = language === 'kh' ? t('search.distance') || 'Distance' : t('search.distance') || 'Distance';
+    const reviewsLabel = language === 'kh' ? 'មតិយោបល់' : 'Reviews';
+
+    const metricCardClass =
+      'flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/55 dark:bg-white/10 border border-white/30 dark:border-white/10 text-sm font-medium text-[rgba(31,33,36,0.85)] dark:text-white/80 backdrop-blur-lg shadow-[0_18px_40px_-28px_rgba(4,0,151,0.4)]';
+    const quickActionClass =
+      'flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white/45 dark:bg-white/10 border border-white/25 dark:border-white/10 text-sm font-semibold text-[rgba(31,33,36,0.85)] dark:text-white/80 transition-all duration-300 hover:bg-white/65 hover:-translate-y-0.5';
+    const baseActionButton =
+      'btn-sheen inline-flex items-center justify-center h-12 px-6 rounded-full font-semibold transition-all duration-300';
+
     return (
-    <div
-      key={service.id}
-      className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-6 border border-white/20 dark:border-gray-700/20"
-    >
-      <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
-        <div className="relative flex-shrink-0 self-center sm:self-start">
-          <Avatar
-            src={service.specialist.user.avatar}
-            alt={`${service.specialist.user.firstName} ${service.specialist.user.lastName}`}
-            size="lg"
-            fallbackIcon={false}
-            lazy={true}
-          />
-          {/* Debug search card avatar data */}
-          {console.log('🔍 SearchPage - Avatar debug for service:', service.id, {
-            specialistUserAvatar: service.specialist.user.avatar,
-            specialistUserKeys: service.specialist.user ? Object.keys(service.specialist.user) : 'No user',
-            specialistKeys: Object.keys(service.specialist),
-            serviceId: service.id,
-            specialistId: service.specialist.id
-          })}
-          {service.specialist.user.isVerified && (
-            <CheckBadgeIcon className="absolute -bottom-1 -right-1 w-6 h-6 text-primary-600 bg-white rounded-full" />
-          )}
-          {service.specialist.isOnline && (
-            <>
-              <span className="absolute -top-1 -right-1 inline-flex h-4 w-4">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-4 w-4 bg-green-500 border-2 border-white"></span>
-              </span>
-            </>
-          )}
-        </div>
-
-        <div className="flex-1 min-w-0 text-center sm:text-left">
-          <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2 sm:gap-0">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
-              {service.name}
-            </h3>
-            <div className="flex items-center space-x-1">
-              {renderStars(service.rating)}
-              <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">
-                {service.rating.toFixed(1)} ({service.reviewCount})
-              </span>
-            </div>
-          </div>
-
-          <p className="text-sm text-primary-600 dark:text-primary-400 font-medium">
-            {translateProfession(service.specialist.businessName, t)} • {service.specialist.user.firstName} {service.specialist.user.lastName}
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-4 mt-3 text-sm text-gray-500 dark:text-gray-400">
-            <div className="flex items-center">
-              <MapPinIcon className="w-4 h-4 mr-1" />
-              <span className="truncate">{service.location}</span>
-            </div>
-            <div className="flex items-center">
-              <ClockIcon className="w-4 h-4 mr-1" />
-              <span>{service.duration} {t('common.minutes')}</span>
-            </div>
-            {service.distance && (
-              <div className="flex items-center">
-                <span>{service.distance.toFixed(1)} km</span>
-              </div>
-            )}
-          </div>
-
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
-            {service.description}
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-3 sm:gap-0 mt-4">
-            <div className="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">
-              {(service.specialist.completedBookings ?? (service as any).specialist?.completedJobs ?? service._count?.bookings ?? 0)} {t('specialist.completedJobs')} • {service.specialist.experience}
-              {typeof service.specialist.responseTime === 'number' && (
-                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
-                  ~{service.specialist.responseTime} {t('common.minutes') || 'min'}
+      <div
+        key={service.id}
+        className="glass-panel group relative overflow-hidden transition-all duration-500 p-6 sm:p-8"
+      >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-32 right-0 h-40 w-40 rounded-full bg-[radial-gradient(circle_at_center,rgba(4,0,151,0.28),rgba(4,0,151,0))] blur-3xl opacity-0 group-hover:opacity-60 transition-opacity duration-500"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-48 left-[-120px] h-48 w-48 rounded-full bg-[radial-gradient(circle_at_center,rgba(198,36,24,0.32),rgba(198,36,24,0))] blur-[120px] opacity-0 group-hover:opacity-60 transition-opacity duration-500"
+        />
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+          <div className="flex flex-col items-center lg:items-start gap-4">
+            <div className="relative">
+              <div className="absolute inset-[-32px] rounded-full bg-[radial-gradient(circle_at_center,rgba(198,36,24,0.32),rgba(4,0,151,0.28),rgba(198,36,24,0))] blur-[70px] opacity-0 group-hover:opacity-80 transition-opacity duration-500" />
+              <Avatar
+                src={service.specialist.user.avatar}
+                alt={`${service.specialist.user.firstName} ${service.specialist.user.lastName}`}
+                size="lg"
+                fallbackIcon={false}
+                lazy
+                className="ring-4 ring-white/80 dark:ring-white/10 shadow-[0_24px_48px_-28px_rgba(4,0,151,0.6)]"
+              />
+              {service.specialist.user.isVerified && (
+                <CheckBadgeIcon className="absolute -bottom-2 -right-2 w-7 h-7 text-white bg-gradient-to-r from-[#040097] to-[#c62418] rounded-full p-1 shadow-[0_12px_24px_-12px_rgba(4,0,151,0.4)]" />
+              )}
+              {service.specialist.isOnline && (
+                <span className="absolute -top-1.5 -right-1.5 inline-flex h-5 w-5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400/70" />
+                  <span className="relative inline-flex rounded-full h-5 w-5 bg-emerald-500 border-2 border-white/80 dark:border-white/20 shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
                 </span>
               )}
             </div>
-            <div className="text-center sm:text-right">
-              <div className={`text-xs px-2 py-1 rounded-full mb-1 ${service.isAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                {service.isAvailable ? t('service.available') : t('service.unavailable')}
-              </div>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatPrice(service.price, service.currency as 'USD' | 'EUR' | 'UAH' || 'UAH')}
-              </p>
+            <div className="flex flex-col items-center lg:items-start gap-2">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/60 dark:bg-white/10 border border-white/35 dark:border-white/15 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#040097] dark:text-[#9397ff]">
+                {translateProfession(service.specialist.businessName, t)}
+              </span>
+              <span className="text-sm text-[rgba(78,80,86,0.7)] dark:text-white/70">
+                {service.specialist.user.firstName} {service.specialist.user.lastName}
+              </span>
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <Link
-              to={`/specialist/${service.specialist.id}`}
-              className="bg-primary-50 hover:bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:hover:bg-primary-900/30 dark:text-primary-300 text-center h-10 inline-flex items-center justify-center px-4 rounded-lg font-medium transition-colors duration-200"
-            >
-              {t('actions.viewProfile')}
-            </Link>
-            {isOwnService ? (
-              <button
-                disabled
-                className="text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-lg font-medium bg-gray-400 cursor-not-allowed"
-                title={t('booking.cannotBookOwn') || "You can't book your own service"}
-              >
-                {t('actions.book')}
-              </button>
-            ) : (
-              <Link
-                to={`/booking/${service.id}`}
-                className={`text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-lg transition-colors font-medium ${
-                  service.isAvailable
-                    ? 'bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 shadow-lg hover:shadow-xl'
-                    : 'bg-gray-400 cursor-not-allowed'
-                }`}
-                onClick={(e) => !service.isAvailable && e.preventDefault()}
-              >
-                {t('actions.book')}
-              </Link>
-            )}
-            {/* Conditional Call/Directions CTAs when data exists */}
-            {(() => {
-              const phone = (service as any)?.specialist?.user?.phone || (service as any)?.specialist?.phone;
-              const locationStr = service.location;
-              return (
-                <div className="flex gap-2">
-                  {phone && (
-                    <a
-                      href={`tel:${phone}`}
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
-                      aria-label="Call"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                      </svg>
-                      {t('actions.call') || 'Call'}
-                    </a>
-                  )}
-                  {locationStr && (
-                    <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationStr)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
-                      aria-label="Directions"
-                    >
-                      <MapPinIcon className="w-4 h-4" />
-                      {t('actions.directions') || 'Directions'}
-                    </a>
-                  )}
+          <div className="flex-1 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div className="space-y-3">
+                <h3 className="text-xl sm:text-2xl font-semibold text-[rgb(31,33,36)] dark:text-white">
+                  {service.name}
+                </h3>
+                <div className="flex flex-wrap items-center gap-3 text-sm text-[rgba(78,80,86,0.75)] dark:text-white/70">
+                  <span className="flex items-center gap-1">
+                    {renderStars(service.rating)}
+                  </span>
+                  <span className="text-xs uppercase tracking-[0.22em] text-[rgba(78,80,86,0.6)] dark:text-white/50">
+                    {service.rating.toFixed(1)} • {service.reviewCount} {reviewsLabel}
+                  </span>
+                  <span className="hidden sm:inline h-1 w-1 rounded-full bg-white/30 dark:bg-white/20" />
+                  <span>
+                    {completedJobs} {t('specialist.completedJobs')}
+                  </span>
                 </div>
-              );
-            })()}
+              </div>
+              <div className="flex flex-col items-center sm:items-end gap-3">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/70 dark:bg-white/10 border border-white/30 dark:border-white/10 shadow-[0_22px_48px_-28px_rgba(4,0,151,0.45)]">
+                  <StarIconSolid className="w-5 h-5 text-yellow-400" />
+                  <span className="text-sm font-semibold text-[rgb(31,33,36)] dark:text-white">
+                    {service.rating.toFixed(1)}
+                  </span>
+                  <span className="text-xs text-[rgba(78,80,86,0.65)] dark:text-white/50">
+                    {service.reviewCount} {reviewsLabel}
+                  </span>
+                </div>
+                <div className="inline-flex items-center gap-2 px-5 py-2 rounded-2xl bg-white/75 dark:bg-white/10 border border-white/30 dark:border-white/10">
+                  <span className="text-2xl font-bold text-[rgb(31,33,36)] dark:text-white">
+                    {formatPrice(service.price, (service.currency as 'USD' | 'KHR' | 'UAH' | 'EUR') || 'USD')}
+                  </span>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      service.isAvailable
+                        ? 'bg-emerald-500/15 text-emerald-400'
+                        : 'bg-rose-500/15 text-rose-400'
+                    }`}
+                  >
+                    {service.isAvailable ? t('service.available') : t('service.unavailable')}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-sm leading-relaxed text-[rgba(45,37,32,0.7)] dark:text-white/70 line-clamp-3">
+              {service.description}
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className={metricCardClass}>
+                <MapPinIcon className="w-5 h-5 text-[#040097]" />
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-[rgba(78,80,86,0.6)] dark:text-white/50">
+                    {locationLabel}
+                  </p>
+                  <p className="text-sm font-semibold text-[rgb(31,33,36)] dark:text-white">
+                    {service.location}
+                  </p>
+                </div>
+              </div>
+              <div className={metricCardClass}>
+                <ClockIcon className="w-5 h-5 text-[#c62418]" />
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-[rgba(78,80,86,0.6)] dark:text-white/50">
+                    {durationLabel}
+                  </p>
+                  <p className="text-sm font-semibold text-[rgb(31,33,36)] dark:text-white">
+                    {service.duration} {t('common.minutes')}
+                  </p>
+                </div>
+              </div>
+              <div className={metricCardClass}>
+                <ListBulletIcon className="w-5 h-5 text-[#040097]" />
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-[rgba(78,80,86,0.6)] dark:text-white/50">
+                    {experienceLabel}
+                  </p>
+                  <p className="text-sm font-semibold text-[rgb(31,33,36)] dark:text-white">
+                    {service.specialist.experience}
+                  </p>
+                </div>
+              </div>
+              {typeof responseMinutes === 'number' && (
+                <div className={metricCardClass}>
+                  <BoltIcon className="w-5 h-5 text-[#c62418]" />
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-[rgba(78,80,86,0.6)] dark:text-white/50">
+                      {responseLabel}
+                    </p>
+                    <p className="text-sm font-semibold text-[rgb(31,33,36)] dark:text-white">
+                      ~{responseMinutes} {t('common.minutes') || 'min'}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {service.distance && (
+                <div className={metricCardClass}>
+                  <Squares2X2Icon className="w-5 h-5 text-[#040097]" />
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-[rgba(78,80,86,0.6)] dark:text-white/50">
+                      {distanceLabel}
+                    </p>
+                    <p className="text-sm font-semibold text-[rgb(31,33,36)] dark:text-white">
+                      {service.distance.toFixed(1)} km
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col xl:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 flex-1">
+                <Link
+                  to={`/specialist/${service.specialist.id}`}
+                  className={`${baseActionButton} text-white bg-gradient-to-r from-[#040097] via-[#3d3dff] to-[#c62418] shadow-[0_26px_60px_-28px_rgba(4,0,151,0.55)] hover:-translate-y-0.5`}
+                >
+                  {t('actions.viewProfile')}
+                </Link>
+                {isOwnService ? (
+                  <button
+                    disabled
+                    className={`${baseActionButton} cursor-not-allowed bg-white/25 dark:bg-white/5 border border-white/20 text-white/60`}
+                    title={t('booking.cannotBookOwn') || 'You can\'t book your own service'}
+                  >
+                    {t('actions.book')}
+                  </button>
+                ) : (
+                  <Link
+                    to={`/booking/${service.id}`}
+                    className={
+                      service.isAvailable
+                        ? `${baseActionButton} text-white bg-gradient-to-r from-[#c62418] via-[#f25545] to-[#040097] shadow-[0_32px_70px_-32px_rgba(198,36,24,0.6)] hover:-translate-y-0.5`
+                        : `${baseActionButton} cursor-not-allowed bg-white/25 dark:bg-white/5 border border-white/20 text-white/60`
+                    }
+                    onClick={(e) => !service.isAvailable && e.preventDefault()}
+                  >
+                    {service.isAvailable ? t('actions.bookNow') : t('booking.unavailable')}
+                  </Link>
+                )}
+              </div>
+              {(() => {
+                const phone = (service as any)?.specialist?.user?.phone || (service as any)?.specialist?.phone;
+                const locationStr = service.location;
+                return (
+                  <div className="flex gap-2 sm:gap-3">
+                    {phone && (
+                      <a
+                        href={`tel:${phone}`}
+                        className={quickActionClass}
+                        aria-label="Call"
+                      >
+                        <PhoneIcon className="w-5 h-5" />
+                        {t('actions.call') || 'Call'}
+                      </a>
+                    )}
+                    {locationStr && (
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationStr)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={quickActionClass}
+                        aria-label="Directions"
+                      >
+                        <MapPinIcon className="w-5 h-5" />
+                        {t('actions.directions') || 'Directions'}
+                      </a>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
           </div>
         </div>
       </div>
-    </div>
     );
   };
 

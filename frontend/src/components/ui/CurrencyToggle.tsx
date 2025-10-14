@@ -21,24 +21,14 @@ export const CurrencyToggle: React.FC<CurrencyToggleProps> = ({ className = '' }
         $
       </button>
       <button
-        onClick={() => setCurrency('EUR')}
+        onClick={() => setCurrency('KHR')}
         className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 mobile-touch-target ${
-          currency === 'EUR'
-            ? 'bg-primary-500 text-white shadow-md'
-            : 'text-gray-700 dark:text-gray-300 hover:bg-white/20'
-        }`}
-      >
-        €
-      </button>
-      <button
-        onClick={() => setCurrency('UAH')}
-        className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 mobile-touch-target ${
-          currency === 'UAH'
+          currency === 'KHR'
             ? 'bg-secondary-500 text-white shadow-md'
             : 'text-gray-700 dark:text-gray-300 hover:bg-white/20'
         }`}
       >
-        ₴
+        ៛
       </button>
     </div>
   );

@@ -525,9 +525,8 @@ const CustomerSettings: React.FC = () => {
                           onChange={(e) => setCurrency(e.target.value as any)}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         >
-                          <option value="UAH">₴ {t('currency.uah')}</option>
                           <option value="USD">$ {t('currency.usd')}</option>
-                          <option value="EUR">€ {t('currency.eur')}</option>
+                          <option value="KHR">៛ {t('currency.khr')}</option>
                         </select>
                       </div>
                     </div>
@@ -798,9 +797,8 @@ const CustomerSettings: React.FC = () => {
                         onChange={(e) => setCurrency(e.target.value as any)}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       >
-                        <option value="UAH">₴ {t('currency.uah')}</option>
                         <option value="USD">$ {t('currency.usd')}</option>
-                        <option value="EUR">€ {t('currency.eur')}</option>
+                        <option value="KHR">៛ {t('currency.khr')}</option>
                       </select>
                     </div>
 

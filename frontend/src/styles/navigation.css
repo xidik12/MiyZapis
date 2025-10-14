@@ -1,33 +1,36 @@
-/* Ukrainian-themed Side Navigation Styles */
+/* Huddle Navigation Styles */
 
 /* Glass morphism effects for navigation */
 .navigation-glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  border: 1px solid rgba(223, 214, 207, 0.45);
+  box-shadow: 0 25px 60px -30px rgba(200, 16, 46, 0.25);
 }
 
 .navigation-glass-dark {
-  background: rgba(17, 25, 40, 0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  background: rgba(28, 23, 41, 0.82);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid rgba(90, 70, 110, 0.55);
+  box-shadow: 0 25px 60px -32px rgba(147, 197, 253, 0.35);
 }
 
-/* Ukrainian gradient backgrounds */
+/* Vichea gradients */
+.vichea-gradient,
 .ukraine-gradient {
-  background: linear-gradient(135deg, #0057b7 0%, #ffd700 100%);
+  background: linear-gradient(135deg, #C8102E 0%, #FFD700 52%, #003893 100%);
 }
 
+.vichea-gradient-soft,
 .ukraine-gradient-soft {
-  background: linear-gradient(135deg, rgba(0, 87, 183, 0.1) 0%, rgba(255, 215, 0, 0.1) 100%);
+  background: linear-gradient(135deg, rgba(200, 16, 46, 0.12) 0%, rgba(255, 215, 0, 0.15) 45%, rgba(0, 56, 147, 0.18) 100%);
 }
 
+.vichea-text-gradient,
 .ukraine-text-gradient {
-  background: linear-gradient(135deg, #0057b7 0%, #ffd700 100%);
+  background: linear-gradient(135deg, rgba(200, 16, 46, 0.95) 0%, rgba(255, 215, 0, 0.95) 52%, rgba(0, 56, 147, 0.9) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -47,7 +50,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.25), transparent);
   transition: left 0.5s;
 }
 
@@ -97,8 +100,8 @@
 .nav-item-active {
   position: relative;
   box-shadow: 
-    0 0 20px rgba(0, 87, 183, 0.3),
-    0 0 40px rgba(0, 87, 183, 0.1),
+    0 0 25px rgba(200, 16, 46, 0.28),
+    0 0 40px rgba(255, 215, 0, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
@@ -110,7 +113,7 @@
   right: 0;
   bottom: 0;
   border-radius: inherit;
-  background: linear-gradient(135deg, rgba(0, 87, 183, 0.1) 0%, rgba(255, 215, 0, 0.1) 100%);
+  background: linear-gradient(135deg, rgba(200, 16, 46, 0.16) 0%, rgba(255, 215, 0, 0.18) 60%, rgba(0, 56, 147, 0.15) 100%);
   z-index: -1;
 }
 
@@ -255,8 +258,8 @@
 }
 
 .dark .user-avatar {
-  background: linear-gradient(rgb(17, 24, 39), rgb(17, 24, 39)) padding-box,
-              linear-gradient(135deg, #0057b7, #ffd700) border-box;
+  background: linear-gradient(rgb(28, 23, 41), rgb(28, 23, 41)) padding-box,
+              linear-gradient(135deg, #C8102E, #FFD700) border-box;
 }
 
 /* Responsive adjustments */
@@ -269,7 +272,7 @@
 
 /* Focus states for accessibility */
 .nav-item:focus {
-  outline: 2px solid #0057b7;
+  outline: 2px solid rgb(var(--color-accent));
   outline-offset: 2px;
 }
 
@@ -282,12 +285,13 @@
   .navigation-glass,
   .navigation-glass-dark {
     backdrop-filter: none;
-    background: var(--bg-primary);
-    border: 2px solid var(--border-primary);
+    background: rgb(var(--bg-primary));
+    border: 2px solid rgb(var(--role-border));
   }
   
+  .vichea-gradient,
   .ukraine-gradient {
-    background: #0057b7;
+    background: linear-gradient(135deg, rgb(var(--color-primary)) 0%, rgb(var(--color-secondary)) 50%, rgb(var(--color-accent)) 100%);
   }
 }
 

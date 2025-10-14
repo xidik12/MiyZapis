@@ -1,11 +1,26 @@
 import { Environment } from '../types';
 
+const sanitizeBrandName = (value?: string | null) => {
+  const fallback = 'Huddle';
+  if (!value) {
+    return fallback;
+  }
+
+  const normalized = value
+    .trim()
+    .replace(/MiyZap[iy]s/gi, 'Huddle')
+    .replace(/Miyzapis/gi, 'Huddle')
+    .replace(/VicheaPro/gi, 'Huddle');
+
+  return normalized.length > 0 ? normalized : fallback;
+};
+
 export const environment: Environment = {
   API_URL: import.meta.env.VITE_API_URL || 'https://miyzapis-backend-production.up.railway.app/api/v1',
   WS_URL: import.meta.env.VITE_WS_URL || 'wss://miyzapis-backend-production.up.railway.app',
   STRIPE_PUBLISHABLE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || null,
   GOOGLE_MAPS_API_KEY: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-  APP_NAME: import.meta.env.VITE_APP_NAME || 'МійЗапис',
+  APP_NAME: sanitizeBrandName(import.meta.env.VITE_APP_NAME),
   APP_VERSION: import.meta.env.VITE_APP_VERSION || '1.0.0',
   APP_URL: import.meta.env.VITE_APP_URL || 'http://localhost:3000',
   TELEGRAM_BOT_USERNAME: import.meta.env.VITE_TELEGRAM_BOT_USERNAME,

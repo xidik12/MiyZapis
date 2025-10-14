@@ -18,7 +18,7 @@ export interface UpdateProfileRequest {
 
 export interface UserPreferences {
   language: 'uk' | 'en' | 'ru';
-  currency: 'UAH' | 'USD' | 'EUR';
+  currency: 'USD' | 'KHR' | 'UAH' | 'EUR';
   timezone: string;
   notifications: {
     email: boolean;

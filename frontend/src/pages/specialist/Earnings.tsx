@@ -60,9 +60,12 @@ interface ErrorState {
 }
 
 // Helper function to get the booking currency
-const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
-  // Use the service's stored currency, defaulting to UAH if not specified
-  return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+const getBookingCurrency = (booking: any): 'USD' | 'KHR' | 'UAH' | 'EUR' => {
+  const detected = (booking.service?.currency || booking.currency || '').toUpperCase();
+  if (detected === 'KHR') return 'KHR';
+  if (detected === 'EUR') return 'EUR';
+  if (detected === 'UAH') return 'UAH';
+  return 'USD';
 };
 
 const SpecialistEarnings: React.FC = () => {

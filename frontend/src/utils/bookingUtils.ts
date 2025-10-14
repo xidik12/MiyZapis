@@ -50,8 +50,12 @@ export const getSpecialistRating = (booking: Booking): number => {
   return booking.specialist?.rating || 5;
 };
 
-export const getBookingCurrency = (booking: Booking): 'USD' | 'EUR' | 'UAH' => {
-  return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+export const getBookingCurrency = (booking: Booking): 'USD' | 'KHR' | 'UAH' | 'EUR' => {
+  const detected = (booking.service?.currency || (booking as any)?.currency || '').toUpperCase();
+  if (detected === 'KHR') return 'KHR';
+  if (detected === 'EUR') return 'EUR';
+  if (detected === 'UAH') return 'UAH';
+  return 'USD';
 };
 
 export const canCancelBooking = (booking: Booking): boolean => {

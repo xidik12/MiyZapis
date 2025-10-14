@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { clsx } from 'clsx';
 import { toast } from 'react-toastify';
 import ConfirmModal from '../../components/ui/ConfirmModal';
 import { useDispatch, useSelector } from 'react-redux';
@@ -675,9 +676,12 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
 };
 
 // Helper function to get the booking currency
-const getBookingCurrency = (booking: Booking): 'USD' | 'EUR' | 'UAH' => {
-  // Use the service's stored currency, defaulting to UAH if not specified
-  return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+const getBookingCurrency = (booking: Booking): 'USD' | 'KHR' | 'UAH' | 'EUR' => {
+  const detected = (booking.service?.currency || (booking as any)?.currency || '').toUpperCase();
+  if (detected === 'KHR') return 'KHR';
+  if (detected === 'EUR') return 'EUR';
+  if (detected === 'UAH') return 'UAH';
+  return 'USD';
 };
 
 const SpecialistBookings: React.FC = () => {
@@ -1014,7 +1018,7 @@ const SpecialistBookings: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-4 sm:py-8">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,215,0,0.25),transparent_55%),radial-gradient(circle_at_bottom_right,rgba(200,16,46,0.18),transparent_60%),#faf8f5] dark:bg-[radial-gradient(circle_at_top_left,rgba(241,149,162,0.35),transparent_60%),radial-gradient(circle_at_bottom_right,rgba(147,197,253,0.3),transparent_65%),#141022] py-6 sm:py-10 text-[rgb(45,37,32)] dark:text-[rgb(242,241,244)]">
       <ConfirmModal
         open={!!cancelTarget}
         title={t('bookings.cancelBooking')}
@@ -1028,10 +1032,10 @@ const SpecialistBookings: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="font-display text-3xl sm:text-4xl font-semibold vichea-text-gradient mb-2">
               {t('dashboard.nav.bookings')}
             </h1>
-            <p className="text-gray-600 dark:text-gray-300">
+            <p className="text-[rgba(45,37,32,0.75)] dark:text-[rgba(242,241,244,0.7)]">
               {t('bookings.subtitle')}
             </p>
           </div>
@@ -1039,24 +1043,26 @@ const SpecialistBookings: React.FC = () => {
 
         {/* Tab Navigation */}
         <div className="mb-6">
-          <nav className="flex space-x-8" aria-label="Tabs">
+          <nav className="inline-flex items-center glass-effect rounded-full p-1 shadow-[0_18px_32px_-20px_rgba(4,0,151,0.25)]" aria-label="Tabs">
             <button
               onClick={() => setActiveTab('provider')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={clsx(
+                'px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300',
                 activeTab === 'provider'
-                  ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
+                  ? 'vichea-gradient text-white shadow-primary'
+                  : 'text-[rgba(45,37,32,0.65)] dark:text-[rgba(242,241,244,0.65)] hover:text-[rgb(45,37,32)] dark:hover:text-white'
+              )}
             >
               {t('bookings.myServices')}
             </button>
             <button
               onClick={() => setActiveTab('customer')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={clsx(
+                'px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300',
                 activeTab === 'customer'
-                  ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
+                  ? 'vichea-gradient text-white shadow-primary'
+                  : 'text-[rgba(45,37,32,0.65)] dark:text-[rgba(242,241,244,0.65)] hover:text-[rgb(45,37,32)] dark:hover:text-white'
+              )}
             >
               {t('bookings.myBookings')}
             </button>
@@ -1066,25 +1072,25 @@ const SpecialistBookings: React.FC = () => {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           {/* Quick Stats */}
           <div className="mt-4 lg:mt-0 grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border dark:border-gray-700">
-              <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.total')}</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">{filteredAndSortedBookings.length}</p>
+            <div className="glass-panel p-4">
+              <p className="text-sm text-[rgba(78,80,86,0.85)] dark:text-[rgba(196,198,210,0.82)]">{t('bookings.total')}</p>
+              <p className="text-xl font-bold text-[rgb(31,33,36)] dark:text-[rgb(238,240,250)]">{filteredAndSortedBookings.length}</p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border dark:border-gray-700">
-              <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.confirmed')}</p>
-              <p className="text-xl font-bold text-green-600">
+            <div className="glass-panel p-4">
+              <p className="text-sm text-[rgba(78,80,86,0.85)] dark:text-[rgba(196,198,210,0.82)]">{t('bookings.confirmed')}</p>
+              <p className="text-xl font-bold text-[#22c55e]">
                 {filteredAndSortedBookings.filter(b => b.status === 'CONFIRMED' || b.status === 'confirmed').length}
               </p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border dark:border-gray-700">
-              <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.pending')}</p>
-              <p className="text-xl font-bold text-yellow-600">
+            <div className="glass-panel p-4">
+              <p className="text-sm text-[rgba(78,80,86,0.85)] dark:text-[rgba(196,198,210,0.82)]">{t('bookings.pending')}</p>
+              <p className="text-xl font-bold text-[#eab308]">
                 {filteredAndSortedBookings.filter(b => b.status === 'PENDING' || b.status === 'pending').length}
               </p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border dark:border-gray-700">
-              <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.completed')}</p>
-              <p className="text-xl font-bold text-blue-600">
+            <div className="glass-panel p-4">
+              <p className="text-sm text-[rgba(78,80,86,0.85)] dark:text-[rgba(196,198,210,0.82)]">{t('bookings.completed')}</p>
+              <p className="text-xl font-bold text-[#3b82f6]">
                 {filteredAndSortedBookings.filter(b => b.status === 'COMPLETED' || b.status === 'completed').length}
               </p>
             </div>
@@ -1092,11 +1098,11 @@ const SpecialistBookings: React.FC = () => {
         </div>
         
         {/* Filters and Search */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8">
+        <div className="glass-panel shadow-lg p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Search */}
             <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('bookings.search')}</label>
+              <label className="block text-sm font-semibold text-[rgba(45,37,32,0.75)] dark:text-[rgba(242,241,244,0.7)] mb-2">{t('bookings.search')}</label>
               <div className="relative">
                 <input
                   type="text"
@@ -1113,7 +1119,7 @@ const SpecialistBookings: React.FC = () => {
             
             {/* Status Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('bookings.status')}</label>
+              <label className="block text-sm font-semibold text-[rgba(45,37,32,0.75)] dark:text-[rgba(242,241,244,0.7)] mb-2">{t('bookings.status')}</label>
               <select
                 value={filters.status}
                 onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
@@ -1131,7 +1137,7 @@ const SpecialistBookings: React.FC = () => {
             
             {/* Date Range Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('bookings.dateRange')}</label>
+              <label className="block text-sm font-semibold text-[rgba(45,37,32,0.75)] dark:text-[rgba(242,241,244,0.7)] mb-2">{t('bookings.dateRange')}</label>
               <select
                 value={filters.dateRange}
                 onChange={(e) => setFilters(prev => ({ ...prev, dateRange: e.target.value }))}
@@ -1146,7 +1152,7 @@ const SpecialistBookings: React.FC = () => {
             
             {/* Sort */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('bookings.sortBy')}</label>
+              <label className="block text-sm font-semibold text-[rgba(45,37,32,0.75)] dark:text-[rgba(242,241,244,0.7)] mb-2">{t('bookings.sortBy')}</label>
               <div className="flex space-x-1">
                 <select
                   value={sortBy}

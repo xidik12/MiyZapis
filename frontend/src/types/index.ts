@@ -6,7 +6,7 @@ export interface BaseEntity {
 }
 
 // User Types
-export type UserType = 'customer' | 'specialist' | 'admin';
+export type UserType = 'customer' | 'specialist' | 'business' | 'admin';
 
 export interface User extends BaseEntity {
   email: string;

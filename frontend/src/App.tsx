@@ -81,7 +81,7 @@ const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 
 // Loading component for Suspense
 const SuspenseLoader = () => (
-  <FullScreenHandshakeLoader title="Loading..." subtitle="Preparing your workspace" />
+  <FullScreenHandshakeLoader title="Hang tight..." subtitle="Huddle is curating your experience" />
 );
 
 // Component to redirect from /book/:serviceId to /booking/:serviceId
@@ -96,39 +96,42 @@ const usePageTitle = () => {
 
   useEffect(() => {
     const titles: Record<string, string> = {
-      '/': 'МійЗапис - Professional Service Booking Platform',
-      '/search': 'Search Services - МійЗапис',
-      '/login': 'Sign In - МійЗапис',
-      '/register': 'Sign Up - МійЗапис',
-      '/dashboard': 'Dashboard - МійЗапис',
-      '/bookings': 'My Bookings - МійЗапис',
-      '/profile': 'My Profile - МійЗапис',
-      '/specialist/dashboard': 'Specialist Dashboard - МійЗапис',
-      '/specialist/bookings': 'Manage Bookings - МійЗапис',
-      '/specialist/services': 'Manage Services - МійЗапис',
-      '/specialist/analytics': 'Analytics - МійЗапис',
-      '/specialist/schedule': 'Schedule - МійЗапис',
-      '/specialist/earnings': 'Earnings - МійЗапис',
-      '/specialist/reviews': 'Reviews - МійЗапис',
-      '/specialist/loyalty': 'Loyalty Program - МійЗапис',
-      '/specialist/messages': 'Messages - МійЗапис',
-      '/specialist/settings': 'Settings - МійЗапис',
-      '/specialist/notifications': 'Notifications - МійЗапис',
-      '/admin/dashboard': 'Admin Dashboard - МійЗапис',
+      '/': 'Huddle – Cambodian Service Booking Platform',
+      '/search': 'Search Services – Huddle',
+      '/login': 'Sign In – Huddle',
+      '/register': 'Sign Up – Huddle',
+      '/dashboard': 'Dashboard – Huddle',
+      '/bookings': 'My Bookings – Huddle',
+      '/profile': 'My Profile – Huddle',
+      '/specialist/dashboard': 'Specialist Dashboard – Huddle',
+      '/specialist/bookings': 'Manage Bookings – Huddle',
+      '/specialist/services': 'Manage Services – Huddle',
+      '/specialist/analytics': 'Analytics – Huddle',
+      '/specialist/schedule': 'Schedule – Huddle',
+      '/specialist/earnings': 'Earnings – Huddle',
+      '/specialist/reviews': 'Reviews – Huddle',
+      '/specialist/loyalty': 'Loyalty Program – Huddle',
+      '/specialist/messages': 'Messages – Huddle',
+      '/specialist/settings': 'Settings – Huddle',
+      '/specialist/notifications': 'Notifications – Huddle',
+      '/admin/dashboard': 'Admin Dashboard – Huddle',
     };
 
-    const title = titles[location.pathname] || 'МійЗапис';
+    const title = titles[location.pathname] || 'Huddle';
     document.title = title;
 
     // Update meta description based on page
     const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
+      if (metaDescription) {
       const descriptions: Record<string, string> = {
-        '/': 'Book professional services easily with МійЗапис. Find trusted specialists, schedule appointments, and manage your bookings all in one place.',
-        '/search': 'Search and discover professional services near you. Compare specialists, read reviews, and book appointments instantly.',
-        '/specialist/dashboard': 'Manage your specialist business with МійЗапис. Track bookings, analyze performance, and grow your client base.',
+        '/': 'Book Cambodian specialists with confidence on Huddle. Explore trusted experts, fair pricing, and instant scheduling in one modern platform.',
+        '/search': 'Discover spa, wellness, beauty, and professional services around Cambodia. Filter, compare, and secure appointments instantly with Huddle.',
+        '/specialist/dashboard': 'Grow your specialist brand on Huddle. Track bookings, earnings, and client happiness with intuitive analytics and tools.',
       };
-      metaDescription.setAttribute('content', descriptions[location.pathname] || 'МійЗапис - Professional Service Booking Platform');
+      metaDescription.setAttribute(
+        'content',
+        descriptions[location.pathname] || 'Huddle – Cambodian Professional Service Booking Platform'
+      );
     }
   }, [location.pathname]);
 };

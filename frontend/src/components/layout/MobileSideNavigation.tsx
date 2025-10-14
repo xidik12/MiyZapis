@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { clsx } from 'clsx';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, selectIsAuthenticated, logout } from '@/store/slices/authSlice';
 import { selectNotifications } from '@/store/slices/notificationSlice';
@@ -165,6 +166,13 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
     },
   ];
 
+  const navButtonBase =
+    'flex items-center gap-3 px-3 py-3 rounded-2xl mobile-touch-target transition-all duration-300 group border border-transparent transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-secondary-400 hover:-translate-y-0.5';
+  const navButtonActive =
+    'bg-white/70 dark:bg-[rgba(35,28,52,0.85)] border-[rgba(223,214,207,0.45)] dark:border-[rgba(90,70,110,0.55)] text-[rgb(45,37,32)] dark:text-white shadow-primary';
+  const navButtonIdle =
+    'text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)] hover:text-[rgb(45,37,32)] dark:hover:text-white hover:bg-white/60 dark:hover:bg-[rgba(147,197,253,0.12)]';
+
   const userNavigationItems = isAuthenticated ? [
     { name: t('nav.profile'), href: '/profile', icon: UserCircleIcon },
     { name: t('nav.bookings'), href: '/bookings', icon: CalendarDaysIcon },
@@ -230,45 +238,20 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
               onClose();
             }}
           >
-            <img 
-              src="/miyzapis_logo.png" 
-              alt="МійЗапис Logo" 
-              className="w-10 h-10 group-hover:scale-110 transition-all duration-300"
-              onError={(e) => {
-                const img = e.currentTarget as HTMLImageElement;
-                const currentSrc = img.src;
-                
-                if (currentSrc.includes('miyzapis_logo.png')) {
-                  console.log('🖼️ MobileSideNav logo failed, trying SVG fallback');
-                  img.src = '/logo.svg';
-                } else if (currentSrc.includes('logo.svg')) {
-                  console.log('🖼️ MobileSideNav SVG logo failed, trying favicon fallback');
-                  img.src = '/favicon.svg';
-                } else {
-                  console.log('🖼️ MobileSideNav all logos failed, replacing with text fallback');
-                  img.style.display = 'none';
-                  const parent = img.parentElement;
-                  if (parent && !parent.querySelector('.logo-fallback')) {
-                    const fallback = document.createElement('div');
-                    fallback.className = 'logo-fallback w-10 h-10 bg-blue-600 text-white rounded flex items-center justify-center text-sm font-bold';
-                    fallback.textContent = 'МЗ';
-                    parent.insertBefore(fallback, img);
-                  }
-                }
-              }}
-              onLoad={() => console.log('✅ MobileSideNav logo loaded successfully')}
-            />
-            <span className="text-xl font-bold ukraine-text-gradient group-hover:text-primary-500 transition-colors duration-300">
+            <div className="w-10 h-10 vichea-gradient text-white rounded-xl flex items-center justify-center text-base font-bold shadow-primary group-hover:scale-110 transition-all duration-300">
+              H
+            </div>
+            <span className="text-xl font-bold vichea-text-gradient group-hover:scale-[1.02] transition-transform duration-300">
               {environment.APP_NAME}
             </span>
           </Link>
           
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 mobile-touch-target"
+            className="p-2.5 rounded-2xl bg-white/60 dark:bg-[rgba(35,28,52,0.85)] border border-[rgba(223,214,207,0.45)] dark:border-[rgba(90,70,110,0.55)] text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)] hover:-translate-y-0.5 hover:shadow-primary transition-all duration-300 mobile-touch-target"
             aria-label="Close menu"
           >
-            <XMarkIcon className="w-6 h-6 text-gray-500" />
+            <XMarkIcon className="w-6 h-6" />
           </button>
         </div>
 
@@ -278,7 +261,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
             {/* Main Navigation */}
             {navigationSections.map((section) => (
               <div key={section.id} className="space-y-3">
-                <h3 className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <h3 className="px-3 text-xs font-semibold uppercase tracking-[0.28em] text-[rgba(92,83,77,0.75)] dark:text-[rgba(206,199,216,0.7)]">
                   {section.title}
                 </h3>
                 <div className="space-y-1">
@@ -290,14 +273,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
                         <button
                           key={item.name}
                           onClick={() => handleHashNavigation(item.href)}
-                          className={`
-                            w-full flex items-center gap-3 px-3 py-3 rounded-xl
-                            mobile-touch-target transition-all duration-300 group
-                            ${isActive
-                              ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400'
-                              : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                            }
-                          `}
+                          className={clsx('w-full', navButtonBase, isActive ? navButtonActive : navButtonIdle)}
                         >
                           <item.icon className="w-5 h-5 flex-shrink-0" />
                           <span className="font-medium text-base">{item.name}</span>
@@ -309,14 +285,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
                       <Link
                         key={item.name}
                         to={item.href}
-                        className={`
-                          flex items-center gap-3 px-3 py-3 rounded-xl
-                          mobile-touch-target transition-all duration-300 group
-                          ${isActive
-                            ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400'
-                            : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                          }
-                        `}
+                        className={clsx(navButtonBase, isActive ? navButtonActive : navButtonIdle)}
                       >
                         <item.icon className="w-5 h-5 flex-shrink-0" />
                         <span className="font-medium text-base">{item.name}</span>
@@ -464,7 +433,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
               
               <Link
                 to="/auth/register"
-                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl ukraine-gradient text-white mobile-touch-target transition-all duration-300 hover:scale-105 hover:shadow-lg shadow-primary"
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl vichea-gradient temple-shine text-white mobile-touch-target transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg shadow-primary"
               >
                 <UserPlusIcon className="w-5 h-5 flex-shrink-0" />
                 <span className="font-medium text-base">{t('nav.getStarted')}</span>

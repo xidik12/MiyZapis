@@ -27,7 +27,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const density = useAppSelector(selectDensity);
 
   return (
-    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 flex w-full overflow-x-hidden prevent-overflow ${density === 'compact' ? 'density-compact' : 'density-comfortable'}`}>
+    <div className={`relative min-h-screen flex w-full overflow-x-hidden prevent-overflow text-[rgb(45,37,32)] dark:text-[rgb(242,241,244)] ${density === 'compact' ? 'density-compact' : 'density-comfortable'}`}>
       <a href="#main-content" className="skip-link">Skip to content</a>
       {/* Desktop/Tablet Side Navigation */}
       {(isDesktop || isTablet) && (
@@ -63,7 +63,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         )}
 
         {/* Main Content */}
-        <main id="main-content" className="flex-1 w-full overflow-x-hidden prevent-overflow mobile-safe-area">
+        <main
+          id="main-content"
+          className="flex-1 w-full overflow-x-hidden prevent-overflow mobile-safe-area bg-white/70 dark:bg-white/10 border border-white/30 dark:border-white/10 backdrop-blur-2xl shadow-[0_35px_80px_-45px_rgba(4,0,151,0.4)] transition-all duration-300 rounded-tl-3xl rounded-tr-3xl"
+        >
           <div className="w-full prevent-overflow">
             {children}
           </div>

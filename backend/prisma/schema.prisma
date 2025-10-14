@@ -20,7 +20,7 @@ model User {
   firstName String
   lastName  String
   avatar    String?
-  userType  String   @default("CUSTOMER") // "CUSTOMER", "SPECIALIST", "ADMIN"
+  userType  String   @default("CUSTOMER") // "CUSTOMER", "SPECIALIST", "BUSINESS", "ADMIN"
 
   // Contact information
   phoneNumber String?
@@ -60,6 +60,7 @@ model User {
 
   // Relations
   specialist           Specialist?
+  business             Business?
   customerBookings     Booking[]               @relation("CustomerBookings")
   specialistBookings   Booking[]               @relation("SpecialistBookings")
   reviews              Review[]
@@ -97,6 +98,13 @@ model User {
   cryptoPayments       CryptoPayment[]
   subscriptions        SpecialistSubscription[]
   onrampSessions       OnrampSession[]
+  userSubscriptions    UserSubscription[] @relation("UserSubscriptions")
+  advertisements       Advertisement[] @relation("UserAdvertisements")
+  premiumListings      PremiumListing[] @relation("UserPremiumListings")
+  customerPlatformTransactions PlatformTransaction[] @relation("CustomerPlatformTransactions")
+  specialistPlatformTransactions PlatformTransaction[] @relation("SpecialistPlatformTransactions")
+  referrerRewards      ReferralReward[] @relation("ReferrerRewards")
+  referredRewards      ReferralReward[] @relation("ReferredRewards")
 
   // Indexes for performance
   @@index([email])
@@ -1514,4 +1522,529 @@ model OnrampSession {
   @@index([sessionToken])
   @@index([purpose, status])
   @@map("onramp_sessions")
+}
+
+// Business Model: Specialist Subscriptions
+model SubscriptionPlan {
+  id                String @id @default(cuid())
+  name              String @unique
+  nameKh            String // Khmer name
+  description       String
+  descriptionKh     String
+
+  // Plan type
+  type              String // INDIVIDUAL_BASIC, INDIVIDUAL_PREMIUM, BUSINESS_BASIC, BUSINESS_PREMIUM
+  userType          String // INDIVIDUAL, BUSINESS
+
+  // Pricing options
+  monthlyPrice      Float? // $10/month for basic, $30/month for premium individuals
+  yearlyPrice       Float? // $100/year for basic, $300/year for premium individuals
+  commissionRate    Float? // 5% commission option for both
+
+  // Features
+  isPremiumListing  Boolean @default(false) // Premium listing in search results
+  maxServices       Int? // null = unlimited
+  maxEmployees      Int? // null = unlimited (only for business plans)
+  analyticsAccess   Boolean @default(true)
+  prioritySupport   Boolean @default(false)
+  customBranding    Boolean @default(false) // For business premium
+
+  // Status
+  isActive          Boolean @default(true)
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  subscriptions     UserSubscription[]
+
+  @@map("subscription_plans")
+}
+
+model UserSubscription {
+  id                String @id @default(cuid())
+  userId            String
+  planId            String
+
+  // Subscription details
+  status            String @default("ACTIVE") // ACTIVE, CANCELLED, EXPIRED, PAUSED
+  billingType       String // MONTHLY, YEARLY, COMMISSION
+
+  // Billing dates
+  startDate         DateTime @default(now())
+  endDate           DateTime? // For monthly/yearly plans
+  nextBillingDate   DateTime?
+
+  // Payment tracking
+  lastPaymentDate   DateTime?
+  lastPaymentAmount Float?
+
+  // Premium listing status
+  premiumListingActive Boolean @default(false)
+  premiumListingExpiry DateTime?
+
+  // Automatic renewal
+  autoRenew         Boolean @default(true)
+
+  // Cancellation
+  cancelledAt       DateTime?
+  cancellationReason String?
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  user              User @relation("UserSubscriptions", fields: [userId], references: [id], onDelete: Cascade)
+  plan              SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  @@index([userId, status])
+  @@index([status, endDate])
+  @@index([nextBillingDate])
+  @@map("user_subscriptions")
+}
+
+// Advertisement System
+model Advertisement {
+  id                String @id @default(cuid())
+  advertiserId      String // Specialist or business owner
+
+  // Ad type
+  type              String // SERVICE_PAGE_BANNER, SEARCH_SIDEBAR
+  placement         String // TOP, SIDEBAR, BOTTOM
+
+  // Ad content
+  title             String
+  titleKh           String?
+  description       String
+  descriptionKh     String?
+  imageUrl          String?
+  linkUrl           String // Where ad clicks lead to
+  callToAction      String? // "Book Now", "Learn More", etc.
+
+  // Targeting
+  targetCategories  String? // JSON array of category IDs
+  targetLocations   String? // JSON array of cities/regions
+  targetUserType    String? // CUSTOMER, SPECIALIST, ALL
+
+  // Budget and pricing
+  dailyBudget       Float?
+  totalBudget       Float?
+  costPerClick      Float @default(0.5) // $0.50 per click
+  spentAmount       Float @default(0.0)
+
+  // Schedule
+  startDate         DateTime
+  endDate           DateTime
+
+  // Status
+  status            String @default("PENDING") // PENDING, ACTIVE, PAUSED, COMPLETED, REJECTED
+  isActive          Boolean @default(false)
+
+  // Performance metrics
+  impressions       Int @default(0)
+  clicks            Int @default(0)
+  conversions       Int @default(0) // Bookings from this ad
+
+  // Admin approval
+  reviewedBy        String?
+  reviewedAt        DateTime?
+  rejectionReason   String?
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  advertiser        User @relation("UserAdvertisements", fields: [advertiserId], references: [id], onDelete: Cascade)
+  analytics         AdAnalytics[]
+
+  @@index([advertiserId, status])
+  @@index([status, startDate, endDate])
+  @@index([isActive])
+  @@map("advertisements")
+}
+
+model AdAnalytics {
+  id                String @id @default(cuid())
+  adId              String
+
+  // Time period
+  date              DateTime
+
+  // Metrics
+  impressions       Int @default(0)
+  clicks            Int @default(0)
+  conversions       Int @default(0)
+  spent             Float @default(0.0)
+
+  // Performance
+  ctr               Float @default(0.0) // Click-through rate
+  conversionRate    Float @default(0.0)
+  costPerConversion Float @default(0.0)
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  ad                Advertisement @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  @@unique([adId, date])
+  @@index([adId, date])
+  @@map("ad_analytics")
+}
+
+// Premium Listings
+model PremiumListing {
+  id                String @id @default(cuid())
+  specialistId      String
+
+  // Listing details
+  type              String // FEATURED, SPONSORED, TOP_RATED
+  category          String? // If specific to a category
+  location          String? // If specific to a location
+
+  // Boost settings
+  boostMultiplier   Float @default(10.0) // How much to boost in search results
+  priority          Int @default(5) // Higher = appears first (1-10)
+
+  // Pricing
+  price             Float // One-time or recurring price
+  billingType       String // ONE_TIME, WEEKLY, MONTHLY
+
+  // Schedule
+  startDate         DateTime
+  endDate           DateTime
+
+  // Status
+  status            String @default("ACTIVE") // ACTIVE, PAUSED, EXPIRED
+  isActive          Boolean @default(true)
+
+  // Performance tracking
+  impressions       Int @default(0)
+  clicks            Int @default(0)
+  conversions       Int @default(0) // Bookings from premium listing
+
+  // Payment
+  paidAmount        Float
+  paymentDate       DateTime
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  specialist        User @relation("UserPremiumListings", fields: [specialistId], references: [id], onDelete: Cascade)
+  analytics         PremiumListingAnalytics[]
+
+  @@index([specialistId, status])
+  @@index([status, startDate, endDate])
+  @@index([isActive, priority])
+  @@map("premium_listings")
+}
+
+model PremiumListingAnalytics {
+  id                String @id @default(cuid())
+  listingId         String
+
+  // Time period
+  date              DateTime
+
+  // Metrics
+  impressions       Int @default(0)
+  clicks            Int @default(0)
+  conversions       Int @default(0)
+  revenue           Float @default(0.0) // Booking revenue from this listing
+
+  // Performance
+  ctr               Float @default(0.0)
+  conversionRate    Float @default(0.0)
+  averageBookingValue Float @default(0.0)
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  listing           PremiumListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([listingId, date])
+  @@index([listingId, date])
+  @@map("premium_listing_analytics")
+}
+
+// Platform Transaction Tracking (for $1 per booking fee)
+model PlatformTransaction {
+  id                String @id @default(cuid())
+  bookingId         String
+  userId            String // Customer who paid
+  specialistId      String // Specialist who provided service
+
+  // Transaction type
+  type              String // BOOKING_FEE, COMMISSION, AD_PAYMENT, PREMIUM_LISTING
+
+  // Amount details
+  amount            Float // Platform's fee amount
+  currency          String @default("USD")
+
+  // Source
+  sourceType        String // BOOKING, ADVERTISEMENT, SUBSCRIPTION
+  sourceId          String // ID of the source entity
+
+  // Payment status
+  status            String @default("PENDING") // PENDING, COMPLETED, FAILED, REFUNDED
+
+  // Settlement
+  settledAt         DateTime?
+  settlementBatch   String? // Batch ID for bulk settlements
+
+  // Metadata
+  description       String?
+  metadata          String? // JSON
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  customer          User @relation("CustomerPlatformTransactions", fields: [userId], references: [id])
+  specialist        User @relation("SpecialistPlatformTransactions", fields: [specialistId], references: [id])
+
+  @@index([userId, type])
+  @@index([specialistId, type])
+  @@index([status, settledAt])
+  @@index([sourceType, sourceId])
+  @@map("platform_transactions")
+}
+
+// Referral System Updates (new wallet credit structure)
+model ReferralReward {
+  id                String @id @default(cuid())
+  referrerId        String
+  referredId        String?
+
+  // Reward type
+  type              String // CUSTOMER_REFERRAL, SPECIALIST_REFERRAL
+
+  // Reward amount
+  amount            Float // $2 for customer, $5 for specialist referral
+  currency          String @default("USD")
+  appliedToWallet   Boolean @default(false)
+
+  // Specialist special reward
+  freeMonths        Int? // 1 month free for specialist-to-specialist referrals
+  freeMonthsApplied Boolean @default(false)
+
+  // Status
+  status            String @default("PENDING") // PENDING, COMPLETED, EXPIRED
+  completedAt       DateTime?
+
+  // Completion requirements
+  requirementMet    String? // "FIRST_BOOKING_COMPLETED", "SPECIALIST_VERIFIED"
+  requirementMetAt  DateTime?
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  referrer          User @relation("ReferrerRewards", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred          User? @relation("ReferredRewards", fields: [referredId], references: [id], onDelete: Cascade)
+
+  @@index([referrerId, status])
+  @@index([referredId, status])
+  @@map("referral_rewards")
+}
+
+// Business Model (Dental clinics, salons, spas with multiple employees)
+model Business {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+
+  // Business information
+  businessName String
+  description  String?
+  descriptionKh String? // Khmer description
+  businessType String  // CLINIC, SALON, SPA, GYM, STUDIO, etc.
+
+  // Location
+  address      String?
+  city         String?
+  province     String?
+  country      String  @default("Cambodia")
+  latitude     Float?
+  longitude    Float?
+
+  // Contact
+  businessPhone     String?
+  businessEmail     String?
+  website           String?
+
+  // Business registration
+  registrationNumber String?
+  taxId              String?
+  isRegistered       Boolean @default(false)
+  isVerified         Boolean @default(false)
+  verifiedDate       DateTime?
+
+  // Operating hours
+  operatingHours String? // JSON string for operating hours
+
+  // Business metrics
+  rating           Float   @default(0.0)
+  reviewCount      Int     @default(0)
+  totalBookings    Int     @default(0)
+  totalRevenue     Float   @default(0.0)
+
+  // Images
+  logo             String?
+  coverImage       String?
+  images           String? // JSON array of image URLs
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user             User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employees        Employee[]
+  services         BusinessService[]
+
+  // Indexes
+  @@index([city, isVerified])
+  @@index([businessType])
+  @@index([rating])
+  @@map("businesses")
+}
+
+// Employee Model (Staff members working for a business)
+model Employee {
+  id           String  @id @default(cuid())
+  businessId   String
+
+  // Employee information
+  firstName    String
+  lastName     String
+  email        String?
+  phoneNumber  String?
+  avatar       String?
+
+  // Professional details
+  title        String  // Job title (Dentist, Barber, Masseuse, etc.)
+  titleKh      String? // Khmer title
+  bio          String?
+  bioKh        String?
+  specialties  String? // JSON array of specialties
+  experience   Int     @default(0) // Years of experience
+
+  // Credentials
+  licenses     String? // JSON array of license numbers
+  certifications String? // JSON array of certifications
+
+  // Employment details
+  employmentType String @default("FULL_TIME") // FULL_TIME, PART_TIME, CONTRACT
+  startDate      DateTime @default(now())
+  endDate        DateTime? // For contract or if they leave
+  isActive       Boolean @default(true)
+
+  // Performance
+  rating       Float   @default(0.0)
+  reviewCount  Int     @default(0)
+  totalBookings Int    @default(0)
+
+  // Commission (if applicable)
+  commissionRate Float? // Percentage of bookings
+
+  // Schedule
+  workingDays  String? // JSON array of working days
+  workingHours String? // JSON string for working hours
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  business          Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  employeeBookings  EmployeeBooking[]
+
+  // Indexes
+  @@index([businessId, isActive])
+  @@index([rating])
+  @@map("employees")
+}
+
+// Business Service Model (Services offered by businesses)
+model BusinessService {
+  id          String  @id @default(cuid())
+  businessId  String
+
+  // Service details
+  name        String
+  nameKh      String? // Khmer name
+  description String
+  descriptionKh String?
+  category    String
+
+  // Pricing
+  basePrice   Float
+  currency    String @default("USD")
+
+  // Duration
+  duration    Int // Duration in minutes
+
+  // Service options
+  requiresEmployee Boolean @default(true) // If true, customer must select an employee
+  availableFor     String? // JSON array of employee IDs who can provide this service
+
+  // Images
+  images      String? // JSON array of image URLs
+
+  // Settings
+  isActive    Boolean @default(true)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  bookings   EmployeeBooking[]
+
+  // Indexes
+  @@index([businessId, isActive])
+  @@index([category])
+  @@map("business_services")
+}
+
+// Employee Booking Model (Bookings for business services with specific employees)
+model EmployeeBooking {
+  id             String @id @default(cuid())
+  bookingId      String
+  businessId     String
+  employeeId     String
+  serviceId      String
+
+  // Booking status
+  status         String @default("PENDING") // PENDING, CONFIRMED, COMPLETED, CANCELLED
+
+  // Time
+  scheduledAt    DateTime
+  duration       Int
+  completedAt    DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  employee       Employee @relation(fields: [employeeId], references: [id])
+  service        BusinessService @relation(fields: [serviceId], references: [id])
+
+  // Indexes
+  @@index([businessId, status])
+  @@index([employeeId, scheduledAt])
+  @@index([status, scheduledAt])
+  @@map("employee_bookings")
 }

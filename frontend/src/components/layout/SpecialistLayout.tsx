@@ -176,20 +176,32 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
   };
 
   const currencyOptions = [
-    { value: 'UAH', label: 'Гривня (₴)', flag: '🇺🇦' },
-    { value: 'USD', label: 'Dollar ($)', flag: '🇺🇸' },
-    { value: 'EUR', label: 'Euro (€)', flag: '🇪🇺' },
+    { value: 'USD', label: 'US Dollar ($)', flag: '🇺🇸' },
+    { value: 'KHR', label: 'Khmer Riel (៛)', flag: '🇰🇭' },
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+    <div className="relative flex min-h-screen overflow-hidden">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-[#040097]/15 dark:from-white/10 dark:via-transparent dark:to-[#040097]/25 blur-3xl"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-40 -left-32 h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle_at_center,rgba(198,36,24,0.28),rgba(198,36,24,0))] dark:bg-[radial-gradient(circle_at_center,rgba(233,105,103,0.22),rgba(233,105,103,0))] blur-[120px] opacity-70 dark:opacity-45"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-56 right-[-120px] h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle_at_center,rgba(4,0,151,0.32),rgba(4,0,151,0))] dark:bg-[radial-gradient(circle_at_center,rgba(109,118,255,0.28),rgba(109,118,255,0))] blur-[140px] opacity-60 dark:opacity-40"
+      />
+      <div className="relative z-10 flex-1 flex">
+        {/* Mobile sidebar overlay */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 z-40 bg-[#040097]/45 backdrop-blur-sm lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
 
       {/* Sidebar */}
       <aside className={`
@@ -197,11 +209,11 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
         ${isCollapsed ? 'w-16' : 'w-72'}
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         transition-all duration-300 ease-in-out
-        bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
-        backdrop-blur-xl bg-opacity-95 dark:bg-opacity-95
+        bg-white/80 dark:bg-white/10 border border-white/40 dark:border-white/10 lg:border-r lg:border-white/30 lg:dark:border-white/5
+        backdrop-blur-2xl shadow-[0_32px_80px_-48px_rgba(4,0,151,0.45)]
       `}>
         {/* Logo section */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between h-16 px-4 border-b border-white/40 dark:border-white/10">
           {!isCollapsed && (
             <Link 
               to="/" 
@@ -211,36 +223,11 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
                 window.scrollTo(0, 0);
               }}
             >
-              <img 
-                src="/miyzapis_logo.png" 
-                alt="МійЗапис Logo" 
-                className="w-8 h-8 group-hover:scale-110 transition-all duration-300"
-                onError={(e) => {
-                  const img = e.currentTarget as HTMLImageElement;
-                  const currentSrc = img.src;
-                  
-                  if (currentSrc.includes('miyzapis_logo.png')) {
-                    console.log('🖼️ SpecialistLayout logo failed, trying SVG fallback');
-                    img.src = '/logo.svg';
-                  } else if (currentSrc.includes('logo.svg')) {
-                    console.log('🖼️ SpecialistLayout SVG logo failed, trying favicon fallback');
-                    img.src = '/favicon.svg';
-                  } else {
-                    console.log('🖼️ SpecialistLayout all logos failed, replacing with text fallback');
-                    img.style.display = 'none';
-                    const parent = img.parentElement;
-                    if (parent && !parent.querySelector('.logo-fallback')) {
-                      const fallback = document.createElement('div');
-                      fallback.className = 'logo-fallback w-8 h-8 bg-blue-600 text-white rounded flex items-center justify-center text-xs font-bold';
-                      fallback.textContent = 'МЗ';
-                      parent.insertBefore(fallback, img);
-                    }
-                  }
-                }}
-                onLoad={() => console.log('✅ SpecialistLayout logo loaded successfully')}
-              />
+              <div className="w-8 h-8 vichea-gradient text-white rounded-lg flex items-center justify-center text-sm font-bold group-hover:scale-110 transition-all duration-300">
+                H
+              </div>
               <span className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-500 transition-colors duration-300">
-                МійЗапис
+                Huddle
               </span>
               <span className="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full">
                 Pro
@@ -264,7 +251,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
         </div>
 
         {/* User profile section */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-b border-white/40 dark:border-white/10">
           <div className="flex items-center space-x-3">
             {user?.avatar ? (
               <img
@@ -347,13 +334,13 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
         </nav>
 
         {/* Bottom controls */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
+        <div className="p-4 border-t border-white/40 dark:border-white/10 space-y-3">
           {/* Theme toggle (larger touch target on mobile) */}
           <button
             onClick={toggleTheme}
             className={`
               flex items-center w-full px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
-              text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 mobile-touch-target
+              text-gray-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-white/15 mobile-touch-target backdrop-blur
               ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
             `}
             aria-label={theme === 'dark' ? t('theme.light') : t('theme.dark')}
@@ -374,7 +361,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value as any)}
-                className="w-full px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none"
+                className="w-full px-3 py-2 text-sm bg-white/70 dark:bg-white/10 border border-white/30 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 backdrop-blur"
               >
                 {currencyOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -404,10 +391,10 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
       {/* Main content */}
       <div className={`flex-1 flex flex-col ${isCollapsed ? 'lg:ml-16' : 'lg:ml-72'} transition-all duration-300`}>
         {/* Top bar */}
-        <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 lg:px-6">
+        <header className="h-16 bg-white/75 dark:bg-white/10 border-b border-white/30 dark:border-white/10 backdrop-blur-xl shadow-[0_24px_60px_-36px_rgba(4,0,151,0.45)] flex items-center justify-between px-4 lg:px-6 rounded-bl-3xl rounded-br-3xl">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-3 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="lg:hidden p-3 sm:p-2 rounded-lg hover:bg-white/40 dark:hover:bg-white/15 transition-colors backdrop-blur"
           >
             <Bars3Icon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
           </button>
@@ -419,7 +406,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
             {/* Settings */}
             <Link 
               to="/specialist/settings"
-              className="p-3 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="p-3 sm:p-2 rounded-lg hover:bg-white/40 dark:hover:bg-white/15 transition-colors backdrop-blur"
             >
               <Cog6ToothIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
             </Link>
@@ -427,11 +414,12 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 animate-fade-in">
+        <main className="flex-1 overflow-auto bg-white/65 dark:bg-white/8 border border-white/25 dark:border-white/10 backdrop-blur-2xl rounded-tl-3xl rounded-tr-3xl shadow-[0_45px_90px_-60px_rgba(4,0,151,0.5)] animate-fade-in">
           {children}
         </main>
       </div>
     </div>
+  </div>
   );
 };
 

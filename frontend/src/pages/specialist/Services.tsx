@@ -10,8 +10,9 @@ import { FloatingElements, UkrainianOrnament } from '../../components/ui/Ukraini
 import { CategoryDropdown } from '../../components/ui/CategoryDropdown';
 import { getCategoryName } from '@/data/serviceCategories';
 import { ServiceCategory } from '../../types';
-import { specialistService } from '../../services/specialist.service';
 import { reviewsService } from '../../services/reviews.service';
+import { ClockIcon, ListBulletIcon } from '@heroicons/react/24/outline';
+import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
 interface Service {
   id: string;
@@ -54,9 +55,12 @@ const sampleServices: Service[] = [
 ];
 
 // Helper function to get the service currency
-const getServiceCurrency = (service: Service): 'USD' | 'EUR' | 'UAH' => {
-  // Use the service's stored currency, defaulting to UAH if not specified
-  return (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+const getServiceCurrency = (service: Service): 'USD' | 'KHR' | 'UAH' | 'EUR' => {
+  const detected = (service.currency || '').toUpperCase();
+  if (detected === 'KHR') return 'KHR';
+  if (detected === 'EUR') return 'EUR';
+  if (detected === 'UAH') return 'UAH';
+  return 'USD';
 };
 
 const SpecialistServices: React.FC = () => {
@@ -181,7 +185,7 @@ const SpecialistServices: React.FC = () => {
     descriptionRu: '',
     category: '',
     price: '',
-    currency: 'UAH', // Default to UAH
+    currency: 'USD', // Default to USD
     duration: '',
     serviceLocation: '',
     locationNotes: '',
@@ -227,7 +231,7 @@ const SpecialistServices: React.FC = () => {
       serviceLocation: '',
       locationNotes: '',
       price: '',
-      currency: 'UAH', // Default to UAH
+      currency: 'USD', // Default to USD
       duration: '',
       isActive: true,
       availability: {
@@ -279,7 +283,7 @@ const SpecialistServices: React.FC = () => {
       descriptionRu: '',
       category: existingCategory ? existingCategory.id : '',
       price: service.basePrice?.toString() || service.price?.toString() || '',
-      currency: service.currency || 'UAH',
+      currency: service.currency || 'USD',
       duration: service.duration.toString(),
       serviceLocation: service.serviceLocation || '',
       locationNotes: service.locationNotes || '',
@@ -654,91 +658,133 @@ const SpecialistServices: React.FC = () => {
 
   // Removed getDayName function as availability is no longer supported
 
-  const ServiceCard: React.FC<{ service: Service }> = ({ service }) => (
-    <div className={`bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20 dark:border-gray-700/20 ${!service.isActive ? 'opacity-60' : ''}`}>
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-              {getLocalizedText(service, 'name')}
-            </h3>
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-              service.isActive 
-                ? 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-300'
-                : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-            }`}>
-              {service.isActive ? t('services.active') : t('services.inactive')}
-            </span>
+  const ServiceCard: React.FC<{ service: Service }> = ({ service }) => {
+    const metricCardClass =
+      'flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/55 dark:bg-white/10 border border-white/30 dark:border-white/10 text-sm font-medium text-[rgba(31,33,36,0.85)] dark:text-white/80 backdrop-blur-lg shadow-[0_18px_40px_-28px_rgba(4,0,151,0.35)]';
+    const baseActionButton =
+      'btn-sheen inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300';
+    const statusClasses = service.isActive
+      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-400/30'
+      : 'bg-white/20 text-white/60 border border-white/20 dark:border-white/10';
+    const priceLabel = language === 'kh' ? 'តម្លៃចាប់ផ្តើម' : 'Base price';
+    const durationLabel = language === 'kh' ? 'រយៈពេល' : 'Duration';
+    const bookingsLabel = (() => {
+      const value = t('services.bookings');
+      if (value && value !== 'services.bookings') {
+        return value;
+      }
+      return language === 'kh' ? 'ការកក់' : 'Bookings';
+    })();
+    const ratingLabel = language === 'kh' ? 'ការវាយតម្លៃ' : 'Rating';
+
+    return (
+      <div
+        className={`glass-panel group relative overflow-hidden p-6 sm:p-7 transition-all duration-500 ${
+          !service.isActive ? 'opacity-75' : ''
+        }`}
+      >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-32 right-0 h-36 w-36 rounded-full bg-[radial-gradient(circle_at_center,rgba(4,0,151,0.3),rgba(4,0,151,0))] blur-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-70"
+        />
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <h3 className="text-xl font-semibold text-[rgb(31,33,36)] dark:text-white">
+                  {getLocalizedText(service, 'name')}
+                </h3>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-[0.18em] ${statusClasses}`}>
+                  {service.isActive ? t('services.active') : t('services.inactive')}
+                </span>
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-white/50 dark:bg-white/10 border border-white/30 dark:border-white/10 text-[rgba(31,33,36,0.75)] dark:text-white/70">
+                  {getLocalizedText(service, 'category')}
+                </span>
+              </div>
+              <p className="text-sm leading-relaxed text-[rgba(45,37,32,0.7)] dark:text-white/70">
+                {getLocalizedText(service, 'description')}
+              </p>
+            </div>
+            <div className="flex flex-col items-start lg:items-end gap-2">
+              <span className="text-xs uppercase tracking-[0.18em] text-[rgba(78,80,86,0.6)] dark:text-white/50">
+                {priceLabel}
+              </span>
+              <div className="inline-flex items-baseline gap-2 px-5 py-2 rounded-2xl bg-white/75 dark:bg-white/10 border border-white/30 dark:border-white/10 shadow-[0_22px_52px_-32px_rgba(4,0,151,0.45)]">
+                <span className="text-2xl font-bold text-[rgb(31,33,36)] dark:text-white">
+                  {service.basePrice && !isNaN(service.basePrice)
+                    ? formatPrice(service.basePrice, getServiceCurrency(service))
+                    : (t('common.notAvailable') || 'N/A')}
+                </span>
+              </div>
+            </div>
           </div>
-          <p className="text-gray-600 dark:text-gray-300 mb-3 text-sm leading-relaxed">
-            {getLocalizedText(service, 'description')}
-          </p>
-          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-3">
-            <span className="flex items-center gap-1">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {service.duration} {t('services.min')}
-            </span>
-            <span className="flex items-center gap-1">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              {getBookingCount(service)} {t('services.bookings')}
-            </span>
-            <span className="flex items-center gap-1">
-              <svg className="w-4 h-4 text-secondary-500" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-              {service.rating && !isNaN(service.rating) ? service.rating.toFixed(1) : (t('common.notAvailable') || 'N/A')}
-            </span>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className={metricCardClass}>
+              <ClockIcon className="w-5 h-5 text-[#c62418]" />
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-[rgba(78,80,86,0.6)] dark:text-white/50">
+                  {durationLabel}
+                </p>
+                <p className="text-sm font-semibold text-[rgb(31,33,36)] dark:text-white">
+                  {service.duration} {t('services.min')}
+                </p>
+              </div>
+            </div>
+            <div className={metricCardClass}>
+              <ListBulletIcon className="w-5 h-5 text-[#040097]" />
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-[rgba(78,80,86,0.6)] dark:text-white/50">
+                  {bookingsLabel}
+                </p>
+                <p className="text-sm font-semibold text-[rgb(31,33,36)] dark:text-white">
+                  {getBookingCount(service)}
+                </p>
+              </div>
+            </div>
+            <div className={metricCardClass}>
+              <StarIconSolid className="w-5 h-5 text-yellow-400" />
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-[rgba(78,80,86,0.6)] dark:text-white/50">
+                  {ratingLabel}
+                </p>
+                <p className="text-sm font-semibold text-[rgb(31,33,36)] dark:text-white">
+                  {service.rating && !isNaN(service.rating)
+                    ? service.rating.toFixed(1)
+                    : (t('common.notAvailable') || 'N/A')}
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="text-right ml-4">
-          <div className="text-2xl font-bold text-primary-600 mb-2">
-            {service.basePrice && !isNaN(service.basePrice) ? formatPrice(service.basePrice, getServiceCurrency(service)) : (t('common.notAvailable') || 'N/A')}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-            {getLocalizedText(service, 'category')}
+
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-white/30 dark:border-white/10">
+            <button
+              onClick={() => openEditModal(service)}
+              className={`${baseActionButton} flex-1 text-white bg-gradient-to-r from-[#040097] via-[#3d3dff] to-[#c62418] shadow-[0_26px_60px_-28px_rgba(4,0,151,0.55)] hover:-translate-y-0.5`}
+            >
+              {t('services.edit')}
+            </button>
+            <button
+              onClick={() => handleToggleServiceStatus(service.id, !service.isActive)}
+              className={`${baseActionButton} ${
+                service.isActive
+                  ? 'text-amber-400 bg-amber-500/10 border border-amber-400/30 hover:bg-amber-500/15'
+                  : 'text-emerald-400 bg-emerald-500/10 border border-emerald-400/30 hover:bg-emerald-500/15'
+              }`}
+            >
+              {service.isActive ? t('services.deactivate') : t('services.activate')}
+            </button>
+            <button
+              onClick={() => handleDeleteService(service.id)}
+              className={`${baseActionButton} text-rose-400 bg-rose-500/10 border border-rose-400/30 hover:bg-rose-500/15`}
+            >
+              {t('services.delete') || 'Delete'}
+            </button>
           </div>
         </div>
       </div>
-
-      {/* Removed availability and timeSlots display as they're not part of backend schema */}
-
-      {/* Action Buttons */}
-      <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <button
-          onClick={() => openEditModal(service)}
-          className="flex-1 bg-primary-50 hover:bg-primary-100 text-primary-700 px-4 py-2 rounded-lg font-medium transition-colors duration-200 dark:bg-primary-900/20 dark:hover:bg-primary-900/30 dark:text-primary-300"
-        >
-          {t('services.edit')}
-        </button>
-        <button
-          onClick={() => {
-            console.log('📝 Service object before toggle:', service);
-            console.log('🏷️ Service ID:', service.id);
-            handleToggleServiceStatus(service.id, !service.isActive);
-          }}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
-            service.isActive
-              ? 'bg-warning-50 hover:bg-warning-100 text-warning-700 dark:bg-warning-900/20 dark:hover:bg-warning-900/30 dark:text-warning-300'
-              : 'bg-success-50 hover:bg-success-100 text-success-700 dark:bg-success-900/20 dark:hover:bg-success-900/30 dark:text-success-300'
-          }`}
-        >
-          {service.isActive ? t('services.deactivate') : t('services.activate')}
-        </button>
-        <button 
-          onClick={() => handleDeleteService(service.id)}
-          className="p-2 bg-error-50 hover:bg-error-100 text-error-600 rounded-lg transition-colors duration-200 dark:bg-error-900/20 dark:hover:bg-error-900/30 dark:text-error-300"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  );
+    );
+  };
 
   if (loading) {
     return <FullScreenHandshakeLoader title={t('common.loading')} subtitle={t('dashboard.nav.services')} />;
@@ -873,7 +919,10 @@ const SpecialistServices: React.FC = () => {
                           });
                           return validPrices.length === 0 
                             ? t('services.noDataYet') || 'No data yet'
-                            : formatPrice(validPrices.reduce((sum, s) => sum + (s.basePrice || s.price), 0) / validPrices.length, validPrices[0]?.currency as 'USD' | 'EUR' | 'UAH' || 'UAH');
+                            : formatPrice(
+                                validPrices.reduce((sum, s) => sum + (s.basePrice || s.price), 0) / validPrices.length,
+                                (validPrices[0]?.currency as 'USD' | 'KHR' | 'UAH' | 'EUR') || 'USD'
+                              );
                         })()
                     }
                   </p>
@@ -1131,9 +1180,8 @@ const SpecialistServices: React.FC = () => {
                         onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
                         className="px-3 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
                       >
-                        <option value="UAH">₴ UAH</option>
                         <option value="USD">$ USD</option>
-                        <option value="EUR">€ EUR</option>
+                        <option value="KHR">៛ KHR</option>
                       </select>
                     </div>
                     {formErrors.price && <p className="mt-1 text-sm text-red-500">{formErrors.price}</p>}
@@ -1329,7 +1377,9 @@ const SpecialistServices: React.FC = () => {
                             <span className="mr-2 text-gray-500 dark:text-gray-400">%</span>
                           )}
                           {formData.discountType === 'FIXED_AMOUNT' && (
-                            <span className="mr-2 text-gray-500 dark:text-gray-400">{formData.currency === 'UAH' ? '₴' : formData.currency === 'USD' ? '$' : '€'}</span>
+                            <span className="mr-2 text-gray-500 dark:text-gray-400">
+                              {formData.currency === 'KHR' ? '៛' : formData.currency === 'UAH' ? '₴' : formData.currency === 'EUR' ? '€' : '$'}
+                            </span>
                           )}
                           <input
                             type="number"
@@ -1395,7 +1445,7 @@ const SpecialistServices: React.FC = () => {
                           🎉 <strong>Discount Preview:</strong> {' '}
                           {formData.discountType === 'PERCENTAGE'
                             ? `${formData.discountValue}% off`
-                            : `${formData.currency === 'UAH' ? '₴' : formData.currency === 'USD' ? '$' : '€'}${formData.discountValue} off`
+                            : `${formData.currency === 'KHR' ? '៛' : formData.currency === 'UAH' ? '₴' : formData.currency === 'EUR' ? '€' : '$'}${formData.discountValue} off`
                           }
                           {' '}
                           {formData.price && (
@@ -1404,11 +1454,11 @@ const SpecialistServices: React.FC = () => {
                               {formData.discountType === 'PERCENTAGE'
                                 ? formatPrice(
                                     parseFloat(formData.price) * (1 - parseFloat(formData.discountValue) / 100),
-                                    formData.currency as 'USD' | 'EUR' | 'UAH'
+                                    formData.currency as 'USD' | 'KHR' | 'UAH' | 'EUR'
                                   )
                                 : formatPrice(
                                     parseFloat(formData.price) - parseFloat(formData.discountValue),
-                                    formData.currency as 'USD' | 'EUR' | 'UAH'
+                                    formData.currency as 'USD' | 'KHR' | 'UAH' | 'EUR'
                                   )
                               })
                             </span>

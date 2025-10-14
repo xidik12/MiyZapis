@@ -40,7 +40,7 @@ import {
 } from '@heroicons/react/24/solid';
 
 // Helper function to get the booking currency
-const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
+const getBookingCurrency = (booking: any): 'USD' | 'KHR' | 'UAH' | 'EUR' => {
   // Debug logging to see what currency is stored
   console.log(`🔍 getBookingCurrency for booking ${booking.id}:`, {
     serviceName: booking.service?.name || booking.serviceName,
@@ -48,8 +48,12 @@ const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
     totalAmount: booking.totalAmount
   });
   
-  // Use the service's stored currency, defaulting to UAH if not specified
-  const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+  // Use the service's stored currency, defaulting to USD if not specified
+  const detected = (booking.service?.currency || booking.currency || '').toUpperCase();
+  const currency: 'USD' | 'KHR' | 'UAH' | 'EUR' =
+    detected === 'KHR' ? 'KHR' :
+    detected === 'EUR' ? 'EUR' :
+    detected === 'UAH' ? 'UAH' : 'USD';
   console.log(`💱 Final currency for ${booking.service?.name || booking.serviceName}: ${currency}`);
   return currency;
 };

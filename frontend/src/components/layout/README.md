@@ -1,15 +1,15 @@
-# Modern Side Navigation System for МійЗапис
+# Modern Side Navigation System for Huddle
 
 ## Overview
 
-This is a comprehensive side navigation system designed specifically for the МійЗапис booking platform. It replaces the traditional top header approach with a modern, space-efficient side navigation that provides better user experience across all devices.
+This is a comprehensive side navigation system designed specifically for the Huddle booking platform. It replaces the traditional top header approach with a modern, space-efficient side navigation that provides better user experience across all devices.
 
 ## Design Philosophy
 
-### Ukrainian Theme Integration
-- **Colors**: Blue (#0057b7) and Yellow (#ffd700) representing Ukrainian flag
-- **Typography**: Clean, modern fonts with Ukrainian text support
-- **Cultural Sensitivity**: Respectful use of national colors without being overly patriotic
+### Huddle Theme Integration
+- **Colors**: Red (#EF4444) and Blue (#3B82F6) representing energy and trust
+- **Typography**: Clean, modern fonts optimized for readability
+- **Modern Design**: Contemporary aesthetic with glass-morphism effects
 
 ### Glass Morphism Design
 - **Translucent backgrounds** with backdrop blur effects
@@ -114,12 +114,12 @@ styles/
 }
 ```
 
-### Ukrainian Color Palette
+### Huddle Color Palette
 ```css
 :root {
-  --ukraine-blue: #0057b7;
-  --ukraine-yellow: #ffd700;
-  --ukraine-gradient: linear-gradient(135deg, #0057b7 0%, #ffd700 100%);
+  --color-primary: #EF4444;
+  --color-accent: #3B82F6;
+  --huddle-gradient: linear-gradient(135deg, #EF4444 0%, #3B82F6 100%);
 }
 ```
 
@@ -223,11 +223,11 @@ module.exports = {
 ## Customization
 
 ### Theme Colors
-Override Ukrainian colors by updating CSS custom properties:
+Override Huddle colors by updating CSS custom properties:
 ```css
 :root {
-  --ukraine-blue: #your-blue;
-  --ukraine-yellow: #your-yellow;
+  --color-primary: #your-primary-color;
+  --color-accent: #your-accent-color;
 }
 ```
 
@@ -310,4 +310,4 @@ The old `Header` component is preserved for compatibility but hidden in the new 
 - **Migration guides**: Step-by-step upgrade instructions
 - **Troubleshooting**: Common issues and solutions
 
-This navigation system provides a solid foundation for the МійЗапис platform with room for future enhancements and customizations.
+This navigation system provides a solid foundation for the Huddle platform with room for future enhancements and customizations.

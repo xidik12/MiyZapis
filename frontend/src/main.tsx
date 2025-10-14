@@ -18,10 +18,10 @@ const stripePromise = environment.STRIPE_PUBLISHABLE_KEY ? loadStripe(environmen
 
 // Loading component for PersistGate
 const LoadingComponent = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+  <div className="min-h-screen flex items-center justify-center bg-cream-100 dark:bg-[rgb(20,17,34)]">
     <div className="text-center">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-      <p className="mt-4 text-gray-600">Loading МійЗапис...</p>
+      <p className="mt-4 text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)]">Loading Huddle...</p>
     </div>
   </div>
 );
@@ -82,22 +82,22 @@ class ErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center bg-cream-100 dark:bg-[rgb(20,17,34)]">
           <div className="text-center max-w-md mx-auto p-6">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 bg-error-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-error-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
             </div>
-            <h1 className="text-xl font-semibold text-gray-900 mb-2">
+            <h1 className="text-xl font-semibold text-[rgb(45,37,32)] dark:text-[rgb(242,241,244)] mb-2">
               Something went wrong
             </h1>
-            <p className="text-gray-600 mb-4">
+            <p className="text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)] mb-4">
               We're sorry, but something unexpected happened. Please refresh the page or try again later.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors"
+              className="px-5 py-2.5 rounded-xl text-white font-semibold vichea-gradient hover:shadow-primary transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-secondary-400"
             >
               Refresh Page
             </button>
@@ -166,7 +166,7 @@ const initializeApp = () => {
 
 // Development logging
 if (environment.DEBUG) {
-  console.log('🚀 Starting МійЗапис in development mode');
+  console.log('🚀 Starting Huddle in development mode');
   console.log('Environment:', environment);
 }
 

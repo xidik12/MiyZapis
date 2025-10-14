@@ -699,12 +699,11 @@ const SpecialistSettings: React.FC = () => {
                       </label>
                       <select
                         value={currency}
-                        onChange={(e) => setCurrency(e.target.value as 'UAH' | 'USD' | 'EUR')}
+                        onChange={(e) => setCurrency(e.target.value as 'USD' | 'KHR')}
                         className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                       >
-                        <option value="UAH">₴ {t('currency.uah')}</option>
-                        <option value="USD">$ {t('currency.usd')}</option>
-                        <option value="EUR">€ {t('currency.eur')}</option>
+                        <option value="USD">$ {t('currency.usd') || 'US Dollar'}</option>
+                        <option value="KHR">៛ {t('currency.khr') || 'Khmer Riel'}</option>
                       </select>
                     </div>
                   </div>

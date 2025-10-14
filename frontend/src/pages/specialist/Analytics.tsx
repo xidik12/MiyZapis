@@ -4,10 +4,12 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 
 // Helper function to get the booking currency (same as Dashboard)
-const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
-  // Use the service's stored currency, defaulting to UAH if not specified
-  const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
-  return currency;
+const getBookingCurrency = (booking: any): 'USD' | 'KHR' | 'UAH' | 'EUR' => {
+  const detected = (booking.service?.currency || booking.currency || '').toUpperCase();
+  if (detected === 'KHR') return 'KHR';
+  if (detected === 'EUR') return 'EUR';
+  if (detected === 'UAH') return 'UAH';
+  return 'USD';
 };
 import { RootState, AppDispatch } from '../../store';
 import { analyticsService, AnalyticsOverview, PerformanceAnalytics, BookingAnalytics, RevenueAnalytics, ServiceAnalytics } from '../../services/analytics.service';
