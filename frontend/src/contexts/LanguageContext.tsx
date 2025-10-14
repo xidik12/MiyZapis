@@ -34,13 +34,18 @@ const createTranslations = (): Translations => {
       .replace(/Miyzapis/gi, 'Huddle')
       .replace(/VicheaPro/gi, 'Huddle');
 
+  // First load all translations from JSON file
   for (const [key, value] of Object.entries(baseEnTranslations)) {
     const normalized = normalize(value);
     map[key] = { en: normalized, kh: normalized };
   }
 
+  // Then allow manual overrides with ensure()
   const ensure = (key: string, en: string, kh?: string) => {
-    map[key] = { en, kh: kh ?? en };
+    // Only override if explicitly providing different content
+    if (!map[key] || map[key].en !== en) {
+      map[key] = { en, kh: kh ?? en };
+    }
   };
 
   // Branding
