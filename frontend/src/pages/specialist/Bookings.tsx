@@ -173,7 +173,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       }}
     >
       <div 
-        className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
+        className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-lg sm:rounded-xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -576,7 +576,7 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full">
+      <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-xl shadow-2xl max-w-md w-full">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{t('bookings.paymentConfirmation') || 'Payment Confirmation'}</h3>
@@ -1212,7 +1212,7 @@ const SpecialistBookings: React.FC = () => {
         {/* Mobile Bookings Cards */}
         <div className="lg:hidden space-y-4">
           {paginatedBookings.map((booking) => (
-            <div key={booking.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4">
+            <div key={booking.id} className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-xl p-4 relative overflow-hidden transition-all duration-300">
               {/* Header with checkbox and customer */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-3">
@@ -1315,10 +1315,10 @@ const SpecialistBookings: React.FC = () => {
         </div>
 
         {/* Desktop Bookings Table */}
-        <div className="hidden lg:block bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div className="hidden lg:block backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-xl relative overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50 dark:bg-gray-700">
+            <table className="min-w-full divide-y divide-amber-200/50 dark:divide-amber-500/20">
+              <thead className="bg-white/40 dark:bg-white/5">
                 <tr>
                   <th className="px-6 py-3 text-left">
                     <input
@@ -1351,9 +1351,9 @@ const SpecialistBookings: React.FC = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-transparent divide-y divide-amber-200/50 dark:divide-amber-500/20">
                 {paginatedBookings.map((booking) => (
-                  <tr key={booking.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <tr key={booking.id} className="hover:bg-white/30 dark:hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4">
                       <input
                         type="checkbox"
@@ -1508,7 +1508,7 @@ const SpecialistBookings: React.FC = () => {
         {/* Pagination */}
         {totalPages > 1 && filteredAndSortedBookings.length > 0 && (
           <div className="mt-6">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 px-4 py-3 sm:px-6">
+            <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-xl px-4 py-3 sm:px-6 relative overflow-hidden">
               <div className="flex items-center justify-between">
                 <div className="flex justify-between flex-1 sm:hidden">
                   <button

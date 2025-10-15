@@ -971,7 +971,7 @@ Performance:
         {/* Key Metrics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Total Revenue */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
+          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
@@ -1005,7 +1005,7 @@ Performance:
           </div>
           
           {/* Monthly Revenue */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
+          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
@@ -1027,7 +1027,7 @@ Performance:
           </div>
           
           {/* Total Bookings */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
+          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
@@ -1061,7 +1061,7 @@ Performance:
           </div>
           
           {/* Average Rating */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
+          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
@@ -1102,7 +1102,7 @@ Performance:
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Revenue Trend Chart */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                 {selectedView === 'revenue' ? t('analytics.revenueTrend') : t('analytics.bookingsTrend')} ({t(`analytics.${selectedPeriod}`)})
@@ -1174,7 +1174,7 @@ Performance:
           </div>
           
           {/* Service Performance Pie Chart */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{t('analytics.servicePerformance')}</h2>
             {serviceData.length > 0 ? (
               <SimplePieChart data={serviceData} height="300px" />
@@ -1193,7 +1193,7 @@ Performance:
         </div>
         
         {/* Service Revenue Analysis */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8">
+        <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{t('analytics.revenueByService')}</h2>
           {serviceRevenue.length > 0 ? (
             <SimpleBarChart
@@ -1216,7 +1216,7 @@ Performance:
         
         {/* Additional Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
@@ -1237,7 +1237,7 @@ Performance:
             </div>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
@@ -1258,7 +1258,7 @@ Performance:
             </div>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
@@ -1282,7 +1282,7 @@ Performance:
             </div>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">

@@ -312,7 +312,7 @@ const SpecialistSettings: React.FC = () => {
               {/* Settings Content */}
               <div className="lg:col-span-2 space-y-8">
                 {/* Profile Settings */}
-                <div id="profile" className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div id="profile" className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-lg shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <UserIcon className="w-5 h-5 mr-2" />
@@ -397,7 +397,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Account Settings */}
-                <div id="account" className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div id="account" className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-lg shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <Cog6ToothIcon className="w-5 h-5 mr-2" />
@@ -436,7 +436,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Security Settings */}
-                <div id="security" className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div id="security" className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-lg shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <ShieldCheckIcon className="w-5 h-5 mr-2" />
@@ -539,7 +539,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Notification Settings */}
-                <div id="notifications" className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div id="notifications" className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-lg shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <BellIcon className="w-5 h-5 mr-2" />
@@ -584,7 +584,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Privacy Settings */}
-                <div id="privacy" className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div id="privacy" className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-lg shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <ShieldCheckIcon className="w-5 h-5 mr-2" />
@@ -623,7 +623,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Business Settings */}
-                <div id="business" className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div id="business" className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-lg shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <CreditCardIcon className="w-5 h-5 mr-2" />
@@ -671,7 +671,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Language & Currency Settings */}
-                <div id="language" className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div id="language" className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-lg shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <GlobeAltIcon className="w-5 h-5 mr-2" />
@@ -714,7 +714,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Save Button */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-lg shadow p-6">
                   <div className="flex justify-end space-x-3">
                     <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                       {t('common.cancel')}

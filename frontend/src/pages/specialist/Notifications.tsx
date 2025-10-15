@@ -258,7 +258,7 @@ const SpecialistNotifications: React.FC = () => {
       {loading && (
         <div className="space-y-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow animate-pulse">
+            <div key={i} className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-lg p-4 shadow animate-pulse">
               <div className="flex items-start space-x-4">
                 <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
                 <div className="flex-1 space-y-2">

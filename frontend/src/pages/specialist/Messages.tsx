@@ -271,7 +271,7 @@ const SpecialistMessages: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 h-[600px] flex">
+      <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 relative overflow-hidden rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 h-[600px] flex">
         {/* Conversations List */}
         <div className="w-1/3 border-r border-gray-200 dark:border-gray-700 flex flex-col">
           {/* Search */}
