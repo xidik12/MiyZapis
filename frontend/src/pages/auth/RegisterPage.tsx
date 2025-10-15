@@ -5,7 +5,14 @@ import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { register as registerUser, selectIsAuthenticated, selectAuthError, selectIsLoading, clearError } from '@/store/slices/authSlice';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import PasswordStrengthIndicator from '@/components/ui/PasswordStrengthIndicator';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import {
+  EyeIcon,
+  EyeSlashIcon,
+  UserIcon,
+  WrenchScrewdriverIcon,
+  BuildingOfficeIcon,
+  CheckCircleIcon
+} from '@heroicons/react/24/outline';
 import { RegisterRequest, UserType } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -204,102 +211,194 @@ const RegisterPage: React.FC = () => {
 
         {/* Account Type Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          <label className="block text-base font-semibold text-gray-900 dark:text-white mb-2">
             {t('auth.register.accountType')}
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            <label className="relative">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            Choose the account type that best describes you
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Customer Option */}
+            <label className="relative cursor-pointer group">
               <input
                 {...register('userType', { required: t('auth.error.accountTypeRequired') })}
                 type="radio"
                 value="customer"
-                className="sr-only"
+                className="sr-only peer"
               />
-              <div className={`p-5 border-2 rounded-xl cursor-pointer transition-all h-full ${
+              <div className={`relative h-full p-6 rounded-2xl border-2 transition-all duration-300 ${
                 watchUserType === 'customer'
-                  ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20 shadow-md'
-                  : 'border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 hover:shadow-sm'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-lg scale-[1.02]'
+                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md hover:scale-[1.01]'
               }`}>
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center ${
-                      watchUserType === 'customer' ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
-                    }`}>
-                      {watchUserType === 'customer' && (
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                    <div className="font-semibold text-gray-900 dark:text-gray-100">{t('auth.register.bookServices')}</div>
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{t('auth.register.bookServicesDesc')}</div>
+                {/* Selection Indicator */}
+                <div className={`absolute top-4 right-4 transition-all duration-300 ${
+                  watchUserType === 'customer' ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+                }`}>
+                  <CheckCircleIcon className="w-6 h-6 text-blue-500" />
                 </div>
+
+                {/* Icon */}
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 ${
+                  watchUserType === 'customer'
+                    ? 'bg-blue-100 dark:bg-blue-800/50'
+                    : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30'
+                }`}>
+                  <UserIcon className={`w-7 h-7 transition-colors duration-300 ${
+                    watchUserType === 'customer'
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : 'text-gray-600 dark:text-gray-400 group-hover:text-blue-500'
+                  }`} />
+                </div>
+
+                {/* Title */}
+                <h3 className={`text-lg font-bold mb-2 transition-colors duration-300 ${
+                  watchUserType === 'customer'
+                    ? 'text-blue-900 dark:text-blue-100'
+                    : 'text-gray-900 dark:text-white'
+                }`}>
+                  {t('auth.register.bookServices')}
+                </h3>
+
+                {/* Description */}
+                <p className={`text-sm leading-relaxed transition-colors duration-300 ${
+                  watchUserType === 'customer'
+                    ? 'text-blue-700 dark:text-blue-300'
+                    : 'text-gray-600 dark:text-gray-400'
+                }`}>
+                  {t('auth.register.bookServicesDesc')}
+                </p>
+
+                {/* Hover Effect Border */}
+                <div className={`absolute inset-0 rounded-2xl transition-all duration-300 pointer-events-none ${
+                  watchUserType === 'customer' ? 'ring-2 ring-blue-400 ring-offset-2 dark:ring-offset-gray-900' : ''
+                }`} />
               </div>
             </label>
 
-            <label className="relative">
+            {/* Specialist Option */}
+            <label className="relative cursor-pointer group">
               <input
                 {...register('userType', { required: t('auth.error.accountTypeRequired') })}
                 type="radio"
                 value="specialist"
-                className="sr-only"
+                className="sr-only peer"
               />
-              <div className={`p-5 border-2 rounded-xl cursor-pointer transition-all h-full ${
+              <div className={`relative h-full p-6 rounded-2xl border-2 transition-all duration-300 ${
                 watchUserType === 'specialist'
-                  ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20 shadow-md'
-                  : 'border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 hover:shadow-sm'
+                  ? 'border-green-500 bg-green-50 dark:bg-green-900/20 shadow-lg scale-[1.02]'
+                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-green-300 dark:hover:border-green-600 hover:shadow-md hover:scale-[1.01]'
               }`}>
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center ${
-                      watchUserType === 'specialist' ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
-                    }`}>
-                      {watchUserType === 'specialist' && (
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                    <div className="font-semibold text-gray-900 dark:text-gray-100">{t('auth.register.individualSpecialist')}</div>
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{t('auth.register.individualSpecialistDesc')}</div>
+                {/* Selection Indicator */}
+                <div className={`absolute top-4 right-4 transition-all duration-300 ${
+                  watchUserType === 'specialist' ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+                }`}>
+                  <CheckCircleIcon className="w-6 h-6 text-green-500" />
                 </div>
+
+                {/* Icon */}
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 ${
+                  watchUserType === 'specialist'
+                    ? 'bg-green-100 dark:bg-green-800/50'
+                    : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-green-50 dark:group-hover:bg-green-900/30'
+                }`}>
+                  <WrenchScrewdriverIcon className={`w-7 h-7 transition-colors duration-300 ${
+                    watchUserType === 'specialist'
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-gray-600 dark:text-gray-400 group-hover:text-green-500'
+                  }`} />
+                </div>
+
+                {/* Title */}
+                <h3 className={`text-lg font-bold mb-2 transition-colors duration-300 ${
+                  watchUserType === 'specialist'
+                    ? 'text-green-900 dark:text-green-100'
+                    : 'text-gray-900 dark:text-white'
+                }`}>
+                  {t('auth.register.individualSpecialist')}
+                </h3>
+
+                {/* Description */}
+                <p className={`text-sm leading-relaxed transition-colors duration-300 ${
+                  watchUserType === 'specialist'
+                    ? 'text-green-700 dark:text-green-300'
+                    : 'text-gray-600 dark:text-gray-400'
+                }`}>
+                  {t('auth.register.individualSpecialistDesc')}
+                </p>
+
+                {/* Hover Effect Border */}
+                <div className={`absolute inset-0 rounded-2xl transition-all duration-300 pointer-events-none ${
+                  watchUserType === 'specialist' ? 'ring-2 ring-green-400 ring-offset-2 dark:ring-offset-gray-900' : ''
+                }`} />
               </div>
             </label>
 
-            <label className="relative">
+            {/* Business Option */}
+            <label className="relative cursor-pointer group">
               <input
                 {...register('userType', { required: t('auth.error.accountTypeRequired') })}
                 type="radio"
                 value="business"
-                className="sr-only"
+                className="sr-only peer"
               />
-              <div className={`p-5 border-2 rounded-xl cursor-pointer transition-all h-full ${
+              <div className={`relative h-full p-6 rounded-2xl border-2 transition-all duration-300 ${
                 watchUserType === 'business'
-                  ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20 shadow-md'
-                  : 'border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 hover:shadow-sm'
+                  ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 shadow-lg scale-[1.02]'
+                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md hover:scale-[1.01]'
               }`}>
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center ${
-                      watchUserType === 'business' ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
-                    }`}>
-                      {watchUserType === 'business' && (
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                    <div className="font-semibold text-gray-900 dark:text-gray-100">{t('auth.register.businessAccount')}</div>
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{t('auth.register.businessAccountDesc')}</div>
+                {/* Selection Indicator */}
+                <div className={`absolute top-4 right-4 transition-all duration-300 ${
+                  watchUserType === 'business' ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+                }`}>
+                  <CheckCircleIcon className="w-6 h-6 text-purple-500" />
                 </div>
+
+                {/* Icon */}
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 ${
+                  watchUserType === 'business'
+                    ? 'bg-purple-100 dark:bg-purple-800/50'
+                    : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-purple-50 dark:group-hover:bg-purple-900/30'
+                }`}>
+                  <BuildingOfficeIcon className={`w-7 h-7 transition-colors duration-300 ${
+                    watchUserType === 'business'
+                      ? 'text-purple-600 dark:text-purple-400'
+                      : 'text-gray-600 dark:text-gray-400 group-hover:text-purple-500'
+                  }`} />
+                </div>
+
+                {/* Title */}
+                <h3 className={`text-lg font-bold mb-2 transition-colors duration-300 ${
+                  watchUserType === 'business'
+                    ? 'text-purple-900 dark:text-purple-100'
+                    : 'text-gray-900 dark:text-white'
+                }`}>
+                  {t('auth.register.businessAccount')}
+                </h3>
+
+                {/* Description */}
+                <p className={`text-sm leading-relaxed transition-colors duration-300 ${
+                  watchUserType === 'business'
+                    ? 'text-purple-700 dark:text-purple-300'
+                    : 'text-gray-600 dark:text-gray-400'
+                }`}>
+                  {t('auth.register.businessAccountDesc')}
+                </p>
+
+                {/* Hover Effect Border */}
+                <div className={`absolute inset-0 rounded-2xl transition-all duration-300 pointer-events-none ${
+                  watchUserType === 'business' ? 'ring-2 ring-purple-400 ring-offset-2 dark:ring-offset-gray-900' : ''
+                }`} />
               </div>
             </label>
           </div>
           {errors.userType && (
-            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.userType.message}</p>
+            <p className="mt-3 text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              {errors.userType.message}
+            </p>
           )}
         </div>
 
