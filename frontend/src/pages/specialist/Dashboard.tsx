@@ -458,25 +458,25 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
   };
 
   const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description }: any) => (
-    <div className="bg-surface rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+    <div className="group backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1 truncate">{title}</p>
+          <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 mb-1 truncate uppercase tracking-wider">{title}</p>
           {loading ? (
             <div className="mb-2">
               <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-24"></div>
             </div>
           ) : (
-            <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">{value}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-primary-500 transition-colors duration-300">{value}</p>
           )}
           {description && !loading && (
-            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{description}</p>
+            <p className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">{description}</p>
           )}
           {loading && (
             <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-16"></div>
           )}
           {change && !loading && (
-            <div className={`flex items-center mt-2 text-xs sm:text-sm ${
+            <div className={`flex items-center mt-2 text-xs sm:text-sm font-semibold ${
               changeType === 'positive' ? 'text-success-600' : 'text-error-600'
             }`}>
               {changeType === 'positive' ? (
@@ -488,50 +488,60 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
             </div>
           )}
         </div>
-        <div className={`p-2 sm:p-3 rounded-xl ${iconBg} flex-shrink-0`}>
-          <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+        <div className={`p-3 sm:p-4 rounded-xl ${iconBg} flex-shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+          <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
         </div>
       </div>
     </div>
   );
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {getGreeting()}, {user?.firstName}! 👋
-          </h1>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-            {t('dashboard.today')} {currentTime.toLocaleDateString(
-              language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
-              { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              }
-            )}
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Animated background orbs */}
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDuration: '4s' }}></div>
+      <div className="fixed bottom-0 left-0 w-[600px] h-[600px] bg-accent-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDuration: '5s', animationDelay: '2s' }}></div>
+
+      <div className="relative p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-2xl p-6 shadow-lg">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
+                  {getGreeting()}, {user?.firstName}!
+                </h1>
+                <span className="text-3xl animate-bounce">👋</span>
+              </div>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 font-medium">
+                📅 {t('dashboard.today')} {currentTime.toLocaleDateString(
+                  language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
+                  {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  }
+                )}
+              </p>
+            </div>
+            <div className="mt-4 lg:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+              <Link
+                to="/specialist/services"
+                className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-xl hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 font-bold shadow-lg shadow-primary-500/30 text-sm sm:text-base"
+              >
+                <PlusIcon className="w-5 h-5 mr-2" />
+                {t('dashboard.specialist.addService')}
+              </Link>
+              <button
+                onClick={handleExportReport}
+                className="inline-flex items-center justify-center px-6 py-3 backdrop-blur-xl bg-white/80 dark:bg-white/10 text-gray-700 dark:text-gray-300 border border-white/20 dark:border-white/10 rounded-xl hover:bg-white dark:hover:bg-white/20 transition-all duration-200 font-bold text-sm sm:text-base shadow-lg"
+              >
+                <ArrowDownTrayIcon className="w-5 h-5 mr-2" />
+                {t('dashboard.specialist.exportReport')}
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="mt-4 lg:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-          <Link
-            to="/specialist/services"
-            className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl hover:from-primary-700 hover:to-secondary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
-          >
-            <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-            {t('dashboard.specialist.addService')}
-          </Link>
-          <button 
-            onClick={handleExportReport}
-            className="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-sm sm:text-base"
-          >
-            <ArrowDownTrayIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-            {t('dashboard.specialist.exportReport')}
-          </button>
-        </div>
-      </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -575,69 +585,75 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
 
       {/* Additional Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+        <div className="group backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-2xl p-6 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.profileActivity')}</h3>
-            <EyeIcon className="w-5 h-5 text-gray-400" />
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">👁️ {t('dashboard.specialist.profileActivity')}</h3>
+            <div className="p-2 rounded-lg bg-primary-500/10">
+              <EyeIcon className="w-5 h-5 text-primary-500" />
+            </div>
           </div>
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.profileViews')}</span>
-              <span className="font-semibold text-gray-900 dark:text-white">{dashboardData.stats.profileViews}</span>
+            <div className="flex justify-between items-center p-3 rounded-xl bg-gray-50/50 dark:bg-white/5">
+              <span className="text-gray-600 dark:text-gray-400 font-medium">{t('dashboard.specialist.profileViews')}</span>
+              <span className="font-bold text-gray-900 dark:text-white text-lg">{dashboardData.stats.profileViews}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.favoriteCount')}</span>
-              <span className="font-semibold text-gray-900 dark:text-white">{dashboardData.stats.favoriteCount}</span>
+            <div className="flex justify-between items-center p-3 rounded-xl bg-gray-50/50 dark:bg-white/5">
+              <span className="text-gray-600 dark:text-gray-400 font-medium">{t('dashboard.specialist.favoriteCount')}</span>
+              <span className="font-bold text-gray-900 dark:text-white text-lg">{dashboardData.stats.favoriteCount}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.conversionRate')}</span>
-              <span className="font-semibold text-success-600">{dashboardData.stats.conversionRate}%</span>
+            <div className="flex justify-between items-center p-3 rounded-xl bg-success-50/50 dark:bg-success-900/20">
+              <span className="text-gray-600 dark:text-gray-400 font-medium">{t('dashboard.specialist.conversionRate')}</span>
+              <span className="font-bold text-success-600 text-lg">{dashboardData.stats.conversionRate}%</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+        <div className="group backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-2xl p-6 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.qualityMetrics')}</h3>
-            <ChartBarIcon className="w-5 h-5 text-gray-400" />
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">📊 {t('dashboard.specialist.qualityMetrics')}</h3>
+            <div className="p-2 rounded-lg bg-accent-500/10">
+              <ChartBarIcon className="w-5 h-5 text-accent-500" />
+            </div>
           </div>
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.completionRate')}</span>
-              <span className="font-semibold text-success-600">{dashboardData.stats.completionRate}%</span>
+            <div className="flex justify-between items-center p-3 rounded-xl bg-success-50/50 dark:bg-success-900/20">
+              <span className="text-gray-600 dark:text-gray-400 font-medium">{t('dashboard.specialist.completionRate')}</span>
+              <span className="font-bold text-success-600 text-lg">{dashboardData.stats.completionRate}%</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.repeatClients')}</span>
-              <span className="font-semibold text-gray-900 dark:text-white">{dashboardData.stats.repeatClients}%</span>
+            <div className="flex justify-between items-center p-3 rounded-xl bg-gray-50/50 dark:bg-white/5">
+              <span className="text-gray-600 dark:text-gray-400 font-medium">{t('dashboard.specialist.repeatClients')}</span>
+              <span className="font-bold text-gray-900 dark:text-white text-lg">{dashboardData.stats.repeatClients}%</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl p-6 text-white shadow-lg">
+        <div className="group backdrop-blur-xl bg-gradient-to-br from-primary-500 to-accent-500 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">{t('dashboard.quickActions')}</h3>
-            <UserGroupIcon className="w-5 h-5 opacity-80" />
+            <h3 className="text-lg font-bold">⚡ {t('dashboard.quickActions')}</h3>
+            <div className="p-2 rounded-lg bg-white/20">
+              <UserGroupIcon className="w-5 h-5" />
+            </div>
           </div>
           <div className="space-y-2">
             <Link
               to="/specialist/schedule"
-              className="w-full text-left py-2 px-3 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 text-sm font-medium flex items-center"
+              className="block w-full text-left py-3 px-4 rounded-xl bg-white/20 hover:bg-white/30 hover:scale-105 transition-all duration-200 font-semibold flex items-center shadow-lg"
             >
-              <Cog6ToothIcon className="w-4 h-4 mr-2" />
+              <Cog6ToothIcon className="w-5 h-5 mr-3" />
               {t('dashboard.specialist.manageSchedule')}
             </Link>
             <Link
               to="/specialist/reviews"
-              className="w-full text-left py-2 px-3 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 text-sm font-medium flex items-center"
+              className="block w-full text-left py-3 px-4 rounded-xl bg-white/20 hover:bg-white/30 hover:scale-105 transition-all duration-200 font-semibold flex items-center shadow-lg"
             >
-              <StarIcon className="w-4 h-4 mr-2" />
+              <StarIcon className="w-5 h-5 mr-3" />
               {t('dashboard.specialist.viewReviews')}
             </Link>
             <Link
               to="/specialist/messages"
-              className="w-full text-left py-2 px-3 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 text-sm font-medium flex items-center"
+              className="block w-full text-left py-3 px-4 rounded-xl bg-white/20 hover:bg-white/30 hover:scale-105 transition-all duration-200 font-semibold flex items-center shadow-lg"
             >
-              <ChatBubbleLeftRightIcon className="w-4 h-4 mr-2" />
+              <ChatBubbleLeftRightIcon className="w-5 h-5 mr-3" />
               {t('dashboard.specialist.messageClients')}
             </Link>
           </div>
@@ -647,35 +663,42 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Bookings */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+        <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.recentBookings')}</h3>
-            <Link 
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <span>📋</span>
+              {t('dashboard.specialist.recentBookings')}
+            </h3>
+            <Link
               to="/specialist/bookings"
-              className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+              className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 text-sm font-bold hover:gap-2 transition-all duration-200"
             >
               {t('dashboard.viewAll')}
+              <ArrowRightIcon className="w-4 h-4" />
             </Link>
           </div>
-          <div className="space-y-4">
-            {dashboardData.recentBookings.slice(0, 4).map((booking) => (
-              <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
+          <div className="space-y-3">
+            {dashboardData.recentBookings.slice(0, 4).map((booking, index) => (
+              <div key={booking.id} className="group flex items-center justify-between p-4 bg-white/50 dark:bg-white/5 rounded-xl hover:bg-white dark:hover:bg-white/10 transition-all duration-200 hover:shadow-md">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-sm">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white shadow-lg ${
+                    index % 2 === 0 ? 'bg-gradient-to-br from-primary-500 to-accent-500' : 'bg-gradient-to-br from-accent-500 to-primary-500'
+                  }`}>
+                    <span className="text-sm">
                       {booking.customerName?.split(' ').map(n => n[0]).join('')}
                     </span>
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{booking.customerName}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{booking.serviceName}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="font-bold text-gray-900 dark:text-white">{booking.customerName}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{booking.serviceName}</p>
+                    <p className="text-xs text-gray-400 flex items-center gap-1">
+                      <span>🕐</span>
                       {booking.date} {language === 'uk' ? 'о' : language === 'ru' ? 'в' : 'at'} {booking.time}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-gray-900 dark:text-white">
+                  <p className="font-bold text-gray-900 dark:text-white text-lg">
                     {(() => {
                       const currency = getBookingCurrency(booking);
                       const formatted = formatPrice(booking.totalAmount, currency);
@@ -683,7 +706,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                       return formatted;
                     })()}
                   </p>
-                  <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
+                  <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full shadow-sm ${getStatusColor(booking.status)}`}>
                     {getStatusText(booking.status)}
                   </span>
                 </div>
@@ -693,36 +716,44 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
         </div>
 
         {/* Today's Schedule */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+        <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.todaysSchedule')}</h3>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <span>📅</span>
+              {t('dashboard.specialist.todaysSchedule')}
+            </h3>
+            <span className="text-sm font-bold text-gray-500 dark:text-gray-400 px-3 py-1 bg-white/50 dark:bg-white/10 rounded-full">
               {currentTime.toLocaleDateString(
                 language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
                 { day: 'numeric', month: 'short' }
               )}
             </span>
           </div>
-          <div className="space-y-4">
-            {dashboardData.upcomingAppointments.map((appointment) => (
-              <div key={appointment.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl">
+          <div className="space-y-3">
+            {dashboardData.upcomingAppointments.map((appointment, index) => (
+              <div key={appointment.id} className="group flex items-center justify-between p-4 bg-white/50 dark:bg-white/5 rounded-xl hover:bg-white dark:hover:bg-white/10 border border-white/20 dark:border-white/10 transition-all duration-200 hover:shadow-md">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-sm">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white shadow-lg ${
+                    index % 2 === 0 ? 'bg-gradient-to-br from-success-500 to-success-600' : 'bg-gradient-to-br from-info-500 to-info-600'
+                  }`}>
+                    <span className="text-sm">
                       {appointment.customerName.split(' ').map(n => n[0]).join('')}
                     </span>
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{appointment.customerName}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{appointment.serviceName}</p>
-                    <div className="flex items-center space-x-2 text-xs text-gray-400">
-                      <span>{appointment.time}</span>
+                    <p className="font-bold text-gray-900 dark:text-white">{appointment.customerName}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{appointment.serviceName}</p>
+                    <div className="flex items-center space-x-2 text-xs text-gray-400 font-medium">
+                      <span className="flex items-center gap-1">
+                        <span>🕐</span>
+                        {appointment.time}
+                      </span>
                       <span>•</span>
                       <span>{appointment.duration}</span>
                       <span>•</span>
-                      <span className={appointment.type === 'online' ? 'text-primary-600' : 'text-secondary-600'}>
-                        {appointment.type === 'online' 
-                          ? `🔗 ${t('dashboard.specialist.online')}` 
+                      <span className={`${appointment.type === 'online' ? 'text-primary-600' : 'text-accent-600'} font-semibold`}>
+                        {appointment.type === 'online'
+                          ? `🔗 ${t('dashboard.specialist.online')}`
                           : `🏢 ${t('dashboard.specialist.offline')}`
                         }
                       </span>
@@ -730,24 +761,27 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <button className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-lg transition-colors">
-                    <ChatBubbleLeftRightIcon className="w-4 h-4" />
+                  <button className="p-2 text-primary-600 hover:bg-primary-500/10 rounded-lg transition-all duration-200 hover:scale-110">
+                    <ChatBubbleLeftRightIcon className="w-5 h-5" />
                   </button>
-                  <button className="p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                    <CalendarIcon className="w-4 h-4" />
+                  <button className="p-2 text-gray-400 hover:bg-gray-500/10 rounded-lg transition-all duration-200 hover:scale-110">
+                    <CalendarIcon className="w-5 h-5" />
                   </button>
                 </div>
               </div>
             ))}
             {dashboardData.upcomingAppointments.length === 0 && (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>{t('dashboard.specialist.noAppointments')}</p>
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary-500/10 flex items-center justify-center">
+                  <CalendarIcon className="w-8 h-8 text-primary-500" />
+                </div>
+                <p className="font-bold text-lg mb-2">{t('dashboard.specialist.noAppointments')}</p>
                 <p className="text-sm">{t('dashboard.specialist.freeTimeMessage')}</p>
               </div>
             )}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
