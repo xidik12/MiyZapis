@@ -391,7 +391,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
       {/* Main content */}
       <div className={`flex-1 flex flex-col ${isCollapsed ? 'lg:ml-16' : 'lg:ml-72'} transition-all duration-300`}>
         {/* Top bar */}
-        <header className="h-16 bg-white/75 dark:bg-white/10 border-b border-white/30 dark:border-white/10 backdrop-blur-xl shadow-[0_24px_60px_-36px_rgba(4,0,151,0.45)] flex items-center justify-between px-4 lg:px-6 rounded-bl-3xl rounded-br-3xl">
+        <header className="h-16 bg-white/75 dark:bg-white/10 border-b border-white/30 dark:border-white/10 backdrop-blur-xl shadow-[0_24px_60px_-36px_rgba(4,0,151,0.45)] flex items-center justify-between px-4 lg:px-6">
           <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden p-3 sm:p-2 rounded-lg hover:bg-white/40 dark:hover:bg-white/15 transition-colors backdrop-blur"
@@ -404,7 +404,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
             <NotificationBell />
 
             {/* Settings */}
-            <Link 
+            <Link
               to="/specialist/settings"
               className="p-3 sm:p-2 rounded-lg hover:bg-white/40 dark:hover:bg-white/15 transition-colors backdrop-blur"
             >
@@ -414,7 +414,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 border border-white/25 dark:border-white/10 rounded-tl-3xl rounded-tr-3xl shadow-[0_45px_90px_-60px_rgba(4,0,151,0.5)] animate-fade-in">
+        <main className="flex-1 overflow-auto bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 animate-fade-in">
           {children}
         </main>
       </div>
