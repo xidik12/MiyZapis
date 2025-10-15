@@ -1899,14 +1899,14 @@ const SpecialistProfile: React.FC = () => {
                         {language === 'uk' ? 'Способи оплати' : language === 'ru' ? 'Способы оплаты' : 'Payment Methods'}
                       </h3>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {['cash', 'card', 'transfer', 'paypal', 'crypto', 'apple_pay'].map((method) => (
-                          <div 
+                        {['cash', 'card', 'transfer', 'aba', 'khqr', 'apple_pay'].map((method) => (
+                          <div
                             key={method}
                             onClick={() => {
                               if (!isEditing) return;
                               const currentMethods = profile.paymentMethods || [];
                               const isSelected = currentMethods.includes(method);
-                              const newMethods = isSelected 
+                              const newMethods = isSelected
                                 ? currentMethods.filter(m => m !== method)
                                 : [...currentMethods, method];
                               handleProfileChange('paymentMethods', newMethods);
@@ -1922,8 +1922,8 @@ const SpecialistProfile: React.FC = () => {
                                 {method === 'cash' ? (language === 'uk' ? 'Готівка' : language === 'ru' ? 'Наличные' : 'Cash')
                                 : method === 'card' ? (language === 'uk' ? 'Картка' : language === 'ru' ? 'Карта' : 'Card')
                                 : method === 'transfer' ? (language === 'uk' ? 'Переказ' : language === 'ru' ? 'Перевод' : 'Transfer')
-                                : method === 'paypal' ? 'PayPal'
-                                : method === 'crypto' ? (language === 'uk' ? 'Крипто' : language === 'ru' ? 'Крипто' : 'Crypto')
+                                : method === 'aba' ? 'ABA Bank'
+                                : method === 'khqr' ? 'KHQR/Bakong'
                                 : method === 'apple_pay' ? 'Apple Pay'
                                 : method}
                               </div>
