@@ -6,7 +6,7 @@ import { prisma } from '@/config/database';
 import { cacheUtils } from '@/config/redis';
 import { logger } from '@/utils/logger';
 // Use enhanced email service for verification emails
-import { enhancedEmailService as emailService } from '@/services/email/enhanced-email';
+import { emailService } from '@/services/email/enhanced-email';
 import {
   LoginRequest,
   RegisterRequest,
