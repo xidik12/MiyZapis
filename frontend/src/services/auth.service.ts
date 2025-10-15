@@ -17,7 +17,10 @@ export class AuthService {
     // Convert userType to backend format
     const requestData = {
       ...data,
-      userType: data.userType === 'customer' ? 'CUSTOMER' : 'SPECIALIST',
+      userType: data.userType === 'customer' ? 'CUSTOMER' :
+                data.userType === 'business' ? 'BUSINESS' :
+                data.userType === 'specialist' ? 'SPECIALIST' :
+                data.userType === 'admin' ? 'ADMIN' : 'CUSTOMER',
     };
 
     try {
