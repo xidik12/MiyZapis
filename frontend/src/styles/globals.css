@@ -547,7 +547,7 @@
   }
 
   .modal-footer {
-    @apply flex gap-3 justify-end p-6 border-t border-gray-200 dark:border-gray-700;
+    @apply flex flex-col gap-3 p-6 border-t border-gray-200 dark:border-gray-700 sm:flex-row sm:justify-end sm:items-center;
   }
 
   /* Toast Components */

@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import PasswordStrengthIndicator from '@/components/ui/PasswordStrengthIndicator';
+import Modal from '@/components/ui/Modal';
 import { getPasswordValidationRules, getConfirmPasswordValidationRules } from '@/utils/passwordValidation';
 import { authService } from '@/services/auth.service';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -81,70 +82,70 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-        onClick={handleClose}
-      />
-
-      {/* Modal */}
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className={`relative w-full max-w-lg rounded-lg shadow-xl ${
-          theme === 'dark' ? 'bg-gray-800' : 'bg-white'
-        }`}>
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-primary-100 dark:bg-primary-900/20 rounded-lg">
-                <KeyIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Set Your Password
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Secure your account with a strong password
-                </p>
-              </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      size="lg"
+      closeOnBackdrop={!isLoading}
+      closeOnEscape={!isLoading}
+      ariaLabel="Set password"
+      contentClassName="flex flex-col"
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="flex h-full flex-col">
+        <div className="modal-header">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-primary-100 p-2 dark:bg-primary-900/20">
+              <KeyIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
             </div>
-            <button
-              onClick={handleClose}
-              disabled={isLoading}
-              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg transition-colors"
-            >
-              <XMarkIcon className="h-5 w-5" />
-            </button>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Set Your Password
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Secure your account with a strong password
+              </p>
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={isLoading}
+            className="rounded-lg p-2 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300 disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label="Close"
+          >
+            <XMarkIcon className="h-5 w-5" />
+          </button>
+        </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
-            {/* Info Message */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div className="flex-1 overflow-y-auto">
+          <div className="modal-body space-y-6">
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
               <p className="text-sm text-blue-700 dark:text-blue-300">
                 Since you signed up with Google, you don't currently have a password.
                 Setting a password will enable you to:
               </p>
-              <ul className="mt-2 text-sm text-blue-600 dark:text-blue-400 list-disc list-inside space-y-1">
+              <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-blue-600 dark:text-blue-400">
                 <li>Reset your password if needed</li>
                 <li>Sign in with email/password as backup</li>
                 <li>Access additional security features</li>
               </ul>
             </div>
 
-            {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label
+                htmlFor="password"
+                className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 New Password
               </label>
               <div className="relative">
                 <input
                   {...register('password', getPasswordValidationRules(t))}
                   type={showPassword ? 'text' : 'password'}
-                  className={`w-full px-3 py-2 pr-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
+                  className={`w-full rounded-lg border px-3 py-2 pr-10 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
                     theme === 'dark'
-                      ? 'bg-gray-700 text-gray-100 border-gray-600'
-                      : 'bg-white text-gray-900 border-gray-300'
+                      ? 'border-gray-600 bg-gray-700 text-gray-100'
+                      : 'border-gray-300 bg-white text-gray-900'
                   } ${
                     errors.password
                       ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
@@ -155,7 +156,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3"
                 >
                   {showPassword ? (
                     <EyeSlashIcon className="h-5 w-5 text-gray-400" />
@@ -164,37 +165,37 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
                   )}
                 </button>
               </div>
-
               {errors.password && (
                 <p className="mt-2 text-sm text-red-600 dark:text-red-400">
                   {errors.password.message}
                 </p>
               )}
 
-              {/* Password Strength Indicator */}
               {watchedPassword && (
                 <div className="mt-3">
-                  <PasswordStrengthIndicator
-                    password={watchedPassword}
-                    showRequirements={true}
-                  />
+                  <PasswordStrengthIndicator password={watchedPassword} showRequirements />
                 </div>
               )}
             </div>
 
-            {/* Confirm Password Field */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label
+                htmlFor="confirmPassword"
+                className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Confirm Password
               </label>
               <div className="relative">
                 <input
-                  {...register('confirmPassword', getConfirmPasswordValidationRules(watchedPassword, t))}
+                  {...register(
+                    'confirmPassword',
+                    getConfirmPasswordValidationRules(watchedPassword, t)
+                  )}
                   type={showConfirmPassword ? 'text' : 'password'}
-                  className={`w-full px-3 py-2 pr-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
+                  className={`w-full rounded-lg border px-3 py-2 pr-10 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
                     theme === 'dark'
-                      ? 'bg-gray-700 text-gray-100 border-gray-600'
-                      : 'bg-white text-gray-900 border-gray-300'
+                      ? 'border-gray-600 bg-gray-700 text-gray-100'
+                      : 'border-gray-300 bg-white text-gray-900'
                   } ${
                     errors.confirmPassword
                       ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
@@ -205,7 +206,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3"
                 >
                   {showConfirmPassword ? (
                     <EyeSlashIcon className="h-5 w-5 text-gray-400" />
@@ -214,37 +215,35 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
                   )}
                 </button>
               </div>
-
               {errors.confirmPassword && (
                 <p className="mt-2 text-sm text-red-600 dark:text-red-400">
                   {errors.confirmPassword.message}
                 </p>
               )}
             </div>
-
-            {/* Buttons */}
-            <div className="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                onClick={handleClose}
-                disabled={isLoading}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isLoading || !watchedPassword}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center space-x-2"
-              >
-                {isLoading && <LoadingSpinner size="sm" color="white" />}
-                <span>{isLoading ? 'Setting Password...' : 'Set Password'}</span>
-              </button>
-            </div>
-          </form>
+          </div>
         </div>
-      </div>
-    </div>
+
+        <div className="modal-footer">
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={isLoading}
+            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 sm:w-auto"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isLoading || !watchedPassword}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+          >
+            {isLoading && <LoadingSpinner size="sm" color="white" />}
+            <span>{isLoading ? 'Setting Password...' : 'Set Password'}</span>
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 };
 

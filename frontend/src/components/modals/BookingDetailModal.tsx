@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import Modal from '@/components/ui/Modal';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { Booking } from '../../types';
@@ -56,24 +57,6 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
 
-  useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen, onClose]);
-
   if (!isOpen || !booking) return null;
 
   const scheduledDate = new Date(booking.scheduledAt);
@@ -91,8 +74,16 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const specialistRating = booking.specialist?.rating || 5;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
-      <div className="bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 rounded-t-xl sm:rounded-xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto border border-white/20 dark:border-white/10">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="xl"
+      position="bottom"
+      ariaLabel={t('bookings.bookingDetails')}
+      containerClassName="bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 border border-white/20 dark:border-white/10"
+      contentClassName="flex flex-col"
+    >
+      <div className="flex h-full flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-3 sm:p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-base sm:text-xl font-semibold text-gray-900 dark:text-white truncate">
@@ -107,7 +98,8 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-3 sm:p-6 space-y-3 sm:space-y-6">
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-3 sm:p-6 space-y-3 sm:space-y-6">
           {/* Status Badge */}
           <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
             <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium border ${statusColors[booking.status] || statusColors.PENDING} text-center sm:text-left`}>
@@ -347,9 +339,10 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             </div>
           )}
         </div>
+      </div>
 
         {/* Actions */}
-        <div className="p-3 sm:p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 rounded-b-xl">
+        <div className="modal-footer bg-gray-50 dark:bg-gray-700">
           <div className="flex flex-wrap gap-2">
             {canCancel && (
               <button
@@ -405,7 +398,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 
