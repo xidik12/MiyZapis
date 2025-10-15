@@ -260,10 +260,14 @@ export const corsOptions = {
     
     const allowedOrigins = [
       'http://localhost:3000',
-      'http://localhost:5173', 
+      'http://localhost:5173',
       'https://miyzapis.com',
       'https://www.miyzapis.com',
       'https://miyzapis-frontend-production.up.railway.app',
+      // New Huddle frontend domains
+      'https://huddle-website-production.up.railway.app',
+      'https://huddle.com',
+      'https://www.huddle.com',
       // Add Google OAuth domain for OAuth flows
       'https://accounts.google.com',
       'https://oauth2.googleapis.com',
