@@ -38,7 +38,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       </div>
 
       {/* Main form container - improved mobile responsiveness */}
-      <div className="sm:mx-auto sm:w-full sm:max-w-md w-full">
+      <div className="sm:mx-auto sm:w-full sm:max-w-3xl w-full">
         <div className="bg-white dark:bg-gray-800 py-6 px-4 shadow-lg sm:rounded-xl sm:px-10 sm:py-8">
           {children}
         </div>

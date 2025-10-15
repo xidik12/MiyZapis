@@ -217,7 +217,7 @@ const RegisterPage: React.FC = () => {
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             Choose the account type that best describes you
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {/* Customer Option */}
             <label className="relative cursor-pointer group">
               <input
@@ -226,53 +226,49 @@ const RegisterPage: React.FC = () => {
                 value="customer"
                 className="sr-only peer"
               />
-              <div className={`relative h-full p-6 rounded-2xl border-2 transition-all duration-300 ${
+              <div className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
                 watchUserType === 'customer'
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-lg scale-[1.02]'
-                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md hover:scale-[1.01]'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-md'
+                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-sm'
               }`}>
                 {/* Selection Indicator */}
-                <div className={`absolute top-4 right-4 transition-all duration-300 ${
-                  watchUserType === 'customer' ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-                }`}>
-                  <CheckCircleIcon className="w-6 h-6 text-blue-500" />
-                </div>
+                {watchUserType === 'customer' && (
+                  <div className="absolute top-3 right-3">
+                    <CheckCircleIcon className="w-5 h-5 text-blue-500" />
+                  </div>
+                )}
 
-                {/* Icon */}
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 ${
-                  watchUserType === 'customer'
-                    ? 'bg-blue-100 dark:bg-blue-800/50'
-                    : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30'
-                }`}>
-                  <UserIcon className={`w-7 h-7 transition-colors duration-300 ${
+                {/* Icon and Content */}
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-200 ${
                     watchUserType === 'customer'
-                      ? 'text-blue-600 dark:text-blue-400'
-                      : 'text-gray-600 dark:text-gray-400 group-hover:text-blue-500'
-                  }`} />
+                      ? 'bg-blue-100 dark:bg-blue-800/50'
+                      : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30'
+                  }`}>
+                    <UserIcon className={`w-5 h-5 transition-colors duration-200 ${
+                      watchUserType === 'customer'
+                        ? 'text-blue-600 dark:text-blue-400'
+                        : 'text-gray-600 dark:text-gray-400 group-hover:text-blue-500'
+                    }`} />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`text-sm font-bold mb-1 transition-colors duration-200 ${
+                      watchUserType === 'customer'
+                        ? 'text-blue-900 dark:text-blue-100'
+                        : 'text-gray-900 dark:text-white'
+                    }`}>
+                      {t('auth.register.bookServices')}
+                    </h3>
+                    <p className={`text-xs leading-snug transition-colors duration-200 ${
+                      watchUserType === 'customer'
+                        ? 'text-blue-700 dark:text-blue-300'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}>
+                      {t('auth.register.bookServicesDesc')}
+                    </p>
+                  </div>
                 </div>
-
-                {/* Title */}
-                <h3 className={`text-lg font-bold mb-2 transition-colors duration-300 ${
-                  watchUserType === 'customer'
-                    ? 'text-blue-900 dark:text-blue-100'
-                    : 'text-gray-900 dark:text-white'
-                }`}>
-                  {t('auth.register.bookServices')}
-                </h3>
-
-                {/* Description */}
-                <p className={`text-sm leading-relaxed transition-colors duration-300 ${
-                  watchUserType === 'customer'
-                    ? 'text-blue-700 dark:text-blue-300'
-                    : 'text-gray-600 dark:text-gray-400'
-                }`}>
-                  {t('auth.register.bookServicesDesc')}
-                </p>
-
-                {/* Hover Effect Border */}
-                <div className={`absolute inset-0 rounded-2xl transition-all duration-300 pointer-events-none ${
-                  watchUserType === 'customer' ? 'ring-2 ring-blue-400 ring-offset-2 dark:ring-offset-gray-900' : ''
-                }`} />
               </div>
             </label>
 
@@ -284,53 +280,49 @@ const RegisterPage: React.FC = () => {
                 value="specialist"
                 className="sr-only peer"
               />
-              <div className={`relative h-full p-6 rounded-2xl border-2 transition-all duration-300 ${
+              <div className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
                 watchUserType === 'specialist'
-                  ? 'border-green-500 bg-green-50 dark:bg-green-900/20 shadow-lg scale-[1.02]'
-                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-green-300 dark:hover:border-green-600 hover:shadow-md hover:scale-[1.01]'
+                  ? 'border-green-500 bg-green-50 dark:bg-green-900/20 shadow-md'
+                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-green-300 dark:hover:border-green-600 hover:shadow-sm'
               }`}>
                 {/* Selection Indicator */}
-                <div className={`absolute top-4 right-4 transition-all duration-300 ${
-                  watchUserType === 'specialist' ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-                }`}>
-                  <CheckCircleIcon className="w-6 h-6 text-green-500" />
-                </div>
+                {watchUserType === 'specialist' && (
+                  <div className="absolute top-3 right-3">
+                    <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                  </div>
+                )}
 
-                {/* Icon */}
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 ${
-                  watchUserType === 'specialist'
-                    ? 'bg-green-100 dark:bg-green-800/50'
-                    : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-green-50 dark:group-hover:bg-green-900/30'
-                }`}>
-                  <WrenchScrewdriverIcon className={`w-7 h-7 transition-colors duration-300 ${
+                {/* Icon and Content */}
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-200 ${
                     watchUserType === 'specialist'
-                      ? 'text-green-600 dark:text-green-400'
-                      : 'text-gray-600 dark:text-gray-400 group-hover:text-green-500'
-                  }`} />
+                      ? 'bg-green-100 dark:bg-green-800/50'
+                      : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-green-50 dark:group-hover:bg-green-900/30'
+                  }`}>
+                    <WrenchScrewdriverIcon className={`w-5 h-5 transition-colors duration-200 ${
+                      watchUserType === 'specialist'
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-gray-600 dark:text-gray-400 group-hover:text-green-500'
+                    }`} />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`text-sm font-bold mb-1 transition-colors duration-200 ${
+                      watchUserType === 'specialist'
+                        ? 'text-green-900 dark:text-green-100'
+                        : 'text-gray-900 dark:text-white'
+                    }`}>
+                      {t('auth.register.individualSpecialist')}
+                    </h3>
+                    <p className={`text-xs leading-snug transition-colors duration-200 ${
+                      watchUserType === 'specialist'
+                        ? 'text-green-700 dark:text-green-300'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}>
+                      {t('auth.register.individualSpecialistDesc')}
+                    </p>
+                  </div>
                 </div>
-
-                {/* Title */}
-                <h3 className={`text-lg font-bold mb-2 transition-colors duration-300 ${
-                  watchUserType === 'specialist'
-                    ? 'text-green-900 dark:text-green-100'
-                    : 'text-gray-900 dark:text-white'
-                }`}>
-                  {t('auth.register.individualSpecialist')}
-                </h3>
-
-                {/* Description */}
-                <p className={`text-sm leading-relaxed transition-colors duration-300 ${
-                  watchUserType === 'specialist'
-                    ? 'text-green-700 dark:text-green-300'
-                    : 'text-gray-600 dark:text-gray-400'
-                }`}>
-                  {t('auth.register.individualSpecialistDesc')}
-                </p>
-
-                {/* Hover Effect Border */}
-                <div className={`absolute inset-0 rounded-2xl transition-all duration-300 pointer-events-none ${
-                  watchUserType === 'specialist' ? 'ring-2 ring-green-400 ring-offset-2 dark:ring-offset-gray-900' : ''
-                }`} />
               </div>
             </label>
 
@@ -342,53 +334,49 @@ const RegisterPage: React.FC = () => {
                 value="business"
                 className="sr-only peer"
               />
-              <div className={`relative h-full p-6 rounded-2xl border-2 transition-all duration-300 ${
+              <div className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
                 watchUserType === 'business'
-                  ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 shadow-lg scale-[1.02]'
-                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md hover:scale-[1.01]'
+                  ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 shadow-md'
+                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-sm'
               }`}>
                 {/* Selection Indicator */}
-                <div className={`absolute top-4 right-4 transition-all duration-300 ${
-                  watchUserType === 'business' ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-                }`}>
-                  <CheckCircleIcon className="w-6 h-6 text-purple-500" />
-                </div>
+                {watchUserType === 'business' && (
+                  <div className="absolute top-3 right-3">
+                    <CheckCircleIcon className="w-5 h-5 text-purple-500" />
+                  </div>
+                )}
 
-                {/* Icon */}
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-all duration-300 ${
-                  watchUserType === 'business'
-                    ? 'bg-purple-100 dark:bg-purple-800/50'
-                    : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-purple-50 dark:group-hover:bg-purple-900/30'
-                }`}>
-                  <BuildingOfficeIcon className={`w-7 h-7 transition-colors duration-300 ${
+                {/* Icon and Content */}
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-200 ${
                     watchUserType === 'business'
-                      ? 'text-purple-600 dark:text-purple-400'
-                      : 'text-gray-600 dark:text-gray-400 group-hover:text-purple-500'
-                  }`} />
+                      ? 'bg-purple-100 dark:bg-purple-800/50'
+                      : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-purple-50 dark:group-hover:bg-purple-900/30'
+                  }`}>
+                    <BuildingOfficeIcon className={`w-5 h-5 transition-colors duration-200 ${
+                      watchUserType === 'business'
+                        ? 'text-purple-600 dark:text-purple-400'
+                        : 'text-gray-600 dark:text-gray-400 group-hover:text-purple-500'
+                    }`} />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`text-sm font-bold mb-1 transition-colors duration-200 ${
+                      watchUserType === 'business'
+                        ? 'text-purple-900 dark:text-purple-100'
+                        : 'text-gray-900 dark:text-white'
+                    }`}>
+                      {t('auth.register.businessAccount')}
+                    </h3>
+                    <p className={`text-xs leading-snug transition-colors duration-200 ${
+                      watchUserType === 'business'
+                        ? 'text-purple-700 dark:text-purple-300'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}>
+                      {t('auth.register.businessAccountDesc')}
+                    </p>
+                  </div>
                 </div>
-
-                {/* Title */}
-                <h3 className={`text-lg font-bold mb-2 transition-colors duration-300 ${
-                  watchUserType === 'business'
-                    ? 'text-purple-900 dark:text-purple-100'
-                    : 'text-gray-900 dark:text-white'
-                }`}>
-                  {t('auth.register.businessAccount')}
-                </h3>
-
-                {/* Description */}
-                <p className={`text-sm leading-relaxed transition-colors duration-300 ${
-                  watchUserType === 'business'
-                    ? 'text-purple-700 dark:text-purple-300'
-                    : 'text-gray-600 dark:text-gray-400'
-                }`}>
-                  {t('auth.register.businessAccountDesc')}
-                </p>
-
-                {/* Hover Effect Border */}
-                <div className={`absolute inset-0 rounded-2xl transition-all duration-300 pointer-events-none ${
-                  watchUserType === 'business' ? 'ring-2 ring-purple-400 ring-offset-2 dark:ring-offset-gray-900' : ''
-                }`} />
               </div>
             </label>
           </div>
