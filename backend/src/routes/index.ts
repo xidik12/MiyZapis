@@ -32,6 +32,7 @@ import debugAdminRoutes from './debug-admin';
 import debugEmailRoutes from './debug-email';
 import advertisementRoutes from './advertisements';
 import premiumListingRoutes from './premium-listings';
+import employeeRoutes from './employee.routes';
 
 const router = Router();
 
@@ -71,6 +72,9 @@ router.use('/diagnostics', diagnosticsRoutes);
 // Monetization routes
 router.use('/advertisements', advertisementRoutes);
 router.use('/premium-listings', premiumListingRoutes);
+
+// Employee management routes
+router.use('/employees', employeeRoutes);
 
 // Admin setup routes (for initial setup only)
 router.use('/setup', setupAdminRoutes);
