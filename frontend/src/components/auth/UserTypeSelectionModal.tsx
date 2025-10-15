@@ -4,6 +4,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import {
   UserIcon,
   WrenchScrewdriverIcon,
+  BuildingOfficeIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 
@@ -103,6 +104,25 @@ const UserTypeSelectionModal: React.FC<UserTypeSelectionModalProps> = ({
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       {t('auth.userType.specialist.description')}
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => onSelectUserType('specialist')}
+                className="group w-full rounded-xl border-2 border-gray-200 p-4 transition-all hover:border-primary-500 hover:bg-primary-50 dark:border-gray-600 dark:hover:bg-primary-900/20"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 transition group-hover:bg-primary-100 dark:bg-purple-900/30 dark:group-hover:bg-primary-900/40">
+                    <BuildingOfficeIcon className="h-6 w-6 text-purple-600 transition group-hover:text-primary-600 dark:text-purple-400 dark:group-hover:text-primary-400" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                      {t('auth.register.businessAccount')}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {t('auth.register.businessAccountDesc')}
                     </p>
                   </div>
                 </div>
