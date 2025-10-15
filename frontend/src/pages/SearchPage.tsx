@@ -367,11 +367,11 @@ const SearchPage: React.FC = () => {
     const reviewsLabel = language === 'kh' ? 'មតិយោបល់' : 'Reviews';
 
     const metricCardClass =
-      'flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl bg-white/55 dark:bg-white/10 border border-white/30 dark:border-white/10 text-sm font-medium text-[rgba(31,33,36,0.85)] dark:text-white/80 backdrop-blur-lg shadow-[0_18px_40px_-28px_rgba(4,0,151,0.4)] min-w-0';
+      'flex items-center gap-2 lg:gap-3 px-2 sm:px-3 lg:px-4 py-2 lg:py-2.5 rounded-xl lg:rounded-2xl bg-white/55 dark:bg-white/10 border border-white/30 dark:border-white/10 text-xs sm:text-sm font-medium text-[rgba(31,33,36,0.85)] dark:text-white/80 backdrop-blur-lg shadow-sm min-w-0';
     const quickActionClass =
-      'flex-1 inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl bg-white/45 dark:bg-white/10 border border-white/25 dark:border-white/10 text-xs sm:text-sm font-semibold text-[rgba(31,33,36,0.85)] dark:text-white/80 transition-all duration-300 hover:bg-white/65 hover:-translate-y-0.5 min-w-0 whitespace-nowrap';
+      'flex-1 inline-flex items-center justify-center gap-1 sm:gap-1.5 lg:gap-2 px-2 sm:px-3 lg:px-4 py-2 lg:py-2.5 rounded-xl lg:rounded-2xl bg-white/45 dark:bg-white/10 border border-white/25 dark:border-white/10 text-[10px] sm:text-xs lg:text-sm font-semibold text-[rgba(31,33,36,0.85)] dark:text-white/80 transition-all duration-300 hover:bg-white/65 hover:-translate-y-0.5 min-w-0';
     const baseActionButton =
-      'btn-sheen inline-flex items-center justify-center h-12 px-6 rounded-full font-semibold transition-all duration-300';
+      'btn-sheen inline-flex items-center justify-center h-10 sm:h-11 lg:h-12 px-4 sm:px-5 lg:px-6 rounded-full text-sm sm:text-base font-semibold transition-all duration-300';
 
     return (
       <div
@@ -386,8 +386,8 @@ const SearchPage: React.FC = () => {
           aria-hidden="true"
           className="pointer-events-none absolute -bottom-48 left-[-120px] h-48 w-48 rounded-full bg-[radial-gradient(circle_at_center,rgba(198,36,24,0.32),rgba(198,36,24,0))] blur-[120px] opacity-0 group-hover:opacity-60 transition-opacity duration-500"
         />
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
-          <div className="flex flex-col items-center lg:items-start gap-4">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+          <div className="flex flex-col items-center lg:items-start gap-3 lg:w-48 flex-shrink-0">
             <div className="relative">
               <div className="absolute inset-[-32px] rounded-full bg-[radial-gradient(circle_at_center,rgba(198,36,24,0.32),rgba(4,0,151,0.28),rgba(198,36,24,0))] blur-[70px] opacity-0 group-hover:opacity-80 transition-opacity duration-500" />
               <Avatar
@@ -399,60 +399,60 @@ const SearchPage: React.FC = () => {
                 className="ring-4 ring-white/80 dark:ring-white/10 shadow-[0_24px_48px_-28px_rgba(4,0,151,0.6)]"
               />
               {service.specialist.user.isVerified && (
-                <CheckBadgeIcon className="absolute -bottom-2 -right-2 w-7 h-7 text-white bg-gradient-to-r from-[#040097] to-[#c62418] rounded-full p-1 shadow-[0_12px_24px_-12px_rgba(4,0,151,0.4)]" />
+                <CheckBadgeIcon className="absolute -bottom-2 -right-2 w-6 h-6 lg:w-7 lg:h-7 text-white bg-gradient-to-r from-[#040097] to-[#c62418] rounded-full p-1 shadow-[0_12px_24px_-12px_rgba(4,0,151,0.4)]" />
               )}
               {service.specialist.isOnline && (
-                <span className="absolute -top-1.5 -right-1.5 inline-flex h-5 w-5">
+                <span className="absolute -top-1.5 -right-1.5 inline-flex h-4 w-4 lg:h-5 lg:w-5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400/70" />
-                  <span className="relative inline-flex rounded-full h-5 w-5 bg-emerald-500 border-2 border-white/80 dark:border-white/20 shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
+                  <span className="relative inline-flex rounded-full h-4 w-4 lg:h-5 lg:w-5 bg-emerald-500 border-2 border-white/80 dark:border-white/20 shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
                 </span>
               )}
             </div>
-            <div className="flex flex-col items-center lg:items-start gap-2">
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/60 dark:bg-white/10 border border-white/35 dark:border-white/15 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#040097] dark:text-[#9397ff]">
+            <div className="flex flex-col items-center lg:items-start gap-2 w-full">
+              <span className="inline-flex items-center gap-2 px-3 lg:px-4 py-1 lg:py-1.5 rounded-full bg-white/60 dark:bg-white/10 border border-white/35 dark:border-white/15 text-[9px] lg:text-[10px] font-semibold uppercase tracking-wider lg:tracking-[0.28em] text-[#040097] dark:text-[#9397ff] text-center">
                 {translateProfession(service.specialist.businessName, t)}
               </span>
-              <span className="text-sm text-[rgba(78,80,86,0.7)] dark:text-white/70">
+              <span className="text-xs lg:text-sm text-[rgba(78,80,86,0.7)] dark:text-white/70 text-center lg:text-left truncate max-w-full">
                 {service.specialist.user.firstName} {service.specialist.user.lastName}
               </span>
             </div>
           </div>
 
-          <div className="flex-1 space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-              <div className="space-y-3">
-                <h3 className="text-xl sm:text-2xl font-semibold text-[rgb(31,33,36)] dark:text-white">
+          <div className="flex-1 min-w-0 space-y-4 lg:space-y-6">
+            <div className="flex flex-col gap-3">
+              <div className="space-y-2">
+                <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-[rgb(31,33,36)] dark:text-white break-words">
                   {service.name}
                 </h3>
-                <div className="flex flex-wrap items-center gap-3 text-sm text-[rgba(78,80,86,0.75)] dark:text-white/70">
+                <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-[rgba(78,80,86,0.75)] dark:text-white/70">
                   <span className="flex items-center gap-1">
                     {renderStars(service.rating)}
                   </span>
-                  <span className="text-xs uppercase tracking-[0.22em] text-[rgba(78,80,86,0.6)] dark:text-white/50">
+                  <span className="text-[10px] sm:text-xs uppercase tracking-wider text-[rgba(78,80,86,0.6)] dark:text-white/50">
                     {service.rating.toFixed(1)} • {service.reviewCount} {reviewsLabel}
                   </span>
                   <span className="hidden sm:inline h-1 w-1 rounded-full bg-white/30 dark:bg-white/20" />
-                  <span>
+                  <span className="text-xs sm:text-sm">
                     {completedJobs} {t('specialist.completedJobs')}
                   </span>
                 </div>
               </div>
-              <div className="flex flex-col items-center sm:items-end gap-3">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/70 dark:bg-white/10 border border-white/30 dark:border-white/10 shadow-[0_22px_48px_-28px_rgba(4,0,151,0.45)]">
-                  <StarIconSolid className="w-5 h-5 text-yellow-400" />
-                  <span className="text-sm font-semibold text-[rgb(31,33,36)] dark:text-white">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="inline-flex items-center gap-1.5 lg:gap-2 px-3 lg:px-4 py-1.5 lg:py-2 rounded-xl lg:rounded-2xl bg-white/70 dark:bg-white/10 border border-white/30 dark:border-white/10 shadow-sm">
+                  <StarIconSolid className="w-4 h-4 lg:w-5 lg:h-5 text-yellow-400 flex-shrink-0" />
+                  <span className="text-xs lg:text-sm font-semibold text-[rgb(31,33,36)] dark:text-white">
                     {service.rating.toFixed(1)}
                   </span>
-                  <span className="text-xs text-[rgba(78,80,86,0.65)] dark:text-white/50">
+                  <span className="text-[10px] lg:text-xs text-[rgba(78,80,86,0.65)] dark:text-white/50">
                     {service.reviewCount} {reviewsLabel}
                   </span>
                 </div>
-                <div className="inline-flex items-center gap-2 px-5 py-2 rounded-2xl bg-white/75 dark:bg-white/10 border border-white/30 dark:border-white/10">
-                  <span className="text-2xl font-bold text-[rgb(31,33,36)] dark:text-white">
+                <div className="inline-flex items-center gap-1.5 lg:gap-2 px-3 lg:px-5 py-1.5 lg:py-2 rounded-xl lg:rounded-2xl bg-white/75 dark:bg-white/10 border border-white/30 dark:border-white/10">
+                  <span className="text-lg sm:text-xl lg:text-2xl font-bold text-[rgb(31,33,36)] dark:text-white">
                     {formatPrice(service.price, (service.currency as 'USD' | 'KHR' | 'UAH' | 'EUR') || 'USD')}
                   </span>
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    className={`px-2 lg:px-3 py-0.5 lg:py-1 rounded-full text-[10px] lg:text-xs font-semibold ${
                       service.isAvailable
                         ? 'bg-emerald-500/15 text-emerald-400'
                         : 'bg-rose-500/15 text-rose-400'
@@ -464,7 +464,7 @@ const SearchPage: React.FC = () => {
               </div>
             </div>
 
-            <p className="text-sm leading-relaxed text-[rgba(45,37,32,0.7)] dark:text-white/70 line-clamp-3">
+            <p className="text-xs sm:text-sm leading-relaxed text-[rgba(45,37,32,0.7)] dark:text-white/70 line-clamp-2 sm:line-clamp-3">
               {service.description}
             </p>
 
