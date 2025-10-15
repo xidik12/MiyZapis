@@ -92,7 +92,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-t-xl sm:rounded-xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+      <div className="bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 rounded-t-xl sm:rounded-xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto border border-white/20 dark:border-white/10">
         {/* Header */}
         <div className="flex items-center justify-between p-3 sm:p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-base sm:text-xl font-semibold text-gray-900 dark:text-white truncate">
@@ -119,7 +119,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           </div>
 
           {/* Service Info */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 sm:p-4">
+          <div className="bg-white/40 dark:bg-white/5 rounded-lg p-3 sm:p-4 border border-white/20 dark:border-white/10">
             <h3 className="font-medium text-gray-900 dark:text-white mb-2 sm:mb-3 text-sm sm:text-base">
               {t('bookings.serviceDetails')}
             </h3>
@@ -146,7 +146,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           </div>
 
           {/* Specialist Info */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 sm:p-4">
+          <div className="bg-white/40 dark:bg-white/5 rounded-lg p-3 sm:p-4 border border-white/20 dark:border-white/10">
             <h3 className="font-medium text-gray-900 dark:text-white mb-2 sm:mb-3 text-sm sm:text-base">
               {t('bookings.specialistDetails')}
             </h3>
@@ -294,7 +294,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           )}
 
           {/* Payment Info */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 sm:p-4">
+          <div className="bg-white/40 dark:bg-white/5 rounded-lg p-3 sm:p-4 border border-white/20 dark:border-white/10">
             <h3 className="font-medium text-gray-900 dark:text-white mb-2 sm:mb-3 text-sm sm:text-base">
               {t('bookings.paymentDetails')}
             </h3>
@@ -320,7 +320,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
           {/* Notes */}
           {(booking.customerNotes || booking.specialistNotes) && (
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 sm:p-4">
+            <div className="bg-white/40 dark:bg-white/5 rounded-lg p-3 sm:p-4 border border-white/20 dark:border-white/10">
               <h3 className="font-medium text-gray-900 dark:text-white mb-2 sm:mb-3 text-sm sm:text-base">
                 {t('bookings.notes')}
               </h3>
