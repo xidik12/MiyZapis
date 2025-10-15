@@ -1018,7 +1018,12 @@ const SpecialistBookings: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,215,0,0.25),transparent_55%),radial-gradient(circle_at_bottom_right,rgba(200,16,46,0.18),transparent_60%),#faf8f5] dark:bg-[radial-gradient(circle_at_top_left,rgba(241,149,162,0.35),transparent_60%),radial-gradient(circle_at_bottom_right,rgba(147,197,253,0.3),transparent_65%),#141022] py-6 sm:py-10 text-[rgb(45,37,32)] dark:text-[rgb(242,241,244)]">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Animated background orbs */}
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDuration: '4s' }}></div>
+      <div className="fixed bottom-0 left-0 w-[600px] h-[600px] bg-accent-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDuration: '5s', animationDelay: '2s' }}></div>
+
+      <div className="relative p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       <ConfirmModal
         open={!!cancelTarget}
         title={t('bookings.cancelBooking')}
@@ -1028,7 +1033,6 @@ const SpecialistBookings: React.FC = () => {
         onCancel={() => setCancelTarget(null)}
         onConfirm={confirmCancel}
       />
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div>
@@ -1641,6 +1645,7 @@ const SpecialistBookings: React.FC = () => {
         loading={reviewLoading}
       />
       </div>
+    </div>
   );
 };
 
