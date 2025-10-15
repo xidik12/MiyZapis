@@ -27,6 +27,7 @@ import {
   ClockIcon,
   ArrowUpIcon,
   ArrowDownIcon,
+  ArrowRightIcon,
   EyeIcon,
   HeartIcon,
   ChatBubbleLeftRightIcon,
