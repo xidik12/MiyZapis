@@ -1337,8 +1337,6 @@ Performance:
             {t('analytics.shareAnalytics')}
           </button>
         </div>
-        </div>
-      </div>
       </div>
     </div>
   );
