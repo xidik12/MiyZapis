@@ -79,22 +79,22 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
       <button
         ref={btnRef}
         onClick={handleClick}
-        className={`relative p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full transition-colors ${className}`}
+        className={`relative p-3 sm:p-2 rounded-lg hover:bg-white/40 dark:hover:bg-white/15 transition-all duration-300 backdrop-blur group ${className}`}
         title="Notifications"
         aria-label="Open notifications"
       >
-        <BellIcon className="h-6 w-6" />
-        
+        <BellIcon className="w-6 h-6 text-gray-600 dark:text-gray-300 group-hover:scale-110 transition-transform duration-300" />
+
         {/* Unread count badge */}
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs font-medium rounded-full flex items-center justify-center animate-pulse">
+          <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-gray-800 animate-pulse">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
-        
+
         {/* Loading indicator */}
-        {loading && (
-          <div className="absolute -top-1 -right-1 h-3 w-3 bg-gray-400 rounded-full animate-pulse" />
+        {loading && !unreadCount && (
+          <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-blue-500 dark:bg-blue-400 rounded-full animate-pulse shadow-lg" />
         )}
       </button>
 
