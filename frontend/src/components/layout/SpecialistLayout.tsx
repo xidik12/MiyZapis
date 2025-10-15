@@ -31,6 +31,7 @@ import {
   PresentationChartLineIcon,
   GiftIcon,
   UsersIcon,
+  UserGroupIcon,
 } from '@heroicons/react/24/outline';
 import { ChartBarIcon as ChartBarIconSolid } from '@heroicons/react/24/solid';
 
@@ -76,6 +77,13 @@ const navigation: SidebarNavItem[] = [
     href: '/specialist/services',
     icon: BriefcaseIcon,
     iconActive: BriefcaseIcon,
+  },
+  {
+    name: 'Employees',
+    nameUk: 'Співробітники',
+    href: '/specialist/employees',
+    icon: UserGroupIcon,
+    iconActive: UserGroupIcon,
   },
   {
     name: 'Schedule',
