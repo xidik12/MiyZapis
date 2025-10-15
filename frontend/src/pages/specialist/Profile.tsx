@@ -1592,7 +1592,25 @@ const SpecialistProfile: React.FC = () => {
                             className="inline-flex items-center gap-2 px-3 py-2 bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300 rounded-lg text-sm font-medium"
                           >
                             <GlobeAltIcon className="h-4 w-4" />
-                            {lang === 'uk' ? 'Українська' : lang === 'en' ? 'English' : lang === 'ru' ? 'Русский' : lang}
+                            {(() => {
+                              const languageNames: Record<string, string> = {
+                                en: 'English', uk: 'Українська', ru: 'Русский', de: 'Deutsch', fr: 'Français',
+                                es: 'Español', it: 'Italiano', pt: 'Português', pl: 'Polski', nl: 'Nederlands',
+                                sv: 'Svenska', no: 'Norsk', da: 'Dansk', fi: 'Suomi', cs: 'Čeština',
+                                ro: 'Română', el: 'Ελληνικά', tr: 'Türkçe', zh: '中文', ja: '日本語',
+                                ko: '한국어', th: 'ไทย', vi: 'Tiếng Việt', id: 'Bahasa Indonesia',
+                                ms: 'Bahasa Melayu', tl: 'Tagalog', km: 'ភាសាខ្មែរ', lo: 'ລາວ',
+                                my: 'မြန်မာဘာသာ', hi: 'हिन्दी', bn: 'বাংলা', ur: 'اردو', ta: 'தமிழ்',
+                                te: 'తెలుగు', mr: 'मराठी', pa: 'ਪੰਜਾਬੀ', gu: 'ગુજરાતી', kn: 'ಕನ್ನಡ',
+                                ml: 'മലയാളം', si: 'සිංහල', ne: 'नेपाली', ar: 'العربية', fa: 'فارسی',
+                                he: 'עברית', sw: 'Kiswahili', af: 'Afrikaans', am: 'አማርኛ', az: 'Azərbaycan',
+                                be: 'Беларуская', bg: 'Български', ca: 'Català', hr: 'Hrvatski', et: 'Eesti',
+                                ka: 'ქართული', hu: 'Magyar', is: 'Íslenska', kk: 'Қазақ', lv: 'Latviešu',
+                                lt: 'Lietuvių', mk: 'Македонски', mn: 'Монгол', sk: 'Slovenčina',
+                                sl: 'Slovenščina', sr: 'Српски', sq: 'Shqip', uz: 'O\'zbek'
+                              };
+                              return languageNames[lang] || lang;
+                            })()}
                             {isEditing && (
                               <button
                                 onClick={() => {
@@ -1619,12 +1637,78 @@ const SpecialistProfile: React.FC = () => {
                             className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                           >
                             <option value="">{language === 'uk' ? 'Додати мову' : language === 'ru' ? 'Добавить язык' : 'Add Language'}</option>
-                            <option value="uk">Українська</option>
-                            <option value="ru">Русский</option>
+
+                            {/* European Languages */}
                             <option value="en">English</option>
-                            <option value="de">Deutsch</option>
-                            <option value="fr">Français</option>
-                            <option value="es">Español</option>
+                            <option value="uk">Українська (Ukrainian)</option>
+                            <option value="ru">Русский (Russian)</option>
+                            <option value="de">Deutsch (German)</option>
+                            <option value="fr">Français (French)</option>
+                            <option value="es">Español (Spanish)</option>
+                            <option value="it">Italiano (Italian)</option>
+                            <option value="pt">Português (Portuguese)</option>
+                            <option value="pl">Polski (Polish)</option>
+                            <option value="nl">Nederlands (Dutch)</option>
+                            <option value="sv">Svenska (Swedish)</option>
+                            <option value="no">Norsk (Norwegian)</option>
+                            <option value="da">Dansk (Danish)</option>
+                            <option value="fi">Suomi (Finnish)</option>
+                            <option value="cs">Čeština (Czech)</option>
+                            <option value="ro">Română (Romanian)</option>
+                            <option value="el">Ελληνικά (Greek)</option>
+                            <option value="tr">Türkçe (Turkish)</option>
+
+                            {/* Asian Languages */}
+                            <option value="zh">中文 (Chinese)</option>
+                            <option value="ja">日本語 (Japanese)</option>
+                            <option value="ko">한국어 (Korean)</option>
+                            <option value="th">ไทย (Thai)</option>
+                            <option value="vi">Tiếng Việt (Vietnamese)</option>
+                            <option value="id">Bahasa Indonesia (Indonesian)</option>
+                            <option value="ms">Bahasa Melayu (Malay)</option>
+                            <option value="tl">Tagalog (Filipino)</option>
+                            <option value="km">ភាសាខ្មែរ (Khmer/Cambodian)</option>
+                            <option value="lo">ລາວ (Lao)</option>
+                            <option value="my">မြန်မာဘာသာ (Burmese)</option>
+                            <option value="hi">हिन्दी (Hindi)</option>
+                            <option value="bn">বাংলা (Bengali)</option>
+                            <option value="ur">اردو (Urdu)</option>
+                            <option value="ta">தமிழ் (Tamil)</option>
+                            <option value="te">తెలుగు (Telugu)</option>
+                            <option value="mr">मराठी (Marathi)</option>
+                            <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                            <option value="gu">ગુજરાતી (Gujarati)</option>
+                            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                            <option value="ml">മലയാളം (Malayalam)</option>
+                            <option value="si">සිංහල (Sinhala)</option>
+                            <option value="ne">नेपाली (Nepali)</option>
+                            <option value="ar">العربية (Arabic)</option>
+                            <option value="fa">فارسی (Persian)</option>
+                            <option value="he">עברית (Hebrew)</option>
+
+                            {/* Other Languages */}
+                            <option value="sw">Kiswahili (Swahili)</option>
+                            <option value="af">Afrikaans</option>
+                            <option value="am">አማርኛ (Amharic)</option>
+                            <option value="az">Azərbaycan (Azerbaijani)</option>
+                            <option value="be">Беларуская (Belarusian)</option>
+                            <option value="bg">Български (Bulgarian)</option>
+                            <option value="ca">Català (Catalan)</option>
+                            <option value="hr">Hrvatski (Croatian)</option>
+                            <option value="et">Eesti (Estonian)</option>
+                            <option value="ka">ქართული (Georgian)</option>
+                            <option value="hu">Magyar (Hungarian)</option>
+                            <option value="is">Íslenska (Icelandic)</option>
+                            <option value="kk">Қазақ (Kazakh)</option>
+                            <option value="lv">Latviešu (Latvian)</option>
+                            <option value="lt">Lietuvių (Lithuanian)</option>
+                            <option value="mk">Македонски (Macedonian)</option>
+                            <option value="mn">Монгол (Mongolian)</option>
+                            <option value="sk">Slovenčina (Slovak)</option>
+                            <option value="sl">Slovenščina (Slovenian)</option>
+                            <option value="sr">Српски (Serbian)</option>
+                            <option value="sq">Shqip (Albanian)</option>
+                            <option value="uz">O'zbek (Uzbek)</option>
                           </select>
                         </div>
                       )}
