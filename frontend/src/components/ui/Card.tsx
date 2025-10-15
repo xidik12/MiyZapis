@@ -23,24 +23,22 @@ export const Card: React.FC<CardProps> = ({
       glass ? [
         // Glass-morphism effect
         'backdrop-blur-xl bg-white/60 dark:bg-white/5',
-        'border-2 border-transparent',
+        'border border-white/20 dark:border-white/10',
         'shadow-lg shadow-black/5 dark:shadow-black/20',
-        // Gold gradient border overlay
-        'before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px]',
-        'before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60',
-        'before:opacity-70 before:pointer-events-none before:-z-10',
-        'before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40',
+        // Glass gradient border overlay
+        'before:absolute before:inset-0 before:rounded-[inherit] before:p-[1px]',
+        'before:bg-gradient-to-br before:from-white/40 before:via-transparent before:to-transparent',
+        'before:opacity-50 before:pointer-events-none',
         // Shine effect on top
         'after:absolute after:top-0 after:left-0 after:right-0 after:h-[40%]',
-        'after:bg-gradient-to-b after:from-amber-200/40 after:to-transparent',
+        'after:bg-gradient-to-b after:from-white/30 after:to-transparent',
         'after:opacity-0 after:transition-opacity after:duration-300',
         'after:pointer-events-none',
         hover && [
           'hover:after:opacity-100',
-          'hover:shadow-xl hover:shadow-amber-500/20 dark:hover:shadow-amber-500/30',
+          'hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-black/30',
           'hover:-translate-y-1 hover:scale-[1.01]',
-          'cursor-pointer',
-          'hover:before:opacity-100'
+          'cursor-pointer'
         ]
       ] : [
         // Standard card (non-glass)
@@ -61,7 +59,7 @@ export const Card: React.FC<CardProps> = ({
     {/* Animated gradient orb on hover */}
     {glass && hover && (
       <div className="absolute -inset-[100%] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-r from-amber-400/10 via-yellow-300/10 to-amber-500/10 blur-3xl animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/10 via-accent-500/10 to-primary-500/10 blur-3xl animate-pulse" />
       </div>
     )}
 
