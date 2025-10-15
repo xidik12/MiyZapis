@@ -1,3 +1,9 @@
+/**
+ * @deprecated This Coinbase Commerce service is deprecated as of 2025-01-15.
+ * The platform now uses ABA Payment and KHQR/Bakong instead.
+ * This file is kept for backward compatibility only.
+ */
+
 import axios from 'axios';
 import crypto from 'crypto';
 import QRCode from 'qrcode';

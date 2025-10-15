@@ -1,3 +1,9 @@
+/**
+ * @deprecated This PayPal service is deprecated as of 2025-01-15.
+ * The platform now uses ABA Payment and KHQR/Bakong instead.
+ * This file is kept for backward compatibility only.
+ */
+
 import {
   Client,
   Environment,

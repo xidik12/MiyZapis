@@ -326,6 +326,11 @@ export class BookingService {
         const depositAmount = totalAmount * 0.2; // 20% deposit
         const remainingAmount = totalAmount - depositAmount;
 
+        // Calculate platform fee (5%)
+        const platformFeePercentage = 5.0;
+        const platformFeeAmount = totalAmount * (platformFeePercentage / 100);
+        const specialistEarnings = totalAmount - platformFeeAmount;
+
         // Check if customer has enough loyalty points
         if (loyaltyPointsUsed > 0 && customer.loyaltyPoints < loyaltyPointsUsed) {
           throw new Error('INSUFFICIENT_LOYALTY_POINTS');
@@ -333,7 +338,7 @@ export class BookingService {
 
         // Determine initial booking status based on specialist's auto-booking setting
         const initialStatus = service.specialist.autoBooking ? 'CONFIRMED' : 'PENDING';
-        
+
         // Create booking within the transaction
         const createdBooking = await tx.booking.create({
           data: {
@@ -345,6 +350,9 @@ export class BookingService {
             totalAmount,
             depositAmount,
             remainingAmount,
+            platformFeePercentage,
+            platformFeeAmount,
+            specialistEarnings,
             loyaltyPointsUsed,
             customerNotes: data.customerNotes,
             deliverables: JSON.stringify([]), // Empty deliverables initially
@@ -1441,7 +1449,7 @@ export class BookingService {
         cancelledBookings: bookings.filter(b => b.status === 'CANCELLED').length,
         totalRevenue: bookings
           .filter(b => b.status === 'COMPLETED')
-          .reduce((sum, b) => sum + b.totalAmount, 0),
+          .reduce((sum, b) => sum + (b.specialistEarnings || (b.totalAmount * 0.95)), 0), // Use specialistEarnings (after 5% platform fee)
         averageBookingValue: 0,
       };
 

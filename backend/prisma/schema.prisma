@@ -281,6 +281,9 @@ model Booking {
   totalAmount    Float
   depositAmount  Float
   remainingAmount Float
+  platformFeePercentage Float @default(5.0) // Platform fee percentage (default 5%)
+  platformFeeAmount Float @default(0.0) // Calculated platform fee amount
+  specialistEarnings Float @default(0.0) // Amount specialist receives after platform fee
   loyaltyPointsUsed Int @default(0)
   paidWithLoyaltyPoints Boolean @default(false) // True if booking was paid entirely with loyalty points
 

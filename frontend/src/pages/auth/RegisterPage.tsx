@@ -272,20 +272,20 @@ const RegisterPage: React.FC = () => {
               <input
                 {...register('userType', { required: t('auth.error.accountTypeRequired') })}
                 type="radio"
-                value="business"
+                value="specialist"
                 className="sr-only"
               />
               <div className={`p-5 border-2 rounded-xl cursor-pointer transition-all h-full ${
-                watchUserType === 'business'
+                watchUserType === 'specialist'
                   ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20 shadow-md'
                   : 'border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 hover:shadow-sm'
               }`}>
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-3">
                     <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center ${
-                      watchUserType === 'business' ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
+                      watchUserType === 'specialist' ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
                     }`}>
-                      {watchUserType === 'business' && (
+                      {watchUserType === 'specialist' && (
                         <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>

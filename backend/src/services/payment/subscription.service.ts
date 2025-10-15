@@ -1,3 +1,10 @@
+/**
+ * @deprecated This subscription service is deprecated as of 2025-01-15.
+ * The platform now uses a 5% transaction fee model instead of subscriptions.
+ * Platform fee is automatically calculated and deducted from specialist earnings.
+ * This file is kept for backward compatibility only.
+ */
+
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
 import { coinbaseCommerceService } from './coinbase.service';
