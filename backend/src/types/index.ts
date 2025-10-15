@@ -2,7 +2,7 @@ import { Request } from 'express';
 import { User } from '@prisma/client';
 
 // Define user types as constants since we're using strings in SQLite
-export type UserType = 'CUSTOMER' | 'SPECIALIST' | 'ADMIN';
+export type UserType = 'CUSTOMER' | 'SPECIALIST' | 'BUSINESS' | 'ADMIN';
 
 // Extend Express Request interface
 export interface AuthenticatedRequest extends Request {

@@ -226,7 +226,6 @@ model Employee {
   services              EmployeeService[]
   bookings              Booking[]             @relation("EmployeeBookings")
   availabilityBlocks    EmployeeAvailability[]
-  employeeBookings      EmployeeBooking[]
 
   // Indexes
   @@index([businessId, isActive])
@@ -2012,6 +2011,7 @@ model Business {
 
   // Relations
   user             User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employees        Employee[]
   services         BusinessService[]
 
   // Indexes
@@ -2021,6 +2021,61 @@ model Business {
   @@map("businesses")
 }
 
+// Employee Model (Staff members working for a business)
+model Employee {
+  id           String  @id @default(cuid())
+  businessId   String
+
+  // Employee information
+  firstName    String
+  lastName     String
+  email        String?
+  phoneNumber  String?
+  avatar       String?
+
+  // Professional details
+  title        String  // Job title (Dentist, Barber, Masseuse, etc.)
+  titleKh      String? // Khmer title
+  bio          String?
+  bioKh        String?
+  specialties  String? // JSON array of specialties
+  experience   Int     @default(0) // Years of experience
+
+  // Credentials
+  licenses     String? // JSON array of license numbers
+  certifications String? // JSON array of certifications
+
+  // Employment details
+  employmentType String @default("FULL_TIME") // FULL_TIME, PART_TIME, CONTRACT
+  startDate      DateTime @default(now())
+  endDate        DateTime? // For contract or if they leave
+  isActive       Boolean @default(true)
+
+  // Performance
+  rating       Float   @default(0.0)
+  reviewCount  Int     @default(0)
+  totalBookings Int    @default(0)
+
+  // Commission (if applicable)
+  commissionRate Float? // Percentage of bookings
+
+  // Schedule
+  workingDays  String? // JSON array of working days
+  workingHours String? // JSON string for working hours
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  business          Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  employeeBookings  EmployeeBooking[]
+
+  // Indexes
+  @@index([businessId, isActive])
+  @@index([rating])
+  @@map("employees")
+}
 
 // Business Service Model (Services offered by businesses)
 model BusinessService {

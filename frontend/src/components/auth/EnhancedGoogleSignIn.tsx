@@ -134,18 +134,18 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
     }
   };
 
-  const handleUserTypeSelection = async (userType: 'customer' | 'specialist') => {
+  const handleUserTypeSelection = async (userType: 'customer' | 'specialist' | 'business') => {
     try {
       if (!pendingGoogleData) {
         throw new Error('No pending Google data');
       }
 
       // Dispatch Google login with selected user type
-      const result = await dispatch(googleLogin({ 
-        credential: pendingGoogleData.credential, 
-        userType 
+      const result = await dispatch(googleLogin({
+        credential: pendingGoogleData.credential,
+        userType
       })).unwrap();
-      
+
       setShowUserTypeModal(false);
       setPendingGoogleData(null);
 
@@ -154,7 +154,7 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
       }
 
       // Navigate based on user type
-      if (userType === 'specialist') {
+      if (userType === 'specialist' || userType === 'business') {
         navigate('/specialist/dashboard');
       } else {
         navigate('/dashboard');
@@ -164,7 +164,7 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
       console.error('User type selection error:', error);
       setShowUserTypeModal(false);
       setPendingGoogleData(null);
-      
+
       if (onError) {
         onError(error.message || 'Registration failed');
       }

@@ -11,7 +11,7 @@ import {
 interface UserTypeSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectUserType: (userType: 'customer' | 'specialist') => void;
+  onSelectUserType: (userType: 'customer' | 'specialist' | 'business') => void;
   userEmail?: string;
   userName?: string;
 }
@@ -110,7 +110,7 @@ const UserTypeSelectionModal: React.FC<UserTypeSelectionModalProps> = ({
               </button>
 
               <button
-                onClick={() => onSelectUserType('specialist')}
+                onClick={() => onSelectUserType('business')}
                 className="group w-full rounded-xl border-2 border-gray-200 p-4 transition-all hover:border-primary-500 hover:bg-primary-50 dark:border-gray-600 dark:hover:bg-primary-900/20"
               >
                 <div className="flex items-center gap-4">

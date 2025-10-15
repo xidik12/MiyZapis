@@ -143,13 +143,13 @@ export class EnhancedAuthService {
         },
       });
 
-      // Create specialist profile if user is a specialist
-      if (data.userType === 'SPECIALIST') {
+      // Create specialist profile if user is a specialist or business
+      if (data.userType === 'SPECIALIST' || data.userType === 'BUSINESS') {
         await prisma.specialist.create({
           data: {
             userId: user.id,
             businessName: '', // Empty - user must fill this in
-            bio: '', // Empty - user must fill this in  
+            bio: '', // Empty - user must fill this in
             specialties: '[]', // Empty array
             city: '',
             state: '',
