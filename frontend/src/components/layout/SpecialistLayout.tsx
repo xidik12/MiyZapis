@@ -391,7 +391,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
       {/* Main content */}
       <div className={`flex-1 flex flex-col ${isCollapsed ? 'lg:ml-16' : 'lg:ml-72'} transition-all duration-300`}>
         {/* Top bar */}
-        <header className="h-16 bg-white/75 dark:bg-white/10 border-b border-white/30 dark:border-white/10 backdrop-blur-xl shadow-[0_24px_60px_-36px_rgba(4,0,151,0.45)] flex items-center justify-between px-4 lg:px-6">
+        <header className="h-16 bg-white/75 dark:bg-white/10 border-b border-white/30 dark:border-white/10 backdrop-blur-xl shadow-[0_24px_60px_-36px_rgba(4,0,151,0.45)] flex items-center justify-between px-4 lg:px-6 lg:-ml-px">
           <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden p-3 sm:p-2 rounded-lg hover:bg-white/40 dark:hover:bg-white/15 transition-colors backdrop-blur"
@@ -399,7 +399,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
             <Bars3Icon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
           </button>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 ml-auto">
             {/* Notifications */}
             <NotificationBell />
 
