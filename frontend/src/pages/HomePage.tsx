@@ -155,9 +155,9 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full prevent-overflow bg-white dark:bg-secondary-900">
+    <div className="min-h-screen w-full prevent-overflow bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Hero Section */}
-      <section className="relative overflow-hidden min-h-[95vh] xs:min-h-[88vh] sm:min-h-[82vh] flex items-center w-full prevent-overflow bg-white dark:bg-secondary-900">
+      <section className="relative overflow-hidden min-h-[95vh] xs:min-h-[88vh] sm:min-h-[82vh] flex items-center w-full prevent-overflow bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         {/* Animated gradient orbs */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }}></div>
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-accent-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '5s', animationDelay: '2s' }}></div>
