@@ -267,6 +267,7 @@ const SpecialistSettings: React.FC = () => {
       <div className="fixed bottom-0 left-0 w-[600px] h-[600px] bg-accent-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDuration: '5s', animationDelay: '2s' }}></div>
 
       <div className="relative p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+        <div>
             {/* Header */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
@@ -749,7 +750,6 @@ const SpecialistSettings: React.FC = () => {
             window.location.reload();
           }}
         />
-      </div>
       </div>
     </div>
   );

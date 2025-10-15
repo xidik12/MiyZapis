@@ -372,7 +372,6 @@ const SpecialistNotifications: React.FC = () => {
         </div>
       )}
       </div>
-      </div>
     </div>
   );
 };

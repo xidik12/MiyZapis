@@ -1644,7 +1644,6 @@ const SpecialistBookings: React.FC = () => {
         }}
         loading={reviewLoading}
       />
-      </div>
     </div>
   );
 };

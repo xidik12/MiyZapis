@@ -2,13 +2,14 @@
   "permissions": {
     "allow": [
       "Bash(for:*)",
-      "Bash(do echo \"=== $file ===\")"
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(awk:*)"
     ],
     "deny": [],
+    "ask": [],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [
       "/Users/salakhitdinovkhidayotullo/Documents"
-    ],
-    "ask": []
+    ]
   }
 }

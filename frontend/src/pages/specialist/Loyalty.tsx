@@ -1508,7 +1508,6 @@ const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSu
           </form>
         </div>
       </div>
-      </div>
     </div>
   );
 };
