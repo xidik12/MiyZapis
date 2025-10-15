@@ -655,6 +655,15 @@ export class BookingService {
               specialist: true,
             },
           },
+          employee: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+              title: true,
+            },
+          },
         },
       });
 
@@ -784,6 +793,15 @@ export class BookingService {
           service: {
             include: {
               specialist: true,
+            },
+          },
+          employee: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+              title: true,
             },
           },
         },
@@ -1216,6 +1234,16 @@ export class BookingService {
                 createdAt: true,
                 updatedAt: true,
                 specialist: true,
+              },
+            },
+            // Include employee information for business bookings
+            employee: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                avatar: true,
+                title: true,
               },
             },
             // Include review information for completed bookings

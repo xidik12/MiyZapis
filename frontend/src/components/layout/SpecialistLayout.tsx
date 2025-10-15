@@ -160,6 +160,14 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
   const dispatch = useAppDispatch();
   const location = useLocation();
 
+  // Filter navigation based on user type - only show Employees for BUSINESS accounts
+  const filteredNavigation = navigation.filter(item => {
+    if (item.href === '/specialist/employees') {
+      return user?.userType === 'BUSINESS';
+    }
+    return true;
+  });
+
   // Check if mobile view
   useEffect(() => {
     const checkScreenSize = () => {
@@ -294,7 +302,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navigation.map((item) => {
+          {filteredNavigation.map((item) => {
             const isActive = isCurrentPath(item.href);
             const Icon = isActive ? item.iconActive : item.icon;
             
