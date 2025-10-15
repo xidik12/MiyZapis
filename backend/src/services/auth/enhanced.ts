@@ -937,14 +937,8 @@ export class EnhancedAuthService {
         },
       });
 
-      // Send verification email
-      const frontendUrl = config.frontend?.url || (config.isProduction ? 'https://miyzapis.com' : 'http://localhost:3000');
-      const verificationLink = `${frontendUrl}/auth/verify-email?token=${verificationToken}`;
-      
-      const emailSent = await emailService.sendVerificationEmail(user.email, {
-        firstName: user.firstName,
-        verificationLink,
-      });
+      // Send verification email using enhanced email service
+      const emailSent = await emailService.sendEmailVerification(user.id, verificationToken, user.language || 'en');
 
       if (!emailSent) {
         return {
