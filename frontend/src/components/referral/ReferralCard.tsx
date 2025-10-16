@@ -23,6 +23,7 @@ import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { ReferralCardProps } from '../../types/referral';
 import { referralService } from '../../services/referral.service';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const ReferralCard: React.FC<ReferralCardProps> = ({
   referral,
@@ -32,6 +33,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [copying, setCopying] = useState(false);
+  const { t } = useLanguage();
 
   const handleCopy = async () => {
     setCopying(true);
@@ -82,7 +84,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
               </h3>
               <div className="flex items-center mt-1 space-x-2">
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Code: {referral.referralCode}
+                  {t('referral.code')}: {referral.referralCode}
                 </span>
                 {getStatusBadge()}
               </div>
@@ -112,7 +114,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
                 {referral.viewCount}
               </span>
             </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400">Views</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">{t('referral.stats.views')}</div>
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
@@ -121,7 +123,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
                 {referral.clickCount}
               </span>
             </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400">Clicks</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">{t('referral.stats.clicks')}</div>
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
@@ -130,7 +132,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
                 {daysUntilExpiry}
               </span>
             </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400">Days left</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">{t('referral.stats.daysLeft')}</div>
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
@@ -139,7 +141,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
                 {referralService.getRewardDisplayText(referral.referrerRewardType, referral.referrerRewardValue || 0)}
               </span>
             </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400">Your reward</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">{t('referral.stats.yourReward')}</div>
           </div>
         </div>
 
@@ -149,8 +151,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
             <div className="flex">
               <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400 mr-2 mt-0.5" />
               <div className="text-sm text-yellow-700 dark:text-yellow-300">
-                This referral expires in {daysUntilExpiry} day{daysUntilExpiry !== 1 ? 's' : ''}.
-                Share it soon to maximize your chances!
+                {t('referral.expiryWarning', { days: daysUntilExpiry })}
               </div>
             </div>
           </div>
@@ -167,7 +168,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
               leftIcon={copying ? <ClipboardDocumentCheckIcon className="h-4 w-4" /> : <ClipboardDocumentIcon className="h-4 w-4" />}
               className="flex-1"
             >
-              {copying ? 'Copied!' : 'Copy Link'}
+              {copying ? t('referral.actions.copied') : t('referral.actions.copyLink')}
             </Button>
             <Button
               onClick={() => onShare(referral)}
@@ -176,7 +177,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
               leftIcon={<ShareIcon className="h-4 w-4" />}
               className="flex-1"
             >
-              Share
+              {t('referral.actions.share')}
             </Button>
           </div>
         )}
@@ -188,7 +189,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
             {referral.referred && (
               <div>
                 <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                  Referred User
+                  {t('referral.referredUser')}
                 </h4>
                 <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg mr-3">
@@ -199,7 +200,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
                       {referral.referred.firstName} {referral.referred.lastName}
                     </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">
-                      {referral.referred.email} • Joined {new Date(referral.referred.createdAt).toLocaleDateString()}
+                      {referral.referred.email} • {t('referral.joined')} {new Date(referral.referred.createdAt).toLocaleDateString()}
                     </div>
                   </div>
                 </div>
@@ -210,7 +211,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
             {referral.customMessage && (
               <div>
                 <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                  Custom Message
+                  {t('referral.customMessage')}
                 </h4>
                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <p className="text-sm text-gray-700 dark:text-gray-300">
@@ -223,12 +224,12 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
             {/* Rewards Details */}
             <div>
               <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                Reward Details
+                {t('referral.rewardDetails')}
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
                   <div className="text-xs text-primary-600 dark:text-primary-400 mb-1">
-                    Your Reward
+                    {t('referral.yourReward')}
                   </div>
                   <div className="text-sm font-medium text-gray-900 dark:text-white">
                     {referralService.getRewardDisplayText(referral.referrerRewardType, referral.referrerRewardValue || 0)}
@@ -236,7 +237,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
                 </div>
                 <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                   <div className="text-xs text-green-600 dark:text-green-400 mb-1">
-                    Their Reward
+                    {t('referral.theirReward')}
                   </div>
                   <div className="text-sm font-medium text-gray-900 dark:text-white">
                     {referralService.getRewardDisplayText(referral.referredRewardType, referral.referredRewardValue || 0)}
@@ -248,7 +249,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
             {/* Share URL */}
             <div>
               <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                Share URL
+                {t('referral.shareUrl')}
               </h4>
               <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <code className="flex-1 text-xs text-gray-600 dark:text-gray-400 break-all">
@@ -267,10 +268,10 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
 
             {/* Timestamps */}
             <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-              <div>Created: {new Date(referral.createdAt).toLocaleString()}</div>
-              <div>Expires: {new Date(referral.expiresAt).toLocaleString()}</div>
+              <div>{t('referral.created')}: {new Date(referral.createdAt).toLocaleString()}</div>
+              <div>{t('referral.expires')}: {new Date(referral.expiresAt).toLocaleString()}</div>
               {referral.completedAt && (
-                <div>Completed: {new Date(referral.completedAt).toLocaleString()}</div>
+                <div>{t('referral.completed')}: {new Date(referral.completedAt).toLocaleString()}</div>
               )}
             </div>
           </div>

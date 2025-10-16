@@ -512,8 +512,8 @@ const CustomerSettings: React.FC = () => {
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         >
                           <option value="uk">🇺🇦 Українська</option>
-                          <option value="ru">🇷🇺 Русский</option>
                           <option value="en">🇺🇸 English</option>
+                          <option value="ru">🇷🇺 Русский</option>
                         </select>
                       </div>
                       <div>
@@ -784,8 +784,8 @@ const CustomerSettings: React.FC = () => {
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       >
                         <option value="uk">🇺🇦 Українська</option>
-                        <option value="ru">🇷🇺 Русский</option>
                         <option value="en">🇺🇸 English</option>
+                        <option value="ru">🇷🇺 Русский</option>
                       </select>
                     </div>
 

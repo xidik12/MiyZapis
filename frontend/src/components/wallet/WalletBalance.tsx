@@ -4,6 +4,7 @@ import { Button } from '../ui/Button';
 import { Loader2, Wallet, Eye, EyeOff, TrendingUp, TrendingDown } from 'lucide-react';
 import { walletService, WalletBalance as WalletBalanceType, WalletSummary } from '../../services/wallet.service';
 import { useCurrency } from '../../contexts/CurrencyContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { toast } from 'react-toastify';
 
 interface WalletBalanceProps {
@@ -20,6 +21,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
   const [showBalance, setShowBalance] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
 
   const fetchWalletSummary = async (showLoading = true) => {
     try {
@@ -30,7 +32,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
       setSummary(summaryData);
     } catch (error) {
       console.error('Error fetching wallet summary:', error);
-      toast.error('Failed to load wallet information');
+      toast.error(t('wallet.errors.loadFailed'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -60,7 +62,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
       <Card className="w-full">
         <div className="p-6">
           <div className="text-center text-muted-foreground">
-            Unable to load wallet information
+            {t('wallet.errors.loadFailed')}
           </div>
         </div>
       </Card>
@@ -76,7 +78,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium flex items-center gap-2">
             <Wallet className="h-4 w-4" />
-            Wallet Balance
+            {t('wallet.balance.title')}
           </h3>
           <div className="flex items-center gap-2">
             <Button
@@ -110,7 +112,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
             {showBalance ? formatPrice(summary.balance) : '•••••'}
           </div>
           <div className="text-sm text-muted-foreground mt-1">
-            Available Balance
+            {t('wallet.balance.available')}
           </div>
         </div>
 
@@ -123,7 +125,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
               <TrendingDown className="h-4 w-4 text-red-500" />
             )}
             <span className={isPositiveFlow ? 'text-green-600' : 'text-red-600'}>
-              {isPositiveFlow ? '+' : ''}{formatPrice(netFlow)} net flow
+              {isPositiveFlow ? '+' : ''}{formatPrice(netFlow)} {t('wallet.balance.netFlow')}
             </span>
           </div>
         ) : null}
@@ -134,13 +136,13 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
             <div className="text-lg font-semibold text-green-600">
               {showBalance ? formatPrice(summary.totalCredits) : '•••••'}
             </div>
-            <div className="text-xs text-muted-foreground">Total Received</div>
+            <div className="text-xs text-muted-foreground">{t('wallet.balance.totalReceived')}</div>
           </div>
           <div className="text-center">
             <div className="text-lg font-semibold text-red-600">
               {showBalance ? formatPrice(summary.totalDebits) : '•••••'}
             </div>
-            <div className="text-xs text-muted-foreground">Total Spent</div>
+            <div className="text-xs text-muted-foreground">{t('wallet.balance.totalSpent')}</div>
           </div>
         </div>
 
@@ -148,7 +150,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
         {summary.pendingTransactions > 0 && (
           <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-md text-center">
             <div className="text-sm text-yellow-800 dark:text-yellow-200">
-              {summary.pendingTransactions} pending transaction{summary.pendingTransactions !== 1 ? 's' : ''}
+              {summary.pendingTransactions} {t('wallet.balance.pendingTransactions')}
             </div>
           </div>
         )}
@@ -156,7 +158,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
         {/* Last Transaction */}
         {summary.lastTransactionAt && (
           <div className="text-xs text-muted-foreground text-center">
-            Last transaction: {new Date(summary.lastTransactionAt).toLocaleDateString()}
+            {t('wallet.balance.lastTransaction')}: {new Date(summary.lastTransactionAt).toLocaleDateString()}
           </div>
         )}
 
@@ -167,7 +169,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
             className="w-full"
             onClick={onTransactionsClick}
           >
-            View Transaction History
+            {t('wallet.balance.viewHistory')}
           </Button>
         )}
         </div>

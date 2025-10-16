@@ -5,6 +5,7 @@ import { Input } from '../ui/Input';
 import { Loader2, Filter, RefreshCw, ArrowUpRight, ArrowDownLeft, RotateCcw, Coins } from 'lucide-react';
 import { walletService, WalletTransaction, TransactionFilters } from '../../services/wallet.service';
 import { useCurrency } from '../../contexts/CurrencyContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { toast } from 'react-toastify';
 
 interface WalletTransactionHistoryProps {
@@ -25,6 +26,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
   const [filters, setFilters] = useState<TransactionFilters>({ limit });
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
 
   const fetchTransactions = async (newFilters: TransactionFilters = filters) => {
     try {
@@ -35,7 +37,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
       setBalance(data.balance);
     } catch (error) {
       console.error('Error fetching transactions:', error);
-      toast.error('Failed to load transaction history');
+      toast.error(t('wallet.transactions.errors.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -110,7 +112,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium">
-            Transaction History {total > 0 && `(${total})`}
+            {t('wallet.transactions.title')} {total > 0 && `(${total})`}
           </h3>
         <div className="flex items-center gap-2">
           {showFilters && (
@@ -144,23 +146,23 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
               onChange={(e) => handleFilterChange('type', e.target.value || undefined)}
               className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             >
-              <option value="">All Types</option>
-              <option value="CREDIT">Credit</option>
-              <option value="DEBIT">Debit</option>
-              <option value="REFUND">Refund</option>
-              <option value="FORFEITURE_SPLIT">Forfeiture</option>
+              <option value="">{t('wallet.transactions.filters.allTypes')}</option>
+              <option value="CREDIT">{t('wallet.transactions.filters.credit')}</option>
+              <option value="DEBIT">{t('wallet.transactions.filters.debit')}</option>
+              <option value="REFUND">{t('wallet.transactions.filters.refund')}</option>
+              <option value="FORFEITURE_SPLIT">{t('wallet.transactions.filters.forfeiture')}</option>
             </select>
 
             <Input
               type="date"
-              placeholder="Start date"
+              placeholder={t('wallet.transactions.filters.startDate')}
               value={filters.startDate || ''}
               onChange={(e) => handleFilterChange('startDate', e.target.value || undefined)}
             />
 
             <Input
               type="date"
-              placeholder="End date"
+              placeholder={t('wallet.transactions.filters.endDate')}
               value={filters.endDate || ''}
               onChange={(e) => handleFilterChange('endDate', e.target.value || undefined)}
             />
@@ -170,13 +172,13 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
         {/* Current Balance */}
         <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
           <div className="text-2xl font-bold">{formatPrice(balance)}</div>
-          <div className="text-sm text-muted-foreground">Current Balance</div>
+          <div className="text-sm text-muted-foreground">{t('wallet.transactions.currentBalance')}</div>
         </div>
 
         {/* Transaction List */}
         {transactions.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            No transactions found
+            {t('wallet.transactions.noTransactions')}
           </div>
         ) : (
           <div className="space-y-2">
@@ -205,12 +207,12 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
                     <div className="text-xs text-muted-foreground">
                       {new Date(transaction.createdAt).toLocaleString()}
                       {transaction.status === 'PENDING' && (
-                        <span className="ml-2 text-yellow-600">Pending</span>
+                        <span className="ml-2 text-yellow-600">{t('wallet.transactions.pending')}</span>
                       )}
                     </div>
                     {transaction.booking && !compact && (
                       <div className="text-xs text-blue-600">
-                        Booking: {transaction.booking.service.name}
+                        {t('wallet.transactions.booking')}: {transaction.booking.service.name}
                       </div>
                     )}
                   </div>
@@ -223,7 +225,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
                   </div>
                   {!compact && (
                     <div className="text-xs text-muted-foreground">
-                      Balance: {formatPrice(transaction.balanceAfter)}
+                      {t('wallet.transactions.balance')}: {formatPrice(transaction.balanceAfter)}
                     </div>
                   )}
                 </div>
@@ -243,7 +245,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : null}
-              Load More ({transactions.length} of {total})
+              {t('wallet.transactions.loadMore')} ({transactions.length} {t('common.of')} {total})
             </Button>
           </div>
         )}

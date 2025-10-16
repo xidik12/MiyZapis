@@ -1615,8 +1615,8 @@ const SpecialistProfile: React.FC = () => {
                           >
                             <option value="">{language === 'uk' ? 'Додати мову' : language === 'ru' ? 'Добавить язык' : 'Add Language'}</option>
                             <option value="uk">Українська</option>
-                            <option value="ru">Русский</option>
                             <option value="en">English</option>
+                            <option value="ru">Русский</option>
                             <option value="de">Deutsch</option>
                             <option value="fr">Français</option>
                             <option value="es">Español</option>

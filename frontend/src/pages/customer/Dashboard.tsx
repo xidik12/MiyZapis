@@ -350,7 +350,7 @@ const CustomerDashboard: React.FC = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading your dashboard...</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('dashboard.loading')}</p>
         </div>
       </div>
     );
@@ -364,11 +364,11 @@ const CustomerDashboard: React.FC = () => {
             <ExclamationTriangleIcon className="w-12 h-12 mx-auto" />
           </div>
           <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
-            Try Again
+            {t('common.tryAgain')}
           </button>
         </div>
       </div>
@@ -549,12 +549,12 @@ const CustomerDashboard: React.FC = () => {
             {/* Wallet Balance */}
             <div className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Wallet</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('wallet.title')}</h3>
                 <Link
                   to="/customer/wallet"
                   className="text-primary-600 hover:text-primary-700 text-sm font-medium"
                 >
-                  View Details
+                  {t('dashboard.viewAll')}
                 </Link>
               </div>
               <WalletBalance
@@ -682,7 +682,7 @@ const CustomerDashboard: React.FC = () => {
                 ))
               )}
               {favoritesLoading && (
-                <div className="text-center py-3 text-sm text-gray-500">Loading...</div>
+                <div className="text-center py-3 text-sm text-gray-500">{t('common.loading')}</div>
               )}
               </div>
             </div>
@@ -697,9 +697,9 @@ const CustomerDashboard: React.FC = () => {
                     <GiftIconSolid className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Loyalty Progress</h3>
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.loyalty.progressTitle')}</h3>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                      {loyaltyStats.currentTier?.name || 'Bronze'} Member
+                      {loyaltyStats.currentTier?.name || 'Bronze'} {t('dashboard.loyalty.member')}
                     </p>
                   </div>
                 </div>
@@ -707,7 +707,7 @@ const CustomerDashboard: React.FC = () => {
                   to="/loyalty"
                   className="inline-flex items-center justify-center w-full sm:w-auto px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs sm:text-sm font-medium"
                 >
-                  View Details
+                  {t('dashboard.viewAll')}
                 </Link>
               </div>
 
@@ -716,21 +716,21 @@ const CustomerDashboard: React.FC = () => {
                   <p className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
                     {formatPoints(loyaltyData?.currentPoints || 0)}
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Current Points</p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('dashboard.loyalty.currentPoints')}</p>
                 </div>
-                
+
                 <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-lg">
                   <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
                     {formatPoints(loyaltyStats.monthlyPoints)}
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">This Month</p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('dashboard.loyalty.thisMonth')}</p>
                 </div>
-                
+
                 <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-lg">
                   <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {formatPoints(loyaltyData?.lifetimePoints || 0)}
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Lifetime Points</p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('dashboard.loyalty.lifetimePoints')}</p>
                 </div>
               </div>
 
@@ -738,10 +738,10 @@ const CustomerDashboard: React.FC = () => {
                 <div>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-1">
                     <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Progress to {loyaltyStats.nextTier.name}
+                      {t('dashboard.loyalty.progressTo')} {loyaltyStats.nextTier.name}
                     </span>
                     <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                      {loyaltyStats.pointsToNextTier} points needed
+                      {loyaltyStats.pointsToNextTier} {t('dashboard.loyalty.pointsNeeded')}
                     </span>
                   </div>
                   <div className="overflow-hidden h-3 mb-2 text-xs flex rounded-full bg-purple-200 dark:bg-purple-800">

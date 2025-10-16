@@ -688,8 +688,8 @@ const SpecialistSettings: React.FC = () => {
                         className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                       >
                         <option value="uk">🇺🇦 Українська</option>
-                        <option value="ru">🇷🇺 Русский</option>
                         <option value="en">🇺🇸 English</option>
+                        <option value="ru">🇷🇺 Русский</option>
                       </select>
                     </div>
                     
