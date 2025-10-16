@@ -78,9 +78,6 @@ export class ServiceService {
         throw new Error('SPECIALIST_NOT_FOUND');
       }
 
-      console.log('🏗️ Creating service with data:', data);
-      console.log('⏰ Duration value before DB save:', data.duration, typeof data.duration);
-      
       // Create service
       const service = await prisma.service.create({
         data: {
@@ -140,9 +137,6 @@ export class ServiceService {
         },
       });
 
-      console.log('✅ Service created in DB:', service);
-      console.log('⏰ Duration in created service:', service.duration, typeof service.duration);
-      
       logger.info('Service created successfully', {
         serviceId: service.id,
         specialistId: specialist.id,
@@ -180,9 +174,6 @@ export class ServiceService {
         throw new Error('UNAUTHORIZED_ACCESS');
       }
 
-      console.log('🔄 Updating service with data:', data);
-      console.log('⏰ Duration value from frontend:', data.duration, typeof data.duration);
-      
       // Update service
       const updateData: any = {
         updatedAt: new Date(),
@@ -194,7 +185,6 @@ export class ServiceService {
       if (data.basePrice !== undefined) updateData.basePrice = data.basePrice;
       if (data.currency !== undefined) updateData.currency = data.currency;
       if (data.duration !== undefined) {
-        console.log('⏰ Setting duration in updateData:', data.duration);
         updateData.duration = data.duration;
       }
       if (data.serviceLocation !== undefined) updateData.serviceLocation = data.serviceLocation;
@@ -217,9 +207,6 @@ export class ServiceService {
       if (data.discountValidFrom !== undefined) updateData.discountValidFrom = data.discountValidFrom ? new Date(data.discountValidFrom) : null;
       if (data.discountValidUntil !== undefined) updateData.discountValidUntil = data.discountValidUntil ? new Date(data.discountValidUntil) : null;
       if (data.discountDescription !== undefined) updateData.discountDescription = data.discountDescription;
-
-      console.log('📤 Final updateData being sent to DB:', updateData);
-      console.log('⏰ Duration in updateData:', updateData.duration);
 
       const service = await prisma.service.update({
         where: { id: serviceId },
@@ -252,9 +239,6 @@ export class ServiceService {
         },
       });
 
-      console.log('✅ Service updated in DB:', service);
-      console.log('⏰ Duration in updated service:', service.duration, typeof service.duration);
-      
       logger.info('Service updated successfully', {
         serviceId: service.id,
         specialistId: existingService.specialist.id,

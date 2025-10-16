@@ -273,6 +273,7 @@ export class ServiceController {
             description: service.description,
             category: service.category,
             basePrice: service.basePrice,
+            price: service.basePrice, // Add price field for frontend compatibility
             currency: service.currency,
             duration: service.duration,
             requirements: service.requirements ? JSON.parse(service.requirements) : [],
@@ -352,6 +353,7 @@ export class ServiceController {
             description: service.description,
             category: service.category,
             basePrice: service.basePrice,
+            price: service.basePrice, // Add price field for frontend compatibility
             currency: service.currency,
             duration: service.duration,
             requirements: service.requirements ? JSON.parse(service.requirements) : [],
@@ -422,6 +424,7 @@ export class ServiceController {
             description: service.description,
             category: service.category,
             basePrice: service.basePrice,
+            price: service.basePrice, // Add price field for frontend compatibility
             currency: service.currency,
             duration: service.duration,
             images: service.images ? JSON.parse(service.images) : [],
@@ -506,6 +509,7 @@ export class ServiceController {
             description: service.description,
             category: service.category,
             basePrice: service.basePrice,
+            price: service.basePrice, // Add price field for frontend compatibility
             currency: service.currency,
             duration: service.duration,
             images: service.images ? JSON.parse(service.images) : [],

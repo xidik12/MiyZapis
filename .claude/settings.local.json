@@ -214,7 +214,8 @@
       "Read(//Users/salakhitdinovkhidayotullo/Downloads/**)",
       "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot/test-paypal-webhook.sh)",
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma migrate dev:*)",
-      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma db push:*)"
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma db push:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma studio:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
