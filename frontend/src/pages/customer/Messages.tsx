@@ -149,7 +149,7 @@ const CustomerMessages: React.FC = () => {
     if (date.toDateString() === now.toDateString()) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday';
+      return t('messages.time.yesterday');
     } else {
       return date.toLocaleDateString();
     }
@@ -160,7 +160,7 @@ const CustomerMessages: React.FC = () => {
       <div className="flex items-center justify-center min-h-96 bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading messages...</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('messages.loading')}</p>
         </div>
       </div>
     );
@@ -191,7 +191,7 @@ const CustomerMessages: React.FC = () => {
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 h-4 sm:h-5 sm:w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search conversations..."
+              placeholder={t('messages.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base"
@@ -205,10 +205,10 @@ const CustomerMessages: React.FC = () => {
             <div className="flex flex-col items-center justify-center h-full text-center p-6">
               <InboxIcon className="h-16 w-16 text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                No conversations yet
+                {t('messages.empty.title')}
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Start a conversation with a specialist by booking a service
+                {t('messages.empty.description')}
               </p>
             </div>
           ) : (
@@ -376,7 +376,7 @@ const CustomerMessages: React.FC = () => {
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type a message..."
+                    placeholder={t('messages.inputPlaceholder')}
                     className="w-full px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm sm:text-base"
                     disabled={sendingMessage}
                   />
@@ -398,10 +398,10 @@ const CustomerMessages: React.FC = () => {
             <div className="text-center">
               <ChatBubbleLeftEllipsisIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                Select a conversation
+                {t('messages.selectConversation.title')}
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Choose a conversation from the sidebar to start messaging
+                {t('messages.selectConversation.description')}
               </p>
             </div>
           </div>

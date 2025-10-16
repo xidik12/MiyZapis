@@ -19,6 +19,7 @@ import {
   ReferralAnalytics,
 } from '../../types/referral';
 import { referralService } from '../../services/referral.service';
+import { useLanguage } from '../../contexts/LanguageContext';
 import ReferralCard from './ReferralCard';
 
 const ReferralTracker: React.FC<ReferralTrackerProps> = ({
@@ -27,6 +28,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
   loading = false,
   className,
 }) => {
+  const { t } = useLanguage();
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'pending' | 'completed' | 'expired'>('all');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
@@ -87,11 +89,11 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
       <Card className="p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Referral Performance
+            {t('referral.performance.title')}
           </h3>
           <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
             <ChartBarIcon className="h-4 w-4 mr-1" />
-            {referralService.formatConversionRate(analytics.overview.conversionRate)} conversion rate
+            {referralService.formatConversionRate(analytics.overview.conversionRate)} {t('referral.performance.conversionRate')}
           </div>
         </div>
 
@@ -100,25 +102,25 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
             <div className="text-2xl font-bold text-gray-900 dark:text-white">
               {analytics.overview.totalReferrals}
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Total Sent</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">{t('referral.performance.totalSent')}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600 dark:text-green-400">
               {analytics.overview.completedReferrals}
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Completed</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">{t('referral.stats.completed')}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
               {analytics.overview.pendingReferrals}
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Pending</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">{t('referral.performance.pending')}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
               {analytics.overview.totalPointsEarned}
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Points Earned</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">{t('referral.stats.pointsEarned')}</div>
           </div>
         </div>
       </Card>
@@ -127,7 +129,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
       {analytics.topPerformingTypes.length > 0 && (
         <Card className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Top Performing Types
+            {t('referral.performance.topTypes')}
           </h3>
           <div className="space-y-3">
             {analytics.topPerformingTypes.map((type) => (
@@ -137,7 +139,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
                 </span>
                 <div className="flex items-center">
                   <span className="text-sm text-gray-600 dark:text-gray-400 mr-2">
-                    {type.completedCount} completed
+                    {type.completedCount} {t('referral.performance.completed')}
                   </span>
                   <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
@@ -158,10 +160,10 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
           {[
-            { key: 'all', label: 'All' },
-            { key: 'pending', label: 'Pending' },
-            { key: 'completed', label: 'Completed' },
-            { key: 'expired', label: 'Expired' },
+            { key: 'all', label: t('referral.filters.all') },
+            { key: 'pending', label: t('referral.filters.pending') },
+            { key: 'completed', label: t('referral.filters.completed') },
+            { key: 'expired', label: t('referral.filters.expired') },
           ].map((filter) => (
             <button
               key={filter.key}
@@ -179,7 +181,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
         </div>
 
         <div className="text-sm text-gray-600 dark:text-gray-400">
-          {filteredReferrals.length} referral{filteredReferrals.length !== 1 ? 's' : ''}
+          {filteredReferrals.length} {filteredReferrals.length !== 1 ? t('referral.filters.referrals') : t('referral.filters.referral')}
         </div>
       </div>
 
@@ -189,8 +191,8 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
           <Card className="p-8 text-center">
             <div className="text-gray-500 dark:text-gray-400">
               {selectedFilter === 'all'
-                ? 'No referrals yet. Create your first referral to get started!'
-                : `No ${selectedFilter} referrals found.`
+                ? t('referral.empty.noReferrals')
+                : `${t('referral.filters.no')} ${selectedFilter} ${t('referral.filters.referrals')} ${t('referral.filters.found')}`
               }
             </div>
           </Card>
@@ -211,7 +213,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
       {analytics.recentActivity.length > 0 && (
         <Card className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Recent Activity
+            {t('referral.recentActivity.title')}
           </h3>
           <div className="space-y-3">
             {analytics.recentActivity.slice(0, 5).map((activity) => (
@@ -224,8 +226,8 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
                     </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">
                       {activity.referred
-                        ? `${activity.referred.name} joined as ${activity.referred.userType.toLowerCase()}`
-                        : 'Pending signup'
+                        ? `${activity.referred.name} ${t('referral.recentActivity.joinedAs')} ${activity.referred.userType.toLowerCase()}`
+                        : t('referral.recentActivity.pendingSignup')
                       }
                     </div>
                   </div>

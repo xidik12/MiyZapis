@@ -21,10 +21,12 @@ import {
   CreateReferralRequest,
 } from '../../types/referral';
 import { referralService } from '../../services/referral.service';
+import { useLanguage } from '../../contexts/LanguageContext';
 import ReferralCreateModal from './ReferralCreateModal';
 import ReferralTracker from './ReferralTracker';
 
 const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, className }) => {
+  const { t } = useLanguage();
   const [config, setConfig] = useState<ReferralConfigResponse | null>(null);
   const [analytics, setAnalytics] = useState<ReferralAnalytics | null>(null);
   const [referrals, setReferrals] = useState<Referral[]>([]);
@@ -50,7 +52,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
       setReferrals(referralsData.referrals);
     } catch (error) {
       console.error('Failed to load referral data:', error);
-      toast.error('Failed to load referral data');
+      toast.error(t('referral.errors.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -64,17 +66,17 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
       // Refresh data
       await loadData();
 
-      toast.success('Referral created successfully!');
+      toast.success(t('referral.success.created'));
       setCreateModalOpen(false);
 
       // Auto-copy link to clipboard
       const copied = await referralService.copyReferralLink(newReferral.referralCode);
       if (copied) {
-        toast.success('Referral link copied to clipboard!');
+        toast.success(t('referral.success.linkCopied'));
       }
     } catch (error: any) {
       console.error('Failed to create referral:', error);
-      const errorMessage = error?.apiError?.message || 'Failed to create referral';
+      const errorMessage = error?.apiError?.message || t('referral.errors.createFailed');
       toast.error(errorMessage);
     } finally {
       setCreating(false);
@@ -92,9 +94,9 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
   if (!config || !analytics) {
     return (
       <div className={clsx('text-center py-12', className)}>
-        <p className="text-gray-500 dark:text-gray-400">Failed to load referral data</p>
+        <p className="text-gray-500 dark:text-gray-400">{t('referral.errors.loadFailed')}</p>
         <Button onClick={loadData} className="mt-4">
-          Try Again
+          {t('common.tryAgain')}
         </Button>
       </div>
     );
@@ -109,10 +111,10 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Referral Program
+            {t('referral.title')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Earn rewards by referring friends and colleagues
+            {t('referral.subtitle')}
           </p>
         </div>
         <Button
@@ -120,7 +122,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
           disabled={!canCreateReferral}
           leftIcon={<UserPlusIcon className="h-5 w-5" />}
         >
-          Create Referral
+          {t('referral.createButton')}
         </Button>
       </div>
 
@@ -133,7 +135,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Total Referrals
+                {t('referral.stats.total')}
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {analytics.overview.totalReferrals}
@@ -149,7 +151,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Completed
+                {t('referral.stats.completed')}
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {analytics.overview.completedReferrals}
@@ -165,7 +167,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Conversion Rate
+                {t('referral.stats.conversionRate')}
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {referralService.formatConversionRate(analytics.overview.conversionRate)}
@@ -181,7 +183,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Points Earned
+                {t('referral.stats.pointsEarned')}
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {analytics.overview.totalPointsEarned}
@@ -194,13 +196,13 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
       {/* Limits & Status */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Current Limits
+          {t('referral.limits.title')}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-gray-600 dark:text-gray-400">
-                Daily Referrals
+                {t('referral.limits.daily')}
               </span>
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {config.limits.dailyUsed} / {config.limits.dailyLimit}
@@ -219,7 +221,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
           <div>
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-gray-600 dark:text-gray-400">
-                Pending Referrals
+                {t('referral.limits.pending')}
               </span>
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {config.limits.pendingUsed} / {config.limits.pendingLimit}
@@ -240,7 +242,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
       {/* Available Referral Types */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Available Referral Types
+          {t('referral.types.title')}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {config.availableTypes.map((type) => {
@@ -255,13 +257,13 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
                 </h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">You earn:</span>
+                    <span className="text-gray-600 dark:text-gray-400">{t('referral.types.youEarn')}</span>
                     <span className="font-medium text-gray-900 dark:text-white">
                       {referralService.getRewardDisplayText(rewards.referrerRewardType, rewards.referrerRewardValue)}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">They get:</span>
+                    <span className="text-gray-600 dark:text-gray-400">{t('referral.types.theyGet')}</span>
                     <span className="font-medium text-gray-900 dark:text-white">
                       {referralService.getRewardDisplayText(rewards.referredRewardType, rewards.referredRewardValue)}
                     </span>
