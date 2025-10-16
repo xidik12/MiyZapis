@@ -291,6 +291,7 @@ const SpecialistSchedule: React.FC = () => {
   const [operationInProgress, setOperationInProgress] = useState(false);
   const [preSelectedDate, setPreSelectedDate] = useState<Date | undefined>();
   const [preSelectedTime, setPreSelectedTime] = useState<string | undefined>();
+  const [showGeneratePrompt, setShowGeneratePrompt] = useState(false);
 
   function getWeekStart(date: Date): Date {
     const d = new Date(date);
@@ -323,6 +324,23 @@ const SpecialistSchedule: React.FC = () => {
 
   function goToToday() {
     setCurrentWeekStart(getWeekStart(new Date()));
+  }
+
+  function getFormattedDateRange(startDate: Date, endDate: Date): string {
+    const months = ['january', 'february', 'march', 'april', 'may', 'june',
+                   'july', 'august', 'september', 'october', 'november', 'december'];
+
+    const startMonth = t(`month.${months[startDate.getMonth()]}`) || months[startDate.getMonth()];
+    const endMonth = t(`month.${months[endDate.getMonth()]}`) || months[endDate.getMonth()];
+    const startDay = startDate.getDate();
+    const endDay = endDate.getDate();
+    const year = endDate.getFullYear();
+
+    if (startDate.getMonth() === endDate.getMonth()) {
+      return `${startMonth} ${startDay} - ${endDay}, ${year}`;
+    } else {
+      return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`;
+    }
   }
 
   const weekDays = getWeekDays(currentWeekStart);
@@ -376,6 +394,60 @@ const SpecialistSchedule: React.FC = () => {
 
     loadAvailabilityBlocks();
   }, [currentWeekStart]);
+
+  // Check if we should prompt to generate availability from working hours
+  useEffect(() => {
+    if (!loading && availabilityBlocks.length === 0 && user?.workingHours) {
+      // User has working hours but no availability blocks - offer to generate
+      setShowGeneratePrompt(true);
+    }
+  }, [loading, availabilityBlocks.length, user?.workingHours]);
+
+  const handleGenerateFromWorkingHours = async () => {
+    if (!isFeatureEnabled('ENABLE_SPECIALIST_SCHEDULE_API')) {
+      return;
+    }
+
+    setOperationInProgress(true);
+    setShowGeneratePrompt(false);
+    try {
+      await retryRequest(
+        () => specialistService.generateAvailabilityFromWorkingHours(),
+        2,
+        1500
+      );
+
+      // Reload availability blocks
+      const startDate = weekDays[0].toISOString().split('T')[0];
+      const endDate = weekDays[6].toISOString().split('T')[0];
+
+      const blocks = await retryRequest(
+        () => specialistService.getAvailabilityBlocks(startDate, endDate),
+        3,
+        2000
+      );
+
+      if (Array.isArray(blocks) && blocks.length > 0) {
+        const formattedBlocks = blocks.map(block => ({
+          id: block.id,
+          startDateTime: new Date(block.startDateTime),
+          endDateTime: new Date(block.endDateTime),
+          isAvailable: block.isAvailable !== false,
+          reason: block.reason || '',
+          isRecurring: block.isRecurring || block.recurring || false,
+          recurringDays: block.recurringDays || [],
+        }));
+        setAvailabilityBlocks(formattedBlocks);
+      }
+
+      setError(null);
+    } catch (err: any) {
+      console.error('Error generating availability:', err);
+      setError(err.message || 'Failed to generate availability from working hours');
+    } finally {
+      setOperationInProgress(false);
+    }
+  };
 
   const handleAddTimeSlot = async (formData: any) => {
     if (!isFeatureEnabled('ENABLE_SPECIALIST_SCHEDULE_API')) {
@@ -559,7 +631,7 @@ const SpecialistSchedule: React.FC = () => {
               <XMarkIcon className="h-5 w-5 text-red-400" />
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">{t('common.error') || 'Ошибка'}</h3>
               <div className="mt-2 text-sm text-red-700 dark:text-red-300">
                 <p>{error}</p>
               </div>
@@ -569,7 +641,43 @@ const SpecialistSchedule: React.FC = () => {
                   onClick={() => setError(null)}
                   className="text-sm font-medium text-red-800 dark:text-red-200 hover:text-red-600 dark:hover:text-red-400"
                 >
-                  Dismiss
+                  {t('common.dismiss') || 'Закрыть'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Generate from Working Hours Prompt */}
+      {showGeneratePrompt && (
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <CalendarIcon className="h-5 w-5 text-blue-400" />
+            </div>
+            <div className="ml-3 flex-1">
+              <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                {t('schedule.generatePromptTitle') || 'Автоматически создать расписание'}
+              </h3>
+              <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                <p>{t('schedule.generatePromptMessage') || 'У вас настроены рабочие часы, но нет доступных слотов. Хотите автоматически создать расписание на основе ваших рабочих часов?'}</p>
+              </div>
+              <div className="mt-3 flex items-center space-x-3">
+                <button
+                  type="button"
+                  onClick={handleGenerateFromWorkingHours}
+                  disabled={operationInProgress}
+                  className="text-sm font-medium text-blue-800 dark:text-blue-200 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-50"
+                >
+                  {operationInProgress ? (t('common.loading') || 'Загрузка...') : (t('schedule.generateButton') || 'Создать расписание')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowGeneratePrompt(false)}
+                  className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                >
+                  {t('common.cancel') || 'Отмена'}
                 </button>
               </div>
             </div>
@@ -588,8 +696,7 @@ const SpecialistSchedule: React.FC = () => {
           </button>
           <div className="text-center">
             <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-              {weekDays[0].toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} -{' '}
-              {weekDays[6].toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+              {getFormattedDateRange(weekDays[0], weekDays[6])}
             </h2>
           </div>
           <button
@@ -603,7 +710,7 @@ const SpecialistSchedule: React.FC = () => {
           onClick={goToToday}
           className="px-4 py-2 bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 rounded-lg hover:bg-primary-200 dark:hover:bg-primary-900/40 transition-colors font-medium text-sm"
         >
-          Today
+          {t('schedule.today') || 'Сегодня'}
         </button>
       </div>
 
@@ -614,10 +721,12 @@ const SpecialistSchedule: React.FC = () => {
             {/* Day Headers */}
             <div className="grid grid-cols-8 border-b border-gray-200 dark:border-gray-700">
               <div className="p-2 sm:p-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
-                Time
+                {t('schedule.time') || 'Время'}
               </div>
               {weekDays.map((day, index) => {
                 const isToday = day.toDateString() === new Date().toDateString();
+                const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                const dayName = dayNames[day.getDay()];
                 return (
                   <div
                     key={index}
@@ -626,7 +735,7 @@ const SpecialistSchedule: React.FC = () => {
                     }`}
                   >
                     <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                      {day.toLocaleDateString('en-US', { weekday: 'short' })}
+                      {t(`weekday.${dayName}`) || day.toLocaleDateString('en-US', { weekday: 'short' })}
                     </div>
                     <div className={`text-lg sm:text-xl font-bold mt-1 ${
                       isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-900 dark:text-white'
