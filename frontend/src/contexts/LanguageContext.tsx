@@ -1006,7 +1006,25 @@ const translations: Translations = {
 
   // Customer Settings - Password Section
   'customer.settings.changePassword': { en: 'Change Password', uk: 'Змінити пароль', ru: 'Изменить пароль' },
-  
+  'customer.settings.passwordSecurity': { en: 'Password & Security', uk: 'Пароль та безпека', ru: 'Пароль и безопасность' },
+  'customer.settings.setPasswordTitle': { en: 'Set up password for your account', uk: 'Встановіть пароль для свого облікового запису', ru: 'Установите пароль для своей учетной записи' },
+  'customer.settings.setPasswordDescription': { en: 'You signed up with Google. Set a password to enable password reset and additional security options.', uk: 'Ви зареєструвалися через Google. Встановіть пароль, щоб увімкнути скидання пароля та додаткові параметри безпеки.', ru: 'Вы зарегистрировались через Google. Установите пароль, чтобы включить сброс пароля и дополнительные параметры безопасности.' },
+  'customer.settings.setPassword': { en: 'Set Password', uk: 'Встановити пароль', ru: 'Установить пароль' },
+  'customer.settings.password': { en: 'Password', uk: 'Пароль', ru: 'Пароль' },
+  'customer.settings.lastChanged': { en: 'Last changed', uk: 'Останнє оновлення', ru: 'Последнее изменение' },
+  'customer.settings.never': { en: 'Never', uk: 'Ніколи', ru: 'Никогда' },
+  'customer.settings.passwordRequirements': { en: 'Password requirements', uk: 'Вимоги до пароля', ru: 'Требования к паролю' },
+  'customer.settings.passwordReq1': { en: 'At least 8 characters long', uk: 'Мінімум 8 символів', ru: 'Минимум 8 символов' },
+  'customer.settings.passwordReq2': { en: 'One uppercase letter (A-Z)', uk: 'Одна велика літера (A-Z)', ru: 'Одна заглавная буква (A-Z)' },
+  'customer.settings.passwordReq3': { en: 'One lowercase letter (a-z)', uk: 'Одна мала літера (a-z)', ru: 'Одна строчная буква (a-z)' },
+  'customer.settings.passwordReq4': { en: 'One number (0-9)', uk: 'Одна цифра (0-9)', ru: 'Одна цифра (0-9)' },
+  'customer.settings.passwordReq5': { en: 'One symbol (!@#$%^&*)', uk: 'Один символ (!@#$%^&*)', ru: 'Один символ (!@#$%^&*)' },
+  'customer.settings.passwordReq6': { en: 'English characters only', uk: 'Лише англійські символи', ru: 'Только английские символы' },
+  'customer.settings.noPaymentMethods': { en: 'No payment methods added yet', uk: 'Ще не додано способів оплати', ru: 'Еще не добавлено способов оплаты' },
+  'customer.settings.addFirstPayment': { en: 'Add Your First Payment Method', uk: 'Додайте свій перший спосіб оплати', ru: 'Добавьте свой первый способ оплаты' },
+  'customer.settings.noAddresses': { en: 'No addresses added yet', uk: 'Ще не додано адрес', ru: 'Еще не добавлено адресов' },
+  'customer.settings.addFirstAddress': { en: 'Add Your First Address', uk: 'Додайте свою першу адресу', ru: 'Добавьте свой первый адрес' },
+
   // Customer Settings - Notifications Section
   'customer.settings.emailNotifications': { en: 'Email Notifications', uk: 'Електронні сповіщення', ru: 'Email уведомления' },
   'customer.settings.pushNotifications': { en: 'Push Notifications', uk: 'Push-сповіщення', ru: 'Push уведомления' },

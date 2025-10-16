@@ -537,7 +537,7 @@ const CustomerSettings: React.FC = () => {
                   <div className="border-t pt-6">
                     <h4 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
                       <ShieldCheckIcon className="w-4 h-4 mr-2" />
-                      Password & Security
+                      {t('customer.settings.passwordSecurity')}
                     </h4>
 
                     {/* Google OAuth Users - Set Password */}
@@ -553,16 +553,16 @@ const CustomerSettings: React.FC = () => {
                           <ShieldCheckIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                           <div className="flex-1">
                             <h5 className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                              Set up password for your account
+                              {t('customer.settings.setPasswordTitle')}
                             </h5>
                             <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                              You signed up with Google. Set a password to enable password reset and additional security options.
+                              {t('customer.settings.setPasswordDescription')}
                             </p>
                             <button
                               onClick={() => setShowSetPasswordModal(true)}
                               className="inline-flex items-center mt-3 px-3 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700 transition-colors"
                             >
-                              Set Password
+                              {t('customer.settings.setPassword')}
                             </button>
                           </div>
                         </div>
@@ -573,10 +573,10 @@ const CustomerSettings: React.FC = () => {
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          Password
+                          {t('customer.settings.password')}
                         </p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Last changed: {currentUser?.passwordLastChanged ? new Date(currentUser.passwordLastChanged).toLocaleDateString() : 'Never'}
+                          {t('customer.settings.lastChanged')}: {currentUser?.passwordLastChanged ? new Date(currentUser.passwordLastChanged).toLocaleDateString() : t('customer.settings.never')}
                         </p>
                       </div>
                       {/* Debug logging - remove in production */}
@@ -591,7 +591,7 @@ const CustomerSettings: React.FC = () => {
                           onClick={() => setShowSetPasswordModal(true)}
                           className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
                         >
-                          Set Password
+                          {t('customer.settings.setPassword')}
                         </button>
                       ) : (
                         <button
@@ -605,14 +605,14 @@ const CustomerSettings: React.FC = () => {
 
                     {/* Password Requirements */}
                     <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                      <p className="font-medium mb-2">Password requirements:</p>
+                      <p className="font-medium mb-2">{t('customer.settings.passwordRequirements')}:</p>
                       <ul className="space-y-1 text-xs">
-                        <li>• At least 8 characters long</li>
-                        <li>• One uppercase letter (A-Z)</li>
-                        <li>• One lowercase letter (a-z)</li>
-                        <li>• One number (0-9)</li>
-                        <li>• One symbol (!@#$%^&*)</li>
-                        <li>• English characters only</li>
+                        <li>• {t('customer.settings.passwordReq1')}</li>
+                        <li>• {t('customer.settings.passwordReq2')}</li>
+                        <li>• {t('customer.settings.passwordReq3')}</li>
+                        <li>• {t('customer.settings.passwordReq4')}</li>
+                        <li>• {t('customer.settings.passwordReq5')}</li>
+                        <li>• {t('customer.settings.passwordReq6')}</li>
                       </ul>
                     </div>
 
@@ -664,12 +664,12 @@ const CustomerSettings: React.FC = () => {
 
                     {/* Push Notifications */}
                     <div>
-                      <h3 className="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">Push Notifications</h3>
+                      <h3 className="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">{t('customer.settings.pushNotifications')}</h3>
                       <div className="space-y-3">
                         {[
-                          { key: 'pushBookingConfirmation', label: 'Booking confirmations' },
-                          { key: 'pushReminders', label: 'Appointment reminders' },
-                          { key: 'pushPromotions', label: 'Promotions and offers' },
+                          { key: 'pushBookingConfirmation', label: t('customer.settings.bookingConfirmations') },
+                          { key: 'pushReminders', label: t('customer.settings.appointmentReminders') },
+                          { key: 'pushPromotions', label: t('customer.settings.promotionsOffers') },
                         ].map(({ key, label }) => (
                           <div key={key} className="flex items-center justify-between">
                             <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
@@ -692,10 +692,10 @@ const CustomerSettings: React.FC = () => {
 
                     {/* SMS Notifications */}
                     <div>
-                      <h3 className="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">SMS Notifications</h3>
+                      <h3 className="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">{t('customer.settings.smsNotifications')}</h3>
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-700 dark:text-gray-300">Appointment reminders</span>
+                          <span className="text-sm text-gray-700 dark:text-gray-300">{t('customer.settings.appointmentReminders')}</span>
                           <button
                             onClick={() => handleNotificationChange('smsReminders')}
                             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
@@ -725,24 +725,24 @@ const CustomerSettings: React.FC = () => {
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Profile Visibility
+                        {t('customer.settings.profileVisibility')}
                       </label>
                       <select
                         value={privacy.profileVisibility}
                         onChange={(e) => handlePrivacyChange('profileVisibility', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       >
-                        <option value="public">Public</option>
-                        <option value="private">Private</option>
+                        <option value="public">{t('customer.settings.publicProfile')}</option>
+                        <option value="private">{t('customer.settings.privateProfile')}</option>
                       </select>
                     </div>
 
                     <div className="space-y-3">
                       {[
-                        { key: 'showEmail', label: 'Show email in profile' },
-                        { key: 'showPhone', label: 'Show phone number in profile' },
-                        { key: 'allowReviews', label: 'Allow others to leave reviews' },
-                        { key: 'dataProcessing', label: 'Allow data processing for recommendations' },
+                        { key: 'showEmail', label: t('customer.settings.showEmailProfile') },
+                        { key: 'showPhone', label: t('customer.settings.showPhoneProfile') },
+                        { key: 'allowReviews', label: t('customer.settings.allowReviews') },
+                        { key: 'dataProcessing', label: t('customer.settings.dataProcessing') },
                       ].map(({ key, label }) => (
                         <div key={key} className="flex items-center justify-between">
                           <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
@@ -776,7 +776,7 @@ const CustomerSettings: React.FC = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Language
+                        {t('customer.settings.languageLabel')}
                       </label>
                       <select
                         value={language}
@@ -791,7 +791,7 @@ const CustomerSettings: React.FC = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Currency
+                        {t('customer.settings.currencyLabel')}
                       </label>
                       <select
                         value={currency}
@@ -806,16 +806,16 @@ const CustomerSettings: React.FC = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Theme
+                        {t('customer.settings.themeLabel')}
                       </label>
                       <select
                         value={theme}
                         onChange={(e) => setTheme(e.target.value as any)}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       >
-                        <option value="light">Light</option>
-                        <option value="dark">Dark</option>
-                        <option value="system">System</option>
+                        <option value="light">{t('customer.settings.lightTheme')}</option>
+                        <option value="dark">{t('customer.settings.darkTheme')}</option>
+                        <option value="system">{t('customer.settings.systemTheme')}</option>
                       </select>
                     </div>
                   </div>
@@ -829,12 +829,12 @@ const CustomerSettings: React.FC = () => {
                     <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                       {t('customer.settings.payments')}
                     </h2>
-                    <button 
+                    <button
                       onClick={handleAddPaymentMethod}
                       className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
                     >
                       <PlusIcon className="h-4 w-4 mr-2" />
-                      Add Payment Method
+                      {t('customer.settings.addPaymentMethod')}
                     </button>
                   </div>
 
@@ -842,13 +842,13 @@ const CustomerSettings: React.FC = () => {
                     {paymentMethods.length === 0 ? (
                       <div className="text-center py-8">
                         <CreditCardIcon className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                        <p className="text-gray-500 dark:text-gray-400 mb-4">No payment methods added yet</p>
-                        <button 
+                        <p className="text-gray-500 dark:text-gray-400 mb-4">{t('customer.settings.noPaymentMethods')}</p>
+                        <button
                           onClick={handleAddPaymentMethod}
                           className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
                         >
                           <PlusIcon className="h-4 w-4 mr-2" />
-                          Add Your First Payment Method
+                          {t('customer.settings.addFirstPayment')}
                         </button>
                       </div>
                     ) : (
@@ -862,26 +862,26 @@ const CustomerSettings: React.FC = () => {
                               **** **** **** {method.cardLast4}
                               {method.cardExpMonth && method.cardExpYear && (
                                 <span className="ml-2">
-                                  Expires {method.cardExpMonth.toString().padStart(2, '0')}/{method.cardExpYear}
+                                  {t('customer.settings.expires')} {method.cardExpMonth.toString().padStart(2, '0')}/{method.cardExpYear}
                                 </span>
                               )}
                             </p>
                             {method.isDefault && (
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                                Default
+                                {t('customer.settings.defaultPayment')}
                               </span>
                             )}
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
                           <button className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
-                            Edit
+                            {t('customer.settings.editPayment')}
                           </button>
                           <button
                             onClick={() => handleRemovePaymentMethod(method.id)}
                             className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
                           >
-                            Remove
+                            {t('customer.settings.removePayment')}
                           </button>
                         </div>
                       </div>
@@ -898,12 +898,12 @@ const CustomerSettings: React.FC = () => {
                     <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                       {t('customer.settings.addresses')}
                     </h2>
-                    <button 
+                    <button
                       onClick={handleAddAddress}
                       className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
                     >
                       <PlusIcon className="h-4 w-4 mr-2" />
-                      Add Address
+                      {t('customer.settings.addAddress')}
                     </button>
                   </div>
 
@@ -911,13 +911,13 @@ const CustomerSettings: React.FC = () => {
                     {addresses.length === 0 ? (
                       <div className="text-center py-8">
                         <MapPinIcon className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                        <p className="text-gray-500 dark:text-gray-400 mb-4">No addresses added yet</p>
-                        <button 
+                        <p className="text-gray-500 dark:text-gray-400 mb-4">{t('customer.settings.noAddresses')}</p>
+                        <button
                           onClick={handleAddAddress}
                           className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
                         >
                           <PlusIcon className="h-4 w-4 mr-2" />
-                          Add Your First Address
+                          {t('customer.settings.addFirstAddress')}
                         </button>
                       </div>
                     ) : (
@@ -930,7 +930,7 @@ const CustomerSettings: React.FC = () => {
                               <p className="font-medium text-gray-900 dark:text-gray-100 mr-2">{address.label}</p>
                               {address.isDefault && (
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                                  Default
+                                  {t('customer.settings.defaultAddress')}
                                 </span>
                               )}
                             </div>
@@ -943,13 +943,13 @@ const CustomerSettings: React.FC = () => {
                         </div>
                         <div className="flex items-center space-x-2">
                           <button className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
-                            Edit
+                            {t('customer.settings.editAddress')}
                           </button>
                           <button
                             onClick={() => handleRemoveAddress(address.id)}
                             className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
                           >
-                            Remove
+                            {t('customer.settings.removeAddress')}
                           </button>
                         </div>
                       </div>
