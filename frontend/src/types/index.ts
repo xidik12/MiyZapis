@@ -22,6 +22,10 @@ export interface User extends BaseEntity {
   isVerified: boolean;
   telegramId?: string;
   preferences: UserPreferences;
+  // Free trial period
+  trialStartDate?: string;
+  trialEndDate?: string;
+  isInTrial?: boolean;
 }
 
 export interface UserPreferences {

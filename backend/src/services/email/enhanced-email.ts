@@ -509,6 +509,98 @@ export class EnhancedEmailService {
   }
 
   /**
+   * Send trial expiring warning email (7 days before expiration)
+   */
+  async sendTrialExpiringWarning(userId: string, language: string = 'en'): Promise<boolean> {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user || !user.trialEndDate) {
+        logger.error('User not found or no trial end date:', userId);
+        return false;
+      }
+
+      const now = new Date();
+      const endDate = new Date(user.trialEndDate);
+      const daysRemaining = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+      const trialInfoUrl = `${config.frontend.url}/trial-info`;
+      const helpUrl = `${config.frontend.url}/help`;
+
+      return await this.sendTemplateEmail({
+        to: user.email,
+        templateKey: 'trialExpiringWarning',
+        language,
+        data: {
+          firstName: user.firstName,
+          daysRemaining,
+          trialEndDate: endDate.toLocaleDateString(language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }),
+          isCustomer: user.userType === 'CUSTOMER',
+          isSpecialist: user.userType === 'SPECIALIST',
+          trialInfoUrl,
+          helpUrl,
+        },
+      });
+
+    } catch (error) {
+      logger.error('Failed to send trial expiring warning email:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Send trial expired email
+   */
+  async sendTrialExpired(userId: string, language: string = 'en'): Promise<boolean> {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user || !user.trialEndDate) {
+        logger.error('User not found or no trial end date:', userId);
+        return false;
+      }
+
+      const endDate = new Date(user.trialEndDate);
+      const dashboardUrl = user.userType === 'SPECIALIST'
+        ? `${config.frontend.url}/specialist/dashboard`
+        : `${config.frontend.url}/customer/dashboard`;
+      const pricingUrl = `${config.frontend.url}/trial-info`;
+      const helpUrl = `${config.frontend.url}/help`;
+
+      return await this.sendTemplateEmail({
+        to: user.email,
+        templateKey: 'trialExpired',
+        language,
+        data: {
+          firstName: user.firstName,
+          trialEndDate: endDate.toLocaleDateString(language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }),
+          isCustomer: user.userType === 'CUSTOMER',
+          isSpecialist: user.userType === 'SPECIALIST',
+          dashboardUrl,
+          pricingUrl,
+          helpUrl,
+        },
+      });
+
+    } catch (error) {
+      logger.error('Failed to send trial expired email:', error);
+      return false;
+    }
+  }
+
+  /**
    * Get email statistics
    */
   async getEmailStats(days: number = 30): Promise<{

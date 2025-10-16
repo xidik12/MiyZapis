@@ -1025,6 +1025,77 @@ const translations: Translations = {
   'customer.settings.noAddresses': { en: 'No addresses added yet', uk: 'Ще не додано адрес', ru: 'Еще не добавлено адресов' },
   'customer.settings.addFirstAddress': { en: 'Add Your First Address', uk: 'Додайте свою першу адресу', ru: 'Добавьте свой первый адрес' },
 
+  // Trial Period
+  'trial.banner.title': { en: 'Free Trial Active', uk: 'Активний безкоштовний пробний період', ru: 'Активен бесплатный пробный период' },
+  'trial.banner.customerMessage': { en: 'You\'re enjoying our free trial -', uk: 'Ви користуєтеся безкоштовним пробним періодом -', ru: 'Вы пользуетесь бесплатным пробным периодом -' },
+  'trial.banner.specialistMessage': { en: 'You\'re enjoying our free trial -', uk: 'Ви користуєтеся безкоштовним пробним періодом -', ru: 'Вы пользуетесь бесплатным пробным периодом -' },
+  'trial.banner.noBookingFees': { en: 'no booking deposits required!', uk: 'без депозитів за бронювання!', ru: 'без депозитов за бронирование!' },
+  'trial.banner.noPlatformFees': { en: 'no platform fees!', uk: 'без платформних комісій!', ru: 'без платформных комиссий!' },
+  'trial.banner.dayLeft': { en: 'day left', uk: 'день залишився', ru: 'день остался' },
+  'trial.banner.daysLeft': { en: 'days left', uk: 'днів залишилось', ru: 'дней осталось' },
+  'trial.banner.learnMore': { en: 'Learn More', uk: 'Дізнатися більше', ru: 'Узнать больше' },
+
+  // Trial Info Page
+  'trial.info.hero.title': { en: 'Welcome to Your Free 3-Month Trial', uk: 'Ласкаво просимо до вашого безкоштовного 3-місячного пробного періоду', ru: 'Добро пожаловать в ваш бесплатный 3-месячный пробный период' },
+  'trial.info.hero.subtitle': { en: 'Experience all the benefits of our platform with no commitments, no hidden fees, and no credit card required.', uk: 'Відчуйте всі переваги нашої платформи без зобов\'язань, прихованих комісій та без потреби кредитної картки.', ru: 'Ощутите все преимущества нашей платформы без обязательств, скрытых комиссий и без необходимости кредитной карты.' },
+
+  'trial.info.yourTrial.title': { en: 'Your Free Trial Period', uk: 'Ваш безкоштовний пробний період', ru: 'Ваш бесплатный пробный период' },
+  'trial.info.yourTrial.subtitle': { en: 'Track your trial progress and see when it ends', uk: 'Стежте за прогресом пробного періоду та дізнайтесь, коли він завершиться', ru: 'Отслеживайте прогресс пробного периода и узнайте, когда он закончится' },
+  'trial.info.yourTrial.progress': { en: 'Trial Progress', uk: 'Прогрес пробного періоду', ru: 'Прогресс пробного периода' },
+  'trial.info.yourTrial.endDate': { en: 'Ends on', uk: 'Закінчується', ru: 'Заканчивается' },
+
+  'trial.info.whatIs.title': { en: 'What is the Free Trial?', uk: 'Що таке безкоштовний пробний період?', ru: 'Что такое бесплатный пробный период?' },
+  'trial.info.whatIs.description': { en: 'Our free trial gives you unrestricted access to our platform for 3 months. No credit card required, no automatic billing, just pure value.', uk: 'Наш безкоштовний пробний період надає вам необмежений доступ до нашої платформи протягом 3 місяців. Без кредитної картки, без автоматичних платежів, лише цінність.', ru: 'Наш бесплатный пробный период предоставляет вам неограниченный доступ к нашей платформе на 3 месяца. Без кредитной карты, без автоматических платежей, только ценность.' },
+
+  'trial.info.features.duration.title': { en: '3 Full Months', uk: '3 повні місяці', ru: '3 полных месяца' },
+  'trial.info.features.duration.description': { en: 'Enjoy 90 days of free access to all platform features without any restrictions.', uk: 'Насолоджуйтесь 90 днями безкоштовного доступу до всіх функцій платформи без жодних обмежень.', ru: 'Наслаждайтесь 90 днями бесплатного доступа ко всем функциям платформы без каких-либо ограничений.' },
+
+  'trial.info.features.automatic.title': { en: 'Automatic Activation', uk: 'Автоматична активація', ru: 'Автоматическая активация' },
+  'trial.info.features.automatic.description': { en: 'Your trial starts immediately upon registration. No setup required, just sign up and start!', uk: 'Ваш пробний період починається відразу після реєстрації. Не потрібно налаштування, просто зареєструйтесь і починайте!', ru: 'Ваш пробный период начинается сразу после регистрации. Настройка не требуется, просто зарегистрируйтесь и начните!' },
+
+  'trial.info.features.fullAccess.title': { en: 'Full Platform Access', uk: 'Повний доступ до платформи', ru: 'Полный доступ к платформе' },
+  'trial.info.features.fullAccess.description': { en: 'Access every feature, tool, and service available on our platform during your trial period.', uk: 'Доступ до кожної функції, інструменту та послуги, доступних на нашій платформі протягом пробного періоду.', ru: 'Доступ к каждой функции, инструменту и услуге, доступным на нашей платформе в течение пробного периода.' },
+
+  'trial.info.forCustomers.title': { en: 'Benefits for Customers', uk: 'Переваги для клієнтів', ru: 'Преимущества для клиентов' },
+  'trial.info.forCustomers.subtitle': { en: 'Book services without worrying about deposits or fees during your trial', uk: 'Бронюйте послуги без турбот про депозити чи комісії під час пробного періоду', ru: 'Бронируйте услуги без беспокойства о депозитах или комиссиях в течение пробного периода' },
+
+  'trial.info.customerBenefits.noDeposits.title': { en: 'No Booking Deposits', uk: 'Без депозитів за бронювання', ru: 'Без депозитов за бронирование' },
+  'trial.info.customerBenefits.noDeposits.description': { en: 'Book any service without paying upfront deposits. Try different specialists risk-free during your trial.', uk: 'Бронюйте будь-яку послугу без передоплати депозитів. Спробуйте різних спеціалістів без ризику під час пробного періоду.', ru: 'Бронируйте любую услугу без предоплаты депозитов. Попробуйте разных специалистов без риска в течение пробного периода.' },
+
+  'trial.info.customerBenefits.fullAccess.title': { en: 'Access All Services', uk: 'Доступ до всіх послуг', ru: 'Доступ ко всем услугам' },
+  'trial.info.customerBenefits.fullAccess.description': { en: 'Browse and book from thousands of services and specialists across all categories without any limitations.', uk: 'Переглядайте та бронюйте з тисяч послуг та спеціалістів у всіх категоріях без жодних обмежень.', ru: 'Просматривайте и бронируйте из тысяч услуг и специалистов во всех категориях без каких-либо ограничений.' },
+
+  'trial.info.customerBenefits.noCommitment.title': { en: 'No Commitment Required', uk: 'Без зобов\'язань', ru: 'Без обязательств' },
+  'trial.info.customerBenefits.noCommitment.description': { en: 'Cancel anytime, no questions asked. We never store your payment information during the trial.', uk: 'Скасуйте будь-коли, без питань. Ми ніколи не зберігаємо вашу платіжну інформацію під час пробного періоду.', ru: 'Отменить в любое время, без вопросов. Мы никогда не сохраняем вашу платежную информацию во время пробного периода.' },
+
+  'trial.info.forSpecialists.title': { en: 'Benefits for Specialists', uk: 'Переваги для спеціалістів', ru: 'Преимущества для специалистов' },
+  'trial.info.forSpecialists.subtitle': { en: 'Grow your business without paying platform fees during your trial', uk: 'Розвивайте свій бізнес без сплати платформних комісій під час пробного періоду', ru: 'Развивайте свой бизнес без уплаты платформенных комиссий в течение пробного периода' },
+
+  'trial.info.specialistBenefits.noFees.title': { en: 'Zero Platform Fees', uk: 'Нульові платформні комісії', ru: 'Нулевые платформенные комиссии' },
+  'trial.info.specialistBenefits.noFees.description': { en: 'Keep 100% of your earnings during the trial. No per-booking fees, no monthly subscription costs.', uk: 'Зберігайте 100% своїх заробітків під час пробного періоду. Без комісій за бронювання, без витрат на місячну підписку.', ru: 'Сохраняйте 100% своих заработков в течение пробного периода. Без комиссий за бронирование, без затрат на ежемесячную подписку.' },
+
+  'trial.info.specialistBenefits.buildClientele.title': { en: 'Build Your Clientele', uk: 'Створіть свою клієнтську базу', ru: 'Создайте свою клиентскую базу' },
+  'trial.info.specialistBenefits.buildClientele.description': { en: 'Attract new clients, build your reputation, and gather reviews without any financial barriers.', uk: 'Залучайте нових клієнтів, будуйте свою репутацію та збирайте відгуки без жодних фінансових бар\'єрів.', ru: 'Привлекайте новых клиентов, создавайте свою репутацию и собирайте отзывы без каких-либо финансовых барьеров.' },
+
+  'trial.info.specialistBenefits.growBusiness.title': { en: 'Test & Grow', uk: 'Тестуйте та зростайте', ru: 'Тестируйте и растите' },
+  'trial.info.specialistBenefits.growBusiness.description': { en: 'Test our platform risk-free and see how it fits your business before committing to a subscription.', uk: 'Тестуйте нашу платформу без ризику та подивіться, як вона підходить вашому бізнесу перед оформленням підписки.', ru: 'Тестируйте нашу платформу без риска и посмотрите, как она подходит вашему бизнесу перед оформлением подписки.' },
+
+  'trial.info.afterTrial.title': { en: 'What Happens After the Trial?', uk: 'Що відбувається після пробного періоду?', ru: 'Что происходит после пробного периода?' },
+  'trial.info.afterTrial.description': { en: 'After your 3-month trial ends, our standard pricing applies. You can continue enjoying all features with transparent pricing.', uk: 'Після закінчення 3-місячного пробного періоду діють наші стандартні ціни. Ви можете продовжувати користуватися всіма функціями з прозорим ціноутворенням.', ru: 'После окончания 3-месячного пробного периода применяются наши стандартные цены. Вы можете продолжать пользоваться всеми функциями с прозрачным ценообразованием.' },
+
+  'trial.info.afterTrial.customers.title': { en: 'For Customers', uk: 'Для клієнтів', ru: 'Для клиентов' },
+  'trial.info.afterTrial.customers.item1': { en: 'Small deposit required when booking services (typically 10-20% of total)', uk: 'Невеликий депозит потрібен при бронюванні послуг (зазвичай 10-20% від загальної суми)', ru: 'Небольшой депозит требуется при бронировании услуг (обычно 10-20% от общей суммы)' },
+  'trial.info.afterTrial.customers.item2': { en: 'Continue browsing and booking services as usual', uk: 'Продовжуйте переглядати та бронювати послуги як зазвичай', ru: 'Продолжайте просматривать и бронировать услуги как обычно' },
+
+  'trial.info.afterTrial.specialists.title': { en: 'For Specialists', uk: 'Для спеціалістів', ru: 'Для специалистов' },
+  'trial.info.afterTrial.specialists.item1': { en: 'Choose from two flexible pricing plans: Pay-per-use (20₴/booking) or Monthly subscription ($10/month)', uk: 'Виберіть один із двох гнучких тарифних планів: Оплата за використання (20₴/бронювання) або Місячна підписка ($10/місяць)', ru: 'Выберите один из двух гибких тарифных планов: Оплата за использование (20₴/бронирование) или Ежемесячная подписка ($10/месяц)' },
+  'trial.info.afterTrial.specialists.item2': { en: 'Continue providing services and growing your business', uk: 'Продовжуйте надавати послуги та розвивати свій бізнес', ru: 'Продолжайте предоставлять услуги и развивать свой бизнес' },
+
+  'trial.info.cta.title': { en: 'Ready to Get Started?', uk: 'Готові почати?', ru: 'Готовы начать?' },
+  'trial.info.cta.subtitle': { en: 'Join thousands of users and specialists already benefiting from our platform. Start your free 3-month trial today!', uk: 'Приєднуйтесь до тисяч користувачів та спеціалістів, які вже користуються перевагами нашої платформи. Розпочніть свій безкоштовний 3-місячний пробний період сьогодні!', ru: 'Присоединяйтесь к тысячам пользователей и специалистов, которые уже пользуются преимуществами нашей платформы. Начните свой бесплатный 3-месячный пробный период сегодня!' },
+  'trial.info.cta.signUpButton': { en: 'Sign Up Free', uk: 'Зареєструватися безкоштовно', ru: 'Зарегистрироваться бесплатно' },
+  'trial.info.cta.loginButton': { en: 'Already have an account? Login', uk: 'Вже є аккаунт? Увійти', ru: 'Уже есть аккаунт? Войти' },
+
   // Customer Settings - Notifications Section
   'customer.settings.emailNotifications': { en: 'Email Notifications', uk: 'Електронні сповіщення', ru: 'Email уведомления' },
   'customer.settings.pushNotifications': { en: 'Push Notifications', uk: 'Push-сповіщення', ru: 'Push уведомления' },

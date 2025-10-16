@@ -14,6 +14,7 @@ import { loyaltyService, UserLoyalty, LoyaltyStats } from '@/services/loyalty.se
 import { translateProfession } from '@/utils/profession';
 import { formatPoints } from '@/utils/formatPoints';
 import WalletBalance from '@/components/wallet/WalletBalance';
+import TrialStatusBanner from '@/components/trial/TrialStatusBanner';
 // Status colors for bookings
 const statusColors = {
   confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -449,6 +450,14 @@ const CustomerDashboard: React.FC = () => {
               </Link>
             </div>
           </div>
+
+          {/* Trial Status Banner */}
+          <TrialStatusBanner
+            trialStartDate={user?.trialStartDate}
+            trialEndDate={user?.trialEndDate}
+            isInTrial={user?.isInTrial}
+            userType="customer"
+          />
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

@@ -30,6 +30,7 @@ import diagnosticsRoutes from './diagnostics';
 import setupAdminRoutes from './setup-admin';
 import debugAdminRoutes from './debug-admin';
 import debugEmailRoutes from './debug-email';
+import cronRoutes from './cron';
 
 const router = Router();
 
@@ -72,5 +73,8 @@ router.use('/setup', setupAdminRoutes);
 // Debug routes (for testing only)
 router.use('/debug', debugAdminRoutes);
 router.use('/debug/email', debugEmailRoutes);
+
+// Cron job routes (internal use only - should be protected)
+router.use('/cron', cronRoutes);
 
 export default router;

@@ -673,24 +673,24 @@ export const emailTemplates = {
             <h1 style="color: #374151; margin-bottom: 10px;">Reset Your Password</h1>
             <p style="color: #6b7280;">You requested a password reset</p>
           </div>
-          
+
           <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 10px;">
             <p style="color: #6b7280; margin-bottom: 20px;">Hello {{firstName}},</p>
-            
+
             <p style="color: #6b7280; line-height: 1.6; margin-bottom: 20px;">
               We received a request to reset your password. Click the button below to create a new password:
             </p>
-            
+
             <div style="text-align: center; margin: 30px 0;">
               <a href="{{resetUrl}}" style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
                 Reset Password
               </a>
             </div>
-            
+
             <p style="color: #6b7280; font-size: 14px;">
               This link will expire in 1 hour. If you didn't request this reset, please ignore this email and your password will remain unchanged.
             </p>
-            
+
             <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
               If you're having trouble with the button, copy and paste this URL into your browser:
               <br><a href="{{resetUrl}}" style="color: #667eea; word-break: break-all;">{{resetUrl}}</a>
@@ -700,16 +700,426 @@ export const emailTemplates = {
       `,
       text: `
         Reset Your Password
-        
+
         Hello {{firstName}},
-        
+
         We received a request to reset your password. Visit this link to create a new password:
         {{resetUrl}}
-        
+
         This link will expire in 1 hour. If you didn't request this reset, please ignore this email.
       `
     },
     // Add Ukrainian and Russian versions...
+  },
+
+  // Trial expiration warning (7 days before)
+  trialExpiringWarning: {
+    en: {
+      subject: 'Your Free Trial is Ending Soon - {{daysRemaining}} Days Left',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">⏰ Trial Ending Soon</h1>
+            <p style="color: #fef3c7; margin: 10px 0 0 0;">{{daysRemaining}} days left in your free trial</p>
+          </div>
+
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
+            <h2 style="color: #374151; margin-bottom: 20px;">Hello {{firstName}}!</h2>
+
+            <p style="color: #6b7280; line-height: 1.6;">
+              We hope you've been enjoying your 3-month free trial! We wanted to remind you that your trial period will end in <strong>{{daysRemaining}} days</strong> on <strong>{{trialEndDate}}</strong>.
+            </p>
+
+            <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+              <h3 style="color: #92400e; margin-top: 0;">What happens after the trial?</h3>
+              {{#if isCustomer}}
+              <p style="color: #92400e; margin: 5px 0;">• Small deposits will be required when booking services (typically 10-20%)</p>
+              <p style="color: #92400e; margin: 5px 0;">• You'll continue to have full access to all features</p>
+              {{/if}}
+              {{#if isSpecialist}}
+              <p style="color: #92400e; margin: 5px 0;">• Choose a pricing plan: Pay-per-use (20₴/booking) or Monthly subscription ($10/month)</p>
+              <p style="color: #92400e; margin: 5px 0;">• Keep growing your business with all platform features</p>
+              {{/if}}
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="{{trialInfoUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                Learn More About Pricing
+              </a>
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px; text-align: center;">
+              Have questions? <a href="{{helpUrl}}" style="color: #667eea;">Contact our support team</a>
+            </p>
+          </div>
+        </div>
+      `,
+      text: `
+        Your Free Trial is Ending Soon
+
+        Hello {{firstName}},
+
+        We hope you've been enjoying your 3-month free trial! Your trial period will end in {{daysRemaining}} days on {{trialEndDate}}.
+
+        What happens after the trial?
+        {{#if isCustomer}}
+        • Small deposits will be required when booking services (typically 10-20%)
+        • You'll continue to have full access to all features
+        {{/if}}
+        {{#if isSpecialist}}
+        • Choose a pricing plan: Pay-per-use (20₴/booking) or Monthly subscription ($10/month)
+        • Keep growing your business with all platform features
+        {{/if}}
+
+        Learn more: {{trialInfoUrl}}
+
+        Have questions? Contact our support: {{helpUrl}}
+      `
+    },
+    uk: {
+      subject: 'Ваш безкоштовний пробний період закінчується - {{daysRemaining}} днів залишилось',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">⏰ Пробний період скоро закінчиться</h1>
+            <p style="color: #fef3c7; margin: 10px 0 0 0;">{{daysRemaining}} днів залишилось у вашому пробному періоді</p>
+          </div>
+
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
+            <h2 style="color: #374151; margin-bottom: 20px;">Привіт {{firstName}}!</h2>
+
+            <p style="color: #6b7280; line-height: 1.6;">
+              Сподіваємося, вам сподобався ваш 3-місячний безкоштовний пробний період! Нагадуємо, що ваш пробний період закінчиться через <strong>{{daysRemaining}} днів</strong> - <strong>{{trialEndDate}}</strong>.
+            </p>
+
+            <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+              <h3 style="color: #92400e; margin-top: 0;">Що відбудеться після пробного періоду?</h3>
+              {{#if isCustomer}}
+              <p style="color: #92400e; margin: 5px 0;">• Потрібні будуть невеликі депозити при бронюванні (зазвичай 10-20%)</p>
+              <p style="color: #92400e; margin: 5px 0;">• Ви продовжите мати повний доступ до всіх функцій</p>
+              {{/if}}
+              {{#if isSpecialist}}
+              <p style="color: #92400e; margin: 5px 0;">• Оберіть тарифний план: Оплата за використання (20₴/бронювання) або Місячна підписка ($10/місяць)</p>
+              <p style="color: #92400e; margin: 5px 0;">• Продовжуйте розвивати свій бізнес з усіма функціями платформи</p>
+              {{/if}}
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="{{trialInfoUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                Дізнатися більше про ціни
+              </a>
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px; text-align: center;">
+              Є питання? <a href="{{helpUrl}}" style="color: #667eea;">Зверніться до нашої служби підтримки</a>
+            </p>
+          </div>
+        </div>
+      `,
+      text: `
+        Ваш безкоштовний пробний період закінчується
+
+        Привіт {{firstName}},
+
+        Сподіваємося, вам сподобався ваш 3-місячний безкоштовний пробний період! Ваш пробний період закінчиться через {{daysRemaining}} днів - {{trialEndDate}}.
+
+        Що відбудеться після пробного періоду?
+        {{#if isCustomer}}
+        • Потрібні будуть невеликі депозити при бронюванні (зазвичай 10-20%)
+        • Ви продовжите мати повний доступ до всіх функцій
+        {{/if}}
+        {{#if isSpecialist}}
+        • Оберіть тарифний план: Оплата за використання (20₴/бронювання) або Місячна підписка ($10/місяць)
+        • Продовжуйте розвивати свій бізнес з усіма функціями платформи
+        {{/if}}
+
+        Дізнатися більше: {{trialInfoUrl}}
+
+        Є питання? Зверніться до служби підтримки: {{helpUrl}}
+      `
+    },
+    ru: {
+      subject: 'Ваш бесплатный пробный период заканчивается - {{daysRemaining}} дней осталось',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">⏰ Пробный период скоро закончится</h1>
+            <p style="color: #fef3c7; margin: 10px 0 0 0;">{{daysRemaining}} дней осталось в вашем пробном периоде</p>
+          </div>
+
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
+            <h2 style="color: #374151; margin-bottom: 20px;">Привет {{firstName}}!</h2>
+
+            <p style="color: #6b7280; line-height: 1.6;">
+              Надеемся, вам понравился ваш 3-месячный бесплатный пробный период! Напоминаем, что ваш пробный период закончится через <strong>{{daysRemaining}} дней</strong> - <strong>{{trialEndDate}}</strong>.
+            </p>
+
+            <div style="background: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+              <h3 style="color: #92400e; margin-top: 0;">Что произойдет после пробного периода?</h3>
+              {{#if isCustomer}}
+              <p style="color: #92400e; margin: 5px 0;">• Потребуются небольшие депозиты при бронировании (обычно 10-20%)</p>
+              <p style="color: #92400e; margin: 5px 0;">• Вы продолжите иметь полный доступ ко всем функциям</p>
+              {{/if}}
+              {{#if isSpecialist}}
+              <p style="color: #92400e; margin: 5px 0;">• Выберите тарифный план: Оплата за использование (20₴/бронирование) или Ежемесячная подписка ($10/месяц)</p>
+              <p style="color: #92400e; margin: 5px 0;">• Продолжайте развивать свой бизнес со всеми функциями платформы</p>
+              {{/if}}
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="{{trialInfoUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                Узнать больше о ценах
+              </a>
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px; text-align: center;">
+              Есть вопросы? <a href="{{helpUrl}}" style="color: #667eea;">Обратитесь в нашу службу поддержки</a>
+            </p>
+          </div>
+        </div>
+      `,
+      text: `
+        Ваш бесплатный пробный период заканчивается
+
+        Привет {{firstName}},
+
+        Надеемся, вам понравился ваш 3-месячный бесплатный пробный период! Ваш пробный период закончится через {{daysRemaining}} дней - {{trialEndDate}}.
+
+        Что произойдет после пробного периода?
+        {{#if isCustomer}}
+        • Потребуются небольшие депозиты при бронировании (обычно 10-20%)
+        • Вы продолжите иметь полный доступ ко всем функциям
+        {{/if}}
+        {{#if isSpecialist}}
+        • Выберите тарифный план: Оплата за использование (20₴/бронирование) или Ежемесячная подписка ($10/месяц)
+        • Продолжайте развивать свой бизнес со всеми функциями платформы
+        {{/if}}
+
+        Узнать больше: {{trialInfoUrl}}
+
+        Есть вопросы? Обратитесь в службу поддержки: {{helpUrl}}
+      `
+    }
+  },
+
+  // Trial expired
+  trialExpired: {
+    en: {
+      subject: 'Your Free Trial Has Ended - Thank You for Trying MiyZapis',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">Thank You for Trying MiyZapis!</h1>
+            <p style="color: #e0e8ff; margin: 10px 0 0 0;">Your 3-month free trial has ended</p>
+          </div>
+
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
+            <h2 style="color: #374151; margin-bottom: 20px;">Hello {{firstName}}!</h2>
+
+            <p style="color: #6b7280; line-height: 1.6;">
+              Your 3-month free trial ended on <strong>{{trialEndDate}}</strong>. We hope you enjoyed exploring all the features of MiyZapis!
+            </p>
+
+            <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0ea5e9;">
+              <h3 style="color: #374151; margin-top: 0;">What's Next?</h3>
+              {{#if isCustomer}}
+              <p style="color: #6b7280; margin: 5px 0;">✓ Continue browsing and booking services</p>
+              <p style="color: #6b7280; margin: 5px 0;">✓ A small deposit (10-20%) will now be required for bookings</p>
+              <p style="color: #6b7280; margin: 5px 0;">✓ All other features remain fully accessible</p>
+              {{/if}}
+              {{#if isSpecialist}}
+              <p style="color: #6b7280; margin: 5px 0;">✓ Continue providing services and growing your business</p>
+              <p style="color: #6b7280; margin: 5px 0;">✓ Choose your preferred pricing plan</p>
+              <p style="color: #6b7280; margin: 5px 0;">✓ All platform features remain available</p>
+              {{/if}}
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="{{dashboardUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-right: 10px;">
+                Go to Dashboard
+              </a>
+              {{#if isSpecialist}}
+              <a href="{{pricingUrl}}" style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                View Pricing Plans
+              </a>
+              {{/if}}
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px; text-align: center; margin-top: 30px;">
+              Questions? <a href="{{helpUrl}}" style="color: #667eea;">Contact our support team</a>
+            </p>
+          </div>
+        </div>
+      `,
+      text: `
+        Thank You for Trying MiyZapis!
+
+        Hello {{firstName}},
+
+        Your 3-month free trial ended on {{trialEndDate}}. We hope you enjoyed exploring all the features!
+
+        What's Next?
+        {{#if isCustomer}}
+        ✓ Continue browsing and booking services
+        ✓ A small deposit (10-20%) will now be required for bookings
+        ✓ All other features remain fully accessible
+        {{/if}}
+        {{#if isSpecialist}}
+        ✓ Continue providing services and growing your business
+        ✓ Choose your preferred pricing plan
+        ✓ All platform features remain available
+        {{/if}}
+
+        Dashboard: {{dashboardUrl}}
+        {{#if isSpecialist}}Pricing Plans: {{pricingUrl}}{{/if}}
+
+        Questions? Contact support: {{helpUrl}}
+      `
+    },
+    uk: {
+      subject: 'Ваш безкоштовний пробний період завершився - Дякуємо за користування МійЗапис',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">Дякуємо за користування МійЗапис!</h1>
+            <p style="color: #e0e8ff; margin: 10px 0 0 0;">Ваш 3-місячний безкоштовний пробний період завершився</p>
+          </div>
+
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
+            <h2 style="color: #374151; margin-bottom: 20px;">Привіт {{firstName}}!</h2>
+
+            <p style="color: #6b7280; line-height: 1.6;">
+              Ваш 3-місячний безкоштовний пробний період завершився <strong>{{trialEndDate}}</strong>. Сподіваємося, вам сподобалося знайомство з усіма функціями МійЗапис!
+            </p>
+
+            <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0ea5e9;">
+              <h3 style="color: #374151; margin-top: 0;">Що далі?</h3>
+              {{#if isCustomer}}
+              <p style="color: #6b7280; margin: 5px 0;">✓ Продовжуйте переглядати та бронювати послуги</p>
+              <p style="color: #6b7280; margin: 5px 0;">✓ Тепер потрібен невеликий депозит (10-20%) для бронювань</p>
+              <p style="color: #6b7280; margin: 5px 0;">✓ Всі інші функції залишаються повністю доступними</p>
+              {{/if}}
+              {{#if isSpecialist}}
+              <p style="color: #6b7280; margin: 5px 0;">✓ Продовжуйте надавати послуги та розвивати свій бізнес</p>
+              <p style="color: #6b7280; margin: 5px 0;">✓ Оберіть зручний тарифний план</p>
+              <p style="color: #6b7280; margin: 5px 0;">✓ Всі функції платформи залишаються доступними</p>
+              {{/if}}
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="{{dashboardUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-right: 10px;">
+                Перейти до кабінету
+              </a>
+              {{#if isSpecialist}}
+              <a href="{{pricingUrl}}" style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                Переглянути тарифні плани
+              </a>
+              {{/if}}
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px; text-align: center; margin-top: 30px;">
+              Є питання? <a href="{{helpUrl}}" style="color: #667eea;">Зверніться до служби підтримки</a>
+            </p>
+          </div>
+        </div>
+      `,
+      text: `
+        Дякуємо за користування МійЗапис!
+
+        Привіт {{firstName}},
+
+        Ваш 3-місячний безкоштовний пробний період завершився {{trialEndDate}}. Сподіваємося, вам сподобалося!
+
+        Що далі?
+        {{#if isCustomer}}
+        ✓ Продовжуйте переглядати та бронювати послуги
+        ✓ Тепер потрібен невеликий депозит (10-20%) для бронювань
+        ✓ Всі інші функції залишаються повністю доступними
+        {{/if}}
+        {{#if isSpecialist}}
+        ✓ Продовжуйте надавати послуги та розвивати свій бізнес
+        ✓ Оберіть зручний тарифний план
+        ✓ Всі функції платформи залишаються доступними
+        {{/if}}
+
+        Кабінет: {{dashboardUrl}}
+        {{#if isSpecialist}}Тарифні плани: {{pricingUrl}}{{/if}}
+
+        Є питання? Підтримка: {{helpUrl}}
+      `
+    },
+    ru: {
+      subject: 'Ваш бесплатный пробный период завершился - Спасибо за использование МойЗапись',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">Спасибо за использование МойЗапись!</h1>
+            <p style="color: #e0e8ff; margin: 10px 0 0 0;">Ваш 3-месячный бесплатный пробный период завершился</p>
+          </div>
+
+          <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
+            <h2 style="color: #374151; margin-bottom: 20px;">Привет {{firstName}}!</h2>
+
+            <p style="color: #6b7280; line-height: 1.6;">
+              Ваш 3-месячный бесплатный пробный период завершился <strong>{{trialEndDate}}</strong>. Надеемся, вам понравилось знакомство со всеми функциями МойЗапись!
+            </p>
+
+            <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0ea5e9;">
+              <h3 style="color: #374151; margin-top: 0;">Что дальше?</h3>
+              {{#if isCustomer}}
+              <p style="color: #6b7280; margin: 5px 0;">✓ Продолжайте просматривать и бронировать услуги</p>
+              <p style="color: #6b7280; margin: 5px 0;">✓ Теперь требуется небольшой депозит (10-20%) для бронирований</p>
+              <p style="color: #6b7280; margin: 5px 0;">✓ Все остальные функции остаются полностью доступными</p>
+              {{/if}}
+              {{#if isSpecialist}}
+              <p style="color: #6b7280; margin: 5px 0;">✓ Продолжайте предоставлять услуги и развивать свой бизнес</p>
+              <p style="color: #6b7280; margin: 5px 0;">✓ Выберите удобный тарифный план</p>
+              <p style="color: #6b7280; margin: 5px 0;">✓ Все функции платформы остаются доступными</p>
+              {{/if}}
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="{{dashboardUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-right: 10px;">
+                Перейти в кабинет
+              </a>
+              {{#if isSpecialist}}
+              <a href="{{pricingUrl}}" style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                Посмотреть тарифные планы
+              </a>
+              {{/if}}
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px; text-align: center; margin-top: 30px;">
+              Есть вопросы? <a href="{{helpUrl}}" style="color: #667eea;">Обратитесь в службу поддержки</a>
+            </p>
+          </div>
+        </div>
+      `,
+      text: `
+        Спасибо за использование МойЗапись!
+
+        Привет {{firstName}},
+
+        Ваш 3-месячный бесплатный пробный период завершился {{trialEndDate}}. Надеемся, вам понравилось!
+
+        Что дальше?
+        {{#if isCustomer}}
+        ✓ Продолжайте просматривать и бронировать услуги
+        ✓ Теперь требуется небольшой депозит (10-20%) для бронирований
+        ✓ Все остальные функции остаются полностью доступными
+        {{/if}}
+        {{#if isSpecialist}}
+        ✓ Продолжайте предоставлять услуги и развивать свой бизнес
+        ✓ Выберите удобный тарифный план
+        ✓ Все функции платформы остаются доступными
+        {{/if}}
+
+        Кабинет: {{dashboardUrl}}
+        {{#if isSpecialist}}Тарифные планы: {{pricingUrl}}{{/if}}
+
+        Есть вопросы? Поддержка: {{helpUrl}}
+      `
+    }
   }
 };
 

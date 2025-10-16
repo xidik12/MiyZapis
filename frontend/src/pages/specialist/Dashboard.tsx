@@ -8,6 +8,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { analyticsService, bookingService, paymentService, specialistService } from '../../services';
 import { reviewsService } from '../../services/reviews.service';
 import { retryRequest } from '../../services/api';
+import TrialStatusBanner from '../../components/trial/TrialStatusBanner';
 // Removed SpecialistSidebar import - layout is handled by SpecialistLayout
 // Status colors for bookings
 const statusColors = {
@@ -528,6 +529,14 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           </button>
         </div>
       </div>
+
+      {/* Trial Status Banner */}
+      <TrialStatusBanner
+        trialStartDate={user?.trialStartDate}
+        trialEndDate={user?.trialEndDate}
+        isInTrial={user?.isInTrial}
+        userType="specialist"
+      />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

@@ -78,6 +78,7 @@ const PaymentPage = React.lazy(() => import('./pages/PaymentPage'));
 const NotFoundPage = React.lazy(() => import('./pages/NotFoundPage'));
 const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage'));
 const TermsPage = React.lazy(() => import('./pages/TermsPage'));
+const TrialInfoPage = React.lazy(() => import('./pages/TrialInfoPage'));
 
 // Loading component for Suspense
 const SuspenseLoader = () => (
@@ -701,6 +702,13 @@ function App() {
             <MainLayout>
               <Suspense fallback={<SuspenseLoader />}>
                 <TermsPage />
+              </Suspense>
+            </MainLayout>
+          } />
+          <Route path="/trial-info" element={
+            <MainLayout>
+              <Suspense fallback={<SuspenseLoader />}>
+                <TrialInfoPage />
               </Suspense>
             </MainLayout>
           } />
