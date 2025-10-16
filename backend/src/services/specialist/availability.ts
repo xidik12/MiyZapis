@@ -125,14 +125,21 @@ export class AvailabilityService {
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + (weeksAhead * 7));
 
-      // Remove old future availability blocks to regenerate
-      await prisma.availabilityBlock.deleteMany({
+      // DON'T delete existing availability blocks - specialists should manage their own schedules
+      // Instead, we'll only create blocks for dates that don't have any blocks yet
+
+      // Get existing availability blocks to avoid duplicates
+      const existingBlocks = await prisma.availabilityBlock.findMany({
         where: {
           specialistId,
-          startDateTime: { gte: new Date() },
-          isRecurring: false,
-          // Don't delete manually created blocks (those without a specific pattern)
-          reason: 'Working hours'
+          startDateTime: {
+            gte: startDate,
+            lte: endDate
+          }
+        },
+        select: {
+          startDateTime: true,
+          endDateTime: true
         }
       });
 
@@ -148,24 +155,33 @@ export class AvailabilityService {
           // Create availability block for this working day
           const startDateTime = new Date(date);
           const endDateTime = new Date(date);
-          
+
           // Parse time strings (e.g., "09:00")
           const [startHour, startMinute] = daySchedule.start.split(':').map(Number);
           const [endHour, endMinute] = daySchedule.end.split(':').map(Number);
-          
+
           startDateTime.setHours(startHour, startMinute, 0, 0);
           endDateTime.setHours(endHour, endMinute, 0, 0);
 
-          // Only create blocks for future dates
+          // Only create blocks for future dates AND dates without existing blocks
           if (startDateTime > new Date()) {
-            newBlocks.push({
-              specialistId,
-              startDateTime,
-              endDateTime,
-              isAvailable: true,
-              reason: 'Working hours',
-              isRecurring: false
+            // Check if this date already has an availability block
+            const hasExistingBlock = existingBlocks.some(block => {
+              const blockDate = new Date(block.startDateTime);
+              return blockDate.toDateString() === startDateTime.toDateString();
             });
+
+            // Only create block if no existing block for this date
+            if (!hasExistingBlock) {
+              newBlocks.push({
+                specialistId,
+                startDateTime,
+                endDateTime,
+                isAvailable: true,
+                reason: 'Working hours',
+                isRecurring: false
+              });
+            }
           }
         }
       }
