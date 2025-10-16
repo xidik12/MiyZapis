@@ -108,7 +108,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
   return (
     <div className={clsx('space-y-6', className)}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {t('referral.title')}
@@ -121,6 +121,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
           onClick={() => setCreateModalOpen(true)}
           disabled={!canCreateReferral}
           leftIcon={<UserPlusIcon className="h-5 w-5" />}
+          className="w-full sm:w-auto"
         >
           {t('referral.createButton')}
         </Button>

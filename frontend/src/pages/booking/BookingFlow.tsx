@@ -67,7 +67,7 @@ const BookingFlow: React.FC = () => {
 
   // Payment states
   const [useWalletFirst, setUseWalletFirst] = useState<boolean>(true);
-  const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'paypal' | 'wayforpay'>('crypto');
+  const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'paypal'>('crypto');
   const [paymentLoading, setPaymentLoading] = useState<boolean>(false);
   const [paymentResult, setPaymentResult] = useState<any>(null);
   const [showQRCode, setShowQRCode] = useState<boolean>(false);
@@ -571,46 +571,6 @@ const BookingFlow: React.FC = () => {
         } else {
           throw new Error('PayPal order created but no approval URL received');
         }
-      } else if (paymentMethod === 'wayforpay') {
-        // Handle WayForPay payment
-        console.log('💳 BookingFlow: Creating WayForPay invoice...');
-        // Convert USD cents to UAH kopecks (1 USD = 40 UAH, so 100 cents = 4000 kopecks)
-        const wayforpayAmount = depositAmount * 40; // Convert $1 (100 cents) to 40 UAH (4000 kopecks)
-        const wayforpayInvoiceData = {
-          bookingId: `booking-${Date.now()}`, // Temporary booking ID
-          amount: wayforpayAmount, // Amount in UAH kopecks
-          currency: 'UAH',
-          description: `${service.name} - ${paymentData.specialistName}`,
-          customerEmail: user?.email || '', // Will be filled from user context if available
-          customerPhone: user?.phone || '',
-          bookingData: {
-            serviceId: service.id,
-            specialistId: currentSpecialistId,
-            scheduledAt: scheduledAt.toISOString(),
-            duration: service.duration || 60,
-            customerNotes: bookingNotes || undefined,
-            serviceName: service.name,
-            specialistName: paymentData.specialistName,
-            servicePrice: service.price,
-            serviceCurrency: service.currency || 'USD',
-            loyaltyPointsUsed: 0,
-            rewardRedemptionId: selectedRedemptionId || undefined
-          }
-        };
-
-        const wayforpayResult = await paymentService.createWayForPayInvoice(wayforpayInvoiceData);
-        console.log('✅ BookingFlow: WayForPay invoice created:', wayforpayResult);
-
-        // Store result for UI with proper structure
-        depositResult = {
-          paymentUrl: wayforpayResult.paymentUrl || wayforpayResult.invoice?.paymentUrl,
-          finalAmount: depositAmount,
-          status: 'PENDING',
-          remainingAmount: depositAmount,
-          paymentMethod: 'WAYFORPAY',
-          wayforpayPayment: wayforpayResult.invoice, // Include invoice with formData
-          message: 'Complete your WayForPay payment'
-        };
       } else {
         // Handle crypto payment with Coinbase Commerce
         console.log('💳 BookingFlow: Creating Coinbase Commerce charge...');
@@ -1373,7 +1333,7 @@ const BookingFlow: React.FC = () => {
                       name="paymentMethod"
                       value="crypto"
                       checked={paymentMethod === 'crypto'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal' | 'wayforpay')}
+                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal')}
                       className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                     />
                     <div className="flex-1">
@@ -1397,7 +1357,7 @@ const BookingFlow: React.FC = () => {
                       name="paymentMethod"
                       value="paypal"
                       checked={paymentMethod === 'paypal'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal' | 'wayforpay')}
+                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal')}
                       className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                     />
                     <div className="flex-1">
@@ -1411,30 +1371,6 @@ const BookingFlow: React.FC = () => {
                           <div className="font-medium text-gray-900 dark:text-white">PayPal</div>
                           <div className="text-sm text-gray-600 dark:text-gray-400">Pay with PayPal, credit cards, or bank account</div>
                           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Fast and secure traditional payment</div>
-                        </div>
-                      </div>
-                    </div>
-                  </label>
-
-                  {/* WayForPay Payment Option */}
-                  <label className="flex items-start space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="wayforpay"
-                      checked={paymentMethod === 'wayforpay'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal' | 'wayforpay')}
-                      className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
-                          <CreditCardIcon className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">WayForPay</div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">Ukrainian payment system with cards and banking</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Support for UAH and other local payment methods</div>
                         </div>
                       </div>
                     </div>
@@ -1478,7 +1414,6 @@ const BookingFlow: React.FC = () => {
                     <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
                       💳 Complete Your {
                         paymentMethod === 'paypal' ? 'PayPal' :
-                        paymentMethod === 'wayforpay' ? 'WayForPay' :
                         'Cryptocurrency'
                       } Payment
                     </h4>
@@ -1523,53 +1458,6 @@ const BookingFlow: React.FC = () => {
                         </a>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                           You'll receive an email confirmation once payment is verified.
-                        </p>
-                      </div>
-                    )}
-
-                    {/* WayForPay Payment Interface */}
-                    {paymentMethod === 'wayforpay' && paymentResult.paymentUrl && (
-                      <div className="mb-4">
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                          Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, 'USD')}
-                        </p>
-                        <form
-                          id="wayforpayForm"
-                          action={paymentResult.paymentUrl}
-                          method="POST"
-                          target="_blank"
-                        >
-                          {/* Add form fields from wayforpayPayment.formData if available */}
-                          {paymentResult.wayforpayPayment?.formData && Object.entries(paymentResult.wayforpayPayment.formData).map(([key, value]: [string, any]) => {
-                            if (Array.isArray(value)) {
-                              return value.map((item: any, index: number) => (
-                                <input
-                                  key={`${key}-${index}`}
-                                  type="hidden"
-                                  name={`${key}[${index}]`}
-                                  value={String(item)}
-                                />
-                              ));
-                            }
-                            return (
-                              <input
-                                key={key}
-                                type="hidden"
-                                name={key}
-                                value={String(value)}
-                              />
-                            );
-                          })}
-                          <button
-                            type="submit"
-                            className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                          >
-                            <CreditCardIcon className="w-4 h-4 mr-2" />
-                            Pay with WayForPay
-                          </button>
-                        </form>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                          Click to complete your payment securely on WayForPay.
                         </p>
                       </div>
                     )}

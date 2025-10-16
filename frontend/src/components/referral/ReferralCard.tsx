@@ -73,24 +73,24 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
     <Card className={clsx('transition-all duration-200', className)}>
       <div className="p-6">
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-start">
-            <div className="p-2 bg-primary-100 dark:bg-primary-900/20 rounded-lg mr-3">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+          <div className="flex items-start flex-1">
+            <div className="p-2 bg-primary-100 dark:bg-primary-900/20 rounded-lg mr-3 shrink-0">
               <GiftIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {referralService.getReferralTypeDisplayName(referral.referralType)}
               </h3>
-              <div className="flex items-center mt-1 space-x-2">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex flex-wrap items-center mt-1 gap-2">
+                <span className="text-sm text-gray-600 dark:text-gray-400 break-all">
                   {t('referral.code')}: {referral.referralCode}
                 </span>
                 {getStatusBadge()}
               </div>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 shrink-0">
             {getStatusIcon()}
             <button
               onClick={() => setIsExpanded(!isExpanded)}
@@ -159,7 +159,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
 
         {/* Action Buttons */}
         {canShare && (
-          <div className="flex items-center space-x-2 mb-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-4">
             <Button
               onClick={handleCopy}
               variant="secondary"

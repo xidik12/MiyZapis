@@ -87,7 +87,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
     <div className={clsx('space-y-6', className)}>
       {/* Analytics Summary */}
       <Card className="p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             {t('referral.performance.title')}
           </h3>
@@ -133,7 +133,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
           </h3>
           <div className="space-y-3">
             {analytics.topPerformingTypes.map((type) => (
-              <div key={type.type} className="flex items-center justify-between">
+              <div key={type.type} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <span className="text-sm font-medium text-gray-900 dark:text-white">
                   {referralService.getReferralTypeDisplayName(type.type)}
                 </span>
@@ -141,7 +141,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
                   <span className="text-sm text-gray-600 dark:text-gray-400 mr-2">
                     {type.completedCount} {t('referral.performance.completed')}
                   </span>
-                  <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div className="w-16 sm:w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
                       className="bg-primary-600 h-2 rounded-full"
                       style={{
@@ -157,8 +157,8 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
       )}
 
       {/* Filter Tabs */}
-      <div className="flex items-center justify-between">
-        <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-wrap gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
           {[
             { key: 'all', label: t('referral.filters.all') },
             { key: 'pending', label: t('referral.filters.pending') },
@@ -169,7 +169,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
               key={filter.key}
               onClick={() => setSelectedFilter(filter.key as any)}
               className={clsx(
-                'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
+                'px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors whitespace-nowrap',
                 selectedFilter === filter.key
                   ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
@@ -217,7 +217,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
           </h3>
           <div className="space-y-3">
             {analytics.recentActivity.slice(0, 5).map((activity) => (
-              <div key={activity.id} className="flex items-center justify-between py-2">
+              <div key={activity.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-2">
                 <div className="flex items-center">
                   {getStatusIcon(activity.status)}
                   <div className="ml-3">
@@ -232,7 +232,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
                     </div>
                   </div>
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
+                <div className="text-xs text-gray-500 dark:text-gray-400 sm:text-right">
                   {new Date(activity.createdAt).toLocaleDateString()}
                 </div>
               </div>

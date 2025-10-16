@@ -212,7 +212,9 @@
       "Bash(PORT=3045 DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npm start)",
       "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot/test-webhook-reachability.sh)",
       "Read(//Users/salakhitdinovkhidayotullo/Downloads/**)",
-      "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot/test-paypal-webhook.sh)"
+      "Bash(/Users/salakhitdinovkhidayotullo/Documents/BookingBot/test-paypal-webhook.sh)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma migrate dev:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma db push:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
