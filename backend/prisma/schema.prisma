@@ -54,6 +54,11 @@ model User {
   subscriptionValidUntil DateTime?
   subscriptionEffectiveDate DateTime?
 
+  // Free trial period (3 months for both users and specialists)
+  trialStartDate         DateTime? // When trial started
+  trialEndDate           DateTime? // When trial ends (3 months from start)
+  isInTrial              Boolean @default(true) // Quick check if user is in trial period
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

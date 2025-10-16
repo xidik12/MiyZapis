@@ -219,8 +219,32 @@ export class SpecialistSubscriptionService {
   async processTransactionFee(specialistId: string, bookingId: string): Promise<{
     feeCharged: number;
     currency: string;
-    method: 'SUBSCRIPTION_COVERED' | 'PER_TRANSACTION_FEE';
+    method: 'SUBSCRIPTION_COVERED' | 'PER_TRANSACTION_FEE' | 'TRIAL_PERIOD';
   }> {
+    // Check if specialist is in trial period
+    const specialist = await prisma.user.findUnique({
+      where: { id: specialistId },
+      select: {
+        isInTrial: true,
+        trialEndDate: true,
+      },
+    });
+
+    // If specialist is in trial period, skip all fees
+    if (specialist?.isInTrial && specialist?.trialEndDate && new Date() < specialist.trialEndDate) {
+      logger.info('Specialist in trial period - skipping transaction fee', {
+        specialistId,
+        bookingId,
+        trialEndDate: specialist.trialEndDate,
+      });
+
+      return {
+        feeCharged: 0,
+        currency: 'USD',
+        method: 'TRIAL_PERIOD',
+      };
+    }
+
     const subscription = await this.getSubscription(specialistId);
 
     logger.info('Processing transaction fee', {

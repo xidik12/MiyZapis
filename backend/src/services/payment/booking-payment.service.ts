@@ -69,6 +69,41 @@ export class BookingPaymentService {
     });
 
     try {
+      // Check if user is in trial period
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          isInTrial: true,
+          trialEndDate: true,
+        },
+      });
+
+      // If user is in trial and trial hasn't expired, skip payment
+      if (user?.isInTrial && user?.trialEndDate && new Date() < user.trialEndDate) {
+        logger.info('User in trial period - skipping payment', {
+          userId,
+          bookingId,
+          trialEndDate: user.trialEndDate,
+        });
+
+        // Update booking to confirmed status immediately (free during trial)
+        await prisma.booking.update({
+          where: { id: bookingId },
+          data: {
+            depositStatus: 'PAID',
+            depositPaidAt: new Date(),
+            status: 'CONFIRMED',
+          },
+        });
+
+        return {
+          paymentMethod: 'WALLET',
+          totalPaid: depositAmount,
+          remainingAmount: 0,
+          status: 'COMPLETED',
+        };
+      }
+
       // Verify booking exists and user has permission
       const booking = await prisma.booking.findFirst({
         where: {
