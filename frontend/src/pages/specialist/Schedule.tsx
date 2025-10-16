@@ -141,18 +141,19 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+        <div className="p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               {editingBlock ? t('schedule.editTimeSlot') : t('schedule.addTimeSlot')}
             </h2>
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg"
+              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg touch-manipulation"
+              aria-label="Close modal"
             >
-              <XMarkIcon className="w-6 h-6" />
+              <XMarkIcon className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </div>
 
@@ -165,12 +166,12 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                 type="date"
                 value={formData.date}
                 onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base touch-manipulation"
                 required
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('schedule.startTime')}
@@ -179,7 +180,7 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                   type="time"
                   value={formData.startTime}
                   onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base touch-manipulation"
                   required
                 />
               </div>
@@ -191,21 +192,21 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                   type="time"
                   value={formData.endTime}
                   onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base touch-manipulation"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="flex items-center">
+              <label className="flex items-center cursor-pointer py-2 touch-manipulation">
                 <input
                   type="checkbox"
                   checked={formData.isAvailable}
                   onChange={(e) => setFormData(prev => ({ ...prev, isAvailable: e.target.checked }))}
-                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                  className="w-5 h-5 sm:w-4 sm:h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 touch-manipulation"
                 />
-                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('schedule.availableForBooking')}</span>
+                <span className="ml-3 sm:ml-2 text-sm text-gray-700 dark:text-gray-300">{t('schedule.availableForBooking')}</span>
               </label>
             </div>
 
@@ -219,20 +220,20 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                   value={formData.reason}
                   onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
                   placeholder={t('schedule.reasonPlaceholder')}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base touch-manipulation"
                 />
               </div>
             )}
 
             <div>
-              <label className="flex items-center">
+              <label className="flex items-center cursor-pointer py-2 touch-manipulation">
                 <input
                   type="checkbox"
                   checked={formData.isRecurring}
                   onChange={(e) => setFormData(prev => ({ ...prev, isRecurring: e.target.checked }))}
-                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                  className="w-5 h-5 sm:w-4 sm:h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 touch-manipulation"
                 />
-                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('schedule.repeatWeekly')}</span>
+                <span className="ml-3 sm:ml-2 text-sm text-gray-700 dark:text-gray-300">{t('schedule.repeatWeekly')}</span>
               </label>
             </div>
 
@@ -241,33 +242,33 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('schedule.repeatOnDays')}
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
                   {weekDays.map(day => (
-                    <label key={day.key} className="flex items-center">
+                    <label key={day.key} className="flex items-center cursor-pointer py-1 touch-manipulation">
                       <input
                         type="checkbox"
                         checked={formData.recurringDays.includes(day.key)}
                         onChange={() => toggleRecurringDay(day.key)}
-                        className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                        className="w-5 h-5 sm:w-4 sm:h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 touch-manipulation"
                       />
-                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t(`schedule.${day.key}`)}</span>
+                      <span className="ml-3 sm:ml-2 text-sm text-gray-700 dark:text-gray-300">{t(`schedule.${day.key}`)}</span>
                     </label>
                   ))}
                 </div>
               </div>
             )}
 
-            <div className="flex space-x-3 pt-4">
+            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 pt-4">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="flex-1 px-4 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 transition-colors font-medium touch-manipulation"
               >
                 {t('schedule.cancel')}
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                className="flex-1 px-4 py-3 sm:py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 active:bg-primary-800 transition-colors font-medium touch-manipulation"
               >
                 {editingBlock ? t('schedule.update') : t('schedule.add')}
               </button>
@@ -716,11 +717,11 @@ const SpecialistSchedule: React.FC = () => {
 
       {/* Calendar Grid */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <div className="min-w-[800px]">
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
+          <div className="min-w-max px-4 sm:px-0">
             {/* Day Headers */}
             <div className="grid grid-cols-8 border-b border-gray-200 dark:border-gray-700">
-              <div className="p-2 sm:p-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
+              <div className="p-2 sm:p-3 md:p-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400 sticky left-0 bg-white dark:bg-gray-800 z-10">
                 {t('schedule.time') || 'Время'}
               </div>
               {weekDays.map((day, index) => {
@@ -730,14 +731,14 @@ const SpecialistSchedule: React.FC = () => {
                 return (
                   <div
                     key={index}
-                    className={`p-2 sm:p-4 text-center border-l border-gray-200 dark:border-gray-700 ${
+                    className={`p-2 sm:p-3 md:p-4 text-center border-l border-gray-200 dark:border-gray-700 min-w-[80px] sm:min-w-[100px] ${
                       isToday ? 'bg-primary-50 dark:bg-primary-900/20' : ''
                     }`}
                   >
                     <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
                       {t(`weekday.${dayName}`) || day.toLocaleDateString('en-US', { weekday: 'short' })}
                     </div>
-                    <div className={`text-lg sm:text-xl font-bold mt-1 ${
+                    <div className={`text-base sm:text-lg md:text-xl font-bold mt-1 ${
                       isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-900 dark:text-white'
                     }`}>
                       {day.getDate()}
@@ -752,7 +753,7 @@ const SpecialistSchedule: React.FC = () => {
               {timeSlots.map(hour => (
                 <div key={hour} className="grid grid-cols-8">
                   {/* Time Label */}
-                  <div className="p-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-700">
+                  <div className="p-2 sm:p-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-700 sticky left-0 bg-white dark:bg-gray-800 z-10">
                     {`${hour.toString().padStart(2, '0')}:00`}
                   </div>
 
@@ -766,7 +767,7 @@ const SpecialistSchedule: React.FC = () => {
                       <div
                         key={dayIndex}
                         onClick={() => !isPast && handleCellClick(day, hour)}
-                        className={`relative min-h-[60px] sm:min-h-[80px] border-l border-gray-200 dark:border-gray-700 cursor-pointer transition-colors group ${
+                        className={`relative min-h-[60px] sm:min-h-[70px] md:min-h-[80px] min-w-[80px] sm:min-w-[100px] border-l border-gray-200 dark:border-gray-700 cursor-pointer transition-colors group ${
                           isPast
                             ? 'bg-gray-50 dark:bg-gray-900 cursor-not-allowed'
                             : isToday
@@ -776,8 +777,8 @@ const SpecialistSchedule: React.FC = () => {
                       >
                         {/* Add button hint */}
                         {!isPast && blocks.length === 0 && (
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <PlusIcon className="w-5 h-5 text-gray-400" />
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                            <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                           </div>
                         )}
 
@@ -802,33 +803,35 @@ const SpecialistSchedule: React.FC = () => {
                                 e.stopPropagation();
                                 openEditModal(block);
                               }}
-                              className={`absolute left-0 right-0 px-1 sm:px-2 py-1 text-xs overflow-hidden ${
+                              className={`absolute left-0 right-0 px-1 sm:px-2 py-1 text-[10px] sm:text-xs overflow-hidden touch-manipulation ${
                                 block.isAvailable
-                                  ? 'bg-green-500/20 border-l-4 border-green-500 text-green-900 dark:text-green-100'
-                                  : 'bg-red-500/20 border-l-4 border-red-500 text-red-900 dark:text-red-100'
-                              } hover:opacity-80 transition-opacity`}
+                                  ? 'bg-green-500/20 border-l-2 sm:border-l-4 border-green-500 text-green-900 dark:text-green-100'
+                                  : 'bg-red-500/20 border-l-2 sm:border-l-4 border-red-500 text-red-900 dark:text-red-100'
+                              } hover:opacity-80 active:opacity-70 transition-opacity`}
                               style={{
                                 top: `${startOffset}%`,
-                                height: `${height}%`
+                                height: `${height}%`,
+                                minHeight: '40px'
                               }}
                             >
-                              <div className="font-medium truncate">
+                              <div className="font-medium truncate leading-tight">
                                 {blockStart.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
                                 {' - '}
                                 {blockEnd.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
                               </div>
                               {block.reason && (
-                                <div className="text-xs truncate opacity-75">{block.reason}</div>
+                                <div className="text-[9px] sm:text-xs truncate opacity-75 mt-0.5">{block.reason}</div>
                               )}
-                              <div className="flex items-center space-x-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="flex items-center space-x-1 mt-1 opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleDeleteTimeSlot(block.id);
                                   }}
-                                  className="p-1 hover:bg-red-600 rounded text-red-600 hover:text-white"
+                                  className="p-1 hover:bg-red-600 rounded text-red-600 hover:text-white touch-manipulation"
+                                  aria-label="Delete time slot"
                                 >
-                                  <TrashIcon className="w-3 h-3" />
+                                  <TrashIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                                 </button>
                               </div>
                             </div>

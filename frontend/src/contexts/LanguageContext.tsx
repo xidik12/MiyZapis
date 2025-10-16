@@ -1652,6 +1652,8 @@ const translations: Translations = {
 
   // Schedule
   'schedule.subtitle': { en: 'Configure your work schedule and availability', uk: 'Налаштуйте свій робочий розклад та доступність', ru: 'Настройте свой рабочий график и доступность' },
+  'schedule.today': { en: 'Today', uk: 'Сьогодні', ru: 'Сегодня' },
+  'schedule.time': { en: 'Time', uk: 'Час', ru: 'Время' },
   'schedule.addTime': { en: 'Add Time', uk: 'Додати час', ru: 'Добавить время' },
   'schedule.comingSoon': { en: 'Schedule Coming Soon', uk: 'Розклад буде тут', ru: 'Расписание скоро здесь' },
   'schedule.description': { en: 'This section will contain a calendar with the ability to configure working hours, breaks and availability.', uk: 'Цей розділ буде містити календар з можливістю налаштування робочих годин, перерв та доступності.', ru: 'Этот раздел будет содержать календарь с возможностью настройки рабочих часов, перерывов и доступности.' },
@@ -1687,6 +1689,9 @@ const translations: Translations = {
   'schedule.week': { en: 'Week', uk: 'Тиждень', ru: 'Неделя' },
   'schedule.month': { en: 'Month', uk: 'Місяць', ru: 'Месяц' },
   'schedule.year': { en: 'Year', uk: 'Рік', ru: 'Год' },
+  'schedule.generatePromptTitle': { en: 'Auto-generate Schedule', uk: 'Автоматично створити розклад', ru: 'Автоматически создать расписание' },
+  'schedule.generatePromptMessage': { en: 'You have working hours configured but no available slots. Would you like to automatically create a schedule based on your working hours?', uk: 'У вас налаштовані робочі години, але немає доступних слотів. Бажаєте автоматично створити розклад на основі ваших робочих годин?', ru: 'У вас настроены рабочие часы, но нет доступных слотов. Хотите автоматически создать расписание на основе ваших рабочих часов?' },
+  'schedule.generateButton': { en: 'Generate Schedule', uk: 'Створити розклад', ru: 'Создать расписание' },
 
   // Month names for date formatting
   'month.january': { en: 'Jan', uk: 'Січ', ru: 'Янв' },
