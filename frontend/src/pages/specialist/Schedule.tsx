@@ -577,13 +577,33 @@ const SpecialistSchedule: React.FC = () => {
     return availabilityBlocks.filter(block => {
       const blockStart = new Date(block.startDateTime);
       const blockEnd = new Date(block.endDateTime);
-      const cellStart = new Date(date);
-      cellStart.setHours(hour, 0, 0, 0);
-      const cellEnd = new Date(date);
-      cellEnd.setHours(hour + 1, 0, 0, 0);
 
-      // Check if block overlaps with this cell
-      return blockStart < cellEnd && blockEnd > cellStart;
+      // Compare using local date components (not ISO/UTC)
+      const blockYear = blockStart.getFullYear();
+      const blockMonth = blockStart.getMonth();
+      const blockDay = blockStart.getDate();
+
+      const cellYear = date.getFullYear();
+      const cellMonth = date.getMonth();
+      const cellDay = date.getDate();
+
+      // First check if the block is on the same day (local time)
+      if (blockYear !== cellYear || blockMonth !== cellMonth || blockDay !== cellDay) {
+        return false;
+      }
+
+      // Then check if the block overlaps with this hour (local time)
+      const blockHour = blockStart.getHours();
+      const blockEndHour = blockEnd.getHours();
+      const blockEndMinute = blockEnd.getMinutes();
+
+      // Block overlaps with hour if:
+      // - Block starts in this hour, OR
+      // - Block ends in this hour (and not exactly at hour:00), OR
+      // - Block spans across this hour
+      return (blockHour === hour) ||
+             (blockEndHour === hour && blockEndMinute > 0) ||
+             (blockHour < hour && (blockEndHour > hour || (blockEndHour === hour && blockEndMinute > 0)));
     });
   };
 
