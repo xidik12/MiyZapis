@@ -196,9 +196,18 @@ const CustomerBookings: React.FC = () => {
       dispatch(fetchBookings({ filters: {}, userType: 'customer' }));
       
       toast.success(t('reviews.reviewSubmitted'));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to submit review:', error);
-      toast.error(t('reviews.submitError'));
+
+      // Handle specific error codes
+      if (error?.response?.status === 409 || error?.status === 409) {
+        toast.error(t('reviews.alreadyExists') || 'You have already reviewed this booking');
+        setShowReviewModal(false);
+        setBookingToReview(null);
+      } else {
+        const errorMessage = error?.response?.data?.message || error?.message || t('reviews.submitError');
+        toast.error(errorMessage);
+      }
     } finally {
       setReviewLoading(false);
     }

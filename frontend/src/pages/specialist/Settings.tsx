@@ -286,6 +286,10 @@ const SpecialistSettings: React.FC = () => {
                     <Cog6ToothIcon className="w-5 h-5 mr-3" />
                     {t('settings.account')}
                   </a>
+                  <a href="#security" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md">
+                    <ShieldCheckIcon className="w-5 h-5 mr-3" />
+                    {t('customer.settings.passwordSecurity') || 'Security & Password'}
+                  </a>
                   <a href="#notifications" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md">
                     <BellIcon className="w-5 h-5 mr-3" />
                     {t('settings.notifications')}
