@@ -594,12 +594,12 @@ const SpecialistSchedule: React.FC = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 max-w-full mx-auto">
+    <div className="p-2 sm:p-4 md:p-6 w-full overflow-hidden">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard.nav.schedule')}</h1>
-          <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">{t('schedule.subtitle')}</p>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-6">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">{t('dashboard.nav.schedule')}</h1>
+          <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm md:text-base">{t('schedule.subtitle')}</p>
         </div>
         <button
           onClick={() => {
@@ -716,29 +716,30 @@ const SpecialistSchedule: React.FC = () => {
       </div>
 
       {/* Calendar Grid */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
-        <div className="overflow-x-auto -mx-4 sm:mx-0">
-          <div className="min-w-max px-4 sm:px-0">
+      <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-lg overflow-hidden -mx-2 sm:mx-0">
+        <div className="overflow-x-auto">
+          <div className="inline-block min-w-full">
             {/* Day Headers */}
             <div className="grid grid-cols-8 border-b border-gray-200 dark:border-gray-700">
-              <div className="p-2 sm:p-3 md:p-4 text-center text-xs font-medium text-gray-500 dark:text-gray-400 sticky left-0 bg-white dark:bg-gray-800 z-10">
+              <div className="p-1.5 sm:p-2 md:p-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 sticky left-0 bg-white dark:bg-gray-800 z-20 min-w-[50px] sm:min-w-[60px]">
                 {t('schedule.time') || 'Время'}
               </div>
               {weekDays.map((day, index) => {
                 const isToday = day.toDateString() === new Date().toDateString();
                 const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
                 const dayName = dayNames[day.getDay()];
+                const dayLabel = t(`weekday.${dayName}`) || day.toLocaleDateString('en-US', { weekday: 'short' });
                 return (
                   <div
                     key={index}
-                    className={`p-2 sm:p-3 md:p-4 text-center border-l border-gray-200 dark:border-gray-700 min-w-[80px] sm:min-w-[100px] ${
+                    className={`p-1.5 sm:p-2 md:p-3 text-center border-l border-gray-200 dark:border-gray-700 min-w-[70px] sm:min-w-[90px] ${
                       isToday ? 'bg-primary-50 dark:bg-primary-900/20' : ''
                     }`}
                   >
-                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                      {t(`weekday.${dayName}`) || day.toLocaleDateString('en-US', { weekday: 'short' })}
+                    <div className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 truncate px-1">
+                      {dayLabel.slice(0, 3)}
                     </div>
-                    <div className={`text-base sm:text-lg md:text-xl font-bold mt-1 ${
+                    <div className={`text-sm sm:text-base md:text-lg font-bold mt-0.5 ${
                       isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-900 dark:text-white'
                     }`}>
                       {day.getDate()}
@@ -753,7 +754,7 @@ const SpecialistSchedule: React.FC = () => {
               {timeSlots.map(hour => (
                 <div key={hour} className="grid grid-cols-8">
                   {/* Time Label */}
-                  <div className="p-2 sm:p-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-700 sticky left-0 bg-white dark:bg-gray-800 z-10">
+                  <div className="p-1.5 sm:p-2 text-center text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-700 sticky left-0 bg-white dark:bg-gray-800 z-10 min-w-[50px] sm:min-w-[60px]">
                     {`${hour.toString().padStart(2, '0')}:00`}
                   </div>
 
@@ -767,7 +768,7 @@ const SpecialistSchedule: React.FC = () => {
                       <div
                         key={dayIndex}
                         onClick={() => !isPast && handleCellClick(day, hour)}
-                        className={`relative min-h-[60px] sm:min-h-[70px] md:min-h-[80px] min-w-[80px] sm:min-w-[100px] border-l border-gray-200 dark:border-gray-700 cursor-pointer transition-colors group ${
+                        className={`relative min-h-[50px] sm:min-h-[60px] md:min-h-[70px] min-w-[70px] sm:min-w-[90px] border-l border-gray-200 dark:border-gray-700 cursor-pointer transition-colors group ${
                           isPast
                             ? 'bg-gray-50 dark:bg-gray-900 cursor-not-allowed'
                             : isToday
@@ -803,15 +804,15 @@ const SpecialistSchedule: React.FC = () => {
                                 e.stopPropagation();
                                 openEditModal(block);
                               }}
-                              className={`absolute left-0 right-0 px-1 sm:px-2 py-1 text-[10px] sm:text-xs overflow-hidden touch-manipulation ${
+                              className={`absolute left-0 right-0 px-0.5 sm:px-1 md:px-2 py-0.5 sm:py-1 text-[9px] sm:text-[10px] md:text-xs overflow-hidden touch-manipulation ${
                                 block.isAvailable
-                                  ? 'bg-green-500/20 border-l-2 sm:border-l-4 border-green-500 text-green-900 dark:text-green-100'
-                                  : 'bg-red-500/20 border-l-2 sm:border-l-4 border-red-500 text-red-900 dark:text-red-100'
+                                  ? 'bg-green-500/20 border-l-2 sm:border-l-3 md:border-l-4 border-green-500 text-green-900 dark:text-green-100'
+                                  : 'bg-red-500/20 border-l-2 sm:border-l-3 md:border-l-4 border-red-500 text-red-900 dark:text-red-100'
                               } hover:opacity-80 active:opacity-70 transition-opacity`}
                               style={{
                                 top: `${startOffset}%`,
                                 height: `${height}%`,
-                                minHeight: '40px'
+                                minHeight: '35px'
                               }}
                             >
                               <div className="font-medium truncate leading-tight">
@@ -820,18 +821,18 @@ const SpecialistSchedule: React.FC = () => {
                                 {blockEnd.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
                               </div>
                               {block.reason && (
-                                <div className="text-[9px] sm:text-xs truncate opacity-75 mt-0.5">{block.reason}</div>
+                                <div className="text-[8px] sm:text-[9px] md:text-xs truncate opacity-75 mt-0.5 hidden sm:block">{block.reason}</div>
                               )}
-                              <div className="flex items-center space-x-1 mt-1 opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                              <div className="flex items-center space-x-1 mt-0.5 sm:mt-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleDeleteTimeSlot(block.id);
                                   }}
-                                  className="p-1 hover:bg-red-600 rounded text-red-600 hover:text-white touch-manipulation"
+                                  className="p-0.5 sm:p-1 hover:bg-red-600 rounded text-red-600 hover:text-white touch-manipulation"
                                   aria-label="Delete time slot"
                                 >
-                                  <TrashIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                                  <TrashIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4" />
                                 </button>
                               </div>
                             </div>

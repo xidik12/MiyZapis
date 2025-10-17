@@ -163,8 +163,11 @@ export class AvailabilityService {
           startDateTime.setHours(startHour, startMinute, 0, 0);
           endDateTime.setHours(endHour, endMinute, 0, 0);
 
-          // Only create blocks for future dates AND dates without existing blocks
-          if (startDateTime > new Date()) {
+          // Create blocks for current and future time slots (not past ones)
+          const now = new Date();
+          const isPastTimeSlot = endDateTime <= now;
+
+          if (!isPastTimeSlot) {
             // Check if this date already has an availability block
             const hasExistingBlock = existingBlocks.some(block => {
               const blockDate = new Date(block.startDateTime);
