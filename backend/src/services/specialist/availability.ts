@@ -145,43 +145,58 @@ export class AvailabilityService {
 
       const newBlocks = [];
       const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const slotDuration = 15; // 15-minute slots
 
       // Generate blocks for each day in the date range
       for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
         const dayName = dayNames[date.getDay()];
         const daySchedule = workingHours[dayName];
 
-        if (daySchedule && daySchedule.isWorking) {
-          // Create availability block for this working day
-          const startDateTime = new Date(date);
-          const endDateTime = new Date(date);
-
+        if (daySchedule && (daySchedule.isWorking || daySchedule.isOpen)) {
           // Parse time strings (e.g., "09:00")
-          const [startHour, startMinute] = daySchedule.start.split(':').map(Number);
-          const [endHour, endMinute] = daySchedule.end.split(':').map(Number);
+          const startTime = daySchedule.start || daySchedule.startTime || '09:00';
+          const endTime = daySchedule.end || daySchedule.endTime || '17:00';
 
-          startDateTime.setHours(startHour, startMinute, 0, 0);
-          endDateTime.setHours(endHour, endMinute, 0, 0);
+          const [startHour, startMinute] = startTime.split(':').map(Number);
+          const [endHour, endMinute] = endTime.split(':').map(Number);
 
-          // Create blocks for current and future time slots (not past ones)
+          const startMinutesFromMidnight = startHour * 60 + startMinute;
+          const endMinutesFromMidnight = endHour * 60 + endMinute;
+
           const now = new Date();
-          const isPastTimeSlot = endDateTime <= now;
 
-          if (!isPastTimeSlot) {
-            // Check if this date already has an availability block
+          // Generate 15-minute time slots for this working day
+          for (let minutes = startMinutesFromMidnight; minutes < endMinutesFromMidnight; minutes += slotDuration) {
+            const slotStartDateTime = new Date(date);
+            const slotEndDateTime = new Date(date);
+
+            const hour = Math.floor(minutes / 60);
+            const minute = minutes % 60;
+
+            slotStartDateTime.setHours(hour, minute, 0, 0);
+            slotEndDateTime.setHours(hour, minute + slotDuration, 0, 0);
+
+            // Skip past time slots
+            if (slotEndDateTime <= now) {
+              continue;
+            }
+
+            // Check if this exact time slot already exists
             const hasExistingBlock = existingBlocks.some(block => {
-              const blockDate = new Date(block.startDateTime);
-              return blockDate.toDateString() === startDateTime.toDateString();
+              const blockStart = new Date(block.startDateTime);
+              const blockEnd = new Date(block.endDateTime);
+              return blockStart.getTime() === slotStartDateTime.getTime() &&
+                     blockEnd.getTime() === slotEndDateTime.getTime();
             });
 
-            // Only create block if no existing block for this date
+            // Only create block if no existing block for this exact time slot
             if (!hasExistingBlock) {
               newBlocks.push({
                 specialistId,
-                startDateTime,
-                endDateTime,
+                startDateTime: slotStartDateTime,
+                endDateTime: slotEndDateTime,
                 isAvailable: true,
-                reason: 'Working hours',
+                reason: 'Available',
                 isRecurring: false
               });
             }
