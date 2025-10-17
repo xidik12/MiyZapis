@@ -373,18 +373,21 @@ export class SpecialistService {
     if (endDate) params.append('endDate', endDate);
 
     try {
-      // Use the existing blocked slots endpoint directly (skip the non-existent /specialists/blocks)
-      console.log('📦 Fetching availability blocks from blocked slots endpoint...');
-      const response = await apiClient.get<{ blockedSlots: BlockedSlot[] }>(`/specialists/availability/blocked?${params}`);
+      // Use the correct /specialists/blocks endpoint
+      console.log('📦 Fetching availability blocks from /specialists/blocks endpoint...');
+      const response = await apiClient.get<{ blocks: BlockedSlot[] }>(`/specialists/blocks?${params}`);
       if (response.success && response.data) {
-        const blocks = response.data.blockedSlots || response.data.data?.blockedSlots || [];
-        console.log('📦 getAvailabilityBlocks response:', { response: response.data, extractedBlocks: blocks });
+        const blocks = response.data.blocks || [];
+        console.log('📦 getAvailabilityBlocks response:', {
+          blocksCount: blocks.length,
+          blocks: blocks.slice(0, 3) // Show first 3 blocks for debugging
+        });
         return Array.isArray(blocks) ? blocks : [];
       }
     } catch (error: any) {
       console.warn('📦 Failed to fetch availability blocks:', error);
     }
-    
+
     return [];
   }
 
