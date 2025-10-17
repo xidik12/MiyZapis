@@ -371,6 +371,8 @@ export class SpecialistService {
     const params = new URLSearchParams();
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
+    // Request up to 1000 blocks (enough for a week of 15-minute slots across multiple days)
+    params.append('limit', '1000');
 
     try {
       // Use the correct /specialists/blocks endpoint
