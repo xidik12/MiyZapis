@@ -163,7 +163,7 @@ export interface ReferralFilters {
 // Component Props
 export interface ReferralCardProps {
   referral: Referral;
-  onCopyLink: (referralCode: string) => void;
+  onCopyLink: (referralCode: string, shareUrl?: string) => void;
   onShare: (referral: Referral) => void;
   className?: string;
 }

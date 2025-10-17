@@ -32,8 +32,8 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'pending' | 'completed' | 'expired'>('all');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
-  const handleCopyLink = async (referralCode: string) => {
-    const success = await referralService.copyReferralLink(referralCode);
+  const handleCopyLink = async (referralCode: string, shareUrl?: string) => {
+    const success = await referralService.copyReferralLink(shareUrl || referralCode);
     if (success) {
       setCopiedCode(referralCode);
       setTimeout(() => setCopiedCode(null), 2000);

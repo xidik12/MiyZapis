@@ -81,18 +81,25 @@ class ReferralService {
   /**
    * Copy referral link to clipboard
    */
-  async copyReferralLink(referralCode: string): Promise<boolean> {
+  async copyReferralLink(referralCodeOrUrl: string): Promise<boolean> {
     try {
-      const config = await this.getConfig();
-      const referral = await this.getReferralByCode(referralCode);
+      // If it's a full URL, use it directly, otherwise treat it as a code and build the URL
+      let textToCopy = referralCodeOrUrl;
+
+      // Check if it's already a full URL
+      if (!referralCodeOrUrl.startsWith('http')) {
+        // It's a referral code, so we need to build the full URL
+        const baseUrl = window.location.origin;
+        textToCopy = `${baseUrl}/register?ref=${referralCodeOrUrl}`;
+      }
 
       if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(referral.shareUrl);
+        await navigator.clipboard.writeText(textToCopy);
         return true;
       } else {
         // Fallback for older browsers
         const textArea = document.createElement('textarea');
-        textArea.value = referral.shareUrl;
+        textArea.value = textToCopy;
         textArea.style.position = 'absolute';
         textArea.style.left = '-999999px';
         document.body.appendChild(textArea);

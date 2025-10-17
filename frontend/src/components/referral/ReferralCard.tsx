@@ -40,7 +40,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
     e?.stopPropagation();
     setCopying(true);
     try {
-      await onCopyLink(referral.referralCode);
+      await onCopyLink(referral.referralCode, referral.shareUrl);
     } finally {
       setTimeout(() => setCopying(false), 1000);
     }
