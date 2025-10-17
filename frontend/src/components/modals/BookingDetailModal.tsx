@@ -379,7 +379,9 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
             {canReview && (
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   onLeaveReview(booking.id);
                   onClose();
                 }}
@@ -392,7 +394,9 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
             {canBookAgain && (
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   onBookAgain(booking);
                   onClose();
                 }}

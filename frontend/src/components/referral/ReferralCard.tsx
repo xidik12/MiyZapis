@@ -35,10 +35,15 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
   const [copying, setCopying] = useState(false);
   const { t } = useLanguage();
 
-  const handleCopy = async () => {
+  const handleCopy = async (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     setCopying(true);
-    await onCopyLink(referral.referralCode);
-    setTimeout(() => setCopying(false), 1000);
+    try {
+      await onCopyLink(referral.referralCode);
+    } finally {
+      setTimeout(() => setCopying(false), 1000);
+    }
   };
 
   const getStatusIcon = () => {
