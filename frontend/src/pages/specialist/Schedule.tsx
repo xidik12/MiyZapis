@@ -10,6 +10,8 @@ import {
   PencilIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
 } from '@heroicons/react/24/outline';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector } from '../../hooks/redux';
@@ -293,6 +295,7 @@ const SpecialistSchedule: React.FC = () => {
   const [preSelectedDate, setPreSelectedDate] = useState<Date | undefined>();
   const [preSelectedTime, setPreSelectedTime] = useState<string | undefined>();
   const [showGeneratePrompt, setShowGeneratePrompt] = useState(false);
+  const [expandedHours, setExpandedHours] = useState<Record<string, boolean>>({});
 
   function getWeekStart(date: Date): Date {
     const d = new Date(date);
@@ -584,6 +587,27 @@ const SpecialistSchedule: React.FC = () => {
     });
   };
 
+  const toggleHourExpanded = (dayIndex: number, hour: number) => {
+    const key = `${dayIndex}-${hour}`;
+    setExpandedHours(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const isHourExpanded = (dayIndex: number, hour: number): boolean => {
+    const key = `${dayIndex}-${hour}`;
+    return !!expandedHours[key];
+  };
+
+  const getHourSummary = (day: Date, hour: number) => {
+    const blocks = getBlocksForCell(day, hour);
+    const availableCount = blocks.filter(b => b.isAvailable).length;
+    const blockedCount = blocks.filter(b => !b.isAvailable).length;
+    const totalCount = blocks.length;
+    return { availableCount, blockedCount, totalCount };
+  };
+
   if (loading) {
     return (
       <FullScreenHandshakeLoader
@@ -715,137 +739,175 @@ const SpecialistSchedule: React.FC = () => {
         </button>
       </div>
 
-      {/* Calendar Grid */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-lg overflow-hidden -mx-2 sm:mx-0">
-        <div className="overflow-x-auto">
-          <div className="inline-block min-w-full">
-            {/* Day Headers */}
-            <div className="grid grid-cols-8 border-b border-gray-200 dark:border-gray-700">
-              <div className="p-1.5 sm:p-2 md:p-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 sticky left-0 bg-white dark:bg-gray-800 z-20 min-w-[50px] sm:min-w-[60px]">
-                {t('schedule.time') || 'Время'}
-              </div>
-              {weekDays.map((day, index) => {
-                const isToday = day.toDateString() === new Date().toDateString();
-                const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-                const dayName = dayNames[day.getDay()];
-                const dayLabel = t(`weekday.${dayName}`) || day.toLocaleDateString('en-US', { weekday: 'short' });
-                return (
-                  <div
-                    key={index}
-                    className={`p-1.5 sm:p-2 md:p-3 text-center border-l border-gray-200 dark:border-gray-700 min-w-[70px] sm:min-w-[90px] ${
-                      isToday ? 'bg-primary-50 dark:bg-primary-900/20' : ''
-                    }`}
-                  >
-                    <div className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 truncate px-1">
-                      {dayLabel.slice(0, 3)}
-                    </div>
-                    <div className={`text-sm sm:text-base md:text-lg font-bold mt-0.5 ${
-                      isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-900 dark:text-white'
-                    }`}>
-                      {day.getDate()}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+      {/* Calendar - Card Based Design */}
+      <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
+        {weekDays.map((day, dayIndex) => {
+          const isToday = day.toDateString() === new Date().toDateString();
+          const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+          const dayName = dayNames[day.getDay()];
+          const dayLabel = t(`weekday.${dayName}`) || day.toLocaleDateString('en-US', { weekday: 'long' });
 
-            {/* Time Grid */}
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {timeSlots.map(hour => (
-                <div key={hour} className="grid grid-cols-8">
-                  {/* Time Label */}
-                  <div className="p-1.5 sm:p-2 text-center text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-700 sticky left-0 bg-white dark:bg-gray-800 z-10 min-w-[50px] sm:min-w-[60px]">
-                    {`${hour.toString().padStart(2, '0')}:00`}
-                  </div>
-
-                  {/* Day Cells */}
-                  {weekDays.map((day, dayIndex) => {
-                    const blocks = getBlocksForCell(day, hour);
-                    const isToday = day.toDateString() === new Date().toDateString();
-                    const isPast = new Date(day.setHours(hour, 0, 0, 0)) < new Date();
-
-                    return (
-                      <div
-                        key={dayIndex}
-                        onClick={() => !isPast && handleCellClick(day, hour)}
-                        className={`relative min-h-[50px] sm:min-h-[60px] md:min-h-[70px] min-w-[70px] sm:min-w-[90px] border-l border-gray-200 dark:border-gray-700 cursor-pointer transition-colors group ${
-                          isPast
-                            ? 'bg-gray-50 dark:bg-gray-900 cursor-not-allowed'
-                            : isToday
-                            ? 'bg-primary-50/30 dark:bg-primary-900/10 hover:bg-primary-100/50 dark:hover:bg-primary-900/20'
-                            : 'hover:bg-gray-50 dark:hover:bg-gray-750'
-                        }`}
-                      >
-                        {/* Add button hint */}
-                        {!isPast && blocks.length === 0 && (
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                            <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-                          </div>
-                        )}
-
-                        {/* Availability Blocks */}
-                        {blocks.map(block => {
-                          const blockStart = new Date(block.startDateTime);
-                          const blockEnd = new Date(block.endDateTime);
-                          const cellStart = new Date(day);
-                          cellStart.setHours(hour, 0, 0, 0);
-                          const cellEnd = new Date(day);
-                          cellEnd.setHours(hour + 1, 0, 0, 0);
-
-                          // Calculate position within cell
-                          const startOffset = blockStart < cellStart ? 0 : ((blockStart.getTime() - cellStart.getTime()) / (60 * 60 * 1000)) * 100;
-                          const endOffset = blockEnd > cellEnd ? 100 : ((blockEnd.getTime() - cellStart.getTime()) / (60 * 60 * 1000)) * 100;
-                          const height = endOffset - startOffset;
-
-                          return (
-                            <div
-                              key={block.id}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openEditModal(block);
-                              }}
-                              className={`absolute left-0 right-0 px-0.5 sm:px-1 md:px-2 py-0.5 sm:py-1 text-[9px] sm:text-[10px] md:text-xs overflow-hidden touch-manipulation ${
-                                block.isAvailable
-                                  ? 'bg-green-500/20 border-l-2 sm:border-l-3 md:border-l-4 border-green-500 text-green-900 dark:text-green-100'
-                                  : 'bg-red-500/20 border-l-2 sm:border-l-3 md:border-l-4 border-red-500 text-red-900 dark:text-red-100'
-                              } hover:opacity-80 active:opacity-70 transition-opacity`}
-                              style={{
-                                top: `${startOffset}%`,
-                                height: `${height}%`,
-                                minHeight: '35px'
-                              }}
-                            >
-                              <div className="font-medium truncate leading-tight">
-                                {blockStart.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
-                                {' - '}
-                                {blockEnd.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
-                              </div>
-                              {block.reason && (
-                                <div className="text-[8px] sm:text-[9px] md:text-xs truncate opacity-75 mt-0.5 hidden sm:block">{block.reason}</div>
-                              )}
-                              <div className="flex items-center space-x-1 mt-0.5 sm:mt-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteTimeSlot(block.id);
-                                  }}
-                                  className="p-0.5 sm:p-1 hover:bg-red-600 rounded text-red-600 hover:text-white touch-manipulation"
-                                  aria-label="Delete time slot"
-                                >
-                                  <TrashIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4" />
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })}
+          return (
+            <div key={dayIndex} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+              {/* Day Header */}
+              <div className={`p-4 border-b border-gray-200 dark:border-gray-700 ${
+                isToday ? 'bg-primary-50 dark:bg-primary-900/20' : ''
+              }`}>
+                <div className={`text-sm font-medium ${
+                  isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400'
+                }`}>
+                  {dayLabel}
                 </div>
-              ))}
+                <div className={`text-2xl font-bold ${
+                  isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-900 dark:text-white'
+                }`}>
+                  {day.getDate()}
+                </div>
+              </div>
+
+              {/* Hour Cards */}
+              <div className="divide-y divide-gray-100 dark:divide-gray-700 max-h-[600px] overflow-y-auto">
+                {timeSlots.map(hour => {
+                  const { availableCount, blockedCount, totalCount } = getHourSummary(day, hour);
+                  const blocks = getBlocksForCell(day, hour);
+                  const expanded = isHourExpanded(dayIndex, hour);
+                  const isPast = new Date(new Date(day).setHours(hour, 0, 0, 0)) < new Date();
+
+                  // Skip hours with no slots
+                  if (totalCount === 0) return null;
+
+                  return (
+                    <div key={hour} className={`${isPast ? 'opacity-50' : ''}`}>
+                      {/* Hour Card Header */}
+                      <button
+                        onClick={() => toggleHourExpanded(dayIndex, hour)}
+                        className="w-full p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors text-left flex items-center justify-between group"
+                      >
+                        <div className="flex items-center space-x-3 flex-1">
+                          <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary-100 dark:bg-primary-900/30">
+                            <ClockIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                              {`${hour.toString().padStart(2, '0')}:00`}
+                            </div>
+                            <div className="flex items-center space-x-3 mt-1">
+                              {availableCount > 0 && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+                                  <CheckIcon className="w-3 h-3 mr-1" />
+                                  {availableCount}
+                                </span>
+                              )}
+                              {blockedCount > 0 && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
+                                  <XMarkIcon className="w-3 h-3 mr-1" />
+                                  {blockedCount}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="ml-2">
+                          {expanded ? (
+                            <ChevronUpIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
+                          ) : (
+                            <ChevronDownIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
+                          )}
+                        </div>
+                      </button>
+
+                      {/* Expanded Time Slots */}
+                      {expanded && (
+                        <div className="px-4 pb-4 space-y-2 bg-gray-50 dark:bg-gray-900/30">
+                          {blocks.map(block => {
+                            const blockStart = new Date(block.startDateTime);
+                            const blockEnd = new Date(block.endDateTime);
+
+                            return (
+                              <div
+                                key={block.id}
+                                className={`p-3 rounded-lg border-2 transition-all hover:shadow-md ${
+                                  block.isAvailable
+                                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                                    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1">
+                                    <div className={`text-sm font-medium ${
+                                      block.isAvailable
+                                        ? 'text-green-900 dark:text-green-100'
+                                        : 'text-red-900 dark:text-red-100'
+                                    }`}>
+                                      {blockStart.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                                      {' - '}
+                                      {blockEnd.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                                    </div>
+                                    {block.reason && (
+                                      <div className={`text-xs mt-1 ${
+                                        block.isAvailable
+                                          ? 'text-green-700 dark:text-green-300'
+                                          : 'text-red-700 dark:text-red-300'
+                                      }`}>
+                                        {block.reason}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center space-x-2 ml-3">
+                                    <button
+                                      onClick={() => openEditModal(block)}
+                                      className={`p-2 rounded-lg transition-colors ${
+                                        block.isAvailable
+                                          ? 'hover:bg-green-200 dark:hover:bg-green-800 text-green-700 dark:text-green-300'
+                                          : 'hover:bg-red-200 dark:hover:bg-red-800 text-red-700 dark:text-red-300'
+                                      }`}
+                                      aria-label="Edit time slot"
+                                    >
+                                      <PencilIcon className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteTimeSlot(block.id)}
+                                      disabled={operationInProgress}
+                                      className={`p-2 rounded-lg transition-colors ${
+                                        block.isAvailable
+                                          ? 'hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400'
+                                          : 'hover:bg-red-200 dark:hover:bg-red-800 text-red-700 dark:text-red-300'
+                                      } disabled:opacity-50`}
+                                      aria-label="Delete time slot"
+                                    >
+                                      <TrashIcon className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Add Time for This Day */}
+              <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={() => {
+                    setPreSelectedDate(day);
+                    setPreSelectedTime('09:00');
+                    setEditingBlock(null);
+                    setShowAddModal(true);
+                  }}
+                  disabled={operationInProgress}
+                  className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors disabled:opacity-50"
+                >
+                  <PlusIcon className="w-4 h-4" />
+                  <span className="text-sm font-medium">Add Time</span>
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
+          );
+        })}
       </div>
 
       {/* Stats Summary */}
