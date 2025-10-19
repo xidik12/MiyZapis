@@ -271,7 +271,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       const tpl = t('notifications.time.daysAgo') || '{n}d ago';
       return tpl.replace('{n}', String(diffDays));
     }
-    const locale = language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US';
+    const locale = language === 'kh' ? 'km-KH' : 'en-US';
     return date.toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' });
   };
 

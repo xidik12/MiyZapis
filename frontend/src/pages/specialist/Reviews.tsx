@@ -229,7 +229,7 @@ const SpecialistReviews: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString(language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US', {
+    return date.toLocaleDateString(language === 'kh' ? 'km-KH' : 'en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'

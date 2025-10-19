@@ -155,12 +155,15 @@ class ProductionSetup {
     
     // API Configuration
     this.config.port = parseInt(await this.prompt('API Port', '3000'));
-    const corsOrigins = await this.prompt('CORS Origins (comma-separated)', 'https://miyzapis.com,https://www.miyzapis.com');
+    const corsOrigins = await this.prompt(
+      'CORS Origins (comma-separated)',
+      'https://panhaha.com,https://www.panhaha.com,https://panhaha-website-production.up.railway.app'
+    );
     this.config.corsOrigins = corsOrigins.split(',').map(origin => origin.trim());
     
     // URLs
-    this.config.frontendUrl = await this.prompt('Frontend URL', 'https://miyzapis.com');
-    this.config.apiUrl = await this.prompt('API URL', 'https://api.miyzapis.com');
+    this.config.frontendUrl = await this.prompt('Frontend URL', 'https://panhaha.com');
+    this.config.apiUrl = await this.prompt('API URL', 'https://api.panhaha.com');
     
     // Email Configuration
     this.config.smtpHost = await this.prompt('SMTP Host', 'smtp.gmail.com');

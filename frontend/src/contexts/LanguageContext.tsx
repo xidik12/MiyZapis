@@ -8,7 +8,7 @@ import React, {
 } from 'react';
 import baseEnTranslations from './translations-en.json';
 
-type Language = 'en' | 'kh';
+export type Language = 'en' | 'kh';
 
 interface LanguageContextType {
   language: Language;
@@ -74,13 +74,19 @@ const createTranslations = (): Translations => {
   ensure('cta.joinBusiness', 'Register Your Business');
 
   // Currency
-  ensure('currency.usd', 'US Dollar');
-  ensure('currency.khr', 'Khmer Riel');
+  ensure('currency.usd', 'US Dollar', 'ដុល្លារអាមេរិក');
+  ensure('currency.khr', 'Khmer Riel', 'រៀលខ្មែរ');
 
   // Theme
-  ensure('settings.theme.light', 'Light');
-  ensure('settings.theme.dark', 'Dark');
-  ensure('settings.theme.system', 'System');
+  ensure('settings.language', 'Language', 'ភាសា');
+  ensure('settings.languageDescription', 'Set your preferred language and currency', 'កំណត់ភាសា និងរូបិយប័ណ្ណដែលអ្នកចូលចិត្ត');
+  ensure('settings.languagePreferences', 'Language Preferences', 'ការកំណត់ភាសា');
+  ensure('settings.interfaceLanguage', 'Interface Language', 'ភាសាបង្ហាញ');
+  ensure('settings.theme', 'Theme', 'ប្រធានបទ');
+  ensure('settings.theme.light', 'Light', 'ពន្លឺ');
+  ensure('settings.theme.dark', 'Dark', 'ងងឹត');
+  ensure('settings.theme.system', 'System', 'ប្រព័ន្ធ');
+  ensure('settings.currency', 'Currency', 'រូបិយប័ណ្ណ');
 
   // Auth - Registration Account Types
   ensure('auth.register.individualSpecialist', 'Individual Specialist', 'អ្នកជំនាញបុគ្គល');

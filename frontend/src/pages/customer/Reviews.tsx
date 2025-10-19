@@ -78,7 +78,7 @@ const CustomerReviews: React.FC = () => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString(
-      language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
+      language === 'kh' ? 'km-KH' : 'en-US',
       { 
         year: 'numeric', 
         month: 'long', 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import type { Language } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser, updateUserProfile } from '../../store/slices/authSlice';
@@ -26,6 +27,11 @@ import {
   KeyIcon,
   LockClosedIcon,
 } from '@heroicons/react/24/outline';
+
+const interfaceLanguageOptions: Array<{ value: Language; label: { en: string; kh: string }; flag: string }> = [
+  { value: 'en', label: { en: 'English', kh: 'អង់គ្លេស' }, flag: '🇺🇸' },
+  { value: 'kh', label: { en: 'Khmer', kh: 'ខ្មែរ' }, flag: '🇰🇭' },
+];
 
 const SpecialistSettings: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
@@ -688,12 +694,14 @@ const SpecialistSettings: React.FC = () => {
                       </label>
                       <select
                         value={language}
-                        onChange={(e) => setLanguage(e.target.value as 'uk' | 'ru' | 'en')}
+                        onChange={(e) => setLanguage(e.target.value as Language)}
                         className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                       >
-                        <option value="uk">🇺🇦 Українська</option>
-                        <option value="ru">🇷🇺 Русский</option>
-                        <option value="en">🇺🇸 English</option>
+                        {interfaceLanguageOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.flag} {language === 'kh' ? option.label.kh : option.label.en}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     

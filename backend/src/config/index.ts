@@ -87,7 +87,9 @@ const envSchema = z.object({
   // Security
   BCRYPT_ROUNDS: z.string().transform(Number).default('12'),
   SESSION_SECRET: z.string().min(32, 'Session secret must be at least 32 characters').default('miyzapis-default-session-secret-change-in-production-32chars'),
-  CORS_ORIGIN: z.string().default('http://localhost:3000'),
+  CORS_ORIGIN: z
+    .string()
+    .default('http://localhost:3000,https://panhaha.com,https://www.panhaha.com,https://panhaha-website-production.up.railway.app'),
 
   // External APIs
   GOOGLE_MAPS_API_KEY: z.string().optional(),
@@ -102,7 +104,11 @@ const envSchema = z.object({
 
   // WebSocket
   WEBSOCKET_PORT: z.string().transform(Number).default('3001'),
-  WEBSOCKET_CORS_ORIGIN: z.string().default('http://localhost:3000,https://miyzapis.com,https://miyzapis-frontend.vercel.app'),
+  WEBSOCKET_CORS_ORIGIN: z
+    .string()
+    .default(
+      'http://localhost:3000,https://panhaha.com,https://www.panhaha.com,https://panhaha-website-production.up.railway.app'
+    ),
 
   // Monitoring
   SENTRY_DSN: z.string().optional(),

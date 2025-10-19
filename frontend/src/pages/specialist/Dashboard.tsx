@@ -515,7 +515,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
               </div>
               <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 font-medium">
                 📅 {t('dashboard.today')} {currentTime.toLocaleDateString(
-                  language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
+                  language === 'kh' ? 'km-KH' : 'en-US',
                   {
                     weekday: 'long',
                     year: 'numeric',
@@ -725,7 +725,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
             </h3>
             <span className="text-sm font-bold text-gray-500 dark:text-gray-400 px-3 py-1 bg-white/50 dark:bg-white/10 rounded-full">
               {currentTime.toLocaleDateString(
-                language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
+                language === 'kh' ? 'km-KH' : 'en-US',
                 { day: 'numeric', month: 'short' }
               )}
             </span>

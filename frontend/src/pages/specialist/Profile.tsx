@@ -331,7 +331,7 @@ const SpecialistProfile: React.FC = () => {
     try {
       const dateObj = new Date(date);
       if (isNaN(dateObj.getTime())) return null;
-      return dateObj.toLocaleDateString(language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US', {
+      return dateObj.toLocaleDateString(language === 'kh' ? 'km-KH' : 'en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'

@@ -422,7 +422,7 @@ const CustomerDashboard: React.FC = () => {
               </h1>
               <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                 {t('dashboard.today')} {currentTime.toLocaleDateString(
-                  language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
+                  language === 'kh' ? 'km-KH' : 'en-US',
                   { 
                     weekday: 'long', 
                     year: 'numeric', 

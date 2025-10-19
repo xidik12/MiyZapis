@@ -273,8 +273,15 @@ export const corsOptions = {
       'https://oauth2.googleapis.com',
       ...config.security.corsOrigin
     ];
-    
-    if (allowedOrigins.includes(origin)) {
+
+    const normalizedOrigin = origin?.toLowerCase();
+    const isPanhahaSubdomain =
+      normalizedOrigin?.startsWith('https://') &&
+      (normalizedOrigin === 'https://panhaha.com' ||
+        normalizedOrigin === 'https://www.panhaha.com' ||
+        normalizedOrigin.endsWith('.panhaha.com'));
+
+    if (allowedOrigins.includes(origin) || isPanhahaSubdomain) {
       callback(null, true);
     } else {
       logger.warn(`CORS blocked origin: ${origin}`);
