@@ -9,7 +9,21 @@ import { ReferralService } from '@/services/referral';
 import { ReferralProcessingService } from '@/services/referral/processing.service';
 import { Prisma, Booking, User, Service, Specialist, BookingStatus as PrismaBookingStatus } from '@prisma/client';
 
-const PRISMA_BOOKING_STATUSES = Object.values(PrismaBookingStatus);
+const DEFAULT_BOOKING_STATUSES = [
+  'PENDING',
+  'PENDING_PAYMENT',
+  'CONFIRMED',
+  'IN_PROGRESS',
+  'COMPLETED',
+  'CANCELLED',
+  'NO_SHOW',
+  'REFUNDED',
+] as const;
+
+const PRISMA_BOOKING_STATUSES: ReadonlyArray<string> =
+  PrismaBookingStatus && typeof PrismaBookingStatus === 'object'
+    ? (Object.values(PrismaBookingStatus) as string[])
+    : DEFAULT_BOOKING_STATUSES;
 
 interface CreateBookingData {
   customerId: string;

@@ -118,8 +118,8 @@ export class KHQRService {
         },
         body: JSON.stringify({
           md: transactionId,
-        }),);
-
+        }),
+      });
       if (!response.ok) {
         throw new Error(`Bakong API error: ${response.statusText}`);
       }
