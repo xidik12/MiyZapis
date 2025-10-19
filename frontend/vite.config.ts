@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
+const enableCrossOriginHeaders = process.env.VITE_ENABLE_CROSS_ORIGIN_HEADERS === 'true'
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -11,10 +13,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'Booking Platform',
-        short_name: 'BookingApp',
-        description: 'Professional service booking platform',
-        theme_color: '#3b82f6',
+        name: 'Panhaha – Connect & Book',
+        short_name: 'Panhaha',
+        description: 'Panhaha – Cambodian professional service booking platform',
+        theme_color: '#C8102E',
         background_color: '#ffffff',
         display: 'standalone',
         icons: [
@@ -81,10 +83,12 @@ export default defineConfig({
       '127.0.0.1',
       '0.0.0.0'
     ],
-    headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
-      'Cross-Origin-Embedder-Policy': 'credentialless'
-    }
+    headers: enableCrossOriginHeaders
+      ? {
+          'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+          'Cross-Origin-Embedder-Policy': 'credentialless'
+        }
+      : {}
   },
   build: {
     outDir: 'dist',

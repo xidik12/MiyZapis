@@ -13,8 +13,15 @@ const BOOKING_STATUSES = [
   'IN_PROGRESS', 
   'COMPLETED', 
   'CANCELLED', 
+  'NO_SHOW',
   'REFUNDED'
 ] as const;
+
+const normalizeStatus = (status: string) =>
+  status
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .replace(/[\s-]+/g, '_')
+    .toUpperCase();
 
 // Create booking validation
 export const validateCreateBooking = [
@@ -118,7 +125,24 @@ export const validateGetBookings = [
   
   query('status')
     .optional()
-    .isIn(BOOKING_STATUSES)
+    .customSanitizer(value => {
+      const values = Array.isArray(value) ? value : value.split(',');
+      const normalized = Array.from(
+        new Set(
+          values
+            .map(status => status?.toString().trim())
+            .filter(Boolean)
+            .map(status => normalizeStatus(status as string))
+        )
+      );
+      return normalized;
+    })
+    .custom((value: string | string[]) => {
+      const values = Array.isArray(value) ? value : value.split(',');
+      return values.every(status =>
+        BOOKING_STATUSES.includes(status as typeof BOOKING_STATUSES[number])
+      );
+    })
     .withMessage('Valid booking status is required'),
   
   query('startDate')

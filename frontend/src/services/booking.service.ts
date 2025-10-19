@@ -9,8 +9,19 @@ import {
   ApiResponse
 } from '@/types';
 
+const VALID_BOOKING_STATUSES = [
+  'PENDING',
+  'PENDING_PAYMENT',
+  'CONFIRMED',
+  'IN_PROGRESS',
+  'COMPLETED',
+  'CANCELLED',
+  'NO_SHOW',
+  'REFUNDED'
+] as const;
+
 export interface BookingFilters {
-  status?: BookingStatus;
+  status?: BookingStatus | BookingStatus[] | string;
   startDate?: string;
   endDate?: string;
   specialistId?: string;
@@ -137,9 +148,35 @@ export class BookingService {
     params.append('userType', userType);
     
     Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        params.append(key, value.toString());
+      if (value === undefined || value === null) {
+        return;
       }
+
+      if (key === 'status') {
+        const toArray = Array.isArray(value) ? value : value.toString().split(',');
+        const normalizedStatuses = Array.from(
+          new Set(
+            toArray
+              .map(statusValue => statusValue?.toString().trim())
+              .filter(Boolean)
+              .map(statusValue =>
+                statusValue
+                  .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+                  .replace(/[\s-]+/g, '_')
+                  .toUpperCase()
+              )
+          )
+        ).filter(statusValue => VALID_BOOKING_STATUSES.includes(statusValue as typeof VALID_BOOKING_STATUSES[number]));
+
+        if (normalizedStatuses.length === 0) {
+          return;
+        }
+
+        normalizedStatuses.forEach(statusValue => params.append('status', statusValue));
+        return;
+      }
+
+      params.append(key, value.toString());
     });
 
     console.log('📡 BookingService: Fetching bookings with userType:', userType, 'filters:', filters);

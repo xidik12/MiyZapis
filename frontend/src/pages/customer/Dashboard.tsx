@@ -143,8 +143,8 @@ const CustomerDashboard: React.FC = () => {
 
         // Fetch essential data first, then optional data with timeout protection
         const essentialPromise = Promise.allSettled([
-          bookingService.getBookings({ limit: 10, status: 'confirmed,pending,inProgress' as any }, 'customer'),
-          bookingService.getBookings({ limit: 5, status: 'COMPLETED' as any }, 'customer'),
+          bookingService.getBookings({ limit: 10, status: 'confirmed,pending,inProgress' }, 'customer'),
+          bookingService.getBookings({ limit: 5, status: 'COMPLETED' }, 'customer'),
           bookingService.getBookings({ limit: 1 }, 'customer'),
         ]);
 

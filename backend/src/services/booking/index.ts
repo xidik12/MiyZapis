@@ -7,7 +7,9 @@ import LoyaltyService from '@/services/loyalty';
 import { specialistSubscriptionService } from '@/services/payment/subscription.service';
 import { ReferralService } from '@/services/referral';
 import { ReferralProcessingService } from '@/services/referral/processing.service';
-import { Booking, User, Service, Specialist } from '@prisma/client';
+import { Prisma, Booking, User, Service, Specialist, BookingStatus as PrismaBookingStatus } from '@prisma/client';
+
+const PRISMA_BOOKING_STATUSES = Object.values(PrismaBookingStatus);
 
 interface CreateBookingData {
   customerId: string;
@@ -1143,7 +1145,7 @@ export class BookingService {
   static async getUserBookings(
     userId: string,
     userType: 'customer' | 'specialist',
-    status?: string,
+    status?: string | string[],
     page: number = 1,
     limit: number = 20
   ): Promise<{
@@ -1155,7 +1157,7 @@ export class BookingService {
     try {
       const skip = (page - 1) * limit;
 
-      const where: any = {};
+      const where: Prisma.BookingWhereInput = {};
       
       if (userType === 'customer') {
         where.customerId = userId;
@@ -1163,8 +1165,29 @@ export class BookingService {
         where.specialistId = userId;
       }
 
+      const normalizeStatus = (value: string) =>
+        value
+          .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+          .replace(/[\s-]+/g, '_')
+          .toUpperCase();
+
       if (status) {
-        where.status = status;
+        const statusArray = Array.isArray(status) ? status : status.split(',');
+        const validStatuses = statusArray
+          .map(value => value?.trim())
+          .filter(Boolean)
+          .map(value => normalizeStatus(value as string))
+          .filter(value => PRISMA_BOOKING_STATUSES.includes(value as PrismaBookingStatus));
+
+        if (validStatuses.length === 1) {
+          where.status = validStatuses[0] as PrismaBookingStatus;
+        } else if (validStatuses.length > 1) {
+          where.status = { in: validStatuses as PrismaBookingStatus[] };
+        } else if (statusArray.length > 0) {
+          logger.warn('Filtering bookings skipped due to invalid status values', {
+            statusArray
+          });
+        }
       }
 
       const [bookings, total] = await Promise.all([

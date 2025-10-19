@@ -656,6 +656,12 @@ export class BookingController {
         limit = 20,
       } = req.query;
 
+      const statusFilters = Array.isArray(status)
+        ? status
+        : typeof status === 'string'
+          ? status.split(',').map(value => value.trim()).filter(Boolean)
+          : undefined;
+
       // Validate userType parameter
       if (!['customer', 'specialist'].includes(userType as string)) {
         res.status(400).json(
@@ -671,7 +677,7 @@ export class BookingController {
       const result = await BookingService.getUserBookings(
         req.user.id,
         userType as 'customer' | 'specialist',
-        status as string,
+        statusFilters,
         parseInt(page as string, 10),
         parseInt(limit as string, 10)
       );
@@ -869,7 +875,11 @@ export class BookingController {
       const result = await BookingService.getUserBookings(
         customerId as string || '',
         'customer',
-        status as string,
+        Array.isArray(status)
+          ? status
+          : typeof status === 'string'
+            ? status.split(',').map(value => value.trim()).filter(Boolean)
+            : undefined,
         parseInt(page as string, 10),
         parseInt(limit as string, 10)
       );
