@@ -4,7 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { serviceService } from '../services';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
-import { selectUser } from '@/store/slices/authSlice';
+import { selectIsAuthenticated, selectUser } from '@/store/slices/authSlice';
 import { fetchFavoriteSpecialists, selectFavoriteSpecialists } from '../store/slices/favoritesSlice';
 import {
   MagnifyingGlassIcon,
@@ -67,6 +67,7 @@ const SearchPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const favoriteSpecialists = useAppSelector(selectFavoriteSpecialists);
   const currentUser = useAppSelector(selectUser);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
   // State
   const [services, setServices] = useState<ServiceWithSpecialist[]>([]);
@@ -134,8 +135,10 @@ const SearchPage: React.FC = () => {
 
   // Fetch favorites when component mounts
   useEffect(() => {
-    dispatch(fetchFavoriteSpecialists());
-  }, [dispatch]);
+    if (isAuthenticated) {
+      dispatch(fetchFavoriteSpecialists());
+    }
+  }, [dispatch, isAuthenticated]);
 
   // Fetch services from API (extracted so we can call on Apply)
   const fetchServices = React.useCallback(async () => {
