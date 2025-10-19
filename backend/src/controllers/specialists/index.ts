@@ -383,7 +383,20 @@ export class SpecialistController {
       const { startDate, endDate, period } = req.query;
 
       // Get specialist ID from user
-      const specialist = await SpecialistService.getProfileByUserId(req.user.id);
+      let specialist;
+      try {
+        specialist = await SpecialistService.getProfileByUserId(req.user.id);
+      } catch (err) {
+        logger.error('Failed to get specialist profile:', err);
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Specialist profile not found. Please complete your profile setup.',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
 
       // Handle date filtering more intelligently
       let analyticsStartDate: Date | undefined;
@@ -419,11 +432,25 @@ export class SpecialistController {
       }
       // If no date parameters provided, show all-time data
 
-      const analytics = await SpecialistService.getAnalytics(
-        specialist.id,
-        analyticsStartDate,
-        analyticsEndDate
-      );
+      let analytics;
+      try {
+        analytics = await SpecialistService.getAnalytics(
+          specialist.id,
+          analyticsStartDate,
+          analyticsEndDate
+        );
+      } catch (err) {
+        logger.error('Failed to get analytics:', err);
+        // Return default analytics if analytics fetch fails
+        analytics = {
+          totalBookings: 0,
+          completedBookings: 0,
+          cancelledBookings: 0,
+          totalRevenue: 0,
+          averageRating: 0,
+          totalReviews: 0,
+        };
+      }
 
       res.json(
         createSuccessResponse({

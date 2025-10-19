@@ -108,12 +108,12 @@ export const Header: React.FC = () => {
                 window.scrollTo(0, 0);
               }}
             >
-              <div className="w-10 h-10 xs:w-12 xs:h-12 rounded-2xl flex items-center justify-center text-white font-bold text-xl xs:text-2xl bg-huddle-gradient shadow-lg shadow-primary-500/25 group-hover:shadow-xl group-hover:shadow-primary-500/40 group-hover:-translate-y-1 group-hover:rotate-3 transition-all duration-300">
+              <div className="w-10 h-10 xs:w-12 xs:h-12 rounded-2xl flex items-center justify-center text-white font-bold text-xl xs:text-2xl bg-panhaha-gradient shadow-lg shadow-primary-500/25 group-hover:shadow-xl group-hover:shadow-primary-500/40 group-hover:-translate-y-1 group-hover:rotate-3 transition-all duration-300">
                 <span className="font-display">H</span>
               </div>
               <div className="flex flex-col leading-tight">
                 <span className="text-lg xs:text-xl font-display font-bold bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent hidden xs:block group-hover:scale-[1.02] transition-transform duration-300">
-                  Huddle
+                  Panhaha
                 </span>
                 <span className="text-[10px] xs:text-xs font-medium text-secondary-500 dark:text-secondary-400 tracking-wide hidden sm:block">
                   Connect & Book

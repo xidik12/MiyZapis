@@ -238,7 +238,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
               onClose();
             }}
           >
-            <div className="w-10 h-10 bg-huddle-gradient text-white rounded-xl flex items-center justify-center text-base font-bold shadow-primary group-hover:scale-110 transition-all duration-300">
+            <div className="w-10 h-10 bg-panhaha-gradient text-white rounded-xl flex items-center justify-center text-base font-bold shadow-primary group-hover:scale-110 transition-all duration-300">
               H
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent group-hover:scale-[1.02] transition-transform duration-300">
@@ -433,7 +433,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
               
               <Link
                 to="/auth/register"
-                className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl bg-huddle-gradient text-white mobile-touch-target transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg shadow-primary"
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-2xl bg-panhaha-gradient text-white mobile-touch-target transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg shadow-primary"
               >
                 <UserPlusIcon className="w-5 h-5 flex-shrink-0" />
                 <span className="font-medium text-base">{t('nav.getStarted')}</span>

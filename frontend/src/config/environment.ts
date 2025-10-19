@@ -1,23 +1,23 @@
 import { Environment } from '../types';
 
 const sanitizeBrandName = (value?: string | null) => {
-  const fallback = 'Huddle';
+  const fallback = 'Panhaha';
   if (!value) {
     return fallback;
   }
 
   const normalized = value
     .trim()
-    .replace(/MiyZap[iy]s/gi, 'Huddle')
-    .replace(/Miyzapis/gi, 'Huddle')
-    .replace(/VicheaPro/gi, 'Huddle');
+    .replace(/MiyZap[iy]s/gi, 'Panhaha')
+    .replace(/Miyzapis/gi, 'Panhaha')
+    .replace(/VicheaPro/gi, 'Panhaha');
 
   return normalized.length > 0 ? normalized : fallback;
 };
 
 export const environment: Environment = {
-  API_URL: import.meta.env.VITE_API_URL || 'https://huddle-backend-production.up.railway.app/api/v1',
-  WS_URL: import.meta.env.VITE_WS_URL || 'wss://huddle-backend-production.up.railway.app',
+  API_URL: import.meta.env.VITE_API_URL || 'https://panhaha-backend-production.up.railway.app/api/v1',
+  WS_URL: import.meta.env.VITE_WS_URL || 'wss://panhaha-backend-production.up.railway.app',
   STRIPE_PUBLISHABLE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || null,
   GOOGLE_MAPS_API_KEY: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
   APP_NAME: sanitizeBrandName(import.meta.env.VITE_APP_NAME),

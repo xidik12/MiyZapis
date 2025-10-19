@@ -8,7 +8,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Huddle - Blue and Red color system
+        // Panhaha - Blue and Red color system
         primary: {
           50: '#FEF2F2',
           100: '#FEE2E2',
@@ -261,8 +261,8 @@ module.exports = {
         'screen-2xl': '1536px',
       },
       backgroundImage: {
-        'huddle-gradient': 'linear-gradient(135deg, #EF4444 0%, #3B82F6 100%)',
-        'huddle-gradient-soft': 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%)',
+        'panhaha-gradient': 'linear-gradient(135deg, #EF4444 0%, #3B82F6 100%)',
+        'panhaha-gradient-soft': 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%)',
         'primary-gradient': 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
         'accent-gradient': 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
         'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',

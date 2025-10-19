@@ -69,14 +69,14 @@ export const Footer: React.FC = () => {
 
         <div className="mt-8 xs:mt-10 sm:mt-14 pt-6 xs:pt-8 sm:pt-10 border-t border-white/10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            {/* Huddle branding */}
+            {/* Panhaha branding */}
             <div className="flex items-center gap-3 group">
-              <div className="w-10 h-10 xs:w-12 xs:h-12 rounded-2xl flex items-center justify-center text-white font-display font-bold text-xl xs:text-2xl bg-huddle-gradient shadow-lg shadow-primary-500/25 group-hover:shadow-xl group-hover:shadow-primary-500/40 group-hover:-translate-y-1 group-hover:rotate-3 transition-all duration-300">
+              <div className="w-10 h-10 xs:w-12 xs:h-12 rounded-2xl flex items-center justify-center text-white font-display font-bold text-xl xs:text-2xl bg-panhaha-gradient shadow-lg shadow-primary-500/25 group-hover:shadow-xl group-hover:shadow-primary-500/40 group-hover:-translate-y-1 group-hover:rotate-3 transition-all duration-300">
                 H
               </div>
               <div>
                 <p className="text-lg xs:text-xl font-display font-bold bg-gradient-to-r from-primary-400 to-accent-400 bg-clip-text text-transparent">
-                  Huddle
+                  Panhaha
                 </p>
                 <p className="text-[10px] xs:text-xs font-medium text-secondary-400 tracking-wide">
                   Connect & Book
@@ -128,7 +128,7 @@ export const Footer: React.FC = () => {
           {/* Copyright */}
           <div className="mt-6 text-center md:text-left space-y-1.5">
             <p className="text-secondary-300 text-xs sm:text-sm">
-              © {currentYear} Huddle. {t('footer.allRightsReserved')}
+              © {currentYear} Panhaha. {t('footer.allRightsReserved')}
               <span className="hidden sm:inline"> • Version {environment.APP_VERSION}</span>
             </p>
             <p className="text-secondary-400 text-xs sm:text-sm">

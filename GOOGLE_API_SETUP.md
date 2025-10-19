@@ -2,7 +2,7 @@
 
 ## Overview
 
-Your Huddle app uses these Google APIs:
+Your Panhaha app uses these Google APIs:
 
 1. **Google OAuth 2.0** - For "Sign in with Google" (REQUIRED for login)
 2. **Google Maps API** - For location features (OPTIONAL)
@@ -52,12 +52,12 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret_here
 2. Select **"External"** (unless you have a Google Workspace)
 3. Click **"Create"**
 4. Fill in required fields:
-   - **App name**: `Huddle` or `МійЗапис`
+   - **App name**: `Panhaha` or `МійЗапис`
    - **User support email**: Your email
    - **App logo**: Upload your logo (optional)
-   - **Application home page**: `https://huddle-website-production.up.railway.app`
+   - **Application home page**: `https://panhaha-website-production.up.railway.app`
    - **Authorized domains**: Add these:
-     - `huddle-website-production.up.railway.app`
+     - `panhaha-website-production.up.railway.app`
      - `railway.app`
      - Your custom domain if you have one
    - **Developer contact**: Your email
@@ -77,25 +77,25 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret_here
 3. Select **"Web application"**
 4. Configure:
 
-**Application name**: `Huddle Web App`
+**Application name**: `Panhaha Web App`
 
 **Authorized JavaScript origins** - Add ALL these:
 ```
 http://localhost:3000
 http://localhost:5173
-https://huddle-website-production.up.railway.app
-https://huddle.com
-https://www.huddle.com
+https://panhaha-website-production.up.railway.app
+https://panhaha.com
+https://www.panhaha.com
 ```
 
 **Authorized redirect URIs** - Add ALL these:
 ```
 http://localhost:3000/auth/callback
 http://localhost:3000
-https://huddle-website-production.up.railway.app/auth/callback
-https://huddle-website-production.up.railway.app
-https://huddle.com/auth/callback
-https://huddle.com
+https://panhaha-website-production.up.railway.app/auth/callback
+https://panhaha-website-production.up.railway.app
+https://panhaha.com/auth/callback
+https://panhaha.com
 ```
 
 5. Click **"Create"** or **"Save"**
@@ -136,8 +136,8 @@ Only needed if you want location/map features.
      ```
      http://localhost:3000/*
      http://localhost:5173/*
-     https://huddle-website-production.up.railway.app/*
-     https://huddle.com/*
+     https://panhaha-website-production.up.railway.app/*
+     https://panhaha.com/*
      ```
 3. Under **"API restrictions"**:
    - Select **"Restrict key"**
@@ -184,16 +184,16 @@ GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
 ### Test Google OAuth
 
 1. Deploy both frontend and backend with new variables
-2. Go to your Huddle website
+2. Go to your Panhaha website
 3. Click "Sign in with Google" button
 4. You should see Google's consent screen (not a 403 error)
-5. After signing in with Google, you should be logged into Huddle
+5. After signing in with Google, you should be logged into Panhaha
 
 ### Common Errors and Fixes
 
 #### Error: "The given origin is not allowed"
 **Solution:**
-- Verify you added `https://huddle-website-production.up.railway.app` to Authorized JavaScript origins
+- Verify you added `https://panhaha-website-production.up.railway.app` to Authorized JavaScript origins
 - Wait 5-10 minutes for Google changes to propagate
 - Clear browser cache and try again
 
@@ -201,8 +201,8 @@ GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
 **Solution:**
 - Add the exact redirect URI shown in the error to Authorized redirect URIs
 - Common URIs needed:
-  - `https://huddle-website-production.up.railway.app`
-  - `https://huddle-website-production.up.railway.app/auth/callback`
+  - `https://panhaha-website-production.up.railway.app`
+  - `https://panhaha-website-production.up.railway.app/auth/callback`
 
 #### Error: "invalid_client"
 **Solution:**
@@ -281,7 +281,7 @@ If Google OAuth still doesn't work:
 
 - [ ] Google Client ID matches in frontend and backend
 - [ ] Google Client Secret is set in backend
-- [ ] Authorized origins include huddle-website-production.up.railway.app
+- [ ] Authorized origins include panhaha-website-production.up.railway.app
 - [ ] Authorized redirect URIs include your callback URLs
 - [ ] OAuth consent screen is configured
 - [ ] Frontend and backend redeployed with variables

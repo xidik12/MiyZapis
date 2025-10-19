@@ -30,9 +30,9 @@ const createTranslations = (): Translations => {
 
   const normalize = (value: string) =>
     value
-      .replace(/MiyZap[iy]s/gi, 'Huddle')
-      .replace(/Miyzapis/gi, 'Huddle')
-      .replace(/VicheaPro/gi, 'Huddle');
+      .replace(/MiyZap[iy]s/gi, 'Panhaha')
+      .replace(/Miyzapis/gi, 'Panhaha')
+      .replace(/VicheaPro/gi, 'Panhaha');
 
   // First load all translations from JSON file
   for (const [key, value] of Object.entries(baseEnTranslations)) {
@@ -49,13 +49,13 @@ const createTranslations = (): Translations => {
   };
 
   // Branding
-  ensure('brand.name', 'Huddle');
+  ensure('brand.name', 'Panhaha');
   ensure('brand.tagline', 'Professional Services Marketplace');
 
   // Hero
   ensure('hero.title', 'Find Expert Services in Cambodia');
   ensure('hero.title1', 'Book trusted Cambodian specialists');
-  ensure('hero.title2', 'Elevate every appointment with Huddle');
+  ensure('hero.title2', 'Elevate every appointment with Panhaha');
   ensure('hero.badge', 'Cambodian excellence');
   ensure(
     'hero.subtitle',

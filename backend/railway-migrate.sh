@@ -1,10 +1,10 @@
 #!/bin/bash
-# Script to run Prisma migrations on NEW Huddle Railway database
+# Script to run Prisma migrations on NEW Panhaha Railway database
 
-echo "🚀 Running Prisma migrations on Huddle database..."
+echo "🚀 Running Prisma migrations on Panhaha database..."
 echo ""
 
-# Run migrations on NEW Huddle database
+# Run migrations on NEW Panhaha database
 DATABASE_URL="postgresql://postgres:hNAJSsKnZmhQDAKZJbvZmKIvEVnVbACA@yamabiko.proxy.rlwy.net:22742/railway" npx prisma migrate deploy
 
 echo ""

@@ -2,8 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import WalletDashboard from '../../components/wallet/WalletDashboard';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const SpecialistWallet: React.FC = () => {
+  const { t } = useLanguage();
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Animated background orbs */}
@@ -21,7 +23,7 @@ const SpecialistWallet: React.FC = () => {
                 className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <ArrowLeft className="h-5 w-5 mr-2" />
-                Back to Dashboard
+                {t('navigation.backToDashboard')}
               </Link>
             </div>
           </div>

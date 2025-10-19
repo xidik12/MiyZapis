@@ -10,12 +10,12 @@
 @layer base {
   /* Design tokens */
   :root {
-    /* Huddle fonts */
+    /* Panhaha fonts */
     --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-display: 'Space Grotesk', 'Inter', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    /* Huddle Blue and Red color system - Light mode */
+    /* Panhaha Blue and Red color system - Light mode */
     --color-bg: 255 255 255;
     --color-bg-elev: 255 255 255;
     --color-bg-hero: 255 255 255;
@@ -97,8 +97,8 @@
     --z-modal: 50;
     --z-toast: 60;
 
-    /* Huddle gradients - Blue and Red */
-    --gradient-huddle: linear-gradient(135deg, rgba(239, 68, 68, 0.92) 0%, rgba(59, 130, 246, 0.88) 100%);
+    /* Panhaha gradients - Blue and Red */
+    --gradient-panhaha: linear-gradient(135deg, rgba(239, 68, 68, 0.92) 0%, rgba(59, 130, 246, 0.88) 100%);
     --gradient-primary: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
     --gradient-accent: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
     --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
@@ -150,7 +150,7 @@
     --shadow-success: 0 20px 48px -20px rgb(76 175 140 / 0.35);
     --shadow-error: 0 20px 48px -20px rgb(248 113 113 / 0.35);
 
-    --gradient-huddle: linear-gradient(135deg, rgba(239, 68, 68, 0.85) 0%, rgba(59, 130, 246, 0.75) 100%);
+    --gradient-panhaha: linear-gradient(135deg, rgba(239, 68, 68, 0.85) 0%, rgba(59, 130, 246, 0.75) 100%);
     --gradient-primary: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
     --gradient-accent: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
     --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
@@ -210,7 +210,7 @@
     filter: blur(100px);
   }
 
-  @keyframes huddle-aurora {
+  @keyframes panhaha-aurora {
     0% {
       transform: rotate(0deg) scale(1);
       filter: blur(1px);
@@ -225,7 +225,7 @@
     }
   }
 
-  @keyframes huddle-gradient {
+  @keyframes panhaha-gradient {
     0% {
       transform: rotate(0deg) scale(1.05);
       opacity: 0.36;
@@ -876,7 +876,7 @@
     background: linear-gradient(135deg, rgba(198, 36, 24, 0.12) 0%, rgba(4, 0, 151, 0.15) 100%);
   }
 
-  .huddle-text-gradient {
+  .panhaha-text-gradient {
     background: linear-gradient(135deg, #EF4444 0%, #3B82F6 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -1158,7 +1158,7 @@
     100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(59,130,246,0); }
   }
 
-  .huddle-loader {
+  .panhaha-loader {
     position: relative;
     width: 120px;
     height: 120px;
@@ -1168,18 +1168,18 @@
     filter: drop-shadow(0 18px 42px rgba(var(--color-accent) / 0.2));
   }
 
-  .huddle-loader__ring {
+  .panhaha-loader__ring {
     position: absolute;
     inset: 0;
     border-radius: 9999px;
     border: 4px solid transparent;
     border-top-color: rgba(var(--color-primary) / 0.85);
     border-right-color: rgba(var(--color-primary) / 0.18);
-    animation: huddle-spin 1.6s ease-in-out infinite;
+    animation: panhaha-spin 1.6s ease-in-out infinite;
     box-shadow: 0 0 22px rgba(var(--color-primary) / 0.25);
   }
 
-  .huddle-loader__ring--delay {
+  .panhaha-loader__ring--delay {
     transform: scale(0.78);
     border-top-color: rgba(var(--color-accent) / 0.9);
     border-right-color: rgba(var(--color-accent) / 0.18);
@@ -1188,14 +1188,14 @@
     box-shadow: 0 0 24px rgba(var(--color-accent) / 0.35);
   }
 
-  .huddle-loader__orb {
+  .panhaha-loader__orb {
     position: absolute;
     inset: 0;
     border-radius: 9999px;
-    animation: huddle-orbit 2.4s ease-in-out infinite;
+    animation: panhaha-orbit 2.4s ease-in-out infinite;
   }
 
-  .huddle-loader__orb::before {
+  .panhaha-loader__orb::before {
     content: '';
     position: absolute;
     top: 50%;
@@ -1208,13 +1208,13 @@
     box-shadow: 0 0 18px rgba(var(--color-primary) / 0.35), 0 0 36px rgba(var(--color-accent) / 0.25);
   }
 
-  @keyframes huddle-spin {
+  @keyframes panhaha-spin {
     0% { transform: rotate(0deg); }
     50% { transform: rotate(220deg); }
     100% { transform: rotate(450deg); }
   }
 
-  @keyframes huddle-orbit {
+  @keyframes panhaha-orbit {
     0% { transform: rotate(0deg); }
     50% { transform: rotate(180deg); }
     100% { transform: rotate(360deg); }

@@ -22,7 +22,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Link to="/" className="flex justify-center mb-6 group">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-huddle-gradient shadow-lg shadow-primary-500/25 flex items-center justify-center text-white font-bold text-2xl font-display group-hover:shadow-xl group-hover:shadow-primary-500/40 group-hover:-translate-y-1 group-hover:rotate-3 transition-all duration-300">
+            <div className="w-12 h-12 rounded-2xl bg-panhaha-gradient shadow-lg shadow-primary-500/25 flex items-center justify-center text-white font-bold text-2xl font-display group-hover:shadow-xl group-hover:shadow-primary-500/40 group-hover:-translate-y-1 group-hover:rotate-3 transition-all duration-300">
               <span>{brandInitial}</span>
             </div>
             <div className="flex flex-col leading-tight">

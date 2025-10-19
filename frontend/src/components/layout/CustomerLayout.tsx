@@ -211,7 +211,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                 H
               </div>
               <span className="text-lg font-bold text-gray-900 dark:text-white">
-                Huddle
+                Panhaha
               </span>
             </div>
           )}

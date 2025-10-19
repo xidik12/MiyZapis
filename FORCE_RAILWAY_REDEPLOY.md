@@ -10,7 +10,7 @@ Railway is running OLD compiled code without the enhanced email service import.
 ### Option 1: Trigger Redeploy in Railway Dashboard (EASIEST)
 
 1. Go to Railway Dashboard
-2. Click on **Backend Service** (Huddle Backend)
+2. Click on **Backend Service** (Panhaha Backend)
 3. Click the **"Deployments"** tab
 4. Click the **"Deploy"** button (top right)
 5. Wait 2-3 minutes for rebuild
@@ -73,7 +73,7 @@ This is why we need to manually trigger a fresh deploy with the latest code.
 
 ## Test After Redeploy
 
-1. Go to https://huddle-website-production.up.railway.app/auth/register
+1. Go to https://panhaha-website-production.up.railway.app/auth/register
 2. Fill in registration form with NEW email (not xidik12@gmail.com - that one exists now)
 3. Submit
 4. Should see success message ✅

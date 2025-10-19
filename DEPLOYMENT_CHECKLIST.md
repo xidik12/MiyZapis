@@ -1,13 +1,13 @@
-# Huddle Deployment Checklist ✅
+# Panhaha Deployment Checklist ✅
 
 ## Critical Issues Fixed
 
 ✅ **1. Logo and Button Visibility** - Fixed Vichea gradients in navigation components
 ✅ **2. Backend Crash** - Created missing auth middleware re-export
-✅ **3. Backend URL Mismatch** - Updated all frontend files to point to huddle-backend
+✅ **3. Backend URL Mismatch** - Updated all frontend files to point to panhaha-backend
 ✅ **4. Empty Database** - Ran `prisma db push` to create all tables
 ✅ **5. Malformed API URL** - Need to set `VITE_API_URL` in Railway frontend
-✅ **6. CORS Error** - Added Huddle frontend domain to backend CORS allowed origins
+✅ **6. CORS Error** - Added Panhaha frontend domain to backend CORS allowed origins
 
 ## Immediate Next Steps
 
@@ -30,15 +30,15 @@ Add these variables:
 
 ```bash
 # Required - Backend API URL
-VITE_API_URL=https://huddle-backend-production.up.railway.app/api/v1
+VITE_API_URL=https://panhaha-backend-production.up.railway.app/api/v1
 
 # Required - WebSocket URL
-VITE_WS_URL=wss://huddle-backend-production.up.railway.app
+VITE_WS_URL=wss://panhaha-backend-production.up.railway.app
 
 # App Configuration
-VITE_APP_NAME=Huddle
+VITE_APP_NAME=Panhaha
 VITE_APP_VERSION=1.0.0
-VITE_APP_URL=https://huddle-website-production.up.railway.app
+VITE_APP_URL=https://panhaha-website-production.up.railway.app
 
 # Feature Flags
 VITE_ENABLE_PWA=true
@@ -77,11 +77,11 @@ The error shows: `[GSI_LOGGER]: The given origin is not allowed for the given cl
 3. Navigate to: APIs & Services → Credentials
 4. Click on your OAuth 2.0 Client ID
 5. Under "Authorized JavaScript origins", add:
-   - `https://huddle-website-production.up.railway.app`
+   - `https://panhaha-website-production.up.railway.app`
    - `http://localhost:3000` (for local development)
 6. Under "Authorized redirect URIs", add:
-   - `https://huddle-website-production.up.railway.app/auth/callback`
-   - `https://huddle-website-production.up.railway.app`
+   - `https://panhaha-website-production.up.railway.app/auth/callback`
+   - `https://panhaha-website-production.up.railway.app`
 7. Click "Save"
 
 **Note:** Changes to Google OAuth settings can take 5-10 minutes to propagate.
@@ -92,12 +92,12 @@ After all deployments complete:
 
 ### 1. Test Backend Health
 ```bash
-curl https://huddle-backend-production.up.railway.app/health
+curl https://panhaha-backend-production.up.railway.app/health
 ```
 Should return: `{"status":"ok"}`
 
 ### 2. Test Frontend Access
-Visit: https://huddle-website-production.up.railway.app
+Visit: https://panhaha-website-production.up.railway.app
 
 ### 3. Test Registration
 1. Go to registration page
@@ -105,7 +105,7 @@ Visit: https://huddle-website-production.up.railway.app
 3. Fill in registration form
 4. Submit
 5. Check console - should NOT see CORS errors
-6. Should see request to: `https://huddle-backend-production.up.railway.app/api/v1/auth-enhanced/register`
+6. Should see request to: `https://panhaha-backend-production.up.railway.app/api/v1/auth-enhanced/register`
 
 ### 4. Check Railway Logs
 

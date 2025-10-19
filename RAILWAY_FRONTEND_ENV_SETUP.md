@@ -4,12 +4,12 @@
 
 The frontend is trying to make requests to:
 ```
-https://huddle-website-production.up.railway.app/auth/huddle-backend-production.up.railway.app/api/v1/...
+https://panhaha-website-production.up.railway.app/auth/panhaha-backend-production.up.railway.app/api/v1/...
 ```
 
 This is wrong! It should be:
 ```
-https://huddle-backend-production.up.railway.app/api/v1/...
+https://panhaha-backend-production.up.railway.app/api/v1/...
 ```
 
 ## Root Cause
@@ -18,21 +18,21 @@ The production frontend build doesn't have the `VITE_API_URL` environment variab
 
 ## Fix: Set Environment Variables in Railway
 
-Go to your **Frontend** Railway service (huddle-website-production) and set these environment variables:
+Go to your **Frontend** Railway service (panhaha-website-production) and set these environment variables:
 
 ### Required Variables
 
 ```bash
 # Backend API URL - CRITICAL
-VITE_API_URL=https://huddle-backend-production.up.railway.app/api/v1
+VITE_API_URL=https://panhaha-backend-production.up.railway.app/api/v1
 
 # WebSocket URL for real-time features
-VITE_WS_URL=wss://huddle-backend-production.up.railway.app
+VITE_WS_URL=wss://panhaha-backend-production.up.railway.app
 
 # App Configuration
-VITE_APP_NAME=Huddle
+VITE_APP_NAME=Panhaha
 VITE_APP_VERSION=1.0.0
-VITE_APP_URL=https://huddle-website-production.up.railway.app
+VITE_APP_URL=https://panhaha-website-production.up.railway.app
 
 # Feature Flags
 VITE_ENABLE_PWA=true
@@ -59,7 +59,7 @@ VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key_here
 
 1. **Go to Railway Dashboard**
    - Navigate to your project
-   - Select the **Frontend** service (huddle-website-production)
+   - Select the **Frontend** service (panhaha-website-production)
 
 2. **Open Variables Tab**
    - Click on "Variables" in the service menu
@@ -76,7 +76,7 @@ VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key_here
 
 5. **Verify**
    - Once deployed, check browser console
-   - Should see requests going to `https://huddle-backend-production.up.railway.app/api/v1/...`
+   - Should see requests going to `https://panhaha-backend-production.up.railway.app/api/v1/...`
    - Registration should work!
 
 ## Important Notes

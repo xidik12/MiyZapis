@@ -165,7 +165,7 @@ const HomePage: React.FC = () => {
         <div className="relative w-full max-w-7xl mx-auto mobile-container py-14 xs:py-18 sm:py-22 lg:py-24 prevent-overflow">
           <div className="text-center w-full prevent-overflow">
             {/* Badge with icon */}
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-huddle-gradient text-white text-xs font-bold tracking-wider uppercase mb-6 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:scale-105 transition-all duration-200">
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-panhaha-gradient text-white text-xs font-bold tracking-wider uppercase mb-6 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:scale-105 transition-all duration-200">
               <StarIcon className="w-4 h-4 animate-pulse" />
               {t('hero.badge')}
             </div>

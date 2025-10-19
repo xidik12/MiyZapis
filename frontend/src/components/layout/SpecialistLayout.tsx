@@ -243,7 +243,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
                 H
               </div>
               <span className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-500 transition-colors duration-300">
-                Huddle
+                Panhaha
               </span>
               <span className="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full">
                 Pro

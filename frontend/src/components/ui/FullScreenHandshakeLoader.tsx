@@ -5,7 +5,7 @@ interface FullScreenHandshakeLoaderProps {
   subtitle?: string;
 }
 
-// Huddle themed loader with Gen-Z glass-morph aesthetic
+// Panhaha themed loader with Gen-Z glass-morph aesthetic
 export const FullScreenHandshakeLoader: React.FC<FullScreenHandshakeLoaderProps> = ({
   title = 'Loading...',
   subtitle = 'Connect & Book',
@@ -40,7 +40,7 @@ export const FullScreenHandshakeLoader: React.FC<FullScreenHandshakeLoaderProps>
         {/* Glass effect background */}
         <div className="absolute inset-[-40px] rounded-full backdrop-blur-xl bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-2xl" />
 
-        {/* Huddle animated logo */}
+        {/* Panhaha animated logo */}
         <div className="relative">
           {/* Outer rotating ring - Primary color */}
           <div className="absolute inset-0 w-24 h-24 rounded-full border-4 border-primary-500/30 border-t-primary-500 animate-spin" />
@@ -53,7 +53,7 @@ export const FullScreenHandshakeLoader: React.FC<FullScreenHandshakeLoaderProps>
 
           {/* Center icon */}
           <div className="relative flex items-center justify-center w-24 h-24">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-display font-bold text-2xl bg-huddle-gradient shadow-2xl shadow-primary-500/50 animate-pulse">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-display font-bold text-2xl bg-panhaha-gradient shadow-2xl shadow-primary-500/50 animate-pulse">
               H
             </div>
           </div>

@@ -82,7 +82,7 @@ const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 
 // Loading component for Suspense
 const SuspenseLoader = () => (
-  <FullScreenHandshakeLoader title="Hang tight..." subtitle="Huddle is curating your experience" />
+  <FullScreenHandshakeLoader title="Hang tight..." subtitle="Panhaha is curating your experience" />
 );
 
 // Component to redirect from /book/:serviceId to /booking/:serviceId
@@ -97,41 +97,41 @@ const usePageTitle = () => {
 
   useEffect(() => {
     const titles: Record<string, string> = {
-      '/': 'Huddle – Cambodian Service Booking Platform',
-      '/search': 'Search Services – Huddle',
-      '/login': 'Sign In – Huddle',
-      '/register': 'Sign Up – Huddle',
-      '/dashboard': 'Dashboard – Huddle',
-      '/bookings': 'My Bookings – Huddle',
-      '/profile': 'My Profile – Huddle',
-      '/specialist/dashboard': 'Specialist Dashboard – Huddle',
-      '/specialist/bookings': 'Manage Bookings – Huddle',
-      '/specialist/services': 'Manage Services – Huddle',
-      '/specialist/analytics': 'Analytics – Huddle',
-      '/specialist/schedule': 'Schedule – Huddle',
-      '/specialist/earnings': 'Earnings – Huddle',
-      '/specialist/reviews': 'Reviews – Huddle',
-      '/specialist/loyalty': 'Loyalty Program – Huddle',
-      '/specialist/messages': 'Messages – Huddle',
-      '/specialist/settings': 'Settings – Huddle',
-      '/specialist/notifications': 'Notifications – Huddle',
-      '/admin/dashboard': 'Admin Dashboard – Huddle',
+      '/': 'Panhaha – Cambodian Service Booking Platform',
+      '/search': 'Search Services – Panhaha',
+      '/login': 'Sign In – Panhaha',
+      '/register': 'Sign Up – Panhaha',
+      '/dashboard': 'Dashboard – Panhaha',
+      '/bookings': 'My Bookings – Panhaha',
+      '/profile': 'My Profile – Panhaha',
+      '/specialist/dashboard': 'Specialist Dashboard – Panhaha',
+      '/specialist/bookings': 'Manage Bookings – Panhaha',
+      '/specialist/services': 'Manage Services – Panhaha',
+      '/specialist/analytics': 'Analytics – Panhaha',
+      '/specialist/schedule': 'Schedule – Panhaha',
+      '/specialist/earnings': 'Earnings – Panhaha',
+      '/specialist/reviews': 'Reviews – Panhaha',
+      '/specialist/loyalty': 'Loyalty Program – Panhaha',
+      '/specialist/messages': 'Messages – Panhaha',
+      '/specialist/settings': 'Settings – Panhaha',
+      '/specialist/notifications': 'Notifications – Panhaha',
+      '/admin/dashboard': 'Admin Dashboard – Panhaha',
     };
 
-    const title = titles[location.pathname] || 'Huddle';
+    const title = titles[location.pathname] || 'Panhaha';
     document.title = title;
 
     // Update meta description based on page
     const metaDescription = document.querySelector('meta[name="description"]');
       if (metaDescription) {
       const descriptions: Record<string, string> = {
-        '/': 'Book Cambodian specialists with confidence on Huddle. Explore trusted experts, fair pricing, and instant scheduling in one modern platform.',
-        '/search': 'Discover spa, wellness, beauty, and professional services around Cambodia. Filter, compare, and secure appointments instantly with Huddle.',
-        '/specialist/dashboard': 'Grow your specialist brand on Huddle. Track bookings, earnings, and client happiness with intuitive analytics and tools.',
+        '/': 'Book Cambodian specialists with confidence on Panhaha. Explore trusted experts, fair pricing, and instant scheduling in one modern platform.',
+        '/search': 'Discover spa, wellness, beauty, and professional services around Cambodia. Filter, compare, and secure appointments instantly with Panhaha.',
+        '/specialist/dashboard': 'Grow your specialist brand on Panhaha. Track bookings, earnings, and client happiness with intuitive analytics and tools.',
       };
       metaDescription.setAttribute(
         'content',
-        descriptions[location.pathname] || 'Huddle – Cambodian Professional Service Booking Platform'
+        descriptions[location.pathname] || 'Panhaha – Cambodian Professional Service Booking Platform'
       );
     }
   }, [location.pathname]);

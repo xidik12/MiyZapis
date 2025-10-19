@@ -264,10 +264,10 @@ export const corsOptions = {
       'https://miyzapis.com',
       'https://www.miyzapis.com',
       'https://miyzapis-frontend-production.up.railway.app',
-      // New Huddle frontend domains
-      'https://huddle-website-production.up.railway.app',
-      'https://huddle.com',
-      'https://www.huddle.com',
+      // New Panhaha frontend domains
+      'https://panhaha-website-production.up.railway.app',
+      'https://panhaha.com',
+      'https://www.panhaha.com',
       // Add Google OAuth domain for OAuth flows
       'https://accounts.google.com',
       'https://oauth2.googleapis.com',

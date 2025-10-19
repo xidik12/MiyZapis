@@ -1,4 +1,4 @@
-# Quick Start Guide - Deploy Huddle Now! 🚀
+# Quick Start Guide - Deploy Panhaha Now! 🚀
 
 ## All Code Fixed ✅
 
@@ -14,11 +14,11 @@ Go to: **Railway → Frontend Service → Variables**
 Copy and paste these (update APP_URL if different):
 
 ```bash
-VITE_API_URL=https://huddle-backend-production.up.railway.app/api/v1
-VITE_WS_URL=wss://huddle-backend-production.up.railway.app
-VITE_APP_NAME=Huddle
+VITE_API_URL=https://panhaha-backend-production.up.railway.app/api/v1
+VITE_WS_URL=wss://panhaha-backend-production.up.railway.app
+VITE_APP_NAME=Panhaha
 VITE_APP_VERSION=1.0.0
-VITE_APP_URL=https://huddle-website-production.up.railway.app
+VITE_APP_URL=https://panhaha-website-production.up.railway.app
 VITE_ENABLE_PWA=true
 VITE_ENABLE_ANALYTICS=true
 VITE_ENABLE_TELEGRAM_INTEGRATION=true
@@ -56,15 +56,15 @@ Check Railway dashboard:
 
 ## Step 4: Test Registration (1 minute)
 
-1. Visit: https://huddle-website-production.up.railway.app
+1. Visit: https://panhaha-website-production.up.railway.app
 2. Look for:
-   - ✅ Logo "Huddle" visible in navigation
+   - ✅ Logo "Panhaha" visible in navigation
    - ✅ "Get Started" button visible
 3. Click Register
 4. Fill in form and submit
 5. Check browser console (F12):
    - ✅ No CORS errors
-   - ✅ Request goes to `https://huddle-backend-production.up.railway.app/api/v1/auth-enhanced/register`
+   - ✅ Request goes to `https://panhaha-backend-production.up.railway.app/api/v1/auth-enhanced/register`
    - ✅ Status 200 or 201 (success)
 
 **Done!** Registration should work now! 🎉
@@ -80,13 +80,13 @@ Check Railway dashboard:
 3. Click your OAuth 2.0 Client ID
 4. Add to **Authorized JavaScript origins**:
    ```
-   https://huddle-website-production.up.railway.app
+   https://panhaha-website-production.up.railway.app
    http://localhost:3000
    ```
 5. Add to **Authorized redirect URIs**:
    ```
-   https://huddle-website-production.up.railway.app/auth/callback
-   https://huddle-website-production.up.railway.app
+   https://panhaha-website-production.up.railway.app/auth/callback
+   https://panhaha-website-production.up.railway.app
    ```
 6. Click **Save**
 

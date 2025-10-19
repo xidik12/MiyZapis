@@ -1233,7 +1233,7 @@ export class BookingService {
                 categoryId: true,
                 createdAt: true,
                 updatedAt: true,
-                specialist: true,
+                specialistId: true,
               },
             },
             // Include employee information for business bookings

@@ -21,7 +21,7 @@ const LoadingComponent = () => (
   <div className="min-h-screen flex items-center justify-center bg-cream-100 dark:bg-[rgb(20,17,34)]">
     <div className="text-center">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-      <p className="mt-4 text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)]">Loading Huddle...</p>
+      <p className="mt-4 text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)]">Loading Panhaha...</p>
     </div>
   </div>
 );
@@ -166,7 +166,7 @@ const initializeApp = () => {
 
 // Development logging
 if (environment.DEBUG) {
-  console.log('🚀 Starting Huddle in development mode');
+  console.log('🚀 Starting Panhaha in development mode');
   console.log('Environment:', environment);
 }
 

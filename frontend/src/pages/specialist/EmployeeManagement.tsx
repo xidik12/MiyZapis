@@ -99,16 +99,16 @@ const EmployeeManagement: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
               <UserGroupIcon className="h-8 w-8 text-primary-600" />
-              Employee Management
+              {t('employeeManagement.title') || 'Employee Management'}
             </h1>
             <p className="mt-2 text-gray-600 dark:text-gray-400">
-              Manage your team members, their services, and availability
+              {t('employeeManagement.subtitle') || 'Manage your team members, their services, and availability'}
             </p>
           </div>
           <button
@@ -116,7 +116,7 @@ const EmployeeManagement: React.FC = () => {
             className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
           >
             <PlusIcon className="h-5 w-5" />
-            Add Employee
+            {t('employeeManagement.addEmployee') || 'Add Employee'}
           </button>
         </div>
 
@@ -128,26 +128,26 @@ const EmployeeManagement: React.FC = () => {
               onChange={(e) => setIncludeInactive(e.target.checked)}
               className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
             />
-            Show inactive employees
+            {t('employeeManagement.showInactive') || 'Show inactive employees'}
           </label>
         </div>
       </div>
 
       {employees.length === 0 ? (
-        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <UserGroupIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            No employees yet
+            {t('employeeManagement.noEmployees') || 'No employees yet'}
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Start building your team by adding your first employee
+            {t('employeeManagement.noEmployeesDescription') || 'Start building your team by adding your first employee'}
           </p>
           <button
             onClick={handleAddEmployee}
             className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
           >
             <PlusIcon className="h-5 w-5" />
-            Add First Employee
+            {t('employeeManagement.addFirstEmployee') || 'Add First Employee'}
           </button>
         </div>
       ) : (
@@ -155,7 +155,7 @@ const EmployeeManagement: React.FC = () => {
           {employees.map((employee) => (
             <div
               key={employee.id}
-              className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all hover:shadow-md ${
+              className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-all hover:shadow-md ${
                 !employee.isActive ? 'opacity-60' : ''
               }`}
             >

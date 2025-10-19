@@ -1,12 +1,12 @@
-# Modern Side Navigation System for Huddle
+# Modern Side Navigation System for Panhaha
 
 ## Overview
 
-This is a comprehensive side navigation system designed specifically for the Huddle booking platform. It replaces the traditional top header approach with a modern, space-efficient side navigation that provides better user experience across all devices.
+This is a comprehensive side navigation system designed specifically for the Panhaha booking platform. It replaces the traditional top header approach with a modern, space-efficient side navigation that provides better user experience across all devices.
 
 ## Design Philosophy
 
-### Huddle Theme Integration
+### Panhaha Theme Integration
 - **Colors**: Red (#EF4444) and Blue (#3B82F6) representing energy and trust
 - **Typography**: Clean, modern fonts optimized for readability
 - **Modern Design**: Contemporary aesthetic with glass-morphism effects
@@ -114,12 +114,12 @@ styles/
 }
 ```
 
-### Huddle Color Palette
+### Panhaha Color Palette
 ```css
 :root {
   --color-primary: #EF4444;
   --color-accent: #3B82F6;
-  --huddle-gradient: linear-gradient(135deg, #EF4444 0%, #3B82F6 100%);
+  --panhaha-gradient: linear-gradient(135deg, #EF4444 0%, #3B82F6 100%);
 }
 ```
 
@@ -223,7 +223,7 @@ module.exports = {
 ## Customization
 
 ### Theme Colors
-Override Huddle colors by updating CSS custom properties:
+Override Panhaha colors by updating CSS custom properties:
 ```css
 :root {
   --color-primary: #your-primary-color;
@@ -310,4 +310,4 @@ The old `Header` component is preserved for compatibility but hidden in the new 
 - **Migration guides**: Step-by-step upgrade instructions
 - **Troubleshooting**: Common issues and solutions
 
-This navigation system provides a solid foundation for the Huddle platform with room for future enhancements and customizations.
+This navigation system provides a solid foundation for the Panhaha platform with room for future enhancements and customizations.

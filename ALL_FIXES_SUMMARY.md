@@ -4,13 +4,13 @@
 
 ### ✅ 1. Logo & Button Visibility
 - **Status**: Fixed ✅
-- **Issue**: Logo "Huddle" and "Get Started" button not visible in light theme
+- **Issue**: Logo "Panhaha" and "Get Started" button not visible in light theme
 - **Root Cause**: Old Vichea gradients (Cambodia red/gold/blue colors)
 - **Files Fixed**:
   - `frontend/src/components/layout/SideNavigation.tsx`
   - `frontend/src/components/layout/MobileSideNavigation.tsx`
   - `frontend/src/components/layout/MobileHeader.tsx`
-- **Commit**: "fix: update navigation components to use Huddle brand gradients"
+- **Commit**: "fix: update navigation components to use Panhaha brand gradients"
 
 ---
 
@@ -33,13 +33,13 @@
   - `frontend/vite.config.ts` (line 67)
   - `frontend/src/services/auth.service.ts` (line 395)
   - `frontend/.env.local` (lines 5-8)
-- **Commit**: "fix: update frontend URLs to new huddle-backend domain"
+- **Commit**: "fix: update frontend URLs to new panhaha-backend domain"
 
 ---
 
 ### ✅ 4. Empty Database Schema
 - **Status**: Fixed ✅
-- **Issue**: New Huddle database completely empty
+- **Issue**: New Panhaha database completely empty
 - **Root Cause**: Fresh database without Prisma migrations
 - **Fix**: Ran `npx prisma db push --accept-data-loss`
 - **Result**: All 30+ tables created successfully
@@ -54,10 +54,10 @@
 - **Files Fixed**:
   - `backend/src/middleware/security/index.ts` (line 268-270)
 - **Added Domains**:
-  - `https://huddle-website-production.up.railway.app`
-  - `https://huddle.com`
-  - `https://www.huddle.com`
-- **Commit**: "fix: add Huddle frontend domain to CORS allowed origins"
+  - `https://panhaha-website-production.up.railway.app`
+  - `https://panhaha.com`
+  - `https://www.panhaha.com`
+- **Commit**: "fix: add Panhaha frontend domain to CORS allowed origins"
 
 ---
 
@@ -87,10 +87,10 @@
 
 **Total Commits**: 6
 ```
-1. fix: update navigation components to use Huddle brand gradients
+1. fix: update navigation components to use Panhaha brand gradients
 2. fix: create missing auth middleware re-export file
-3. fix: update frontend URLs to new huddle-backend domain
-4. fix: add Huddle frontend domain to CORS allowed origins
+3. fix: update frontend URLs to new panhaha-backend domain
+4. fix: add Panhaha frontend domain to CORS allowed origins
 5. fix: use enhanced email service for registration verification
 6. fix: use correct API for resend verification email
 ```
@@ -157,13 +157,13 @@
 #### Frontend Service
 ```bash
 # MUST SET - Registration won't work without these
-VITE_API_URL=https://huddle-backend-production.up.railway.app/api/v1
-VITE_WS_URL=wss://huddle-backend-production.up.railway.app
+VITE_API_URL=https://panhaha-backend-production.up.railway.app/api/v1
+VITE_WS_URL=wss://panhaha-backend-production.up.railway.app
 
 # App configuration
-VITE_APP_NAME=Huddle
+VITE_APP_NAME=Panhaha
 VITE_APP_VERSION=1.0.0
-VITE_APP_URL=https://huddle-website-production.up.railway.app
+VITE_APP_URL=https://panhaha-website-production.up.railway.app
 
 # Feature flags
 VITE_ENABLE_PWA=true
@@ -178,7 +178,7 @@ VITE_TELEGRAM_MINI_APP_URL=https://miyzapis-telegram-mini.up.railway.app
 
 #### Backend Service
 ```bash
-# MUST UPDATE - New Huddle database
+# MUST UPDATE - New Panhaha database
 DATABASE_URL=postgresql://postgres:hNAJSsKnZmhQDAKZJbvZmKIvEVnVbACA@yamabiko.proxy.rlwy.net:22742/railway
 REDIS_URL=redis://default:SPfDOFacFwXrYWFIPqwcFzTlWAWPKhFP@switchback.proxy.rlwy.net:59070
 ```
@@ -198,7 +198,7 @@ GOOGLE_CLIENT_SECRET=GOCSPX-your_secret_from_google_console
 
 ### Google Cloud Console
 **Must add to Authorized JavaScript origins:**
-- `https://huddle-website-production.up.railway.app`
+- `https://panhaha-website-production.up.railway.app`
 - `http://localhost:3000`
 
 ---
@@ -210,7 +210,7 @@ GOOGLE_CLIENT_SECRET=GOCSPX-your_secret_from_google_console
 - Database connection: ✅ Connected
 - Redis connection: ✅ Connected
 - API endpoints: ✅ Accessible
-- CORS: ✅ Huddle frontend domain allowed
+- CORS: ✅ Panhaha frontend domain allowed
 
 ### ⏳ Waiting for Railway Deploy
 - Frontend variables need to be set
@@ -272,7 +272,7 @@ All changes are bug fixes and improvements. No breaking API changes.
    - Wait 10 minutes for Google changes to propagate
 
 3. **Testing**:
-   - Visit https://huddle-website-production.up.railway.app
+   - Visit https://panhaha-website-production.up.railway.app
    - Try registration with email/password
    - Check browser console for errors
    - Verify email sent successfully
