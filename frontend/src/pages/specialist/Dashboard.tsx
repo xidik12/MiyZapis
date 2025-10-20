@@ -460,18 +460,18 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
 
   const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description }: any) => (
     <div className="group backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 mb-1 truncate uppercase tracking-wider">{title}</p>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wider line-clamp-1">{title}</p>
           {loading ? (
             <div className="mb-2">
               <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-24"></div>
             </div>
           ) : (
-            <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-primary-500 transition-colors duration-300">{value}</p>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-primary-500 transition-colors duration-300 break-words">{value}</p>
           )}
           {description && !loading && (
-            <p className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">{description}</p>
+            <p className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 line-clamp-1">{description}</p>
           )}
           {loading && (
             <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-16"></div>
@@ -481,16 +481,16 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
               changeType === 'positive' ? 'text-success-600' : 'text-error-600'
             }`}>
               {changeType === 'positive' ? (
-                <ArrowUpIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                <ArrowUpIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
               ) : (
-                <ArrowDownIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                <ArrowDownIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
               )}
-              <span>{change}</span>
+              <span className="truncate">{change}</span>
             </div>
           )}
         </div>
-        <div className={`p-3 sm:p-4 rounded-xl ${iconBg} flex-shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-          <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+        <div className={`p-2 sm:p-3 lg:p-4 rounded-xl ${iconBg} flex-shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+          <Icon className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-white" />
         </div>
       </div>
     </div>
@@ -525,20 +525,20 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                 )}
               </p>
             </div>
-            <div className="mt-4 lg:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+            <div className="mt-4 lg:mt-0 flex flex-col sm:flex-row gap-3">
               <Link
                 to="/specialist/services"
-                className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-xl hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 font-bold shadow-lg shadow-primary-500/30 text-sm sm:text-base"
+                className="inline-flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-xl hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 font-bold shadow-lg shadow-primary-500/30 text-sm sm:text-base whitespace-nowrap"
               >
-                <PlusIcon className="w-5 h-5 mr-2" />
-                {t('dashboard.specialist.addService')}
+                <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+                <span className="truncate">{t('dashboard.specialist.addService')}</span>
               </Link>
               <button
                 onClick={handleExportReport}
-                className="inline-flex items-center justify-center px-6 py-3 backdrop-blur-xl bg-white/80 dark:bg-white/10 text-gray-700 dark:text-gray-300 border border-white/20 dark:border-white/10 rounded-xl hover:bg-white dark:hover:bg-white/20 transition-all duration-200 font-bold text-sm sm:text-base shadow-lg"
+                className="inline-flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 backdrop-blur-xl bg-white/80 dark:bg-white/10 text-gray-700 dark:text-gray-300 border border-white/20 dark:border-white/10 rounded-xl hover:bg-white dark:hover:bg-white/20 transition-all duration-200 font-bold text-sm sm:text-base shadow-lg whitespace-nowrap"
               >
-                <ArrowDownTrayIcon className="w-5 h-5 mr-2" />
-                {t('dashboard.specialist.exportReport')}
+                <ArrowDownTrayIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+                <span className="truncate">{t('dashboard.specialist.exportReport')}</span>
               </button>
             </div>
           </div>
