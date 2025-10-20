@@ -8,52 +8,52 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Panhaha - 3 Color System: Blue, Red, Gold
-        // Simple, bold, and iconic color palette
+        // Panhaha - 2 Color System + Gold Outlines
+        // Dark Blue & Bright Red with Gold accents only for borders/outlines
 
-        // PRIMARY - Royal Blue (Trust, Professional, Calm)
+        // PRIMARY - Dark Navy Blue (Trust, Professional, Deep)
         primary: {
           50: '#EFF6FF',
           100: '#DBEAFE',
           200: '#BFDBFE',
           300: '#93C5FD',
           400: '#60A5FA',
-          500: '#3B82F6', // Royal Blue - Main primary
-          600: '#2563EB',
+          500: '#1E40AF', // Dark Navy Blue - Main primary
+          600: '#1E3A8A',
           700: '#1D4ED8',
           800: '#1E40AF',
-          900: '#1E3A8A',
-          950: '#172554', // Darker for dark mode
+          900: '#172554',
+          950: '#0F1729', // Very dark for dark mode
         },
 
-        // SECONDARY - Crimson Red (Energy, Urgency, Action)
+        // SECONDARY - Bright Crimson Red (Energy, Bold, Action)
         secondary: {
           50: '#FEF2F2',
           100: '#FEE2E2',
           200: '#FECACA',
           300: '#FCA5A5',
           400: '#F87171',
-          500: '#EF4444', // Crimson Red - Main secondary
-          600: '#DC2626',
-          700: '#B91C1C',
-          800: '#991B1B',
-          900: '#7F1D1D',
-          950: '#450A0A', // Darker for dark mode
+          500: '#DC2626', // Bright Crimson - Main secondary
+          600: '#B91C1C',
+          700: '#991B1B',
+          800: '#7F1D1D',
+          900: '#450A0A',
+          950: '#2D0A0A', // Very dark for dark mode
         },
 
-        // ACCENT - Rich Gold (Premium, Success, Highlight)
+        // ACCENT - Rich Gold (OUTLINES/BORDERS ONLY)
         accent: {
           50: '#FEFCE8',
           100: '#FEF9C3',
           200: '#FEF08A',
           300: '#FDE047',
           400: '#FACC15',
-          500: '#EAB308', // Rich Gold - Main accent
+          500: '#EAB308', // Gold - For borders/outlines only
           600: '#CA8A04',
           700: '#A16207',
           800: '#854D0E',
           900: '#713F12',
-          950: '#422006', // Darker for dark mode
+          950: '#422006',
         },
 
         // Neutral grays for backgrounds and text
@@ -71,30 +71,30 @@ module.exports = {
           950: '#09090B',
         },
 
-        // Semantic mappings to 3-color system
+        // Semantic mappings
         success: {
-          50: '#FEFCE8',
-          100: '#FEF9C3',
-          200: '#FEF08A',
-          300: '#FDE047',
-          400: '#FACC15',
-          500: '#EAB308', // Gold for success
-          600: '#CA8A04',
-          700: '#A16207',
-          800: '#854D0E',
-          900: '#713F12',
+          50: '#EFF6FF',
+          100: '#DBEAFE',
+          200: '#BFDBFE',
+          300: '#93C5FD',
+          400: '#60A5FA',
+          500: '#1E40AF', // Dark Blue for success
+          600: '#1E3A8A',
+          700: '#1D4ED8',
+          800: '#1E40AF',
+          900: '#172554',
         },
         warning: {
-          50: '#FEFCE8',
-          100: '#FEF9C3',
-          200: '#FEF08A',
-          300: '#FDE047',
-          400: '#FACC15',
-          500: '#EAB308', // Gold for warning
-          600: '#CA8A04',
-          700: '#A16207',
-          800: '#854D0E',
-          900: '#713F12',
+          50: '#FEF2F2',
+          100: '#FEE2E2',
+          200: '#FECACA',
+          300: '#FCA5A5',
+          400: '#F87171',
+          500: '#DC2626', // Red for warning
+          600: '#B91C1C',
+          700: '#991B1B',
+          800: '#7F1D1D',
+          900: '#450A0A',
         },
         error: {
           50: '#FEF2F2',
@@ -102,11 +102,11 @@ module.exports = {
           200: '#FECACA',
           300: '#FCA5A5',
           400: '#F87171',
-          500: '#EF4444', // Red for error
-          600: '#DC2626',
-          700: '#B91C1C',
-          800: '#991B1B',
-          900: '#7F1D1D',
+          500: '#DC2626', // Bright Red for error
+          600: '#B91C1C',
+          700: '#991B1B',
+          800: '#7F1D1D',
+          900: '#450A0A',
         },
         info: {
           50: '#EFF6FF',
@@ -114,11 +114,11 @@ module.exports = {
           200: '#BFDBFE',
           300: '#93C5FD',
           400: '#60A5FA',
-          500: '#3B82F6', // Blue for info
-          600: '#2563EB',
+          500: '#1E40AF', // Dark Blue for info
+          600: '#1E3A8A',
           700: '#1D4ED8',
           800: '#1E40AF',
-          900: '#1E3A8A',
+          900: '#172554',
         }
       },
       fontFamily: {
@@ -156,17 +156,17 @@ module.exports = {
         'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05)',
         'xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04)',
         '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-        'primary': '0 4px 20px 0 rgba(59, 130, 246, 0.3)', // Blue
-        'secondary': '0 4px 20px 0 rgba(239, 68, 68, 0.3)', // Red
-        'accent': '0 4px 20px 0 rgba(234, 179, 8, 0.3)', // Gold
-        'success': '0 4px 20px 0 rgba(234, 179, 8, 0.3)', // Gold
-        'warning': '0 4px 20px 0 rgba(234, 179, 8, 0.3)', // Gold
-        'error': '0 4px 20px 0 rgba(239, 68, 68, 0.3)', // Red
-        'info': '0 4px 20px 0 rgba(59, 130, 246, 0.3)', // Blue
+        'primary': '0 4px 20px 0 rgba(30, 64, 175, 0.35)', // Dark Blue
+        'secondary': '0 4px 20px 0 rgba(220, 38, 38, 0.35)', // Bright Red
+        'accent': '0 0 0 1px rgba(234, 179, 8, 0.5)', // Gold outline only
+        'success': '0 4px 20px 0 rgba(30, 64, 175, 0.35)', // Dark Blue
+        'warning': '0 4px 20px 0 rgba(220, 38, 38, 0.35)', // Red
+        'error': '0 4px 20px 0 rgba(220, 38, 38, 0.35)', // Bright Red
+        'info': '0 4px 20px 0 rgba(30, 64, 175, 0.35)', // Dark Blue
         'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.08)',
-        'glow-primary': '0 0 24px rgba(59, 130, 246, 0.5)', // Blue glow
-        'glow-secondary': '0 0 24px rgba(239, 68, 68, 0.5)', // Red glow
-        'glow-accent': '0 0 24px rgba(234, 179, 8, 0.5)', // Gold glow
+        'glow-primary': '0 0 28px rgba(30, 64, 175, 0.6)', // Dark Blue glow
+        'glow-secondary': '0 0 28px rgba(220, 38, 38, 0.6)', // Red glow
+        'glow-accent': '0 0 0 2px rgba(234, 179, 8, 0.8)', // Gold outline glow
         'soft': '0 2px 8px 0 rgba(0, 0, 0, 0.04)',
         'elevated': '0 12px 24px -8px rgba(0, 0, 0, 0.12)',
       },
@@ -280,18 +280,18 @@ module.exports = {
         'screen-2xl': '1536px',
       },
       backgroundImage: {
-        'panhaha-gradient': 'linear-gradient(135deg, #3B82F6 0%, #EF4444 50%, #EAB308 100%)', // Blue → Red → Gold
-        'panhaha-gradient-soft': 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(239, 68, 68, 0.08) 50%, rgba(234, 179, 8, 0.08) 100%)',
-        'primary-gradient': 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)', // Blue gradient
-        'secondary-gradient': 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)', // Red gradient
-        'accent-gradient': 'linear-gradient(135deg, #EAB308 0%, #CA8A04 100%)', // Gold gradient
-        'success-gradient': 'linear-gradient(135deg, #EAB308 0%, #CA8A04 100%)', // Gold
-        'warning-gradient': 'linear-gradient(135deg, #EAB308 0%, #CA8A04 100%)', // Gold
-        'error-gradient': 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)', // Red
-        'info-gradient': 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)', // Blue
+        'panhaha-gradient': 'linear-gradient(135deg, #1E40AF 0%, #DC2626 100%)', // Dark Blue → Red
+        'panhaha-gradient-soft': 'linear-gradient(135deg, rgba(30, 64, 175, 0.08) 0%, rgba(220, 38, 38, 0.08) 100%)',
+        'primary-gradient': 'linear-gradient(135deg, #1E40AF 0%, #1E3A8A 100%)', // Dark Blue gradient
+        'secondary-gradient': 'linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)', // Red gradient
+        'accent-gradient': 'linear-gradient(135deg, #EAB308 0%, #CA8A04 100%)', // Gold (outlines only)
+        'success-gradient': 'linear-gradient(135deg, #1E40AF 0%, #1E3A8A 100%)', // Dark Blue
+        'warning-gradient': 'linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)', // Red
+        'error-gradient': 'linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)', // Red
+        'info-gradient': 'linear-gradient(135deg, #1E40AF 0%, #1E3A8A 100%)', // Dark Blue
         'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-        'hero-gradient': 'linear-gradient(135deg, #3B82F6 0%, #EF4444 50%, #EAB308 100%)', // Blue → Red → Gold
-        'tricolor-gradient': 'linear-gradient(to right, #3B82F6 0%, #EF4444 50%, #EAB308 100%)', // Horizontal tricolor
+        'hero-gradient': 'linear-gradient(135deg, #1E40AF 0%, #DC2626 100%)', // Dark Blue → Red
+        'duotone-gradient': 'linear-gradient(to right, #1E40AF 0%, #DC2626 100%)', // Horizontal blue-red
       },
     },
   },

@@ -15,7 +15,7 @@
     --font-display: 'Space Grotesk', 'Inter', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    /* Panhaha 3-Color System - Light mode: Blue, Red, Gold */
+    /* Panhaha 2-Color System + Gold Outlines - Light mode: Dark Blue, Bright Red, Gold (outlines only) */
     --color-bg: 255 255 255;
     --color-bg-elev: 250 250 250;
     --color-bg-hero: 255 255 255;
@@ -25,14 +25,14 @@
     --color-border: 228 228 231;
     --color-border-strong: 212 212 216;
 
-    --color-primary: 59 130 246; /* Blue */
-    --color-primary-soft: 96 165 250;
-    --color-secondary: 239 68 68; /* Red */
-    --color-secondary-soft: 248 113 113;
-    --color-accent: 234 179 8; /* Gold */
-    --color-success: 234 179 8; /* Gold */
-    --color-danger: 239 68 68; /* Red */
-    --color-warning: 234 179 8; /* Gold */
+    --color-primary: 30 64 175; /* Dark Navy Blue #1E40AF */
+    --color-primary-soft: 37 99 235;
+    --color-secondary: 220 38 38; /* Bright Crimson Red #DC2626 */
+    --color-secondary-soft: 239 68 68;
+    --color-accent: 234 179 8; /* Gold #EAB308 - outlines/borders only */
+    --color-success: 30 64 175; /* Dark Blue */
+    --color-danger: 220 38 38; /* Bright Red */
+    --color-warning: 220 38 38; /* Bright Red */
 
     /* Surfaces */
     --bg-primary: 255 255 255;
@@ -43,7 +43,7 @@
     --role-border: 228 228 231;
     --role-subtle: 244 244 245;
     --role-emphasis: 24 24 27;
-    --role-info: 59 130 246; /* Blue */
+    --role-info: 30 64 175; /* Dark Blue */
     --text-primary: 24 24 27;
     --text-secondary: 82 82 91;
     --text-tertiary: 113 113 122;
@@ -58,11 +58,11 @@
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 10px 20px -10px rgb(0 0 0 / 0.12);
     --shadow-lg: 0 25px 50px -12px rgb(0 0 0 / 0.15);
-    --shadow-primary: 0 12px 35px -10px rgb(59 130 246 / 0.3); /* Blue */
-    --shadow-secondary: 0 12px 35px -10px rgb(239 68 68 / 0.3); /* Red */
-    --shadow-info: 0 12px 30px -8px rgb(59 130 246 / 0.3); /* Blue */
-    --shadow-success: 0 12px 30px -10px rgb(234 179 8 / 0.3); /* Gold */
-    --shadow-error: 0 12px 30px -10px rgb(239 68 68 / 0.3); /* Red */
+    --shadow-primary: 0 12px 35px -10px rgb(30 64 175 / 0.35); /* Dark Blue */
+    --shadow-secondary: 0 12px 35px -10px rgb(220 38 38 / 0.35); /* Bright Red */
+    --shadow-info: 0 12px 30px -8px rgb(30 64 175 / 0.35); /* Dark Blue */
+    --shadow-success: 0 12px 30px -10px rgb(30 64 175 / 0.35); /* Dark Blue */
+    --shadow-error: 0 12px 30px -10px rgb(220 38 38 / 0.35); /* Bright Red */
 
     /* Motion */
     --motion-fast: 120ms;
@@ -97,13 +97,13 @@
     --z-modal: 50;
     --z-toast: 60;
 
-    /* Panhaha 3-Color Gradients: Blue, Red, Gold */
-    --gradient-panhaha: linear-gradient(135deg, rgba(59, 130, 246, 0.92) 0%, rgba(239, 68, 68, 0.88) 50%, rgba(234, 179, 8, 0.9) 100%);
-    --gradient-primary: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); /* Blue */
-    --gradient-accent: linear-gradient(135deg, #EAB308 0%, #CA8A04 100%); /* Gold */
+    /* Panhaha 2-Color Gradients: Dark Blue → Bright Red (Gold for outlines only) */
+    --gradient-panhaha: linear-gradient(135deg, rgba(30, 64, 175, 0.92) 0%, rgba(220, 38, 38, 0.88) 100%);
+    --gradient-primary: linear-gradient(135deg, #1E40AF 0%, #1E3A8A 100%); /* Dark Blue */
+    --gradient-accent: linear-gradient(135deg, #EAB308 0%, #CA8A04 100%); /* Gold - outlines only */
     --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
-    --gradient-soft: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(239, 68, 68, 0.08) 50%, rgba(234, 179, 8, 0.08) 100%);
-    --gradient-orbit: radial-gradient(circle at 15% 20%, rgba(59, 130, 246, 0.12), transparent 55%), radial-gradient(circle at 50% 50%, rgba(239, 68, 68, 0.10), transparent 50%), radial-gradient(circle at 80% 25%, rgba(234, 179, 8, 0.12), transparent 60%);
+    --gradient-soft: linear-gradient(135deg, rgba(30, 64, 175, 0.08) 0%, rgba(220, 38, 38, 0.08) 100%);
+    --gradient-orbit: radial-gradient(circle at 15% 20%, rgba(30, 64, 175, 0.12), transparent 55%), radial-gradient(circle at 85% 75%, rgba(220, 38, 38, 0.10), transparent 50%);
 
     /* Mobile touch target minimum */
     --touch-target-min: 48px;
@@ -119,14 +119,14 @@
     --color-border: 39 39 42;
     --color-border-strong: 63 63 70;
 
-    --color-primary: 96 165 250; /* Lighter Blue for dark mode */
+    --color-primary: 96 165 250; /* Lighter Blue #60A5FA for dark mode */
     --color-primary-soft: 147 197 253;
-    --color-secondary: 248 113 113; /* Lighter Red for dark mode */
+    --color-secondary: 248 113 113; /* Lighter Red #F87171 for dark mode */
     --color-secondary-soft: 252 165 165;
-    --color-accent: 250 204 21; /* Lighter Gold for dark mode */
-    --color-success: 250 204 21; /* Gold */
-    --color-danger: 248 113 113; /* Red */
-    --color-warning: 250 204 21; /* Gold */
+    --color-accent: 250 204 21; /* Lighter Gold #FACC15 for dark mode - outlines only */
+    --color-success: 96 165 250; /* Lighter Blue */
+    --color-danger: 248 113 113; /* Lighter Red */
+    --color-warning: 248 113 113; /* Lighter Red */
 
     --bg-primary: 9 9 11;
     --bg-secondary: 24 24 27;
@@ -136,7 +136,7 @@
     --role-border: 39 39 42;
     --role-subtle: 39 39 42;
     --role-emphasis: 250 250 250;
-    --role-info: 96 165 250; /* Blue */
+    --role-info: 96 165 250; /* Lighter Blue */
     --text-primary: 250 250 250;
     --text-secondary: 212 212 216;
     --text-tertiary: 161 161 170;
@@ -144,18 +144,18 @@
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
     --shadow-md: 0 18px 32px -12px rgb(0 0 0 / 0.6);
     --shadow-lg: 0 42px 64px -18px rgb(0 0 0 / 0.7);
-    --shadow-primary: 0 20px 48px -18px rgb(96 165 250 / 0.4); /* Blue */
-    --shadow-secondary: 0 20px 48px -20px rgb(248 113 113 / 0.4); /* Red */
-    --shadow-info: 0 22px 52px -20px rgb(96 165 250 / 0.4); /* Blue */
-    --shadow-success: 0 20px 48px -20px rgb(250 204 21 / 0.4); /* Gold */
-    --shadow-error: 0 20px 48px -20px rgb(248 113 113 / 0.4); /* Red */
+    --shadow-primary: 0 20px 48px -18px rgb(96 165 250 / 0.4); /* Lighter Blue */
+    --shadow-secondary: 0 20px 48px -20px rgb(248 113 113 / 0.4); /* Lighter Red */
+    --shadow-info: 0 22px 52px -20px rgb(96 165 250 / 0.4); /* Lighter Blue */
+    --shadow-success: 0 20px 48px -20px rgb(96 165 250 / 0.4); /* Lighter Blue */
+    --shadow-error: 0 20px 48px -20px rgb(248 113 113 / 0.4); /* Lighter Red */
 
-    --gradient-panhaha: linear-gradient(135deg, rgba(96, 165, 250, 0.85) 0%, rgba(248, 113, 113, 0.8) 50%, rgba(250, 204, 21, 0.85) 100%);
-    --gradient-primary: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%); /* Blue */
-    --gradient-accent: linear-gradient(135deg, #FACC15 0%, #EAB308 100%); /* Gold */
+    --gradient-panhaha: linear-gradient(135deg, rgba(96, 165, 250, 0.85) 0%, rgba(248, 113, 113, 0.8) 100%);
+    --gradient-primary: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%); /* Lighter Blue */
+    --gradient-accent: linear-gradient(135deg, #FACC15 0%, #EAB308 100%); /* Gold - outlines only */
     --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
-    --gradient-soft: linear-gradient(135deg, rgba(96, 165, 250, 0.12) 0%, rgba(248, 113, 113, 0.12) 50%, rgba(250, 204, 21, 0.12) 100%);
-    --gradient-orbit: radial-gradient(circle at 18% 22%, rgba(96, 165, 250, 0.15), transparent 52%), radial-gradient(circle at 50% 50%, rgba(248, 113, 113, 0.12), transparent 50%), radial-gradient(circle at 82% 18%, rgba(250, 204, 21, 0.15), transparent 60%);
+    --gradient-soft: linear-gradient(135deg, rgba(96, 165, 250, 0.12) 0%, rgba(248, 113, 113, 0.12) 100%);
+    --gradient-orbit: radial-gradient(circle at 18% 22%, rgba(96, 165, 250, 0.15), transparent 52%), radial-gradient(circle at 82% 78%, rgba(248, 113, 113, 0.12), transparent 50%);
   }
 
   * {
