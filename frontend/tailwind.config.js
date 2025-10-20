@@ -8,79 +8,93 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Panhaha - Premium Modern Color System
-        // Inspired by luxury brands with sophisticated, calming tones
+        // Panhaha - 3 Color System: Blue, Red, Gold
+        // Simple, bold, and iconic color palette
+
+        // PRIMARY - Royal Blue (Trust, Professional, Calm)
         primary: {
-          50: '#FDF4F7',
-          100: '#FCE8EF',
-          200: '#F8D1DF',
-          300: '#F3B0C8',
-          400: '#EC7FA4',
-          500: '#E5548A', // Sophisticated Rose - Elegant and warm
-          600: '#D43771',
-          700: '#B82861',
-          800: '#9A2254',
-          900: '#7D1E49',
+          50: '#EFF6FF',
+          100: '#DBEAFE',
+          200: '#BFDBFE',
+          300: '#93C5FD',
+          400: '#60A5FA',
+          500: '#3B82F6', // Royal Blue - Main primary
+          600: '#2563EB',
+          700: '#1D4ED8',
+          800: '#1E40AF',
+          900: '#1E3A8A',
+          950: '#172554', // Darker for dark mode
         },
+
+        // SECONDARY - Crimson Red (Energy, Urgency, Action)
         secondary: {
-          50: '#F8F9FC',
-          100: '#F1F3F9',
-          200: '#E4E8F1',
-          300: '#CBD2E1',
-          400: '#9CA8C1',
-          500: '#6B7AA1', // Muted Slate Blue - Professional and trustworthy
-          600: '#556186',
-          700: '#454F6D',
-          800: '#37405A',
-          900: '#2A3347',
+          50: '#FEF2F2',
+          100: '#FEE2E2',
+          200: '#FECACA',
+          300: '#FCA5A5',
+          400: '#F87171',
+          500: '#EF4444', // Crimson Red - Main secondary
+          600: '#DC2626',
+          700: '#B91C1C',
+          800: '#991B1B',
+          900: '#7F1D1D',
+          950: '#450A0A', // Darker for dark mode
         },
+
+        // ACCENT - Rich Gold (Premium, Success, Highlight)
         accent: {
-          50: '#F0F8FF',
-          100: '#E0F1FE',
-          200: '#B9E1FD',
-          300: '#7DCBFB',
-          400: '#3EAFF7',
-          500: '#0A8FF2', // Vivid Azure - Energetic and modern
-          600: '#0872D9',
-          700: '#065BB5',
-          800: '#054A95',
-          900: '#043B78',
+          50: '#FEFCE8',
+          100: '#FEF9C3',
+          200: '#FEF08A',
+          300: '#FDE047',
+          400: '#FACC15',
+          500: '#EAB308', // Rich Gold - Main accent
+          600: '#CA8A04',
+          700: '#A16207',
+          800: '#854D0E',
+          900: '#713F12',
+          950: '#422006', // Darker for dark mode
         },
+
+        // Neutral grays for backgrounds and text
         neutral: {
-          50: '#FAFBFC',
-          100: '#F4F6F8',
-          200: '#E8ECEF',
-          300: '#D4DBE3',
-          400: '#A8B4C5',
-          500: '#7C8BA7', // Cool Gray - Balanced and sophisticated
-          600: '#5F6D87',
-          700: '#4A5568',
-          800: '#384150',
-          900: '#292F3C',
+          50: '#FAFAFA',
+          100: '#F4F4F5',
+          200: '#E4E4E7',
+          300: '#D4D4D8',
+          400: '#A1A1AA',
+          500: '#71717A',
+          600: '#52525B',
+          700: '#3F3F46',
+          800: '#27272A',
+          900: '#18181B',
+          950: '#09090B',
         },
+
+        // Semantic mappings to 3-color system
         success: {
-          50: '#F0FDF5',
-          100: '#DCFCE8',
-          200: '#BBF7D1',
-          300: '#86EFAC',
-          400: '#4ADE80',
-          500: '#22C55E', // Vibrant Emerald - Fresh and positive
-          600: '#16A34A',
-          700: '#15803D',
-          800: '#166534',
-          900: '#14532D',
+          50: '#FEFCE8',
+          100: '#FEF9C3',
+          200: '#FEF08A',
+          300: '#FDE047',
+          400: '#FACC15',
+          500: '#EAB308', // Gold for success
+          600: '#CA8A04',
+          700: '#A16207',
+          800: '#854D0E',
+          900: '#713F12',
         },
         warning: {
-          50: '#FFFBEB',
-          100: '#FEF3C7',
-          200: '#FDE68A',
-          300: '#FCD34D',
-          400: '#FBBF24',
-          500: '#F59E0B', // Warm Amber - Attention-grabbing but friendly
-          600: '#D97706',
-          700: '#B45309',
-          800: '#92400E',
-          900: '#78350F',
+          50: '#FEFCE8',
+          100: '#FEF9C3',
+          200: '#FEF08A',
+          300: '#FDE047',
+          400: '#FACC15',
+          500: '#EAB308', // Gold for warning
+          600: '#CA8A04',
+          700: '#A16207',
+          800: '#854D0E',
+          900: '#713F12',
         },
         error: {
           50: '#FEF2F2',
@@ -88,7 +102,7 @@ module.exports = {
           200: '#FECACA',
           300: '#FCA5A5',
           400: '#F87171',
-          500: '#EF4444', // Bright Crimson - Clear and urgent
+          500: '#EF4444', // Red for error
           600: '#DC2626',
           700: '#B91C1C',
           800: '#991B1B',
@@ -100,48 +114,11 @@ module.exports = {
           200: '#BFDBFE',
           300: '#93C5FD',
           400: '#60A5FA',
-          500: '#3B82F6', // Classic Sky Blue - Informative and calm
+          500: '#3B82F6', // Blue for info
           600: '#2563EB',
           700: '#1D4ED8',
           800: '#1E40AF',
           900: '#1E3A8A',
-        },
-        // New specialty colors for enhanced UX
-        purple: {
-          50: '#FAF5FF',
-          100: '#F3E8FF',
-          200: '#E9D5FF',
-          300: '#D8B4FE',
-          400: '#C084FC',
-          500: '#A855F7', // Royal Purple - Premium and creative
-          600: '#9333EA',
-          700: '#7E22CE',
-          800: '#6B21A8',
-          900: '#581C87',
-        },
-        indigo: {
-          50: '#EEF2FF',
-          100: '#E0E7FF',
-          200: '#C7D2FE',
-          300: '#A5B4FC',
-          400: '#818CF8',
-          500: '#6366F1', // Deep Indigo - Tech-forward and modern
-          600: '#4F46E5',
-          700: '#4338CA',
-          800: '#3730A6',
-          900: '#312E81',
-        },
-        teal: {
-          50: '#F0FDFA',
-          100: '#CCFBF1',
-          200: '#99F6E4',
-          300: '#5EEAD4',
-          400: '#2DD4BF',
-          500: '#14B8A6', // Fresh Teal - Innovative and refreshing
-          600: '#0D9488',
-          700: '#0F766E',
-          800: '#115E59',
-          900: '#134E4A',
         }
       },
       fontFamily: {
@@ -179,19 +156,17 @@ module.exports = {
         'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05)',
         'xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04)',
         '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-        'primary': '0 4px 20px 0 rgba(229, 84, 138, 0.3)',
-        'accent': '0 4px 20px 0 rgba(10, 143, 242, 0.3)',
-        'success': '0 4px 20px 0 rgba(34, 197, 94, 0.3)',
-        'warning': '0 4px 20px 0 rgba(245, 158, 11, 0.3)',
-        'error': '0 4px 20px 0 rgba(239, 68, 68, 0.3)',
-        'info': '0 4px 20px 0 rgba(59, 130, 246, 0.3)',
-        'purple': '0 4px 20px 0 rgba(168, 85, 247, 0.3)',
-        'indigo': '0 4px 20px 0 rgba(99, 102, 241, 0.3)',
-        'teal': '0 4px 20px 0 rgba(20, 184, 166, 0.3)',
+        'primary': '0 4px 20px 0 rgba(59, 130, 246, 0.3)', // Blue
+        'secondary': '0 4px 20px 0 rgba(239, 68, 68, 0.3)', // Red
+        'accent': '0 4px 20px 0 rgba(234, 179, 8, 0.3)', // Gold
+        'success': '0 4px 20px 0 rgba(234, 179, 8, 0.3)', // Gold
+        'warning': '0 4px 20px 0 rgba(234, 179, 8, 0.3)', // Gold
+        'error': '0 4px 20px 0 rgba(239, 68, 68, 0.3)', // Red
+        'info': '0 4px 20px 0 rgba(59, 130, 246, 0.3)', // Blue
         'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.08)',
-        'glow-primary': '0 0 24px rgba(229, 84, 138, 0.4)',
-        'glow-accent': '0 0 24px rgba(10, 143, 242, 0.4)',
-        'glow-success': '0 0 24px rgba(34, 197, 94, 0.4)',
+        'glow-primary': '0 0 24px rgba(59, 130, 246, 0.5)', // Blue glow
+        'glow-secondary': '0 0 24px rgba(239, 68, 68, 0.5)', // Red glow
+        'glow-accent': '0 0 24px rgba(234, 179, 8, 0.5)', // Gold glow
         'soft': '0 2px 8px 0 rgba(0, 0, 0, 0.04)',
         'elevated': '0 12px 24px -8px rgba(0, 0, 0, 0.12)',
       },
@@ -305,20 +280,18 @@ module.exports = {
         'screen-2xl': '1536px',
       },
       backgroundImage: {
-        'panhaha-gradient': 'linear-gradient(135deg, #E5548A 0%, #0A8FF2 100%)',
-        'panhaha-gradient-soft': 'linear-gradient(135deg, rgba(229, 84, 138, 0.08) 0%, rgba(10, 143, 242, 0.08) 100%)',
-        'primary-gradient': 'linear-gradient(135deg, #E5548A 0%, #D43771 100%)',
-        'accent-gradient': 'linear-gradient(135deg, #0A8FF2 0%, #0872D9 100%)',
-        'success-gradient': 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)',
-        'warning-gradient': 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
-        'error-gradient': 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
-        'purple-gradient': 'linear-gradient(135deg, #A855F7 0%, #9333EA 100%)',
-        'indigo-gradient': 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
-        'teal-gradient': 'linear-gradient(135deg, #14B8A6 0%, #0D9488 100%)',
+        'panhaha-gradient': 'linear-gradient(135deg, #3B82F6 0%, #EF4444 50%, #EAB308 100%)', // Blue → Red → Gold
+        'panhaha-gradient-soft': 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(239, 68, 68, 0.08) 50%, rgba(234, 179, 8, 0.08) 100%)',
+        'primary-gradient': 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)', // Blue gradient
+        'secondary-gradient': 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)', // Red gradient
+        'accent-gradient': 'linear-gradient(135deg, #EAB308 0%, #CA8A04 100%)', // Gold gradient
+        'success-gradient': 'linear-gradient(135deg, #EAB308 0%, #CA8A04 100%)', // Gold
+        'warning-gradient': 'linear-gradient(135deg, #EAB308 0%, #CA8A04 100%)', // Gold
+        'error-gradient': 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)', // Red
+        'info-gradient': 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)', // Blue
         'glass-gradient': 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-        'hero-gradient': 'linear-gradient(135deg, #E5548A 0%, #0A8FF2 50%, #22C55E 100%)',
-        'premium-gradient': 'linear-gradient(135deg, #E5548A 0%, #A855F7 50%, #0A8FF2 100%)',
-        'sunset-gradient': 'linear-gradient(135deg, #F59E0B 0%, #EF4444 50%, #E5548A 100%)',
+        'hero-gradient': 'linear-gradient(135deg, #3B82F6 0%, #EF4444 50%, #EAB308 100%)', // Blue → Red → Gold
+        'tricolor-gradient': 'linear-gradient(to right, #3B82F6 0%, #EF4444 50%, #EAB308 100%)', // Horizontal tricolor
       },
     },
   },
