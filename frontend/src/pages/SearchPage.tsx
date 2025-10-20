@@ -370,7 +370,7 @@ const SearchPage: React.FC = () => {
     const reviewsLabel = language === 'kh' ? 'មតិយោបល់' : 'Reviews';
 
     const metricCardClass =
-      'flex items-center gap-2 lg:gap-3 px-2 sm:px-3 lg:px-4 py-2 lg:py-2.5 rounded-xl lg:rounded-2xl bg-white/55 dark:bg-white/10 border border-white/30 dark:border-white/10 text-xs sm:text-sm font-medium text-[rgba(31,33,36,0.85)] dark:text-white/80 backdrop-blur-lg shadow-sm min-w-0';
+      'flex items-center gap-2 lg:gap-3 px-2 sm:px-3 lg:px-4 py-2 lg:py-2.5 rounded-xl lg:rounded-2xl bg-white/55 dark:bg-white/10 border border-white/30 dark:border-white/10 text-xs sm:text-sm font-medium text-[rgba(31,33,36,0.85)] dark:text-white/80 backdrop-blur-lg shadow-sm';
     const quickActionClass =
       'flex-1 inline-flex items-center justify-center gap-1 sm:gap-1.5 lg:gap-2 px-2 sm:px-3 lg:px-4 py-2 lg:py-2.5 rounded-xl lg:rounded-2xl bg-white/45 dark:bg-white/10 border border-white/25 dark:border-white/10 text-[10px] sm:text-xs lg:text-sm font-semibold text-[rgba(31,33,36,0.85)] dark:text-white/80 transition-all duration-300 hover:bg-white/65 hover:-translate-y-0.5 min-w-0';
     const baseActionButton =
@@ -379,7 +379,7 @@ const SearchPage: React.FC = () => {
     return (
       <div
         key={service.id}
-        className="glass-panel group relative overflow-hidden transition-all duration-500 p-6 sm:p-8"
+        className="glass-panel group relative overflow-hidden transition-all duration-500 p-4 sm:p-6 lg:p-8"
       >
         <div
           aria-hidden="true"
@@ -471,48 +471,52 @@ const SearchPage: React.FC = () => {
               {service.description}
             </p>
 
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
-              <div className={metricCardClass}>
-                <MapPinIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#040097] flex-shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[rgba(78,80,86,0.6)] dark:text-white/50 truncate">
-                    {locationLabel}
-                  </p>
-                  <p className="text-xs sm:text-sm font-semibold text-[rgb(31,33,36)] dark:text-white truncate">
-                    {service.location}
-                  </p>
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              {service.location && (
+                <div className={metricCardClass}>
+                  <MapPinIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#040097] flex-shrink-0" />
+                  <div className="flex flex-col">
+                    <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[rgba(78,80,86,0.6)] dark:text-white/50 whitespace-nowrap">
+                      {locationLabel}
+                    </p>
+                    <p className="text-xs sm:text-sm font-semibold text-[rgb(31,33,36)] dark:text-white whitespace-nowrap">
+                      {service.location}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
               <div className={metricCardClass}>
                 <ClockIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#c62418] flex-shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[rgba(78,80,86,0.6)] dark:text-white/50 truncate">
+                <div className="flex flex-col">
+                  <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[rgba(78,80,86,0.6)] dark:text-white/50 whitespace-nowrap">
                     {durationLabel}
                   </p>
-                  <p className="text-xs sm:text-sm font-semibold text-[rgb(31,33,36)] dark:text-white truncate">
+                  <p className="text-xs sm:text-sm font-semibold text-[rgb(31,33,36)] dark:text-white whitespace-nowrap">
                     {service.duration} {t('common.minutes')}
                   </p>
                 </div>
               </div>
-              <div className={metricCardClass}>
-                <ListBulletIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#040097] flex-shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[rgba(78,80,86,0.6)] dark:text-white/50 truncate">
-                    {experienceLabel}
-                  </p>
-                  <p className="text-xs sm:text-sm font-semibold text-[rgb(31,33,36)] dark:text-white truncate">
-                    {service.specialist.experience}
-                  </p>
+              {service.specialist.experience && (
+                <div className={metricCardClass}>
+                  <ListBulletIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#040097] flex-shrink-0" />
+                  <div className="flex flex-col">
+                    <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[rgba(78,80,86,0.6)] dark:text-white/50 whitespace-nowrap">
+                      {experienceLabel}
+                    </p>
+                    <p className="text-xs sm:text-sm font-semibold text-[rgb(31,33,36)] dark:text-white whitespace-nowrap">
+                      {service.specialist.experience}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
               {typeof responseMinutes === 'number' && (
                 <div className={metricCardClass}>
                   <BoltIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#c62418] flex-shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[rgba(78,80,86,0.6)] dark:text-white/50 truncate">
+                  <div className="flex flex-col">
+                    <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[rgba(78,80,86,0.6)] dark:text-white/50 whitespace-nowrap">
                       {responseLabel}
                     </p>
-                    <p className="text-xs sm:text-sm font-semibold text-[rgb(31,33,36)] dark:text-white truncate">
+                    <p className="text-xs sm:text-sm font-semibold text-[rgb(31,33,36)] dark:text-white whitespace-nowrap">
                       ~{responseMinutes} {t('common.minutes') || 'min'}
                     </p>
                   </div>
@@ -521,11 +525,11 @@ const SearchPage: React.FC = () => {
               {service.distance && (
                 <div className={metricCardClass}>
                   <Squares2X2Icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#040097] flex-shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[rgba(78,80,86,0.6)] dark:text-white/50 truncate">
+                  <div className="flex flex-col">
+                    <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[rgba(78,80,86,0.6)] dark:text-white/50 whitespace-nowrap">
                       {distanceLabel}
                     </p>
-                    <p className="text-xs sm:text-sm font-semibold text-[rgb(31,33,36)] dark:text-white truncate">
+                    <p className="text-xs sm:text-sm font-semibold text-[rgb(31,33,36)] dark:text-white whitespace-nowrap">
                       {service.distance.toFixed(1)} km
                     </p>
                   </div>

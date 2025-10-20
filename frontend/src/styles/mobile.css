@@ -387,3 +387,213 @@
     scroll-behavior: smooth;
   }
 }
+
+/* Platform-wide responsive improvements */
+@layer utilities {
+  /* Prevent text/content overflow on small screens */
+  .responsive-text {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  /* Responsive container with proper padding */
+  .responsive-container {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .responsive-container {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .responsive-container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  /* Responsive grid that adapts to screen size */
+  .responsive-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 640px) {
+    .responsive-grid {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .responsive-grid {
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+    }
+  }
+
+  /* Responsive flexbox */
+  .responsive-flex {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .responsive-flex {
+      flex-direction: row;
+      gap: 1rem;
+    }
+  }
+
+  /* Card responsive improvements */
+  .responsive-card {
+    padding: 1rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+  }
+
+  @media (min-width: 640px) {
+    .responsive-card {
+      padding: 1.5rem;
+      border-radius: 1rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .responsive-card {
+      padding: 2rem;
+      border-radius: 1.25rem;
+    }
+  }
+
+  /* Responsive text sizes */
+  .responsive-text-sm {
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .responsive-text-sm {
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+    }
+  }
+
+  .responsive-text-base {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  @media (min-width: 640px) {
+    .responsive-text-base {
+      font-size: 1rem;
+      line-height: 1.5rem;
+    }
+  }
+
+  .responsive-text-lg {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .responsive-text-lg {
+      font-size: 1.125rem;
+      line-height: 1.75rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .responsive-text-lg {
+      font-size: 1.25rem;
+      line-height: 1.75rem;
+    }
+  }
+
+  .responsive-text-xl {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .responsive-text-xl {
+      font-size: 1.25rem;
+      line-height: 1.75rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .responsive-text-xl {
+      font-size: 1.5rem;
+      line-height: 2rem;
+    }
+  }
+
+  /* Prevent overflow on shrunk windows */
+  .no-overflow {
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .ellipsis-on-small {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  @media (min-width: 640px) {
+    .ellipsis-on-small {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+    }
+  }
+
+  /* Responsive spacing utilities */
+  .responsive-px {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .responsive-px {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .responsive-px {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  .responsive-py {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .responsive-py {
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .responsive-py {
+      padding-top: 1.5rem;
+      padding-bottom: 1.5rem;
+    }
+  }
+}
