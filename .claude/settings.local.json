@@ -11,7 +11,8 @@
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma db push:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:hNAJSsKnZmhQDAKZJbvZmKIvEVnVbACA@yamabiko.proxy.rlwy.net:22742/railway\" npx prisma db push:*)"
     ],
     "deny": [],
     "ask": [],
