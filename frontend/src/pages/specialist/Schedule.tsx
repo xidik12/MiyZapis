@@ -350,6 +350,19 @@ const SpecialistSchedule: React.FC = () => {
   const weekDays = getWeekDays(currentWeekStart);
   const timeSlots = Array.from({ length: 24 }, (_, i) => i); // 0-23 hours
 
+  // Generate 15-minute time slots for a day (from 00:00 to 23:45)
+  const generate15MinSlots = () => {
+    const slots: string[] = [];
+    for (let hour = 0; hour < 24; hour++) {
+      for (let minute = 0; minute < 60; minute += 15) {
+        slots.push(`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`);
+      }
+    }
+    return slots;
+  };
+
+  const fifteenMinSlots = generate15MinSlots();
+
   // Load availability blocks
   useEffect(() => {
     const loadAvailabilityBlocks = async () => {
@@ -571,6 +584,27 @@ const SpecialistSchedule: React.FC = () => {
     setPreSelectedTime(`${hour.toString().padStart(2, '0')}:00`);
     setEditingBlock(null);
     setShowAddModal(true);
+  };
+
+  // Check status of a specific 15-minute slot
+  const getSlotStatus = (date: Date, timeSlot: string): 'available' | 'blocked' | 'empty' => {
+    const [hour, minute] = timeSlot.split(':').map(Number);
+    const slotStart = new Date(date);
+    slotStart.setHours(hour, minute, 0, 0);
+    const slotEnd = new Date(slotStart);
+    slotEnd.setMinutes(slotStart.getMinutes() + 15);
+
+    for (const block of availabilityBlocks) {
+      const blockStart = new Date(block.startDateTime);
+      const blockEnd = new Date(block.endDateTime);
+
+      // Check if this 15-min slot overlaps with the block
+      if (slotStart < blockEnd && slotEnd > blockStart) {
+        return block.isAvailable ? 'available' : 'blocked';
+      }
+    }
+
+    return 'empty';
   };
 
   const getBlocksForCell = (date: Date, hour: number): CalendarBlock[] => {
@@ -845,16 +879,51 @@ const SpecialistSchedule: React.FC = () => {
                         </div>
                       </button>
 
-                      {/* Expanded Time Slots */}
+                      {/* Expanded Time Slots - Show 15-minute blocks */}
                       {expanded && (
-                        <div className="px-4 pb-4 space-y-2 bg-gray-50 dark:bg-gray-900/30">
-                          {blocks.length === 0 ? (
-                            <div className="text-center py-6 text-gray-500 dark:text-gray-400">
-                              <p className="text-sm">{t('schedule.noSlotsForHour') || 'No time slots for this hour'}</p>
-                              <p className="text-xs mt-1">{t('schedule.useButtonBelow') || 'Use the button below to add availability'}</p>
-                            </div>
-                          ) : (
-                            blocks.map(block => {
+                        <div className="px-4 pb-4 bg-gray-50 dark:bg-gray-900/30">
+                          <div className="grid grid-cols-4 gap-2">
+                            {[0, 15, 30, 45].map(minute => {
+                              const timeSlot = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                              const status = getSlotStatus(day, timeSlot);
+                              const isPastSlot = new Date(new Date(day).setHours(hour, minute)) < new Date();
+
+                              return (
+                                <button
+                                  key={timeSlot}
+                                  onClick={() => {
+                                    setPreSelectedDate(day);
+                                    setPreSelectedTime(timeSlot);
+                                    setEditingBlock(null);
+                                    setShowAddModal(true);
+                                  }}
+                                  disabled={isPastSlot}
+                                  className={`p-3 rounded-lg text-sm font-medium transition-all ${
+                                    isPastSlot
+                                      ? 'opacity-40 cursor-not-allowed bg-gray-200 dark:bg-gray-700'
+                                      : status === 'available'
+                                      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/50 border-2 border-green-300 dark:border-green-700'
+                                      : status === 'blocked'
+                                      ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50 border-2 border-red-300 dark:border-red-700'
+                                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-gray-200 dark:border-gray-600'
+                                  }`}
+                                >
+                                  <div className="text-center">
+                                    <div className="font-semibold">{timeSlot}</div>
+                                    <div className="text-xs mt-1">
+                                      {status === 'available' && '✓ Available'}
+                                      {status === 'blocked' && '✗ Blocked'}
+                                      {status === 'empty' && '+ Add'}
+                                    </div>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {/* Show existing blocks list below for reference */}
+                          {blocks.length > 0 && (
+                            <div className="mt-4 space-y-2">
+                              {blocks.map(block => {
                             const blockStart = new Date(block.startDateTime);
                             const blockEnd = new Date(block.endDateTime);
 
@@ -916,7 +985,9 @@ const SpecialistSchedule: React.FC = () => {
                                 </div>
                               </div>
                             );
-                          }))}
+                          })}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
