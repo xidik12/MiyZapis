@@ -516,9 +516,6 @@ export class LoyaltyService {
             'Access to standard promotions',
             '1x points multiplier'
           ]),
-          discountPercentage: 0,
-          prioritySupport: false,
-          exclusiveOffers: false,
           color: '#CD7F32',
           icon: '🥉'
         },
@@ -531,9 +528,6 @@ export class LoyaltyService {
             'Early access to new services',
             '1.1x points multiplier'
           ]),
-          discountPercentage: 0,
-          prioritySupport: true,
-          exclusiveOffers: false,
           color: '#C0C0C0',
           icon: '🥈'
         },
@@ -547,9 +541,6 @@ export class LoyaltyService {
             '1.5x points multiplier',
             'Free service upgrades'
           ]),
-          discountPercentage: 0,
-          prioritySupport: true,
-          exclusiveOffers: true,
           color: '#FFD700',
           icon: '🥇'
         },
@@ -564,9 +555,6 @@ export class LoyaltyService {
             'Free service upgrades',
             'Exclusive events and offers'
           ]),
-          discountPercentage: 0,
-          prioritySupport: true,
-          exclusiveOffers: true,
           color: '#E5E4E2',
           icon: '👑'
         }
@@ -579,9 +567,6 @@ export class LoyaltyService {
             minPoints: tier.minPoints,
             maxPoints: tier.maxPoints,
             benefits: tier.benefits,
-            discountPercentage: tier.discountPercentage,
-            prioritySupport: tier.prioritySupport,
-            exclusiveOffers: tier.exclusiveOffers,
             color: tier.color,
             icon: tier.icon
           },
