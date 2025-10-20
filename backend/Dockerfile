@@ -1,5 +1,5 @@
 # Multi-stage build for production
-FROM node:18-alpine AS builder
+FROM node:18.20.4-alpine3.20 AS builder
 
 # Install OpenSSL for Prisma binary generation
 RUN apk add --no-cache openssl-dev openssl
@@ -28,7 +28,7 @@ RUN npm run build
 RUN npm ci --only=production && npm cache clean --force
 
 # Production stage
-FROM node:18-alpine AS production
+FROM node:18.20.4-alpine3.20 AS production
 
 # Install dumb-init and OpenSSL for Prisma compatibility
 RUN apk add --no-cache dumb-init openssl-dev openssl
