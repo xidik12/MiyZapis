@@ -336,12 +336,18 @@ export class SpecialistService {
     endDateTime: string;
     reason: string;
     recurring?: boolean;
+    recurringDays?: string[];
   }): Promise<{ message: string; blockedSlot: BlockedSlot }> {
     const response = await apiClient.post<{ message: string; blockedSlot: BlockedSlot }>('/specialists/availability/block', data);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to block time slot');
     }
-    return response.data;
+
+    const blockedSlot = this.normalizeBlockedSlot(response.data.blockedSlot);
+    return {
+      message: response.data.message,
+      blockedSlot,
+    };
   }
 
   // Unblock time slot
@@ -363,7 +369,7 @@ export class SpecialistService {
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get blocked slots');
     }
-    return response.data.blockedSlots;
+    return (response.data.blockedSlots || []).map(slot => this.normalizeBlockedSlot(slot));
   }
 
   // Get all availability blocks (both available and blocked)
@@ -371,20 +377,25 @@ export class SpecialistService {
     const params = new URLSearchParams();
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
+    // Request up to 1000 blocks (enough for a week of 15-minute slots across multiple days)
+    params.append('limit', '1000');
 
     try {
-      // Use the existing blocked slots endpoint directly (skip the non-existent /specialists/blocks)
-      console.log('📦 Fetching availability blocks from blocked slots endpoint...');
-      const response = await apiClient.get<{ blockedSlots: BlockedSlot[] }>(`/specialists/availability/blocked?${params}`);
+      // Use the correct /specialists/blocks endpoint
+      console.log('📦 Fetching availability blocks from /specialists/blocks endpoint...');
+      const response = await apiClient.get<{ blocks: BlockedSlot[]; pagination?: any }>(`/specialists/blocks?${params}`);
       if (response.success && response.data) {
-        const blocks = response.data.blockedSlots || response.data.data?.blockedSlots || [];
-        console.log('📦 getAvailabilityBlocks response:', { response: response.data, extractedBlocks: blocks });
-        return Array.isArray(blocks) ? blocks : [];
+        const blocks = Array.isArray(response.data.blocks) ? response.data.blocks : [];
+        console.log('📦 getAvailabilityBlocks response:', {
+          blocksCount: blocks.length,
+          sample: blocks.slice(0, 3)
+        });
+        return blocks.map(block => this.normalizeBlockedSlot(block));
       }
     } catch (error: any) {
       console.warn('📦 Failed to fetch availability blocks:', error);
     }
-    
+
     return [];
   }
 
@@ -417,7 +428,10 @@ export class SpecialistService {
     }
     
     console.log('✅ Block created successfully:', response.data);
-    return response.data;
+    return {
+      message: response.data.message,
+      block: this.normalizeBlockedSlot(response.data.block),
+    };
   }
 
   // Update availability block
@@ -449,7 +463,10 @@ export class SpecialistService {
     }
     
     console.log('✅ Block updated successfully:', response.data);
-    return response.data;
+    return {
+      message: response.data.message,
+      block: this.normalizeBlockedSlot(response.data.block),
+    };
   }
 
   // Delete availability block
@@ -458,6 +475,17 @@ export class SpecialistService {
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to delete availability block');
     }
+    return response.data;
+  }
+
+  // Generate availability blocks from working hours
+  async generateAvailabilityFromWorkingHours(): Promise<{ message: string; blocksCreated: number }> {
+    console.log('📤 Generating availability blocks from working hours');
+    const response = await apiClient.post<{ message: string; blocksCreated: number }>('/specialists/availability/generate', {});
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to generate availability blocks');
+    }
+    console.log('✅ Generated availability blocks:', response.data);
     return response.data;
   }
 
@@ -473,6 +501,46 @@ export class SpecialistService {
       throw new Error(response.error?.message || 'Failed to set vacation period');
     }
     return response.data;
+  }
+
+  private normalizeBlockedSlot(slot: any): BlockedSlot {
+    if (!slot) {
+    return {
+      id: `temp-${Date.now()}`,
+      startDateTime: new Date().toISOString(),
+      endDateTime: new Date().toISOString(),
+      isAvailable: true,
+      reason: undefined,
+      isRecurring: false,
+      recurringDays: [],
+    };
+    }
+
+    const normalizedRecurringDays = Array.isArray(slot.recurringDays)
+      ? slot.recurringDays
+      : typeof slot.recurringDays === 'string' && slot.recurringDays.trim().length > 0
+        ? (() => {
+            try {
+              return JSON.parse(slot.recurringDays);
+            } catch {
+              return [];
+            }
+          })()
+        : [];
+
+    return {
+      id: slot.id ?? `temp-${Date.now()}`,
+      specialistId: slot.specialistId,
+      startDateTime: slot.startDateTime,
+      endDateTime: slot.endDateTime,
+      isAvailable: slot.isAvailable !== false,
+      reason: slot.reason ?? undefined,
+      isRecurring: slot.isRecurring ?? slot.recurring ?? false,
+      recurringDays: normalizedRecurringDays,
+      recurringUntil: slot.recurringUntil ?? null,
+      createdAt: slot.createdAt,
+      updatedAt: slot.updatedAt,
+    };
   }
 
   // Get analytics dashboard data

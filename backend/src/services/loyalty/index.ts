@@ -518,7 +518,9 @@ export class LoyaltyService {
           ]),
           discountPercentage: 0,
           prioritySupport: false,
-          exclusiveOffers: false
+          exclusiveOffers: false,
+          color: '#CD7F32',
+          icon: '🥉'
         },
         {
           name: 'SILVER',
@@ -531,7 +533,9 @@ export class LoyaltyService {
           ]),
           discountPercentage: 0,
           prioritySupport: true,
-          exclusiveOffers: false
+          exclusiveOffers: false,
+          color: '#C0C0C0',
+          icon: '🥈'
         },
         {
           name: 'GOLD',
@@ -545,7 +549,9 @@ export class LoyaltyService {
           ]),
           discountPercentage: 0,
           prioritySupport: true,
-          exclusiveOffers: true
+          exclusiveOffers: true,
+          color: '#FFD700',
+          icon: '🥇'
         },
         {
           name: 'PLATINUM',
@@ -560,7 +566,9 @@ export class LoyaltyService {
           ]),
           discountPercentage: 0,
           prioritySupport: true,
-          exclusiveOffers: true
+          exclusiveOffers: true,
+          color: '#E5E4E2',
+          icon: '👑'
         }
       ];
 
@@ -573,7 +581,9 @@ export class LoyaltyService {
             benefits: tier.benefits,
             discountPercentage: tier.discountPercentage,
             prioritySupport: tier.prioritySupport,
-            exclusiveOffers: tier.exclusiveOffers
+            exclusiveOffers: tier.exclusiveOffers,
+            color: tier.color,
+            icon: tier.icon
           },
           create: tier
         });
@@ -907,7 +917,14 @@ export class LoyaltyService {
           }
         }),
         // Count reviews
-        prisma.review.count({ where: { userId } }),
+        prisma.review.count({
+          where: {
+            OR: [
+              { customerId: userId },
+              { specialistId: userId }
+            ]
+          }
+        }),
         // Count successful referrals
         prisma.loyaltyReferral.count({
           where: { referrerId: userId, status: 'COMPLETED' }

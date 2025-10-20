@@ -25,6 +25,179 @@ const PRISMA_BOOKING_STATUSES: ReadonlyArray<string> =
     ? (Object.values(PrismaBookingStatus) as string[])
     : DEFAULT_BOOKING_STATUSES;
 
+const EMPLOYEE_FEATURE_ENABLED = process.env.ENABLE_EMPLOYEE_FEATURES
+  ? process.env.ENABLE_EMPLOYEE_FEATURES === 'true'
+  : true;
+
+const baseBookingScalarSelect = {
+  id: true,
+  customerId: true,
+  specialistId: true,
+  serviceId: true,
+  promoCodeId: true,
+  status: true,
+  scheduledAt: true,
+  duration: true,
+  totalAmount: true,
+  depositAmount: true,
+  remainingAmount: true,
+  platformFeePercentage: true,
+  platformFeeAmount: true,
+  specialistEarnings: true,
+  loyaltyPointsUsed: true,
+  paidWithLoyaltyPoints: true,
+  depositStatus: true,
+  depositPaidAt: true,
+  depositRefundedAt: true,
+  depositCurrency: true,
+  walletAmountUsed: true,
+  customerNotes: true,
+  specialistNotes: true,
+  preparationNotes: true,
+  completionNotes: true,
+  deliverables: true,
+  confirmedAt: true,
+  startedAt: true,
+  completedAt: true,
+  cancelledAt: true,
+  cancellationReason: true,
+  cancelledBy: true,
+  refundAmount: true,
+  createdAt: true,
+  updatedAt: true,
+  ...(EMPLOYEE_FEATURE_ENABLED ? { employeeId: true } : {}),
+} as const;
+
+const buildBookingSelect = (options?: { includeCustomer?: boolean; includeSpecialist?: boolean; includeService?: boolean; includeReview?: boolean; includeEmployee?: boolean }) => {
+  const {
+    includeCustomer = true,
+    includeSpecialist = true,
+    includeService = true,
+    includeReview = true,
+    includeEmployee = EMPLOYEE_FEATURE_ENABLED,
+  } = options || {};
+
+  return {
+    ...baseBookingScalarSelect,
+    ...(includeCustomer
+      ? {
+          customer: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+              userType: true,
+              phoneNumber: true,
+              telegramId: true,
+              isEmailVerified: true,
+              isPhoneVerified: true,
+              isActive: true,
+              loyaltyPoints: true,
+              language: true,
+              currency: true,
+              timezone: true,
+              lastLoginAt: true,
+              emailNotifications: true,
+              pushNotifications: true,
+              telegramNotifications: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        }
+      : {}),
+    ...(includeSpecialist
+      ? {
+          specialist: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+              userType: true,
+              phoneNumber: true,
+              telegramId: true,
+              isEmailVerified: true,
+              isPhoneVerified: true,
+              isActive: true,
+              loyaltyPoints: true,
+              language: true,
+              currency: true,
+              timezone: true,
+              lastLoginAt: true,
+              emailNotifications: true,
+              pushNotifications: true,
+              telegramNotifications: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        }
+      : {}),
+    ...(includeService
+      ? {
+          service: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              basePrice: true,
+              currency: true,
+              duration: true,
+              isActive: true,
+              categoryId: true,
+              createdAt: true,
+              updatedAt: true,
+              specialistId: true,
+              specialist: {
+                select: {
+                  id: true,
+                  businessName: true,
+                  rating: true,
+                  reviewCount: true,
+                  completedBookings: true,
+                  isVerified: true,
+                },
+              },
+            },
+          },
+        }
+      : {}),
+    ...(includeEmployee && EMPLOYEE_FEATURE_ENABLED
+      ? {
+          employee: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+              title: true,
+            },
+          },
+        }
+      : {}),
+    ...(includeReview
+      ? {
+          review: {
+            select: {
+              id: true,
+              rating: true,
+              comment: true,
+              tags: true,
+              isPublic: true,
+              isVerified: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        }
+      : {}),
+  };
+};
+
 interface CreateBookingData {
   customerId: string;
   serviceId: string;
@@ -33,6 +206,7 @@ interface CreateBookingData {
   customerNotes?: string;
   loyaltyPointsUsed?: number;
   rewardRedemptionId?: string;
+  employeeId?: string;
 }
 
 interface UpdateBookingData {
@@ -370,6 +544,7 @@ export class BookingService {
             platformFeeAmount,
             specialistEarnings,
             loyaltyPointsUsed,
+            employeeId: data.employeeId ?? null,
             customerNotes: data.customerNotes,
             deliverables: JSON.stringify([]), // Empty deliverables initially
             status: initialStatus, // Auto-booking: CONFIRMED if autoBooking enabled, otherwise PENDING
@@ -623,64 +798,7 @@ export class BookingService {
     try {
       const booking = await prisma.booking.findUnique({
         where: { id: bookingId },
-        include: {
-          customer: {
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-              avatar: true,
-              userType: true,
-              phoneNumber: true,
-              isEmailVerified: true,
-              isPhoneVerified: true,
-              isActive: true,
-              loyaltyPoints: true,
-              loyaltyTierId: true,
-              language: true,
-              currency: true,
-              timezone: true,
-              createdAt: true,
-              updatedAt: true,
-            },
-          },
-          specialist: {
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-              avatar: true,
-              userType: true,
-              phoneNumber: true,
-              isEmailVerified: true,
-              isPhoneVerified: true,
-              isActive: true,
-              loyaltyPoints: true,
-              loyaltyTierId: true,
-              language: true,
-              currency: true,
-              timezone: true,
-              createdAt: true,
-              updatedAt: true,
-            },
-          },
-          service: {
-            include: {
-              specialist: true,
-            },
-          },
-          employee: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              avatar: true,
-              title: true,
-            },
-          },
-        },
+        select: buildBookingSelect({ includeEmployee: EMPLOYEE_FEATURE_ENABLED }),
       });
 
       if (!booking) {
@@ -1207,96 +1325,9 @@ export class BookingService {
       const [bookings, total] = await Promise.all([
         prisma.booking.findMany({
           where,
-          include: {
-            customer: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                avatar: true,
-                userType: true,
-                phoneNumber: true,
-                telegramId: true,
-                isEmailVerified: true,
-                isPhoneVerified: true,
-                isActive: true,
-                loyaltyPoints: true,
-                language: true,
-                currency: true,
-                timezone: true,
-                lastLoginAt: true,
-                emailNotifications: true,
-                pushNotifications: true,
-                telegramNotifications: true,
-                createdAt: true,
-                updatedAt: true,
-              },
-            },
-            specialist: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                avatar: true,
-                userType: true,
-                phoneNumber: true,
-                telegramId: true,
-                isEmailVerified: true,
-                isPhoneVerified: true,
-                isActive: true,
-                loyaltyPoints: true,
-                language: true,
-                currency: true,
-                timezone: true,
-                lastLoginAt: true,
-                emailNotifications: true,
-                pushNotifications: true,
-                telegramNotifications: true,
-                createdAt: true,
-                updatedAt: true,
-              },
-            },
-            service: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                basePrice: true,
-                currency: true,
-                duration: true,
-                isActive: true,
-                categoryId: true,
-                createdAt: true,
-                updatedAt: true,
-                specialistId: true,
-              },
-            },
-            // Include employee information for business bookings
-            employee: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                avatar: true,
-                title: true,
-              },
-            },
-            // Include review information for completed bookings
-            review: {
-              select: {
-                id: true,
-                rating: true,
-                comment: true,
-                tags: true,
-                isPublic: true,
-                isVerified: true,
-                createdAt: true,
-                updatedAt: true,
-              },
-            },
-          },
+          select: buildBookingSelect({
+            includeEmployee: EMPLOYEE_FEATURE_ENABLED,
+          }),
           orderBy: { scheduledAt: 'desc' },
           skip,
           take: limit,

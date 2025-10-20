@@ -677,12 +677,21 @@ export class AnalyticsService {
       // Get all services offered by the specialist with booking data
       const services = await this.prisma.service.findMany({
         where: { specialistId },
-        include: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          category: true,
+          basePrice: true,
           bookings: {
             where: {
               createdAt: dateFilter
             },
-            include: {
+            select: {
+              id: true,
+              status: true,
+              totalAmount: true,
+              createdAt: true,
               review: {
                 select: {
                   rating: true
@@ -779,7 +788,11 @@ export class AnalyticsService {
           specialistId,
           createdAt: dateFilter
         },
-        include: {
+        select: {
+          id: true,
+          status: true,
+          totalAmount: true,
+          createdAt: true,
           review: {
             select: { rating: true }
           },
