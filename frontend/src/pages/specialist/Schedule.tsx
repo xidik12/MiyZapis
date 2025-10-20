@@ -288,6 +288,7 @@ const SpecialistSchedule: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingBlock, setEditingBlock] = useState<CalendarBlock | null>(null);
   const [availabilityBlocks, setAvailabilityBlocks] = useState<CalendarBlock[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getWeekStart(new Date()));
@@ -410,6 +411,28 @@ const SpecialistSchedule: React.FC = () => {
     };
 
     loadAvailabilityBlocks();
+  }, [currentWeekStart]);
+
+  // Load bookings for the week
+  useEffect(() => {
+    const loadBookings = async () => {
+      try {
+        const startDate = weekDays[0].toISOString().split('T')[0];
+        const endDate = weekDays[6].toISOString().split('T')[0];
+
+        const result = await bookingService.getBookings({
+          startDate,
+          endDate,
+          status: ['PENDING', 'CONFIRMED'], // Only show upcoming bookings
+        });
+
+        setBookings(result.bookings || []);
+      } catch (err) {
+        console.error('Error loading bookings:', err);
+      }
+    };
+
+    loadBookings();
   }, [currentWeekStart]);
 
   // Check if we should prompt to generate availability from working hours
@@ -587,19 +610,38 @@ const SpecialistSchedule: React.FC = () => {
   };
 
   // Check status of a specific 15-minute slot
-  const getSlotStatus = (date: Date, timeSlot: string): 'available' | 'blocked' | 'empty' => {
+  const getSlotStatus = (date: Date, timeSlot: string): 'available' | 'booked' | 'blocked' | 'empty' => {
     const [hour, minute] = timeSlot.split(':').map(Number);
     const slotStart = new Date(date);
     slotStart.setHours(hour, minute, 0, 0);
     const slotEnd = new Date(slotStart);
     slotEnd.setMinutes(slotStart.getMinutes() + 15);
 
+    // First, check if there's a booking for this slot
+    for (const booking of bookings) {
+      if (!booking.date || !booking.time) continue;
+
+      const bookingDate = new Date(booking.date);
+      const [bookingHour, bookingMinute] = booking.time.split(':').map(Number);
+      const bookingStart = new Date(bookingDate);
+      bookingStart.setHours(bookingHour, bookingMinute, 0, 0);
+      const bookingEnd = new Date(bookingStart);
+      bookingEnd.setMinutes(bookingStart.getMinutes() + (booking.duration || 60));
+
+      // Check if this 15-min slot overlaps with the booking
+      if (slotStart < bookingEnd && slotEnd > bookingStart) {
+        return 'booked';
+      }
+    }
+
+    // Then check if there's an availability block
     for (const block of availabilityBlocks) {
       const blockStart = new Date(block.startDateTime);
       const blockEnd = new Date(block.endDateTime);
 
       // Check if this 15-min slot overlaps with the block
       if (slotStart < blockEnd && slotEnd > blockStart) {
+        // If block is marked as not available (blocked time), show as blocked
         return block.isAvailable ? 'available' : 'blocked';
       }
     }
@@ -897,22 +939,25 @@ const SpecialistSchedule: React.FC = () => {
                                     setEditingBlock(null);
                                     setShowAddModal(true);
                                   }}
-                                  disabled={isPastSlot}
+                                  disabled={isPastSlot || status === 'booked'}
                                   className={`p-3 rounded-lg text-sm font-medium transition-all ${
                                     isPastSlot
                                       ? 'opacity-40 cursor-not-allowed bg-gray-200 dark:bg-gray-700'
+                                      : status === 'booked'
+                                      ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-2 border-red-400 dark:border-red-600 cursor-not-allowed'
                                       : status === 'available'
                                       ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/50 border-2 border-green-300 dark:border-green-700'
                                       : status === 'blocked'
-                                      ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50 border-2 border-red-300 dark:border-red-700'
-                                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-gray-200 dark:border-gray-600'
+                                      ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 hover:bg-orange-200 dark:hover:bg-orange-900/50 border-2 border-orange-300 dark:border-orange-700'
+                                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 border-2 border-dashed border-gray-300 dark:border-gray-500'
                                   }`}
                                 >
                                   <div className="text-center">
                                     <div className="font-semibold">{timeSlot}</div>
                                     <div className="text-xs mt-1">
+                                      {status === 'booked' && '🔒 Booked'}
                                       {status === 'available' && '✓ Available'}
-                                      {status === 'blocked' && '✗ Blocked'}
+                                      {status === 'blocked' && '⊘ Unavailable'}
                                       {status === 'empty' && '+ Add'}
                                     </div>
                                   </div>
