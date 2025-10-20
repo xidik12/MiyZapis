@@ -793,8 +793,9 @@ const SpecialistSchedule: React.FC = () => {
                   const expanded = isHourExpanded(dayIndex, hour);
                   const isPast = new Date(new Date(day).setHours(hour, 0, 0, 0)) < new Date();
 
-                  // Skip hours with no slots
-                  if (totalCount === 0) return null;
+                  // Show all hours, even empty ones, so specialists can add availability
+                  // Skip past hours only if they're empty
+                  if (totalCount === 0 && isPast) return null;
 
                   return (
                     <div key={hour} className={`${isPast ? 'opacity-50' : ''}`}>
@@ -812,17 +813,25 @@ const SpecialistSchedule: React.FC = () => {
                               {`${hour.toString().padStart(2, '0')}:00`}
                             </div>
                             <div className="flex items-center space-x-3 mt-1">
-                              {availableCount > 0 && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
-                                  <CheckIcon className="w-3 h-3 mr-1" />
-                                  {availableCount}
+                              {totalCount === 0 ? (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                                  {t('schedule.noSlotsClickToAdd') || 'Click to add availability'}
                                 </span>
-                              )}
-                              {blockedCount > 0 && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
-                                  <XMarkIcon className="w-3 h-3 mr-1" />
-                                  {blockedCount}
-                                </span>
+                              ) : (
+                                <>
+                                  {availableCount > 0 && (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+                                      <CheckIcon className="w-3 h-3 mr-1" />
+                                      {availableCount}
+                                    </span>
+                                  )}
+                                  {blockedCount > 0 && (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
+                                      <XMarkIcon className="w-3 h-3 mr-1" />
+                                      {blockedCount}
+                                    </span>
+                                  )}
+                                </>
                               )}
                             </div>
                           </div>
@@ -839,7 +848,13 @@ const SpecialistSchedule: React.FC = () => {
                       {/* Expanded Time Slots */}
                       {expanded && (
                         <div className="px-4 pb-4 space-y-2 bg-gray-50 dark:bg-gray-900/30">
-                          {blocks.map(block => {
+                          {blocks.length === 0 ? (
+                            <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                              <p className="text-sm">{t('schedule.noSlotsForHour') || 'No time slots for this hour'}</p>
+                              <p className="text-xs mt-1">{t('schedule.useButtonBelow') || 'Use the button below to add availability'}</p>
+                            </div>
+                          ) : (
+                            blocks.map(block => {
                             const blockStart = new Date(block.startDateTime);
                             const blockEnd = new Date(block.endDateTime);
 
@@ -901,7 +916,7 @@ const SpecialistSchedule: React.FC = () => {
                                 </div>
                               </div>
                             );
-                          })}
+                          }))}
                         </div>
                       )}
                     </div>
