@@ -45,7 +45,7 @@ const RegisterPage: React.FC = () => {
   const error = useAppSelector(selectAuthError);
   const isLoading = useAppSelector(selectIsLoading);
 
-  const defaultUserType = (searchParams.get('type') as UserType) || 'customer';
+  const defaultUserType = (searchParams.get('type')?.toUpperCase() as UserType) || 'CUSTOMER';
   const referralCode = searchParams.get('ref') || searchParams.get('referralCode') || undefined;
 
   const {
@@ -223,16 +223,16 @@ const RegisterPage: React.FC = () => {
               <input
                 {...register('userType', { required: t('auth.error.accountTypeRequired') })}
                 type="radio"
-                value="customer"
+                value="CUSTOMER"
                 className="sr-only peer"
               />
               <div className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
-                watchUserType === 'customer'
+                watchUserType === 'CUSTOMER'
                   ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-md'
                   : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-sm'
               }`}>
                 {/* Selection Indicator */}
-                {watchUserType === 'customer' && (
+                {watchUserType === 'CUSTOMER' && (
                   <div className="absolute top-3 right-3">
                     <CheckCircleIcon className="w-5 h-5 text-blue-500" />
                   </div>
@@ -241,12 +241,12 @@ const RegisterPage: React.FC = () => {
                 {/* Icon and Content */}
                 <div className="flex items-start gap-3">
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-200 ${
-                    watchUserType === 'customer'
+                    watchUserType === 'CUSTOMER'
                       ? 'bg-blue-100 dark:bg-blue-800/50'
                       : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30'
                   }`}>
                     <UserIcon className={`w-5 h-5 transition-colors duration-200 ${
-                      watchUserType === 'customer'
+                      watchUserType === 'CUSTOMER'
                         ? 'text-blue-600 dark:text-blue-400'
                         : 'text-gray-600 dark:text-gray-400 group-hover:text-blue-500'
                     }`} />
@@ -254,14 +254,14 @@ const RegisterPage: React.FC = () => {
 
                   <div className="flex-1 min-w-0">
                     <h3 className={`text-sm font-bold mb-1 transition-colors duration-200 ${
-                      watchUserType === 'customer'
+                      watchUserType === 'CUSTOMER'
                         ? 'text-blue-900 dark:text-blue-100'
                         : 'text-gray-900 dark:text-white'
                     }`}>
                       {t('auth.register.bookServices')}
                     </h3>
                     <p className={`text-xs leading-snug transition-colors duration-200 ${
-                      watchUserType === 'customer'
+                      watchUserType === 'CUSTOMER'
                         ? 'text-blue-700 dark:text-blue-300'
                         : 'text-gray-600 dark:text-gray-400'
                     }`}>
@@ -277,16 +277,16 @@ const RegisterPage: React.FC = () => {
               <input
                 {...register('userType', { required: t('auth.error.accountTypeRequired') })}
                 type="radio"
-                value="specialist"
+                value="SPECIALIST"
                 className="sr-only peer"
               />
               <div className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
-                watchUserType === 'specialist'
+                watchUserType === 'SPECIALIST'
                   ? 'border-green-500 bg-green-50 dark:bg-green-900/20 shadow-md'
                   : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-green-300 dark:hover:border-green-600 hover:shadow-sm'
               }`}>
                 {/* Selection Indicator */}
-                {watchUserType === 'specialist' && (
+                {watchUserType === 'SPECIALIST' && (
                   <div className="absolute top-3 right-3">
                     <CheckCircleIcon className="w-5 h-5 text-green-500" />
                   </div>
@@ -295,12 +295,12 @@ const RegisterPage: React.FC = () => {
                 {/* Icon and Content */}
                 <div className="flex items-start gap-3">
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-200 ${
-                    watchUserType === 'specialist'
+                    watchUserType === 'SPECIALIST'
                       ? 'bg-green-100 dark:bg-green-800/50'
                       : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-green-50 dark:group-hover:bg-green-900/30'
                   }`}>
                     <WrenchScrewdriverIcon className={`w-5 h-5 transition-colors duration-200 ${
-                      watchUserType === 'specialist'
+                      watchUserType === 'SPECIALIST'
                         ? 'text-green-600 dark:text-green-400'
                         : 'text-gray-600 dark:text-gray-400 group-hover:text-green-500'
                     }`} />
@@ -308,14 +308,14 @@ const RegisterPage: React.FC = () => {
 
                   <div className="flex-1 min-w-0">
                     <h3 className={`text-sm font-bold mb-1 transition-colors duration-200 ${
-                      watchUserType === 'specialist'
+                      watchUserType === 'SPECIALIST'
                         ? 'text-green-900 dark:text-green-100'
                         : 'text-gray-900 dark:text-white'
                     }`}>
                       {t('auth.register.individualSpecialist')}
                     </h3>
                     <p className={`text-xs leading-snug transition-colors duration-200 ${
-                      watchUserType === 'specialist'
+                      watchUserType === 'SPECIALIST'
                         ? 'text-green-700 dark:text-green-300'
                         : 'text-gray-600 dark:text-gray-400'
                     }`}>
@@ -331,16 +331,16 @@ const RegisterPage: React.FC = () => {
               <input
                 {...register('userType', { required: t('auth.error.accountTypeRequired') })}
                 type="radio"
-                value="business"
+                value="BUSINESS"
                 className="sr-only peer"
               />
               <div className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
-                watchUserType === 'business'
+                watchUserType === 'BUSINESS'
                   ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 shadow-md'
                   : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-sm'
               }`}>
                 {/* Selection Indicator */}
-                {watchUserType === 'business' && (
+                {watchUserType === 'BUSINESS' && (
                   <div className="absolute top-3 right-3">
                     <CheckCircleIcon className="w-5 h-5 text-purple-500" />
                   </div>
@@ -349,12 +349,12 @@ const RegisterPage: React.FC = () => {
                 {/* Icon and Content */}
                 <div className="flex items-start gap-3">
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-200 ${
-                    watchUserType === 'business'
+                    watchUserType === 'BUSINESS'
                       ? 'bg-purple-100 dark:bg-purple-800/50'
                       : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-purple-50 dark:group-hover:bg-purple-900/30'
                   }`}>
                     <BuildingOfficeIcon className={`w-5 h-5 transition-colors duration-200 ${
-                      watchUserType === 'business'
+                      watchUserType === 'BUSINESS'
                         ? 'text-purple-600 dark:text-purple-400'
                         : 'text-gray-600 dark:text-gray-400 group-hover:text-purple-500'
                     }`} />
@@ -362,14 +362,14 @@ const RegisterPage: React.FC = () => {
 
                   <div className="flex-1 min-w-0">
                     <h3 className={`text-sm font-bold mb-1 transition-colors duration-200 ${
-                      watchUserType === 'business'
+                      watchUserType === 'BUSINESS'
                         ? 'text-purple-900 dark:text-purple-100'
                         : 'text-gray-900 dark:text-white'
                     }`}>
                       {t('auth.register.businessAccount')}
                     </h3>
                     <p className={`text-xs leading-snug transition-colors duration-200 ${
-                      watchUserType === 'business'
+                      watchUserType === 'BUSINESS'
                         ? 'text-purple-700 dark:text-purple-300'
                         : 'text-gray-600 dark:text-gray-400'
                     }`}>
