@@ -986,7 +986,7 @@ const SpecialistBookings: React.FC = () => {
   // Show error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
             <div className="flex items-center">
@@ -1212,7 +1212,7 @@ const SpecialistBookings: React.FC = () => {
         {/* Mobile Bookings Cards */}
         <div className="lg:hidden space-y-4">
           {paginatedBookings.map((booking) => (
-            <div key={booking.id} className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-xl p-4 relative overflow-hidden transition-all duration-300">
+            <div key={booking.id} className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-accent-500/40 dark:border-accent-500/30 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-xl p-4 relative overflow-hidden transition-all duration-300">
               {/* Header with checkbox and customer */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-3">
@@ -1315,9 +1315,9 @@ const SpecialistBookings: React.FC = () => {
         </div>
 
         {/* Desktop Bookings Table */}
-        <div className="hidden lg:block backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-xl relative overflow-hidden">
+        <div className="hidden lg:block backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-accent-500/40 dark:border-accent-500/30 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-xl relative overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-amber-200/50 dark:divide-amber-500/20">
+            <table className="min-w-full divide-y divide-accent-200/50 dark:divide-accent-500/20">
               <thead className="bg-white/40 dark:bg-white/5">
                 <tr>
                   <th className="px-6 py-3 text-left">
@@ -1508,7 +1508,7 @@ const SpecialistBookings: React.FC = () => {
         {/* Pagination */}
         {totalPages > 1 && filteredAndSortedBookings.length > 0 && (
           <div className="mt-6">
-            <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-transparent before:absolute before:inset-0 before:rounded-[inherit] before:p-[2px] before:bg-gradient-to-br before:from-amber-400/60 before:via-yellow-300/40 before:to-amber-500/60 before:opacity-70 before:pointer-events-none before:-z-10 before:dark:from-amber-400/40 before:dark:via-yellow-400/30 before:dark:to-amber-500/40 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-xl px-4 py-3 sm:px-6 relative overflow-hidden">
+            <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-accent-500/40 dark:border-accent-500/30 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-xl px-4 py-3 sm:px-6 relative overflow-hidden">
               <div className="flex items-center justify-between">
                 <div className="flex justify-between flex-1 sm:hidden">
                   <button

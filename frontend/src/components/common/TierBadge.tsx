@@ -27,28 +27,28 @@ const TIER_STYLES: Record<
   }
 > = {
   bronze: {
-    bg: 'bg-gradient-to-r from-amber-50 to-orange-100 dark:from-amber-900/20 dark:to-orange-900/20',
-    text: 'text-amber-800 dark:text-amber-300',
-    border: 'border border-amber-200 dark:border-amber-800/40',
-    iconColor: 'text-amber-600 dark:text-amber-400',
+    bg: 'bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-900/20',
+    text: 'text-red-800 dark:text-red-300',
+    border: 'border border-red-200 dark:border-red-800/40',
+    iconColor: 'text-red-600 dark:text-red-400',
   },
   silver: {
-    bg: 'bg-gradient-to-r from-slate-100 to-gray-100 dark:from-slate-900/30 dark:to-gray-900/30',
-    text: 'text-slate-800 dark:text-slate-300',
-    border: 'border border-slate-200 dark:border-slate-800/40',
-    iconColor: 'text-slate-500 dark:text-slate-300',
+    bg: 'bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-900/30',
+    text: 'text-blue-800 dark:text-blue-300',
+    border: 'border border-blue-200 dark:border-blue-800/40',
+    iconColor: 'text-blue-500 dark:text-blue-300',
   },
   gold: {
-    bg: 'bg-gradient-to-r from-yellow-50 to-amber-100 dark:from-yellow-900/20 dark:to-amber-900/20',
-    text: 'text-yellow-800 dark:text-yellow-300',
-    border: 'border border-yellow-200 dark:border-yellow-800/40',
-    iconColor: 'text-yellow-500 dark:text-yellow-300',
+    bg: 'bg-gradient-to-r from-accent-50 to-accent-100 dark:from-accent-900/20 dark:to-accent-900/20',
+    text: 'text-accent-800 dark:text-accent-300',
+    border: 'border-2 border-accent-500 dark:border-accent-400',
+    iconColor: 'text-accent-600 dark:text-accent-400',
   },
   platinum: {
-    bg: 'bg-gradient-to-r from-indigo-50 to-purple-100 dark:from-indigo-900/20 dark:to-purple-900/20',
-    text: 'text-indigo-800 dark:text-indigo-300',
-    border: 'border border-indigo-200 dark:border-indigo-800/40',
-    iconColor: 'text-indigo-500 dark:text-indigo-300',
+    bg: 'bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-900/20',
+    text: 'text-primary-800 dark:text-primary-300',
+    border: 'border border-primary-200 dark:border-primary-800/40',
+    iconColor: 'text-primary-500 dark:text-primary-300',
   },
 };
 
