@@ -112,7 +112,7 @@ export const Header: React.FC = () => {
                 <span className="font-display">H</span>
               </div>
               <div className="flex flex-col leading-tight">
-                <span className="text-lg xs:text-xl font-display font-bold bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent hidden xs:block group-hover:scale-[1.02] transition-transform duration-300">
+                <span className="text-lg xs:text-xl font-display font-bold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent hidden xs:block group-hover:scale-[1.02] transition-transform duration-300">
                   Panhaha
                 </span>
                 <span className="text-[10px] xs:text-xs font-medium text-secondary-500 dark:text-secondary-400 tracking-wide hidden sm:block">

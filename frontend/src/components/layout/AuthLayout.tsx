@@ -26,7 +26,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
               <span>{brandInitial}</span>
             </div>
             <div className="flex flex-col leading-tight">
-              <span className="text-2xl font-display font-bold bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent group-hover:scale-[1.02] transition-transform duration-300">
+              <span className="text-2xl font-display font-bold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent group-hover:scale-[1.02] transition-transform duration-300">
                 {brandName}
               </span>
               <span className="text-xs font-medium text-secondary-500 dark:text-secondary-400 tracking-wide">

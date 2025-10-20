@@ -173,7 +173,7 @@ const HomePage: React.FC = () => {
             {/* Main heading with better contrast */}
             <h1 className="font-display text-3xl xs:text-4xl sm:text-5xl md:text-6xl leading-tight font-bold mb-6 xs:mb-8 animate-fade-in px-3 xs:px-6 text-secondary-900 dark:text-white">
               {t('hero.title1')}
-              <span className="block mt-2 text-2xl xs:text-3xl sm:text-4xl md:text-5xl bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
+              <span className="block mt-2 text-2xl xs:text-3xl sm:text-4xl md:text-5xl bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">
                 {t('hero.title2')}
               </span>
             </h1>
@@ -270,7 +270,7 @@ const HomePage: React.FC = () => {
                 <div className="text-5xl mb-6 transition-transform duration-300 group-hover:scale-110">
                   {category.icon}
                 </div>
-                <h3 className="text-xl font-semibold text-secondary-900 dark:text-white mb-3 group-hover:bg-gradient-to-r group-hover:from-primary-500 group-hover:to-accent-500 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
+                <h3 className="text-xl font-semibold text-secondary-900 dark:text-white mb-3 group-hover:bg-gradient-to-r group-hover:from-primary-500 group-hover:to-secondary-500 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
                   {category.name}
                 </h3>
                 <p className="text-secondary-600 dark:text-secondary-300 mb-6 leading-relaxed">

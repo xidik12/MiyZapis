@@ -508,7 +508,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
+                <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">
                   {getGreeting()}, {user?.firstName}!
                 </h1>
                 <span className="text-3xl animate-bounce">👋</span>
@@ -528,7 +528,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
             <div className="mt-4 lg:mt-0 flex flex-col sm:flex-row gap-3">
               <Link
                 to="/specialist/services"
-                className="inline-flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-xl hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 font-bold shadow-lg shadow-primary-500/30 text-sm sm:text-base whitespace-nowrap"
+                className="inline-flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 font-bold shadow-lg shadow-primary-500/30 text-sm sm:text-base whitespace-nowrap"
               >
                 <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
                 <span className="truncate">{t('dashboard.specialist.addService')}</span>
@@ -628,7 +628,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           </div>
         </div>
 
-        <div className="group backdrop-blur-xl bg-gradient-to-br from-primary-500 to-accent-500 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+        <div className="group backdrop-blur-xl bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">⚡ {t('dashboard.quickActions')}</h3>
             <div className="p-2 rounded-lg bg-white/20">
@@ -683,7 +683,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
               <div key={booking.id} className="group flex items-center justify-between p-4 bg-white/50 dark:bg-white/5 rounded-xl hover:bg-white dark:hover:bg-white/10 transition-all duration-200 hover:shadow-md">
                 <div className="flex items-center space-x-3">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white shadow-lg ${
-                    index % 2 === 0 ? 'bg-gradient-to-br from-primary-500 to-accent-500' : 'bg-gradient-to-br from-accent-500 to-primary-500'
+                    index % 2 === 0 ? 'bg-gradient-to-br from-primary-500 to-secondary-500' : 'bg-gradient-to-br from-secondary-500 to-primary-500'
                   }`}>
                     <span className="text-sm">
                       {booking.customerName?.split(' ').map(n => n[0]).join('')}

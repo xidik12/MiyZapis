@@ -241,7 +241,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
             <div className="w-10 h-10 bg-panhaha-gradient text-white rounded-xl flex items-center justify-center text-base font-bold shadow-primary group-hover:scale-110 transition-all duration-300">
               H
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent group-hover:scale-[1.02] transition-transform duration-300">
+            <span className="text-xl font-bold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent group-hover:scale-[1.02] transition-transform duration-300">
               {environment.APP_NAME}
             </span>
           </Link>

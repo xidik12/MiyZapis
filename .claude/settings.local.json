@@ -12,7 +12,13 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(DATABASE_URL=\"postgresql://postgres:hNAJSsKnZmhQDAKZJbvZmKIvEVnVbACA@yamabiko.proxy.rlwy.net:22742/railway\" npx prisma db push:*)"
+      "Bash(DATABASE_URL=\"postgresql://postgres:hNAJSsKnZmhQDAKZJbvZmKIvEVnVbACA@yamabiko.proxy.rlwy.net:22742/railway\" npx prisma db push:*)",
+      "Bash(do)",
+      "Bash(if [ -f \"$file\" ])",
+      "Bash(then)",
+      "Bash(echo:*)",
+      "Bash(fi)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": [],

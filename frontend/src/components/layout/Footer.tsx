@@ -37,7 +37,7 @@ export const Footer: React.FC = () => {
   return (
     <footer className="relative w-full prevent-overflow overflow-hidden mt-12 bg-secondary-900 dark:bg-secondary-950">
       {/* Subtle gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-accent-500/5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-secondary-500/5" />
 
       {/* Animated gradient orbs */}
       <div className="absolute -top-32 -right-32 w-64 h-64 rounded-full bg-primary-500/10 blur-3xl opacity-30 animate-pulse" style={{ animationDuration: '4s' }} />
@@ -75,7 +75,7 @@ export const Footer: React.FC = () => {
                 H
               </div>
               <div>
-                <p className="text-lg xs:text-xl font-display font-bold bg-gradient-to-r from-primary-400 to-accent-400 bg-clip-text text-transparent">
+                <p className="text-lg xs:text-xl font-display font-bold bg-gradient-to-r from-primary-400 to-secondary-400 bg-clip-text text-transparent">
                   Panhaha
                 </p>
                 <p className="text-[10px] xs:text-xs font-medium text-secondary-400 tracking-wide">

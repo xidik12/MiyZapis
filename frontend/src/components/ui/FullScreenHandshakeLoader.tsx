@@ -70,7 +70,7 @@ export const FullScreenHandshakeLoader: React.FC<FullScreenHandshakeLoaderProps>
 
       {/* Text with glass effect */}
       <div className="backdrop-blur-md bg-white/30 dark:bg-white/5 px-6 py-3 rounded-2xl border border-white/20 dark:border-white/10 shadow-xl">
-        <h2 className="text-lg sm:text-2xl font-display font-semibold bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent animate-fade-in">
+        <h2 className="text-lg sm:text-2xl font-display font-semibold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent animate-fade-in">
           {title}
         </h2>
         {subtitle && (

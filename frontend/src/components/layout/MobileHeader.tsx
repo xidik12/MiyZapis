@@ -25,7 +25,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuToggle }) => {
           <div className="w-8 h-8 rounded-xl bg-panhaha-gradient text-white flex items-center justify-center text-sm font-bold shadow-primary group-hover:shadow-lg group-hover:-translate-y-0.5 transition-all duration-300">
             H
           </div>
-          <span className="text-lg font-semibold bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
+          <span className="text-lg font-semibold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">
             {t('brand.name')}
           </span>
         </Link>
