@@ -120,7 +120,20 @@ export class AvailabilityService {
         throw new Error('SPECIALIST_NOT_FOUND_OR_NO_WORKING_HOURS');
       }
 
-      const workingHours = JSON.parse(specialist.workingHours);
+      let workingHours: any;
+      try {
+        workingHours =
+          typeof specialist.workingHours === 'string'
+            ? JSON.parse(specialist.workingHours)
+            : specialist.workingHours;
+      } catch (error) {
+        logger.warn('Invalid working hours JSON detected when generating availability', {
+          specialistId,
+          workingHours: specialist.workingHours,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        workingHours = this.getDefaultWorkingHours();
+      }
       const startDate = new Date();
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + (weeksAhead * 7));
@@ -143,18 +156,52 @@ export class AvailabilityService {
       for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
         const dayName = dayNames[date.getDay()];
         const daySchedule = workingHours[dayName];
+        const isWorkingDay = Boolean(daySchedule && (daySchedule.isWorking || daySchedule.isOpen));
 
-        if (daySchedule && daySchedule.isWorking) {
+        if (isWorkingDay) {
           // Create availability block for this working day
           const startDateTime = new Date(date);
           const endDateTime = new Date(date);
           
           // Parse time strings (e.g., "09:00")
-          const [startHour, startMinute] = daySchedule.start.split(':').map(Number);
-          const [endHour, endMinute] = daySchedule.end.split(':').map(Number);
+          const startRaw =
+            daySchedule.start ||
+            daySchedule.startTime ||
+            daySchedule.open ||
+            daySchedule.from ||
+            '09:00';
+          const endRaw =
+            daySchedule.end ||
+            daySchedule.endTime ||
+            daySchedule.close ||
+            daySchedule.to ||
+            '17:00';
+
+          const parseTime = (raw: string | number | undefined, fallbackHour: number, fallbackMinute: number) => {
+            if (raw === null || raw === undefined) {
+              return [fallbackHour, fallbackMinute] as const;
+            }
+
+            const parts = String(raw).split(':');
+            const hour = Number(parts[0]);
+            const minute = parts.length > 1 ? Number(parts[1]) : 0;
+
+            return [
+              Number.isFinite(hour) ? hour : fallbackHour,
+              Number.isFinite(minute) ? minute : fallbackMinute,
+            ] as const;
+          };
+
+          const [startHour, startMinute] = parseTime(startRaw, 9, 0);
+          const [endHour, endMinute] = parseTime(endRaw, 17, 0);
           
           startDateTime.setHours(startHour, startMinute, 0, 0);
           endDateTime.setHours(endHour, endMinute, 0, 0);
+
+          if (endDateTime <= startDateTime) {
+            // Ensure we always have a positive duration
+            endDateTime.setHours(startDateTime.getHours() + 1, startDateTime.getMinutes(), 0, 0);
+          }
 
           // Only create blocks for future dates
           if (startDateTime > new Date()) {
