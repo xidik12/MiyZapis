@@ -11,24 +11,29 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'logo.svg'],
+      includeAssets: ['favicon.svg', 'favicon-192.png', 'favicon-512.png'],
       manifest: {
         name: 'Panhaha – Connect & Book',
         short_name: 'Panhaha',
         description: 'Panhaha – Cambodian professional service booking platform',
-        theme_color: '#C8102E',
-        background_color: '#ffffff',
+        theme_color: '#1E40AF',
+        background_color: '#DC2626',
         display: 'standalone',
         icons: [
           {
-            src: 'logo.svg',
-            sizes: '192x192',
+            src: 'favicon.svg',
+            sizes: 'any',
             type: 'image/svg+xml'
           },
           {
-            src: 'logo.svg',
+            src: 'favicon-192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'favicon-512.png',
             sizes: '512x512',
-            type: 'image/svg+xml',
+            type: 'image/png',
             purpose: 'any maskable'
           }
         ]
