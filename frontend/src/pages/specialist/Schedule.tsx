@@ -701,7 +701,16 @@ const SpecialistSchedule: React.FC = () => {
     const availableCount = blocks.filter(b => b.isAvailable).length;
     const blockedCount = blocks.filter(b => !b.isAvailable).length;
     const totalCount = blocks.length;
-    return { availableCount, blockedCount, totalCount };
+
+    // Also check if there are any bookings for this hour
+    const hasBookings = bookings.some(booking => {
+      if (!booking.date || !booking.time) return false;
+      const bookingDate = new Date(booking.date);
+      const [bookingHour] = booking.time.split(':').map(Number);
+      return bookingDate.toDateString() === day.toDateString() && bookingHour === hour;
+    });
+
+    return { availableCount, blockedCount, totalCount, hasBookings };
   };
 
   if (loading) {
@@ -864,14 +873,14 @@ const SpecialistSchedule: React.FC = () => {
               {/* Hour Cards */}
               <div className="divide-y divide-gray-100 dark:divide-gray-700 max-h-[600px] overflow-y-auto">
                 {timeSlots.map(hour => {
-                  const { availableCount, blockedCount, totalCount } = getHourSummary(day, hour);
+                  const { availableCount, blockedCount, totalCount, hasBookings } = getHourSummary(day, hour);
                   const blocks = getBlocksForCell(day, hour);
                   const expanded = isHourExpanded(dayIndex, hour);
                   const isPast = new Date(new Date(day).setHours(hour, 0, 0, 0)) < new Date();
 
-                  // Show all hours, even empty ones, so specialists can add availability
-                  // Skip past hours only if they're empty
-                  if (totalCount === 0 && isPast) return null;
+                  // Only show hours that have availability blocks OR bookings
+                  // Don't show completely empty hours
+                  if (totalCount === 0 && !hasBookings) return null;
 
                   return (
                     <div key={hour} className={`${isPast ? 'opacity-50' : ''}`}>
