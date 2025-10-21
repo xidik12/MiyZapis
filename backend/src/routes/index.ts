@@ -31,6 +31,7 @@ import setupAdminRoutes from './setup-admin';
 import debugAdminRoutes from './debug-admin';
 import debugEmailRoutes from './debug-email';
 import cronRoutes from './cron';
+import groupSessionsRoutes from './group-sessions';
 
 const router = Router();
 
@@ -66,6 +67,7 @@ router.use('/', availabilityRoutes);  // Mount availability routes at root to ma
 router.use('/analytics-enhanced', analyticsEnhancedRoutes);
 router.use('/telegram', telegramEnhancedRoutes);
 router.use('/diagnostics', diagnosticsRoutes);
+router.use('/group-sessions', groupSessionsRoutes);
 
 // Admin setup routes (for initial setup only)
 router.use('/setup', setupAdminRoutes);

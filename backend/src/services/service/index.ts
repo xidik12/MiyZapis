@@ -16,6 +16,12 @@ interface CreateServiceData {
   requiresApproval?: boolean;
   maxAdvanceBooking?: number;
   minAdvanceBooking?: number;
+  serviceLocation?: string;
+  locationNotes?: string;
+  // Group Session Settings
+  isGroupSession?: boolean;
+  maxParticipants?: number | null;
+  minParticipants?: number;
   // Loyalty Points pricing
   loyaltyPointsEnabled?: boolean;
   loyaltyPointsPrice?: number;
@@ -97,6 +103,10 @@ export class ServiceService {
           requiresApproval: data.requiresApproval !== undefined ? data.requiresApproval : true,
           maxAdvanceBooking: data.maxAdvanceBooking || 30,
           minAdvanceBooking: data.minAdvanceBooking || 1,
+          // Group Session Settings
+          isGroupSession: data.isGroupSession || false,
+          maxParticipants: data.maxParticipants || null,
+          minParticipants: data.minParticipants || 1,
           // Loyalty Points pricing
           loyaltyPointsEnabled: data.loyaltyPointsEnabled || false,
           loyaltyPointsPrice: data.loyaltyPointsPrice || null,

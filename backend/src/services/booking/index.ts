@@ -144,15 +144,54 @@ export class BookingService {
         throw new Error('CUSTOMER_NOT_ACTIVE');
       }
 
+      // Validate and handle group session logic
+      const participantCount = data.participantCount || 1;
+      const isGroupSession = service.isGroupSession || false;
+      let groupSessionId: string | undefined;
+
+      // Validate participant count
+      if (!isGroupSession && participantCount !== 1) {
+        throw new Error('INVALID_PARTICIPANT_COUNT_FOR_INDIVIDUAL_SERVICE');
+      }
+
+      if (participantCount < 1) {
+        throw new Error('PARTICIPANT_COUNT_MUST_BE_POSITIVE');
+      }
+
+      // For group sessions, check capacity and generate session ID
+      if (isGroupSession) {
+        groupSessionId = generateGroupSessionId(data.serviceId, data.scheduledAt);
+
+        // Check if there are enough spots available
+        const canAccommodate = await canAccommodateParticipants(
+          data.serviceId,
+          data.scheduledAt,
+          participantCount,
+          service.maxParticipants
+        );
+
+        if (!canAccommodate) {
+          throw new Error('GROUP_SESSION_FULL');
+        }
+
+        logGroupSessionInfo('Booking request', data.serviceId, data.scheduledAt, {
+          participantCount,
+          maxParticipants: service.maxParticipants,
+          customerId: data.customerId
+        });
+      }
+
       // Check if specialist is available at the requested time
       const bookingStartTime = data.scheduledAt;
       const bookingEndTime = new Date(bookingStartTime.getTime() + (bookingDuration * 60 * 1000));
-      
+
       logger.info('Checking for booking conflicts', {
-        specialistId: service.specialist.userId, // Use User ID for logging consistency
+        specialistId: service.specialist.userId,
         bookingStartTime: bookingStartTime.toISOString(),
         bookingEndTime: bookingEndTime.toISOString(),
-        duration: bookingDuration
+        duration: bookingDuration,
+        isGroupSession,
+        participantCount
       });
 
       // Use a database transaction + advisory locks to prevent race conditions
@@ -176,54 +215,71 @@ export class BookingService {
           // Use two-int variant to avoid bigint collisions
           await tx.$executeRawUnsafe('SELECT pg_advisory_xact_lock($1::int, $2::int)', specialistKey, m);
         }
-        // Find any existing bookings that overlap with the requested time slot
-        const existingBookings = await tx.booking.findMany({
-          where: {
-            specialistId: service.specialist.userId, // Use User ID, not Specialist ID
-            status: {
-              in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'],
+
+        // For group sessions, skip conflict check (multiple bookings allowed)
+        // For individual sessions, check for conflicts
+        if (!isGroupSession) {
+          // Find any existing bookings that overlap with the requested time slot
+          const existingBookings = await tx.booking.findMany({
+            where: {
+              specialistId: service.specialist.userId, // Use User ID, not Specialist ID
+              status: {
+                in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'],
+              },
+              // Add time range filter to reduce the dataset
+              scheduledAt: {
+                gte: new Date(bookingStartTime.getTime() - (24 * 60 * 60 * 1000)), // 24 hours before
+                lte: new Date(bookingEndTime.getTime() + (24 * 60 * 60 * 1000)), // 24 hours after
+              }
             },
-            // Add time range filter to reduce the dataset
-            scheduledAt: {
-              gte: new Date(bookingStartTime.getTime() - (24 * 60 * 60 * 1000)), // 24 hours before
-              lte: new Date(bookingEndTime.getTime() + (24 * 60 * 60 * 1000)), // 24 hours after
+            select: {
+              id: true,
+              scheduledAt: true,
+              duration: true,
+              status: true
             }
-          },
-          select: {
-            id: true,
-            scheduledAt: true,
-            duration: true,
-            status: true
-          }
-        });
+          });
 
-        // Check for time overlap with any existing booking
-        const conflictingBooking = existingBookings.find(booking => {
-          const existingStart = new Date(booking.scheduledAt);
-          const existingEnd = new Date(existingStart.getTime() + (booking.duration * 60 * 1000));
-          
-          // Two time ranges overlap if: start1 < end2 && start2 < end1
-          const hasOverlap = bookingStartTime < existingEnd && existingStart < bookingEndTime;
-          
-          if (hasOverlap) {
-            logger.warn('Booking conflict detected', {
-              existingBookingId: booking.id,
-              existingStart: existingStart.toISOString(),
-              existingEnd: existingEnd.toISOString(),
-              requestedStart: bookingStartTime.toISOString(),
-              requestedEnd: bookingEndTime.toISOString()
-            });
-          }
-          
-          return hasOverlap;
-        });
+          // Check for time overlap with any existing booking
+          const conflictingBooking = existingBookings.find(booking => {
+            const existingStart = new Date(booking.scheduledAt);
+            const existingEnd = new Date(existingStart.getTime() + (booking.duration * 60 * 1000));
 
-        if (conflictingBooking) {
-          throw new Error('TIME_SLOT_NOT_AVAILABLE');
+            // Two time ranges overlap if: start1 < end2 && start2 < end1
+            const hasOverlap = bookingStartTime < existingEnd && existingStart < bookingEndTime;
+
+            if (hasOverlap) {
+              logger.warn('Booking conflict detected', {
+                existingBookingId: booking.id,
+                existingStart: existingStart.toISOString(),
+                existingEnd: existingEnd.toISOString(),
+                requestedStart: bookingStartTime.toISOString(),
+                requestedEnd: bookingEndTime.toISOString()
+              });
+            }
+
+            return hasOverlap;
+          });
+
+          if (conflictingBooking) {
+            throw new Error('TIME_SLOT_NOT_AVAILABLE');
+          }
+        } else {
+          // For group sessions, re-check capacity within transaction for race condition safety
+          const canAccommodate = await canAccommodateParticipants(
+            data.serviceId,
+            data.scheduledAt,
+            participantCount,
+            service.maxParticipants
+          );
+
+          if (!canAccommodate) {
+            throw new Error('GROUP_SESSION_FULL');
+          }
         }
 
-        // Calculate pricing
-        const baseAmount = service.basePrice;
+        // Calculate pricing (multiply by participant count for group sessions)
+        const baseAmount = service.basePrice * participantCount;
         const loyaltyPointsUsed = data.loyaltyPointsUsed || 0;
         const loyaltyDiscount = loyaltyPointsUsed * 0.01; // 1 point = $0.01
         let subtotalAfterPoints = Math.max(0, baseAmount - loyaltyDiscount);
@@ -352,6 +408,8 @@ export class BookingService {
             deliverables: JSON.stringify([]), // Empty deliverables initially
             status: initialStatus, // Auto-booking: CONFIRMED if autoBooking enabled, otherwise PENDING
             confirmedAt: service.specialist.autoBooking ? new Date() : null, // Auto-confirm if auto-booking
+            participantCount, // Add participant count for group sessions
+            groupSessionId, // Add group session ID if applicable
           },
         include: {
           customer: {
