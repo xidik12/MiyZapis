@@ -194,9 +194,18 @@ export class AvailabilityService {
 
           const [startHour, startMinute] = parseTime(startRaw, 9, 0);
           const [endHour, endMinute] = parseTime(endRaw, 17, 0);
-          
-          startDateTime.setHours(startHour, startMinute, 0, 0);
-          endDateTime.setHours(endHour, endMinute, 0, 0);
+
+          // IMPORTANT: Convert from Cambodia time (UTC+7) to UTC
+          // The working hours are entered in Cambodia local time, but we need to store them in UTC
+          // Use setUTCHours to directly set the UTC time, treating the input as Cambodia local time
+          const CAMBODIA_UTC_OFFSET_MS = 7 * 60 * 60 * 1000; // 7 hours in milliseconds
+
+          // Set the time as if it were UTC, then subtract the Cambodia offset
+          startDateTime.setUTCHours(startHour, startMinute, 0, 0);
+          startDateTime.setTime(startDateTime.getTime() - CAMBODIA_UTC_OFFSET_MS);
+
+          endDateTime.setUTCHours(endHour, endMinute, 0, 0);
+          endDateTime.setTime(endDateTime.getTime() - CAMBODIA_UTC_OFFSET_MS);
 
           if (endDateTime <= startDateTime) {
             // Ensure we always have a positive duration
