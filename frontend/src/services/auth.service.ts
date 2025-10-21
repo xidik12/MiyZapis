@@ -395,7 +395,7 @@ export class AuthService {
     
     if (avatarUrl && avatarUrl.startsWith('/uploads/')) {
       // Convert relative URL to absolute URL for production
-      const baseUrl = environment.API_BASE_URL || 'https://panhaha-backend-production.up.railway.app';
+      const baseUrl = environment.API_BASE_URL || 'https://huddle-backend-production.up.railway.app';
       avatarUrl = `${baseUrl}${avatarUrl}`;
       console.log('✅ Backend avatar URL transformed to absolute:', avatarUrl);
     } else if (avatarUrl && avatarUrl.startsWith('http')) {
