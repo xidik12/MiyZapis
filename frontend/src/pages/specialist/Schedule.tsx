@@ -367,6 +367,7 @@ const SpecialistSchedule: React.FC = () => {
           2000
         );
 
+        console.log('📅 Schedule: Raw blocks from API:', blocks);
         if (Array.isArray(blocks) && blocks.length > 0) {
           const formattedBlocks = blocks.map(block => ({
             id: block.id,
@@ -377,6 +378,7 @@ const SpecialistSchedule: React.FC = () => {
             isRecurring: block.isRecurring || false,
             recurringDays: block.recurringDays || [],
           }));
+          console.log('📅 Schedule: Formatted blocks:', formattedBlocks);
           setAvailabilityBlocks(formattedBlocks);
         } else {
           setAvailabilityBlocks([]);
