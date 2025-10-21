@@ -233,7 +233,12 @@ model Service {
   requiresApproval Boolean @default(true)
   maxAdvanceBooking Int    @default(30) // Days
   minAdvanceBooking Int    @default(1)  // Hours
-  
+
+  // Group Session Settings
+  isGroupSession   Boolean @default(false) // Whether this service supports group bookings
+  maxParticipants  Int?    // Maximum number of participants (NULL = unlimited)
+  minParticipants  Int     @default(1) // Minimum participants required
+
   // Soft deletion
   isDeleted        Boolean @default(false)
   deletedAt        DateTime?
@@ -255,6 +260,7 @@ model Service {
   @@index([categoryId, isActive, isDeleted])
   @@index([specialistId, isActive, isDeleted])
   @@index([basePrice])
+  @@index([isGroupSession])
   @@index([duration])
   @@index([isActive, isDeleted])
   @@index([isDeleted])
@@ -294,7 +300,11 @@ model Booking {
   preparationNotes String?
   completionNotes  String?
   deliverables     String // JSON string of deliverables
-  
+
+  // Group Session Support
+  participantCount Int    @default(1) // Number of participants in this booking
+  groupSessionId   String? // Links multiple bookings to same group session
+
   // Time tracking
   confirmedAt   DateTime?
   startedAt     DateTime?
@@ -315,6 +325,8 @@ model Booking {
   @@index([customerId, status])
   @@index([specialistId, status])
   @@index([scheduledAt])
+  @@index([groupSessionId])
+  @@index([scheduledAt, serviceId])
 
   // Relations
   customer      User        @relation("CustomerBookings", fields: [customerId], references: [id])

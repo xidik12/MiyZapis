@@ -8,6 +8,7 @@ import { specialistSubscriptionService } from '@/services/payment/subscription.s
 import { ReferralService } from '@/services/referral';
 import { ReferralProcessingService } from '@/services/referral/processing.service';
 import { Booking, User, Service, Specialist } from '@prisma/client';
+import { generateGroupSessionId, canAccommodateParticipants, logGroupSessionInfo } from '@/utils/groupSessions';
 
 interface CreateBookingData {
   customerId: string;
@@ -17,6 +18,7 @@ interface CreateBookingData {
   customerNotes?: string;
   loyaltyPointsUsed?: number;
   rewardRedemptionId?: string;
+  participantCount?: number; // For group sessions - number of participants in this booking
 }
 
 interface UpdateBookingData {
