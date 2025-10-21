@@ -90,24 +90,20 @@ const Schedule: React.FC = () => {
 
   function hasAvailabilityBlock(date: Date, time: string, blocks: AvailabilityBlock[]): { isAvailable: boolean; blockId?: string } {
     const [hours, minutes] = time.split(':').map(Number);
-    
-    // Create date in Cambodia timezone (UTC+7)
-    // We create a UTC date and then interpret it as local Cambodia time
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const day = date.getDate();
-    
-    // Create slot times as if they were in Cambodia timezone
-    const slotStartUTC = Date.UTC(year, month, day, hours, minutes, 0, 0);
-    const slotEndUTC = slotStartUTC + (15 * 60 * 1000); // Add 15 minutes
+
+    // Create slot timestamp in local browser time (which should be Cambodia time)
+    const slotDate = new Date(date);
+    slotDate.setHours(hours, minutes, 0, 0);
+    const slotStartLocal = slotDate.getTime();
+    const slotEndLocal = slotStartLocal + (15 * 60 * 1000); // Add 15 minutes
 
     for (const block of blocks) {
-      // Blocks from API are in UTC, convert them to timestamps
-      const blockStartUTC = new Date(block.startDateTime).getTime();
-      const blockEndUTC = new Date(block.endDateTime).getTime();
+      // Blocks from API are in UTC, convert them to local time for comparison
+      const blockStartLocal = new Date(block.startDateTime).getTime();
+      const blockEndLocal = new Date(block.endDateTime).getTime();
 
       // Check if slot falls within this block
-      if (slotStartUTC >= blockStartUTC && slotEndUTC <= blockEndUTC) {
+      if (slotStartLocal >= blockStartLocal && slotEndLocal <= blockEndLocal) {
         return { isAvailable: block.isAvailable, blockId: block.id };
       }
     }
@@ -116,19 +112,18 @@ const Schedule: React.FC = () => {
 
   function hasBooking(date: Date, time: string, bookingsList: Booking[]): boolean {
     const [hours, minutes] = time.split(':').map(Number);
-    
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const day = date.getDate();
-    
-    const slotStartUTC = Date.UTC(year, month, day, hours, minutes, 0, 0);
-    const slotEndUTC = slotStartUTC + (15 * 60 * 1000);
+
+    // Create slot timestamp in local browser time (which should be Cambodia time)
+    const slotDate = new Date(date);
+    slotDate.setHours(hours, minutes, 0, 0);
+    const slotStartLocal = slotDate.getTime();
+    const slotEndLocal = slotStartLocal + (15 * 60 * 1000);
 
     for (const booking of bookingsList) {
-      const bookingStartUTC = new Date(booking.startTime).getTime();
-      const bookingEndUTC = new Date(booking.endTime).getTime();
-      
-      if (slotStartUTC < bookingEndUTC && slotEndUTC > bookingStartUTC) {
+      const bookingStartLocal = new Date(booking.startTime).getTime();
+      const bookingEndLocal = new Date(booking.endTime).getTime();
+
+      if (slotStartLocal < bookingEndLocal && slotEndLocal > bookingStartLocal) {
         return true;
       }
     }
