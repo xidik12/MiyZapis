@@ -90,15 +90,24 @@ const Schedule: React.FC = () => {
 
   function hasAvailabilityBlock(date: Date, time: string, blocks: AvailabilityBlock[]): { isAvailable: boolean; blockId?: string } {
     const [hours, minutes] = time.split(':').map(Number);
-    const slotStart = new Date(date);
-    slotStart.setHours(hours, minutes, 0, 0);
-    const slotEnd = new Date(slotStart);
-    slotEnd.setMinutes(slotEnd.getMinutes() + 15);
+    
+    // Create date in Cambodia timezone (UTC+7)
+    // We create a UTC date and then interpret it as local Cambodia time
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+    
+    // Create slot times as if they were in Cambodia timezone
+    const slotStartUTC = Date.UTC(year, month, day, hours, minutes, 0, 0);
+    const slotEndUTC = slotStartUTC + (15 * 60 * 1000); // Add 15 minutes
 
     for (const block of blocks) {
-      const blockStart = new Date(block.startDateTime);
-      const blockEnd = new Date(block.endDateTime);
-      if (slotStart >= blockStart && slotEnd <= blockEnd) {
+      // Blocks from API are in UTC, convert them to timestamps
+      const blockStartUTC = new Date(block.startDateTime).getTime();
+      const blockEndUTC = new Date(block.endDateTime).getTime();
+
+      // Check if slot falls within this block
+      if (slotStartUTC >= blockStartUTC && slotEndUTC <= blockEndUTC) {
         return { isAvailable: block.isAvailable, blockId: block.id };
       }
     }
@@ -107,15 +116,19 @@ const Schedule: React.FC = () => {
 
   function hasBooking(date: Date, time: string, bookingsList: Booking[]): boolean {
     const [hours, minutes] = time.split(':').map(Number);
-    const slotStart = new Date(date);
-    slotStart.setHours(hours, minutes, 0, 0);
-    const slotEnd = new Date(slotStart);
-    slotEnd.setMinutes(slotEnd.getMinutes() + 15);
+    
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+    
+    const slotStartUTC = Date.UTC(year, month, day, hours, minutes, 0, 0);
+    const slotEndUTC = slotStartUTC + (15 * 60 * 1000);
 
     for (const booking of bookingsList) {
-      const bookingStart = new Date(booking.startTime);
-      const bookingEnd = new Date(booking.endTime);
-      if (slotStart < bookingEnd && slotEnd > bookingStart) {
+      const bookingStartUTC = new Date(booking.startTime).getTime();
+      const bookingEndUTC = new Date(booking.endTime).getTime();
+      
+      if (slotStartUTC < bookingEndUTC && slotEndUTC > bookingStartUTC) {
         return true;
       }
     }
@@ -209,8 +222,11 @@ const Schedule: React.FC = () => {
     try {
       setLoading(true);
       const dateStr = formatDateForAPI(selectedDate);
+      
+      // Create datetime in local Cambodia timezone
       const startDateTime = new Date(`${dateStr}T${formData.startTime}:00`);
       const endDateTime = new Date(`${dateStr}T${formData.endTime}:00`);
+      
       const data = {
         startDateTime: startDateTime.toISOString(),
         endDateTime: endDateTime.toISOString(),
