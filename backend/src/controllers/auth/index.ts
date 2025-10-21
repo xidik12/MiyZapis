@@ -636,9 +636,37 @@ export class AuthController {
       // Send localized password reset email
       try {
         const lang = resolveLanguage(user.language, req.headers['accept-language']);
-        await templatedEmailService.sendPasswordReset(user.id, token, lang);
+        const resetUrl = `${config.frontend.url}/auth/reset-password?token=${token}`;
+
+        logger.info('Sending password reset email', {
+          userId: user.id,
+          email: user.email,
+          language: lang,
+          resetUrl: resetUrl.replace(token, '[TOKEN]'),
+          expiresAt
+        });
+
+        const emailSent = await templatedEmailService.sendPasswordReset(user.id, token, lang);
+
+        if (emailSent) {
+          logger.info('Password reset email sent successfully', {
+            userId: user.id,
+            email: user.email
+          });
+        } else {
+          logger.error('Password reset email failed to send', {
+            userId: user.id,
+            email: user.email,
+            reason: 'Email service returned false'
+          });
+        }
       } catch (emailError) {
-        logger.error('Failed to send password reset email:', emailError);
+        logger.error('Failed to send password reset email - exception:', {
+          userId: user.id,
+          email: user.email,
+          error: emailError instanceof Error ? emailError.message : emailError,
+          stack: emailError instanceof Error ? emailError.stack : undefined
+        });
         // Don't fail the request if email sending fails
       }
 
