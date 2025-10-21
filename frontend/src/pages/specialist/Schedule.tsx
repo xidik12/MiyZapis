@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
-import {
-  CalendarIcon,
-  ClockIcon,
-  PlusIcon,
+import { 
+  CalendarIcon, 
+  ClockIcon, 
+  PlusIcon, 
   XMarkIcon,
   CheckIcon,
   TrashIcon,
-  PencilIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
+  PencilIcon
 } from '@heroicons/react/24/outline';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector } from '../../hooks/redux';
@@ -32,33 +28,14 @@ interface TimeSlot {
   recurringDays?: string[];
 }
 
-interface CalendarBlock {
-  id: string;
-  startDateTime: Date;
-  endDateTime: Date;
-  isAvailable: boolean;
-  reason?: string;
-  isRecurring: boolean;
-  recurringDays?: string[];
-}
-
 interface AddTimeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: any) => void;
-  editingBlock?: CalendarBlock | null;
-  preSelectedDate?: Date;
-  preSelectedTime?: string;
+  onSave: (timeSlot: Omit<TimeSlot, 'id'>) => void;
+  editingSlot?: TimeSlot | null;
 }
 
-const AddTimeModal: React.FC<AddTimeModalProps> = ({
-  isOpen,
-  onClose,
-  onSave,
-  editingBlock,
-  preSelectedDate,
-  preSelectedTime
-}) => {
+const AddTimeModal: React.FC<AddTimeModalProps> = ({ isOpen, onClose, onSave, editingSlot }) => {
   const { t } = useLanguage();
   const [formData, setFormData] = useState({
     date: '',
@@ -71,28 +48,15 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
   });
 
   useEffect(() => {
-    if (editingBlock) {
-      const start = new Date(editingBlock.startDateTime);
-      const end = new Date(editingBlock.endDateTime);
-
+    if (editingSlot) {
       setFormData({
-        date: start.toISOString().split('T')[0],
-        startTime: `${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')}`,
-        endTime: `${end.getHours().toString().padStart(2, '0')}:${end.getMinutes().toString().padStart(2, '0')}`,
-        isAvailable: editingBlock.isAvailable,
-        reason: editingBlock.reason || '',
-        isRecurring: editingBlock.isRecurring,
-        recurringDays: editingBlock.recurringDays || []
-      });
-    } else if (preSelectedDate) {
-      setFormData({
-        date: preSelectedDate.toISOString().split('T')[0],
-        startTime: preSelectedTime || '09:00',
-        endTime: preSelectedTime ? calculateEndTime(preSelectedTime, 60) : '10:00',
-        isAvailable: true,
-        reason: '',
-        isRecurring: false,
-        recurringDays: []
+        date: editingSlot.date,
+        startTime: editingSlot.startTime,
+        endTime: editingSlot.endTime,
+        isAvailable: editingSlot.isAvailable,
+        reason: editingSlot.reason || '',
+        isRecurring: editingSlot.isRecurring,
+        recurringDays: editingSlot.recurringDays || []
       });
     } else {
       setFormData({
@@ -105,15 +69,7 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
         recurringDays: []
       });
     }
-  }, [editingBlock, preSelectedDate, preSelectedTime, isOpen]);
-
-  const calculateEndTime = (startTime: string, durationMinutes: number): string => {
-    const [hours, minutes] = startTime.split(':').map(Number);
-    const totalMinutes = hours * 60 + minutes + durationMinutes;
-    const endHours = Math.floor(totalMinutes / 60) % 24;
-    const endMinutes = totalMinutes % 60;
-    return `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
-  };
+  }, [editingSlot, isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,7 +80,7 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
   const toggleRecurringDay = (day: string) => {
     setFormData(prev => ({
       ...prev,
-      recurringDays: prev.recurringDays.includes(day)
+      recurringDays: prev.recurringDays.includes(day) 
         ? prev.recurringDays.filter(d => d !== day)
         : [...prev.recurringDays, day]
     }));
@@ -143,19 +99,18 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg mx-auto my-8 max-h-[calc(100vh-4rem)] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-              {editingBlock ? t('schedule.editTimeSlot') : t('schedule.addTimeSlot')}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              {editingSlot ? t('schedule.editTimeSlot') : t('schedule.addTimeSlot')}
             </h2>
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg touch-manipulation"
-              aria-label="Close modal"
+              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg"
             >
-              <XMarkIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+              <XMarkIcon className="w-6 h-6" />
             </button>
           </div>
 
@@ -168,12 +123,12 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                 type="date"
                 value={formData.date}
                 onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
                 required
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('schedule.startTime')}
@@ -182,7 +137,7 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                   type="time"
                   value={formData.startTime}
                   onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
                   required
                 />
               </div>
@@ -194,21 +149,21 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                   type="time"
                   value={formData.endTime}
                   onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="flex items-center cursor-pointer py-3">
+              <label className="flex items-center">
                 <input
                   type="checkbox"
                   checked={formData.isAvailable}
                   onChange={(e) => setFormData(prev => ({ ...prev, isAvailable: e.target.checked }))}
-                  className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                 />
-                <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">{t('schedule.availableForBooking')}</span>
+                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('schedule.availableForBooking')}</span>
               </label>
             </div>
 
@@ -222,20 +177,20 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                   value={formData.reason}
                   onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
                   placeholder={t('schedule.reasonPlaceholder')}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
                 />
               </div>
             )}
 
             <div>
-              <label className="flex items-center cursor-pointer py-3">
+              <label className="flex items-center">
                 <input
                   type="checkbox"
                   checked={formData.isRecurring}
                   onChange={(e) => setFormData(prev => ({ ...prev, isRecurring: e.target.checked }))}
-                  className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                 />
-                <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">{t('schedule.repeatWeekly')}</span>
+                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('schedule.repeatWeekly')}</span>
               </label>
             </div>
 
@@ -244,35 +199,35 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('schedule.repeatOnDays')}
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   {weekDays.map(day => (
-                    <label key={day.key} className="flex items-center cursor-pointer py-2">
+                    <label key={day.key} className="flex items-center">
                       <input
                         type="checkbox"
                         checked={formData.recurringDays.includes(day.key)}
                         onChange={() => toggleRecurringDay(day.key)}
-                        className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                        className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                       />
-                      <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">{t(`schedule.${day.key}`)}</span>
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t(`schedule.${day.key}`)}</span>
                     </label>
                   ))}
                 </div>
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+            <div className="flex space-x-3 pt-4">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 {t('schedule.cancel')}
               </button>
               <button
                 type="submit"
-                className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
               >
-                {editingBlock ? t('schedule.update') : t('schedule.add')}
+                {editingSlot ? t('schedule.update') : t('schedule.add')}
               </button>
             </div>
           </form>
@@ -286,476 +241,519 @@ const SpecialistSchedule: React.FC = () => {
   const { t } = useLanguage();
   const user = useAppSelector(selectUser);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingBlock, setEditingBlock] = useState<CalendarBlock | null>(null);
-  const [availabilityBlocks, setAvailabilityBlocks] = useState<CalendarBlock[]>([]);
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [editingSlot, setEditingSlot] = useState<TimeSlot | null>(null);
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentWeekStart, setCurrentWeekStart] = useState<Date>(getWeekStart(new Date()));
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [operationInProgress, setOperationInProgress] = useState(false);
-  const [preSelectedDate, setPreSelectedDate] = useState<Date | undefined>();
-  const [preSelectedTime, setPreSelectedTime] = useState<string | undefined>();
-  const [showGeneratePrompt, setShowGeneratePrompt] = useState(false);
-  const [expandedHours, setExpandedHours] = useState<Record<string, boolean>>({});
+  const [isOfflineMode, setIsOfflineMode] = useState(false);
 
-  function getWeekStart(date: Date): Date {
-    const d = new Date(date);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-    return new Date(d.setDate(diff));
-  }
-
-  function getWeekDays(weekStart: Date): Date[] {
-    const days: Date[] = [];
+  // Generate default schedule from working hours
+  const generateDefaultSchedule = (workingHours: any): TimeSlot[] => {
+    console.log('🔍 generateDefaultSchedule called with workingHours:', workingHours);
+    console.log('🔍 Available day keys in workingHours:', workingHours ? Object.keys(workingHours) : 'N/A');
+    const slots: TimeSlot[] = [];
+    const today = new Date();
+    
+    // Generate slots for the next 7 days
     for (let i = 0; i < 7; i++) {
-      const day = new Date(weekStart);
-      day.setDate(weekStart.getDate() + i);
-      days.push(day);
-    }
-    return days;
-  }
-
-  function goToPreviousWeek() {
-    const newWeekStart = new Date(currentWeekStart);
-    newWeekStart.setDate(currentWeekStart.getDate() - 7);
-    setCurrentWeekStart(newWeekStart);
-  }
-
-  function goToNextWeek() {
-    const newWeekStart = new Date(currentWeekStart);
-    newWeekStart.setDate(currentWeekStart.getDate() + 7);
-    setCurrentWeekStart(newWeekStart);
-  }
-
-  function goToToday() {
-    setCurrentWeekStart(getWeekStart(new Date()));
-  }
-
-  function getFormattedDateRange(startDate: Date, endDate: Date): string {
-    const months = ['january', 'february', 'march', 'april', 'may', 'june',
-                   'july', 'august', 'september', 'october', 'november', 'december'];
-
-    const startMonth = t(`month.${months[startDate.getMonth()]}`) || months[startDate.getMonth()];
-    const endMonth = t(`month.${months[endDate.getMonth()]}`) || months[endDate.getMonth()];
-    const startDay = startDate.getDate();
-    const endDay = endDate.getDate();
-    const year = endDate.getFullYear();
-
-    if (startDate.getMonth() === endDate.getMonth()) {
-      return `${startMonth} ${startDay} - ${endDay}, ${year}`;
-    } else {
-      return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`;
-    }
-  }
-
-  const weekDays = getWeekDays(currentWeekStart);
-  const timeSlots = Array.from({ length: 24 }, (_, i) => i); // 0-23 hours
-
-  // Generate 15-minute time slots for a day (from 00:00 to 23:45)
-  const generate15MinSlots = () => {
-    const slots: string[] = [];
-    for (let hour = 0; hour < 24; hour++) {
-      for (let minute = 0; minute < 60; minute += 15) {
-        slots.push(`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`);
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+      console.log(`🔍 Generated dayName: "${dayName}", looking for workingHours["${dayName}"]`);
+      console.log(`🔍 Found data:`, workingHours?.[dayName]);
+      
+      // Check if the specialist works on this day (support both isWorking and isOpen)
+      const dayData = workingHours?.[dayName];
+      const isWorking = dayData?.isWorking || dayData?.isOpen;
+      console.log(`🔍 Day ${dayName}: isWorking=${dayData?.isWorking}, isOpen=${dayData?.isOpen}, final=${isWorking}`);
+      
+      if (workingHours && dayData && isWorking) {
+        const startTime = workingHours[dayName].start || workingHours[dayName].startTime || '09:00';
+        const endTime = workingHours[dayName].end || workingHours[dayName].endTime || '17:00';
+        console.log(`✅ Creating slots for ${dayName}: ${startTime} - ${endTime}`);
+        
+        // Create 15-minute slots
+        const start = new Date(`2000-01-01T${startTime}:00`);
+        const end = new Date(`2000-01-01T${endTime}:00`);
+        
+        while (start < end) {
+          const slotStart = start.toTimeString().substring(0, 5);
+          start.setMinutes(start.getMinutes() + 15);
+          const slotEnd = start.toTimeString().substring(0, 5);
+          
+          const slot = {
+            id: `default-${date.toISOString().split('T')[0]}-${slotStart}`,
+            date: date.toISOString().split('T')[0],
+            startTime: slotStart,
+            endTime: slotEnd,
+            isAvailable: true,
+            reason: '',
+            isRecurring: false,
+          };
+          
+          slots.push(slot);
+          console.log(`⏰ Created slot: ${slot.date} ${slot.startTime}-${slot.endTime}`);
+        }
       }
     }
+    
+    console.log(`🎯 generateDefaultSchedule completed. Total slots created: ${slots.length}`);
     return slots;
   };
 
-  const fifteenMinSlots = generate15MinSlots();
-
-  // Load availability blocks
+  // Load blocked slots from API
   useEffect(() => {
     const loadAvailabilityBlocks = async () => {
       if (!isFeatureEnabled('ENABLE_SPECIALIST_SCHEDULE_API')) {
         setLoading(false);
         setError(null);
-        setAvailabilityBlocks([]);
+        setTimeSlots([]); // Empty schedule until API is ready
         return;
       }
 
       try {
         setLoading(true);
         setError(null);
-
-        // Get all availability blocks for the week
-        const startDate = weekDays[0].toISOString().split('T')[0];
-        const endDate = weekDays[6].toISOString().split('T')[0];
-
-        const blocks = await retryRequest(
+        
+        // Get all availability blocks for the next 30 days
+        const startDate = new Date().toISOString().split('T')[0];
+        const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        
+        const availabilityBlocks = await retryRequest(
           () => specialistService.getAvailabilityBlocks(startDate, endDate),
-          3,
-          2000
+          3, // max retries
+          2000 // initial delay
         );
-
-        if (Array.isArray(blocks) && blocks.length > 0) {
-          const formattedBlocks = blocks.map(block => ({
-            id: block.id,
-            startDateTime: new Date(block.startDateTime),
-            endDateTime: new Date(block.endDateTime),
-            isAvailable: block.isAvailable !== false,
-            reason: block.reason || '',
-            isRecurring: block.isRecurring || block.recurring || false,
-            recurringDays: block.recurringDays || [],
-          }));
-          setAvailabilityBlocks(formattedBlocks);
+        console.log('📦 Schedule: Availability blocks received:', availabilityBlocks);
+        
+        // Convert availability blocks to time slots format
+        let formattedSlots: TimeSlot[] = [];
+        
+        if (Array.isArray(availabilityBlocks) && availabilityBlocks.length > 0) {
+          formattedSlots = availabilityBlocks.map(block => {
+            // Handle different date formats from API
+            const startDateTime = new Date(block.startDateTime);
+            const endDateTime = new Date(block.endDateTime);
+            
+            return {
+              id: block.id,
+              date: startDateTime.toISOString().split('T')[0],
+              startTime: startDateTime.toTimeString().substring(0, 5),
+              endTime: endDateTime.toTimeString().substring(0, 5),
+              isAvailable: block.isAvailable !== false, // Default to available
+              reason: block.reason || '',
+              isRecurring: block.isRecurring || block.recurring || false,
+              recurringDays: block.recurringDays || [],
+            };
+          });
+          console.log('✅ Formatted availability blocks:', formattedSlots);
         } else {
-          setAvailabilityBlocks([]);
+          console.log('📝 No availability blocks found, will generate from working hours');
         }
+        
+        // If no availability blocks, generate default schedule from working hours
+        if (formattedSlots.length === 0) {
+          console.log('📅 Schedule: No availability blocks, generating default schedule from working hours');
+          
+          // Try to get working hours from user first, then from specialist profile
+          let workingHours = user?.workingHours;
+          
+          // If working hours not available in user object, fetch from specialist profile
+          if (!workingHours && isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
+            try {
+              console.log('📡 Fetching specialist profile for working hours...');
+              const specialistData = await retryRequest(
+                () => specialistService.getProfile(),
+                2, // max retries for profile (less critical)
+                1000 // initial delay
+              );
+              const specialist = specialistData.specialist || specialistData;
+              workingHours = specialist?.workingHours;
+              console.log('📦 Working hours from specialist profile:', workingHours);
+            } catch (err) {
+              console.warn('⚠️ Failed to fetch specialist profile for working hours:', err);
+            }
+          }
+          
+          // Parse working hours if it's a JSON string
+          if (typeof workingHours === 'string') {
+            try {
+              console.log('🔄 Parsing working hours JSON string...');
+              workingHours = JSON.parse(workingHours);
+              console.log('✅ Successfully parsed working hours:', workingHours);
+            } catch (err) {
+              console.warn('⚠️ Failed to parse working hours JSON:', err);
+              workingHours = null;
+            }
+          }
+          
+          formattedSlots = generateDefaultSchedule(workingHours);
+          console.log('📅 Schedule: Generated default slots:', formattedSlots.length);
+        }
+        
+        // Fetch existing bookings to block occupied time slots
+        try {
+          console.log('📅 Fetching existing bookings to block occupied slots...');
+          const existingBookings = await retryRequest(
+            () => bookingService.getBookings({
+              limit: 100,
+              startDate: startDate,
+              endDate: endDate
+            }, 'specialist'),
+            2, // max retries
+            1000 // initial delay
+          );
+
+          const bookingsData = existingBookings?.bookings || [];
+          console.log(`📅 Found ${bookingsData.length} existing bookings to check for conflicts`);
+          
+          // Block time slots that conflict with existing bookings
+          if (Array.isArray(bookingsData) && bookingsData.length > 0) {
+            formattedSlots = formattedSlots.map(slot => {
+              const slotStart = new Date(`${slot.date}T${slot.startTime}`);
+              const slotEnd = new Date(`${slot.date}T${slot.endTime}`);
+              
+              const hasConflict = bookingsData.some(booking => {
+                if (booking.status === 'CANCELLED') return false; // Skip cancelled bookings
+                
+                const bookingStart = new Date(booking.scheduledAt);
+                const bookingEnd = new Date(bookingStart.getTime() + (booking.duration || 60) * 60 * 1000);
+                
+                // Check if slot overlaps with booking
+                return slotStart < bookingEnd && slotEnd > bookingStart;
+              });
+              
+              if (hasConflict) {
+                return {
+                  ...slot,
+                  isAvailable: false,
+                  reason: 'Booked'
+                };
+              }
+              
+              return slot;
+            });
+            console.log('📅 Applied booking conflicts to time slots');
+          }
+        } catch (bookingError) {
+          console.warn('⚠️ Failed to fetch existing bookings for conflict detection:', bookingError);
+        }
+
+        setTimeSlots(formattedSlots);
+        setIsOfflineMode(false); // Reset offline mode when API succeeds
       } catch (err: any) {
         console.error('Error loading availability blocks:', err);
-        setError(err.message || 'Failed to load schedule');
+        
+        // Check if this is a network error
+        if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error') || err.code === 'NETWORK_ERROR') {
+          console.warn('Network error detected, falling back to default schedule generation');
+          
+          // Generate default schedule as fallback
+          try {
+            let workingHours = user?.workingHours;
+            
+            // Parse working hours if it's a JSON string
+            if (typeof workingHours === 'string') {
+              try {
+                workingHours = JSON.parse(workingHours);
+              } catch (parseErr) {
+                console.warn('Failed to parse working hours JSON:', parseErr);
+                workingHours = null;
+              }
+            }
+            
+            const fallbackSlots = generateDefaultSchedule(workingHours);
+            setTimeSlots(fallbackSlots);
+            setIsOfflineMode(true);
+            console.log('✅ Fallback schedule generated with', fallbackSlots.length, 'slots');
+            
+            // Don't set error for successful fallback - show the schedule with a warning banner instead
+            setError(null);
+          } catch (fallbackErr) {
+            console.error('Failed to generate fallback schedule:', fallbackErr);
+            setError('Unable to load schedule. Please check your internet connection.');
+            setTimeSlots([]);
+          }
+        } else {
+          // For non-network errors, show the original error
+          setError(err.message || 'Failed to load schedule');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     loadAvailabilityBlocks();
-  }, [currentWeekStart]);
+  }, [user]);
 
-  // Load bookings for the week
-  useEffect(() => {
-    const loadBookings = async () => {
-      try {
-        const startDate = weekDays[0].toISOString().split('T')[0];
-        const endDate = weekDays[6].toISOString().split('T')[0];
-
-        const result = await bookingService.getBookings({
-          startDate,
-          endDate,
-          status: ['PENDING', 'CONFIRMED'], // Only show upcoming bookings
-        });
-
-        setBookings(result.bookings || []);
-      } catch (err) {
-        console.error('Error loading bookings:', err);
-      }
-    };
-
-    loadBookings();
-  }, [currentWeekStart]);
-
-  // Check if we should prompt to generate availability from working hours
-  useEffect(() => {
-    if (!loading && availabilityBlocks.length === 0 && user?.workingHours) {
-      // User has working hours but no availability blocks - offer to generate
-      setShowGeneratePrompt(true);
-    }
-  }, [loading, availabilityBlocks.length, user?.workingHours]);
-
-  const handleGenerateFromWorkingHours = async () => {
+  const handleAddTimeSlot = async (newSlot: Omit<TimeSlot, 'id'>) => {
     if (!isFeatureEnabled('ENABLE_SPECIALIST_SCHEDULE_API')) {
-      return;
-    }
-
-    setOperationInProgress(true);
-    setShowGeneratePrompt(false);
-    try {
-      await retryRequest(
-        () => specialistService.generateAvailabilityFromWorkingHours(),
-        2,
-        1500
-      );
-
-      // Reload availability blocks
-      const startDate = weekDays[0].toISOString().split('T')[0];
-      const endDate = weekDays[6].toISOString().split('T')[0];
-
-      const blocks = await retryRequest(
-        () => specialistService.getAvailabilityBlocks(startDate, endDate),
-        3,
-        2000
-      );
-
-      if (Array.isArray(blocks) && blocks.length > 0) {
-        const formattedBlocks = blocks.map(block => ({
-          id: block.id,
-          startDateTime: new Date(block.startDateTime),
-          endDateTime: new Date(block.endDateTime),
-          isAvailable: block.isAvailable !== false,
-          reason: block.reason || '',
-          isRecurring: block.isRecurring || block.recurring || false,
-          recurringDays: block.recurringDays || [],
-        }));
-        setAvailabilityBlocks(formattedBlocks);
-      }
-
-      setError(null);
-    } catch (err: any) {
-      console.error('Error generating availability:', err);
-      setError(err.message || 'Failed to generate availability from working hours');
-    } finally {
-      setOperationInProgress(false);
-    }
-  };
-
-  const handleAddTimeSlot = async (formData: any) => {
-    if (!isFeatureEnabled('ENABLE_SPECIALIST_SCHEDULE_API')) {
+      console.warn('Schedule API is disabled. Enable ENABLE_SPECIALIST_SCHEDULE_API to use this feature.');
       return;
     }
 
     setOperationInProgress(true);
     try {
-      // Create local datetime and convert to ISO string (preserves local timezone)
-      const startDate = new Date(`${formData.date}T${formData.startTime}:00`);
-      const endDate = new Date(`${formData.date}T${formData.endTime}:00`);
-      const startDateTime = startDate.toISOString();
-      const endDateTime = endDate.toISOString();
-
+      // Validate time slot
+      if (!newSlot.date || !newSlot.startTime || !newSlot.endTime) {
+        throw new Error('Date, start time, and end time are required');
+      }
+      
+      // Create ISO datetime strings
+      const startDateTime = `${newSlot.date}T${newSlot.startTime}:00.000Z`;
+      const endDateTime = `${newSlot.date}T${newSlot.endTime}:00.000Z`;
+      
+      // Validate end time is after start time
+      if (new Date(startDateTime) >= new Date(endDateTime)) {
+        throw new Error('End time must be after start time');
+      }
+      
+      console.log('📅 Creating time slot:', {
+        startDateTime,
+        endDateTime,
+        isAvailable: newSlot.isAvailable,
+        isRecurring: newSlot.isRecurring,
+        recurringDays: newSlot.recurringDays
+      });
+      
+      // Use the correct API based on whether this is an available or blocked slot
       const result = await retryRequest(
         () => specialistService.createAvailabilityBlock({
           startDateTime,
           endDateTime,
-          isAvailable: formData.isAvailable,
-          reason: formData.reason || (formData.isAvailable ? 'Available time' : 'Blocked time'),
-          recurring: formData.isRecurring,
-          recurringDays: formData.recurringDays || [],
+          isAvailable: newSlot.isAvailable,
+          reason: newSlot.reason || (newSlot.isAvailable ? t('schedule.availableTime') || 'Available time' : t('schedule.blockedTime') || 'Blocked time'),
+          recurring: newSlot.isRecurring,
+          recurringDays: newSlot.recurringDays || [],
         }),
-        2,
-        1500
+        2, // max retries for create operation
+        1500 // initial delay
       );
-
-      const newBlock: CalendarBlock = {
+      
+      const slot: TimeSlot = {
         id: result.block.id,
-        startDateTime: new Date(result.block.startDateTime),
-        endDateTime: new Date(result.block.endDateTime),
-        isAvailable: result.block.isAvailable,
-        reason: result.block.reason,
-        isRecurring: result.block.isRecurring,
-        recurringDays: result.block.recurringDays,
+        ...newSlot,
       };
-
-      setAvailabilityBlocks(prev => [...prev, newBlock]);
+      
+      setTimeSlots(prev => [...prev, slot].sort((a, b) => 
+        new Date(a.date + ' ' + a.startTime).getTime() - new Date(b.date + ' ' + b.startTime).getTime()
+      ));
+      
+      // Clear any previous errors and show success message
       setError(null);
-      setPreSelectedDate(undefined);
-      setPreSelectedTime(undefined);
+      console.log('✅ Time slot added successfully');
     } catch (err: any) {
       console.error('Error adding time slot:', err);
-      setError(err.message || 'Failed to add time slot');
+      
+      // Check if this is a network error and provide appropriate message
+      if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error') || err.code === 'NETWORK_ERROR') {
+        setError('Unable to save time slot due to connection issues. Please check your internet and try again.');
+      } else {
+        setError(err.message || 'Failed to add time slot');
+      }
     } finally {
       setOperationInProgress(false);
     }
   };
 
-  const handleEditTimeSlot = async (formData: any) => {
-    if (!editingBlock) return;
-
+  const handleEditTimeSlot = async (updatedSlot: Omit<TimeSlot, 'id'>) => {
+    if (!editingSlot) return;
+    
+    if (!isFeatureEnabled('ENABLE_SPECIALIST_SCHEDULE_API')) {
+      console.warn('Schedule API is disabled. Enable ENABLE_SPECIALIST_SCHEDULE_API to use this feature.');
+      return;
+    }
+    
     setOperationInProgress(true);
     try {
-      // Create local datetime and convert to ISO string (preserves local timezone)
-      const startDate = new Date(`${formData.date}T${formData.startTime}:00`);
-      const endDate = new Date(`${formData.date}T${formData.endTime}:00`);
-      const startDateTime = startDate.toISOString();
-      const endDateTime = endDate.toISOString();
-
+      // Validate time slot
+      if (!updatedSlot.date || !updatedSlot.startTime || !updatedSlot.endTime) {
+        throw new Error('Date, start time, and end time are required');
+      }
+      
+      // Create ISO datetime strings
+      const startDateTime = `${updatedSlot.date}T${updatedSlot.startTime}:00.000Z`;
+      const endDateTime = `${updatedSlot.date}T${updatedSlot.endTime}:00.000Z`;
+      
+      // Validate end time is after start time
+      if (new Date(startDateTime) >= new Date(endDateTime)) {
+        throw new Error('End time must be after start time');
+      }
+      
+      console.log('📅 Updating time slot:', editingSlot.id, {
+        startDateTime,
+        endDateTime,
+        isAvailable: updatedSlot.isAvailable,
+        isRecurring: updatedSlot.isRecurring,
+        recurringDays: updatedSlot.recurringDays
+      });
+      
+      // Use the update API to modify the existing availability block
       const result = await retryRequest(
-        () => specialistService.updateAvailabilityBlock(editingBlock.id, {
+        () => specialistService.updateAvailabilityBlock(editingSlot.id, {
           startDateTime,
           endDateTime,
-          isAvailable: formData.isAvailable,
-          reason: formData.reason || (formData.isAvailable ? 'Available time' : 'Blocked time'),
-          recurring: formData.isRecurring,
-          recurringDays: formData.recurringDays || [],
+          isAvailable: updatedSlot.isAvailable,
+          reason: updatedSlot.reason || (updatedSlot.isAvailable ? t('schedule.availableTime') || 'Available time' : t('schedule.blockedTime') || 'Blocked time'),
+          recurring: updatedSlot.isRecurring,
+          recurringDays: updatedSlot.recurringDays || [],
         }),
-        2,
-        1500
+        2, // max retries for update operation
+        1500 // initial delay
       );
-
-      setAvailabilityBlocks(prev => prev.map(block =>
-        block.id === editingBlock.id
-          ? {
-              ...block,
-              startDateTime: new Date(result.block.startDateTime),
-              endDateTime: new Date(result.block.endDateTime),
-              isAvailable: result.block.isAvailable,
-              reason: result.block.reason,
-              isRecurring: result.block.isRecurring,
-              recurringDays: result.block.recurringDays,
-            }
-          : block
+      
+      setTimeSlots(prev => prev.map(slot => 
+        slot.id === editingSlot.id 
+          ? { ...updatedSlot, id: result.block.id }
+          : slot
+      ).sort((a, b) => 
+        new Date(a.date + ' ' + a.startTime).getTime() - new Date(b.date + ' ' + b.startTime).getTime()
       ));
-
-      setEditingBlock(null);
+      
+      setEditingSlot(null);
+      // Clear any previous errors and show success message
       setError(null);
+      console.log('✅ Time slot updated successfully');
     } catch (err: any) {
       console.error('Error editing time slot:', err);
-      setError(err.message || 'Failed to edit time slot');
+      
+      // Check if this is a network error and provide appropriate message
+      if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error') || err.code === 'NETWORK_ERROR') {
+        setError('Unable to update time slot due to connection issues. Please check your internet and try again.');
+      } else {
+        setError(err.message || 'Failed to edit time slot');
+      }
     } finally {
       setOperationInProgress(false);
     }
   };
 
   const handleDeleteTimeSlot = async (id: string) => {
+    if (!isFeatureEnabled('ENABLE_SPECIALIST_SCHEDULE_API')) {
+      console.warn('Schedule API is disabled. Enable ENABLE_SPECIALIST_SCHEDULE_API to use this feature.');
+      return;
+    }
+    
+    // Add confirmation dialog
+    const { confirm } = await import('../../components/ui/Confirm');
+    const ok = await confirm({
+      title: 'Delete time slot?',
+      message: 'This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      variant: 'destructive'
+    });
+    if (!ok) return;
+    
     setOperationInProgress(true);
     try {
+      console.log('🗑️ Deleting time slot:', id);
       await retryRequest(
         () => specialistService.deleteAvailabilityBlock(id),
-        2,
-        1000
+        2, // max retries for delete operation
+        1000 // initial delay
       );
-      setAvailabilityBlocks(prev => prev.filter(block => block.id !== id));
+      setTimeSlots(prev => prev.filter(slot => slot.id !== id));
+      
+      // Clear any previous errors and show success message
       setError(null);
+      console.log('✅ Time slot deleted successfully');
     } catch (err: any) {
       console.error('Error deleting time slot:', err);
-      setError(err.message || 'Failed to delete time slot');
+      
+      // Check if this is a network error and provide appropriate message
+      if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error') || err.code === 'NETWORK_ERROR') {
+        setError('Unable to delete time slot due to connection issues. Please check your internet and try again.');
+      } else {
+        setError(err.message || 'Failed to delete time slot');
+      }
     } finally {
       setOperationInProgress(false);
     }
   };
 
-  const openEditModal = (block: CalendarBlock) => {
-    setEditingBlock(block);
+  const openEditModal = (slot: TimeSlot) => {
+    setEditingSlot(slot);
     setShowAddModal(true);
   };
 
-  const handleCellClick = (date: Date, hour: number) => {
-    setPreSelectedDate(date);
-    setPreSelectedTime(`${hour.toString().padStart(2, '0')}:00`);
-    setEditingBlock(null);
-    setShowAddModal(true);
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const weekdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const months = ['january', 'february', 'march', 'april', 'may', 'june', 
+                   'july', 'august', 'september', 'october', 'november', 'december'];
+    
+    const weekday = t(`weekday.${weekdays[date.getDay()]}`);
+    const month = t(`month.${months[date.getMonth()]}`);
+    const day = date.getDate();
+    const year = date.getFullYear();
+    
+    return `${weekday}, ${month} ${day}, ${year}`;
   };
 
-  // Check status of a specific 15-minute slot
-  const getSlotStatus = (date: Date, timeSlot: string): 'available' | 'booked' | 'blocked' | 'empty' => {
-    const [hour, minute] = timeSlot.split(':').map(Number);
-    const slotStart = new Date(date);
-    slotStart.setHours(hour, minute, 0, 0);
-    const slotEnd = new Date(slotStart);
-    slotEnd.setMinutes(slotStart.getMinutes() + 15);
-
-    // First, check if there's a booking for this slot
-    for (const booking of bookings) {
-      if (!booking.date || !booking.time) continue;
-
-      const bookingDate = new Date(booking.date);
-      const [bookingHour, bookingMinute] = booking.time.split(':').map(Number);
-      const bookingStart = new Date(bookingDate);
-      bookingStart.setHours(bookingHour, bookingMinute, 0, 0);
-      const bookingEnd = new Date(bookingStart);
-      bookingEnd.setMinutes(bookingStart.getMinutes() + (booking.duration || 60));
-
-      // Check if this 15-min slot overlaps with the booking
-      if (slotStart < bookingEnd && slotEnd > bookingStart) {
-        return 'booked';
-      }
-    }
-
-    // Then check if there's an availability block
-    for (const block of availabilityBlocks) {
-      const blockStart = new Date(block.startDateTime);
-      const blockEnd = new Date(block.endDateTime);
-
-      // Check if this 15-min slot overlaps with the block
-      if (slotStart < blockEnd && slotEnd > blockStart) {
-        // If block is marked as not available (blocked time), show as blocked
-        return block.isAvailable ? 'available' : 'blocked';
-      }
-    }
-
-    return 'empty';
+  const translateReason = (reason: string) => {
+    // Map common English reasons to translation keys
+    const reasonMapping: { [key: string]: string } = {
+      'Personal appointment': 'schedule.personalAppointment',
+    };
+    
+    return reasonMapping[reason] ? t(reasonMapping[reason]) : reason;
   };
 
-  const getBlocksForCell = (date: Date, hour: number): CalendarBlock[] => {
-    return availabilityBlocks.filter(block => {
-      const blockStart = new Date(block.startDateTime);
-      const blockEnd = new Date(block.endDateTime);
-
-      // Compare using local date components (not ISO/UTC)
-      const blockYear = blockStart.getFullYear();
-      const blockMonth = blockStart.getMonth();
-      const blockDay = blockStart.getDate();
-
-      const cellYear = date.getFullYear();
-      const cellMonth = date.getMonth();
-      const cellDay = date.getDate();
-
-      // First check if the block is on the same day (local time)
-      if (blockYear !== cellYear || blockMonth !== cellMonth || blockDay !== cellDay) {
-        return false;
-      }
-
-      // Then check if the block overlaps with this hour (local time)
-      const blockHour = blockStart.getHours();
-      const blockEndHour = blockEnd.getHours();
-      const blockEndMinute = blockEnd.getMinutes();
-
-      // Block overlaps with hour if:
-      // - Block starts in this hour, OR
-      // - Block ends in this hour (and not exactly at hour:00), OR
-      // - Block spans across this hour
-      return (blockHour === hour) ||
-             (blockEndHour === hour && blockEndMinute > 0) ||
-             (blockHour < hour && (blockEndHour > hour || (blockEndHour === hour && blockEndMinute > 0)));
-    });
-  };
-
-  const toggleHourExpanded = (dayIndex: number, hour: number) => {
-    const key = `${dayIndex}-${hour}`;
-    setExpandedHours(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-  };
-
-  const isHourExpanded = (dayIndex: number, hour: number): boolean => {
-    const key = `${dayIndex}-${hour}`;
-    return !!expandedHours[key];
-  };
-
-  const getHourSummary = (day: Date, hour: number) => {
-    const blocks = getBlocksForCell(day, hour);
-    const availableCount = blocks.filter(b => b.isAvailable).length;
-    const blockedCount = blocks.filter(b => !b.isAvailable).length;
-    const totalCount = blocks.length;
-
-    // Also check if there are any bookings for this hour
-    const hasBookings = bookings.some(booking => {
-      if (!booking.date || !booking.time) return false;
-      const bookingDate = new Date(booking.date);
-      const [bookingHour] = booking.time.split(':').map(Number);
-      return bookingDate.toDateString() === day.toDateString() && bookingHour === hour;
-    });
-
-    return { availableCount, blockedCount, totalCount, hasBookings };
+  const getUpcomingSlots = () => {
+    const today = new Date().toISOString().split('T')[0];
+    return timeSlots.filter(slot => slot.date >= today).slice(0, 10);
   };
 
   if (loading) {
     return (
-      <FullScreenHandshakeLoader
-        title={t('schedule.loadingTitle') || 'Loading schedule'}
+      <FullScreenHandshakeLoader 
+        title={t('schedule.loadingTitle') || 'Loading schedule'} 
         subtitle={t('schedule.loadingSubtitle') || 'Preparing your availability'}
       />
     );
   }
 
-  return (
-    <div className="p-2 sm:p-4 md:p-6 w-full overflow-hidden">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-6">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">{t('dashboard.nav.schedule')}</h1>
-          <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm md:text-base">{t('schedule.subtitle')}</p>
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-xl mb-4">Error loading schedule</div>
+          <p className="text-gray-600 dark:text-gray-400">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+          >
+            Retry
+          </button>
         </div>
-        <button
-          onClick={() => {
-            setPreSelectedDate(undefined);
-            setPreSelectedTime(undefined);
-            setEditingBlock(null);
-            setShowAddModal(true);
-          }}
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard.nav.schedule')}</h1>
+          <p className="text-gray-600 dark:text-gray-400">{t('schedule.subtitle')}</p>
+        </div>
+        <button 
+          onClick={() => setShowAddModal(true)}
           disabled={operationInProgress}
           className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-colors ${
-            operationInProgress
-              ? 'bg-gray-400 cursor-not-allowed'
+            operationInProgress 
+              ? 'bg-gray-400 cursor-not-allowed' 
               : 'bg-primary-600 hover:bg-primary-700'
-          } text-white whitespace-nowrap`}
+          } text-white`}
         >
           {operationInProgress && (
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
           )}
           <PlusIcon className="w-5 h-5" />
-          <span className="hidden sm:inline">{t('schedule.addTime')}</span>
-          <span className="sm:hidden">Add</span>
+          <span>{t('schedule.addTime')}</span>
         </button>
       </div>
 
@@ -764,10 +762,12 @@ const SpecialistSchedule: React.FC = () => {
         <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg">
           <div className="flex">
             <div className="flex-shrink-0">
-              <XMarkIcon className="h-5 w-5 text-red-400" />
+              <XMarkIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">{t('common.error') || 'Ошибка'}</h3>
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                Error
+              </h3>
               <div className="mt-2 text-sm text-red-700 dark:text-red-300">
                 <p>{error}</p>
               </div>
@@ -777,7 +777,7 @@ const SpecialistSchedule: React.FC = () => {
                   onClick={() => setError(null)}
                   className="text-sm font-medium text-red-800 dark:text-red-200 hover:text-red-600 dark:hover:text-red-400"
                 >
-                  {t('common.dismiss') || 'Закрыть'}
+                  Dismiss
                 </button>
               </div>
             </div>
@@ -785,35 +785,29 @@ const SpecialistSchedule: React.FC = () => {
         </div>
       )}
 
-      {/* Generate from Working Hours Prompt */}
-      {showGeneratePrompt && (
-        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+      {/* Offline Mode Warning */}
+      {isOfflineMode && (
+        <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
           <div className="flex">
             <div className="flex-shrink-0">
-              <CalendarIcon className="h-5 w-5 text-blue-400" />
+              <svg className="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
             </div>
-            <div className="ml-3 flex-1">
-              <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                {t('schedule.generatePromptTitle') || 'Автоматически создать расписание'}
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                Offline Mode
               </h3>
-              <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
-                <p>{t('schedule.generatePromptMessage') || 'У вас настроены рабочие часы, но нет доступных слотов. Хотите автоматически создать расписание на основе ваших рабочих часов?'}</p>
+              <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
+                <p>Schedule loaded from local data. Changes will sync when connection is restored.</p>
               </div>
-              <div className="mt-3 flex items-center space-x-3">
+              <div className="mt-3">
                 <button
                   type="button"
-                  onClick={handleGenerateFromWorkingHours}
-                  disabled={operationInProgress}
-                  className="text-sm font-medium text-blue-800 dark:text-blue-200 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-50"
+                  onClick={() => window.location.reload()}
+                  className="text-sm font-medium text-yellow-800 dark:text-yellow-200 hover:text-yellow-600 dark:hover:text-yellow-400"
                 >
-                  {operationInProgress ? (t('common.loading') || 'Загрузка...') : (t('schedule.generateButton') || 'Создать расписание')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowGeneratePrompt(false)}
-                  className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-                >
-                  {t('common.cancel') || 'Отмена'}
+                  Retry Connection
                 </button>
               </div>
             </div>
@@ -821,317 +815,165 @@ const SpecialistSchedule: React.FC = () => {
         </div>
       )}
 
-      {/* Week Navigation */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
-        <div className="flex items-center space-x-2 sm:space-x-4">
-          <button
-            onClick={goToPreviousWeek}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            <ChevronLeftIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          </button>
-          <div className="text-center">
-            <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
-              {getFormattedDateRange(weekDays[0], weekDays[6])}
-            </h2>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center">
+            <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+              <CheckIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('schedule.availableSlots')}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                {timeSlots.filter(slot => slot.isAvailable).length}
+              </p>
+            </div>
           </div>
-          <button
-            onClick={goToNextWeek}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            <ChevronRightIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          </button>
         </div>
-        <button
-          onClick={goToToday}
-          className="px-4 py-2 bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 rounded-lg hover:bg-primary-200 dark:hover:bg-primary-900/40 transition-colors font-medium text-sm"
-        >
-          {t('schedule.today') || 'Сегодня'}
-        </button>
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center">
+            <div className="p-3 bg-red-100 dark:bg-red-900 rounded-lg">
+              <XMarkIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('schedule.blockedSlots')}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                {timeSlots.filter(slot => !slot.isAvailable).length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center">
+            <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+              <CalendarIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('schedule.totalSlots')}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{timeSlots.length}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Calendar - Card Based Design */}
-      <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
-        {weekDays.map((day, dayIndex) => {
-          const isToday = day.toDateString() === new Date().toDateString();
-          const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-          const dayName = dayNames[day.getDay()];
-          const dayLabel = t(`weekday.${dayName}`) || day.toLocaleDateString('en-US', { weekday: 'long' });
-
-          return (
-            <div key={dayIndex} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
-              {/* Day Header */}
-              <div className={`p-4 border-b border-gray-200 dark:border-gray-700 ${
-                isToday ? 'bg-primary-50 dark:bg-primary-900/20' : ''
-              }`}>
-                <div className={`text-sm font-medium ${
-                  isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400'
-                }`}>
-                  {dayLabel}
-                </div>
-                <div className={`text-2xl font-bold ${
-                  isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-900 dark:text-white'
-                }`}>
-                  {day.getDate()}
-                </div>
-              </div>
-
-              {/* Hour Cards */}
-              <div className="divide-y divide-gray-100 dark:divide-gray-700 max-h-[600px] overflow-y-auto">
-                {timeSlots.map(hour => {
-                  const { availableCount, blockedCount, totalCount, hasBookings } = getHourSummary(day, hour);
-                  const blocks = getBlocksForCell(day, hour);
-                  const expanded = isHourExpanded(dayIndex, hour);
-                  const isPast = new Date(new Date(day).setHours(hour, 0, 0, 0)) < new Date();
-
-                  // Only show hours that have availability blocks OR bookings
-                  // Don't show completely empty hours
-                  if (totalCount === 0 && !hasBookings) return null;
-
-                  return (
-                    <div key={hour} className={`${isPast ? 'opacity-50' : ''}`}>
-                      {/* Hour Card Header */}
-                      <button
-                        onClick={() => toggleHourExpanded(dayIndex, hour)}
-                        className="w-full p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors text-left flex items-center justify-between group"
-                      >
-                        <div className="flex items-center space-x-3 flex-1">
-                          <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary-100 dark:bg-primary-900/30">
-                            <ClockIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                              {`${hour.toString().padStart(2, '0')}:00`}
-                            </div>
-                            <div className="flex items-center space-x-3 mt-1">
-                              {totalCount === 0 ? (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                                  {t('schedule.noSlotsClickToAdd') || 'Click to add availability'}
-                                </span>
-                              ) : (
-                                <>
-                                  {availableCount > 0 && (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
-                                      <CheckIcon className="w-3 h-3 mr-1" />
-                                      {availableCount}
-                                    </span>
-                                  )}
-                                  {blockedCount > 0 && (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
-                                      <XMarkIcon className="w-3 h-3 mr-1" />
-                                      {blockedCount}
-                                    </span>
-                                  )}
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="ml-2">
-                          {expanded ? (
-                            <ChevronUpIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
-                          ) : (
-                            <ChevronDownIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
-                          )}
-                        </div>
-                      </button>
-
-                      {/* Expanded Time Slots - Show 15-minute blocks */}
-                      {expanded && (
-                        <div className="px-4 pb-4 bg-gray-50 dark:bg-gray-900/30">
-                          <div className="grid grid-cols-4 gap-2">
-                            {[0, 15, 30, 45].map(minute => {
-                              const timeSlot = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-                              const status = getSlotStatus(day, timeSlot);
-                              const isPastSlot = new Date(new Date(day).setHours(hour, minute)) < new Date();
-
-                              return (
-                                <button
-                                  key={timeSlot}
-                                  onClick={() => {
-                                    setPreSelectedDate(day);
-                                    setPreSelectedTime(timeSlot);
-                                    setEditingBlock(null);
-                                    setShowAddModal(true);
-                                  }}
-                                  disabled={isPastSlot || status === 'booked'}
-                                  className={`p-3 rounded-lg text-sm font-medium transition-all ${
-                                    isPastSlot
-                                      ? 'opacity-40 cursor-not-allowed bg-gray-200 dark:bg-gray-700'
-                                      : status === 'booked'
-                                      ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-2 border-red-400 dark:border-red-600 cursor-not-allowed'
-                                      : status === 'available'
-                                      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/50 border-2 border-green-300 dark:border-green-700'
-                                      : status === 'blocked'
-                                      ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 hover:bg-orange-200 dark:hover:bg-orange-900/50 border-2 border-orange-300 dark:border-orange-700'
-                                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 border-2 border-dashed border-gray-300 dark:border-gray-500'
-                                  }`}
-                                >
-                                  <div className="text-center">
-                                    <div className="font-semibold">{timeSlot}</div>
-                                    <div className="text-xs mt-1">
-                                      {status === 'booked' && '🔒 Booked'}
-                                      {status === 'available' && '✓ Available'}
-                                      {status === 'blocked' && '⊘ Unavailable'}
-                                      {status === 'empty' && '+ Add'}
-                                    </div>
-                                  </div>
-                                </button>
-                              );
-                            })}
-                          </div>
-                          {/* Show existing blocks list below for reference */}
-                          {blocks.length > 0 && (
-                            <div className="mt-4 space-y-2">
-                              {blocks.map(block => {
-                            const blockStart = new Date(block.startDateTime);
-                            const blockEnd = new Date(block.endDateTime);
-
-                            return (
-                              <div
-                                key={block.id}
-                                className={`p-3 rounded-lg border-2 transition-all hover:shadow-md ${
-                                  block.isAvailable
-                                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                                    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                                }`}
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex-1">
-                                    <div className={`text-sm font-medium ${
-                                      block.isAvailable
-                                        ? 'text-green-900 dark:text-green-100'
-                                        : 'text-red-900 dark:text-red-100'
-                                    }`}>
-                                      {blockStart.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
-                                      {' - '}
-                                      {blockEnd.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
-                                    </div>
-                                    {block.reason && (
-                                      <div className={`text-xs mt-1 ${
-                                        block.isAvailable
-                                          ? 'text-green-700 dark:text-green-300'
-                                          : 'text-red-700 dark:text-red-300'
-                                      }`}>
-                                        {block.reason}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="flex items-center space-x-2 ml-3">
-                                    <button
-                                      onClick={() => openEditModal(block)}
-                                      className={`p-2 rounded-lg transition-colors ${
-                                        block.isAvailable
-                                          ? 'hover:bg-green-200 dark:hover:bg-green-800 text-green-700 dark:text-green-300'
-                                          : 'hover:bg-red-200 dark:hover:bg-red-800 text-red-700 dark:text-red-300'
-                                      }`}
-                                      aria-label="Edit time slot"
-                                    >
-                                      <PencilIcon className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                      onClick={() => handleDeleteTimeSlot(block.id)}
-                                      disabled={operationInProgress}
-                                      className={`p-2 rounded-lg transition-colors ${
-                                        block.isAvailable
-                                          ? 'hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400'
-                                          : 'hover:bg-red-200 dark:hover:bg-red-800 text-red-700 dark:text-red-300'
-                                      } disabled:opacity-50`}
-                                      aria-label="Delete time slot"
-                                    >
-                                      <TrashIcon className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Add Time for This Day */}
-              <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                <button
-                  onClick={() => {
-                    setPreSelectedDate(day);
-                    setPreSelectedTime('09:00');
-                    setEditingBlock(null);
-                    setShowAddModal(true);
-                  }}
-                  disabled={operationInProgress}
-                  className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors disabled:opacity-50"
+      {/* Schedule List */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('schedule.upcomingSchedule')}</h2>
+        </div>
+        
+        <div className="p-6">
+          {getUpcomingSlots().length === 0 ? (
+            <div className="text-center py-8">
+              <CalendarIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('schedule.noScheduleSet')}</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                {t('schedule.noScheduleDescription')}
+              </p>
+              <button 
+                onClick={() => setShowAddModal(true)}
+                className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+              >
+                <PlusIcon className="w-5 h-5 mr-2" />
+                {t('schedule.addFirstSlot')}
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {getUpcomingSlots().map((slot) => (
+                <div 
+                  key={slot.id}
+                  className={`p-4 rounded-lg border-2 ${
+                    slot.isAvailable 
+                      ? 'border-green-200 bg-green-50 dark:border-green-700 dark:bg-green-900/20' 
+                      : 'border-red-200 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
+                  }`}
                 >
-                  <PlusIcon className="w-4 h-4" />
-                  <span className="text-sm font-medium">Add Time</span>
-                </button>
-              </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className={`p-2 rounded-lg ${
+                        slot.isAvailable 
+                          ? 'bg-green-100 dark:bg-green-800' 
+                          : 'bg-red-100 dark:bg-red-800'
+                      }`}>
+                        {slot.isAvailable ? (
+                          <CheckIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
+                        ) : (
+                          <XMarkIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <h3 className="font-medium text-gray-900 dark:text-white">
+                            {formatDate(slot.date)}
+                          </h3>
+                          {slot.isRecurring && (
+                            <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs rounded-full">
+                              {t('schedule.recurring')}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <ClockIcon className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {slot.startTime} - {slot.endTime}
+                          </span>
+                        </div>
+                        {slot.reason && (
+                          <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                            {translateReason(slot.reason)}
+                          </p>
+                        )}
+                        {slot.isRecurring && slot.recurringDays && (
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            {t('schedule.repeats')}: {slot.recurringDays.map(day => t(`schedule.${day}`)).join(', ')}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => openEditModal(slot)}
+                        disabled={operationInProgress}
+                        className={`p-2 rounded-lg transition-colors ${
+                          operationInProgress
+                            ? 'text-gray-300 cursor-not-allowed'
+                            : 'text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                        }`}
+                      >
+                        <PencilIcon className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTimeSlot(slot.id)}
+                        disabled={operationInProgress}
+                        className={`p-2 rounded-lg transition-colors ${
+                          operationInProgress
+                            ? 'text-gray-300 cursor-not-allowed'
+                            : 'text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
+                        }`}
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          );
-        })}
+          )}
+        </div>
       </div>
 
-      {/* Stats Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-              <CheckIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
-            </div>
-            <div className="ml-3">
-              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">{t('schedule.availableSlots')}</p>
-              <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
-                {availabilityBlocks.filter(b => b.isAvailable).length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-          <div className="flex items-center">
-            <div className="p-2 bg-red-100 dark:bg-red-900 rounded-lg">
-              <XMarkIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
-            </div>
-            <div className="ml-3">
-              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">{t('schedule.blockedSlots')}</p>
-              <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
-                {availabilityBlocks.filter(b => !b.isAvailable).length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm col-span-2 sm:col-span-1">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-              <CalendarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div className="ml-3">
-              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">{t('schedule.totalSlots')}</p>
-              <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">{availabilityBlocks.length}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Add/Edit Modal */}
+      {/* Add/Edit Time Modal */}
       <AddTimeModal
         isOpen={showAddModal}
         onClose={() => {
           setShowAddModal(false);
-          setEditingBlock(null);
-          setPreSelectedDate(undefined);
-          setPreSelectedTime(undefined);
+          setEditingSlot(null);
         }}
-        onSave={editingBlock ? handleEditTimeSlot : handleAddTimeSlot}
-        editingBlock={editingBlock}
-        preSelectedDate={preSelectedDate}
-        preSelectedTime={preSelectedTime}
+        onSave={editingSlot ? handleEditTimeSlot : handleAddTimeSlot}
+        editingSlot={editingSlot}
       />
     </div>
   );
