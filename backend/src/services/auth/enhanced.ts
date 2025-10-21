@@ -119,12 +119,7 @@ export class EnhancedAuthService {
       // Hash password
       const hashedPassword = await bcrypt.hash(data.password, config.security.bcryptRounds);
 
-      // Calculate 3-month trial period
-      const trialStartDate = new Date();
-      const trialEndDate = new Date();
-      trialEndDate.setMonth(trialEndDate.getMonth() + 3); // Add 3 months
-
-      // Create user (unverified) with 3-month trial period
+      // Create user (unverified)
       const user = await prisma.user.create({
         data: {
           email: data.email,
@@ -136,10 +131,6 @@ export class EnhancedAuthService {
           telegramId: data.telegramId,
           isEmailVerified: false, // Start as unverified
           language: (data as any).language || 'en',
-          // Free 3-month trial period
-          trialStartDate,
-          trialEndDate,
-          isInTrial: true,
         },
         select: {
           id: true,
@@ -615,12 +606,7 @@ export class EnhancedAuthService {
         // Validate userType
         const validUserType = userType.toUpperCase() === 'SPECIALIST' ? 'SPECIALIST' : 'CUSTOMER';
 
-        // Calculate 3-month trial period
-        const trialStartDate = new Date();
-        const trialEndDate = new Date();
-        trialEndDate.setMonth(trialEndDate.getMonth() + 3); // Add 3 months
-
-        // Create new user from Google data with 3-month trial period
+        // Create new user from Google data
         user = await prisma.user.create({
           data: {
             email: googleData.email,
@@ -630,10 +616,6 @@ export class EnhancedAuthService {
             userType: validUserType,
             isEmailVerified: googleData.verified_email,
             isActive: true,
-            // Free 3-month trial period
-            trialStartDate,
-            trialEndDate,
-            isInTrial: true,
           },
           select: {
             id: true,
@@ -837,11 +819,6 @@ export class EnhancedAuthService {
         // Create new user from Telegram data
         const email = `telegram_${telegramData.telegramId}@miyzapis.com`;
 
-        // Calculate 3-month trial period
-        const trialStartDate = new Date();
-        const trialEndDate = new Date();
-        trialEndDate.setMonth(trialEndDate.getMonth() + 3); // Add 3 months
-
         user = await prisma.user.create({
           data: {
             email,
@@ -851,10 +828,6 @@ export class EnhancedAuthService {
             telegramId: telegramData.telegramId,
             isEmailVerified: false, // Telegram users don't have email verification
             isActive: true,
-            // Free 3-month trial period
-            trialStartDate,
-            trialEndDate,
-            isInTrial: true,
           },
           select: {
             id: true,
