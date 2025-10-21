@@ -18,6 +18,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import EnhancedGoogleSignIn from '@/components/auth/EnhancedGoogleSignIn';
 import TelegramLogin from '@/components/auth/TelegramLogin';
+import { environment } from '@/config/environment';
 import { getPasswordValidationRules, getConfirmPasswordValidationRules } from '@/utils/passwordValidation';
 
 interface RegisterFormData {
@@ -146,7 +147,7 @@ const RegisterPage: React.FC = () => {
       </div>
 
 {/* Social Registration - only show if Google is configured (Telegram temporarily disabled) */}
-      {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
+      {environment.GOOGLE_AUTH_ENABLED && (
         <div className="space-y-4">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">

@@ -230,7 +230,7 @@ const LoginPage: React.FC = () => {
         </div>
 
 {/* Social login - only show if Google is configured (Telegram temporarily disabled) */}
-        {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
+        {environment.GOOGLE_AUTH_ENABLED && (
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">

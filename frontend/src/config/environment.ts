@@ -20,6 +20,8 @@ export const environment: Environment = {
   WS_URL: import.meta.env.VITE_WS_URL || 'wss://huddle-backend-production.up.railway.app',
   STRIPE_PUBLISHABLE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || null,
   GOOGLE_MAPS_API_KEY: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+  GOOGLE_CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+  GOOGLE_AUTH_ENABLED: Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID),
   APP_NAME: sanitizeBrandName(import.meta.env.VITE_APP_NAME),
   APP_VERSION: import.meta.env.VITE_APP_VERSION || '1.0.0',
   APP_URL: import.meta.env.VITE_APP_URL || 'http://localhost:3000',
@@ -29,6 +31,7 @@ export const environment: Environment = {
   ENABLE_ANALYTICS: import.meta.env.VITE_ENABLE_ANALYTICS === 'true',
   ENABLE_TELEGRAM_INTEGRATION: import.meta.env.VITE_ENABLE_TELEGRAM_INTEGRATION === 'true',
   DEBUG: import.meta.env.VITE_DEBUG === 'true',
+  MOCK_API: import.meta.env.VITE_MOCK_API === 'true',
   // All data comes from backend API - no mock data used
 };
 

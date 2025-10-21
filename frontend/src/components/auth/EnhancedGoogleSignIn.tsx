@@ -3,6 +3,7 @@ import { useAppDispatch } from '@/hooks/redux';
 import { googleLogin } from '@/store/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
 import UserTypeSelectionModal from './UserTypeSelectionModal';
+import { environment } from '@/config/environment';
 
 interface EnhancedGoogleSignInProps {
   onSuccess?: () => void;
@@ -23,7 +24,7 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const clientId = environment.GOOGLE_CLIENT_ID;
   
   const [showUserTypeModal, setShowUserTypeModal] = useState(false);
   const [pendingGoogleData, setPendingGoogleData] = useState<any>(null);

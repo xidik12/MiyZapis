@@ -637,8 +637,10 @@ export interface RouteConfig {
 export interface Environment {
   API_URL: string;
   WS_URL: string;
-  STRIPE_PUBLISHABLE_KEY: string;
+  STRIPE_PUBLISHABLE_KEY: string | null;
   GOOGLE_MAPS_API_KEY?: string;
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_AUTH_ENABLED: boolean;
   APP_NAME: string;
   APP_VERSION: string;
   APP_URL: string;
