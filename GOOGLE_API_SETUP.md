@@ -10,7 +10,7 @@ Your Panhaha app uses these Google APIs:
 ## Current Setup
 
 From your error logs, I can see:
-- **Google Client ID**: `426771384730-qv95spl1avpo5k5dbl6j3jmcnn1g05ct.apps.googleusercontent.com`
+- **Google Client ID**: `173408809843-mlv9rn3c95rlf1n4bumk937nqvqk3md0.apps.googleusercontent.com`
 - **Error**: "The given origin is not allowed for the given client ID"
 
 This means your Google OAuth is partially set up but missing authorized domains.
@@ -23,12 +23,12 @@ This means your Google OAuth is partially set up but missing authorized domains.
 
 **Frontend Environment Variable:**
 ```bash
-VITE_GOOGLE_CLIENT_ID=426771384730-qv95spl1avpo5k5dbl6j3jmcnn1g05ct.apps.googleusercontent.com
+VITE_GOOGLE_CLIENT_ID=173408809843-mlv9rn3c95rlf1n4bumk937nqvqk3md0.apps.googleusercontent.com
 ```
 
 **Backend Environment Variables:**
 ```bash
-GOOGLE_CLIENT_ID=426771384730-qv95spl1avpo5k5dbl6j3jmcnn1g05ct.apps.googleusercontent.com
+GOOGLE_CLIENT_ID=173408809843-mlv9rn3c95rlf1n4bumk937nqvqk3md0.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your_google_client_secret_here
 ```
 
@@ -154,7 +154,7 @@ Go to Railway → **Frontend Service** → **Variables** → Add:
 
 ```bash
 # Google OAuth (REQUIRED for "Sign in with Google")
-VITE_GOOGLE_CLIENT_ID=426771384730-qv95spl1avpo5k5dbl6j3jmcnn1g05ct.apps.googleusercontent.com
+VITE_GOOGLE_CLIENT_ID=173408809843-mlv9rn3c95rlf1n4bumk937nqvqk3md0.apps.googleusercontent.com
 
 # Google Maps (OPTIONAL - only if you want maps)
 VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
@@ -166,7 +166,7 @@ Go to Railway → **Backend Service** → **Variables** → Add:
 
 ```bash
 # Google OAuth (REQUIRED for "Sign in with Google")
-GOOGLE_CLIENT_ID=426771384730-qv95spl1avpo5k5dbl6j3jmcnn1g05ct.apps.googleusercontent.com
+GOOGLE_CLIENT_ID=173408809843-mlv9rn3c95rlf1n4bumk937nqvqk3md0.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=GOCSPX-your_actual_secret_here
 
 # Google Maps (OPTIONAL - only if you want maps)
@@ -233,12 +233,12 @@ GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
 
 **Frontend Railway Variables:**
 ```bash
-VITE_GOOGLE_CLIENT_ID=426771384730-qv95spl1avpo5k5dbl6j3jmcnn1g05ct.apps.googleusercontent.com
+VITE_GOOGLE_CLIENT_ID=173408809843-mlv9rn3c95rlf1n4bumk937nqvqk3md0.apps.googleusercontent.com
 ```
 
 **Backend Railway Variables:**
 ```bash
-GOOGLE_CLIENT_ID=426771384730-qv95spl1avpo5k5dbl6j3jmcnn1g05ct.apps.googleusercontent.com
+GOOGLE_CLIENT_ID=173408809843-mlv9rn3c95rlf1n4bumk937nqvqk3md0.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=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
 ```
 
