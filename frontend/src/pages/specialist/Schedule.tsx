@@ -225,11 +225,11 @@ const Schedule: React.FC = () => {
     try {
       setLoading(true);
       const dateStr = formatDateForAPI(selectedDate);
-      
+
       // Create datetime in local Cambodia timezone
       const startDateTime = new Date(`${dateStr}T${formData.startTime}:00`);
       const endDateTime = new Date(`${dateStr}T${formData.endTime}:00`);
-      
+
       const data = {
         startDateTime: startDateTime.toISOString(),
         endDateTime: endDateTime.toISOString(),
@@ -244,6 +244,28 @@ const Schedule: React.FC = () => {
     } catch (err: any) {
       console.error('Error saving availability:', err);
       setError(err.message || 'Failed to save availability');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleRegenerateAvailability() {
+    if (!user?.id) return;
+
+    if (!confirm('This will delete all existing availability blocks and recreate them from your business hours. Continue?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('🔄 Regenerating availability blocks from business hours...');
+      await specialistService.generateAvailabilityFromWorkingHours();
+      console.log('✅ Availability blocks regenerated successfully');
+      await loadScheduleData();
+    } catch (err: any) {
+      console.error('❌ Error regenerating availability:', err);
+      setError(err.message || 'Failed to regenerate availability');
     } finally {
       setLoading(false);
     }
@@ -340,12 +362,21 @@ const Schedule: React.FC = () => {
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {weekSchedule.length > 0 && `${formatDateForAPI(weekSchedule[0].date)} - ${formatDateForAPI(weekSchedule[6].date)}`}
               </h2>
-              <button
-                onClick={goToToday}
-                className="text-sm text-primary-600 dark:text-primary-400 hover:underline mt-1"
-              >
-                {t('schedule.today') || 'Today'}
-              </button>
+              <div className="flex items-center justify-center gap-4 mt-1">
+                <button
+                  onClick={goToToday}
+                  className="text-sm text-primary-600 dark:text-primary-400 hover:underline"
+                >
+                  {t('schedule.today') || 'Today'}
+                </button>
+                <button
+                  onClick={handleRegenerateAvailability}
+                  disabled={loading}
+                  className="text-sm bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white px-3 py-1 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  🔄 Regenerate from Business Hours
+                </button>
+              </div>
             </div>
 
             <button
