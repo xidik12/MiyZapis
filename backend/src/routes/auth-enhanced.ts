@@ -272,9 +272,18 @@ router.post('/google', validateGoogleAuth, async (req, res) => {
 
     res.json(createSuccessResponse(result));
   } catch (error: any) {
-    logger.error('Google authentication error:', error);
+    logger.error('Google authentication error:', {
+      error: error.message,
+      stack: error.stack,
+      googleEmail: payload?.email,
+      userType,
+      requestId: req.id
+    });
+
+    // Return more specific error message
+    const errorMessage = error.message || 'Google authentication failed';
     res.status(500).json(
-      createErrorResponse('GOOGLE_AUTH_FAILED', 'Google authentication failed', req.id)
+      createErrorResponse('GOOGLE_AUTH_FAILED', errorMessage, req.id)
     );
   }
 });
