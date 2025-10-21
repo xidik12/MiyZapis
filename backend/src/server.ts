@@ -29,7 +29,7 @@ import { enhancedTelegramBot } from '@/services/telegram/enhanced-bot';
 import { startBookingReminderWorker } from '@/workers/bookingReminderWorker';
 import { subscriptionWorker } from '@/workers/subscription.worker';
 
-// Create Express app
+// Create Express app with enhanced security and CORS support
 const app = express();
 
 // Trust proxy in production
