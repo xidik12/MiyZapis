@@ -161,6 +161,14 @@ const Schedule: React.FC = () => {
 
       const blocks = await specialistService.getAvailabilityBlocks(startDate, endDate, 1000);
       console.log('📦 Loaded availability blocks:', blocks);
+      console.log('📦 Block details:', blocks.map(b => ({
+        id: b.id,
+        start: b.startDateTime,
+        end: b.endDateTime,
+        isAvailable: b.isAvailable,
+        startLocal: new Date(b.startDateTime).toLocaleString(),
+        endLocal: new Date(b.endDateTime).toLocaleString()
+      })));
       setAvailabilityBlocks(Array.isArray(blocks) ? blocks : []);
 
       const bookingsData = await bookingService.getBookings({
