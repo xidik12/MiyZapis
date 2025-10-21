@@ -143,9 +143,9 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
-        <div className="p-4 sm:p-6">
+    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg mx-auto my-8 max-h-[calc(100vh-4rem)] overflow-y-auto">
+        <div className="p-6">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               {editingBlock ? t('schedule.editTimeSlot') : t('schedule.addTimeSlot')}
@@ -168,12 +168,12 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                 type="date"
                 value={formData.date}
                 onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                className="w-full px-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base touch-manipulation"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base"
                 required
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('schedule.startTime')}
@@ -182,7 +182,7 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                   type="time"
                   value={formData.startTime}
                   onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
-                  className="w-full px-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base touch-manipulation"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base"
                   required
                 />
               </div>
@@ -194,21 +194,21 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                   type="time"
                   value={formData.endTime}
                   onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
-                  className="w-full px-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base touch-manipulation"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="flex items-center cursor-pointer py-2 touch-manipulation">
+              <label className="flex items-center cursor-pointer py-3">
                 <input
                   type="checkbox"
                   checked={formData.isAvailable}
                   onChange={(e) => setFormData(prev => ({ ...prev, isAvailable: e.target.checked }))}
-                  className="w-5 h-5 sm:w-4 sm:h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 touch-manipulation"
+                  className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                 />
-                <span className="ml-3 sm:ml-2 text-sm text-gray-700 dark:text-gray-300">{t('schedule.availableForBooking')}</span>
+                <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">{t('schedule.availableForBooking')}</span>
               </label>
             </div>
 
@@ -222,20 +222,20 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                   value={formData.reason}
                   onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
                   placeholder={t('schedule.reasonPlaceholder')}
-                  className="w-full px-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base touch-manipulation"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base"
                 />
               </div>
             )}
 
             <div>
-              <label className="flex items-center cursor-pointer py-2 touch-manipulation">
+              <label className="flex items-center cursor-pointer py-3">
                 <input
                   type="checkbox"
                   checked={formData.isRecurring}
                   onChange={(e) => setFormData(prev => ({ ...prev, isRecurring: e.target.checked }))}
-                  className="w-5 h-5 sm:w-4 sm:h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 touch-manipulation"
+                  className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                 />
-                <span className="ml-3 sm:ml-2 text-sm text-gray-700 dark:text-gray-300">{t('schedule.repeatWeekly')}</span>
+                <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">{t('schedule.repeatWeekly')}</span>
               </label>
             </div>
 
@@ -244,33 +244,33 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('schedule.repeatOnDays')}
                 </label>
-                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {weekDays.map(day => (
-                    <label key={day.key} className="flex items-center cursor-pointer py-1 touch-manipulation">
+                    <label key={day.key} className="flex items-center cursor-pointer py-2">
                       <input
                         type="checkbox"
                         checked={formData.recurringDays.includes(day.key)}
                         onChange={() => toggleRecurringDay(day.key)}
-                        className="w-5 h-5 sm:w-4 sm:h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 touch-manipulation"
+                        className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                       />
-                      <span className="ml-3 sm:ml-2 text-sm text-gray-700 dark:text-gray-300">{t(`schedule.${day.key}`)}</span>
+                      <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">{t(`schedule.${day.key}`)}</span>
                     </label>
                   ))}
                 </div>
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 transition-colors font-medium touch-manipulation"
+                className="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
               >
                 {t('schedule.cancel')}
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-3 sm:py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 active:bg-primary-800 transition-colors font-medium touch-manipulation"
+                className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
               >
                 {editingBlock ? t('schedule.update') : t('schedule.add')}
               </button>
@@ -496,8 +496,11 @@ const SpecialistSchedule: React.FC = () => {
 
     setOperationInProgress(true);
     try {
-      const startDateTime = `${formData.date}T${formData.startTime}:00.000Z`;
-      const endDateTime = `${formData.date}T${formData.endTime}:00.000Z`;
+      // Create local datetime and convert to ISO string (preserves local timezone)
+      const startDate = new Date(`${formData.date}T${formData.startTime}:00`);
+      const endDate = new Date(`${formData.date}T${formData.endTime}:00`);
+      const startDateTime = startDate.toISOString();
+      const endDateTime = endDate.toISOString();
 
       const result = await retryRequest(
         () => specialistService.createAvailabilityBlock({
@@ -539,8 +542,11 @@ const SpecialistSchedule: React.FC = () => {
 
     setOperationInProgress(true);
     try {
-      const startDateTime = `${formData.date}T${formData.startTime}:00.000Z`;
-      const endDateTime = `${formData.date}T${formData.endTime}:00.000Z`;
+      // Create local datetime and convert to ISO string (preserves local timezone)
+      const startDate = new Date(`${formData.date}T${formData.startTime}:00`);
+      const endDate = new Date(`${formData.date}T${formData.endTime}:00`);
+      const startDateTime = startDate.toISOString();
+      const endDateTime = endDate.toISOString();
 
       const result = await retryRequest(
         () => specialistService.updateAvailabilityBlock(editingBlock.id, {
