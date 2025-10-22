@@ -180,6 +180,10 @@ export interface Service extends BaseEntity {
   discountValidFrom?: string;
   discountValidUntil?: string;
   discountDescription?: string;
+  // Group Session fields
+  isGroupSession?: boolean;
+  maxParticipants?: number;
+  minParticipants?: number;
 }
 
 export interface ServiceCategory {
@@ -217,7 +221,11 @@ export interface Booking extends BaseEntity {
   cancellationDeadline?: string;
   cancellationReason?: string;
   rescheduleHistory?: RescheduleRecord[];
-  
+
+  // Group Session fields
+  participantCount?: number;
+  groupSessionId?: string;
+
   // Review information for completed bookings
   review?: {
     id: string;

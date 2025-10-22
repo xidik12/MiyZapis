@@ -58,6 +58,7 @@ const BookingFlow: React.FC = () => {
     totalSlots: number;
   }>>([]);
   const [bookingNotes, setBookingNotes] = useState('');
+  const [participantCount, setParticipantCount] = useState(1);
   const [bookingResult, setBookingResult] = useState<any>(null);
   const [conflictHint, setConflictHint] = useState<{ active: boolean; lastTried?: string }>({ active: false });
   const [loyaltyData, setLoyaltyData] = useState<UserLoyalty | null>(null);
@@ -507,7 +508,8 @@ const BookingFlow: React.FC = () => {
         serviceName: service.name,
         specialistName: specialist.user?.firstName && specialist.user?.lastName
           ? `${specialist.user.firstName} ${specialist.user.lastName}`
-          : specialist.businessName || 'Specialist'
+          : specialist.businessName || 'Specialist',
+        ...(service.isGroupSession && { participantCount })
       };
 
       let depositResult;
@@ -1028,6 +1030,35 @@ const BookingFlow: React.FC = () => {
               </h3>
               
               <div className="space-y-4">
+                {/* Participant Count for Group Sessions */}
+                {service?.isGroupSession && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('booking.participantCount')}
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="number"
+                        min="1"
+                        max={service.maxParticipants || 999}
+                        value={participantCount}
+                        onChange={(e) => setParticipantCount(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                      />
+                      {service.maxParticipants && (
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          {t('booking.participantCountHint', { max: service.maxParticipants })}
+                        </span>
+                      )}
+                    </div>
+                    {service.minParticipants && participantCount < service.minParticipants && (
+                      <p className="mt-1 text-sm text-amber-600 dark:text-amber-400">
+                        {t('booking.minParticipantsWarning', { min: service.minParticipants })}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {t('booking.additionalNotes')}
