@@ -1758,44 +1758,71 @@ const SpecialistProfile: React.FC = () => {
                               </span>
                             </label>
                             {hours.isOpen && (
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="time"
-                                  value={hours.startTime}
-                                  disabled={!isEditing}
-                                  onChange={(e) => {
-                                    if (isEditing) {
-                                      const newBusinessHours = {
-                                        ...profile.businessHours,
-                                        [day]: {
-                                          ...hours,
-                                          startTime: e.target.value
-                                        }
-                                      };
-                                      handleProfileChange('businessHours', newBusinessHours);
-                                    }
-                                  }}
-                                  className="px-2 py-1 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
-                                />
-                                <span className="text-gray-500">-</span>
-                                <input
-                                  type="time"
-                                  value={hours.endTime}
-                                  disabled={!isEditing}
-                                  onChange={(e) => {
-                                    if (isEditing) {
-                                      const newBusinessHours = {
-                                        ...profile.businessHours,
-                                        [day]: {
-                                          ...hours,
-                                          endTime: e.target.value
-                                        }
-                                      };
-                                      handleProfileChange('businessHours', newBusinessHours);
-                                    }
-                                  }}
-                                  className="px-2 py-1 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
-                                />
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="time"
+                                    value={hours.startTime}
+                                    disabled={!isEditing}
+                                    onChange={(e) => {
+                                      if (isEditing) {
+                                        const newBusinessHours = {
+                                          ...profile.businessHours,
+                                          [day]: {
+                                            ...hours,
+                                            startTime: e.target.value
+                                          }
+                                        };
+                                        handleProfileChange('businessHours', newBusinessHours);
+                                      }
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                                  />
+                                  <span className="text-gray-500">-</span>
+                                  <input
+                                    type="time"
+                                    value={hours.endTime}
+                                    disabled={!isEditing}
+                                    onChange={(e) => {
+                                      if (isEditing) {
+                                        const newBusinessHours = {
+                                          ...profile.businessHours,
+                                          [day]: {
+                                            ...hours,
+                                            endTime: e.target.value
+                                          }
+                                        };
+                                        handleProfileChange('businessHours', newBusinessHours);
+                                      }
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                                  />
+                                </div>
+                                {(() => {
+                                  const [startHour, startMinute] = hours.startTime.split(':').map(Number);
+                                  const [endHour, endMinute] = hours.endTime.split(':').map(Number);
+                                  const startMinutes = startHour * 60 + startMinute;
+                                  const endMinutes = endHour * 60 + endMinute;
+                                  const crossesMidnight = endMinutes <= startMinutes;
+
+                                  if (crossesMidnight) {
+                                    return (
+                                      <div className="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-1 mt-1">
+                                        <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                        </svg>
+                                        <span>
+                                          {language === 'uk'
+                                            ? 'Увага: Час роботи перетинає північ. Слоти будуть генеруватися від часу початку до 23:45, а потім від 00:00 до часу закінчення.'
+                                            : language === 'ru'
+                                            ? 'Внимание: Время работы пересекает полночь. Слоты будут генерироваться от времени начала до 23:45, а затем от 00:00 до времени окончания.'
+                                            : 'Warning: Business hours cross midnight. Slots will be generated from start time to 11:45 PM, then from 12:00 AM to end time.'}
+                                        </span>
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                })()}
                               </div>
                             )}
                           </div>
