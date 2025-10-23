@@ -156,7 +156,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
             <div className="flex">
               <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400 mr-2 mt-0.5" />
               <div className="text-sm text-yellow-700 dark:text-yellow-300">
-                {t('referral.expiryWarning', { days: daysUntilExpiry })}
+                {t('referral.expiryWarning').replace('{days}', daysUntilExpiry.toString())}
               </div>
             </div>
           </div>

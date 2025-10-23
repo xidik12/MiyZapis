@@ -364,16 +364,12 @@ export class AvailabilityService {
         throw new Error('INVALID_DATE_RANGE');
       }
 
-      // Check for overlapping blocks
+      // Check for overlapping blocks (allow back-to-back slots)
       const overlappingBlocks = await prisma.availabilityBlock.findMany({
         where: {
           specialistId: data.specialistId,
-          OR: [
-            {
-              startDateTime: { lte: data.endDateTime },
-              endDateTime: { gte: data.startDateTime },
-            },
-          ],
+          startDateTime: { lt: data.endDateTime },
+          endDateTime: { gt: data.startDateTime },
         },
       });
 
@@ -424,6 +420,20 @@ export class AvailabilityService {
 
       if (startDateTime >= endDateTime) {
         throw new Error('INVALID_DATE_RANGE');
+      }
+
+      // Check for overlapping blocks with the new time range (exclude current block)
+      const overlappingBlocks = await prisma.availabilityBlock.findMany({
+        where: {
+          specialistId: existingBlock.specialistId,
+          id: { not: blockId },
+          startDateTime: { lt: endDateTime },
+          endDateTime: { gt: startDateTime },
+        },
+      });
+
+      if (overlappingBlocks.length > 0) {
+        throw new Error('OVERLAPPING_AVAILABILITY_BLOCK');
       }
 
       const updateData: any = {};

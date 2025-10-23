@@ -101,10 +101,10 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Set Your Password
+                  {t('auth.setPasswordModal.title')}
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Secure your account with a strong password
+                  {t('auth.setPasswordModal.subtitle')}
                 </p>
               </div>
             </div>
@@ -122,20 +122,19 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
             {/* Info Message */}
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
               <p className="text-sm text-blue-700 dark:text-blue-300">
-                Since you signed up with Google, you don't currently have a password.
-                Setting a password will enable you to:
+                {t('auth.setPasswordModal.info')}
               </p>
               <ul className="mt-2 text-sm text-blue-600 dark:text-blue-400 list-disc list-inside space-y-1">
-                <li>Reset your password if needed</li>
-                <li>Sign in with email/password as backup</li>
-                <li>Access additional security features</li>
+                <li>{t('auth.setPasswordModal.benefit.reset')}</li>
+                <li>{t('auth.setPasswordModal.benefit.backup')}</li>
+                <li>{t('auth.setPasswordModal.benefit.security')}</li>
               </ul>
             </div>
 
             {/* Password Field */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                New Password
+                {t('auth.setPasswordModal.passwordLabel')}
               </label>
               <div className="relative">
                 <input
@@ -150,7 +149,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
                       ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
                       : ''
                   }`}
-                  placeholder="Enter your new password"
+                  placeholder={t('auth.setPasswordModal.passwordPlaceholder')}
                 />
                 <button
                   type="button"
@@ -185,7 +184,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
             {/* Confirm Password Field */}
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Confirm Password
+                {t('auth.setPasswordModal.confirmLabel')}
               </label>
               <div className="relative">
                 <input
@@ -200,7 +199,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
                       ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
                       : ''
                   }`}
-                  placeholder="Confirm your new password"
+                  placeholder={t('auth.setPasswordModal.confirmPlaceholder')}
                 />
                 <button
                   type="button"
@@ -230,7 +229,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
                 disabled={isLoading}
                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
@@ -238,7 +237,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
                 className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center space-x-2"
               >
                 {isLoading && <LoadingSpinner size="sm" color="white" />}
-                <span>{isLoading ? 'Setting Password...' : 'Set Password'}</span>
+                <span>{isLoading ? t('auth.setPasswordModal.submitting') : t('auth.setPasswordModal.submit')}</span>
               </button>
             </div>
           </form>

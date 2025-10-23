@@ -460,8 +460,8 @@ const SpecialistSchedule: React.FC = () => {
 
     setOperationInProgress(true);
     try {
-      const startDateTime = `${formData.date}T${formData.startTime}:00.000Z`;
-      const endDateTime = `${formData.date}T${formData.endTime}:00.000Z`;
+      const startDateTime = toUtcIsoString(formData.date, formData.startTime);
+      const endDateTime = toUtcIsoString(formData.date, formData.endTime);
 
       const result = await retryRequest(
         () => specialistService.createAvailabilityBlock({
@@ -503,8 +503,8 @@ const SpecialistSchedule: React.FC = () => {
 
     setOperationInProgress(true);
     try {
-      const startDateTime = `${formData.date}T${formData.startTime}:00.000Z`;
-      const endDateTime = `${formData.date}T${formData.endTime}:00.000Z`;
+      const startDateTime = toUtcIsoString(formData.date, formData.startTime);
+      const endDateTime = toUtcIsoString(formData.date, formData.endTime);
 
       const result = await retryRequest(
         () => specialistService.updateAvailabilityBlock(editingBlock.id, {
@@ -992,3 +992,10 @@ const SpecialistSchedule: React.FC = () => {
 };
 
 export default SpecialistSchedule;
+  const toUtcIsoString = (date: string, time: string) => {
+    const localDate = new Date(`${date}T${time}`);
+    if (Number.isNaN(localDate.getTime())) {
+      throw new Error('Invalid date or time');
+    }
+    return localDate.toISOString();
+  };
