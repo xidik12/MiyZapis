@@ -12,7 +12,8 @@
       "Bash(npm run build:*)",
       "Bash(PGPASSWORD=GVGsHSeKoazyvATppTqvabRFqGniRQsH psql:*)",
       "Bash(python3:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" node generate-blocks.js:*)"
     ],
     "deny": [],
     "ask": [],

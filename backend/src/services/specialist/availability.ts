@@ -171,6 +171,11 @@ export class AvailabilityService {
             const hour = Math.floor(minutes / 60);
             const minute = minutes % 60;
 
+            // Calculate end time properly
+            const endTotalMinutes = minutes + slotDuration;
+            const endHour = Math.floor(endTotalMinutes / 60);
+            const endMinute = endTotalMinutes % 60;
+
             // Create date string in YYYY-MM-DDTHH:mm:ss format for Ukraine timezone
             // Then parse as UTC (working hours are already in Ukraine time, we store them as-is in UTC)
             const year = date.getFullYear();
@@ -178,11 +183,12 @@ export class AvailabilityService {
             const day = String(date.getDate()).padStart(2, '0');
             const hourStr = String(hour).padStart(2, '0');
             const minuteStr = String(minute).padStart(2, '0');
-            const endMinuteStr = String(minute + slotDuration).padStart(2, '0');
+            const endHourStr = String(endHour).padStart(2, '0');
+            const endMinuteStr = String(endMinute).padStart(2, '0');
 
             // Create UTC dates directly from Ukraine time strings
             const slotStartDateTime = new Date(`${year}-${month}-${day}T${hourStr}:${minuteStr}:00.000Z`);
-            const slotEndDateTime = new Date(`${year}-${month}-${day}T${hourStr}:${endMinuteStr}:00.000Z`);
+            const slotEndDateTime = new Date(`${year}-${month}-${day}T${endHourStr}:${endMinuteStr}:00.000Z`);
 
             // Skip past time slots
             if (slotEndDateTime <= now) {
