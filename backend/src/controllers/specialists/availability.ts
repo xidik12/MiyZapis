@@ -796,10 +796,15 @@ export class AvailabilityController {
       const [endHour, endMinute] = endTime.split(':').map(Number);
 
       const startMinutesFromMidnight = startHour * 60 + startMinute;
-      const endMinutesFromMidnight = endHour * 60 + endMinute;
+      let endMinutesFromMidnight = endHour * 60 + endMinute;
+
+      // Handle midnight crossing (e.g., 20:00 - 06:00)
+      if (endMinutesFromMidnight <= startMinutesFromMidnight) {
+        endMinutesFromMidnight += 24 * 60; // Add 24 hours
+      }
 
       for (let minutes = startMinutesFromMidnight; minutes < endMinutesFromMidnight; minutes += slotDuration) {
-        const hour = Math.floor(minutes / 60);
+        const hour = Math.floor(minutes / 60) % 24; // Wrap around at 24 hours
         const minute = minutes % 60;
         const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
         slots.push(timeString);
@@ -1020,11 +1025,16 @@ export class AvailabilityController {
           const [startHour, startMinute] = startTime.split(':').map(Number);
           const [endHour, endMinute] = endTime.split(':').map(Number);
           const startMinutesFromMidnight = startHour * 60 + startMinute;
-          const endMinutesFromMidnight = endHour * 60 + endMinute;
-          
+          let endMinutesFromMidnight = endHour * 60 + endMinute;
+
+          // Handle midnight crossing (e.g., 20:00 - 06:00)
+          if (endMinutesFromMidnight <= startMinutesFromMidnight) {
+            endMinutesFromMidnight += 24 * 60; // Add 24 hours
+          }
+
           const daySlots = [];
           for (let minutes = startMinutesFromMidnight; minutes < endMinutesFromMidnight; minutes += 15) {
-            const hour = Math.floor(minutes / 60);
+            const hour = Math.floor(minutes / 60) % 24; // Wrap around at 24 hours
             const minute = minutes % 60;
             const slotDateTime = new Date(date);
             slotDateTime.setHours(hour, minute, 0, 0);
