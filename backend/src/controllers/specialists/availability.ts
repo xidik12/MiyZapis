@@ -10,10 +10,6 @@ import { logger } from '@/utils/logger';
 import { ErrorCodes, AuthenticatedRequest } from '@/types';
 import { validationResult } from 'express-validator';
 import { prisma } from '@/config/database';
-import { zonedTimeToUtc, utcToZonedTime, format } from 'date-fns-tz';
-
-// Ukraine timezone constant for all availability operations
-const UKRAINE_TZ = 'Europe/Kyiv';
 
 export class AvailabilityController {
   /**

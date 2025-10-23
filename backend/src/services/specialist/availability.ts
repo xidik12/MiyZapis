@@ -1,7 +1,6 @@
 import { AvailabilityBlock } from '@prisma/client';
 import { logger } from '@/utils/logger';
 import { prisma } from '@/config/database';
-import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
 
 export interface CreateAvailabilityBlockData {
   specialistId: string;
@@ -165,22 +164,34 @@ export class AvailabilityService {
           const startMinutesFromMidnight = startHour * 60 + startMinute;
           const endMinutesFromMidnight = endHour * 60 + endMinute;
 
-          const UKRAINE_TZ = 'Europe/Kyiv';
-          const now = utcToZonedTime(new Date(), UKRAINE_TZ);
+          const now = new Date();
 
           // Generate 15-minute time slots for this working day
           for (let minutes = startMinutesFromMidnight; minutes < endMinutesFromMidnight; minutes += slotDuration) {
             const hour = Math.floor(minutes / 60);
             const minute = minutes % 60;
 
-            // Create date in Ukraine timezone then convert to UTC for storage
-            const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
-            const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00`;
-            const startTimeStr = `${dateStr}T${timeStr}`;
-            const endTimeStr = `${dateStr}T${hour.toString().padStart(2, '0')}:${(minute + slotDuration).toString().padStart(2, '0')}:00`;
+            // Create date objects using the date's year/month/day with specified hours/minutes
+            // This creates times in the server's local timezone
+            const slotStartDateTime = new Date(
+              date.getFullYear(),
+              date.getMonth(),
+              date.getDate(),
+              hour,
+              minute,
+              0,
+              0
+            );
 
-            const slotStartDateTime = zonedTimeToUtc(startTimeStr, UKRAINE_TZ);
-            const slotEndDateTime = zonedTimeToUtc(endTimeStr, UKRAINE_TZ);
+            const slotEndDateTime = new Date(
+              date.getFullYear(),
+              date.getMonth(),
+              date.getDate(),
+              hour,
+              minute + slotDuration,
+              0,
+              0
+            );
 
             // Skip past time slots
             if (slotEndDateTime <= now) {
