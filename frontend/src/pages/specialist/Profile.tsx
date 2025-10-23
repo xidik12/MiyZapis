@@ -515,10 +515,22 @@ const SpecialistProfile: React.FC = () => {
     if (!profile.profession?.trim()) {
       errors.profession = language === 'uk' ? 'Професія обов\'язкова' : language === 'ru' ? 'Профессия обязательна' : 'Profession is required';
     }
-    
+
     // Validate phone if provided
     if (profile.phone && profile.phone.trim() && !/^[\d\s\-\+\(\)]+$/.test(profile.phone)) {
       errors.phone = language === 'uk' ? 'Невірний формат телефону' : language === 'ru' ? 'Неверный формат телефона' : 'Invalid phone format';
+    }
+
+    // Validate precise address (required)
+    if (!profile.preciseAddress?.trim()) {
+      errors.preciseAddress = language === 'uk' ? 'Точна адреса обов\'язкова' : language === 'ru' ? 'Точный адрес обязателен' : 'Precise address is required';
+    }
+
+    // Validate business phone (required)
+    if (!profile.businessPhone?.trim()) {
+      errors.businessPhone = language === 'uk' ? 'Робочий телефон обов\'язковий' : language === 'ru' ? 'Рабочий телефон обязателен' : 'Business phone is required';
+    } else if (!/^[\d\s\-\+\(\)]+$/.test(profile.businessPhone)) {
+      errors.businessPhone = language === 'uk' ? 'Невірний формат телефону' : language === 'ru' ? 'Неверный формат телефона' : 'Invalid phone format';
     }
 
     setValidationErrors(errors);
@@ -531,13 +543,15 @@ const SpecialistProfile: React.FC = () => {
       // Show specific validation errors
       const errorFields = Object.keys(validationErrors);
       const errorMessage = errorFields.length > 0 
-        ? (language === 'uk' 
+        ? (language === 'uk'
           ? `Будь ласка, заповніть обов'язкові поля: ${errorFields.map(field => {
               switch(field) {
                 case 'firstName': return "Ім'я";
                 case 'lastName': return 'Прізвище';
                 case 'email': return 'Email';
                 case 'profession': return 'Професія';
+                case 'preciseAddress': return 'Точна адреса';
+                case 'businessPhone': return 'Робочий телефон';
                 default: return field;
               }
             }).join(', ')}`
@@ -548,6 +562,8 @@ const SpecialistProfile: React.FC = () => {
                 case 'lastName': return 'Фамилия';
                 case 'email': return 'Email';
                 case 'profession': return 'Профессия';
+                case 'preciseAddress': return 'Точный адрес';
+                case 'businessPhone': return 'Рабочий телефон';
                 default: return field;
               }
             }).join(', ')}`
@@ -557,6 +573,8 @@ const SpecialistProfile: React.FC = () => {
                 case 'lastName': return 'Last Name';
                 case 'email': return 'Email';
                 case 'profession': return 'Profession';
+                case 'preciseAddress': return 'Precise Address';
+                case 'businessPhone': return 'Business Phone';
                 default: return field;
               }
             }).join(', ')}`)
@@ -1334,16 +1352,28 @@ const SpecialistProfile: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Precise Address (Shown only to confirmed customers)
+                          Precise Address (Shown only to confirmed customers) <span className="text-red-500">*</span>
                         </label>
                         {isEditing ? (
-                          <input
-                            type="text"
-                            value={profile.preciseAddress || ''}
-                            onChange={(e) => handleProfileChange('preciseAddress', e.target.value)}
-                            placeholder="Apt 5B, Building A, 123 Main Street"
-                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          />
+                          <>
+                            <input
+                              type="text"
+                              value={profile.preciseAddress || ''}
+                              onChange={(e) => handleProfileChange('preciseAddress', e.target.value)}
+                              placeholder="Apt 5B, Building A, 123 Main Street"
+                              className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
+                                validationErrors.preciseAddress
+                                  ? 'border-error-300 focus:border-error-500 focus:ring-error-500'
+                                  : 'dark:border-gray-600'
+                              }`}
+                            />
+                            {validationErrors.preciseAddress && (
+                              <p className="text-error-600 text-sm mt-1 flex items-center gap-1">
+                                <ExclamationTriangleIcon className="h-4 w-4" />
+                                {validationErrors.preciseAddress}
+                              </p>
+                            )}
+                          </>
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
                             <div className="flex items-center space-x-2">
@@ -1356,16 +1386,28 @@ const SpecialistProfile: React.FC = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Business Phone
+                          Business Phone <span className="text-red-500">*</span>
                         </label>
                         {isEditing ? (
-                          <input
-                            type="tel"
-                            value={profile.businessPhone || ''}
-                            onChange={(e) => handleProfileChange('businessPhone', e.target.value)}
-                            placeholder="+1 (555) 123-4567"
-                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          />
+                          <>
+                            <input
+                              type="tel"
+                              value={profile.businessPhone || ''}
+                              onChange={(e) => handleProfileChange('businessPhone', e.target.value)}
+                              placeholder="+1 (555) 123-4567"
+                              className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
+                                validationErrors.businessPhone
+                                  ? 'border-error-300 focus:border-error-500 focus:ring-error-500'
+                                  : 'dark:border-gray-600'
+                              }`}
+                            />
+                            {validationErrors.businessPhone && (
+                              <p className="text-error-600 text-sm mt-1 flex items-center gap-1">
+                                <ExclamationTriangleIcon className="h-4 w-4" />
+                                {validationErrors.businessPhone}
+                              </p>
+                            )}
+                          </>
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
                             <div className="flex items-center space-x-2">

@@ -1850,23 +1850,23 @@ const BookingFlow: React.FC = () => {
                       </h5>
                     </div>
 
-                    {specialist.user?.phone && (
+                    {specialist.businessPhone && (
                       <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">{t('booking.phone') || 'Phone'}</span>
                         <a
-                          href={`tel:${specialist.user.phone}`}
+                          href={`tel:${specialist.businessPhone}`}
                           className="font-medium text-primary-600 dark:text-primary-400 hover:underline"
                         >
-                          {specialist.user.phone}
+                          {specialist.businessPhone}
                         </a>
                       </div>
                     )}
 
-                    {specialist.location && (
+                    {specialist.preciseAddress && (
                       <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">{t('booking.location') || 'Location'}</span>
                         <span className="font-medium text-gray-900 dark:text-white text-right max-w-xs">
-                          {specialist.location}
+                          {specialist.preciseAddress}
                         </span>
                       </div>
                     )}
