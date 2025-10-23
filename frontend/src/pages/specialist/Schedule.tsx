@@ -77,8 +77,8 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
 
       setFormData({
         date: start.toISOString().split('T')[0],
-        startTime: `${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')}`,
-        endTime: `${end.getHours().toString().padStart(2, '0')}:${end.getMinutes().toString().padStart(2, '0')}`,
+        startTime: `${start.getUTCHours().toString().padStart(2, '0')}:${start.getUTCMinutes().toString().padStart(2, '0')}`,
+        endTime: `${end.getUTCHours().toString().padStart(2, '0')}:${end.getUTCMinutes().toString().padStart(2, '0')}`,
         isAvailable: editingBlock.isAvailable,
         reason: editingBlock.reason || '',
         isRecurring: editingBlock.isRecurring,
@@ -578,24 +578,24 @@ const SpecialistSchedule: React.FC = () => {
       const blockStart = new Date(block.startDateTime);
       const blockEnd = new Date(block.endDateTime);
 
-      // Compare using local date components (not ISO/UTC)
-      const blockYear = blockStart.getFullYear();
-      const blockMonth = blockStart.getMonth();
-      const blockDay = blockStart.getDate();
+      // Compare using UTC date components (timezone-agnostic)
+      const blockYear = blockStart.getUTCFullYear();
+      const blockMonth = blockStart.getUTCMonth();
+      const blockDay = blockStart.getUTCDate();
 
       const cellYear = date.getFullYear();
       const cellMonth = date.getMonth();
       const cellDay = date.getDate();
 
-      // First check if the block is on the same day (local time)
+      // First check if the block is on the same day (UTC time)
       if (blockYear !== cellYear || blockMonth !== cellMonth || blockDay !== cellDay) {
         return false;
       }
 
-      // Then check if the block overlaps with this hour (local time)
-      const blockHour = blockStart.getHours();
-      const blockEndHour = blockEnd.getHours();
-      const blockEndMinute = blockEnd.getMinutes();
+      // Then check if the block overlaps with this hour (UTC time)
+      const blockHour = blockStart.getUTCHours();
+      const blockEndHour = blockEnd.getUTCHours();
+      const blockEndMinute = blockEnd.getUTCMinutes();
 
       // Block overlaps with hour if:
       // - Block starts in this hour, OR
@@ -859,9 +859,9 @@ const SpecialistSchedule: React.FC = () => {
                                         ? 'text-green-900 dark:text-green-100'
                                         : 'text-red-900 dark:text-red-100'
                                     }`}>
-                                      {blockStart.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                                      {blockStart.getUTCHours().toString().padStart(2, '0')}:{blockStart.getUTCMinutes().toString().padStart(2, '0')}
                                       {' - '}
-                                      {blockEnd.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                                      {blockEnd.getUTCHours().toString().padStart(2, '0')}:{blockEnd.getUTCMinutes().toString().padStart(2, '0')}
                                     </div>
                                     {block.reason && (
                                       <div className={`text-xs mt-1 ${
