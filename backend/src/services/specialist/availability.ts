@@ -171,27 +171,18 @@ export class AvailabilityService {
             const hour = Math.floor(minutes / 60);
             const minute = minutes % 60;
 
-            // Create date objects using the date's year/month/day with specified hours/minutes
-            // This creates times in the server's local timezone
-            const slotStartDateTime = new Date(
-              date.getFullYear(),
-              date.getMonth(),
-              date.getDate(),
-              hour,
-              minute,
-              0,
-              0
-            );
+            // Create date string in YYYY-MM-DDTHH:mm:ss format for Ukraine timezone
+            // Then parse as UTC (working hours are already in Ukraine time, we store them as-is in UTC)
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hourStr = String(hour).padStart(2, '0');
+            const minuteStr = String(minute).padStart(2, '0');
+            const endMinuteStr = String(minute + slotDuration).padStart(2, '0');
 
-            const slotEndDateTime = new Date(
-              date.getFullYear(),
-              date.getMonth(),
-              date.getDate(),
-              hour,
-              minute + slotDuration,
-              0,
-              0
-            );
+            // Create UTC dates directly from Ukraine time strings
+            const slotStartDateTime = new Date(`${year}-${month}-${day}T${hourStr}:${minuteStr}:00.000Z`);
+            const slotEndDateTime = new Date(`${year}-${month}-${day}T${hourStr}:${endMinuteStr}:00.000Z`);
 
             // Skip past time slots
             if (slotEndDateTime <= now) {
