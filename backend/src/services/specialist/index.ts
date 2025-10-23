@@ -275,8 +275,9 @@ export class SpecialistService {
           for (const day of days) {
             const daySchedule = workingHours[day];
             if (daySchedule && (daySchedule.isOpen || daySchedule.isWorking)) {
-              const startTime = daySchedule.start || daySchedule.startTime;
-              const endTime = daySchedule.end || daySchedule.endTime;
+              // Prioritize startTime/endTime (new format) over start/end (legacy format)
+              const startTime = daySchedule.startTime || daySchedule.start;
+              const endTime = daySchedule.endTime || daySchedule.end;
 
               if (startTime && endTime) {
                 const [startHour, startMinute] = startTime.split(':').map(Number);

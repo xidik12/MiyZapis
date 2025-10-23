@@ -9,7 +9,9 @@
       "Bash(npx prisma migrate dev:*)",
       "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" psql:*)",
       "Bash(psql:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(PGPASSWORD=GVGsHSeKoazyvATppTqvabRFqGniRQsH psql:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": [],

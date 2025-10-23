@@ -154,8 +154,9 @@ export class AvailabilityService {
 
         if (daySchedule && (daySchedule.isWorking || daySchedule.isOpen)) {
           // Parse time strings (e.g., "09:00")
-          const startTime = daySchedule.start || daySchedule.startTime || '09:00';
-          const endTime = daySchedule.end || daySchedule.endTime || '17:00';
+          // Prioritize startTime/endTime (new format) over start/end (legacy format)
+          const startTime = daySchedule.startTime || daySchedule.start || '09:00';
+          const endTime = daySchedule.endTime || daySchedule.end || '17:00';
 
           const [startHour, startMinute] = startTime.split(':').map(Number);
           const [endHour, endMinute] = endTime.split(':').map(Number);
