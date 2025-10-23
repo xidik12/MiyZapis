@@ -1838,6 +1838,47 @@ const BookingFlow: React.FC = () => {
                     {selectedDate?.toLocaleDateString(language || 'en')} {selectedTime}
                   </span>
                 </div>
+
+                {/* Specialist Contact Information */}
+                {isAutoBooked && (
+                  <>
+                    <div className="border-t border-gray-200 dark:border-gray-700 my-4"></div>
+
+                    <div className="mb-2">
+                      <h5 className="font-semibold text-gray-900 dark:text-white mb-3">
+                        {t('booking.specialistContact') || 'Specialist Contact Information'}
+                      </h5>
+                    </div>
+
+                    {specialist.user?.phone && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">{t('booking.phone') || 'Phone'}</span>
+                        <a
+                          href={`tel:${specialist.user.phone}`}
+                          className="font-medium text-primary-600 dark:text-primary-400 hover:underline"
+                        >
+                          {specialist.user.phone}
+                        </a>
+                      </div>
+                    )}
+
+                    {specialist.location && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">{t('booking.location') || 'Location'}</span>
+                        <span className="font-medium text-gray-900 dark:text-white text-right max-w-xs">
+                          {specialist.location}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">{t('booking.paymentAmount') || 'Payment Amount'}</span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {formatPrice(finalPrice, service.currency as 'USD' | 'EUR' | 'UAH' || 'UAH')}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
