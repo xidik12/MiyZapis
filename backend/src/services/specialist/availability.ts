@@ -150,10 +150,29 @@ export class AvailabilityService {
         weeksAhead
       });
 
-      // DON'T delete existing availability blocks - specialists should manage their own schedules
-      // Instead, we'll only create blocks for dates that don't have any blocks yet
+      // Delete existing auto-generated blocks to regenerate them with correct 15-minute slots
+      // Only delete blocks with reason 'Available' or 'Working hours' (auto-generated)
+      // Keep manually created blocks (with custom reasons)
+      const deletedBlocks = await prisma.availabilityBlock.deleteMany({
+        where: {
+          specialistId,
+          startDateTime: {
+            gte: startDate,
+            lte: endDate
+          },
+          OR: [
+            { reason: 'Available' },
+            { reason: 'Working hours' },
+            { reason: null }
+          ]
+        }
+      });
 
-      // Get existing availability blocks to avoid duplicates
+      logger.info('📅 Deleted old auto-generated blocks:', {
+        count: deletedBlocks.count
+      });
+
+      // Get remaining existing blocks (manually created ones)
       const existingBlocks = await prisma.availabilityBlock.findMany({
         where: {
           specialistId,
