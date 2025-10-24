@@ -481,7 +481,7 @@ export class SpecialistService {
   // Generate availability blocks from working hours
   async generateAvailabilityFromWorkingHours(): Promise<{ message: string; blocksCreated: number; dateRange?: { startDate: string; endDate: string } }> {
     console.log('📤 Generating availability blocks from working hours');
-    const response = await apiClient.post<{ message?: string; blocksCreated: number; dateRange?: { startDate: string; endDate: string } }>('/specialists/generate', {});
+    const response = await apiClient.post<{ message?: string; blocksCreated: number; dateRange?: { startDate: string; endDate: string } }>('/specialists/availability/generate', {});
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to generate availability blocks');
     }
