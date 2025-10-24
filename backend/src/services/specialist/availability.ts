@@ -248,14 +248,20 @@ export class AvailabilityService {
             const endHour = Math.floor(endTotalMinutes / 60);
             const endMinute = endTotalMinutes % 60;
 
-            // Working hours are entered in local timezone (e.g., Cambodia UTC+7)
-            // We need to store them as local times, not convert to UTC
-            // Use the date object's local timezone methods to create proper datetime
-            const slotStartDateTime = new Date(date);
-            slotStartDateTime.setHours(hour, minute, 0, 0);
+            // Store times as-is in UTC format (timezone-agnostic)
+            // If specialist sets 08:30, we store 08:30 UTC and display 08:30 everywhere
+            // This ensures schedule shows same times regardless of user's timezone
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hourStr = String(hour).padStart(2, '0');
+            const minuteStr = String(minute).padStart(2, '0');
+            const endHourStr = String(endHour).padStart(2, '0');
+            const endMinuteStr = String(endMinute).padStart(2, '0');
 
-            const slotEndDateTime = new Date(date);
-            slotEndDateTime.setHours(endHour, endMinute, 0, 0);
+            // Create UTC dates directly - no timezone conversion
+            const slotStartDateTime = new Date(`${year}-${month}-${day}T${hourStr}:${minuteStr}:00.000Z`);
+            const slotEndDateTime = new Date(`${year}-${month}-${day}T${endHourStr}:${endMinuteStr}:00.000Z`);
 
             // Don't skip past slots - allow viewing full week including past days
             // The frontend will handle displaying past slots differently

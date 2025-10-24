@@ -847,9 +847,9 @@ const SpecialistSchedule: React.FC = () => {
                                         ? 'text-green-900 dark:text-green-100'
                                         : 'text-red-900 dark:text-red-100'
                                     }`}>
-                                      {blockStart.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                                      {blockStart.getUTCHours().toString().padStart(2, '0')}:{blockStart.getUTCMinutes().toString().padStart(2, '0')}
                                       {' - '}
-                                      {blockEnd.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                                      {blockEnd.getUTCHours().toString().padStart(2, '0')}:{blockEnd.getUTCMinutes().toString().padStart(2, '0')}
                                     </div>
                                     {block.reason && (
                                       <div className={`text-xs mt-1 ${
