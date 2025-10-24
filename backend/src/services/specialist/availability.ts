@@ -262,10 +262,8 @@ export class AvailabilityService {
             const slotStartDateTime = new Date(`${year}-${month}-${day}T${hourStr}:${minuteStr}:00.000Z`);
             const slotEndDateTime = new Date(`${year}-${month}-${day}T${endHourStr}:${endMinuteStr}:00.000Z`);
 
-            // Skip past time slots
-            if (slotEndDateTime <= now) {
-              continue;
-            }
+            // Don't skip past slots - allow viewing full week including past days
+            // The frontend will handle displaying past slots differently
 
             // Check if this exact time slot already exists
             const hasExistingBlock = existingBlocks.some(block => {
