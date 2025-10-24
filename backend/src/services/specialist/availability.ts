@@ -243,8 +243,8 @@ export class AvailabilityService {
             const hour = Math.floor(minutes / 60);
             const minute = minutes % 60;
 
-            // Calculate end time properly
-            const endTotalMinutes = minutes + slotDuration;
+            // Calculate end time properly - cap at working hours end time
+            const endTotalMinutes = Math.min(minutes + slotDuration, endMinutesFromMidnight);
             const endHour = Math.floor(endTotalMinutes / 60);
             const endMinute = endTotalMinutes % 60;
 
