@@ -126,6 +126,12 @@ export class AvailabilityService {
           typeof specialist.workingHours === 'string'
             ? JSON.parse(specialist.workingHours)
             : specialist.workingHours;
+
+        logger.info('📅 Working hours parsed for availability generation:', {
+          specialistId,
+          workingHours,
+          raw: specialist.workingHours
+        });
       } catch (error) {
         logger.warn('Invalid working hours JSON detected when generating availability', {
           specialistId,
@@ -137,6 +143,12 @@ export class AvailabilityService {
       const startDate = new Date();
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + (weeksAhead * 7));
+
+      logger.info('📅 Date range for availability generation:', {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        weeksAhead
+      });
 
       // DON'T delete existing availability blocks - specialists should manage their own schedules
       // Instead, we'll only create blocks for dates that don't have any blocks yet
@@ -160,10 +172,21 @@ export class AvailabilityService {
       const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
       const slotDuration = 15; // 15-minute slots
 
+      logger.info('📅 Starting block generation with slotDuration:', { slotDuration, existingBlocksCount: existingBlocks.length });
+
       // Generate blocks for each day in the date range
+      let daysProcessed = 0;
+      let slotsGenerated = 0;
       for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
         const dayName = dayNames[date.getDay()];
         const daySchedule = workingHours[dayName];
+
+        logger.info(`📅 Processing day: ${dayName} (${date.toISOString().split('T')[0]})`, {
+          daySchedule,
+          isWorking: daySchedule?.isWorking,
+          isOpen: daySchedule?.isOpen,
+          willProcess: !!(daySchedule && (daySchedule.isWorking || daySchedule.isOpen))
+        });
 
         if (daySchedule && (daySchedule.isWorking || daySchedule.isOpen)) {
           // Parse time strings (e.g., "09:00")
@@ -171,15 +194,32 @@ export class AvailabilityService {
           const startTime = daySchedule.startTime || daySchedule.start || '09:00';
           const endTime = daySchedule.endTime || daySchedule.end || '17:00';
 
+          logger.info(`📅 Day schedule times:`, {
+            dayName,
+            startTime,
+            endTime,
+            daySchedule
+          });
+
           const [startHour, startMinute] = startTime.split(':').map(Number);
           const [endHour, endMinute] = endTime.split(':').map(Number);
 
           const startMinutesFromMidnight = startHour * 60 + startMinute;
           const endMinutesFromMidnight = endHour * 60 + endMinute;
 
+          logger.info(`📅 Calculated minutes:`, {
+            dayName,
+            startMinutesFromMidnight,
+            endMinutesFromMidnight,
+            totalMinutes: endMinutesFromMidnight - startMinutesFromMidnight,
+            expectedSlots: Math.floor((endMinutesFromMidnight - startMinutesFromMidnight) / slotDuration)
+          });
+
           const now = new Date();
+          daysProcessed++;
 
           // Generate 15-minute time slots for this working day
+          let daySlots = 0;
           for (let minutes = startMinutesFromMidnight; minutes < endMinutesFromMidnight; minutes += slotDuration) {
             const hour = Math.floor(minutes / 60);
             const minute = minutes % 60;
@@ -226,10 +266,24 @@ export class AvailabilityService {
                 reason: 'Available',
                 isRecurring: false
               });
+              daySlots++;
+              slotsGenerated++;
             }
           }
+
+          logger.info(`📅 Day ${dayName} completed:`, {
+            daySlots,
+            totalSlots: slotsGenerated
+          });
         }
       }
+
+      logger.info('📅 Block generation summary:', {
+        daysProcessed,
+        slotsGenerated,
+        newBlocksCount: newBlocks.length,
+        existingBlocksCount: existingBlocks.length
+      });
 
       // Batch create availability blocks
       if (newBlocks.length > 0) {
