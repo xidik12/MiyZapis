@@ -71,8 +71,8 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
 
       setFormData({
         date: start.toISOString().split('T')[0],
-        startTime: `${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')}`,
-        endTime: `${end.getHours().toString().padStart(2, '0')}:${end.getMinutes().toString().padStart(2, '0')}`,
+        startTime: `${start.getUTCHours().toString().padStart(2, '0')}:${start.getUTCMinutes().toString().padStart(2, '0')}`,
+        endTime: `${end.getUTCHours().toString().padStart(2, '0')}:${end.getUTCMinutes().toString().padStart(2, '0')}`,
         isAvailable: editingBlock.isAvailable,
         reason: editingBlock.reason || '',
         isRecurring: editingBlock.isRecurring,
@@ -580,10 +580,10 @@ const SpecialistSchedule: React.FC = () => {
         return false;
       }
 
-      // Then check if the block overlaps with this hour (local time)
-      const blockHour = blockStart.getHours();
-      const blockEndHour = blockEnd.getHours();
-      const blockEndMinute = blockEnd.getMinutes();
+      // Then check if the block overlaps with this hour (UTC time - timezone independent)
+      const blockHour = blockStart.getUTCHours();
+      const blockEndHour = blockEnd.getUTCHours();
+      const blockEndMinute = blockEnd.getUTCMinutes();
 
       // Block overlaps with hour if:
       // - Block starts in this hour, OR
