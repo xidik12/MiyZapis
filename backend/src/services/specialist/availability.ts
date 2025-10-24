@@ -138,90 +138,95 @@ export class AvailabilityService {
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + (weeksAhead * 7));
 
-      // Remove old future availability blocks to regenerate
-      await prisma.availabilityBlock.deleteMany({
+      // DON'T delete existing availability blocks - specialists should manage their own schedules
+      // Instead, we'll only create blocks for dates that don't have any blocks yet
+
+      // Get existing availability blocks to avoid duplicates
+      const existingBlocks = await prisma.availabilityBlock.findMany({
         where: {
           specialistId,
-          startDateTime: { gte: new Date() },
-          isRecurring: false,
-          // Don't delete manually created blocks (those without a specific pattern)
-          reason: 'Working hours'
+          startDateTime: {
+            gte: startDate,
+            lte: endDate
+          }
+        },
+        select: {
+          startDateTime: true,
+          endDateTime: true
         }
       });
 
       const newBlocks = [];
       const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const slotDuration = 15; // 15-minute slots
 
       // Generate blocks for each day in the date range
       for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
         const dayName = dayNames[date.getDay()];
         const daySchedule = workingHours[dayName];
-        const isWorkingDay = Boolean(daySchedule && (daySchedule.isWorking || daySchedule.isOpen));
 
-        if (isWorkingDay) {
-          // Create availability block for this working day
-          const startDateTime = new Date(date);
-          const endDateTime = new Date(date);
-          
+        if (daySchedule && (daySchedule.isWorking || daySchedule.isOpen)) {
           // Parse time strings (e.g., "09:00")
-          const startRaw =
-            daySchedule.start ||
-            daySchedule.startTime ||
-            daySchedule.open ||
-            daySchedule.from ||
-            '09:00';
-          const endRaw =
-            daySchedule.end ||
-            daySchedule.endTime ||
-            daySchedule.close ||
-            daySchedule.to ||
-            '17:00';
+          // Prioritize startTime/endTime (new format) over start/end (legacy format)
+          const startTime = daySchedule.startTime || daySchedule.start || '09:00';
+          const endTime = daySchedule.endTime || daySchedule.end || '17:00';
 
-          const parseTime = (raw: string | number | undefined, fallbackHour: number, fallbackMinute: number) => {
-            if (raw === null || raw === undefined) {
-              return [fallbackHour, fallbackMinute] as const;
+          const [startHour, startMinute] = startTime.split(':').map(Number);
+          const [endHour, endMinute] = endTime.split(':').map(Number);
+
+          const startMinutesFromMidnight = startHour * 60 + startMinute;
+          const endMinutesFromMidnight = endHour * 60 + endMinute;
+
+          const now = new Date();
+
+          // Generate 15-minute time slots for this working day
+          for (let minutes = startMinutesFromMidnight; minutes < endMinutesFromMidnight; minutes += slotDuration) {
+            const hour = Math.floor(minutes / 60);
+            const minute = minutes % 60;
+
+            // Calculate end time properly
+            const endTotalMinutes = minutes + slotDuration;
+            const endHour = Math.floor(endTotalMinutes / 60);
+            const endMinute = endTotalMinutes % 60;
+
+            // Create date string in YYYY-MM-DDTHH:mm:ss format for Ukraine timezone
+            // Then parse as UTC (working hours are already in Ukraine time, we store them as-is in UTC)
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hourStr = String(hour).padStart(2, '0');
+            const minuteStr = String(minute).padStart(2, '0');
+            const endHourStr = String(endHour).padStart(2, '0');
+            const endMinuteStr = String(endMinute).padStart(2, '0');
+
+            // Create UTC dates directly from Ukraine time strings
+            const slotStartDateTime = new Date(`${year}-${month}-${day}T${hourStr}:${minuteStr}:00.000Z`);
+            const slotEndDateTime = new Date(`${year}-${month}-${day}T${endHourStr}:${endMinuteStr}:00.000Z`);
+
+            // Skip past time slots
+            if (slotEndDateTime <= now) {
+              continue;
             }
 
-            const parts = String(raw).split(':');
-            const hour = Number(parts[0]);
-            const minute = parts.length > 1 ? Number(parts[1]) : 0;
-
-            return [
-              Number.isFinite(hour) ? hour : fallbackHour,
-              Number.isFinite(minute) ? minute : fallbackMinute,
-            ] as const;
-          };
-
-          const [startHour, startMinute] = parseTime(startRaw, 9, 0);
-          const [endHour, endMinute] = parseTime(endRaw, 17, 0);
-
-          // IMPORTANT: Convert from Cambodia time (UTC+7) to UTC
-          // The working hours are entered in Cambodia local time, but we need to store them in UTC
-          // Use setUTCHours to directly set the UTC time, treating the input as Cambodia local time
-          const CAMBODIA_UTC_OFFSET_MS = 7 * 60 * 60 * 1000; // 7 hours in milliseconds
-
-          // Set the time as if it were UTC, then subtract the Cambodia offset
-          startDateTime.setUTCHours(startHour, startMinute, 0, 0);
-          startDateTime.setTime(startDateTime.getTime() - CAMBODIA_UTC_OFFSET_MS);
-
-          endDateTime.setUTCHours(endHour, endMinute, 0, 0);
-          endDateTime.setTime(endDateTime.getTime() - CAMBODIA_UTC_OFFSET_MS);
-
-          if (endDateTime <= startDateTime) {
-            // Ensure we always have a positive duration
-            endDateTime.setHours(startDateTime.getHours() + 1, startDateTime.getMinutes(), 0, 0);
-          }
-
-          // Only create blocks for future dates
-          if (startDateTime > new Date()) {
-            newBlocks.push({
-              specialistId,
-              startDateTime,
-              endDateTime,
-              isAvailable: true,
-              reason: 'Working hours',
-              isRecurring: false
+            // Check if this exact time slot already exists
+            const hasExistingBlock = existingBlocks.some(block => {
+              const blockStart = new Date(block.startDateTime);
+              const blockEnd = new Date(block.endDateTime);
+              return blockStart.getTime() === slotStartDateTime.getTime() &&
+                     blockEnd.getTime() === slotEndDateTime.getTime();
             });
+
+            // Only create block if no existing block for this exact time slot
+            if (!hasExistingBlock) {
+              newBlocks.push({
+                specialistId,
+                startDateTime: slotStartDateTime,
+                endDateTime: slotEndDateTime,
+                isAvailable: true,
+                reason: 'Available',
+                isRecurring: false
+              });
+            }
           }
         }
       }
