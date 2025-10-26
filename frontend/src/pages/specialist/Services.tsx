@@ -486,7 +486,11 @@ const SpecialistServices: React.FC = () => {
       discountValue: formData.discountEnabled ? parseFloat(formData.discountValue) : undefined,
       discountValidFrom: formData.discountEnabled && formData.discountValidFrom ? formData.discountValidFrom : undefined,
       discountValidUntil: formData.discountEnabled && formData.discountValidUntil ? formData.discountValidUntil : undefined,
-      discountDescription: formData.discountEnabled && formData.discountDescription ? formData.discountDescription : undefined
+      discountDescription: formData.discountEnabled && formData.discountDescription ? formData.discountDescription : undefined,
+      // Group Session fields
+      isGroupSession: formData.isGroupSession,
+      maxParticipants: formData.isGroupSession ? formData.maxParticipants : undefined,
+      minParticipants: formData.isGroupSession ? formData.minParticipants : 1
     };
     
     console.log('🚀 Service data being sent to backend:', serviceData);
@@ -709,6 +713,15 @@ const SpecialistServices: React.FC = () => {
                 <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-[0.18em] ${statusClasses}`}>
                   {service.isActive ? t('services.active') : t('services.inactive')}
                 </span>
+                {service.isGroupSession && (
+                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    {t('services.groupSession')}
+                    {service.maxParticipants && ` (${service.maxParticipants})`}
+                  </span>
+                )}
                 <span className="px-3 py-1 rounded-full text-xs font-medium bg-white/50 dark:bg-white/10 border border-white/30 dark:border-white/10 text-[rgba(31,33,36,0.75)] dark:text-white/70">
                   {getLocalizedText(service, 'category')}
                 </span>
@@ -1482,6 +1495,83 @@ const SpecialistServices: React.FC = () => {
                         </p>
                       </div>
                     )}
+                  </div>
+                )}
+              </div>
+
+              {/* Group Session Settings */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  Group Session Settings
+                </h3>
+
+                {/* Enable Group Session */}
+                <div className="mb-4">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.isGroupSession}
+                      onChange={(e) => {
+                        console.log('Group Session checkbox clicked:', e.target.checked);
+                        setFormData(prev => ({
+                          ...prev,
+                          isGroupSession: e.target.checked,
+                          maxParticipants: e.target.checked ? prev.maxParticipants : undefined,
+                          minParticipants: e.target.checked ? (prev.minParticipants || 1) : 1
+                        }));
+                      }}
+                      className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    />
+                    <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
+                      {t('serviceForm.groupSession')}
+                    </span>
+                  </label>
+                  <p className="ml-8 mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Allow multiple customers to book the same time slot for this service
+                  </p>
+                </div>
+
+                {/* Group Session Options */}
+                {formData.isGroupSession && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 ml-8">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('serviceForm.maxParticipants')}
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.maxParticipants || ''}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          maxParticipants: e.target.value ? parseInt(e.target.value) : undefined
+                        }))}
+                        min="1"
+                        placeholder={t('serviceForm.maxParticipantsPlaceholder')}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Maximum number of participants per session
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('serviceForm.minParticipants')}
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.minParticipants || 1}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          minParticipants: e.target.value ? parseInt(e.target.value) : 1
+                        }))}
+                        min="1"
+                        max={formData.maxParticipants || undefined}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                      />
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Minimum participants required to confirm session
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>

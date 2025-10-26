@@ -317,6 +317,11 @@ model Service {
   discountValidUntil   DateTime?
   discountDescription  String? // Optional description for the discount
 
+  // Group Session Settings
+  isGroupSession   Boolean @default(false) // If true, allows multiple bookings for same time slot
+  maxParticipants  Int?    // Maximum number of participants allowed
+  minParticipants  Int     @default(1) // Minimum participants required to confirm session
+
   // Service details
   duration       Int    // Duration in minutes
 
