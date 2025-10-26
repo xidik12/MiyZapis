@@ -337,6 +337,7 @@ router.get('/code/:referralCode', async (req: Request, res: Response) => {
         customMessage: referral.customMessage,
         expiresAt: referral.expiresAt,
         referrer: referral.referrer,
+        shareUrl: `${process.env.FRONTEND_URL}/register?ref=${referral.referralCode}`,
         isExpired: referral.expiresAt < new Date()
       }
     }));
