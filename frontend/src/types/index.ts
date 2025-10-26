@@ -183,6 +183,10 @@ export interface Service extends BaseEntity {
   discountValidFrom?: string;
   discountValidUntil?: string;
   discountDescription?: string;
+  // Group Session fields
+  isGroupSession?: boolean;
+  maxParticipants?: number;
+  minParticipants?: number;
 }
 
 export interface ServiceCategory {

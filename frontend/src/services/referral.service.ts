@@ -80,19 +80,31 @@ class ReferralService {
 
   /**
    * Copy referral link to clipboard
+   * Can accept either a referral code string or full referral object
    */
-  async copyReferralLink(referralCode: string): Promise<boolean> {
+  async copyReferralLink(referralCodeOrObject: string | Referral): Promise<boolean> {
     try {
-      const config = await this.getConfig();
-      const referral = await this.getReferralByCode(referralCode);
+      let shareUrl: string;
+
+      // If we received a full referral object, use its shareUrl directly
+      if (typeof referralCodeOrObject === 'object' && referralCodeOrObject.shareUrl) {
+        shareUrl = referralCodeOrObject.shareUrl;
+      } else {
+        // Otherwise fetch the referral by code
+        const referralCode = typeof referralCodeOrObject === 'string'
+          ? referralCodeOrObject
+          : referralCodeOrObject.referralCode;
+        const referral = await this.getReferralByCode(referralCode);
+        shareUrl = referral.shareUrl;
+      }
 
       if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(referral.shareUrl);
+        await navigator.clipboard.writeText(shareUrl);
         return true;
       } else {
         // Fallback for older browsers
         const textArea = document.createElement('textarea');
-        textArea.value = referral.shareUrl;
+        textArea.value = shareUrl;
         textArea.style.position = 'absolute';
         textArea.style.left = '-999999px';
         document.body.appendChild(textArea);

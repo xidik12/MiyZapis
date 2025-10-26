@@ -48,6 +48,10 @@ interface Service {
   discountValidFrom?: string;
   discountValidUntil?: string;
   discountDescription?: string;
+  // Group Session fields
+  isGroupSession?: boolean;
+  maxParticipants?: number;
+  minParticipants?: number;
 }
 
 const sampleServices: Service[] = [
@@ -201,6 +205,10 @@ const SpecialistServices: React.FC = () => {
     discountValidFrom: '',
     discountValidUntil: '',
     discountDescription: '',
+    // Group Session fields
+    isGroupSession: false,
+    maxParticipants: undefined as number | undefined,
+    minParticipants: 1,
     availability: {
       monday: false,
       tuesday: false,
@@ -254,7 +262,11 @@ const SpecialistServices: React.FC = () => {
       discountValue: '',
       discountValidFrom: '',
       discountValidUntil: '',
-      discountDescription: ''
+      discountDescription: '',
+      // Group Session fields
+      isGroupSession: false,
+      maxParticipants: undefined,
+      minParticipants: 1
     });
     setCustomCategory('');
     setShowCustomCategory(false);

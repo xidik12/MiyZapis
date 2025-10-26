@@ -68,7 +68,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
       setCreateModalOpen(false);
 
       // Auto-copy link to clipboard
-      const copied = await referralService.copyReferralLink(newReferral.referralCode);
+      const copied = await referralService.copyReferralLink(newReferral);
       if (copied) {
         toast.success('Referral link copied to clipboard!');
       }
