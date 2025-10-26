@@ -573,16 +573,16 @@ const SpecialistSchedule: React.FC = () => {
       const blockStart = new Date(block.startDateTime);
       const blockEnd = new Date(block.endDateTime);
 
-      // Compare using local date components (not ISO/UTC)
-      const blockYear = blockStart.getFullYear();
-      const blockMonth = blockStart.getMonth();
-      const blockDay = blockStart.getDate();
+      // Use UTC date components for timezone-independent comparison
+      const blockYear = blockStart.getUTCFullYear();
+      const blockMonth = blockStart.getUTCMonth();
+      const blockDay = blockStart.getUTCDate();
 
       const cellYear = date.getFullYear();
       const cellMonth = date.getMonth();
       const cellDay = date.getDate();
 
-      // First check if the block is on the same day (local time)
+      // First check if the block is on the same day (using UTC for block, local for cell)
       if (blockYear !== cellYear || blockMonth !== cellMonth || blockDay !== cellDay) {
         return false;
       }
