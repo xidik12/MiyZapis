@@ -971,6 +971,7 @@
   "services.min": "min",
   "services.bookings": "bookings",
   "services.noDataYet": "No data yet",
+  "services.delete": "Delete",
   "serviceForm.addService": "Add New Service",
   "serviceForm.editService": "Edit Service",
   "serviceForm.serviceName": "Service Name",
