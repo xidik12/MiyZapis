@@ -38,11 +38,18 @@ interface AddTimeModalProps {
 }
 
 const toUtcIsoString = (date: string, time: string) => {
-  const localDate = new Date(`${date}T${time}`);
-  if (Number.isNaN(localDate.getTime())) {
-    throw new Error('Invalid date or time');
+  // Parse date and time components
+  const [year, month, day] = date.split('-');
+  const [hours, minutes] = time.split(':');
+
+  // Validate inputs
+  if (!year || !month || !day || !hours || !minutes) {
+    throw new Error('Invalid date or time format');
   }
-  return localDate.toISOString();
+
+  // Create timezone-independent UTC string
+  // If user selects 14:00, we store it as 14:00 UTC (not converted from local time)
+  return `${year}-${month}-${day}T${hours}:${minutes}:00.000Z`;
 };
 
 const AddTimeModal: React.FC<AddTimeModalProps> = ({
