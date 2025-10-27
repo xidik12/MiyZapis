@@ -6,7 +6,8 @@ import {
   RescheduleRecord,
   PaymentIntent,
   Pagination,
-  ApiResponse
+  ApiResponse,
+  GroupSessionInfo
 } from '@/types';
 
 const VALID_BOOKING_STATUSES = [
@@ -347,7 +348,7 @@ export class BookingService {
   // Export bookings data
   async exportBookings(filters: BookingFilters = {}, format: 'csv' | 'pdf' = 'csv'): Promise<void> {
     const params = new URLSearchParams();
-    
+
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         params.append(key, value.toString());
@@ -357,6 +358,15 @@ export class BookingService {
     params.append('format', format);
 
     await apiClient.download(`/bookings/export?${params}`, `bookings.${format}`);
+  }
+
+  // Get group session information
+  async getGroupSessionInfo(groupSessionId: string): Promise<GroupSessionInfo> {
+    const response = await apiClient.get(`/bookings/group-session/${groupSessionId}`);
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get group session info');
+    }
+    return response.data.groupSession;
   }
 }
 

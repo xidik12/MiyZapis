@@ -17,6 +17,7 @@ router.post('/', authenticateToken, validateCreateBooking, BookingController.cre
 router.post('/with-payment', authenticateToken, BookingController.createBookingWithPayment);
 router.get('/', authenticateToken, validateGetBookings, BookingController.getUserBookings);
 router.get('/stats', authenticateToken, BookingController.getSpecialistBookingStats);
+router.get('/group-session/:groupSessionId', authenticateToken, BookingController.getGroupSessionInfo);
 router.get('/:bookingId', authenticateToken, validateBookingId, BookingController.getBooking);
 router.put('/:bookingId', authenticateToken, validateBookingId, validateUpdateBookingStatus, BookingController.updateBooking);
 router.put('/:bookingId/confirm', authenticateToken, validateConfirmBooking, BookingController.confirmBooking);

@@ -381,18 +381,57 @@ export class BookingService {
             id: true,
             scheduledAt: true,
             duration: true,
-            status: true
+            status: true,
+            serviceId: true,
+            isGroupBooking: true,
+            groupSessionId: true,
+            participantCount: true
           }
         });
 
         // Check for time overlap with any existing booking
+        // For group sessions, we allow multiple bookings if capacity permits
         const conflictingBooking = existingBookings.find(booking => {
           const existingStart = new Date(booking.scheduledAt);
           const existingEnd = new Date(existingStart.getTime() + (booking.duration * 60 * 1000));
-          
+
           // Two time ranges overlap if: start1 < end2 && start2 < end1
           const hasOverlap = bookingStartTime < existingEnd && existingStart < bookingEndTime;
-          
+
+          if (!hasOverlap) return false;
+
+          // If this is a group session booking, check if capacity allows
+          if (service.isGroupSession && booking.isGroupBooking && booking.serviceId === data.serviceId) {
+            // Count total participants for this group session
+            const groupBookings = existingBookings.filter(b =>
+              b.groupSessionId === booking.groupSessionId &&
+              b.status !== 'CANCELLED' &&
+              b.status !== 'REFUNDED'
+            );
+            const totalParticipants = groupBookings.reduce((sum, b) => sum + (b.participantCount || 1), 0);
+
+            // Check if there's room for one more participant
+            if (service.maxParticipants && totalParticipants >= service.maxParticipants) {
+              logger.warn('Group session full', {
+                groupSessionId: booking.groupSessionId,
+                totalParticipants,
+                maxParticipants: service.maxParticipants,
+                serviceId: service.id
+              });
+              return true; // Conflict - session is full
+            }
+
+            // There's room - no conflict
+            logger.info('Group session has capacity', {
+              groupSessionId: booking.groupSessionId,
+              totalParticipants,
+              maxParticipants: service.maxParticipants,
+              serviceId: service.id
+            });
+            return false;
+          }
+
+          // Regular booking or different service - this is a conflict
           if (hasOverlap) {
             logger.warn('Booking conflict detected', {
               existingBookingId: booking.id,
@@ -402,8 +441,8 @@ export class BookingService {
               requestedEnd: bookingEndTime.toISOString()
             });
           }
-          
-          return hasOverlap;
+
+          return true;
         });
 
         if (conflictingBooking) {
@@ -529,6 +568,26 @@ export class BookingService {
         // Determine initial booking status based on specialist's auto-booking setting
         const initialStatus = service.specialist.autoBooking ? 'CONFIRMED' : 'PENDING';
 
+        // Generate group session ID if this is a group session
+        // Group session ID is based on specialist, service, and scheduled time
+        let groupSessionId: string | null = null;
+        if (service.isGroupSession) {
+          // Find existing group session for this time slot
+          const existingGroupBooking = existingBookings.find(b =>
+            b.isGroupBooking &&
+            b.serviceId === data.serviceId &&
+            new Date(b.scheduledAt).getTime() === bookingStartTime.getTime() &&
+            b.groupSessionId
+          );
+
+          if (existingGroupBooking) {
+            groupSessionId = existingGroupBooking.groupSessionId;
+          } else {
+            // Create new group session ID
+            groupSessionId = `grp_${service.specialist.userId}_${data.serviceId}_${bookingStartTime.getTime()}`;
+          }
+        }
+
         // Create booking within the transaction
         const createdBooking = await tx.booking.create({
           data: {
@@ -549,6 +608,10 @@ export class BookingService {
             deliverables: JSON.stringify([]), // Empty deliverables initially
             status: initialStatus, // Auto-booking: CONFIRMED if autoBooking enabled, otherwise PENDING
             confirmedAt: service.specialist.autoBooking ? new Date() : null, // Auto-confirm if auto-booking
+            // Group session fields
+            isGroupBooking: service.isGroupSession,
+            groupSessionId,
+            participantCount: 1, // Default to 1 participant per booking
           },
         include: {
           customer: {
@@ -808,6 +871,66 @@ export class BookingService {
       return booking as BookingWithDetails;
     } catch (error) {
       logger.error('Error getting booking:', error);
+      throw error;
+    }
+  }
+
+  // Get group session information
+  static async getGroupSessionInfo(groupSessionId: string): Promise<{
+    totalParticipants: number;
+    maxParticipants: number | null;
+    bookings: Array<{
+      id: string;
+      customerId: string;
+      customerName: string;
+      status: string;
+      participantCount: number;
+    }>;
+  }> {
+    try {
+      const bookings = await prisma.booking.findMany({
+        where: {
+          groupSessionId,
+          status: {
+            notIn: ['CANCELLED', 'REFUNDED']
+          }
+        },
+        select: {
+          id: true,
+          customerId: true,
+          status: true,
+          participantCount: true,
+          serviceId: true,
+          customer: {
+            select: {
+              firstName: true,
+              lastName: true
+            }
+          },
+          service: {
+            select: {
+              maxParticipants: true
+            }
+          }
+        }
+      });
+
+      const totalParticipants = bookings.reduce((sum, b) => sum + (b.participantCount || 1), 0);
+      const maxParticipants = bookings[0]?.service.maxParticipants || null;
+
+      return {
+        totalParticipants,
+        maxParticipants,
+        bookings: bookings.map(b => ({
+          id: b.id,
+          customerId: b.customerId,
+          customerName: `${b.customer.firstName} ${b.customer.lastName}`,
+          status: b.status,
+          participantCount: b.participantCount || 1
+        }))
+      };
+    } catch (error) {
+      logger.error('Error getting group session info:', error);
       throw error;
     }
   }

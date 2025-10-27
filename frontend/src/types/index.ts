@@ -224,6 +224,11 @@ export interface Booking extends BaseEntity {
   cancellationDeadline?: string;
   cancellationReason?: string;
   rescheduleHistory?: RescheduleRecord[];
+
+  // Group Session fields
+  isGroupBooking?: boolean;
+  groupSessionId?: string;
+  participantCount?: number;
   
   // Review information for completed bookings
   review?: {
@@ -239,13 +244,25 @@ export interface Booking extends BaseEntity {
   
   // Flattened fields for frontend convenience (added by backend transform)
   customerName: string;
-  customerEmail?: string;  
+  customerEmail?: string;
   customerPhone?: string;
   serviceName: string;
   date: string; // YYYY-MM-DD format
-  time?: string; // HH:MM format  
+  time?: string; // HH:MM format
   amount: number; // Same as totalAmount
   type?: 'online' | 'in-person'; // Based on meetingLink presence
+}
+
+export interface GroupSessionInfo {
+  totalParticipants: number;
+  maxParticipants: number | null;
+  bookings: Array<{
+    id: string;
+    customerId: string;
+    customerName: string;
+    status: string;
+    participantCount: number;
+  }>;
 }
 
 export interface RescheduleRecord {

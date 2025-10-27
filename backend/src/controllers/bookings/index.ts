@@ -997,4 +997,51 @@ export class BookingController {
       );
     }
   }
+
+  // Get group session information
+  static async getGroupSessionInfo(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { groupSessionId } = req.params;
+
+      if (!groupSessionId) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Group session ID is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const groupSessionInfo = await BookingService.getGroupSessionInfo(groupSessionId);
+
+      res.json(
+        createSuccessResponse({
+          groupSession: groupSessionInfo
+        })
+      );
+    } catch (error: any) {
+      logger.error('Get group session info error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get group session information',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
 }

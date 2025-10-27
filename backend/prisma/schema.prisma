@@ -380,6 +380,11 @@ model Booking {
   status      String @default("PENDING") // PENDING, PENDING_PAYMENT, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED, REFUNDED
   scheduledAt DateTime
   duration    Int           // Duration in minutes
+
+  // Group Session Support
+  isGroupBooking Boolean @default(false) // If true, this booking is part of a group session
+  groupSessionId String? // Unique identifier to group multiple bookings together (same service, specialist, scheduledAt)
+  participantCount Int @default(1) // Number of participants in this booking (for group sessions)
   
   // Pricing
   totalAmount    Float
@@ -425,6 +430,7 @@ model Booking {
   @@index([customerId, status])
   @@index([specialistId, status])
   @@index([scheduledAt])
+  @@index([groupSessionId]) // For efficiently querying all bookings in a group session
 
   // Relations
   customer      User        @relation("CustomerBookings", fields: [customerId], references: [id])
