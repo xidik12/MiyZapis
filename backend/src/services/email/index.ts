@@ -229,7 +229,7 @@ class EmailService {
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Verify Your Email - MiyZapis</title>
+      <title>Verify Your Email - Panhaha</title>
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -250,11 +250,11 @@ class EmailService {
     <body>
       <div class="container">
         <div class="header">
-          <h1>Welcome to MiyZapis!</h1>
+          <h1>Welcome to Panhaha!</h1>
         </div>
         <div class="content">
           <h2>Hi ${data.firstName}!</h2>
-          <p>Thank you for registering with MiyZapis, your trusted booking platform.</p>
+          <p>Thank you for registering with Panhaha, your trusted booking platform.</p>
           <p>To complete your registration and verify your email address, please click the button below:</p>
           <p style="text-align: center;">
             <a href="${data.verificationLink}" class="button">Verify Email Address</a>
@@ -262,10 +262,10 @@ class EmailService {
           <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
           <p style="word-break: break-all; color: #007bff;">${data.verificationLink}</p>
           <p><strong>This link will expire in 24 hours.</strong></p>
-          <p>If you didn't create an account with MiyZapis, you can safely ignore this email.</p>
+          <p>If you didn't create an account with Panhaha, you can safely ignore this email.</p>
         </div>
         <div class="footer">
-          <p>© 2024 MiyZapis. All rights reserved.</p>
+          <p>© 2024 Panhaha. All rights reserved.</p>
           <p>This is an automated email, please do not reply.</p>
         </div>
       </div>
@@ -274,22 +274,22 @@ class EmailService {
     `;
 
     const text = `
-    Welcome to MiyZapis!
+    Welcome to Panhaha!
     
     Hi ${data.firstName}!
     
-    Thank you for registering with MiyZapis. To complete your registration, please verify your email address by clicking the link below:
+    Thank you for registering with Panhaha. To complete your registration, please verify your email address by clicking the link below:
     
     ${data.verificationLink}
     
     This link will expire in 24 hours.
     
-    If you didn't create an account with MiyZapis, you can safely ignore this email.
+    If you didn't create an account with Panhaha, you can safely ignore this email.
     `;
 
     return this.sendEmail({
       to: email,
-      subject: 'Verify Your Email - MiyZapis',
+      subject: 'Verify Your Email - Panhaha',
       html,
       text,
     });
@@ -322,7 +322,7 @@ class EmailService {
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Reset Your Password - MiyZapis</title>
+      <title>Reset Your Password - Panhaha</title>
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -347,7 +347,7 @@ class EmailService {
         </div>
         <div class="content">
           <h2>Hi ${data.firstName}!</h2>
-          <p>We received a request to reset your password for your MiyZapis account.</p>
+          <p>We received a request to reset your password for your Panhaha account.</p>
           <p>Click the button below to reset your password:</p>
           <p style="text-align: center;">
             <a href="${data.resetLink}" class="button">Reset Password</a>
@@ -358,7 +358,7 @@ class EmailService {
           <p>If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.</p>
         </div>
         <div class="footer">
-          <p>© 2024 MiyZapis. All rights reserved.</p>
+          <p>© 2024 Panhaha. All rights reserved.</p>
           <p>This is an automated email, please do not reply.</p>
         </div>
       </div>
@@ -367,11 +367,11 @@ class EmailService {
     `;
 
     const text = `
-    Password Reset Request - MiyZapis
+    Password Reset Request - Panhaha
     
     Hi ${data.firstName}!
     
-    We received a request to reset your password for your MiyZapis account.
+    We received a request to reset your password for your Panhaha account.
     
     Click the link below to reset your password:
     ${data.resetLink}
@@ -383,7 +383,7 @@ class EmailService {
 
     return this.sendEmail({
       to: email,
-      subject: 'Reset Your Password - MiyZapis',
+      subject: 'Reset Your Password - Panhaha',
       html,
       text,
     });
@@ -416,7 +416,7 @@ class EmailService {
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Welcome to MiyZapis!</title>
+      <title>Welcome to Panhaha!</title>
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -429,11 +429,11 @@ class EmailService {
     <body>
       <div class="container">
         <div class="header">
-          <h1>🎉 Welcome to MiyZapis!</h1>
+          <h1>🎉 Welcome to Panhaha!</h1>
         </div>
         <div class="content">
           <h2>Hi ${firstName}!</h2>
-          <p>Your email has been verified successfully! Welcome to MiyZapis - your trusted booking platform.</p>
+          <p>Your email has been verified successfully! Welcome to Panhaha - your trusted booking platform.</p>
           
           <div class="feature">
             <h3>🔍 Discover Services</h3>
@@ -442,7 +442,7 @@ class EmailService {
           
           <div class="feature">
             <h3>📱 Multi-Platform Access</h3>
-            <p>Access MiyZapis on web, Telegram bot, or our mini app.</p>
+            <p>Access Panhaha on web, Telegram bot, or our mini app.</p>
           </div>
           
           <div class="feature">
@@ -450,10 +450,10 @@ class EmailService {
             <p>Get rewarded for every booking and refer friends to earn more!</p>
           </div>
           
-          <p>Ready to get started? Log in to your account and explore what MiyZapis has to offer!</p>
+          <p>Ready to get started? Log in to your account and explore what Panhaha has to offer!</p>
         </div>
         <div class="footer">
-          <p>© 2024 MiyZapis. All rights reserved.</p>
+          <p>© 2024 Panhaha. All rights reserved.</p>
           <p>Need help? Contact our support team anytime.</p>
         </div>
       </div>
@@ -463,7 +463,7 @@ class EmailService {
 
     return this.sendEmail({
       to: email,
-      subject: '🎉 Welcome to MiyZapis!',
+      subject: '🎉 Welcome to Panhaha!',
       html,
     });
   }

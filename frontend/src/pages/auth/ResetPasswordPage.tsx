@@ -44,17 +44,27 @@ const ResetPasswordPage: React.FC = () => {
   const onSubmit = async (data: ResetPasswordFormData) => {
     if (!token) return;
 
+    console.log('[RESET PASSWORD] Starting password reset with token:', token.substring(0, 10) + '...');
     setIsLoading(true);
     setError(null);
 
     try {
-      await authService.resetPassword(token, data.password);
+      console.log('[RESET PASSWORD] Calling authService.resetPassword...');
+      const result = await authService.resetPassword(token, data.password);
+      console.log('[RESET PASSWORD] Success! Result:', result);
       setIsSuccess(true);
     } catch (error: any) {
-      console.error('Password reset failed:', error);
+      console.error('[RESET PASSWORD] Failed:', error);
+      console.error('[RESET PASSWORD] Error details:', {
+        message: error.message,
+        response: error.response,
+        apiError: error.apiError,
+        stack: error.stack
+      });
       setError(error.message || 'Failed to reset password. Please try again.');
     } finally {
       setIsLoading(false);
+      console.log('[RESET PASSWORD] Loading finished');
     }
   };
 

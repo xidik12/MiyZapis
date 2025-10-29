@@ -3,11 +3,11 @@ export const emailTemplates = {
   // Welcome email for new users
   welcome: {
     en: {
-      subject: 'Welcome to MiyZapis - Your Booking Platform',
+      subject: 'Welcome to Panhaha - Your Booking Platform',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to MiyZapis!</h1>
+            <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to Panhaha!</h1>
             <p style="color: #e0e8ff; margin: 10px 0 0 0;">Your journey to seamless bookings starts here</p>
           </div>
           
@@ -15,7 +15,7 @@ export const emailTemplates = {
             <h2 style="color: #374151; margin-bottom: 20px;">Hello {{firstName}}!</h2>
             
             <p style="color: #6b7280; line-height: 1.6;">
-              Thank you for joining MiyZapis, the modern booking platform that connects customers with talented specialists across Ukraine.
+              Thank you for joining Panhaha, the modern booking platform that connects customers with talented specialists across Ukraine.
             </p>
             
             <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -40,11 +40,11 @@ export const emailTemplates = {
         </div>
       `,
       text: `
-        Welcome to MiyZapis!
+        Welcome to Panhaha!
         
         Hello {{firstName}},
         
-        Thank you for joining MiyZapis, the modern booking platform that connects customers with talented specialists across Ukraine.
+        Thank you for joining Panhaha, the modern booking platform that connects customers with talented specialists across Ukraine.
         
         What's Next?
         - Complete your profile to get personalized recommendations
@@ -461,7 +461,7 @@ export const emailTemplates = {
   // Email verification
   emailVerification: {
     en: {
-      subject: 'Verify Your Email Address - MiyZapis',
+      subject: 'Verify Your Email Address - Panhaha',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
@@ -666,7 +666,7 @@ export const emailTemplates = {
   // Password reset
   passwordReset: {
     en: {
-      subject: 'Reset Your Password - MiyZapis',
+      subject: 'Reset Your Password - Panhaha',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">

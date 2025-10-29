@@ -62,7 +62,7 @@ class ResendEmailService {
       logger.info('📤 Attempting to send email via Resend');
 
       const result = await this.resend.emails.send({
-        from: 'MiyZapis <noreply@miyzapis.com>',
+        from: 'Panhaha <noreply@panhaha.com>',
         to: options.to,
         subject: options.subject,
         html: options.html,
@@ -111,7 +111,7 @@ class ResendEmailService {
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Verify Your Email - MiyZapis</title>
+      <title>Verify Your Email - Panhaha</title>
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; background: #ffffff; }
@@ -142,11 +142,11 @@ class ResendEmailService {
     <body>
       <div class="container">
         <div class="header">
-          <h1 style="margin: 0; font-size: 28px;">🎉 Welcome to MiyZapis!</h1>
+          <h1 style="margin: 0; font-size: 28px;">🎉 Welcome to Panhaha!</h1>
         </div>
         <div class="content">
           <h2 style="color: #1e293b; margin-top: 0;">Hi ${data.firstName}!</h2>
-          <p style="font-size: 16px; margin-bottom: 24px;">Thank you for registering with MiyZapis, your trusted booking platform.</p>
+          <p style="font-size: 16px; margin-bottom: 24px;">Thank you for registering with Panhaha, your trusted booking platform.</p>
           <p style="font-size: 16px; margin-bottom: 24px;">To complete your registration and verify your email address, please click the button below:</p>
           <div style="text-align: center; margin: 32px 0;">
             <a href="${data.verificationLink}" class="button">Verify Email Address</a>
@@ -154,10 +154,10 @@ class ResendEmailService {
           <p style="font-size: 14px; color: #64748b;">If the button doesn't work, you can copy and paste this link into your browser:</p>
           <p style="font-size: 14px;" class="link">${data.verificationLink}</p>
           <p style="font-size: 14px; color: #dc2626; font-weight: 600; margin-top: 24px;">⏰ This link will expire in 24 hours.</p>
-          <p style="font-size: 14px; color: #64748b;">If you didn't create an account with MiyZapis, you can safely ignore this email.</p>
+          <p style="font-size: 14px; color: #64748b;">If you didn't create an account with Panhaha, you can safely ignore this email.</p>
         </div>
         <div class="footer">
-          <p style="margin: 0;">© 2025 MiyZapis. All rights reserved.</p>
+          <p style="margin: 0;">© 2025 Panhaha. All rights reserved.</p>
           <p style="margin: 8px 0 0 0;">This is an automated email, please do not reply.</p>
         </div>
       </div>
@@ -166,22 +166,22 @@ class ResendEmailService {
     `;
 
     const text = `
-    Welcome to MiyZapis!
+    Welcome to Panhaha!
     
     Hi ${data.firstName}!
     
-    Thank you for registering with MiyZapis. To complete your registration, please verify your email address by clicking the link below:
+    Thank you for registering with Panhaha. To complete your registration, please verify your email address by clicking the link below:
     
     ${data.verificationLink}
     
     This link will expire in 24 hours.
     
-    If you didn't create an account with MiyZapis, you can safely ignore this email.
+    If you didn't create an account with Panhaha, you can safely ignore this email.
     `;
 
     return this.sendEmail({
       to: email,
-      subject: '🎉 Verify Your Email - MiyZapis',
+      subject: '🎉 Verify Your Email - Panhaha',
       html,
       text,
     });
@@ -193,7 +193,7 @@ class ResendEmailService {
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Reset Your Password - MiyZapis</title>
+      <title>Reset Your Password - Panhaha</title>
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; background: #ffffff; }
@@ -228,7 +228,7 @@ class ResendEmailService {
         </div>
         <div class="content">
           <h2 style="color: #1e293b; margin-top: 0;">Hi ${data.firstName}!</h2>
-          <p style="font-size: 16px; margin-bottom: 24px;">We received a request to reset your password for your MiyZapis account.</p>
+          <p style="font-size: 16px; margin-bottom: 24px;">We received a request to reset your password for your Panhaha account.</p>
           <p style="font-size: 16px; margin-bottom: 24px;">Click the button below to reset your password:</p>
           <div style="text-align: center; margin: 32px 0;">
             <a href="${data.resetLink}" class="button">Reset Password</a>
@@ -239,7 +239,7 @@ class ResendEmailService {
           <p style="font-size: 14px; color: #64748b;">If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.</p>
         </div>
         <div class="footer">
-          <p style="margin: 0;">© 2025 MiyZapis. All rights reserved.</p>
+          <p style="margin: 0;">© 2025 Panhaha. All rights reserved.</p>
           <p style="margin: 8px 0 0 0;">This is an automated email, please do not reply.</p>
         </div>
       </div>
@@ -248,11 +248,11 @@ class ResendEmailService {
     `;
 
     const text = `
-    Password Reset Request - MiyZapis
+    Password Reset Request - Panhaha
     
     Hi ${data.firstName}!
     
-    We received a request to reset your password for your MiyZapis account.
+    We received a request to reset your password for your Panhaha account.
     
     Click the link below to reset your password:
     ${data.resetLink}
@@ -264,7 +264,7 @@ class ResendEmailService {
 
     return this.sendEmail({
       to: email,
-      subject: '🔐 Reset Your Password - MiyZapis',
+      subject: '🔐 Reset Your Password - Panhaha',
       html,
       text,
     });
@@ -276,7 +276,7 @@ class ResendEmailService {
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Welcome to MiyZapis!</title>
+      <title>Welcome to Panhaha!</title>
       <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; background: #ffffff; }
@@ -296,11 +296,11 @@ class ResendEmailService {
     <body>
       <div class="container">
         <div class="header">
-          <h1 style="margin: 0; font-size: 28px;">🎉 Welcome to MiyZapis!</h1>
+          <h1 style="margin: 0; font-size: 28px;">🎉 Welcome to Panhaha!</h1>
         </div>
         <div class="content">
           <h2 style="color: #1e293b; margin-top: 0;">Hi ${firstName}!</h2>
-          <p style="font-size: 16px; margin-bottom: 24px;">Your email has been verified successfully! Welcome to MiyZapis - your trusted booking platform.</p>
+          <p style="font-size: 16px; margin-bottom: 24px;">Your email has been verified successfully! Welcome to Panhaha - your trusted booking platform.</p>
           
           <div class="feature">
             <h3 style="color: #1e40af; margin: 0 0 12px 0;">🔍 Discover Services</h3>
@@ -309,7 +309,7 @@ class ResendEmailService {
           
           <div class="feature">
             <h3 style="color: #1e40af; margin: 0 0 12px 0;">📱 Multi-Platform Access</h3>
-            <p style="margin: 0; color: #475569;">Access MiyZapis on web, Telegram bot, or our mini app.</p>
+            <p style="margin: 0; color: #475569;">Access Panhaha on web, Telegram bot, or our mini app.</p>
           </div>
           
           <div class="feature">
@@ -317,10 +317,10 @@ class ResendEmailService {
             <p style="margin: 0; color: #475569;">Get rewarded for every booking and refer friends to earn more!</p>
           </div>
           
-          <p style="font-size: 16px; margin: 32px 0 0 0;">Ready to get started? Log in to your account and explore what MiyZapis has to offer!</p>
+          <p style="font-size: 16px; margin: 32px 0 0 0;">Ready to get started? Log in to your account and explore what Panhaha has to offer!</p>
         </div>
         <div class="footer">
-          <p style="margin: 0;">© 2025 MiyZapis. All rights reserved.</p>
+          <p style="margin: 0;">© 2025 Panhaha. All rights reserved.</p>
           <p style="margin: 8px 0 0 0;">Need help? Contact our support team anytime.</p>
         </div>
       </div>
@@ -330,7 +330,7 @@ class ResendEmailService {
 
     return this.sendEmail({
       to: email,
-      subject: '🎉 Welcome to MiyZapis!',
+      subject: '🎉 Welcome to Panhaha!',
       html,
     });
   }
