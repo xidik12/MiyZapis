@@ -220,13 +220,18 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     const iconProps = { className: "h-5 w-5" };
     
     switch (type) {
-      case 'booking':
+      case 'booking_confirmed':
+      case 'booking_cancelled':
+      case 'booking_reminder':
+      case 'new_booking':
+      case 'booking_updated':
         return <CalendarIcon {...iconProps} />;
-      case 'payment':
+      case 'payment_received':
+      case 'payment_failed':
         return <CreditCardIcon {...iconProps} />;
-      case 'review':
+      case 'review_received':
         return <StarIcon {...iconProps} />;
-      case 'system':
+      case 'system_announcement':
         return <InformationCircleIcon {...iconProps} />;
       default:
         return <BellIcon {...iconProps} />;
@@ -236,13 +241,18 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   // Get notification type color
   const getNotificationColor = (type: NotificationType) => {
     switch (type) {
-      case 'booking':
+      case 'booking_confirmed':
+      case 'booking_cancelled':
+      case 'booking_reminder':
+      case 'new_booking':
+      case 'booking_updated':
         return 'text-blue-600 bg-blue-100';
-      case 'payment':
+      case 'payment_received':
+      case 'payment_failed':
         return 'text-green-600 bg-green-100';
-      case 'review':
+      case 'review_received':
         return 'text-yellow-600 bg-yellow-100';
-      case 'system':
+      case 'system_announcement':
         return 'text-gray-600 bg-gray-100';
       default:
         return 'text-gray-600 bg-gray-100';

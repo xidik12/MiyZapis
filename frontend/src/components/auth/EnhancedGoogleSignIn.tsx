@@ -73,7 +73,7 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
         });
         
         // Apply custom styling to make it full width
-        const googleButton = buttonContainer.querySelector('div[role="button"]');
+        const googleButton = buttonContainer.querySelector('div[role="button"]') as HTMLElement;
         if (googleButton) {
           googleButton.style.width = '100%';
           googleButton.style.justifyContent = 'center';
@@ -91,8 +91,8 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
       // Dispatch Google login action without userType first
       const result = await dispatch(googleLogin({ credential: response.credential })).unwrap();
       
-      // Check if user type selection is required
-      if (result.requiresUserTypeSelection) {
+      // Type guard: Check if user type selection is required
+      if ('requiresUserTypeSelection' in result && result.requiresUserTypeSelection) {
         setPendingGoogleData({
           credential: response.credential,
           userData: result.googleData
@@ -102,15 +102,18 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
       }
 
       // If we get here, user already exists and is logged in
-      if (onSuccess) {
-        onSuccess();
-      }
+      // Type guard: Check if result has user property
+      if ('user' in result && result.user) {
+        if (onSuccess) {
+          onSuccess();
+        }
 
-      // Navigate based on user type
-      if (result.user?.userType === 'specialist') {
-        navigate('/specialist/dashboard');
-      } else {
-        navigate('/dashboard');
+        // Navigate based on user type
+        if (result.user.userType === 'specialist' || result.user.userType === 'business') {
+          navigate('/specialist/dashboard');
+        } else {
+          navigate('/dashboard');
+        }
       }
       
     } catch (error: any) {
@@ -142,9 +145,11 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
       }
 
       // Dispatch Google login with selected user type
-      const result = await dispatch(googleLogin({
+      // Note: googleLogin only accepts 'customer' | 'specialist', so map 'business' to 'specialist'
+      const mappedUserType = userType === 'business' ? 'specialist' : userType;
+      await dispatch(googleLogin({
         credential: pendingGoogleData.credential,
-        userType
+        userType: mappedUserType
       })).unwrap();
 
       setShowUserTypeModal(false);

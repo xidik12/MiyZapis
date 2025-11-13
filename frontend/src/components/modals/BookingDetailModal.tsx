@@ -66,11 +66,11 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const canReview = booking.status === 'COMPLETED' && !booking.review;
   const canBookAgain = booking.status === 'COMPLETED';
 
-  const specialistName = booking.specialist?.firstName && booking.specialist?.lastName
-    ? `${booking.specialist.firstName} ${booking.specialist.lastName}`
-    : booking.specialistName || 'Unknown Specialist';
+  const specialistName = booking.specialist?.user?.firstName && booking.specialist?.user?.lastName
+    ? `${booking.specialist.user.firstName} ${booking.specialist.user.lastName}`
+    : booking.specialist?.businessName || booking.specialistName || 'Unknown Specialist';
 
-  const specialistAvatar = booking.specialist?.profileImage || booking.specialist?.user?.avatar;
+  const specialistAvatar = booking.specialist?.user?.avatar;
   const specialistRating = booking.specialist?.rating || 5;
 
   return (
@@ -300,42 +300,25 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               <div className="flex justify-between">
                 <span>{t('bookings.paymentStatus')}:</span>
                 <span className={`font-medium ${
-                  booking.paymentStatus === 'PAID'
+                  booking.depositPaid && (booking.fullPaymentPaid ?? true)
                     ? 'text-green-600 dark:text-green-400'
                     : 'text-orange-600 dark:text-orange-400'
                 }`}>
-                  {booking.paymentStatus || 'PENDING'}
+                  {booking.depositPaid && (booking.fullPaymentPaid ?? true) ? 'PAID' : 'PENDING'}
                 </span>
               </div>
             </div>
           </div>
 
           {/* Notes */}
-          {(booking.customerNotes || booking.specialistNotes) && (
+          {booking.notes && (
             <div className="bg-white/40 dark:bg-white/5 rounded-lg p-3 sm:p-4 border border-white/20 dark:border-white/10">
               <h3 className="font-medium text-gray-900 dark:text-white mb-2 sm:mb-3 text-sm sm:text-base">
                 {t('bookings.notes')}
               </h3>
-              {booking.customerNotes && (
-                <div className="mb-2 sm:mb-3">
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-medium mb-1">
-                    {t('bookings.yourNotes')}:
-                  </p>
-                  <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-200 break-words">
-                    {booking.customerNotes}
-                  </p>
-                </div>
-              )}
-              {booking.specialistNotes && (
-                <div>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 font-medium mb-1">
-                    {t('bookings.specialistNotes')}:
-                  </p>
-                  <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-200 break-words">
-                    {booking.specialistNotes}
-                  </p>
-                </div>
-              )}
+              <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-200 break-words">
+                {booking.notes}
+              </p>
             </div>
           )}
         </div>

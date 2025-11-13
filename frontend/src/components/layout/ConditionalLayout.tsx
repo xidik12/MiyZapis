@@ -18,7 +18,7 @@ export const ConditionalLayout: React.FC<ConditionalLayoutProps> = ({ children }
     return <CustomerLayout>{children}</CustomerLayout>;
   }
   
-  if (isAuthenticated && user?.userType === 'specialist') {
+  if (isAuthenticated && (user?.userType === 'specialist' || user?.userType === 'business')) {
     return <SpecialistLayout>{children}</SpecialistLayout>;
   }
 
