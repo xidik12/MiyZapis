@@ -21,6 +21,7 @@ import { UserDropdown } from '../common/UserDropdown';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { LanguageToggle } from '../ui/LanguageToggle';
 import { CurrencyToggle } from '../ui/CurrencyToggle';
+import { Logo } from '../common/Logo';
 
 export const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -100,26 +101,8 @@ export const Header: React.FC = () => {
         <div className="flex justify-between items-center h-14 xs:h-16 sm:h-16">
           {/* Logo and brand */}
           <div className="flex items-center">
-            <Link
-              to="/"
-              className="flex items-center gap-3 group hover:opacity-95 transition-all duration-300"
-              onClick={() => {
-                // Force navigate to home page and scroll to top
-                window.scrollTo(0, 0);
-              }}
-            >
-              <div className="w-10 h-10 xs:w-12 xs:h-12 rounded-2xl flex items-center justify-center text-white font-bold text-xl xs:text-2xl bg-panhaha-gradient shadow-lg shadow-primary-500/25 group-hover:shadow-xl group-hover:shadow-primary-500/40 group-hover:-translate-y-1 group-hover:rotate-3 transition-all duration-300">
-                <span className="font-display">H</span>
-              </div>
-              <div className="flex flex-col leading-tight">
-                <span className="text-lg xs:text-xl font-display font-bold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent hidden xs:block group-hover:scale-[1.02] transition-transform duration-300">
-                  Panhaha
-                </span>
-                <span className="text-[10px] xs:text-xs font-medium text-secondary-500 dark:text-secondary-400 tracking-wide hidden sm:block">
-                  Connect & Book
-                </span>
-              </div>
-            </Link>
+            <Logo size="md" showText showTagline className="hidden sm:flex" />
+            <Logo size="sm" showText={false} className="sm:hidden" />
           </div>
 
           {/* Desktop navigation */}

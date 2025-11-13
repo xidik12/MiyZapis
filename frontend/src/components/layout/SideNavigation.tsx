@@ -23,6 +23,7 @@ import {
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { LanguageToggle } from '../ui/LanguageToggle';
 import { CurrencyToggle } from '../ui/CurrencyToggle';
+import { LogoIcon } from '../common/Logo';
 
 interface SideNavigationProps {
   isCollapsed: boolean;
@@ -158,9 +159,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
       <div className="flex items-center justify-between p-4 border-b border-[rgba(223,214,207,0.35)] dark:border-[rgba(90,70,110,0.55)]">
         {!isCollapsed && (
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 bg-panhaha-gradient text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-primary group-hover:shadow-lg group-hover:-translate-y-0.5 transition-all duration-300">
-              H
-            </div>
+            <LogoIcon size={36} />
             <span className="text-lg font-semibold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">
               {t('brand.name')}
             </span>
@@ -169,9 +168,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
 
         {isCollapsed && (
           <Link to="/" className="flex justify-center w-full">
-            <div className="w-9 h-9 bg-panhaha-gradient text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-primary hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-              H
-            </div>
+            <LogoIcon size={36} />
           </Link>
         )}
         

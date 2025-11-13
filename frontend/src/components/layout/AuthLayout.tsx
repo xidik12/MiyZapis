@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { environment } from '@/config/environment';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { Logo } from '../common/Logo';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -20,21 +21,9 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
 
       {/* Logo section - responsive sizing */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Link to="/" className="flex justify-center mb-6 group">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-panhaha-gradient shadow-lg shadow-primary-500/25 flex items-center justify-center text-white font-bold text-2xl font-display group-hover:shadow-xl group-hover:shadow-primary-500/40 group-hover:-translate-y-1 group-hover:rotate-3 transition-all duration-300">
-              <span>{brandInitial}</span>
-            </div>
-            <div className="flex flex-col leading-tight">
-              <span className="text-2xl font-display font-bold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent group-hover:scale-[1.02] transition-transform duration-300">
-                {brandName}
-              </span>
-              <span className="text-xs font-medium text-secondary-500 dark:text-secondary-400 tracking-wide">
-                Connect & Book
-              </span>
-            </div>
-          </div>
-        </Link>
+        <div className="flex justify-center mb-6">
+          <Logo size="lg" showText showTagline />
+        </div>
       </div>
 
       {/* Main form container - improved mobile responsiveness */}
