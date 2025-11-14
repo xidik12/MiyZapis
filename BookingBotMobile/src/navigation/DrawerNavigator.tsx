@@ -32,12 +32,14 @@ const Stack = createStackNavigator();
 export const DrawerNavigator: React.FC = () => {
   const { colors } = useTheme();
   const user = useAppSelector(selectUser);
+  // Normalize userType - backend uses lowercase, but we compare with uppercase for consistency
   const userType = user?.userType?.toUpperCase() || 'CUSTOMER';
   const userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'User';
   const userEmail = user?.email || '';
   
   // Business users use the same screens as specialists
   const isSpecialistOrBusiness = userType === 'SPECIALIST' || userType === 'BUSINESS';
+  const isBusiness = userType === 'BUSINESS';
 
   return (
     <Drawer.Navigator
@@ -133,7 +135,7 @@ export const DrawerNavigator: React.FC = () => {
             options={{ title: 'Earnings' }}
           />
           {/* Business-only: Employees management */}
-          {userType === 'BUSINESS' && (
+          {isBusiness && (
             <Drawer.Screen
               name="Employees"
               component={EmployeesScreen}

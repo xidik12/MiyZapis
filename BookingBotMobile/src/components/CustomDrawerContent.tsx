@@ -12,19 +12,22 @@ interface CustomDrawerContentProps extends DrawerContentComponentProps {
 
 export const CustomDrawerContent: React.FC<CustomDrawerContentProps> = ({
   navigation,
-  userType = 'CUSTOMER',
+  userType = 'customer',
   userName = 'User',
   userEmail = 'user@example.com',
 }) => {
   const { colors, isDark, toggleTheme } = useTheme();
-  const isSpecialist = userType === 'SPECIALIST' || userType === 'BUSINESS';
+  // Normalize userType for comparison
+  const normalizedUserType = userType.toUpperCase();
+  const isSpecialist = normalizedUserType === 'SPECIALIST' || normalizedUserType === 'BUSINESS';
+  const isBusiness = normalizedUserType === 'BUSINESS';
 
   const navigateTo = (screen: string) => {
     navigation.navigate(screen as any);
   };
 
   const getRoleBadgeColor = () => {
-    switch (userType) {
+    switch (normalizedUserType) {
       case 'SPECIALIST':
         return colors.secondary;
       case 'BUSINESS':
@@ -59,7 +62,7 @@ export const CustomDrawerContent: React.FC<CustomDrawerContentProps> = ({
         </View>
         <Text style={[styles.userName, { color: colors.text }]}>{userName}</Text>
         <View style={[styles.roleBadge, { backgroundColor: getRoleBadgeColor() }]}>
-          <Text style={styles.roleBadgeText}>{userType}</Text>
+          <Text style={styles.roleBadgeText}>{normalizedUserType}</Text>
         </View>
         <Text style={[styles.userEmail, { color: colors.textSecondary }]}>{userEmail}</Text>
       </View>
@@ -103,7 +106,7 @@ export const CustomDrawerContent: React.FC<CustomDrawerContentProps> = ({
       {isSpecialist && (
         <View style={styles.menuSection}>
           <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-            {userType === 'BUSINESS' ? 'FOR BUSINESS' : 'FOR SPECIALISTS'}
+            {isBusiness ? 'FOR BUSINESS' : 'FOR SPECIALISTS'}
           </Text>
           
           <TouchableOpacity
@@ -147,7 +150,7 @@ export const CustomDrawerContent: React.FC<CustomDrawerContentProps> = ({
           </TouchableOpacity>
 
           {/* Business-only: Employees */}
-          {userType === 'BUSINESS' && (
+          {isBusiness && (
             <TouchableOpacity
               style={styles.menuItem}
               onPress={() => navigateTo('Employees')}

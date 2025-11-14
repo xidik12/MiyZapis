@@ -84,7 +84,7 @@ export const RegisterScreen: React.FC = () => {
         email: data.email,
         password: data.password,
         phoneNumber: data.phoneNumber || undefined,
-        userType: data.userType,
+        userType: data.userType.toLowerCase() as UserType,
       };
 
       const result = await dispatch(registerUser(registerData)).unwrap();
