@@ -1,6 +1,6 @@
 // Auth service - adapted for React Native
 import { apiClient } from './api';
-import { API_ENDPOINTS } from '../config/environment';
+import { API_ENDPOINTS, environment } from '../config/environment';
 import {
   User,
   AuthTokens,
