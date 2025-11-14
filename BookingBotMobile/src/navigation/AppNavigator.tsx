@@ -1,22 +1,36 @@
+// App Navigator - Complete navigation setup with all screens
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { RootStackParamList } from '../types';
+import { useAppSelector } from '../store/hooks';
+import { selectIsAuthenticated } from '../store/slices/authSlice';
 import { DrawerNavigator } from './DrawerNavigator';
-import { LoginScreen } from '../screens/auth/LoginScreen';
 import { useTheme } from '../contexts/ThemeContext';
 
-const Stack = createStackNavigator<RootStackParamList>();
+// Auth screens
+import { LoginScreen } from '../screens/auth/LoginScreen';
+import { RegisterScreen } from '../screens/auth/RegisterScreen';
+import { ForgotPasswordScreen } from '../screens/auth/ForgotPasswordScreen';
+import { ResetPasswordScreen } from '../screens/auth/ResetPasswordScreen';
+import { VerifyEmailScreen } from '../screens/auth/VerifyEmailScreen';
+
+// Public screens
+import { ServiceDetailScreen } from '../screens/ServiceDetailScreen';
+import { SpecialistProfileScreen } from '../screens/SpecialistProfileScreen';
+
+// Customer screens
+import { CustomerDashboardScreen } from '../screens/customer/DashboardScreen';
+
+const Stack = createStackNavigator();
 
 export const AppNavigator: React.FC = () => {
-  const { colors } = useTheme();
-  // TODO: Check authentication status
-  const isAuthenticated = true; // This should come from your auth context/store
+  const { colors, isDark } = useTheme();
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
   return (
     <NavigationContainer
       theme={{
-        dark: false,
+        dark: isDark,
         colors: {
           primary: colors.primary,
           background: colors.background,
@@ -39,17 +53,63 @@ export const AppNavigator: React.FC = () => {
         }}
       >
         {isAuthenticated ? (
-          <Stack.Screen
-            name="Main"
-            component={DrawerNavigator}
-            options={{ headerShown: false }}
-          />
+          <>
+            <Stack.Screen
+              name="Main"
+              component={DrawerNavigator}
+              options={{ headerShown: false }}
+            />
+            {/* Public screens accessible when authenticated */}
+            <Stack.Screen
+              name="ServiceDetail"
+              component={ServiceDetailScreen}
+              options={{ title: 'Service Details' }}
+            />
+            <Stack.Screen
+              name="SpecialistProfile"
+              component={SpecialistProfileScreen}
+              options={{ title: 'Specialist Profile' }}
+            />
+          </>
         ) : (
-          <Stack.Screen
-            name="Auth"
-            component={LoginScreen}
-            options={{ headerShown: false }}
-          />
+          <>
+            <Stack.Screen
+              name="Login"
+              component={LoginScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Register"
+              component={RegisterScreen}
+              options={{ title: 'Create Account' }}
+            />
+            <Stack.Screen
+              name="ForgotPassword"
+              component={ForgotPasswordScreen}
+              options={{ title: 'Forgot Password' }}
+            />
+            <Stack.Screen
+              name="ResetPassword"
+              component={ResetPasswordScreen}
+              options={{ title: 'Reset Password' }}
+            />
+            <Stack.Screen
+              name="VerifyEmail"
+              component={VerifyEmailScreen}
+              options={{ title: 'Verify Email' }}
+            />
+            {/* Public screens accessible when not authenticated */}
+            <Stack.Screen
+              name="ServiceDetail"
+              component={ServiceDetailScreen}
+              options={{ title: 'Service Details' }}
+            />
+            <Stack.Screen
+              name="SpecialistProfile"
+              component={SpecialistProfileScreen}
+              options={{ title: 'Specialist Profile' }}
+            />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>

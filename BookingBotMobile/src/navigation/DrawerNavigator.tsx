@@ -1,8 +1,11 @@
+// Drawer Navigator - Complete navigation with customer and specialist screens
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
+import { createStackNavigator } from '@react-navigation/stack';
 import { CustomDrawerContent } from '../components/CustomDrawerContent';
-import { RootDrawerParamList } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAppSelector } from '../store/hooks';
+import { selectUser } from '../store/slices/authSlice';
 
 // Import screens
 import { HomeScreen } from '../screens/HomeScreen';
@@ -11,27 +14,33 @@ import { BookingsScreen } from '../screens/BookingsScreen';
 import { FavoritesScreen } from '../screens/FavoritesScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+
+// Customer screens
+import { CustomerDashboardScreen } from '../screens/customer/DashboardScreen';
+
+// Specialist screens
 import { SpecialistDashboardScreen } from '../screens/specialist/SpecialistDashboardScreen';
 import { CalendarScreen } from '../screens/specialist/CalendarScreen';
 import { MyServicesScreen } from '../screens/specialist/MyServicesScreen';
 import { MyClientsScreen } from '../screens/specialist/MyClientsScreen';
 import { EarningsScreen } from '../screens/specialist/EarningsScreen';
 
-const Drawer = createDrawerNavigator<RootDrawerParamList>();
+const Drawer = createDrawerNavigator();
+const Stack = createStackNavigator();
 
 export const DrawerNavigator: React.FC = () => {
   const { colors } = useTheme();
-  // TODO: Get user type from auth context/store
-  const userType = 'CUSTOMER'; // This should come from your auth state
-  const userName = 'User Name';
-  const userEmail = 'user@example.com';
+  const user = useAppSelector(selectUser);
+  const userType = user?.userType || 'CUSTOMER';
+  const userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'User';
+  const userEmail = user?.email || '';
 
   return (
     <Drawer.Navigator
       drawerContent={(props) => (
         <CustomDrawerContent
           {...props}
-          userType={userType as any}
+          userType={userType as 'CUSTOMER' | 'SPECIALIST'}
           userName={userName}
           userEmail={userEmail}
         />
@@ -53,6 +62,7 @@ export const DrawerNavigator: React.FC = () => {
         },
       }}
     >
+      {/* Common screens */}
       <Drawer.Screen
         name="Home"
         component={HomeScreen}
@@ -63,16 +73,65 @@ export const DrawerNavigator: React.FC = () => {
         component={SearchScreen}
         options={{ title: 'Search Services' }}
       />
-      <Drawer.Screen
-        name="Bookings"
-        component={BookingsScreen}
-        options={{ title: 'My Bookings' }}
-      />
-      <Drawer.Screen
-        name="Favorites"
-        component={FavoritesScreen}
-        options={{ title: 'Favorites' }}
-      />
+      
+      {/* Customer-specific screens */}
+      {userType === 'CUSTOMER' && (
+        <>
+          <Drawer.Screen
+            name="Dashboard"
+            component={CustomerDashboardScreen}
+            options={{ title: 'Dashboard' }}
+          />
+          <Drawer.Screen
+            name="Bookings"
+            component={BookingsScreen}
+            options={{ title: 'My Bookings' }}
+          />
+          <Drawer.Screen
+            name="Favorites"
+            component={FavoritesScreen}
+            options={{ title: 'Favorites' }}
+          />
+        </>
+      )}
+      
+      {/* Specialist-specific screens */}
+      {userType === 'SPECIALIST' && (
+        <>
+          <Drawer.Screen
+            name="Dashboard"
+            component={SpecialistDashboardScreen}
+            options={{ title: 'Dashboard' }}
+          />
+          <Drawer.Screen
+            name="Calendar"
+            component={CalendarScreen}
+            options={{ title: 'Calendar' }}
+          />
+          <Drawer.Screen
+            name="Bookings"
+            component={BookingsScreen}
+            options={{ title: 'My Bookings' }}
+          />
+          <Drawer.Screen
+            name="MyServices"
+            component={MyServicesScreen}
+            options={{ title: 'My Services' }}
+          />
+          <Drawer.Screen
+            name="MyClients"
+            component={MyClientsScreen}
+            options={{ title: 'My Clients' }}
+          />
+          <Drawer.Screen
+            name="Earnings"
+            component={EarningsScreen}
+            options={{ title: 'Earnings' }}
+          />
+        </>
+      )}
+      
+      {/* Common screens */}
       <Drawer.Screen
         name="Profile"
         component={ProfileScreen}
@@ -82,31 +141,6 @@ export const DrawerNavigator: React.FC = () => {
         name="Settings"
         component={SettingsScreen}
         options={{ title: 'Settings' }}
-      />
-      <Drawer.Screen
-        name="SpecialistDashboard"
-        component={SpecialistDashboardScreen}
-        options={{ title: 'Dashboard' }}
-      />
-      <Drawer.Screen
-        name="Calendar"
-        component={CalendarScreen}
-        options={{ title: 'Calendar' }}
-      />
-      <Drawer.Screen
-        name="MyServices"
-        component={MyServicesScreen}
-        options={{ title: 'My Services' }}
-      />
-      <Drawer.Screen
-        name="MyClients"
-        component={MyClientsScreen}
-        options={{ title: 'My Clients' }}
-      />
-      <Drawer.Screen
-        name="Earnings"
-        component={EarningsScreen}
-        options={{ title: 'Earnings' }}
       />
     </Drawer.Navigator>
   );
