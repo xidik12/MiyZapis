@@ -134,6 +134,63 @@ export class SpecialistService {
       }
     };
   }
+
+  // Get team members (for Business accounts)
+  async getTeamMembers(): Promise<{
+    members: Array<{
+      id: string;
+      userId: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      avatar?: string;
+      role: string;
+      permissions: string[];
+      isActive: boolean;
+      createdAt: string;
+    }>;
+  }> {
+    const response = await apiClient.get('/specialists/team-members');
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get team members');
+    }
+    return response.data;
+  }
+
+  // Add team member (for Business accounts)
+  async addTeamMember(data: {
+    email: string;
+    role: string;
+    permissions?: string[];
+  }): Promise<{ message: string }> {
+    const response = await apiClient.post('/specialists/team-members', data);
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to add team member');
+    }
+    return response.data;
+  }
+
+  // Update team member
+  async updateTeamMember(memberId: string, data: {
+    role?: string;
+    permissions?: string[];
+    isActive?: boolean;
+  }): Promise<{ message: string }> {
+    const response = await apiClient.put(`/specialists/team-members/${memberId}`, data);
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to update team member');
+    }
+    return response.data;
+  }
+
+  // Remove team member
+  async removeTeamMember(memberId: string): Promise<{ message: string }> {
+    const response = await apiClient.delete(`/specialists/team-members/${memberId}`);
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to remove team member');
+    }
+    return response.data;
+  }
 }
 
 export const specialistService = new SpecialistService();

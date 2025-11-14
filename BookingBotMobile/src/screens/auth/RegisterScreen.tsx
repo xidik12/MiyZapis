@@ -26,7 +26,7 @@ interface RegisterFormData {
   password: string;
   confirmPassword: string;
   phoneNumber?: string;
-  userType: UserType;
+    userType: 'CUSTOMER' | 'SPECIALIST' | 'BUSINESS';
   agreeToTerms: boolean;
 }
 
@@ -54,7 +54,7 @@ export const RegisterScreen: React.FC = () => {
       password: '',
       confirmPassword: '',
       phoneNumber: '',
-      userType: 'CUSTOMER',
+      userType: 'CUSTOMER' as UserType,
       agreeToTerms: false,
     },
   });
@@ -175,11 +175,13 @@ export const RegisterScreen: React.FC = () => {
     },
     userTypeContainer: {
       flexDirection: 'row',
+      flexWrap: 'wrap',
       gap: 12,
       marginBottom: 16,
     },
     userTypeButton: {
       flex: 1,
+      minWidth: '30%',
       padding: 12,
       borderRadius: 12,
       borderWidth: 2,
@@ -316,6 +318,22 @@ export const RegisterScreen: React.FC = () => {
                         ]}
                       >
                         Specialist
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.userTypeButton,
+                        value === 'BUSINESS' ? styles.userTypeButtonActive : styles.userTypeButtonInactive,
+                      ]}
+                      onPress={() => onChange('BUSINESS')}
+                    >
+                      <Text
+                        style={[
+                          styles.userTypeText,
+                          value === 'BUSINESS' && styles.userTypeTextActive,
+                        ]}
+                      >
+                        Business
                       </Text>
                     </TouchableOpacity>
                   </>

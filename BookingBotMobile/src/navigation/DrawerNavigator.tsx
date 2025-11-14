@@ -24,6 +24,7 @@ import { CalendarScreen } from '../screens/specialist/CalendarScreen';
 import { MyServicesScreen } from '../screens/specialist/MyServicesScreen';
 import { MyClientsScreen } from '../screens/specialist/MyClientsScreen';
 import { EarningsScreen } from '../screens/specialist/EarningsScreen';
+import { EmployeesScreen } from '../screens/specialist/EmployeesScreen';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -31,9 +32,12 @@ const Stack = createStackNavigator();
 export const DrawerNavigator: React.FC = () => {
   const { colors } = useTheme();
   const user = useAppSelector(selectUser);
-  const userType = user?.userType || 'CUSTOMER';
+  const userType = user?.userType?.toUpperCase() || 'CUSTOMER';
   const userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'User';
   const userEmail = user?.email || '';
+  
+  // Business users use the same screens as specialists
+  const isSpecialistOrBusiness = userType === 'SPECIALIST' || userType === 'BUSINESS';
 
   return (
     <Drawer.Navigator
@@ -95,8 +99,8 @@ export const DrawerNavigator: React.FC = () => {
         </>
       )}
       
-      {/* Specialist-specific screens */}
-      {userType === 'SPECIALIST' && (
+      {/* Specialist and Business-specific screens */}
+      {isSpecialistOrBusiness && (
         <>
           <Drawer.Screen
             name="Dashboard"
@@ -128,6 +132,14 @@ export const DrawerNavigator: React.FC = () => {
             component={EarningsScreen}
             options={{ title: 'Earnings' }}
           />
+          {/* Business-only: Employees management */}
+          {userType === 'BUSINESS' && (
+            <Drawer.Screen
+              name="Employees"
+              component={EmployeesScreen}
+              options={{ title: 'Employees' }}
+            />
+          )}
         </>
       )}
       

@@ -99,16 +99,16 @@ export const CustomDrawerContent: React.FC<CustomDrawerContentProps> = ({
         </TouchableOpacity>
       </View>
 
-      {/* Specialist Section */}
+      {/* Specialist/Business Section */}
       {isSpecialist && (
         <View style={styles.menuSection}>
           <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-            FOR SPECIALISTS
+            {userType === 'BUSINESS' ? 'FOR BUSINESS' : 'FOR SPECIALISTS'}
           </Text>
           
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => navigateTo('SpecialistDashboard')}
+            onPress={() => navigateTo('Dashboard')}
           >
             <Text style={[styles.menuIcon]}>📊</Text>
             <Text style={[styles.menuText, { color: colors.text }]}>Dashboard</Text>
@@ -145,6 +145,17 @@ export const CustomDrawerContent: React.FC<CustomDrawerContentProps> = ({
             <Text style={[styles.menuIcon]}>💰</Text>
             <Text style={[styles.menuText, { color: colors.text }]}>Earnings</Text>
           </TouchableOpacity>
+
+          {/* Business-only: Employees */}
+          {userType === 'BUSINESS' && (
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => navigateTo('Employees')}
+            >
+              <Text style={[styles.menuIcon]}>👨‍💼</Text>
+              <Text style={[styles.menuText, { color: colors.text }]}>Employees</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
 
