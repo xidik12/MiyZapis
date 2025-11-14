@@ -79,11 +79,16 @@ export class SpecialistService {
     total: number;
     growth?: number;
   }> {
-    const response = await apiClient.get(`/specialists/revenue?period=${period}`);
+    const response = await apiClient.get<{
+      thisMonth: number;
+      lastMonth: number;
+      total: number;
+      growth?: number;
+    }>(`/specialists/revenue?period=${period}`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get revenue');
     }
-    return response.data;
+    return response.data || { thisMonth: 0, lastMonth: 0, total: 0 };
   }
 
   // Get list of specialists
@@ -150,11 +155,24 @@ export class SpecialistService {
       createdAt: string;
     }>;
   }> {
-    const response = await apiClient.get('/specialists/team-members');
+    const response = await apiClient.get<{
+      members: Array<{
+        id: string;
+        userId: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+        avatar?: string;
+        role: string;
+        permissions: string[];
+        isActive: boolean;
+        createdAt: string;
+      }>;
+    }>('/specialists/team-members');
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get team members');
     }
-    return response.data;
+    return response.data || { members: [] };
   }
 
   // Add team member (for Business accounts)
@@ -163,11 +181,11 @@ export class SpecialistService {
     role: string;
     permissions?: string[];
   }): Promise<{ message: string }> {
-    const response = await apiClient.post('/specialists/team-members', data);
+    const response = await apiClient.post<{ message: string }>('/specialists/team-members', data);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to add team member');
     }
-    return response.data;
+    return response.data || { message: 'Team member added successfully' };
   }
 
   // Update team member
@@ -176,20 +194,20 @@ export class SpecialistService {
     permissions?: string[];
     isActive?: boolean;
   }): Promise<{ message: string }> {
-    const response = await apiClient.put(`/specialists/team-members/${memberId}`, data);
+    const response = await apiClient.put<{ message: string }>(`/specialists/team-members/${memberId}`, data);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to update team member');
     }
-    return response.data;
+    return response.data || { message: 'Team member updated successfully' };
   }
 
   // Remove team member
   async removeTeamMember(memberId: string): Promise<{ message: string }> {
-    const response = await apiClient.delete(`/specialists/team-members/${memberId}`);
+    const response = await apiClient.delete<{ message: string }>(`/specialists/team-members/${memberId}`);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to remove team member');
     }
-    return response.data;
+    return response.data || { message: 'Team member removed successfully' };
   }
 }
 
