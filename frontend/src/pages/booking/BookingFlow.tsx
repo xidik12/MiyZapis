@@ -13,6 +13,7 @@ import { paypalService } from '../../services/paypal.service';
 import { loyaltyService, UserLoyalty } from '@/services/loyalty.service';
 import { RewardsService, type RewardRedemption, type LoyaltyReward } from '@/services/rewards.service';
 import { filterSlotsByDuration, calculateEndTime } from '../../utils/timeSlotUtils';
+import { environment } from '@/config/environment';
 import {
   CalendarIcon,
   ClockIcon,
@@ -135,13 +136,16 @@ const BookingFlow: React.FC = () => {
   const discount = calculateDiscount();
   const finalPrice = Math.max(0, ((service?.price ?? service?.basePrice ?? 0) - discount));
 
-  const steps: BookingStep[] = [
+  // Conditionally include payment step based on configuration
+  const allSteps: BookingStep[] = [
     { id: 'service', title: t('booking.selectService'), completed: false },
     { id: 'datetime', title: t('booking.selectDateTime'), completed: false },
     { id: 'details', title: t('booking.bookingDetails'), completed: false },
-    { id: 'payment', title: t('booking.payment'), completed: false },
+    ...(environment.PAYMENTS_ENABLED ? [{ id: 'payment', title: t('booking.payment'), completed: false }] : []),
     { id: 'confirmation', title: t('booking.confirmation'), completed: false },
   ];
+
+  const steps: BookingStep[] = allSteps;
 
   useEffect(() => {
     const fetchBookingData = async () => {
@@ -379,14 +383,49 @@ const BookingFlow: React.FC = () => {
     return () => clearInterval(refreshInterval);
   }, [specialist, service, specialistId, selectedDate, currentStep]);
 
-  const handleNextStep = () => {
-    // Security check: Prevent bypassing payment step
-    if (currentStep === 3) {
-      // Step 3 is payment - user cannot proceed without completing payment
+  const handleNextStep = async () => {
+    // Security check: Prevent bypassing payment step (only if payments are enabled)
+    if (environment.PAYMENTS_ENABLED && steps[currentStep]?.id === 'payment') {
+      // Payment step - user cannot proceed without completing payment
       if (!paymentResult || (paymentResult.requiresPayment && paymentResult.status !== 'COMPLETED')) {
         toast.error('Please complete payment before proceeding to confirmation.');
         return;
       }
+    }
+
+    // If payments are disabled and we're moving from details to confirmation, create booking
+    if (!environment.PAYMENTS_ENABLED && steps[currentStep]?.id === 'details' && steps[currentStep + 1]?.id === 'confirmation') {
+      try {
+        setPaymentLoading(true);
+        const [hours, minutes] = selectedTime!.split(':').map(Number);
+        const scheduledAt = new Date(selectedDate!);
+        scheduledAt.setHours(hours, minutes, 0, 0);
+
+        const bookingData = {
+          serviceId: service.id,
+          scheduledAt: scheduledAt.toISOString(),
+          duration: service.duration || 60,
+          customerNotes: bookingNotes || undefined,
+          participantCount: participantCount,
+          loyaltyPointsUsed: 0,
+          rewardRedemptionId: selectedRedemptionId || undefined
+        };
+
+        console.log('📝 BookingFlow: Creating free booking (payments disabled)', bookingData);
+        const result = await bookingService.createBooking(bookingData);
+        console.log('✅ BookingFlow: Booking created successfully:', result);
+
+        setBookingResult(result);
+        toast.success('Booking created successfully!');
+        setPaymentLoading(false);
+        setCurrentStep(currentStep + 1);
+      } catch (error: any) {
+        console.error('❌ BookingFlow: Error creating booking:', error);
+        toast.error(error.message || 'Failed to create booking');
+        setPaymentLoading(false);
+        return;
+      }
+      return;
     }
 
     if (currentStep < steps.length - 1) {
@@ -874,8 +913,10 @@ const BookingFlow: React.FC = () => {
   }
 
   const renderStepContent = () => {
-    switch (currentStep) {
-      case 0: // Service Selection
+    const currentStepId = steps[currentStep]?.id;
+
+    switch (currentStepId) {
+      case 'service': // Service Selection
         return (
           <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
@@ -908,7 +949,7 @@ const BookingFlow: React.FC = () => {
           </div>
         );
 
-      case 1: // Date & Time Selection
+      case 'datetime': // Date & Time Selection
         return (
           <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
@@ -1021,7 +1062,7 @@ const BookingFlow: React.FC = () => {
           </div>
         );
 
-      case 2: // Booking Details
+      case 'details': // Booking Details
         return (
           <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
@@ -1217,7 +1258,7 @@ const BookingFlow: React.FC = () => {
           </div>
         );
 
-      case 3: // Payment
+      case 'payment': // Payment
         return (
           <div className="space-y-6">
             {/* Payment Summary */}
@@ -1635,7 +1676,7 @@ const BookingFlow: React.FC = () => {
           </div>
         );
 
-      case 4: // Confirmation
+      case 'confirmation': // Confirmation
         const booking = bookingResult?.booking || bookingResult;
         const isAutoBooked = booking?.status === 'CONFIRMED';
         const isPending = booking?.status === 'PENDING';
@@ -1980,9 +2021,9 @@ const BookingFlow: React.FC = () => {
             <button
               onClick={handleNextStep}
               disabled={
-                (currentStep === 1 && (!selectedDate || !selectedTime)) ||
-                (currentStep === 2 && !service) ||
-                (currentStep === 3 && (!paymentResult || (paymentResult.requiresPayment && paymentResult.status !== 'COMPLETED')))
+                (steps[currentStep]?.id === 'datetime' && (!selectedDate || !selectedTime)) ||
+                (steps[currentStep]?.id === 'details' && !service) ||
+                (steps[currentStep]?.id === 'payment' && (!paymentResult || (paymentResult.requiresPayment && paymentResult.status !== 'COMPLETED')))
               }
               className="flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0 mobile-touch-target active:scale-95"
             >

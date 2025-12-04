@@ -654,4 +654,5 @@ export interface Environment {
   ENABLE_TELEGRAM_INTEGRATION: boolean;
   DEBUG: boolean;
   MOCK_API: boolean;
+  PAYMENTS_ENABLED: boolean;
 }

@@ -69,6 +69,33 @@ export class BookingPaymentService {
     });
 
     try {
+      // Check if payments are disabled (free platform mode)
+      const paymentsEnabled = process.env.PAYMENTS_ENABLED === 'true';
+
+      if (!paymentsEnabled) {
+        logger.info('Payments disabled - auto-confirming booking for free', {
+          userId,
+          bookingId,
+        });
+
+        // Update booking to confirmed status immediately (free platform mode)
+        await prisma.booking.update({
+          where: { id: bookingId },
+          data: {
+            depositStatus: 'PAID',
+            depositPaidAt: new Date(),
+            status: 'CONFIRMED',
+          },
+        });
+
+        return {
+          paymentMethod: 'WALLET',
+          totalPaid: 0,
+          remainingAmount: 0,
+          status: 'COMPLETED',
+        };
+      }
+
       // Check if user is in trial period
       const user = await prisma.user.findUnique({
         where: { id: userId },

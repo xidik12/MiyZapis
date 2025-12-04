@@ -14,6 +14,7 @@ export const environment: Environment = {
   ENABLE_ANALYTICS: import.meta.env.VITE_ENABLE_ANALYTICS === 'true',
   ENABLE_TELEGRAM_INTEGRATION: import.meta.env.VITE_ENABLE_TELEGRAM_INTEGRATION === 'true',
   DEBUG: import.meta.env.VITE_DEBUG === 'true',
+  PAYMENTS_ENABLED: import.meta.env.VITE_PAYMENTS_ENABLED === 'true',
   // All data comes from backend API - no mock data used
 };
 
