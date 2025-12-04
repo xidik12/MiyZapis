@@ -123,16 +123,18 @@ export const validatePasswordReset = [
     .isString()
     .isLength({ min: 1 })
     .withMessage('Reset token is required'),
-  
+
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters long')
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
     .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number'),
-  
+
+  // confirmPassword is validated on frontend - optional on backend for backwards compatibility
   body('confirmPassword')
+    .optional()
     .custom((value, { req }) => {
-      if (value !== req.body.password) {
+      if (value && value !== req.body.password) {
         throw new Error('Password confirmation does not match password');
       }
       return true;

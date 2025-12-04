@@ -1,5 +1,7 @@
 /* Import custom navigation styles */
 @import './navigation.css';
+/* Import mobile enhancements */
+@import './mobile.css';
 
 @tailwind base;
 @tailwind components;

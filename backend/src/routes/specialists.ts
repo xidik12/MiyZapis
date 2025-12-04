@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
 import { SpecialistController } from '@/controllers/specialists';
+import { AvailabilityController } from '@/controllers/specialists/availability';
 import { authenticateToken, requireSpecialist, requireAdmin } from '@/middleware/auth/jwt';
 
 const router = Router();
@@ -27,6 +28,88 @@ const validateBlockTimeSlot = [
     .withMessage('Recurring must be a boolean'),
 ];
 
+// Validation middleware for creating availability blocks
+const validateCreateAvailabilityBlock = [
+  body('startDateTime')
+    .notEmpty()
+    .withMessage('Start date time is required')
+    .isISO8601()
+    .withMessage('Start date time must be a valid ISO 8601 date'),
+  body('endDateTime')
+    .notEmpty()
+    .withMessage('End date time is required')
+    .isISO8601()
+    .withMessage('End date time must be a valid ISO 8601 date'),
+  body('isAvailable')
+    .optional()
+    .isBoolean()
+    .withMessage('Is available must be a boolean'),
+  body('reason')
+    .optional()
+    .isLength({ max: 200 })
+    .withMessage('Reason must not exceed 200 characters'),
+  body('isRecurring')
+    .optional()
+    .isBoolean()
+    .withMessage('Is recurring must be a boolean'),
+  body('recurringUntil')
+    .optional()
+    .isISO8601()
+    .withMessage('Recurring until must be a valid ISO 8601 date'),
+  body('recurringDays')
+    .optional()
+    .isArray()
+    .withMessage('Recurring days must be an array')
+    .custom((value) => {
+      const validDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+      if (Array.isArray(value)) {
+        return value.every(day => validDays.includes(day.toLowerCase()));
+      }
+      return true;
+    })
+    .withMessage('Recurring days must contain valid day names'),
+];
+
+// Validation middleware for updating availability blocks
+const validateUpdateAvailabilityBlock = [
+  body('startDateTime')
+    .optional()
+    .isISO8601()
+    .withMessage('Start date time must be a valid ISO 8601 date'),
+  body('endDateTime')
+    .optional()
+    .isISO8601()
+    .withMessage('End date time must be a valid ISO 8601 date'),
+  body('isAvailable')
+    .optional()
+    .isBoolean()
+    .withMessage('Is available must be a boolean'),
+  body('reason')
+    .optional()
+    .isLength({ max: 200 })
+    .withMessage('Reason must not exceed 200 characters'),
+  body('isRecurring')
+    .optional()
+    .isBoolean()
+    .withMessage('Is recurring must be a boolean'),
+  body('recurringUntil')
+    .optional()
+    .isISO8601()
+    .withMessage('Recurring until must be a valid ISO 8601 date'),
+  body('recurringDays')
+    .optional()
+    .isArray()
+    .withMessage('Recurring days must be an array')
+    .custom((value) => {
+      const validDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+      if (Array.isArray(value)) {
+        return value.every(day => validDays.includes(day.toLowerCase()));
+      }
+      return true;
+    })
+    .withMessage('Recurring days must contain valid day names'),
+];
+
 // Protected routes - require authentication (must come before parameterized routes)
 router.get('/my/profile', authenticateToken, requireSpecialist, SpecialistController.getMyProfile);
 router.get('/my/analytics', authenticateToken, requireSpecialist, SpecialistController.getAnalytics);
@@ -48,6 +131,13 @@ router.patch('/services/:serviceId/status', authenticateToken, requireSpecialist
 router.get('/availability/blocked', authenticateToken, requireSpecialist, SpecialistController.getBlockedSlots);
 router.post('/availability/block', authenticateToken, requireSpecialist, validateBlockTimeSlot, SpecialistController.blockTimeSlot);
 router.delete('/availability/block/:blockId', authenticateToken, requireSpecialist, SpecialistController.unblockTimeSlot);
+
+// Availability blocks routes (for schedule management)
+router.get('/blocks', authenticateToken, AvailabilityController.getAvailabilityBlocks);
+router.post('/blocks', authenticateToken, validateCreateAvailabilityBlock, AvailabilityController.createAvailabilityBlock);
+router.put('/blocks/:id', authenticateToken, validateUpdateAvailabilityBlock, AvailabilityController.updateAvailabilityBlock);
+router.delete('/blocks/:id', authenticateToken, AvailabilityController.deleteAvailabilityBlock);
+router.post('/availability/generate', authenticateToken, AvailabilityController.generateFromWorkingHours);
 
 // Protected routes - require specialist access
 router.post('/profile', authenticateToken, SpecialistController.createProfile);

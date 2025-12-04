@@ -515,10 +515,22 @@ const SpecialistProfile: React.FC = () => {
     if (!profile.profession?.trim()) {
       errors.profession = language === 'uk' ? 'Професія обов\'язкова' : language === 'ru' ? 'Профессия обязательна' : 'Profession is required';
     }
-    
+
     // Validate phone if provided
     if (profile.phone && profile.phone.trim() && !/^[\d\s\-\+\(\)]+$/.test(profile.phone)) {
       errors.phone = language === 'uk' ? 'Невірний формат телефону' : language === 'ru' ? 'Неверный формат телефона' : 'Invalid phone format';
+    }
+
+    // Validate precise address (required)
+    if (!profile.preciseAddress?.trim()) {
+      errors.preciseAddress = language === 'uk' ? 'Точна адреса обов\'язкова' : language === 'ru' ? 'Точный адрес обязателен' : 'Precise address is required';
+    }
+
+    // Validate business phone (required)
+    if (!profile.businessPhone?.trim()) {
+      errors.businessPhone = language === 'uk' ? 'Робочий телефон обов\'язковий' : language === 'ru' ? 'Рабочий телефон обязателен' : 'Business phone is required';
+    } else if (!/^[\d\s\-\+\(\)]+$/.test(profile.businessPhone)) {
+      errors.businessPhone = language === 'uk' ? 'Невірний формат телефону' : language === 'ru' ? 'Неверный формат телефона' : 'Invalid phone format';
     }
 
     setValidationErrors(errors);
@@ -531,13 +543,15 @@ const SpecialistProfile: React.FC = () => {
       // Show specific validation errors
       const errorFields = Object.keys(validationErrors);
       const errorMessage = errorFields.length > 0 
-        ? (language === 'uk' 
+        ? (language === 'uk'
           ? `Будь ласка, заповніть обов'язкові поля: ${errorFields.map(field => {
               switch(field) {
                 case 'firstName': return "Ім'я";
                 case 'lastName': return 'Прізвище';
                 case 'email': return 'Email';
                 case 'profession': return 'Професія';
+                case 'preciseAddress': return 'Точна адреса';
+                case 'businessPhone': return 'Робочий телефон';
                 default: return field;
               }
             }).join(', ')}`
@@ -548,6 +562,8 @@ const SpecialistProfile: React.FC = () => {
                 case 'lastName': return 'Фамилия';
                 case 'email': return 'Email';
                 case 'profession': return 'Профессия';
+                case 'preciseAddress': return 'Точный адрес';
+                case 'businessPhone': return 'Рабочий телефон';
                 default: return field;
               }
             }).join(', ')}`
@@ -557,6 +573,8 @@ const SpecialistProfile: React.FC = () => {
                 case 'lastName': return 'Last Name';
                 case 'email': return 'Email';
                 case 'profession': return 'Profession';
+                case 'preciseAddress': return 'Precise Address';
+                case 'businessPhone': return 'Business Phone';
                 default: return field;
               }
             }).join(', ')}`)
@@ -1334,16 +1352,28 @@ const SpecialistProfile: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Precise Address (Shown only to confirmed customers)
+                          Precise Address (Shown only to confirmed customers) <span className="text-red-500">*</span>
                         </label>
                         {isEditing ? (
-                          <input
-                            type="text"
-                            value={profile.preciseAddress || ''}
-                            onChange={(e) => handleProfileChange('preciseAddress', e.target.value)}
-                            placeholder="Apt 5B, Building A, 123 Main Street"
-                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          />
+                          <>
+                            <input
+                              type="text"
+                              value={profile.preciseAddress || ''}
+                              onChange={(e) => handleProfileChange('preciseAddress', e.target.value)}
+                              placeholder="Apt 5B, Building A, 123 Main Street"
+                              className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
+                                validationErrors.preciseAddress
+                                  ? 'border-error-300 focus:border-error-500 focus:ring-error-500'
+                                  : 'dark:border-gray-600'
+                              }`}
+                            />
+                            {validationErrors.preciseAddress && (
+                              <p className="text-error-600 text-sm mt-1 flex items-center gap-1">
+                                <ExclamationTriangleIcon className="h-4 w-4" />
+                                {validationErrors.preciseAddress}
+                              </p>
+                            )}
+                          </>
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
                             <div className="flex items-center space-x-2">
@@ -1356,16 +1386,28 @@ const SpecialistProfile: React.FC = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Business Phone
+                          Business Phone <span className="text-red-500">*</span>
                         </label>
                         {isEditing ? (
-                          <input
-                            type="tel"
-                            value={profile.businessPhone || ''}
-                            onChange={(e) => handleProfileChange('businessPhone', e.target.value)}
-                            placeholder="+1 (555) 123-4567"
-                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          />
+                          <>
+                            <input
+                              type="tel"
+                              value={profile.businessPhone || ''}
+                              onChange={(e) => handleProfileChange('businessPhone', e.target.value)}
+                              placeholder="+1 (555) 123-4567"
+                              className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
+                                validationErrors.businessPhone
+                                  ? 'border-error-300 focus:border-error-500 focus:ring-error-500'
+                                  : 'dark:border-gray-600'
+                              }`}
+                            />
+                            {validationErrors.businessPhone && (
+                              <p className="text-error-600 text-sm mt-1 flex items-center gap-1">
+                                <ExclamationTriangleIcon className="h-4 w-4" />
+                                {validationErrors.businessPhone}
+                              </p>
+                            )}
+                          </>
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
                             <div className="flex items-center space-x-2">
@@ -1615,8 +1657,8 @@ const SpecialistProfile: React.FC = () => {
                           >
                             <option value="">{language === 'uk' ? 'Додати мову' : language === 'ru' ? 'Добавить язык' : 'Add Language'}</option>
                             <option value="uk">Українська</option>
-                            <option value="ru">Русский</option>
                             <option value="en">English</option>
+                            <option value="ru">Русский</option>
                             <option value="de">Deutsch</option>
                             <option value="fr">Français</option>
                             <option value="es">Español</option>
@@ -1758,44 +1800,71 @@ const SpecialistProfile: React.FC = () => {
                               </span>
                             </label>
                             {hours.isOpen && (
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="time"
-                                  value={hours.startTime}
-                                  disabled={!isEditing}
-                                  onChange={(e) => {
-                                    if (isEditing) {
-                                      const newBusinessHours = {
-                                        ...profile.businessHours,
-                                        [day]: {
-                                          ...hours,
-                                          startTime: e.target.value
-                                        }
-                                      };
-                                      handleProfileChange('businessHours', newBusinessHours);
-                                    }
-                                  }}
-                                  className="px-2 py-1 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
-                                />
-                                <span className="text-gray-500">-</span>
-                                <input
-                                  type="time"
-                                  value={hours.endTime}
-                                  disabled={!isEditing}
-                                  onChange={(e) => {
-                                    if (isEditing) {
-                                      const newBusinessHours = {
-                                        ...profile.businessHours,
-                                        [day]: {
-                                          ...hours,
-                                          endTime: e.target.value
-                                        }
-                                      };
-                                      handleProfileChange('businessHours', newBusinessHours);
-                                    }
-                                  }}
-                                  className="px-2 py-1 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
-                                />
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="time"
+                                    value={hours.startTime}
+                                    disabled={!isEditing}
+                                    onChange={(e) => {
+                                      if (isEditing) {
+                                        const newBusinessHours = {
+                                          ...profile.businessHours,
+                                          [day]: {
+                                            ...hours,
+                                            startTime: e.target.value
+                                          }
+                                        };
+                                        handleProfileChange('businessHours', newBusinessHours);
+                                      }
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                                  />
+                                  <span className="text-gray-500">-</span>
+                                  <input
+                                    type="time"
+                                    value={hours.endTime}
+                                    disabled={!isEditing}
+                                    onChange={(e) => {
+                                      if (isEditing) {
+                                        const newBusinessHours = {
+                                          ...profile.businessHours,
+                                          [day]: {
+                                            ...hours,
+                                            endTime: e.target.value
+                                          }
+                                        };
+                                        handleProfileChange('businessHours', newBusinessHours);
+                                      }
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                                  />
+                                </div>
+                                {(() => {
+                                  const [startHour, startMinute] = hours.startTime.split(':').map(Number);
+                                  const [endHour, endMinute] = hours.endTime.split(':').map(Number);
+                                  const startMinutes = startHour * 60 + startMinute;
+                                  const endMinutes = endHour * 60 + endMinute;
+                                  const crossesMidnight = endMinutes <= startMinutes;
+
+                                  if (crossesMidnight) {
+                                    return (
+                                      <div className="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-1 mt-1">
+                                        <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                        </svg>
+                                        <span>
+                                          {language === 'uk'
+                                            ? 'Увага: Час роботи перетинає північ. Слоти будуть генеруватися від часу початку до 23:45, а потім від 00:00 до часу закінчення.'
+                                            : language === 'ru'
+                                            ? 'Внимание: Время работы пересекает полночь. Слоты будут генерироваться от времени начала до 23:45, а затем от 00:00 до времени окончания.'
+                                            : 'Warning: Business hours cross midnight. Slots will be generated from start time to 11:45 PM, then from 12:00 AM to end time.'}
+                                        </span>
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                })()}
                               </div>
                             )}
                           </div>

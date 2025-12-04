@@ -3,6 +3,7 @@ import { logger } from '@/utils/logger';
 import { config } from '@/config';
 import { prisma } from '@/config/database';
 import { convertCurrency } from '@/utils/currency';
+import { walletService } from './wallet.service';
 
 interface PaymentIntentData {
   bookingId: string;
@@ -1415,6 +1416,70 @@ export class PaymentService {
       return updatedPaymentMethod;
     } catch (error) {
       logger.error('Error setting default payment method:', error);
+      throw error;
+    }
+  }
+
+  // Wallet methods
+  static async getWalletBalance(userId: string): Promise<{ balance: number; currency: string }> {
+    try {
+      return await walletService.getBalance(userId);
+    } catch (error) {
+      logger.error('Error getting wallet balance:', error);
+      throw error;
+    }
+  }
+
+  static async getWalletTransactions(
+    userId: string,
+    options: {
+      page: number;
+      limit: number;
+      filters: {
+        type?: string;
+        startDate?: Date;
+        endDate?: Date;
+      };
+    }
+  ): Promise<{
+    transactions: any[];
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalItems: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+    currentBalance: number;
+  }> {
+    try {
+      const { page, limit, filters } = options;
+      const { transactions, total, balance } = await walletService.getTransactionHistory(
+        userId,
+        {
+          limit,
+          offset: (page - 1) * limit,
+          type: filters.type,
+          startDate: filters.startDate,
+          endDate: filters.endDate,
+        }
+      );
+
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        transactions,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalItems: total,
+          hasNext: page < totalPages,
+          hasPrev: page > 1,
+        },
+        currentBalance: balance,
+      };
+    } catch (error) {
+      logger.error('Error getting wallet transactions:', error);
       throw error;
     }
   }

@@ -264,6 +264,42 @@ export class SpecialistService {
           throw new Error('SPECIALIST_NOT_FOUND');
         }
 
+        // Validate working hours to prevent midnight crossing
+        if (data.workingHours) {
+          const workingHours = typeof data.workingHours === 'string'
+            ? JSON.parse(data.workingHours)
+            : data.workingHours;
+
+          const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+          for (const day of days) {
+            const daySchedule = workingHours[day];
+            if (daySchedule && (daySchedule.isOpen || daySchedule.isWorking)) {
+              // Prioritize startTime/endTime (new format) over start/end (legacy format)
+              const startTime = daySchedule.startTime || daySchedule.start;
+              const endTime = daySchedule.endTime || daySchedule.end;
+
+              if (startTime && endTime) {
+                const [startHour, startMinute] = startTime.split(':').map(Number);
+                const [endHour, endMinute] = endTime.split(':').map(Number);
+                const startMinutes = startHour * 60 + startMinute;
+                const endMinutes = endHour * 60 + endMinute;
+
+                // Log warning for midnight-crossing hours (but allow them since frontend shows warning)
+                if (endMinutes <= startMinutes) {
+                  logger.warn('Business hours cross midnight', {
+                    day,
+                    startTime,
+                    endTime,
+                    userId,
+                    message: 'Time slots will be generated from start to 23:45, then 00:00 to end time'
+                  });
+                }
+              }
+            }
+          }
+        }
+
         // Update specialist profile
         const updatedSpecialist = await tx.specialist.update({
         where: { userId },

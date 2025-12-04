@@ -16,6 +16,12 @@ interface CreateServiceData {
   requiresApproval?: boolean;
   maxAdvanceBooking?: number;
   minAdvanceBooking?: number;
+  serviceLocation?: string;
+  locationNotes?: string;
+  // Group Session Settings
+  isGroupSession?: boolean;
+  maxParticipants?: number | null;
+  minParticipants?: number;
   // Loyalty Points pricing
   loyaltyPointsEnabled?: boolean;
   loyaltyPointsPrice?: number;
@@ -78,9 +84,6 @@ export class ServiceService {
         throw new Error('SPECIALIST_NOT_FOUND');
       }
 
-      console.log('🏗️ Creating service with data:', data);
-      console.log('⏰ Duration value before DB save:', data.duration, typeof data.duration);
-      
       // Create service
       const service = await prisma.service.create({
         data: {
@@ -91,6 +94,8 @@ export class ServiceService {
           basePrice: data.basePrice,
           currency: data.currency || 'USD',
           duration: data.duration,
+          serviceLocation: data.serviceLocation || null,
+          locationNotes: data.locationNotes || null,
           requirements: JSON.stringify(data.requirements || []),
           deliverables: JSON.stringify(data.deliverables || []),
           images: JSON.stringify(data.images || []),
@@ -98,6 +103,10 @@ export class ServiceService {
           requiresApproval: data.requiresApproval !== undefined ? data.requiresApproval : true,
           maxAdvanceBooking: data.maxAdvanceBooking || 30,
           minAdvanceBooking: data.minAdvanceBooking || 1,
+          // Group Session Settings
+          isGroupSession: data.isGroupSession || false,
+          maxParticipants: data.maxParticipants || null,
+          minParticipants: data.minParticipants || 1,
           // Loyalty Points pricing
           loyaltyPointsEnabled: data.loyaltyPointsEnabled || false,
           loyaltyPointsPrice: data.loyaltyPointsPrice || null,
@@ -138,9 +147,6 @@ export class ServiceService {
         },
       });
 
-      console.log('✅ Service created in DB:', service);
-      console.log('⏰ Duration in created service:', service.duration, typeof service.duration);
-      
       logger.info('Service created successfully', {
         serviceId: service.id,
         specialistId: specialist.id,
@@ -178,9 +184,6 @@ export class ServiceService {
         throw new Error('UNAUTHORIZED_ACCESS');
       }
 
-      console.log('🔄 Updating service with data:', data);
-      console.log('⏰ Duration value from frontend:', data.duration, typeof data.duration);
-      
       // Update service
       const updateData: any = {
         updatedAt: new Date(),
@@ -192,9 +195,10 @@ export class ServiceService {
       if (data.basePrice !== undefined) updateData.basePrice = data.basePrice;
       if (data.currency !== undefined) updateData.currency = data.currency;
       if (data.duration !== undefined) {
-        console.log('⏰ Setting duration in updateData:', data.duration);
         updateData.duration = data.duration;
       }
+      if (data.serviceLocation !== undefined) updateData.serviceLocation = data.serviceLocation;
+      if (data.locationNotes !== undefined) updateData.locationNotes = data.locationNotes;
       if (data.requirements !== undefined) updateData.requirements = JSON.stringify(data.requirements);
       if (data.deliverables !== undefined) updateData.deliverables = JSON.stringify(data.deliverables);
       if (data.images !== undefined) updateData.images = JSON.stringify(data.images);
@@ -213,9 +217,6 @@ export class ServiceService {
       if (data.discountValidFrom !== undefined) updateData.discountValidFrom = data.discountValidFrom ? new Date(data.discountValidFrom) : null;
       if (data.discountValidUntil !== undefined) updateData.discountValidUntil = data.discountValidUntil ? new Date(data.discountValidUntil) : null;
       if (data.discountDescription !== undefined) updateData.discountDescription = data.discountDescription;
-
-      console.log('📤 Final updateData being sent to DB:', updateData);
-      console.log('⏰ Duration in updateData:', updateData.duration);
 
       const service = await prisma.service.update({
         where: { id: serviceId },
@@ -248,9 +249,6 @@ export class ServiceService {
         },
       });
 
-      console.log('✅ Service updated in DB:', service);
-      console.log('⏰ Duration in updated service:', service.duration, typeof service.duration);
-      
       logger.info('Service updated successfully', {
         serviceId: service.id,
         specialistId: existingService.specialist.id,

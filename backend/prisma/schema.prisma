@@ -31,12 +31,12 @@ model User {
   isPhoneVerified Boolean @default(false)
   isActive        Boolean @default(true)
   lastLoginAt     DateTime?
-  
+
   // Preferences
   language         String @default("en")
   currency         String @default("USD")
   timezone         String @default("UTC")
-  
+
   // Notification preferences
   emailNotifications     Boolean @default(true)
   pushNotifications      Boolean @default(true)
@@ -44,6 +44,20 @@ model User {
 
   // Loyalty program
   loyaltyPoints          Int     @default(0)
+
+  // Wallet and Payment
+  walletBalance          Float   @default(0.0)
+  walletCurrency         String  @default("USD")
+
+  // Specialist subscription
+  subscriptionStatus     String  @default("PAY_PER_USE") // PAY_PER_USE, MONTHLY_SUBSCRIPTION
+  subscriptionValidUntil DateTime?
+  subscriptionEffectiveDate DateTime?
+
+  // Free trial period (3 months for both users and specialists)
+  trialStartDate         DateTime? // When trial started
+  trialEndDate           DateTime? // When trial ends (3 months from start)
+  isInTrial              Boolean @default(true) // Quick check if user is in trial period
 
   // Timestamps
   createdAt DateTime @default(now())
@@ -84,6 +98,10 @@ model User {
   telegramSessions     TelegramSession[]
   createdRewards       LoyaltyReward[]         @relation("SpecialistRewards")
   rewardRedemptions    RewardRedemption[]      @relation("UserRewardRedemptions")
+  walletTransactions   WalletTransaction[]
+  cryptoPayments       CryptoPayment[]
+  subscriptions        SpecialistSubscription[]
+  onrampSessions       OnrampSession[]
 
   // Indexes for performance
   @@index([email])
@@ -201,7 +219,11 @@ model Service {
 
   // Service details
   duration       Int    // Duration in minutes
-  
+
+  // Location details (shown to customer after payment)
+  serviceLocation String? // Physical address or location details for this service
+  locationNotes   String? // Additional instructions for finding the location
+
   // Requirements and deliverables
   requirements  String // JSON string of requirements
   deliverables  String // JSON string of deliverables
@@ -211,7 +233,12 @@ model Service {
   requiresApproval Boolean @default(true)
   maxAdvanceBooking Int    @default(30) // Days
   minAdvanceBooking Int    @default(1)  // Hours
-  
+
+  // Group Session Settings
+  isGroupSession   Boolean @default(false) // Whether this service supports group bookings
+  maxParticipants  Int?    // Maximum number of participants (NULL = unlimited)
+  minParticipants  Int     @default(1) // Minimum participants required
+
   // Soft deletion
   isDeleted        Boolean @default(false)
   deletedAt        DateTime?
@@ -233,6 +260,7 @@ model Service {
   @@index([categoryId, isActive, isDeleted])
   @@index([specialistId, isActive, isDeleted])
   @@index([basePrice])
+  @@index([isGroupSession])
   @@index([duration])
   @@index([isActive, isDeleted])
   @@index([isDeleted])
@@ -258,6 +286,13 @@ model Booking {
   remainingAmount Float
   loyaltyPointsUsed Int @default(0)
   paidWithLoyaltyPoints Boolean @default(false) // True if booking was paid entirely with loyalty points
+
+  // Deposit payment tracking
+  depositStatus        String @default("PENDING") // PENDING, PAID, REFUNDED, FORFEITED
+  depositPaidAt        DateTime?
+  depositRefundedAt    DateTime?
+  depositCurrency      String @default("USD")
+  walletAmountUsed     Float @default(0.0)
   
   // Additional information
   customerNotes    String?
@@ -265,7 +300,11 @@ model Booking {
   preparationNotes String?
   completionNotes  String?
   deliverables     String // JSON string of deliverables
-  
+
+  // Group Session Support
+  participantCount Int    @default(1) // Number of participants in this booking
+  groupSessionId   String? // Links multiple bookings to same group session
+
   // Time tracking
   confirmedAt   DateTime?
   startedAt     DateTime?
@@ -286,6 +325,8 @@ model Booking {
   @@index([customerId, status])
   @@index([specialistId, status])
   @@index([scheduledAt])
+  @@index([groupSessionId])
+  @@index([scheduledAt, serviceId])
 
   // Relations
   customer      User        @relation("CustomerBookings", fields: [customerId], references: [id])
@@ -302,6 +343,11 @@ model Booking {
   reviewRewards     ReviewReward[]
   rewardRedemptions RewardRedemption[] @relation("BookingRewardRedemptions")
 
+  // Crypto Payment Relations
+  cryptoPayments    CryptoPayment[]
+  walletTransactions WalletTransaction[]
+  onrampSessions    OnrampSession[]
+
   @@map("bookings")
 }
 
@@ -309,20 +355,20 @@ model Payment {
   id        String        @id @default(cuid())
   userId    String
   bookingId String?
-  
+
   // Payment details
   status    String  // PENDING, PROCESSING, SUCCEEDED, FAILED, CANCELLED, REFUNDED
-  type      String  // DEPOSIT, FULL_PAYMENT, REFUND, LOYALTY_REDEMPTION
+  type      String  // DEPOSIT, FULL_PAYMENT, REFUND, LOYALTY_REDEMPTION, SUBSCRIPTION
   amount    Float
   currency  String  @default("USD")
-  
+
   // External payment provider info
   stripePaymentIntentId String?
   stripeChargeId        String?
-  
+
   // Payment method
-  paymentMethodType String? // card, telegram_payment, etc.
-  
+  paymentMethodType String? // card, telegram_payment, crypto, wallet
+
   // Metadata
   metadata String? // JSON string
   createdAt DateTime @default(now())
@@ -1033,31 +1079,49 @@ model LoyaltyReferral {
   referrerId    String
   referredId    String?
   referralCode  String @unique
-  
+
+  // Enhanced referral type support
+  referralType  String @default("CUSTOMER_TO_CUSTOMER") // CUSTOMER_TO_CUSTOMER, SPECIALIST_TO_CUSTOMER, CUSTOMER_TO_SPECIALIST
+  targetUserType String? // CUSTOMER, SPECIALIST - who is being referred
+
   // Referral status
   status        String @default("PENDING") // PENDING, COMPLETED, EXPIRED
   completedAt   DateTime?
-  
+
   // Points tracking
   referrerPoints    Int @default(0)
   referredPoints    Int @default(0)
   pointsAwarded     Boolean @default(false)
-  
+
+  // Enhanced rewards tracking
+  referrerRewardType String? // POINTS, DISCOUNT, CREDIT, CUSTOM
+  referredRewardType String? // POINTS, DISCOUNT, CREDIT, CUSTOM
+  referrerRewardValue Float? // Monetary value or percentage for non-points rewards
+  referredRewardValue Float? // Monetary value or percentage for non-points rewards
+
   // Metadata
-  inviteChannel     String? // EMAIL, SMS, SOCIAL, DIRECT
+  inviteChannel     String? // EMAIL, SMS, SOCIAL, DIRECT, LINK
   firstBookingId    String? // First booking that completed the referral
-  
+  specialistId      String? // For specialist-related referrals
+  customMessage     String? // Personalized message from referrer
+
+  // Tracking
+  clickCount        Int @default(0) // How many times referral link was clicked
+  viewCount         Int @default(0) // How many times referral was viewed
+
   // Timestamps
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   expiresAt     DateTime
-  
+
   // Relations
   referrer      User     @relation("ReferrerRelation", fields: [referrerId], references: [id], onDelete: Cascade)
   referred      User?    @relation("ReferredRelation", fields: [referredId], references: [id], onDelete: Cascade)
-  
+
   @@index([referralCode])
   @@index([referrerId])
+  @@index([referralType])
+  @@index([targetUserType])
   @@map("loyalty_referrals")
 }
 
@@ -1259,4 +1323,212 @@ model RewardRedemption {
   @@index([rewardId, status])
   @@index([status, expiresAt])
   @@map("reward_redemptions")
+}
+
+// Crypto Payment Models
+
+model CryptoPayment {
+  id              String @id @default(cuid())
+  userId          String
+  bookingId       String?
+
+  // Coinbase Commerce details
+  coinbaseChargeId    String @unique
+  coinbaseChargeCode  String? // Short code for the payment
+
+  // Payment details
+  status          String // PENDING, PAID, FAILED, EXPIRED, CANCELLED, REFUNDED
+  type            String // DEPOSIT, SUBSCRIPTION
+  amount          Float
+  currency        String @default("USD")
+
+  // Crypto details
+  cryptoAmount    Float?
+  cryptoCurrency  String? // BTC, ETH, USDC, etc.
+  exchangeRate    Float? // USD to crypto rate at time of payment
+
+  // Payment URLs and QR codes
+  paymentUrl      String
+  qrCodeUrl       String?
+
+  // Webhook data
+  webhookData     String? // JSON string of webhook payload
+  confirmedAt     DateTime?
+  expiresAt       DateTime?
+
+  // Metadata
+  metadata        String? // JSON string
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user            User @relation(fields: [userId], references: [id])
+  booking         Booking? @relation(fields: [bookingId], references: [id])
+
+  @@index([userId, status])
+  @@index([coinbaseChargeId])
+  @@index([status, expiresAt])
+  @@map("crypto_payments")
+}
+
+model WalletTransaction {
+  id              String @id @default(cuid())
+  userId          String
+  bookingId       String?
+
+  // Transaction details
+  type            String // CREDIT, DEBIT, REFUND, FORFEITURE_SPLIT
+  amount          Float
+  currency        String @default("USD")
+  balanceBefore   Float
+  balanceAfter    Float
+
+  // Transaction context
+  reason          String // DEPOSIT_REFUND, CANCELLATION_CREDIT, BOOKING_PAYMENT, etc.
+  description     String?
+  referenceId     String? // Related payment, booking, etc.
+  referenceType   String? // BOOKING, CRYPTO_PAYMENT, CANCELLATION
+
+  // Status
+  status          String @default("COMPLETED") // PENDING, COMPLETED, FAILED
+  processedAt     DateTime?
+
+  // Metadata
+  metadata        String? // JSON string
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user            User @relation(fields: [userId], references: [id])
+  booking         Booking? @relation(fields: [bookingId], references: [id])
+
+  @@index([userId, type])
+  @@index([userId, createdAt])
+  @@index([status])
+  @@map("wallet_transactions")
+}
+
+model SpecialistSubscription {
+  id                    String @id @default(cuid())
+  specialistId          String
+
+  // Subscription details
+  planType              String // PAY_PER_USE, MONTHLY_SUBSCRIPTION
+  status                String @default("ACTIVE") // ACTIVE, CANCELLED, EXPIRED, PENDING
+
+  // Billing
+  monthlyRate           Float @default(10.0) // $10/month
+  currency              String @default("USD")
+  transactionFee        Float @default(20.0) // 20₴ per transaction for pay-per-use
+
+  // Coinbase Commerce subscription (if applicable)
+  coinbaseSubscriptionId String?
+
+  // Billing cycle
+  currentPeriodStart    DateTime?
+  currentPeriodEnd      DateTime?
+  nextBillingDate       DateTime?
+
+  // Plan change management
+  pendingPlanType       String? // For plan changes that take effect next month
+  planChangeEffectiveDate DateTime?
+
+  // Usage tracking (for pay-per-use)
+  currentMonthTransactions Int @default(0)
+  currentMonthFees      Float @default(0.0)
+
+  // Payment tracking
+  lastPaymentDate       DateTime?
+  lastPaymentAmount     Float?
+  paymentFailures       Int @default(0)
+
+  // Metadata
+  metadata              String? // JSON string
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  specialist            User @relation(fields: [specialistId], references: [id])
+
+  @@index([specialistId, status])
+  @@index([planType, status])
+  @@index([nextBillingDate])
+  @@map("specialist_subscriptions")
+}
+
+model PaymentWebhook {
+  id              String @id @default(cuid())
+
+  // Webhook details
+  provider        String // COINBASE_COMMERCE
+  eventType       String // charge:confirmed, charge:failed, etc.
+  eventId         String @unique
+
+  // Processing status
+  status          String @default("PENDING") // PENDING, PROCESSED, FAILED, IGNORED
+  processedAt     DateTime?
+  errorMessage    String?
+
+  // Webhook data
+  payload         String // JSON string of full webhook payload
+  signature       String? // Webhook signature for verification
+
+  // Related entities
+  relatedId       String? // CryptoPayment ID, Booking ID, etc.
+  relatedType     String? // CRYPTO_PAYMENT, SUBSCRIPTION
+
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([provider, eventType])
+  @@index([status, createdAt])
+  @@index([eventId])
+  @@map("payment_webhooks")
+}
+
+// Coinbase Onramp Sessions for fiat-to-crypto conversion
+model OnrampSession {
+  id                String @id @default(cuid())
+
+  // User information
+  userId            String
+  user              User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Session details
+  sessionToken      String @unique
+  status            String @default("PENDING") // PENDING, COMPLETED, FAILED, EXPIRED
+
+  // Payment amounts
+  amount            Float // Fiat amount
+  currency          String @default("USD") // Fiat currency
+  cryptoAmount      Float? // Actual crypto received
+  cryptoCurrency    String? // USDC, ETH, BTC, etc.
+  blockchain        String? // ethereum, base, bitcoin, etc.
+
+  // Transaction details
+  transactionHash   String? // Blockchain transaction hash
+  onrampURL         String // URL for the onramp widget
+
+  // Purpose and related entities
+  purpose           String // BOOKING_DEPOSIT, WALLET_TOPUP, SUBSCRIPTION
+  bookingId         String? // If for booking deposit
+  booking           Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  // Timing
+  expiresAt         DateTime
+  completedAt       DateTime?
+
+  // Metadata
+  metadata          String? // JSON string for additional data
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([status, expiresAt])
+  @@index([sessionToken])
+  @@index([purpose, status])
+  @@map("onramp_sessions")
 }

@@ -22,6 +22,8 @@ interface Service {
   price?: number; // For backwards compatibility
   currency: string;
   duration: number;
+  serviceLocation?: string;
+  locationNotes?: string;
   isActive: boolean;
   bookings?: number;
   _count?: {
@@ -181,6 +183,8 @@ const SpecialistServices: React.FC = () => {
     price: '',
     currency: 'UAH', // Default to UAH
     duration: '',
+    serviceLocation: '',
+    locationNotes: '',
     isActive: true,
     // Loyalty Points pricing
     loyaltyPointsEnabled: false,
@@ -202,7 +206,11 @@ const SpecialistServices: React.FC = () => {
       saturday: false,
       sunday: false,
     },
-    timeSlots: ['']
+    timeSlots: [''],
+    // Group Session fields
+    isGroupSession: false,
+    maxParticipants: undefined as number | undefined,
+    minParticipants: 1,
   });
   const [customCategory, setCustomCategory] = useState('');
   const [showCustomCategory, setShowCustomCategory] = useState(false);
@@ -220,6 +228,8 @@ const SpecialistServices: React.FC = () => {
       descriptionUk: '',
       descriptionRu: '',
       category: '',
+      serviceLocation: '',
+      locationNotes: '',
       price: '',
       currency: 'UAH', // Default to UAH
       duration: '',
@@ -244,7 +254,11 @@ const SpecialistServices: React.FC = () => {
       discountValue: '',
       discountValidFrom: '',
       discountValidUntil: '',
-      discountDescription: ''
+      discountDescription: '',
+      // Group Session fields
+      isGroupSession: false,
+      maxParticipants: undefined,
+      minParticipants: 1,
     });
     setCustomCategory('');
     setShowCustomCategory(false);
@@ -275,6 +289,8 @@ const SpecialistServices: React.FC = () => {
       price: service.basePrice?.toString() || service.price?.toString() || '',
       currency: service.currency || 'UAH',
       duration: service.duration.toString(),
+      serviceLocation: service.serviceLocation || '',
+      locationNotes: service.locationNotes || '',
       isActive: service.isActive,
       availability: {
         monday: false,
@@ -443,6 +459,8 @@ const SpecialistServices: React.FC = () => {
       basePrice: parseFloat(formData.price),
       currency: formData.currency,
       duration: parseInt(formData.duration),
+      serviceLocation: formData.serviceLocation || undefined,
+      locationNotes: formData.locationNotes || undefined,
       isActive: formData.isActive,
       requirements: [], // Empty for now, can be extended later
       deliverables: [], // Empty for now, can be extended later
@@ -460,7 +478,11 @@ const SpecialistServices: React.FC = () => {
       discountValue: formData.discountEnabled ? parseFloat(formData.discountValue) : undefined,
       discountValidFrom: formData.discountEnabled && formData.discountValidFrom ? formData.discountValidFrom : undefined,
       discountValidUntil: formData.discountEnabled && formData.discountValidUntil ? formData.discountValidUntil : undefined,
-      discountDescription: formData.discountEnabled && formData.discountDescription ? formData.discountDescription : undefined
+      discountDescription: formData.discountEnabled && formData.discountDescription ? formData.discountDescription : undefined,
+      // Group Session fields
+      isGroupSession: formData.isGroupSession,
+      maxParticipants: formData.isGroupSession ? formData.maxParticipants : undefined,
+      minParticipants: formData.isGroupSession ? formData.minParticipants : 1,
     };
     
     console.log('🚀 Service data being sent to backend:', serviceData);
@@ -653,12 +675,21 @@ const SpecialistServices: React.FC = () => {
               {getLocalizedText(service, 'name')}
             </h3>
             <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-              service.isActive 
+              service.isActive
                 ? 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-300'
                 : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
             }`}>
               {service.isActive ? t('services.active') : t('services.inactive')}
             </span>
+            {service.isGroupSession && (
+              <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 flex items-center gap-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                {t('services.groupSession')}
+                {service.maxParticipants && ` (${service.maxParticipants})`}
+              </span>
+            )}
           </div>
           <p className="text-gray-600 dark:text-gray-300 mb-3 text-sm leading-relaxed">
             {getLocalizedText(service, 'description')}
@@ -1099,6 +1130,71 @@ const SpecialistServices: React.FC = () => {
                 </div>
               </div>
 
+              {/* Group Session */}
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  Group Session Settings
+                </h3>
+                <div className="flex items-center mb-4">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.isGroupSession}
+                      onChange={(e) => {
+                        console.log('Group Session checkbox clicked:', e.target.checked);
+                        setFormData(prev => ({
+                          ...prev,
+                          isGroupSession: e.target.checked,
+                          maxParticipants: e.target.checked ? prev.maxParticipants : undefined,
+                          minParticipants: e.target.checked ? (prev.minParticipants || 1) : 1
+                        }));
+                      }}
+                      className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    />
+                    <span className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {t('serviceForm.groupSession')}
+                    </span>
+                  </label>
+                </div>
+
+                {formData.isGroupSession && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 ml-8">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('serviceForm.maxParticipants')}
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.maxParticipants || ''}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          maxParticipants: e.target.value ? parseInt(e.target.value) : undefined
+                        }))}
+                        min="1"
+                        placeholder={t('serviceForm.maxParticipantsPlaceholder')}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('serviceForm.minParticipants')}
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.minParticipants || 1}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          minParticipants: e.target.value ? parseInt(e.target.value) : 1
+                        }))}
+                        min="1"
+                        max={formData.maxParticipants || undefined}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Pricing & Duration */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('serviceForm.pricing')}</h3>
@@ -1141,6 +1237,45 @@ const SpecialistServices: React.FC = () => {
                       className={`w-full px-4 py-3 rounded-xl border ${formErrors.duration ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
                     />
                     {formErrors.duration && <p className="mt-1 text-sm text-red-500">{formErrors.duration}</p>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Location Information */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  {language === 'uk' ? 'Місцезнаходження' : language === 'ru' ? 'Местоположение' : 'Location Information'}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  {language === 'uk' ? 'Ця інформація буде показана клієнтам після оплати' : language === 'ru' ? 'Эта информация будет показана клиентам после оплаты' : 'This information will be shown to customers after payment'}
+                </p>
+                <div className="grid grid-cols-1 gap-6">
+                  {/* Service Location */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'uk' ? 'Адреса або місце надання послуги' : language === 'ru' ? 'Адрес или место предоставления услуги' : 'Service Location Address'}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.serviceLocation}
+                      onChange={(e) => setFormData(prev => ({ ...prev, serviceLocation: e.target.value }))}
+                      placeholder={language === 'uk' ? 'напр. вул. Хрещатик 1, Київ' : language === 'ru' ? 'напр. ул. Крещатик 1, Киев' : 'e.g. 123 Main St, City'}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+
+                  {/* Location Notes */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'uk' ? 'Додаткові інструкції' : language === 'ru' ? 'Дополнительные инструкции' : 'Additional Instructions'}
+                    </label>
+                    <textarea
+                      value={formData.locationNotes}
+                      onChange={(e) => setFormData(prev => ({ ...prev, locationNotes: e.target.value }))}
+                      placeholder={language === 'uk' ? 'напр. Паркування позаду будівлі, домофон 15' : language === 'ru' ? 'напр. Парковка за зданием, домофон 15' : 'e.g. Parking behind building, buzzer #15'}
+                      rows={3}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                    />
                   </div>
                 </div>
               </div>

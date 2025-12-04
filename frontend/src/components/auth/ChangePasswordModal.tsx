@@ -103,10 +103,10 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Change Password
+                  {t('auth.changePasswordModal.title')}
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Update your account password
+                  {t('auth.changePasswordModal.subtitle')}
                 </p>
               </div>
             </div>
@@ -124,19 +124,19 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
             {/* Info Message */}
             <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
               <p className="text-sm text-amber-700 dark:text-amber-300">
-                For security, you'll need to enter your current password to change it.
+                {t('auth.changePasswordModal.info')}
               </p>
             </div>
 
             {/* Current Password Field */}
             <div>
               <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Current Password
+                {t('auth.changePasswordModal.currentLabel')}
               </label>
               <div className="relative">
                 <input
                   {...register('currentPassword', {
-                    required: 'Current password is required',
+                    required: t('auth.error.currentPasswordRequired') || 'Current password is required',
                   })}
                   type={showCurrentPassword ? 'text' : 'password'}
                   className={`w-full px-3 py-2 pr-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
@@ -148,7 +148,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                       ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
                       : ''
                   }`}
-                  placeholder="Enter your current password"
+                  placeholder={t('auth.changePasswordModal.currentPlaceholder')}
                 />
                 <button
                   type="button"
@@ -173,7 +173,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
             {/* New Password Field */}
             <div>
               <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                New Password
+                {t('auth.changePasswordModal.newLabel')}
               </label>
               <div className="relative">
                 <input
@@ -188,7 +188,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                       ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
                       : ''
                   }`}
-                  placeholder="Enter your new password"
+                  placeholder={t('auth.changePasswordModal.newPlaceholder')}
                 />
                 <button
                   type="button"
@@ -223,7 +223,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
             {/* Confirm Password Field */}
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Confirm New Password
+                {t('auth.changePasswordModal.confirmLabel')}
               </label>
               <div className="relative">
                 <input
@@ -238,7 +238,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                       ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
                       : ''
                   }`}
-                  placeholder="Confirm your new password"
+                  placeholder={t('auth.changePasswordModal.confirmPlaceholder')}
                 />
                 <button
                   type="button"
@@ -268,7 +268,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                 disabled={isLoading}
                 className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
@@ -276,7 +276,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                 className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center space-x-2"
               >
                 {isLoading && <LoadingSpinner size="sm" color="white" />}
-                <span>{isLoading ? 'Changing Password...' : 'Change Password'}</span>
+                <span>{isLoading ? t('auth.changePasswordModal.submitting') : t('auth.changePasswordModal.submit')}</span>
               </button>
             </div>
           </form>

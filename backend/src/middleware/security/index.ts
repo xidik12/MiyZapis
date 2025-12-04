@@ -14,11 +14,13 @@ export const securityHeaders = helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       scriptSrc: [
-        "'self'", 
-        "'unsafe-inline'", 
+        "'self'",
+        "'unsafe-inline'",
         "'unsafe-eval'", // Allow eval for Stripe and Google OAuth
-        "https://accounts.google.com", 
+        "https://accounts.google.com",
+        "https://*.google.com",
         "https://apis.google.com",
+        "https://*.googleapis.com",
         "https://js.stripe.com",
         "https://checkout.stripe.com"
       ],
@@ -39,8 +41,9 @@ export const securityHeaders = helmet({
       formAction: ["'self'", "https://accounts.google.com", "https://checkout.stripe.com"],
       frameAncestors: ["'none'"],
       frameSrc: [
-        "https://accounts.google.com", 
-        "https://js.stripe.com", 
+        "https://accounts.google.com",
+        "https://*.google.com",
+        "https://js.stripe.com",
         "https://checkout.stripe.com",
         "https://hooks.stripe.com"
       ],
@@ -57,8 +60,8 @@ export const securityHeaders = helmet({
   xssFilter: true,
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   crossOriginEmbedderPolicy: false, // Disable for third-party integrations
-  crossOriginOpenerPolicy: false, // Disable for OAuth popups
-  crossOriginResourcePolicy: false, // Disable to allow cross-origin resources
+  crossOriginOpenerPolicy: { policy: 'unsafe-none' }, // Allow OAuth popups
+  crossOriginResourcePolicy: { policy: 'cross-origin' }, // Allow cross-origin resources
 });
 
 // Rate limiter store (Redis when available, in-memory fallback)

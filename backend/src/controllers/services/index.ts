@@ -247,7 +247,32 @@ export class ServiceController {
     }
   }
 
-  // Get service by ID
+  /**
+   * Get service by ID
+   *
+   * Retrieves a single service with full details including specialist information.
+   * Returns both basePrice and price fields for frontend compatibility.
+   *
+   * @route GET /services/:serviceId
+   * @param req - Express request object with serviceId in params
+   * @param res - Express response object
+   * @returns Service details with nested specialist information
+   *
+   * @example
+   * GET /api/v1/services/cuid123
+   * Response: {
+   *   success: true,
+   *   data: {
+   *     service: {
+   *       id: "cuid123",
+   *       name: "Haircut",
+   *       basePrice: 50,
+   *       price: 50,  // Maps to basePrice for frontend compatibility
+   *       specialist: {...}
+   *     }
+   *   }
+   * }
+   */
   static async getService(req: Request, res: Response): Promise<void> {
     try {
       const { serviceId } = req.params;
@@ -273,6 +298,7 @@ export class ServiceController {
             description: service.description,
             category: service.category,
             basePrice: service.basePrice,
+            price: service.basePrice, // Add price field for frontend compatibility
             currency: service.currency,
             duration: service.duration,
             requirements: service.requirements ? JSON.parse(service.requirements) : [],
@@ -352,6 +378,7 @@ export class ServiceController {
             description: service.description,
             category: service.category,
             basePrice: service.basePrice,
+            price: service.basePrice, // Add price field for frontend compatibility
             currency: service.currency,
             duration: service.duration,
             requirements: service.requirements ? JSON.parse(service.requirements) : [],
@@ -422,6 +449,7 @@ export class ServiceController {
             description: service.description,
             category: service.category,
             basePrice: service.basePrice,
+            price: service.basePrice, // Add price field for frontend compatibility
             currency: service.currency,
             duration: service.duration,
             images: service.images ? JSON.parse(service.images) : [],
@@ -506,6 +534,7 @@ export class ServiceController {
             description: service.description,
             category: service.category,
             basePrice: service.basePrice,
+            price: service.basePrice, // Add price field for frontend compatibility
             currency: service.currency,
             duration: service.duration,
             images: service.images ? JSON.parse(service.images) : [],

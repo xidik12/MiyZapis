@@ -10,7 +10,184 @@ import {
 } from '@/types';
 
 export class PaymentService {
-  // Process deposit payment
+  // Create booking deposit using Coinbase Commerce
+  async createBookingDeposit(data: {
+    bookingId: string;
+    useWalletFirst?: boolean;
+  }): Promise<{
+    success: boolean;
+    requiresPayment: boolean;
+    paymentUrl?: string;
+    qrCodeData?: string;
+    paymentId?: string;
+    message: string;
+    booking: any;
+    finalAmount: number;
+    usedWalletAmount: number;
+  }> {
+    const response = await apiClient.post<{
+      success: boolean;
+      requiresPayment: boolean;
+      paymentUrl?: string;
+      qrCodeData?: string;
+      paymentId?: string;
+      message: string;
+      booking: any;
+      finalAmount: number;
+      usedWalletAmount: number;
+    }>(`/crypto-payments/bookings/${data.bookingId}/deposit`, {
+      bookingId: data.bookingId,
+      useWalletFirst: data.useWalletFirst,
+      paymentMethod: 'CRYPTO_ONLY'
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to create booking deposit');
+    }
+    return response.data;
+  }
+
+  // Create payment intent first (payment-first approach) - supports crypto and PayPal
+  async createPaymentIntent(data: {
+    serviceId: string;
+    scheduledAt: string;
+    duration: number;
+    customerNotes?: string;
+    loyaltyPointsUsed: number;
+    useWalletFirst: boolean;
+    paymentMethod?: 'AUTO' | 'CRYPTO_ONLY' | 'PAYPAL' | 'WAYFORPAY';
+  }): Promise<{
+    paymentId: string;
+    status: string;
+    paymentMethod: string;
+    cryptoPayment?: any;
+    paypalPayment?: any;
+    wayforpayPayment?: any;
+    walletTransaction?: any;
+    totalPaid: number;
+    remainingAmount: number;
+    paymentUrl?: string;
+    qrCodeUrl?: string;
+    approvalUrl?: string;
+    invoiceUrl?: string;
+    message: string;
+  }> {
+    console.log('💳 PaymentService: Creating payment intent:', data);
+
+    const response = await apiClient.post<{
+      paymentId: string;
+      status: string;
+      paymentMethod: string;
+      cryptoPayment?: any;
+      paypalPayment?: any;
+      wayforpayPayment?: any;
+      walletTransaction?: any;
+      totalPaid: number;
+      remainingAmount: number;
+      paymentUrl?: string;
+      qrCodeUrl?: string;
+      approvalUrl?: string;
+      invoiceUrl?: string;
+      message: string;
+    }>('/crypto-payments/intent', {
+      ...data,
+      paymentMethod: data.paymentMethod || 'AUTO'
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to create payment intent');
+    }
+
+    console.log('✅ PaymentService: Payment intent created successfully:', response.data);
+    return response.data;
+  }
+
+  // Create Coinbase Commerce charge for crypto payment
+  async createCryptoPaymentIntent(data: {
+    serviceId: string;
+    specialistId: string;
+    scheduledAt: string;
+    duration: number;
+    customerNotes?: string;
+    loyaltyPointsUsed: number;
+    useWalletFirst: boolean;
+    amount: number; // Amount in cents
+    currency: string;
+    serviceName: string;
+    specialistName?: string;
+  }): Promise<{
+    paymentId?: string;
+    status?: string;
+    paymentMethod?: string;
+    cryptoPayment?: any;
+    charge?: {
+      id: string;
+      code: string;
+      paymentUrl: string;
+      qrCodeUrl?: string;
+      expiresAt: Date;
+    };
+    walletTransaction?: any;
+    totalPaid?: number;
+    remainingAmount?: number;
+    paymentUrl?: string;
+    qrCodeUrl?: string;
+    message?: string;
+  }> {
+    console.log('💳 PaymentService: Creating Coinbase charge for crypto payment:', data);
+
+    // Create a temporary booking ID for Coinbase metadata
+    const tempBookingId = `temp-booking-${Date.now()}`;
+
+    const response = await apiClient.post<{
+      charge: {
+        id: string;
+        code: string;
+        paymentUrl: string;
+        qrCodeUrl?: string;
+        expiresAt: Date;
+      };
+    }>('/payments/coinbase/create-charge', {
+      bookingId: tempBookingId,
+      amount: data.amount / 100, // Convert cents to dollars for Coinbase
+      currency: data.currency,
+      name: data.serviceName,
+      description: data.specialistName
+        ? `${data.serviceName} - ${data.specialistName}`
+        : data.serviceName,
+      metadata: {
+        bookingData: {
+          serviceId: data.serviceId,
+          specialistId: data.specialistId, // Add specialistId
+          scheduledAt: data.scheduledAt,
+          duration: data.duration,
+          customerNotes: data.customerNotes,
+          loyaltyPointsUsed: data.loyaltyPointsUsed,
+          useWalletFirst: data.useWalletFirst
+        }
+      }
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to create Coinbase charge');
+    }
+
+    console.log('✅ PaymentService: Coinbase charge created:', response.data);
+
+    // Return structure matching what BookingFlow expects
+    return {
+      charge: response.data.charge,
+      paymentUrl: response.data.charge.paymentUrl,
+      qrCodeUrl: response.data.charge.qrCodeUrl,
+      finalAmount: data.amount, // Amount in cents
+      status: 'PENDING', // Initial status for external payment
+      remainingAmount: data.amount,
+      paymentMethod: 'CRYPTO',
+      message: 'Crypto payment initiated'
+    };
+  }
+
+  // Process deposit payment (legacy method for compatibility)
   async processDeposit(data: ProcessPaymentRequest): Promise<{
     paymentIntent: PaymentIntent;
     booking: any; // Booking type
@@ -19,7 +196,7 @@ export class PaymentService {
       paymentIntent: PaymentIntent;
       booking: any;
     }>('/payments/process-deposit', data);
-    
+
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to process deposit payment');
     }
@@ -44,16 +221,16 @@ export class PaymentService {
     return response.data;
   }
 
-  // Create payment intent for Stripe
-  async createPaymentIntent(data: {
+  // Create payment intent for Stripe (legacy method)
+  async createStripePaymentIntent(data: {
     amount: number;
     currency: string;
     bookingId: string;
     paymentType: PaymentType;
     loyaltyPointsUsed?: number;
   }): Promise<PaymentIntent> {
-    const response = await apiClient.post<PaymentIntent>('/payments/create-intent', data);
-    
+    const response = await apiClient.post<PaymentIntent>('/payments/intent', data);
+
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to create payment intent');
     }
@@ -68,7 +245,7 @@ export class PaymentService {
     const response = await apiClient.post<{
       payment: Payment;
       status: PaymentStatus;
-    }>('/payments/confirm-intent', {
+    }>('/payments/confirm', {
       paymentIntentId,
       paymentMethodId
     });
@@ -347,7 +524,7 @@ export class PaymentService {
   }): Promise<{ message: string }> {
     const formData = new FormData();
     formData.append('description', evidence.description);
-    
+
     evidence.documents.forEach((file, index) => {
       formData.append(`document_${index}`, file);
     });
@@ -357,9 +534,200 @@ export class PaymentService {
         'Content-Type': 'multipart/form-data',
       },
     });
-    
+
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to submit dispute evidence');
+    }
+    return response.data;
+  }
+
+  // Coinbase Payment Methods
+
+  // Get booking payment status
+  async getBookingPaymentStatus(bookingId: string): Promise<{
+    status: 'pending' | 'paid' | 'failed' | 'expired';
+    paymentId?: string;
+    paymentUrl?: string;
+    qrCodeData?: string;
+    amount: number;
+    currency: string;
+    message: string;
+  }> {
+    const response = await apiClient.get<{
+      status: 'pending' | 'paid' | 'failed' | 'expired';
+      paymentId?: string;
+      paymentUrl?: string;
+      qrCodeData?: string;
+      amount: number;
+      currency: string;
+      message: string;
+    }>(`/crypto-payments/bookings/${bookingId}/status`);
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get booking payment status');
+    }
+    return response.data;
+  }
+
+  // Get payment options
+  async getPaymentOptions(amount?: number): Promise<{
+    supportedMethods: Array<{
+      id: string;
+      name: string;
+      description: string;
+      isAvailable: boolean;
+    }>;
+    depositConfiguration: {
+      amountUSD: number;
+      amountUAH: number;
+      currency: string;
+      description: string;
+    };
+  }> {
+    const params = amount ? `?amount=${amount}` : '';
+    const response = await apiClient.get<{
+      supportedMethods: Array<{
+        id: string;
+        name: string;
+        description: string;
+        isAvailable: boolean;
+      }>;
+      depositConfiguration: {
+        amountUSD: number;
+        amountUAH: number;
+        currency: string;
+        description: string;
+      };
+    }>(`/crypto-payments/onramp/options${params}`);
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get payment options');
+    }
+    return response.data;
+  }
+
+  // Create onramp session for fiat-to-crypto
+  async createOnrampSession(data: {
+    amount: number;
+    currency: string;
+    userAddress: string;
+    purpose?: string;
+    bookingId?: string;
+  }): Promise<{
+    sessionId: string;
+    onrampURL: string;
+    expiresAt: string;
+    amount: number;
+    currency: string;
+  }> {
+    const response = await apiClient.post<{
+      sessionId: string;
+      onrampURL: string;
+      expiresAt: string;
+      amount: number;
+      currency: string;
+    }>('/crypto-payments/onramp/create-session', data);
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to create onramp session');
+    }
+    return response.data;
+  }
+
+  // Get onramp session status
+  async getOnrampSessionStatus(sessionId: string): Promise<{
+    status: 'pending' | 'completed' | 'failed' | 'expired';
+    amount: number;
+    currency: string;
+    transactionHash?: string;
+    completedAt?: string;
+    failedReason?: string;
+  }> {
+    const response = await apiClient.get<{
+      status: 'pending' | 'completed' | 'failed' | 'expired';
+      amount: number;
+      currency: string;
+      transactionHash?: string;
+      completedAt?: string;
+      failedReason?: string;
+    }>(`/crypto-payments/onramp/session/${sessionId}`);
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get onramp session status');
+    }
+    return response.data;
+  }
+
+  // Complete onramp session
+  async completeOnrampSession(sessionId: string, data: {
+    transactionHash: string;
+    amount: number;
+    currency: string;
+  }): Promise<{
+    success: boolean;
+    message: string;
+    booking?: any;
+  }> {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+      booking?: any;
+    }>(`/crypto-payments/onramp/session/${sessionId}/complete`, data);
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to complete onramp session');
+    }
+    return response.data;
+  }
+
+  // Get wallet balance
+  async getWalletBalance(): Promise<{
+    balance: number;
+    currency: string;
+    transactions: Array<{
+      id: string;
+      type: 'deposit' | 'withdrawal' | 'booking_payment' | 'refund';
+      amount: number;
+      description: string;
+      createdAt: string;
+    }>;
+  }> {
+    const response = await apiClient.get<{
+      balance: number;
+      currency: string;
+      transactions: Array<{
+        id: string;
+        type: 'deposit' | 'withdrawal' | 'booking_payment' | 'refund';
+        amount: number;
+        description: string;
+        createdAt: string;
+      }>;
+    }>('/crypto-payments/wallet');
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get wallet balance');
+    }
+    return response.data;
+  }
+
+  // Apply wallet to booking
+  async applyWalletToBooking(bookingId: string): Promise<{
+    success: boolean;
+    message: string;
+    appliedAmount: number;
+    remainingBalance: number;
+    booking: any;
+  }> {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+      appliedAmount: number;
+      remainingBalance: number;
+      booking: any;
+    }>(`/crypto-payments/wallet/apply/${bookingId}`);
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to apply wallet to booking');
     }
     return response.data;
   }
@@ -450,6 +818,250 @@ export class PaymentService {
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get revenue data');
     }
+    return response.data;
+  }
+
+  // Get payment status for polling
+  async getPaymentStatus(paymentId: string): Promise<{
+    status: string;
+    bookingId?: string;
+    amount: number;
+    currency: string;
+    confirmedAt?: Date;
+  }> {
+    const response = await apiClient.get<{
+      status: string;
+      bookingId?: string;
+      amount: number;
+      currency: string;
+      confirmedAt?: Date;
+    }>(`/payments/${paymentId}/status`);
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get payment status');
+    }
+    return response.data;
+  }
+
+  // PayPal Payment Methods
+
+  // Create PayPal order for booking
+  async createPayPalOrder(data: {
+    bookingId: string;
+    amount: number;
+    currency: string;
+    description?: string;
+    bookingData?: {
+      serviceId: string;
+      specialistId: string;
+      scheduledAt: string;
+      duration: number;
+      customerNotes?: string;
+      serviceName: string;
+      specialistName: string;
+      servicePrice: number;
+      serviceCurrency: string;
+    };
+  }): Promise<{
+    order: {
+      id: string;
+      status: string;
+      links?: Array<{ rel: string; href: string }>;
+    };
+    approvalUrl: string;
+  }> {
+    const response = await apiClient.post<{
+      order: {
+        id: string;
+        status: string;
+        links?: Array<{ rel: string; href: string }>;
+      };
+      approvalUrl: string;
+    }>('/payments/paypal/create-order', {
+      bookingId: data.bookingId,
+      amount: data.amount,
+      currency: data.currency,
+      description: data.description || 'Booking payment',
+      bookingData: data.bookingData
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to create PayPal order');
+    }
+
+    return response.data;
+  }
+
+  // Capture PayPal order after user approval
+  async capturePayPalOrder(data: {
+    orderId: string;
+  }): Promise<{
+    order: {
+      id: string;
+      status: string;
+      captureId?: string;
+    };
+    captureId: string;
+  }> {
+    const response = await apiClient.post<{
+      order: {
+        id: string;
+        status: string;
+        captureId?: string;
+      };
+      captureId: string;
+    }>('/payments/paypal/capture-order', {
+      orderId: data.orderId
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to capture PayPal order');
+    }
+
+    return response.data;
+  }
+
+  // Get PayPal order details
+  async getPayPalOrderDetails(orderId: string): Promise<{
+    id: string;
+    status: string;
+    intent: string;
+    purchaseUnits?: any[];
+    paymentSource?: any;
+    createTime?: string;
+    updateTime?: string;
+  }> {
+    const response = await apiClient.get<{
+      order: {
+        id: string;
+        status: string;
+        intent: string;
+        purchaseUnits?: any[];
+        paymentSource?: any;
+        createTime?: string;
+        updateTime?: string;
+      };
+    }>(`/payments/paypal/order/${orderId}`);
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get PayPal order details');
+    }
+
+    return response.data.order;
+  }
+
+  // Refund PayPal payment
+  async refundPayPalPayment(data: {
+    captureId: string;
+    amount?: number;
+    currency?: string;
+    reason?: string;
+  }): Promise<{
+    refund: {
+      id: string;
+      status: string;
+      amount?: any;
+    };
+  }> {
+    const response = await apiClient.post<{
+      refund: {
+        id: string;
+        status: string;
+        amount?: any;
+      };
+    }>('/payments/paypal/refund', {
+      captureId: data.captureId,
+      amount: data.amount,
+      currency: data.currency,
+      reason: data.reason || 'Customer request'
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to process PayPal refund');
+    }
+
+    return response.data;
+  }
+
+  // WayForPay payment methods
+
+  // Create WayForPay invoice for booking
+  async createWayForPayInvoice(data: {
+    bookingId: string;
+    amount: number;
+    currency: string;
+    description?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    bookingData?: {
+      serviceId: string;
+      specialistId: string;
+      scheduledAt: string;
+      duration: number;
+      customerNotes?: string;
+      serviceName: string;
+      specialistName: string;
+      servicePrice: number;
+      serviceCurrency: string;
+    };
+  }): Promise<{
+    invoice: {
+      orderReference: string;
+      paymentUrl: string;
+      formData?: any; // Form data for POST submission
+    };
+    paymentUrl: string;
+  }> {
+    console.log('💳 PaymentService: Creating WayForPay invoice:', data);
+
+    const response = await apiClient.post<{
+      invoice: {
+        orderReference: string;
+        paymentUrl: string;
+        formData?: any;
+      };
+      paymentUrl: string;
+    }>('/payments/wayforpay/create-invoice', {
+      bookingId: data.bookingId,
+      amount: data.amount,
+      currency: data.currency,
+      description: data.description || 'Booking payment',
+      customerEmail: data.customerEmail,
+      customerPhone: data.customerPhone,
+      bookingData: data.bookingData
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to create WayForPay invoice');
+    }
+
+    console.log('✅ PaymentService: WayForPay invoice created:', response.data);
+
+    return response.data;
+  }
+
+  // Get WayForPay payment status
+  async getWayForPayPaymentStatus(orderReference: string): Promise<{
+    status: {
+      transactionStatus: string;
+      orderReference: string;
+      amount?: number;
+      currency?: string;
+    };
+  }> {
+    const response = await apiClient.get<{
+      status: {
+        transactionStatus: string;
+        orderReference: string;
+        amount?: number;
+        currency?: string;
+      };
+    }>(`/payments/wayforpay/status/${orderReference}`);
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get WayForPay payment status');
+    }
+
     return response.data;
   }
 }

@@ -30,6 +30,7 @@ import {
   HomeIcon,
   PresentationChartLineIcon,
   GiftIcon,
+  UsersIcon,
 } from '@heroicons/react/24/outline';
 import { ChartBarIcon as ChartBarIconSolid } from '@heroicons/react/24/solid';
 
@@ -110,6 +111,13 @@ const navigation: SidebarNavItem[] = [
     href: '/specialist/loyalty',
     icon: GiftIcon,
     iconActive: GiftIcon,
+  },
+  {
+    name: 'Referrals',
+    nameUk: 'Реферали',
+    href: '/specialist/referrals',
+    icon: UsersIcon,
+    iconActive: UsersIcon,
   },
   {
     name: 'Messages',

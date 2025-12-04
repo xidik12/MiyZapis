@@ -50,10 +50,15 @@ export function getAbsoluteImageUrl(url: string | undefined | null | any): strin
   
   // If it's already an absolute URL, check if it's S3 and needs proxying
   if (url.startsWith('http://') || url.startsWith('https://')) {
+    // Upgrade HTTP to HTTPS to prevent Mixed Content warnings
+    if (url.startsWith('http://') && !url.includes('localhost')) {
+      url = url.replace('http://', 'https://');
+      console.log('🔒 Upgraded HTTP to HTTPS to prevent Mixed Content warning');
+    }
     // Convert S3 URLs to use backend proxy to handle CORS issues
     if (url.includes('miyzapis-storage.s3.ap-southeast-2.amazonaws.com')) {
       const s3Path = url.replace('https://miyzapis-storage.s3.ap-southeast-2.amazonaws.com/', '');
-      const proxyUrl = `https://miyzapis-backend-production.up.railway.app/api/v1/files/s3-proxy/${s3Path}`;
+      const proxyUrl = `${environment.API_URL}/files/s3-proxy/${s3Path}`;
       console.log('🔄 Converting S3 URL to proxy:', proxyUrl.substring(0, 80) + '...');
       return proxyUrl;
     }
@@ -66,7 +71,7 @@ export function getAbsoluteImageUrl(url: string | undefined | null | any): strin
   if (url.toLowerCase().includes('.webp')) {
     // For WebP images, ensure proper server handling
     if (url.startsWith('/uploads')) {
-      return `https://miyzapis-backend-production.up.railway.app${url}`;
+      return `${environment.API_URL.replace('/api/v1', '')}${url}`;
     }
   }
   
@@ -77,14 +82,14 @@ export function getAbsoluteImageUrl(url: string | undefined | null | any): strin
   
   // If it's a relative URL starting with /uploads, convert to absolute backend URL
   if (url.startsWith('/uploads')) {
-    const finalUrl = `https://miyzapis-backend-production.up.railway.app${url}`;
+    const finalUrl = `${environment.API_URL.replace('/api/v1', '')}${url}`;
     console.log('🔗 getAbsoluteImageUrl: Converting /uploads URL:', finalUrl);
     return finalUrl;
   }
-  
+
   // If it's just a filename or other relative path, assume it's in uploads
   if (!url.startsWith('/')) {
-    const finalUrl = `https://miyzapis-backend-production.up.railway.app/uploads/${url}`;
+    const finalUrl = `${environment.API_URL.replace('/api/v1', '')}/uploads/${url}`;
     console.log('🔗 getAbsoluteImageUrl: Converting filename to uploads URL:', finalUrl);
     return finalUrl;
   }

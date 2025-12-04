@@ -6,7 +6,7 @@ import { environment, STORAGE_KEYS } from '../config/environment';
 // Create axios instance
 const api: AxiosInstance = axios.create({
   baseURL: environment.API_URL,
-  timeout: 30000,
+  timeout: 15000, // Reduced timeout to 15 seconds for faster failure detection
   withCredentials: true, // Enable cookies and credentials for CORS requests
   headers: {
     'Content-Type': 'application/json',
@@ -46,6 +46,38 @@ export const clearAuthTokens = () => {
   refreshToken = null;
   localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
   localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+};
+
+// Retry wrapper for critical API calls
+export const withRetry = async <T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 2,
+  delayMs: number = 1000
+): Promise<T> => {
+  let lastError: any;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+
+      // Don't retry authentication errors or validation errors
+      if (error?.response?.status === 401 || error?.response?.status === 403 || error?.response?.status === 400) {
+        throw error;
+      }
+
+      // Don't retry on last attempt
+      if (attempt === maxRetries) {
+        break;
+      }
+
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, delayMs * (attempt + 1)));
+    }
+  }
+
+  throw lastError;
 };
 
 // Request interceptor to add auth token
@@ -115,10 +147,15 @@ api.interceptors.response.use(
       const metadata = (originalRequest as any)?.metadata;
       const responseTime = metadata ? Date.now() - metadata.startTime : 0;
 
-      console.group(`❌ [API ERROR] ${metadata?.requestId || 'unknown'}`);
-      console.error(`Method: ${originalRequest?.method?.toUpperCase()}`);
-      console.error(`URL: ${originalRequest?.url}`);
-      console.error(`Response Time: ${responseTime}ms`);
+      // Don't log 404 errors for loyalty endpoints as they're expected for new users
+      const isExpectedError = originalRequest?.url?.includes('/loyalty/') &&
+                             error.response?.status === 404;
+
+      if (!isExpectedError) {
+        console.group(`❌ [API ERROR] ${metadata?.requestId || 'unknown'}`);
+        console.error(`Method: ${originalRequest?.method?.toUpperCase()}`);
+        console.error(`URL: ${originalRequest?.url}`);
+        console.error(`Response Time: ${responseTime}ms`);
 
       if (error.response) {
         console.error(`Status: ${error.response.status} ${error.response.statusText}`);
@@ -141,7 +178,8 @@ api.interceptors.response.use(
         console.error(`Request Setup Error:`, error.message);
       }
 
-      console.groupEnd();
+        console.groupEnd();
+      }
     }
 
     // Handle 401 Unauthorized - attempt token refresh

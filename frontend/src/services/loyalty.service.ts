@@ -119,22 +119,56 @@ export interface LoyaltyStats {
 }
 
 export class LoyaltyService {
+  // Initialize user loyalty profile (handles new users)
+  async initUserLoyalty(): Promise<UserLoyalty> {
+    try {
+      const response = await apiClient.post<{profile: any}>('/loyalty/init');
+
+      if (!response.success || !response.data) {
+        return this.getDefaultLoyaltyProfile();
+      }
+
+      const profile = response.data.profile;
+
+      // Transform backend response to match frontend interface
+      return {
+        currentPoints: profile.currentPoints || profile.totalPoints || 0,
+        lifetimePoints: profile.totalEarned || profile.currentPoints || profile.totalPoints || 0,
+        tier: profile.tier || profile.currentTier || 'Bronze',
+        badges: profile.badges || [],
+        nextTier: profile.nextTier,
+        progressToNext: profile.progressToNext || 0,
+        availableDiscounts: profile.availableDiscounts || [],
+        stats: profile.stats || {
+          totalBookings: 0,
+          totalReviews: 0,
+          successfulReferrals: 0,
+          totalTransactions: 0
+        }
+      };
+    } catch (error: any) {
+      console.warn('Failed to initialize loyalty profile:', error);
+      return this.getDefaultLoyaltyProfile();
+    }
+  }
+
   // Get user's loyalty profile
   async getUserLoyalty(): Promise<UserLoyalty> {
     try {
+      // Try to get the profile first
       const response = await apiClient.get<{profile: any}>('/loyalty/profile');
-      
+
       if (!response.success || !response.data) {
-        // Return default values if no loyalty profile exists yet
-        return this.getDefaultLoyaltyProfile();
+        // If no profile exists, try to initialize it
+        return await this.initUserLoyalty();
       }
-      
+
       const profile = response.data.profile;
       
       // Transform backend response to match frontend interface
       return {
-        currentPoints: profile.totalPoints || 0,
-        lifetimePoints: profile.totalPoints || 0, // Assuming current points is also lifetime for now
+        currentPoints: profile.currentPoints || profile.totalPoints || 0,
+        lifetimePoints: profile.totalEarned || profile.currentPoints || profile.totalPoints || 0,
         tier: profile.tier || 'Bronze',
         badges: profile.badges || [],
         nextTier: profile.nextTier,
@@ -147,9 +181,20 @@ export class LoyaltyService {
           totalTransactions: 0
         }
       };
-    } catch (error) {
-      console.warn('Failed to fetch loyalty profile, using defaults:', error);
-      return this.getDefaultLoyaltyProfile();
+    } catch (error: any) {
+      // If getting profile fails, try to initialize for new users
+      if (error?.response?.status === 401) {
+        console.warn('Loyalty profile authentication failed - user may need to re-login');
+        return this.getDefaultLoyaltyProfile();
+      }
+
+      try {
+        // Try initialization for new users
+        return await this.initUserLoyalty();
+      } catch (initError: any) {
+        console.warn('Failed to initialize loyalty profile:', initError);
+        return this.getDefaultLoyaltyProfile();
+      }
     }
   }
 
@@ -175,14 +220,17 @@ export class LoyaltyService {
   async getLoyaltyStats(): Promise<LoyaltyStats> {
     try {
       const response = await apiClient.get<LoyaltyStats>('/loyalty/stats');
-      
+
       if (!response.success || !response.data) {
         return this.getDefaultLoyaltyStats();
       }
-      
+
       return response.data;
-    } catch (error) {
-      console.warn('Failed to fetch loyalty stats, using defaults:', error);
+    } catch (error: any) {
+      // Check for authentication errors specifically
+      if (error?.response?.status === 401) {
+        console.warn('Loyalty stats authentication failed - user may need to re-login');
+      }
       return this.getDefaultLoyaltyStats();
     }
   }

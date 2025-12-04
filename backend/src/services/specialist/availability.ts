@@ -125,47 +125,95 @@ export class AvailabilityService {
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + (weeksAhead * 7));
 
-      // Remove old future availability blocks to regenerate
-      await prisma.availabilityBlock.deleteMany({
+      // DON'T delete existing availability blocks - specialists should manage their own schedules
+      // Instead, we'll only create blocks for dates that don't have any blocks yet
+
+      // Get existing availability blocks to avoid duplicates
+      const existingBlocks = await prisma.availabilityBlock.findMany({
         where: {
           specialistId,
-          startDateTime: { gte: new Date() },
-          isRecurring: false,
-          // Don't delete manually created blocks (those without a specific pattern)
-          reason: 'Working hours'
+          startDateTime: {
+            gte: startDate,
+            lte: endDate
+          }
+        },
+        select: {
+          startDateTime: true,
+          endDateTime: true
         }
       });
 
       const newBlocks = [];
       const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const slotDuration = 15; // 15-minute slots
 
       // Generate blocks for each day in the date range
       for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
         const dayName = dayNames[date.getDay()];
         const daySchedule = workingHours[dayName];
 
-        if (daySchedule && daySchedule.isWorking) {
-          // Create availability block for this working day
-          const startDateTime = new Date(date);
-          const endDateTime = new Date(date);
-          
+        if (daySchedule && (daySchedule.isWorking || daySchedule.isOpen)) {
           // Parse time strings (e.g., "09:00")
-          const [startHour, startMinute] = daySchedule.start.split(':').map(Number);
-          const [endHour, endMinute] = daySchedule.end.split(':').map(Number);
-          
-          startDateTime.setHours(startHour, startMinute, 0, 0);
-          endDateTime.setHours(endHour, endMinute, 0, 0);
+          // Prioritize startTime/endTime (new format) over start/end (legacy format)
+          const startTime = daySchedule.startTime || daySchedule.start || '09:00';
+          const endTime = daySchedule.endTime || daySchedule.end || '17:00';
 
-          // Only create blocks for future dates
-          if (startDateTime > new Date()) {
-            newBlocks.push({
-              specialistId,
-              startDateTime,
-              endDateTime,
-              isAvailable: true,
-              reason: 'Working hours',
-              isRecurring: false
+          const [startHour, startMinute] = startTime.split(':').map(Number);
+          const [endHour, endMinute] = endTime.split(':').map(Number);
+
+          const startMinutesFromMidnight = startHour * 60 + startMinute;
+          const endMinutesFromMidnight = endHour * 60 + endMinute;
+
+          const now = new Date();
+
+          // Generate 15-minute time slots for this working day
+          for (let minutes = startMinutesFromMidnight; minutes < endMinutesFromMidnight; minutes += slotDuration) {
+            const hour = Math.floor(minutes / 60);
+            const minute = minutes % 60;
+
+            // Calculate end time properly
+            const endTotalMinutes = minutes + slotDuration;
+            const endHour = Math.floor(endTotalMinutes / 60);
+            const endMinute = endTotalMinutes % 60;
+
+            // Create date string in YYYY-MM-DDTHH:mm:ss format for Ukraine timezone
+            // Then parse as UTC (working hours are already in Ukraine time, we store them as-is in UTC)
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hourStr = String(hour).padStart(2, '0');
+            const minuteStr = String(minute).padStart(2, '0');
+            const endHourStr = String(endHour).padStart(2, '0');
+            const endMinuteStr = String(endMinute).padStart(2, '0');
+
+            // Create UTC dates directly from Ukraine time strings
+            const slotStartDateTime = new Date(`${year}-${month}-${day}T${hourStr}:${minuteStr}:00.000Z`);
+            const slotEndDateTime = new Date(`${year}-${month}-${day}T${endHourStr}:${endMinuteStr}:00.000Z`);
+
+            // Skip past time slots
+            if (slotEndDateTime <= now) {
+              continue;
+            }
+
+            // Check if this exact time slot already exists
+            const hasExistingBlock = existingBlocks.some(block => {
+              const blockStart = new Date(block.startDateTime);
+              const blockEnd = new Date(block.endDateTime);
+              return blockStart.getTime() === slotStartDateTime.getTime() &&
+                     blockEnd.getTime() === slotEndDateTime.getTime();
             });
+
+            // Only create block if no existing block for this exact time slot
+            if (!hasExistingBlock) {
+              newBlocks.push({
+                specialistId,
+                startDateTime: slotStartDateTime,
+                endDateTime: slotEndDateTime,
+                isAvailable: true,
+                reason: 'Available',
+                isRecurring: false
+              });
+            }
           }
         }
       }
@@ -330,16 +378,12 @@ export class AvailabilityService {
         throw new Error('INVALID_DATE_RANGE');
       }
 
-      // Check for overlapping blocks
+      // Check for overlapping blocks (allow back-to-back slots)
       const overlappingBlocks = await prisma.availabilityBlock.findMany({
         where: {
           specialistId: data.specialistId,
-          OR: [
-            {
-              startDateTime: { lte: data.endDateTime },
-              endDateTime: { gte: data.startDateTime },
-            },
-          ],
+          startDateTime: { lt: data.endDateTime },
+          endDateTime: { gt: data.startDateTime },
         },
       });
 
@@ -390,6 +434,20 @@ export class AvailabilityService {
 
       if (startDateTime >= endDateTime) {
         throw new Error('INVALID_DATE_RANGE');
+      }
+
+      // Check for overlapping blocks with the new time range (exclude current block)
+      const overlappingBlocks = await prisma.availabilityBlock.findMany({
+        where: {
+          specialistId: existingBlock.specialistId,
+          id: { not: blockId },
+          startDateTime: { lt: endDateTime },
+          endDateTime: { gt: startDateTime },
+        },
+      });
+
+      if (overlappingBlocks.length > 0) {
+        throw new Error('OVERLAPPING_AVAILABILITY_BLOCK');
       }
 
       const updateData: any = {};
@@ -534,24 +592,46 @@ export class AvailabilityService {
     endDateTime: Date
   ): Promise<boolean> {
     try {
-      // Check existing bookings
+      // Get specialist user ID
+      const specialist = await prisma.specialist.findUnique({
+        where: { id: specialistId },
+        select: { userId: true },
+      });
+
+      if (!specialist) {
+        return false;
+      }
+
+      // Check existing bookings with proper overlap detection
       const conflictingBookings = await prisma.booking.findMany({
         where: {
-          specialistId: (await prisma.specialist.findUnique({
-            where: { id: specialistId },
-            select: { userId: true },
-          }))?.userId,
-          scheduledAt: {
-            gte: startDateTime,
-            lt: endDateTime,
-          },
+          specialistId: specialist.userId,
           status: {
             in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'],
           },
+          // Use a broader range to check for overlaps
+          scheduledAt: {
+            gte: new Date(startDateTime.getTime() - (24 * 60 * 60 * 1000)), // 24 hours before
+            lte: new Date(endDateTime.getTime() + (24 * 60 * 60 * 1000)), // 24 hours after
+          }
+        },
+        select: {
+          id: true,
+          scheduledAt: true,
+          duration: true,
         },
       });
 
-      if (conflictingBookings.length > 0) {
+      // Check for time overlap with proper logic
+      const hasConflict = conflictingBookings.some(booking => {
+        const existingStart = new Date(booking.scheduledAt);
+        const existingEnd = new Date(existingStart.getTime() + (booking.duration * 60 * 1000));
+
+        // Two time ranges overlap if: start1 < end2 && start2 < end1
+        return startDateTime < existingEnd && existingStart < endDateTime;
+      });
+
+      if (hasConflict) {
         return false;
       }
 
@@ -649,17 +729,18 @@ export class AvailabilityService {
       const slotEnd = new Date(currentTime.getTime() + slotDuration * 60 * 1000);
       
       // Check if slot conflicts with unavailable blocks
-      const isBlocked = availabilityBlocks.some(block => 
+      const isBlocked = availabilityBlocks.some(block =>
         !block.isAvailable &&
-        block.startDateTime <= slotEnd &&
-        block.endDateTime >= currentTime
+        currentTime < block.endDateTime &&
+        block.startDateTime < slotEnd
       );
 
-      // Check if slot has a booking
+      // Check if slot has a booking with proper overlap detection
       const booking = bookings.find(b => {
         const bookingStart = new Date(b.scheduledAt);
         const bookingEnd = new Date(bookingStart.getTime() + b.duration * 60 * 1000);
-        return bookingStart <= slotEnd && bookingEnd >= currentTime;
+        // Two time ranges overlap if: start1 < end2 && start2 < end1
+        return currentTime < bookingEnd && bookingStart < slotEnd;
       });
 
       slots.push({

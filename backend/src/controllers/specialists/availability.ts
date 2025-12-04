@@ -788,18 +788,24 @@ export class AvailabilityController {
 
       // Generate time slots based on working hours
       const slots = [];
-      const startTime = daySchedule.start || daySchedule.startTime || '09:00';
-      const endTime = daySchedule.end || daySchedule.endTime || '17:00';
+      // Prioritize startTime/endTime (new format) over start/end (legacy format)
+      const startTime = daySchedule.startTime || daySchedule.start || '09:00';
+      const endTime = daySchedule.endTime || daySchedule.end || '17:00';
       const slotDuration = 15; // 15 minutes
 
       const [startHour, startMinute] = startTime.split(':').map(Number);
       const [endHour, endMinute] = endTime.split(':').map(Number);
 
       const startMinutesFromMidnight = startHour * 60 + startMinute;
-      const endMinutesFromMidnight = endHour * 60 + endMinute;
+      let endMinutesFromMidnight = endHour * 60 + endMinute;
+
+      // Handle midnight crossing (e.g., 20:00 - 06:00)
+      if (endMinutesFromMidnight <= startMinutesFromMidnight) {
+        endMinutesFromMidnight += 24 * 60; // Add 24 hours
+      }
 
       for (let minutes = startMinutesFromMidnight; minutes < endMinutesFromMidnight; minutes += slotDuration) {
-        const hour = Math.floor(minutes / 60);
+        const hour = Math.floor(minutes / 60) % 24; // Wrap around at 24 hours
         const minute = minutes % 60;
         const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
         slots.push(timeString);
@@ -832,14 +838,15 @@ export class AvailabilityController {
         const [slotHour, slotMinute] = slot.split(':').map(Number);
         const slotDateTime = new Date(targetDate);
         slotDateTime.setHours(slotHour, slotMinute, 0, 0);
-        
+        const slotEnd = new Date(slotDateTime.getTime() + (15 * 60 * 1000)); // 15-minute slots
+
         // Check if this slot conflicts with any existing booking
         return !existingBookings.some(booking => {
           const bookingStart = new Date(booking.scheduledAt);
           const bookingEnd = new Date(bookingStart.getTime() + (booking.duration * 60 * 1000));
-          
-          // Check if slot overlaps with booking
-          const slotEnd = new Date(slotDateTime.getTime() + (15 * 60 * 1000)); // 15-minute slots
+
+          // Two time ranges overlap if: start1 < end2 && start2 < end1
+          // This will block all 15-minute slots that overlap with the booking duration
           return (slotDateTime < bookingEnd && slotEnd > bookingStart);
         });
       });
@@ -1012,18 +1019,24 @@ export class AvailabilityController {
         // Check if specialist is working on this day
         if (daySchedule && (daySchedule.isWorking || daySchedule.isOpen)) {
           // Check if there are any available time slots on this date
-          const startTime = daySchedule.start || daySchedule.startTime || '09:00';
-          const endTime = daySchedule.end || daySchedule.endTime || '17:00';
+          // Prioritize startTime/endTime (new format) over start/end (legacy format)
+          const startTime = daySchedule.startTime || daySchedule.start || '09:00';
+          const endTime = daySchedule.endTime || daySchedule.end || '17:00';
           
           // Generate time slots for this day
           const [startHour, startMinute] = startTime.split(':').map(Number);
           const [endHour, endMinute] = endTime.split(':').map(Number);
           const startMinutesFromMidnight = startHour * 60 + startMinute;
-          const endMinutesFromMidnight = endHour * 60 + endMinute;
-          
+          let endMinutesFromMidnight = endHour * 60 + endMinute;
+
+          // Handle midnight crossing (e.g., 20:00 - 06:00)
+          if (endMinutesFromMidnight <= startMinutesFromMidnight) {
+            endMinutesFromMidnight += 24 * 60; // Add 24 hours
+          }
+
           const daySlots = [];
           for (let minutes = startMinutesFromMidnight; minutes < endMinutesFromMidnight; minutes += 15) {
-            const hour = Math.floor(minutes / 60);
+            const hour = Math.floor(minutes / 60) % 24; // Wrap around at 24 hours
             const minute = minutes % 60;
             const slotDateTime = new Date(date);
             slotDateTime.setHours(hour, minute, 0, 0);
@@ -1061,10 +1074,11 @@ export class AvailabilityController {
 
             // Check if at least one slot is available
             const hasAvailableSlot = daySlots.some(slotDateTime => {
+              const slotEnd = new Date(slotDateTime.getTime() + (15 * 60 * 1000));
               return !existingBookings.some(booking => {
                 const bookingStart = new Date(booking.scheduledAt);
                 const bookingEnd = new Date(bookingStart.getTime() + (booking.duration * 60 * 1000));
-                const slotEnd = new Date(slotDateTime.getTime() + (15 * 60 * 1000));
+                // Two time ranges overlap if: start1 < end2 && start2 < end1
                 return (slotDateTime < bookingEnd && slotEnd > bookingStart);
               });
             });

@@ -27,6 +27,7 @@ import apiRoutes from '@/routes';
 import { bot } from '@/bot';
 import { enhancedTelegramBot } from '@/services/telegram/enhanced-bot';
 import { startBookingReminderWorker } from '@/workers/bookingReminderWorker';
+import { subscriptionWorker } from '@/workers/subscription.worker';
 
 // Create Express app
 const app = express();
@@ -39,8 +40,41 @@ app.use(securityHeaders);
 app.use(cors(corsOptions));
 app.use(requestId);
 
-// Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
+// Body parsing middleware with raw body preservation for webhooks
+// For webhook routes, we need the raw body for signature verification
+app.use((req, res, next) => {
+  if (req.path.includes('/webhooks/')) {
+    // For webhooks, capture raw body before parsing
+    let data = '';
+    req.setEncoding('utf8');
+    req.on('data', (chunk) => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      (req as any).rawBody = data;
+      try {
+        req.body = JSON.parse(data);
+      } catch (error) {
+        req.body = {};
+      }
+      next();
+    });
+  } else {
+    // For non-webhooks, use standard JSON parsing
+    next();
+  }
+});
+
+// Apply express.json() only for non-webhook routes
+app.use((req, res, next) => {
+  if (req.path.includes('/webhooks/')) {
+    // Skip express.json() for webhooks - already parsed above
+    next();
+  } else {
+    express.json({ limit: '10mb' })(req, res, next);
+  }
+});
+
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Compression middleware
@@ -197,6 +231,25 @@ logger.info('Static file serving configured', {
 // API routes
 app.use(`/api/${config.apiVersion}`, apiRoutes);
 
+// SEO: serve sitemap.xml and robots.txt if frontend static not serving
+app.get('/sitemap.xml', (req, res) => {
+  const base = config.frontend?.url || 'https://miyzapis.com';
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>${base}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>${base}/auth/register</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>${base}/search</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>${base}/loyalty</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+</urlset>`;
+  res.type('application/xml').send(xml);
+});
+
+app.get('/robots.txt', (req, res) => {
+  const base = config.frontend?.url || 'https://miyzapis.com';
+  const robots = `User-agent: *\nAllow: /\nDisallow: /assets/\nSitemap: ${base}/sitemap.xml\n`;
+  res.type('text/plain').send(robots);
+});
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
@@ -224,21 +277,13 @@ const io = new SocketIOServer(server, {
   transports: ['websocket', 'polling'],
 });
 
-// Socket.IO middleware and handlers
-io.use((socket, next) => {
-  next();
-});
+// Import and initialize enhanced WebSocket service
+import { EnhancedWebSocketService } from '@/services/websocket/enhanced-websocket';
+import { WebSocketManager } from '@/services/websocket/websocket-manager';
 
-io.on('connection', (socket) => {
-  logger.info('Client connected to WebSocket', { socketId: socket.id });
-
-  socket.on('disconnect', (reason) => {
-    logger.info('Client disconnected from WebSocket', { 
-      socketId: socket.id, 
-      reason 
-    });
-  });
-});
+// Initialize enhanced WebSocket service and singleton manager
+const enhancedWebSocketService = new EnhancedWebSocketService(io);
+WebSocketManager.initialize(enhancedWebSocketService);
 
 // Graceful shutdown
 const gracefulShutdown = async (signal: string) => {
@@ -266,6 +311,9 @@ const gracefulShutdown = async (signal: string) => {
         logger.warn('Enhanced bot stop error (bot may not have been running):', botError instanceof Error ? botError.message : botError);
       }
       
+      // Stop workers
+      subscriptionWorker.stop();
+
       // Close database connections
       await closeDatabaseConnection();
       await closeRedisConnection();
@@ -400,6 +448,14 @@ const startServer = async () => {
         logger.info('⏰ Booking reminder worker started');
       } catch (e) {
         logger.warn('Failed to start booking reminder worker', { error: (e as any)?.message });
+      }
+
+      // Start subscription worker
+      try {
+        subscriptionWorker.start();
+        logger.info('💳 Subscription worker started');
+      } catch (e) {
+        logger.warn('Failed to start subscription worker', { error: (e as any)?.message });
       }
     });
 

@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { PaymentController } from '@/controllers/payments';
 import { authenticateToken, requireSpecialist, requireAdmin } from '@/middleware/auth/jwt';
-import { 
-  validateGetPaymentHistory, 
-  validateEarningsTrends, 
+import {
+  validateGetPaymentHistory,
+  validateEarningsTrends,
   validateEarningsDateRange,
-  validateRevenueRequest 
+  validateRevenueRequest
 } from '@/middleware/validation/payments';
 
 const router = Router();
@@ -15,6 +15,7 @@ router.post('/intent', authenticateToken, PaymentController.createPaymentIntent)
 router.post('/confirm', authenticateToken, PaymentController.confirmPayment);
 router.get('/my', authenticateToken, PaymentController.getUserPayments);
 router.get('/history', authenticateToken, validateGetPaymentHistory, PaymentController.getPaymentHistory);
+router.get('/:paymentId/status', authenticateToken, PaymentController.getPaymentStatus);
 router.get('/:paymentId', authenticateToken, PaymentController.getPaymentDetails);
 
 // Payment methods routes
@@ -33,6 +34,33 @@ router.get('/earnings/revenue', authenticateToken, requireSpecialist, validateRe
 
 // Admin routes
 router.post('/refund', authenticateToken, requireAdmin, PaymentController.processRefund);
+
+// Wallet routes
+router.get('/wallet/balance', authenticateToken, PaymentController.getWalletBalance);
+router.get('/wallet/transactions', authenticateToken, PaymentController.getWalletTransactions);
+
+// PayPal routes
+router.post('/paypal/create-order', authenticateToken, PaymentController.createPayPalOrder);
+router.post('/paypal/capture-order', authenticateToken, PaymentController.capturePayPalOrder);
+router.get('/paypal/order/:orderId', authenticateToken, PaymentController.getPayPalOrderDetails);
+router.post('/paypal/refund', authenticateToken, PaymentController.refundPayPalPayment);
+
+// PayPal webhook (no authentication required)
+router.post('/webhooks/paypal', PaymentController.handlePayPalWebhook);
+
+// WayForPay routes
+router.post('/wayforpay/create-invoice', authenticateToken, PaymentController.createWayForPayInvoice);
+router.get('/wayforpay/status/:orderReference', authenticateToken, PaymentController.getWayForPayPaymentStatus);
+
+// WayForPay webhook (no authentication required)
+router.post('/webhooks/wayforpay', PaymentController.handleWayForPayWebhook);
+
+// Coinbase Commerce routes
+router.post('/coinbase/create-charge', authenticateToken, PaymentController.createCoinbaseCharge);
+router.get('/coinbase/charge/:chargeCode', authenticateToken, PaymentController.getCoinbaseChargeDetails);
+
+// Coinbase Commerce webhook (no authentication required)
+router.post('/webhooks/coinbase', PaymentController.handleCoinbaseWebhook);
 
 // Development routes (for testing payments without Stripe)
 router.post('/mock/success', authenticateToken, PaymentController.mockPaymentSuccess);

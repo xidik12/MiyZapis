@@ -22,6 +22,10 @@ export interface User extends BaseEntity {
   isVerified: boolean;
   telegramId?: string;
   preferences: UserPreferences;
+  // Free trial period
+  trialStartDate?: string;
+  trialEndDate?: string;
+  isInTrial?: boolean;
 }
 
 export interface UserPreferences {
@@ -66,6 +70,7 @@ export interface RegisterRequest {
   phoneNumber?: string;
   userType: UserType;
   telegramId?: string;
+  referralCode?: string;
 }
 
 export interface TelegramAuthRequest {
@@ -156,6 +161,8 @@ export interface Service extends BaseEntity {
   currency: string;
   category: string;
   isActive: boolean;
+  serviceLocation?: string; // Physical location for the service
+  locationNotes?: string; // Additional instructions for finding location
   requirements?: string[];
   deliverables?: string[];
   specialistId: string;
@@ -173,6 +180,10 @@ export interface Service extends BaseEntity {
   discountValidFrom?: string;
   discountValidUntil?: string;
   discountDescription?: string;
+  // Group Session fields
+  isGroupSession?: boolean;
+  maxParticipants?: number;
+  minParticipants?: number;
 }
 
 export interface ServiceCategory {
@@ -210,7 +221,11 @@ export interface Booking extends BaseEntity {
   cancellationDeadline?: string;
   cancellationReason?: string;
   rescheduleHistory?: RescheduleRecord[];
-  
+
+  // Group Session fields
+  participantCount?: number;
+  groupSessionId?: string;
+
   // Review information for completed bookings
   review?: {
     id: string;
@@ -639,4 +654,5 @@ export interface Environment {
   ENABLE_TELEGRAM_INTEGRATION: boolean;
   DEBUG: boolean;
   MOCK_API: boolean;
+  PAYMENTS_ENABLED: boolean;
 }

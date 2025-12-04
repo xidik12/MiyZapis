@@ -123,7 +123,7 @@ const CustomerReviews: React.FC = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading your reviews...</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('reviews.loading')}</p>
         </div>
       </div>
     );
@@ -138,7 +138,7 @@ const CustomerReviews: React.FC = () => {
             {t('customer.nav.reviews')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Manage your reviews and ratings
+            {t('reviews.subtitle')}
           </p>
         </div>
 
@@ -149,41 +149,41 @@ const CustomerReviews: React.FC = () => {
               <div className="flex items-center">
                 <ChartBarIcon className="h-8 w-8 text-primary-600 mr-3" />
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Reviews</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('reviews.stats.total')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{reviews.length}</p>
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
               <div className="flex items-center">
                 <StarIconSolid className="h-8 w-8 text-yellow-500 mr-3" />
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Average Rating</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('reviews.stats.average')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {averageRating.toFixed(1)}
                   </p>
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
               <div className="flex items-center">
                 <CheckBadgeIcon className="h-8 w-8 text-green-600 mr-3" />
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Verified Reviews</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('reviews.stats.verified')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {reviews.filter(r => r.isVerified).length}
                   </p>
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
               <div className="flex items-center">
                 <EyeIcon className="h-8 w-8 text-blue-600 mr-3" />
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Public Reviews</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{t('reviews.stats.public')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {reviews.filter(r => r.isPublic).length}
                   </p>
@@ -198,22 +198,22 @@ const CustomerReviews: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mb-6 shadow">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="flex items-center gap-4">
-                <label className="text-sm text-gray-700 dark:text-gray-300">Sort by:</label>
+                <label className="text-sm text-gray-700 dark:text-gray-300">{t('reviews.sortBy.label')}</label>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as 'createdAt' | 'rating')}
                   className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
-                  <option value="createdAt">Date</option>
-                  <option value="rating">Rating</option>
+                  <option value="createdAt">{t('reviews.sortBy.date')}</option>
+                  <option value="rating">{t('reviews.sortBy.rating')}</option>
                 </select>
                 <select
                   value={sortOrder}
                   onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
                   className="border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
-                  <option value="desc">Newest First</option>
-                  <option value="asc">Oldest First</option>
+                  <option value="desc">{t('reviews.sortOrder.newestFirst')}</option>
+                  <option value="asc">{t('reviews.sortOrder.oldestFirst')}</option>
                 </select>
               </div>
             </div>
@@ -227,11 +227,11 @@ const CustomerReviews: React.FC = () => {
               <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-400 mr-2" />
               <p className="text-red-700 dark:text-red-300">{error}</p>
             </div>
-            <button 
+            <button
               onClick={() => fetchReviews(currentPage)}
               className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             >
-              Try Again
+              {t('common.tryAgain')}
             </button>
           </div>
         )}
@@ -242,10 +242,10 @@ const CustomerReviews: React.FC = () => {
             <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center shadow">
               <StarIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                No Reviews Yet
+                {t('reviews.empty.title')}
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                You haven't written any reviews yet. Complete a booking to leave your first review!
+                {t('reviews.empty.description')}
               </p>
             </div>
           ) : (
@@ -263,12 +263,12 @@ const CustomerReviews: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     {review.isVerified && (
-                      <CheckBadgeIcon className="h-5 w-5 text-green-600" title="Verified Review" />
+                      <CheckBadgeIcon className="h-5 w-5 text-green-600" title={t('reviews.verifiedReview')} />
                     )}
                     {review.isPublic ? (
-                      <EyeIcon className="h-5 w-5 text-blue-600" title="Public Review" />
+                      <EyeIcon className="h-5 w-5 text-blue-600" title={t('reviews.publicReview')} />
                     ) : (
-                      <EyeSlashIcon className="h-5 w-5 text-gray-400" title="Private Review" />
+                      <EyeSlashIcon className="h-5 w-5 text-gray-400" title={t('reviews.privateReview')} />
                     )}
                   </div>
                 </div>
@@ -294,7 +294,7 @@ const CustomerReviews: React.FC = () => {
 
                 {review.createdAt !== review.updatedAt && (
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Last updated: {formatDate(review.updatedAt)} at {formatTime(review.updatedAt)}
+                    {t('reviews.lastUpdated')} {formatDate(review.updatedAt)} at {formatTime(review.updatedAt)}
                   </p>
                 )}
               </div>
@@ -310,19 +310,19 @@ const CustomerReviews: React.FC = () => {
               disabled={!pagination.hasPrev}
               className="px-3 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              Previous
+              {t('pagination.previous')}
             </button>
-            
+
             <span className="px-4 py-2 text-gray-700 dark:text-gray-300">
-              Page {currentPage} of {pagination.totalPages}
+              {t('pagination.pageOf').replace('{current}', currentPage.toString()).replace('{total}', pagination.totalPages.toString())}
             </span>
-            
+
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={!pagination.hasNext}
               className="px-3 py-2 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              Next
+              {t('pagination.next')}
             </button>
           </div>
         )}

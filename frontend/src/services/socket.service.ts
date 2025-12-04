@@ -1,5 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 import { getAuthToken } from './api';
+import { environment } from '@/config/environment';
 import {
   BookingSocketEvent,
   NotificationSocketEvent,
@@ -31,7 +32,10 @@ class SocketService {
     }
 
     try {
-      this.socket = io(import.meta.env.VITE_WS_URL || 'ws://localhost:8000', {
+      console.log('[Socket] Connecting to:', environment.WS_URL);
+      console.log('[Socket] Token available:', !!token);
+
+      this.socket = io(environment.WS_URL, {
         auth: {
           token
         },
@@ -41,13 +45,12 @@ class SocketService {
         reconnectionAttempts: this.maxReconnectAttempts,
         reconnectionDelay: this.reconnectDelay,
         reconnectionDelayMax: 5000,
+        forceNew: true,
       });
 
       this.setupEventListeners();
-      
-      if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] Attempting to connect...');
-      }
+
+      console.log('[Socket] Attempting to connect to', environment.WS_URL);
     } catch (error) {
       console.error('[Socket] Connection error:', error);
     }
@@ -100,9 +103,17 @@ class SocketService {
 
     this.socket.on('connect_error', (error) => {
       this.reconnectAttempts++;
-      
+
       console.error('[Socket] Connection error:', error);
-      
+      console.error('[Socket] Error details:', {
+        message: error.message,
+        description: error.description,
+        context: error.context,
+        type: error.type
+      });
+      console.error('[Socket] WS_URL:', environment.WS_URL);
+      console.error('[Socket] Attempt #:', this.reconnectAttempts);
+
       if (this.reconnectAttempts >= this.maxReconnectAttempts) {
         console.error('[Socket] Max reconnection attempts reached');
         this.emit('socket:connection_failed', { error: error.message });
@@ -164,7 +175,16 @@ class SocketService {
       if (import.meta.env.VITE_DEBUG === 'true') {
         console.log('[Socket] Notification:', data);
       }
-      // Normalize to 'notification:new'
+
+      // Check if this is a payment completion notification
+      if (data.type === 'PAYMENT_COMPLETED') {
+        if (import.meta.env.VITE_DEBUG === 'true') {
+          console.log('[Socket] Payment completion notification:', data);
+        }
+        this.emit('payment:completed', data.data);
+      }
+
+      // Also emit as general notification
       this.emit('notification:new', data);
     });
 
@@ -261,6 +281,91 @@ class SocketService {
       this.eventHandlers.set(event, new Set());
     }
     this.eventHandlers.get(event)!.add(handler);
+  }
+
+  // Enhanced subscription for payment events with auto-retry
+  subscribeToPayment(paymentId: string, handler: SocketEventHandler): () => void {
+    // Ensure connection is active
+    if (!this.isSocketConnected()) {
+      console.log('[Socket] Attempting to reconnect for payment subscription');
+      this.ensureConnection();
+    }
+
+    // Subscribe to both specific and general payment events
+    this.on('payment:completed', handler);
+    this.on('notification', (data: any) => {
+      if (data.type === 'PAYMENT_COMPLETED' && data.data?.paymentId === paymentId) {
+        handler(data.data);
+      }
+    });
+
+    // Join payment-specific room if connected
+    if (this.isSocketConnected()) {
+      this.send('payment:subscribe', { paymentId });
+    }
+
+    // Return unsubscribe function
+    return () => {
+      this.off('payment:completed', handler);
+      if (this.isSocketConnected()) {
+        this.send('payment:unsubscribe', { paymentId });
+      }
+    };
+  }
+
+  // Ensure WebSocket connection with retry
+  ensureConnection(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (this.isSocketConnected()) {
+        resolve(true);
+        return;
+      }
+
+      // Try to reconnect
+      const token = getAuthToken();
+      if (!token) {
+        console.warn('[Socket] No auth token for reconnection');
+        resolve(false);
+        return;
+      }
+
+      // Set up one-time connection listener
+      const onConnect = () => {
+        this.socket?.off('connect', onConnect);
+        this.socket?.off('connect_error', onError);
+        resolve(true);
+      };
+
+      const onError = () => {
+        this.socket?.off('connect', onConnect);
+        this.socket?.off('connect_error', onError);
+        resolve(false);
+      };
+
+      // Attempt reconnection
+      try {
+        if (!this.socket || this.socket.disconnected) {
+          this.connect();
+        } else {
+          this.socket.connect();
+        }
+
+        this.socket?.on('connect', onConnect);
+        this.socket?.on('connect_error', onError);
+
+        // Timeout after 5 seconds
+        setTimeout(() => {
+          this.socket?.off('connect', onConnect);
+          this.socket?.off('connect_error', onError);
+          if (!this.isSocketConnected()) {
+            resolve(false);
+          }
+        }, 5000);
+      } catch (error) {
+        console.error('[Socket] Error during reconnection:', error);
+        resolve(false);
+      }
+    });
   }
 
   // Unsubscribe from socket events
@@ -419,5 +524,13 @@ export const onAvailabilityUpdate = (handler: SocketEventHandler<any>) => {
   socketService.on('availability:updated', handler);
   return () => socketService.off('availability:updated', handler);
 };
+
+// Enhanced payment subscription helper
+export const subscribeToPaymentUpdates = (paymentId: string, handler: SocketEventHandler<PaymentSocketEvent['data']>) => {
+  return socketService.subscribeToPayment(paymentId, handler);
+};
+
+// Connection helpers
+export const ensureSocketConnection = () => socketService.ensureConnection();
 
 export default socketService;

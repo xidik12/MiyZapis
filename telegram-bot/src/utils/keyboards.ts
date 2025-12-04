@@ -163,9 +163,9 @@ export class KeyboardBuilder {
     return [
       [
         { text: '🇺🇦 Українська', callback_data: 'lang_uk' },
-        { text: '🇷🇺 Русский', callback_data: 'lang_ru' }
+        { text: '🇬🇧 English', callback_data: 'lang_en' }
       ],
-      [{ text: '🇬🇧 English', callback_data: 'lang_en' }]
+      [{ text: '🇷🇺 Русский', callback_data: 'lang_ru' }]
     ];
   }
 

@@ -898,4 +898,93 @@ export class BookingController {
       );
     }
   }
+
+  // Create booking with confirmed payment (payment-first approach)
+  static async createBookingWithPayment(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Validate required fields
+      const { paymentId, serviceId, scheduledAt, duration, customerNotes } = req.body;
+
+      if (!paymentId || !serviceId || !scheduledAt) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Missing required fields: paymentId, serviceId, and scheduledAt are required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Create booking data with the confirmed payment
+      const bookingData = {
+        serviceId,
+        customerId: req.user.id,
+        scheduledAt: new Date(scheduledAt),
+        duration: duration || 60,
+        customerNotes: customerNotes || undefined,
+        status: 'PENDING', // Start as pending, specialist needs to confirm
+        paymentId, // Link to the confirmed payment
+      };
+
+      const booking = await BookingService.createBooking(bookingData);
+
+      logger.info('Booking created with payment successfully', {
+        bookingId: booking.id,
+        customerId: req.user.id,
+        paymentId,
+        serviceId,
+      });
+
+      res.status(201).json(
+        createSuccessResponse(
+          { booking },
+          { message: 'Booking created successfully' }
+        )
+      );
+    } catch (error: any) {
+      logger.error('Create booking with payment error:', error);
+
+      if (error.message?.includes('Payment not found') || error.message?.includes('Payment not completed')) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            error.message,
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (error.message?.includes('Time slot conflicts') || error.message?.includes('already booked')) {
+        res.status(409).json(
+          createErrorResponse(
+            ErrorCodes.BOOKING_CONFLICT,
+            error.message,
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to create booking',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
 }

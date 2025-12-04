@@ -5,17 +5,18 @@ import { config } from '@/config';
 import { prisma } from '@/config/database';
 import { cacheUtils } from '@/config/redis';
 import { logger } from '@/utils/logger';
-// Use enhanced email service with localization support
-import { emailService as templatedEmailService } from '@/services/email/enhanced-email';
-import { 
-  LoginRequest, 
-  RegisterRequest, 
+// Use basic email service for verification emails
+import { emailService } from '@/services/email';
+import {
+  LoginRequest,
+  RegisterRequest,
   TelegramAuthRequest,
-  JwtPayload, 
+  JwtPayload,
   RefreshTokenPayload,
   ErrorCodes,
-  UserType 
+  UserType
 } from '@/types';
+import { ReferralService } from '@/services/referral';
 import { User } from '@prisma/client';
 
 interface GoogleAuthData {
@@ -118,7 +119,12 @@ export class EnhancedAuthService {
       // Hash password
       const hashedPassword = await bcrypt.hash(data.password, config.security.bcryptRounds);
 
-      // Create user (unverified)
+      // Calculate 3-month trial period
+      const trialStartDate = new Date();
+      const trialEndDate = new Date();
+      trialEndDate.setMonth(trialEndDate.getMonth() + 3); // Add 3 months
+
+      // Create user (unverified) with 3-month trial period
       const user = await prisma.user.create({
         data: {
           email: data.email,
@@ -130,6 +136,10 @@ export class EnhancedAuthService {
           telegramId: data.telegramId,
           isEmailVerified: false, // Start as unverified
           language: (data as any).language || 'en',
+          // Free 3-month trial period
+          trialStartDate,
+          trialEndDate,
+          isInTrial: true,
         },
         select: {
           id: true,
@@ -198,7 +208,7 @@ export class EnhancedAuthService {
         firstName: user.firstName
       });
 
-      templatedEmailService.sendEmailVerification(user.id, verificationToken, user.language || 'en').then((emailSent) => {
+      emailService.sendEmailVerification(user.id, verificationToken, user.language || 'en').then((emailSent) => {
         if (!emailSent) {
           logger.error('💥 Verification email failed to send', { 
             userId: user.id, 
@@ -225,14 +235,60 @@ export class EnhancedAuthService {
         });
       });
 
-      logger.info('User registered successfully', { 
-        userId: user.id, 
-        email: user.email
+      // Process referral if provided
+      let referralProcessed = false;
+      if ((data as any).referralCode) {
+        try {
+          // Validate and process the referral
+          const referral = await ReferralService.getReferralByCode((data as any).referralCode);
+
+          // Check if the user type matches the referral target
+          const isSpecialist = data.userType === 'SPECIALIST';
+          if ((referral.targetUserType === 'SPECIALIST' && isSpecialist) ||
+              (referral.targetUserType === 'CUSTOMER' && !isSpecialist)) {
+
+            // Process referral completion
+            await ReferralService.processReferralCompletion({
+              referralCode: (data as any).referralCode,
+              referredUserId: user.id
+            });
+
+            referralProcessed = true;
+            logger.info('Referral processed during registration', {
+              userId: user.id,
+              referralCode: (data as any).referralCode,
+              referralType: referral.referralType
+            });
+          } else {
+            logger.warn('Referral user type mismatch during registration', {
+              userId: user.id,
+              referralCode: (data as any).referralCode,
+              expectedType: referral.targetUserType,
+              actualType: data.userType
+            });
+          }
+        } catch (error) {
+          // Don't fail registration if referral processing fails
+          logger.error('Failed to process referral during registration', {
+            userId: user.id,
+            referralCode: (data as any).referralCode,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+
+      logger.info('User registered successfully', {
+        userId: user.id,
+        email: user.email,
+        referralProcessed
       });
 
       return {
-        message: 'Registration successful. Please check your email to verify your account.',
+        message: referralProcessed
+          ? 'Registration successful! Your referral bonus has been applied. Please check your email to verify your account.'
+          : 'Registration successful. Please check your email to verify your account.',
         requiresVerification: true,
+        referralProcessed,
         user: {
           id: user.id,
           email: user.email,
@@ -329,6 +385,11 @@ export class EnhancedAuthService {
           telegramNotifications: true,
           passwordLastChanged: true,
           authProvider: true,
+          walletBalance: true,
+          walletCurrency: true,
+          subscriptionStatus: true,
+          subscriptionValidUntil: true,
+          subscriptionEffectiveDate: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -344,7 +405,7 @@ export class EnhancedAuthService {
       });
 
       // Send welcome email
-        await templatedEmailService.sendWelcomeEmail(updatedUser.id, updatedUser.language || 'en');
+        await emailService.sendWelcomeEmail(updatedUser.id, updatedUser.language || 'en');
 
       // Create auth tokens
       const tokens = await this.createTokens(updatedUser);
@@ -554,7 +615,12 @@ export class EnhancedAuthService {
         // Validate userType
         const validUserType = userType.toUpperCase() === 'SPECIALIST' ? 'SPECIALIST' : 'CUSTOMER';
 
-        // Create new user from Google data
+        // Calculate 3-month trial period
+        const trialStartDate = new Date();
+        const trialEndDate = new Date();
+        trialEndDate.setMonth(trialEndDate.getMonth() + 3); // Add 3 months
+
+        // Create new user from Google data with 3-month trial period
         user = await prisma.user.create({
           data: {
             email: googleData.email,
@@ -564,6 +630,10 @@ export class EnhancedAuthService {
             userType: validUserType,
             isEmailVerified: googleData.verified_email,
             isActive: true,
+            // Free 3-month trial period
+            trialStartDate,
+            trialEndDate,
+            isInTrial: true,
           },
           select: {
             id: true,
@@ -632,7 +702,7 @@ export class EnhancedAuthService {
         }
 
         // Send localized welcome email for new users
-        await templatedEmailService.sendWelcomeEmail(user.id, user.language || 'en');
+        await emailService.sendWelcomeEmail(user.id, user.language || 'en');
       } else {
         // Existing user - check available roles
         const hasCustomerRole = user.userType === 'CUSTOMER' || user.userType === 'ADMIN';
@@ -751,6 +821,11 @@ export class EnhancedAuthService {
           telegramNotifications: true,
           passwordLastChanged: true,
           authProvider: true,
+          walletBalance: true,
+          walletCurrency: true,
+          subscriptionStatus: true,
+          subscriptionValidUntil: true,
+          subscriptionEffectiveDate: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -761,7 +836,12 @@ export class EnhancedAuthService {
       if (!user) {
         // Create new user from Telegram data
         const email = `telegram_${telegramData.telegramId}@miyzapis.com`;
-        
+
+        // Calculate 3-month trial period
+        const trialStartDate = new Date();
+        const trialEndDate = new Date();
+        trialEndDate.setMonth(trialEndDate.getMonth() + 3); // Add 3 months
+
         user = await prisma.user.create({
           data: {
             email,
@@ -771,6 +851,10 @@ export class EnhancedAuthService {
             telegramId: telegramData.telegramId,
             isEmailVerified: false, // Telegram users don't have email verification
             isActive: true,
+            // Free 3-month trial period
+            trialStartDate,
+            trialEndDate,
+            isInTrial: true,
           },
           select: {
             id: true,

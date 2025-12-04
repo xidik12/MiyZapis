@@ -877,59 +877,59 @@ export class LoyaltyService {
   
   static async getUserLoyaltyStats(userId: string) {
     try {
-      // Get user's full info including related data
+      // Get basic user info first
       const user = await prisma.user.findUnique({
         where: { id: userId },
-        include: {
-          customerBookings: {
-            where: { status: 'COMPLETED' }
-          },
-          specialistBookings: {
-            where: { status: 'COMPLETED' }
-          },
-          reviews: true,
-          referralsGiven: {
-            where: { status: 'COMPLETED' }
-          },
-          badges: {
-            include: { badge: true }
-          }
-        }
+        select: { id: true, loyaltyPoints: true, createdAt: true }
       });
-      
+
       if (!user) return null;
-      
-      // Calculate total points from transactions with safeguards
-      // Exclude erroneously-attributed provider points:
-      // - For entries with reason 'BOOKING_COMPLETED', only include when the user was the booking's customer
-      const allTx = await prisma.loyaltyTransaction.findMany({ where: { userId } });
-      const bookingIds = allTx
-        .filter(tx => tx.reason === 'BOOKING_COMPLETED' && !!tx.referenceId)
-        .map(tx => tx.referenceId!) as string[];
 
-      let bookingById: Record<string, { customerId: string }> = {};
-      if (bookingIds.length > 0) {
-        const bookings = await prisma.booking.findMany({
-          where: { id: { in: bookingIds } },
-          select: { id: true, customerId: true }
-        });
-        bookingById = bookings.reduce((acc, b) => {
-          acc[b.id] = { customerId: b.customerId };
-          return acc;
-        }, {} as Record<string, { customerId: string }>);
-      }
-
-      const totalPoints = allTx.reduce((sum, tx) => {
-        // Only gate positive points
-        if (tx.points > 0 && tx.reason === 'BOOKING_COMPLETED' && tx.referenceId) {
-          const b = bookingById[tx.referenceId];
-          if (!b || b.customerId !== userId) {
-            return sum; // skip provider-attributed booking points
+      // Use efficient aggregate queries instead of loading all data
+      const [
+        bookingStats,
+        reviewCount,
+        referralCount,
+        badgeCount,
+        transactionCount,
+        totalEarnedAgg,
+        totalRedeemedAgg
+      ] = await Promise.all([
+        // Count bookings efficiently
+        prisma.booking.aggregate({
+          _count: { id: true },
+          _sum: { totalAmount: true },
+          where: {
+            OR: [
+              { customerId: userId, status: 'COMPLETED' },
+              { specialistId: userId, status: 'COMPLETED' }
+            ]
           }
-        }
-        return sum + tx.points;
-      }, 0);
-      
+        }),
+        // Count reviews
+        prisma.review.count({ where: { userId } }),
+        // Count successful referrals
+        prisma.loyaltyReferral.count({
+          where: { referrerId: userId, status: 'COMPLETED' }
+        }),
+        // Count badges
+        prisma.userBadge.count({ where: { userId } }),
+        // Count transactions
+        prisma.loyaltyTransaction.count({ where: { userId } }),
+        // Sum earned points
+        prisma.loyaltyTransaction.aggregate({
+          _sum: { points: true },
+          where: { userId, type: 'EARN' }
+        }),
+        // Sum redeemed points (convert to positive)
+        prisma.loyaltyTransaction.aggregate({
+          _sum: { points: true },
+          where: { userId, type: 'REDEEMED' }
+        })
+      ]);
+      // Use current loyalty points from user record (this is maintained by the system)
+      const totalPoints = user.loyaltyPoints || 0;
+
       // Determine current tier based on calculated points
       let tier = 'BRONZE';
       if (totalPoints >= LOYALTY_CONFIG.TIERS.PLATINUM.min) {
@@ -939,24 +939,25 @@ export class LoyaltyService {
       } else if (totalPoints >= LOYALTY_CONFIG.TIERS.SILVER.min) {
         tier = 'SILVER';
       }
-      
-      // Get transaction count
-      const totalTransactions = await prisma.loyaltyTransaction.count({ 
-        where: { userId } 
-      });
-      
-      // Count total bookings for both customer and specialist roles
-      const totalBookings = user.customerBookings.length + user.specialistBookings.length;
+
+      // Extract aggregated data
+      const totalBookings = bookingStats._count.id || 0;
+      const totalSpent = bookingStats._sum.totalAmount || 0;
+      const totalEarned = totalEarnedAgg._sum.points || 0;
+      const totalRedeemed = Math.abs(totalRedeemedAgg._sum.points || 0);
       
       return {
         userId,
         totalPoints: Math.max(0, totalPoints), // Ensure non-negative
         tier,
-        badges: user.badges.map(ub => ub.badge),
+        badges: [], // Will be loaded separately if needed to avoid slow query
         totalBookings,
-        totalReviews: user.reviews.length,
-        successfulReferrals: user.referralsGiven.length,
-        totalTransactions,
+        totalReviews: reviewCount,
+        successfulReferrals: referralCount,
+        totalTransactions: transactionCount,
+        totalEarned,
+        totalRedeemed,
+        totalSpent,
         memberSince: user.createdAt
       };
     } catch (error) {

@@ -14,6 +14,7 @@ const router = Router();
 
 // Protected routes - require authentication
 router.post('/', authenticateToken, validateCreateBooking, BookingController.createBooking);
+router.post('/with-payment', authenticateToken, BookingController.createBookingWithPayment);
 router.get('/', authenticateToken, validateGetBookings, BookingController.getUserBookings);
 router.get('/stats', authenticateToken, BookingController.getSpecialistBookingStats);
 router.get('/:bookingId', authenticateToken, validateBookingId, BookingController.getBooking);

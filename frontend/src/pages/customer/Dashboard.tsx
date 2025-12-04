@@ -13,6 +13,8 @@ import { messagesService } from '@/services/messages.service';
 import { loyaltyService, UserLoyalty, LoyaltyStats } from '@/services/loyalty.service';
 import { translateProfession } from '@/utils/profession';
 import { formatPoints } from '@/utils/formatPoints';
+import WalletBalance from '@/components/wallet/WalletBalance';
+import TrialStatusBanner from '@/components/trial/TrialStatusBanner';
 // Status colors for bookings
 const statusColors = {
   confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -140,11 +142,14 @@ const CustomerDashboard: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch customer's bookings and loyalty data
-        const [upcomingRes, completedRes, allRes, favoritesCount, myReviews, favSpecs, unread, loyaltyProfile, loyaltyStatsData] = await Promise.all([
+        // Fetch essential data first, then optional data with timeout protection
+        const essentialPromise = Promise.allSettled([
           bookingService.getBookings({ limit: 10, status: 'confirmed,pending,inProgress' as any }, 'customer'),
           bookingService.getBookings({ limit: 5, status: 'COMPLETED' as any }, 'customer'),
           bookingService.getBookings({ limit: 1 }, 'customer'),
+        ]);
+
+        const optionalPromise = Promise.allSettled([
           favoritesService.getFavoritesCount().catch(() => ({ specialists: 0, services: 0 })),
           reviewsService.getMyReviews(1, 100).catch(() => ({ reviews: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 100, hasNext: false, hasPrev: false } } as any)),
           favoritesService.getFavoriteSpecialists(1, 6).catch(() => ({ specialists: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 6, hasNext: false, hasPrev: false } } as any)),
@@ -152,6 +157,39 @@ const CustomerDashboard: React.FC = () => {
           loyaltyService.getUserLoyalty().catch(() => null),
           loyaltyService.getLoyaltyStats().catch(() => null),
         ]);
+
+        // Wait for essential data with timeout
+        const essentialResults = await Promise.race([
+          essentialPromise,
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Essential data timeout')), 10000))
+        ]);
+
+        const [upcomingResult, completedResult, allResult] = essentialResults;
+        const upcomingRes = upcomingResult.status === 'fulfilled' ? upcomingResult.value : { bookings: [] };
+        const completedRes = completedResult.status === 'fulfilled' ? completedResult.value : { bookings: [] };
+        const allRes = allResult.status === 'fulfilled' ? allResult.value : { pagination: { total: 0 } };
+
+        // Wait for optional data with timeout (don't fail if this times out)
+        const optionalResults = await Promise.race([
+          optionalPromise,
+          new Promise(resolve => setTimeout(() => resolve([
+            { status: 'rejected' as const, reason: 'timeout' },
+            { status: 'rejected' as const, reason: 'timeout' },
+            { status: 'rejected' as const, reason: 'timeout' },
+            { status: 'rejected' as const, reason: 'timeout' },
+            { status: 'rejected' as const, reason: 'timeout' },
+            { status: 'rejected' as const, reason: 'timeout' },
+          ]), 5000))
+        ]) as PromiseSettledResult<any>[];
+
+        const [favoritesCountResult, myReviewsResult, favSpecsResult, unreadResult, loyaltyProfileResult, loyaltyStatsResult] = optionalResults;
+
+        const favoritesCount = favoritesCountResult.status === 'fulfilled' ? favoritesCountResult.value : { specialists: 0, services: 0 };
+        const myReviews = myReviewsResult.status === 'fulfilled' ? myReviewsResult.value : { reviews: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 100, hasNext: false, hasPrev: false } };
+        const favSpecs = favSpecsResult.status === 'fulfilled' ? favSpecsResult.value : { specialists: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 6, hasNext: false, hasPrev: false } };
+        const unread = unreadResult.status === 'fulfilled' ? unreadResult.value : { count: 0 };
+        const loyaltyProfile = loyaltyProfileResult.status === 'fulfilled' ? loyaltyProfileResult.value : null;
+        const loyaltyStatsData = loyaltyStatsResult.status === 'fulfilled' ? loyaltyStatsResult.value : null;
 
         // Set loyalty data
         setLoyaltyData(loyaltyProfile);
@@ -313,7 +351,7 @@ const CustomerDashboard: React.FC = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading your dashboard...</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('dashboard.loading')}</p>
         </div>
       </div>
     );
@@ -327,11 +365,11 @@ const CustomerDashboard: React.FC = () => {
             <ExclamationTriangleIcon className="w-12 h-12 mx-auto" />
           </div>
           <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
-            Try Again
+            {t('common.tryAgain')}
           </button>
         </div>
       </div>
@@ -412,6 +450,14 @@ const CustomerDashboard: React.FC = () => {
               </Link>
             </div>
           </div>
+
+          {/* Trial Status Banner */}
+          <TrialStatusBanner
+            trialStartDate={user?.trialStartDate}
+            trialEndDate={user?.trialEndDate}
+            isInTrial={user?.isInTrial}
+            userType="customer"
+          />
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -508,7 +554,23 @@ const CustomerDashboard: React.FC = () => {
           )}
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            {/* Wallet Balance */}
+            <div className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('wallet.title')}</h3>
+                <Link
+                  to="/customer/wallet"
+                  className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                >
+                  {t('dashboard.viewAll')}
+                </Link>
+              </div>
+              <WalletBalance
+                showTransactions={true}
+                onTransactionsClick={() => navigate('/customer/wallet')}
+              />
+            </div>
             {/* Recent Bookings */}
             <div className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
               <div className="flex items-center justify-between mb-4 sm:mb-6">
@@ -629,7 +691,7 @@ const CustomerDashboard: React.FC = () => {
                 ))
               )}
               {favoritesLoading && (
-                <div className="text-center py-3 text-sm text-gray-500">Loading...</div>
+                <div className="text-center py-3 text-sm text-gray-500">{t('common.loading')}</div>
               )}
               </div>
             </div>
@@ -644,9 +706,9 @@ const CustomerDashboard: React.FC = () => {
                     <GiftIconSolid className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Loyalty Progress</h3>
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.loyalty.progressTitle')}</h3>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                      {loyaltyStats.currentTier?.name || 'Bronze'} Member
+                      {loyaltyStats.currentTier?.name || 'Bronze'} {t('dashboard.loyalty.member')}
                     </p>
                   </div>
                 </div>
@@ -654,7 +716,7 @@ const CustomerDashboard: React.FC = () => {
                   to="/loyalty"
                   className="inline-flex items-center justify-center w-full sm:w-auto px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs sm:text-sm font-medium"
                 >
-                  View Details
+                  {t('dashboard.viewAll')}
                 </Link>
               </div>
 
@@ -663,21 +725,21 @@ const CustomerDashboard: React.FC = () => {
                   <p className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
                     {formatPoints(loyaltyData?.currentPoints || 0)}
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Current Points</p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('dashboard.loyalty.currentPoints')}</p>
                 </div>
-                
+
                 <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-lg">
                   <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
                     {formatPoints(loyaltyStats.monthlyPoints)}
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">This Month</p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('dashboard.loyalty.thisMonth')}</p>
                 </div>
-                
+
                 <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-lg">
                   <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {formatPoints(loyaltyData?.lifetimePoints || 0)}
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Lifetime Points</p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('dashboard.loyalty.lifetimePoints')}</p>
                 </div>
               </div>
 
@@ -685,10 +747,10 @@ const CustomerDashboard: React.FC = () => {
                 <div>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-1">
                     <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Progress to {loyaltyStats.nextTier.name}
+                      {t('dashboard.loyalty.progressTo')} {loyaltyStats.nextTier.name}
                     </span>
                     <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                      {loyaltyStats.pointsToNextTier} points needed
+                      {loyaltyStats.pointsToNextTier} {t('dashboard.loyalty.pointsNeeded')}
                     </span>
                   </div>
                   <div className="overflow-hidden h-3 mb-2 text-xs flex rounded-full bg-purple-200 dark:bg-purple-800">

@@ -13,6 +13,7 @@ export { reviewService } from './review.service';
 export { fileUploadService } from './fileUpload.service';
 export { messagingService } from './messaging.service';
 export { analyticsService } from './analytics.service';
+export { referralService } from './referral.service';
 
 // Socket Service
 // export { 
@@ -39,6 +40,7 @@ export const services = {
   get fileUpload() { return fileUploadService; },
   get messaging() { return messagingService; },
   get analytics() { return analyticsService; },
+  get referral() { return referralService; },
   // get socket() { return socketService; },
 } as const;
 

@@ -371,20 +371,25 @@ export class SpecialistService {
     const params = new URLSearchParams();
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
+    // Request up to 1000 blocks (enough for a week of 15-minute slots across multiple days)
+    params.append('limit', '1000');
 
     try {
-      // Use the existing blocked slots endpoint directly (skip the non-existent /specialists/blocks)
-      console.log('📦 Fetching availability blocks from blocked slots endpoint...');
-      const response = await apiClient.get<{ blockedSlots: BlockedSlot[] }>(`/specialists/availability/blocked?${params}`);
+      // Use the correct /specialists/blocks endpoint
+      console.log('📦 Fetching availability blocks from /specialists/blocks endpoint...');
+      const response = await apiClient.get<{ blocks: BlockedSlot[] }>(`/specialists/blocks?${params}`);
       if (response.success && response.data) {
-        const blocks = response.data.blockedSlots || response.data.data?.blockedSlots || [];
-        console.log('📦 getAvailabilityBlocks response:', { response: response.data, extractedBlocks: blocks });
+        const blocks = response.data.blocks || [];
+        console.log('📦 getAvailabilityBlocks response:', {
+          blocksCount: blocks.length,
+          blocks: blocks.slice(0, 3) // Show first 3 blocks for debugging
+        });
         return Array.isArray(blocks) ? blocks : [];
       }
     } catch (error: any) {
       console.warn('📦 Failed to fetch availability blocks:', error);
     }
-    
+
     return [];
   }
 
@@ -458,6 +463,17 @@ export class SpecialistService {
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to delete availability block');
     }
+    return response.data;
+  }
+
+  // Generate availability blocks from working hours
+  async generateAvailabilityFromWorkingHours(): Promise<{ message: string; blocksCreated: number }> {
+    console.log('📤 Generating availability blocks from working hours');
+    const response = await apiClient.post<{ message: string; blocksCreated: number }>('/specialists/availability/generate', {});
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to generate availability blocks');
+    }
+    console.log('✅ Generated availability blocks:', response.data);
     return response.data;
   }
 
@@ -673,13 +689,15 @@ export class SpecialistService {
   async getAvailableSlots(specialistId: string, date: string): Promise<string[]> {
     try {
       console.log('📅 API: Getting available slots for specialist:', specialistId, 'date:', date);
-      
+
       // Calculate start and end of the day for the availability query
       const startDate = `${date}T00:00:00.000Z`;
       const endDate = `${date}T23:59:59.999Z`;
-      
+
+      // Add cache-busting timestamp to ensure fresh data
+      const cacheBuster = Date.now();
       const response = await apiClient.get<{ availableSlots: string[] }>(
-        `/specialists/${specialistId}/slots?date=${date}`
+        `/specialists/${specialistId}/slots?date=${date}&_t=${cacheBuster}`
       );
       
       if (!response.success || !response.data) {

@@ -17,6 +17,24 @@ export interface PasswordRequirements {
   isEnglishOnly: boolean;
 }
 
+const PASSWORD_ERROR_KEYS = {
+  minLength: 'auth.passwordErrors.minLength',
+  uppercase: 'auth.passwordErrors.uppercase',
+  lowercase: 'auth.passwordErrors.lowercase',
+  number: 'auth.passwordErrors.number',
+  symbol: 'auth.passwordErrors.symbol',
+  englishOnly: 'auth.passwordErrors.englishOnly'
+} as const;
+
+const PASSWORD_ERROR_FALLBACKS: Record<string, string> = {
+  [PASSWORD_ERROR_KEYS.minLength]: 'Password must be at least 8 characters long',
+  [PASSWORD_ERROR_KEYS.uppercase]: 'Password must contain at least one uppercase letter (A-Z)',
+  [PASSWORD_ERROR_KEYS.lowercase]: 'Password must contain at least one lowercase letter (a-z)',
+  [PASSWORD_ERROR_KEYS.number]: 'Password must contain at least one number (0-9)',
+  [PASSWORD_ERROR_KEYS.symbol]: 'Password must contain at least one symbol (!@#$%^&*()_+-=[]{}|;:,.<>?)',
+  [PASSWORD_ERROR_KEYS.englishOnly]: 'Password must contain only English letters, numbers, and symbols'
+};
+
 /**
  * Validates password against all requirements
  */
@@ -26,32 +44,32 @@ export const validatePassword = (password: string): PasswordValidationResult => 
 
   // Check minimum length
   if (!requirements.minLength) {
-    errors.push('Password must be at least 8 characters long');
+    errors.push(PASSWORD_ERROR_KEYS.minLength);
   }
 
   // Check for uppercase letter
   if (!requirements.hasUppercase) {
-    errors.push('Password must contain at least one uppercase letter (A-Z)');
+    errors.push(PASSWORD_ERROR_KEYS.uppercase);
   }
 
   // Check for lowercase letter
   if (!requirements.hasLowercase) {
-    errors.push('Password must contain at least one lowercase letter (a-z)');
+    errors.push(PASSWORD_ERROR_KEYS.lowercase);
   }
 
   // Check for number
   if (!requirements.hasNumber) {
-    errors.push('Password must contain at least one number (0-9)');
+    errors.push(PASSWORD_ERROR_KEYS.number);
   }
 
   // Check for symbol
   if (!requirements.hasSymbol) {
-    errors.push('Password must contain at least one symbol (!@#$%^&*()_+-=[]{}|;:,.<>?)');
+    errors.push(PASSWORD_ERROR_KEYS.symbol);
   }
 
   // Check for English characters only
   if (!requirements.isEnglishOnly) {
-    errors.push('Password must contain only English letters, numbers, and symbols');
+    errors.push(PASSWORD_ERROR_KEYS.englishOnly);
   }
 
   // Determine password strength
@@ -144,7 +162,8 @@ export const getPasswordValidationRules = (t: (key: string) => string) => ({
   validate: (value: string) => {
     const validation = validatePassword(value);
     if (!validation.isValid) {
-      return validation.errors[0]; // Return first error
+      const errorKey = validation.errors[0];
+      return t(errorKey) || PASSWORD_ERROR_FALLBACKS[errorKey] || PASSWORD_ERROR_FALLBACKS[PASSWORD_ERROR_KEYS.minLength];
     }
     return true;
   }

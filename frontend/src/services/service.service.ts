@@ -66,24 +66,19 @@ export class ServiceService {
 
   // Get specific service details
   async getService(serviceId: string): Promise<Service> {
-    console.log('📡 API: Getting service by ID:', serviceId);
-    
     if (!serviceId) {
       throw new Error('Service ID is required');
     }
-    
+
     const response = await apiClient.get<{service: Service}>(`/services/${serviceId}`);
-    console.log('📦 API: Service response:', response);
-    
+
     if (!response.success || !response.data) {
       console.error('❌ API: Failed to get service:', response.error);
       throw new Error(response.error?.message || 'Failed to get service details');
     }
-    
+
     // Extract service from response.data.service
     const serviceData = response.data.service || response.data;
-    console.log('✅ API: Service retrieved:', serviceData);
-    console.log('🔍 API: Extracted service data for booking:', serviceData);
     return serviceData;
   }
 

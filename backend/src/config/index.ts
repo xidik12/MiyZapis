@@ -38,6 +38,22 @@ const envSchema = z.object({
   STRIPE_PUBLISHABLE_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
+  // Coinbase Commerce (optional for development)
+  COINBASE_COMMERCE_API_KEY: z.string().optional(),
+  COINBASE_COMMERCE_WEBHOOK_SECRET: z.string().optional(),
+
+  // PayPal (optional for development)
+  PAYPAL_CLIENT_ID: z.string().optional(),
+  PAYPAL_CLIENT_SECRET: z.string().optional(),
+  PAYPAL_WEBHOOK_ID: z.string().optional(),
+  PAYPAL_MODE: z.string().default('sandbox'), // 'sandbox' or 'live'
+
+  // WayForPay (optional for development)
+  WAYFORPAY_MERCHANT_ACCOUNT: z.string().optional(),
+  WAYFORPAY_MERCHANT_SECRET: z.string().optional(),
+  WAYFORPAY_MERCHANT_DOMAIN: z.string().optional(),
+  WAYFORPAY_MODE: z.string().default('test'), // 'test' or 'live'
+
   // Telegram (optional for development)
   TELEGRAM_BOT_TOKEN: z.string().optional(),
   TELEGRAM_WEBHOOK_URL: z.string().optional(),
@@ -86,7 +102,7 @@ const envSchema = z.object({
 
   // WebSocket
   WEBSOCKET_PORT: z.string().transform(Number).default('3001'),
-  WEBSOCKET_CORS_ORIGIN: z.string().default('http://localhost:3000'),
+  WEBSOCKET_CORS_ORIGIN: z.string().default('http://localhost:3000,https://miyzapis.com,https://miyzapis-frontend.vercel.app'),
 
   // Monitoring
   SENTRY_DSN: z.string().optional(),
@@ -148,6 +164,35 @@ export const config = {
     secretKey: env.STRIPE_SECRET_KEY,
     publishableKey: env.STRIPE_PUBLISHABLE_KEY,
     webhookSecret: env.STRIPE_WEBHOOK_SECRET,
+  },
+
+  // Coinbase Commerce
+  coinbaseCommerce: {
+    apiKey: env.COINBASE_COMMERCE_API_KEY,
+    webhookSecret: env.COINBASE_COMMERCE_WEBHOOK_SECRET,
+    baseUrl: 'https://api.commerce.coinbase.com',
+  },
+
+  // PayPal
+  paypal: {
+    clientId: env.PAYPAL_CLIENT_ID,
+    clientSecret: env.PAYPAL_CLIENT_SECRET,
+    webhookId: env.PAYPAL_WEBHOOK_ID,
+    mode: env.PAYPAL_MODE, // 'sandbox' or 'live'
+    baseUrl: env.PAYPAL_MODE === 'live'
+      ? 'https://api.paypal.com'
+      : 'https://api.sandbox.paypal.com',
+  },
+
+  // WayForPay
+  wayforpay: {
+    merchantAccount: env.WAYFORPAY_MERCHANT_ACCOUNT,
+    merchantSecret: env.WAYFORPAY_MERCHANT_SECRET,
+    merchantDomain: env.WAYFORPAY_MERCHANT_DOMAIN,
+    mode: env.WAYFORPAY_MODE, // 'test' or 'live'
+    baseUrl: env.WAYFORPAY_MODE === 'live'
+      ? 'https://api.wayforpay.com/api'
+      : 'https://secure.wayforpay.com/pay',
   },
 
   // Telegram

@@ -29,6 +29,7 @@ import {
   ArrowRightOnRectangleIcon,
   ChatBubbleLeftEllipsisIcon,
   UsersIcon,
+  WalletIcon,
 } from '@heroicons/react/24/outline';
 import { HomeIcon as HomeIconSolid } from '@heroicons/react/24/solid';
 
@@ -88,6 +89,13 @@ const navigation: SidebarNavItem[] = [
     href: '/customer/messages',
     icon: ChatBubbleLeftEllipsisIcon,
     iconActive: ChatBubbleLeftEllipsisIcon,
+  },
+  {
+    name: 'Wallet',
+    nameKey: 'customer.nav.wallet',
+    href: '/customer/wallet',
+    icon: WalletIcon,
+    iconActive: WalletIcon,
   },
   {
     name: 'Payments',
@@ -152,7 +160,13 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  const isCurrentPath = (path: string) => location.pathname === path;
+  const isCurrentPath = (path: string) => {
+    // Handle wallet routes - both /wallet and /customer/wallet should highlight the wallet nav item
+    if (path === '/customer/wallet') {
+      return location.pathname === '/customer/wallet' || location.pathname === '/wallet';
+    }
+    return location.pathname === path;
+  };
 
   const handleLogout = async () => {
     try {

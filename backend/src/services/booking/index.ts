@@ -4,7 +4,11 @@ import { NotificationService } from '@/services/notification';
 import { emailService as templatedEmailService } from '@/services/email/enhanced-email';
 import { resolveLanguage } from '@/utils/language';
 import LoyaltyService from '@/services/loyalty';
+import { specialistSubscriptionService } from '@/services/payment/subscription.service';
+import { ReferralService } from '@/services/referral';
+import { ReferralProcessingService } from '@/services/referral/processing.service';
 import { Booking, User, Service, Specialist } from '@prisma/client';
+import { generateGroupSessionId, canAccommodateParticipants, logGroupSessionInfo } from '@/utils/groupSessions';
 
 interface CreateBookingData {
   customerId: string;
@@ -14,6 +18,7 @@ interface CreateBookingData {
   customerNotes?: string;
   loyaltyPointsUsed?: number;
   rewardRedemptionId?: string;
+  participantCount?: number; // For group sessions - number of participants in this booking
 }
 
 interface UpdateBookingData {
@@ -139,15 +144,54 @@ export class BookingService {
         throw new Error('CUSTOMER_NOT_ACTIVE');
       }
 
+      // Validate and handle group session logic
+      const participantCount = data.participantCount || 1;
+      const isGroupSession = service.isGroupSession || false;
+      let groupSessionId: string | undefined;
+
+      // Validate participant count
+      if (!isGroupSession && participantCount !== 1) {
+        throw new Error('INVALID_PARTICIPANT_COUNT_FOR_INDIVIDUAL_SERVICE');
+      }
+
+      if (participantCount < 1) {
+        throw new Error('PARTICIPANT_COUNT_MUST_BE_POSITIVE');
+      }
+
+      // For group sessions, check capacity and generate session ID
+      if (isGroupSession) {
+        groupSessionId = generateGroupSessionId(data.serviceId, data.scheduledAt);
+
+        // Check if there are enough spots available
+        const canAccommodate = await canAccommodateParticipants(
+          data.serviceId,
+          data.scheduledAt,
+          participantCount,
+          service.maxParticipants
+        );
+
+        if (!canAccommodate) {
+          throw new Error('GROUP_SESSION_FULL');
+        }
+
+        logGroupSessionInfo('Booking request', data.serviceId, data.scheduledAt, {
+          participantCount,
+          maxParticipants: service.maxParticipants,
+          customerId: data.customerId
+        });
+      }
+
       // Check if specialist is available at the requested time
       const bookingStartTime = data.scheduledAt;
       const bookingEndTime = new Date(bookingStartTime.getTime() + (bookingDuration * 60 * 1000));
-      
+
       logger.info('Checking for booking conflicts', {
-        specialistId: service.specialist.userId, // Use User ID for logging consistency
+        specialistId: service.specialist.userId,
         bookingStartTime: bookingStartTime.toISOString(),
         bookingEndTime: bookingEndTime.toISOString(),
-        duration: bookingDuration
+        duration: bookingDuration,
+        isGroupSession,
+        participantCount
       });
 
       // Use a database transaction + advisory locks to prevent race conditions
@@ -171,54 +215,71 @@ export class BookingService {
           // Use two-int variant to avoid bigint collisions
           await tx.$executeRawUnsafe('SELECT pg_advisory_xact_lock($1::int, $2::int)', specialistKey, m);
         }
-        // Find any existing bookings that overlap with the requested time slot
-        const existingBookings = await tx.booking.findMany({
-          where: {
-            specialistId: service.specialist.userId, // Use User ID, not Specialist ID
-            status: {
-              in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'],
+
+        // For group sessions, skip conflict check (multiple bookings allowed)
+        // For individual sessions, check for conflicts
+        if (!isGroupSession) {
+          // Find any existing bookings that overlap with the requested time slot
+          const existingBookings = await tx.booking.findMany({
+            where: {
+              specialistId: service.specialist.userId, // Use User ID, not Specialist ID
+              status: {
+                in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'],
+              },
+              // Add time range filter to reduce the dataset
+              scheduledAt: {
+                gte: new Date(bookingStartTime.getTime() - (24 * 60 * 60 * 1000)), // 24 hours before
+                lte: new Date(bookingEndTime.getTime() + (24 * 60 * 60 * 1000)), // 24 hours after
+              }
             },
-            // Add time range filter to reduce the dataset
-            scheduledAt: {
-              gte: new Date(bookingStartTime.getTime() - (24 * 60 * 60 * 1000)), // 24 hours before
-              lte: new Date(bookingEndTime.getTime() + (24 * 60 * 60 * 1000)), // 24 hours after
+            select: {
+              id: true,
+              scheduledAt: true,
+              duration: true,
+              status: true
             }
-          },
-          select: {
-            id: true,
-            scheduledAt: true,
-            duration: true,
-            status: true
-          }
-        });
+          });
 
-        // Check for time overlap with any existing booking
-        const conflictingBooking = existingBookings.find(booking => {
-          const existingStart = new Date(booking.scheduledAt);
-          const existingEnd = new Date(existingStart.getTime() + (booking.duration * 60 * 1000));
-          
-          // Two time ranges overlap if: start1 < end2 && start2 < end1
-          const hasOverlap = bookingStartTime < existingEnd && existingStart < bookingEndTime;
-          
-          if (hasOverlap) {
-            logger.warn('Booking conflict detected', {
-              existingBookingId: booking.id,
-              existingStart: existingStart.toISOString(),
-              existingEnd: existingEnd.toISOString(),
-              requestedStart: bookingStartTime.toISOString(),
-              requestedEnd: bookingEndTime.toISOString()
-            });
-          }
-          
-          return hasOverlap;
-        });
+          // Check for time overlap with any existing booking
+          const conflictingBooking = existingBookings.find(booking => {
+            const existingStart = new Date(booking.scheduledAt);
+            const existingEnd = new Date(existingStart.getTime() + (booking.duration * 60 * 1000));
 
-        if (conflictingBooking) {
-          throw new Error('TIME_SLOT_NOT_AVAILABLE');
+            // Two time ranges overlap if: start1 < end2 && start2 < end1
+            const hasOverlap = bookingStartTime < existingEnd && existingStart < bookingEndTime;
+
+            if (hasOverlap) {
+              logger.warn('Booking conflict detected', {
+                existingBookingId: booking.id,
+                existingStart: existingStart.toISOString(),
+                existingEnd: existingEnd.toISOString(),
+                requestedStart: bookingStartTime.toISOString(),
+                requestedEnd: bookingEndTime.toISOString()
+              });
+            }
+
+            return hasOverlap;
+          });
+
+          if (conflictingBooking) {
+            throw new Error('TIME_SLOT_NOT_AVAILABLE');
+          }
+        } else {
+          // For group sessions, re-check capacity within transaction for race condition safety
+          const canAccommodate = await canAccommodateParticipants(
+            data.serviceId,
+            data.scheduledAt,
+            participantCount,
+            service.maxParticipants
+          );
+
+          if (!canAccommodate) {
+            throw new Error('GROUP_SESSION_FULL');
+          }
         }
 
-        // Calculate pricing
-        const baseAmount = service.basePrice;
+        // Calculate pricing (multiply by participant count for group sessions)
+        const baseAmount = service.basePrice * participantCount;
         const loyaltyPointsUsed = data.loyaltyPointsUsed || 0;
         const loyaltyDiscount = loyaltyPointsUsed * 0.01; // 1 point = $0.01
         let subtotalAfterPoints = Math.max(0, baseAmount - loyaltyDiscount);
@@ -347,6 +408,8 @@ export class BookingService {
             deliverables: JSON.stringify([]), // Empty deliverables initially
             status: initialStatus, // Auto-booking: CONFIRMED if autoBooking enabled, otherwise PENDING
             confirmedAt: service.specialist.autoBooking ? new Date() : null, // Auto-confirm if auto-booking
+            participantCount, // Add participant count for group sessions
+            groupSessionId, // Add group session ID if applicable
           },
         include: {
           customer: {
@@ -440,6 +503,53 @@ export class BookingService {
 
         return createdBooking;
       });
+
+      // Track referral activity for first booking (if applicable)
+      try {
+        // Check if this is the customer's first booking
+        const customerBookingCount = await prisma.booking.count({
+          where: {
+            customerId: data.customerId,
+            status: { not: 'CANCELLED' }
+          }
+        });
+
+        if (customerBookingCount === 1) {
+          // This is the first booking - check for any pending referrals for this customer
+          const pendingReferrals = await prisma.loyaltyReferral.findMany({
+            where: {
+              referredId: data.customerId,
+              status: 'PENDING'
+            }
+          });
+
+          // Update referrals with first booking ID
+          if (pendingReferrals.length > 0) {
+            await prisma.loyaltyReferral.updateMany({
+              where: {
+                referredId: data.customerId,
+                status: 'PENDING'
+              },
+              data: {
+                firstBookingId: booking.id
+              }
+            });
+
+            logger.info('Updated referrals with first booking ID', {
+              customerId: data.customerId,
+              bookingId: booking.id,
+              referralCount: pendingReferrals.length
+            });
+          }
+        }
+      } catch (error) {
+        // Don't fail booking creation if referral tracking fails
+        logger.error('Failed to track referral activity for booking', {
+          bookingId: booking.id,
+          customerId: data.customerId,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
 
       // Send appropriate notifications based on auto-booking setting
       try {
@@ -774,6 +884,40 @@ export class BookingService {
         // Use centralized loyalty service for consistent point calculation
         await LoyaltyService.processBookingCompletion(booking.id);
 
+        // Process referral completion (if this was a first booking)
+        try {
+          await ReferralProcessingService.processBookingCompletion(booking.id);
+        } catch (error) {
+          // Don't fail booking completion if referral processing fails
+          logger.error('Failed to process referral completion', {
+            bookingId: booking.id,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+
+        // Process specialist subscription fees (PAY_PER_USE or MONTHLY_SUBSCRIPTION)
+        try {
+          const feeResult = await specialistSubscriptionService.processTransactionFee(
+            booking.specialistId,
+            booking.id
+          );
+
+          logger.info('Specialist subscription fee processed', {
+            bookingId: booking.id,
+            specialistId: booking.specialistId,
+            feeCharged: feeResult.feeCharged,
+            currency: feeResult.currency,
+            method: feeResult.method,
+          });
+        } catch (subscriptionError) {
+          logger.error('Failed to process specialist subscription fee:', {
+            error: subscriptionError,
+            bookingId: booking.id,
+            specialistId: booking.specialistId,
+          });
+          // Don't throw error as booking completion was successful
+        }
+
         // Update specialist metrics
         await prisma.specialist.update({
           where: { userId: booking.specialistId },
@@ -827,91 +971,150 @@ export class BookingService {
 
       // Calculate refund amount
       let refundAmount = 0;
-      if (booking.status === 'CONFIRMED') {
-        // Refund deposit minus cancellation fee (10%)
-        refundAmount = booking.depositAmount * 0.9;
-      }
+      const isSpecialistCancellation = cancelledBy === booking.specialistId;
 
-      const updatedBooking = await prisma.booking.update({
-        where: { id: bookingId },
-        data: {
-          status: 'CANCELLED',
-          cancelledAt: new Date(),
-          cancelledBy,
-          cancellationReason: reason,
-          refundAmount,
-          updatedAt: new Date(),
-        },
-        include: {
-          customer: {
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-              avatar: true,
-              userType: true,
-              phoneNumber: true,
-              isEmailVerified: true,
-              isPhoneVerified: true,
-              isActive: true,
-              loyaltyPoints: true,
-              loyaltyTierId: true,
-              language: true,
-              currency: true,
-              timezone: true,
-              createdAt: true,
-              updatedAt: true,
+      if (isSpecialistCancellation) {
+        // If specialist cancels, customer gets FULL refund ($1) to wallet
+        refundAmount = 100; // $1 in cents
+      }
+      // If customer cancels, they lose the $1 deposit (no refund)
+
+      // Use transaction to ensure atomic operation
+      const updatedBooking = await prisma.$transaction(async (tx) => {
+        // Update booking status
+        const booking = await tx.booking.update({
+          where: { id: bookingId },
+          data: {
+            status: 'CANCELLED',
+            cancelledAt: new Date(),
+            cancelledBy,
+            cancellationReason: reason,
+            refundAmount,
+            updatedAt: new Date(),
+          },
+          include: {
+            customer: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                avatar: true,
+                userType: true,
+                phoneNumber: true,
+                isEmailVerified: true,
+                isPhoneVerified: true,
+                isActive: true,
+                loyaltyPoints: true,
+                loyaltyTierId: true,
+                language: true,
+                currency: true,
+                timezone: true,
+                walletBalance: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
+            specialist: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                avatar: true,
+                userType: true,
+                phoneNumber: true,
+                isEmailVerified: true,
+                isPhoneVerified: true,
+                isActive: true,
+                loyaltyPoints: true,
+                loyaltyTierId: true,
+                language: true,
+                currency: true,
+                timezone: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
+            service: {
+              include: {
+                specialist: true,
+              },
             },
           },
-          specialist: {
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-              avatar: true,
-              userType: true,
-              phoneNumber: true,
-              isEmailVerified: true,
-              isPhoneVerified: true,
-              isActive: true,
-              loyaltyPoints: true,
-              loyaltyTierId: true,
-              language: true,
-              currency: true,
-              timezone: true,
-              createdAt: true,
-              updatedAt: true,
-            },
-          },
-          service: {
-            include: {
-              specialist: true,
-            },
-          },
-        },
+        });
+
+        // If there's a refund amount, credit customer's wallet
+        if (refundAmount > 0 && booking.customerId) {
+          await tx.user.update({
+            where: { id: booking.customerId },
+            data: {
+              walletBalance: {
+                increment: refundAmount
+              }
+            }
+          });
+
+          // Create wallet transaction record
+          await tx.walletTransaction.create({
+            data: {
+              userId: booking.customerId,
+              amount: refundAmount,
+              type: 'REFUND',
+              description: isSpecialistCancellation
+                ? 'Booking cancellation refund (specialist cancelled)'
+                : 'Booking cancellation refund',
+              relatedBookingId: bookingId,
+              status: 'COMPLETED',
+              createdAt: new Date()
+            }
+          });
+
+          logger.info('Refund credited to customer wallet', {
+            bookingId,
+            customerId: booking.customerId,
+            refundAmount,
+            cancelledBy: isSpecialistCancellation ? 'specialist' : 'customer'
+          });
+        }
+
+        return booking;
       });
 
-      // Send localized emails for key changes
+      // Send localized emails for cancellation
       try {
         const langCustomer = resolveLanguage(updatedBooking.customer?.language, undefined);
         const langSpecialist = updatedBooking.specialist?.language || 'en';
-        const bookingUrlCustomer = `${process.env.FRONTEND_URL || 'https://miyzapis.com'}/bookings/${updatedBooking.id}`;
-        const bookingUrlSpecialist = `${process.env.FRONTEND_URL || 'https://miyzapis.com'}/specialist/bookings/${updatedBooking.id}`;
 
-        // If status changed to CANCELLED
-        if (data.status === 'CANCELLED') {
+        // Send cancellation email to customer
+        if (updatedBooking.customer?.email) {
           const dateStr = new Intl.DateTimeFormat(langCustomer === 'uk' ? 'uk-UA' : langCustomer === 'ru' ? 'ru-RU' : 'en-US', {
             year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
             timeZone: updatedBooking.customer.timezone
           }).format(new Date(updatedBooking.scheduledAt));
+
+          // Add refund notice to cancellation reason if applicable
+          let cancellationMessage = reason || '';
+          if (refundAmount > 0) {
+            const refundInDollars = (refundAmount / 100).toFixed(2);
+            cancellationMessage += cancellationMessage ? ` A refund of $${refundInDollars} has been credited to your wallet.` : `A refund of $${refundInDollars} has been credited to your wallet.`;
+          }
+
           await templatedEmailService.sendTemplateEmail({
             to: updatedBooking.customer.email!,
             templateKey: 'bookingCancelled',
             language: langCustomer,
-            data: { name: updatedBooking.customer.firstName, serviceName: updatedBooking.service.name, bookingDateTime: dateStr, reason: data.cancellationReason || '' }
+            data: {
+              name: updatedBooking.customer.firstName,
+              serviceName: updatedBooking.service.name,
+              bookingDateTime: dateStr,
+              reason: cancellationMessage
+            }
           });
+        }
+
+        // Send cancellation email to specialist
+        if (updatedBooking.specialist?.email) {
           const dateStrSpec = new Intl.DateTimeFormat(langSpecialist === 'uk' ? 'uk-UA' : langSpecialist === 'ru' ? 'ru-RU' : 'en-US', {
             year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
             timeZone: updatedBooking.specialist.timezone
@@ -920,45 +1123,17 @@ export class BookingService {
             to: updatedBooking.specialist.email!,
             templateKey: 'bookingCancelled',
             language: langSpecialist,
-            data: { name: updatedBooking.specialist.firstName, serviceName: updatedBooking.service.name, bookingDateTime: dateStrSpec, reason: data.cancellationReason || '' }
-          });
-        } else if (data.status || data.scheduledAt) {
-          // Any status/time update → bookingUpdated for both
-          const dateStrCust = new Intl.DateTimeFormat(langCustomer === 'uk' ? 'uk-UA' : langCustomer === 'ru' ? 'ru-RU' : 'en-US', {
-            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
-            timeZone: updatedBooking.customer.timezone
-          }).format(new Date(updatedBooking.scheduledAt));
-          await templatedEmailService.sendTemplateEmail({
-            to: updatedBooking.customer.email!,
-            templateKey: 'bookingUpdated',
-            language: langCustomer,
-            data: {
-              name: updatedBooking.customer.firstName,
-              serviceName: updatedBooking.service.name,
-              specialistName: `${updatedBooking.specialist.firstName} ${updatedBooking.specialist.lastName}`,
-              bookingDateTime: dateStrCust,
-              bookingUrl: bookingUrlCustomer,
-            }
-          });
-          const dateStrSpec2 = new Intl.DateTimeFormat(langSpecialist === 'uk' ? 'uk-UA' : langSpecialist === 'ru' ? 'ru-RU' : 'en-US', {
-            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
-            timeZone: updatedBooking.specialist.timezone
-          }).format(new Date(updatedBooking.scheduledAt));
-          await templatedEmailService.sendTemplateEmail({
-            to: updatedBooking.specialist.email!,
-            templateKey: 'bookingUpdated',
-            language: langSpecialist,
             data: {
               name: updatedBooking.specialist.firstName,
               serviceName: updatedBooking.service.name,
-              specialistName: `${updatedBooking.specialist.firstName} ${updatedBooking.specialist.lastName}`,
-              bookingDateTime: dateStrSpec2,
-              bookingUrl: bookingUrlSpecialist,
+              bookingDateTime: dateStrSpec,
+              reason: reason || ''
             }
           });
         }
       } catch (e) {
         // non-blocking
+        logger.error('Failed to send cancellation emails', { bookingId, error: e });
       }
 
       // Refund loyalty points if they were used
