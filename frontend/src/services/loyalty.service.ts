@@ -263,34 +263,54 @@ export class LoyaltyService {
       hasPrev: boolean;
     };
   }> {
-    const response = await apiClient.get<{
-      transactions: LoyaltyTransaction[];
-      pagination: {
-        currentPage: number;
-        totalPages: number;
-        totalItems: number;
-        itemsPerPage: number;
-        hasNext: boolean;
-        hasPrev: boolean;
-      };
-    }>(`/loyalty/transactions?page=${page}&limit=${limit}`);
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get transactions');
+    try {
+      const response = await apiClient.get<{
+        transactions: LoyaltyTransaction[];
+        pagination: {
+          currentPage: number;
+          totalPages: number;
+          totalItems: number;
+          itemsPerPage: number;
+          hasNext: boolean;
+          hasPrev: boolean;
+        };
+      }>(`/loyalty/transactions?page=${page}&limit=${limit}`);
+
+      if (!response.success || !response.data) {
+        return this.getDefaultTransactions();
+      }
+
+      return response.data;
+    } catch (error: any) {
+      console.warn('Failed to get loyalty transactions:', error);
+      return this.getDefaultTransactions();
     }
-    
-    return response.data;
+  }
+
+  private getDefaultTransactions() {
+    return {
+      transactions: [],
+      pagination: {
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        itemsPerPage: 20,
+        hasNext: false,
+        hasPrev: false
+      }
+    };
   }
 
   // Get all loyalty tiers
   async getTiers(): Promise<LoyaltyTier[]> {
-    const response = await apiClient.get<{ tiers: LoyaltyTier[] }>('/loyalty/tiers');
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get loyalty tiers');
-    }
-    
-    const apiTiers = response.data.tiers || [];
+    try {
+      const response = await apiClient.get<{ tiers: LoyaltyTier[] }>('/loyalty/tiers');
+
+      if (!response.success || !response.data) {
+        return this.getDefaultTiers();
+      }
+
+      const apiTiers = response.data.tiers || [];
     // Normalize to fixed ranges: Bronze 0-499, Silver 500-999, Gold 1000-1999, Platinum 2000+
     const byKey = new Map<string, LoyaltyTier>();
     for (const t of apiTiers) {
@@ -338,17 +358,79 @@ export class LoyaltyService {
       return base;
     });
     return normalized;
+    } catch (error: any) {
+      console.warn('Failed to get loyalty tiers:', error);
+      return this.getDefaultTiers();
+    }
+  }
+
+  private getDefaultTiers(): LoyaltyTier[] {
+    return [
+      {
+        id: 'local-bronze',
+        name: 'Bronze',
+        slug: 'bronze',
+        minPoints: 0,
+        maxPoints: 499,
+        benefits: ['Basic support', 'Standard booking', 'Point earning'],
+        discountPercentage: 0,
+        prioritySupport: false,
+        exclusiveOffers: false,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: 'local-silver',
+        name: 'Silver',
+        slug: 'silver',
+        minPoints: 500,
+        maxPoints: 999,
+        benefits: ['Priority support', 'Early booking access'],
+        discountPercentage: 0,
+        prioritySupport: true,
+        exclusiveOffers: false,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: 'local-gold',
+        name: 'Gold',
+        slug: 'gold',
+        minPoints: 1000,
+        maxPoints: 1999,
+        benefits: ['5% bonus points', 'Priority support', 'Early access'],
+        discountPercentage: 5,
+        prioritySupport: true,
+        exclusiveOffers: false,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: 'local-platinum',
+        name: 'Platinum',
+        slug: 'platinum',
+        minPoints: 2000,
+        maxPoints: undefined,
+        benefits: ['10% bonus points', 'VIP support', 'Exclusive services'],
+        discountPercentage: 10,
+        prioritySupport: true,
+        exclusiveOffers: true,
+        createdAt: new Date().toISOString(),
+      },
+    ];
   }
 
   // Get user's badges
   async getUserBadges(): Promise<UserBadge[]> {
-    const response = await apiClient.get<{ badges: UserBadge[] }>('/loyalty/badges');
-    
-    if (!response.success || !response.data) {
-      throw new Error(response.error?.message || 'Failed to get user badges');
+    try {
+      const response = await apiClient.get<{ badges: UserBadge[] }>('/loyalty/badges');
+
+      if (!response.success || !response.data) {
+        return [];
+      }
+
+      return response.data.badges;
+    } catch (error: any) {
+      console.warn('Failed to get user badges:', error);
+      return [];
     }
-    
-    return response.data.badges;
   }
 
   // Get available badges
