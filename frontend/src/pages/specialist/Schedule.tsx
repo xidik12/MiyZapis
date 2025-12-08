@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import {
   CalendarIcon,
@@ -17,7 +18,6 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { specialistService } from '../../services/specialist.service';
-import { bookingService } from '../../services/booking.service';
 import { isFeatureEnabled } from '../../config/features';
 import { retryRequest } from '../../services/api';
 
@@ -490,9 +490,12 @@ const SpecialistSchedule: React.FC = () => {
       setError(null);
       setPreSelectedDate(undefined);
       setPreSelectedTime(undefined);
+      toast.success('Time slot added successfully');
     } catch (err: any) {
       console.error('Error adding time slot:', err);
-      setError(err.message || 'Failed to add time slot');
+      const errorMessage = err?.response?.data?.error?.message || err?.message || 'Failed to add time slot. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setOperationInProgress(false);
     }
@@ -535,9 +538,12 @@ const SpecialistSchedule: React.FC = () => {
 
       setEditingBlock(null);
       setError(null);
+      toast.success('Time slot updated successfully');
     } catch (err: any) {
       console.error('Error editing time slot:', err);
-      setError(err.message || 'Failed to edit time slot');
+      const errorMessage = err?.response?.data?.error?.message || err?.message || 'Failed to edit time slot. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setOperationInProgress(false);
     }
@@ -553,9 +559,12 @@ const SpecialistSchedule: React.FC = () => {
       );
       setAvailabilityBlocks(prev => prev.filter(block => block.id !== id));
       setError(null);
+      toast.success('Time slot deleted successfully');
     } catch (err: any) {
       console.error('Error deleting time slot:', err);
-      setError(err.message || 'Failed to delete time slot');
+      const errorMessage = err?.response?.data?.error?.message || err?.message || 'Failed to delete time slot. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setOperationInProgress(false);
     }

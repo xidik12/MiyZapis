@@ -116,10 +116,14 @@ export interface WorkingHours {
 }
 
 export interface BlockedSlot {
+  id: string;
   startDateTime: string;
   endDateTime: string;
   reason: string;
+  isAvailable: boolean;
+  isRecurring: boolean;
   recurring: boolean;
+  recurringDays?: string[];
 }
 
 export interface SpecialistPricing {
