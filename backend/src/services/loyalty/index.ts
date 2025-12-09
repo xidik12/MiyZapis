@@ -511,6 +511,8 @@ export class LoyaltyService {
           name: 'BRONZE',
           minPoints: LOYALTY_CONFIG.TIERS.BRONZE.min,
           maxPoints: LOYALTY_CONFIG.TIERS.BRONZE.max,
+          color: '#CD7F32',
+          icon: 'shield',
           benefits: JSON.stringify([
             'Basic customer support',
             'Access to standard promotions',
@@ -524,6 +526,8 @@ export class LoyaltyService {
           name: 'SILVER',
           minPoints: LOYALTY_CONFIG.TIERS.SILVER.min,
           maxPoints: LOYALTY_CONFIG.TIERS.SILVER.max,
+          color: '#C0C0C0',
+          icon: 'star',
           benefits: JSON.stringify([
             'Priority customer support',
             'Early access to new services',
@@ -537,6 +541,8 @@ export class LoyaltyService {
           name: 'GOLD',
           minPoints: LOYALTY_CONFIG.TIERS.GOLD.min,
           maxPoints: LOYALTY_CONFIG.TIERS.GOLD.max,
+          color: '#FFD700',
+          icon: 'trophy',
           benefits: JSON.stringify([
             'Premium customer support',
             'Exclusive service access',
@@ -551,6 +557,8 @@ export class LoyaltyService {
           name: 'PLATINUM',
           minPoints: LOYALTY_CONFIG.TIERS.PLATINUM.min,
           maxPoints: LOYALTY_CONFIG.TIERS.PLATINUM.max,
+          color: '#E5E4E2',
+          icon: 'crown',
           benefits: JSON.stringify([
             'VIP customer support',
             'Personal account manager',
@@ -570,6 +578,8 @@ export class LoyaltyService {
           update: {
             minPoints: tier.minPoints,
             maxPoints: tier.maxPoints,
+            color: tier.color,
+            icon: tier.icon,
             benefits: tier.benefits,
             discountPercentage: tier.discountPercentage,
             prioritySupport: tier.prioritySupport,
