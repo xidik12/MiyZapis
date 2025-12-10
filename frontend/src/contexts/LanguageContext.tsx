@@ -713,6 +713,8 @@ const translations: Translations = {
   'actions.remove': { en: 'Remove', uk: 'Видалити', ru: 'Удалить' },
   'settings.upload.uploading': { en: 'Uploading...', uk: 'Завантаження...', ru: 'Загрузка...' },
   'settings.upload.changePhoto': { en: 'Change Photo', uk: 'Змінити фото', ru: 'Изменить фото' },
+  'settings.upload.maxSize': { en: 'Maximum size: 5MB. Supported formats: JPG, PNG, WebP', uk: 'Максимальний розмір: 5МБ. Підтримувані формати: JPG, PNG, WebP', ru: 'Максимальный размер: 5МБ. Поддерживаемые форматы: JPG, PNG, WebP' },
+  'settings.upload.photoUpdated': { en: 'Photo updated successfully!', uk: 'Фото успішно оновлено!', ru: 'Фото успешно обновлено!' },
   'settings.payment.removed': { en: 'Payment method removed', uk: 'Спосіб оплати видалено', ru: 'Способ оплаты удален' },
   'settings.payment.removeError': { en: 'Failed to remove payment method', uk: 'Помилка видалення способу оплати', ru: 'Ошибка удаления способа оплаты' },
   'settings.payment.added': { en: 'Payment method added', uk: 'Спосіб оплати додано', ru: 'Способ оплаты добавлен' },
@@ -1491,7 +1493,6 @@ const translations: Translations = {
   'booking.dateTime': { en: 'Date & Time', uk: 'Дата та час', ru: 'Дата и время' },
   'booking.specialistContact': { en: 'Specialist Contact Information', uk: 'Контактна інформація спеціаліста', ru: 'Контактная информация специалиста' },
   'booking.phone': { en: 'Phone', uk: 'Телефон', ru: 'Телефон' },
-  'booking.location': { en: 'Location', uk: 'Локація', ru: 'Локация' },
   'booking.paymentAmount': { en: 'Payment Amount', uk: 'Сума оплати', ru: 'Сумма оплаты' },
   'booking.duration': { en: 'Duration', uk: 'Тривалість', ru: 'Продолжительность' },
   'booking.total': { en: 'Total', uk: 'Всього', ru: 'Итого' },
@@ -1515,6 +1516,7 @@ const translations: Translations = {
   'empty.startBrowsingServices': { en: 'Start browsing services and add them to your favorites.', uk: 'Почніть переглядати послуги і додавайте їх до обраного.', ru: 'Начните просматривать услуги и добавляйте их в избранное.' },
 
   // Profile & Account
+  'profile.profilePhoto': { en: 'Profile Photo', uk: 'Фото профілю', ru: 'Фото профиля' },
   'profile.changePhoto': { en: 'Change Photo', uk: 'Змінити фото', ru: 'Изменить фото' },
   'profile.firstName': { en: 'First Name', uk: 'Ім\'я', ru: 'Имя' },
   'profile.lastName': { en: 'Last Name', uk: 'Прізвище', ru: 'Фамилия' },
@@ -2231,14 +2233,12 @@ const translations: Translations = {
 
   // Reviews
   'reviews.loading': { en: 'Loading your reviews...', uk: 'Завантаження ваших відгуків...', ru: 'Загрузка ваших отзывов...' },
-  'reviews.subtitle': { en: 'Manage your reviews and ratings', uk: 'Керуйте своїми відгуками та оцінками', ru: 'Управляйте своими отзывами и оценками' },
   'reviews.stats.total': { en: 'Total Reviews', uk: 'Всього відгуків', ru: 'Всего отзывов' },
   'reviews.stats.average': { en: 'Average Rating', uk: 'Середня оцінка', ru: 'Средняя оценка' },
   'reviews.stats.verified': { en: 'Verified Reviews', uk: 'Перевірені відгуки', ru: 'Проверенные отзывы' },
   'reviews.stats.public': { en: 'Public Reviews', uk: 'Публічні відгуки', ru: 'Публичные отзывы' },
   'reviews.sortBy.label': { en: 'Sort by:', uk: 'Сортувати за:', ru: 'Сортировать по:' },
   'reviews.sortBy.date': { en: 'Date', uk: 'Датою', ru: 'Дате' },
-  'reviews.sortBy.rating': { en: 'Rating', uk: 'Оцінкою', ru: 'Оценке' },
   'reviews.sortOrder.newestFirst': { en: 'Newest First', uk: 'Спочатку нові', ru: 'Сначала новые' },
   'reviews.sortOrder.oldestFirst': { en: 'Oldest First', uk: 'Спочатку старі', ru: 'Сначала старые' },
   'reviews.empty.title': { en: 'No Reviews Yet', uk: 'Поки немає відгуків', ru: 'Пока нет отзывов' },
@@ -2249,7 +2249,6 @@ const translations: Translations = {
   'reviews.lastUpdated': { en: 'Last updated:', uk: 'Останнє оновлення:', ru: 'Последнее обновление:' },
 
   // Dashboard
-  'dashboard.loading': { en: 'Loading your dashboard...', uk: 'Завантаження панелі...', ru: 'Загрузка панели...' },
   'dashboard.loyalty.monthlyPoints': { en: 'this month', uk: 'цього місяця', ru: 'в этом месяце' },
   'dashboard.loyalty.tierInfo': { en: 'Tier • to next', uk: 'Рівень • до наступного', ru: 'Уровень • до следующего' },
   'dashboard.loyalty.progressTitle': { en: 'Loyalty Progress', uk: 'Прогрес лояльності', ru: 'Прогресс лояльности' },
@@ -2273,12 +2272,8 @@ const translations: Translations = {
 
   // Common actions
   'common.tryAgain': { en: 'Try Again', uk: 'Спробувати ще раз', ru: 'Попробовать снова' },
-  'common.loading': { en: 'Loading...', uk: 'Завантаження...', ru: 'Загрузка...' },
   'common.viewDetails': { en: 'View Details', uk: 'Переглянути деталі', ru: 'Просмотреть детали' },
-  'common.until': { en: 'until', uk: 'до', ru: 'до' },
   'common.clear': { en: 'Clear', uk: 'Очистити', ru: 'Очистить' },
-  'actions.cancel': { en: 'Cancel', uk: 'Скасувати', ru: 'Отменить' },
-  'actions.remove': { en: 'Remove', uk: 'Видалити', ru: 'Удалить' },
 
   // Pagination
   'pagination.previous': { en: 'Previous', uk: 'Попередня', ru: 'Предыдущая' },
