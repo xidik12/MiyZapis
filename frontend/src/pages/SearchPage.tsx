@@ -178,6 +178,7 @@ const SearchPage: React.FC = () => {
           name: service.name,
           description: service.description,
           price: service.basePrice || service.price || 0,
+          currency: service.currency || 'USD',
           duration: service.duration || 0,
           category: service.category || '',
           location: '', // Backend doesn't seem to have location info yet
@@ -429,7 +430,7 @@ const SearchPage: React.FC = () => {
                 {service.isAvailable ? t('service.available') : t('service.unavailable')}
               </div>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatPrice(service.price, service.currency as 'USD' | 'EUR' | 'UAH' || 'UAH')}
+                {formatPrice(service.price, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
               </p>
             </div>
           </div>
