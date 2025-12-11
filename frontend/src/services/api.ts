@@ -16,6 +16,44 @@ const api: AxiosInstance = axios.create({
   },
 });
 
+// Request deduplication and caching
+interface CacheEntry {
+  data: any;
+  timestamp: number;
+}
+
+const requestCache = new Map<string, CacheEntry>();
+const pendingRequests = new Map<string, Promise<any>>();
+const CACHE_TTL = 30000; // 30 seconds cache TTL
+
+const getCacheKey = (config: AxiosRequestConfig): string => {
+  return `${config.method}:${config.url}:${JSON.stringify(config.params || {})}`;
+};
+
+const getCachedResponse = (key: string): any | null => {
+  const entry = requestCache.get(key);
+  if (entry && Date.now() - entry.timestamp < CACHE_TTL) {
+    return entry.data;
+  }
+  if (entry) {
+    requestCache.delete(key); // Clean up expired entry
+  }
+  return null;
+};
+
+const setCachedResponse = (key: string, data: any): void => {
+  requestCache.set(key, { data, timestamp: Date.now() });
+  // Clean up old entries periodically
+  if (requestCache.size > 100) {
+    const now = Date.now();
+    for (const [k, v] of requestCache.entries()) {
+      if (now - v.timestamp > CACHE_TTL) {
+        requestCache.delete(k);
+      }
+    }
+  }
+};
+
 // Token management
 let authToken: string | null = null;
 let refreshToken: string | null = null;
@@ -80,14 +118,34 @@ export const withRetry = async <T>(
   throw lastError;
 };
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token and handle caching
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = getAuthToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
+    // Check for cached GET requests
+    if (config.method?.toLowerCase() === 'get' && !(config as any).skipCache) {
+      const cacheKey = getCacheKey(config);
+      const cachedResponse = getCachedResponse(cacheKey);
+
+      if (cachedResponse) {
+        // Return cached response immediately
+        (config as any).cachedResponse = cachedResponse;
+      } else {
+        // Check if there's a pending request for the same endpoint
+        const pendingRequest = pendingRequests.get(cacheKey);
+        if (pendingRequest) {
+          (config as any).pendingRequest = pendingRequest;
+        } else {
+          // Store cache key for response interceptor
+          (config as any).cacheKey = cacheKey;
+        }
+      }
+    }
+
     // Add detailed debugging information
     const requestStartTime = Date.now();
     const requestId = `req_${requestStartTime}_${Math.random().toString(36).substr(2, 9)}`;
@@ -98,20 +156,17 @@ api.interceptors.request.use(
       requestId: requestId
     };
 
-    if (environment.DEBUG) {
+    if (environment.DEBUG && !(config as any).cachedResponse) {
       console.group(`🚀 [API Request] ${requestId}`);
       console.log(`Method: ${config.method?.toUpperCase()}`);
       console.log(`URL: ${config.url}`);
-      console.log(`Base URL: ${config.baseURL}`);
-      console.log(`Full URL: ${config.baseURL}${config.url}`);
-      console.log(`Headers:`, JSON.stringify(config.headers, null, 2));
-      console.log(`Data:`, config.data ? JSON.stringify(config.data, null, 2) : 'No data');
-      console.log(`Params:`, config.params ? JSON.stringify(config.params, null, 2) : 'No params');
-      console.log(`Timestamp: ${new Date().toISOString()}`);
-      console.log(`Auth Token:`, token ? `${token.substring(0, 20)}...` : 'No token');
+      console.log(`Cached:`, !!(config as any).cachedResponse);
+      if (!config.headers.Authorization) {
+        console.log(`Full URL: ${config.baseURL}${config.url}`);
+      }
       console.groupEnd();
     }
-    
+
     return config;
   },
   (error) => {
@@ -123,8 +178,31 @@ api.interceptors.request.use(
 // Response interceptor for error handling and token refresh
 api.interceptors.response.use(
   (response: AxiosResponse<ApiResponse<any>>) => {
-    const metadata = (response.config as any).metadata;
+    const config = response.config as any;
+    const metadata = config.metadata;
     const responseTime = metadata ? Date.now() - metadata.startTime : 0;
+
+    // Handle cached response
+    if (config.cachedResponse) {
+      return Promise.resolve({
+        ...response,
+        data: config.cachedResponse,
+        status: 200,
+        statusText: 'OK (Cached)'
+      });
+    }
+
+    // Handle pending request deduplication
+    if (config.pendingRequest) {
+      return config.pendingRequest;
+    }
+
+    // Cache successful GET responses
+    if (config.method?.toLowerCase() === 'get' && config.cacheKey && response.status === 200) {
+      setCachedResponse(config.cacheKey, response.data);
+      // Remove from pending requests
+      pendingRequests.delete(config.cacheKey);
+    }
 
     if (environment.DEBUG) {
       console.group(`✅ [API Response] ${metadata?.requestId || 'unknown'}`);
@@ -132,8 +210,6 @@ api.interceptors.response.use(
       console.log(`URL: ${response.config.url}`);
       console.log(`Status: ${response.status} ${response.statusText}`);
       console.log(`Response Time: ${responseTime}ms`);
-      console.log(`Headers:`, response.headers);
-      console.log(`Data:`, response.data);
       console.groupEnd();
     }
 

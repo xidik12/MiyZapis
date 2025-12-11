@@ -31,10 +31,10 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/api\.bookingplatform\.com\/.*/i,
+            urlPattern: /^https:\/\/miyzapis-backend-production\.up\.railway\.app\/api\/.*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
@@ -44,6 +44,32 @@ export default defineConfig({
               },
               cacheableResponse: {
                 statuses: [0, 200]
+              },
+              networkTimeoutSeconds: 10
+            }
+          },
+          {
+            urlPattern: /^https:\/\/.*\.googleusercontent\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-images-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
               }
             }
           }
@@ -88,7 +114,14 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false, // Disable sourcemaps for production
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove console.logs in production
+        drop_debugger: true
+      }
+    },
     rollupOptions: {
       output: {
         entryFileNames: `assets/[name]-[hash].js`,
@@ -96,7 +129,7 @@ export default defineConfig({
         assetFileNames: (assetInfo) => {
           // Keep logos and manifest files with original names
           if (assetInfo.name && (
-            assetInfo.name.includes('logo') || 
+            assetInfo.name.includes('logo') ||
             assetInfo.name.includes('favicon') ||
             assetInfo.name.includes('manifest')
           )) {
@@ -104,15 +137,50 @@ export default defineConfig({
           }
           return `assets/[name]-[hash].[ext]`;
         },
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          state: ['@reduxjs/toolkit', 'react-redux', 'redux-persist'],
-          ui: ['framer-motion', 'lucide-react'],
-          stripe: ['@stripe/stripe-js', '@stripe/react-stripe-js']
+        manualChunks: (id) => {
+          // Vendor chunks
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('react-router')) {
+              return 'vendor-router';
+            }
+            if (id.includes('@reduxjs') || id.includes('redux')) {
+              return 'vendor-redux';
+            }
+            if (id.includes('framer-motion')) {
+              return 'vendor-framer';
+            }
+            if (id.includes('@heroicons') || id.includes('lucide')) {
+              return 'vendor-icons';
+            }
+            if (id.includes('axios') || id.includes('socket.io')) {
+              return 'vendor-network';
+            }
+            if (id.includes('date-fns')) {
+              return 'vendor-date';
+            }
+            if (id.includes('@stripe')) {
+              return 'vendor-stripe';
+            }
+            // Other vendor dependencies
+            return 'vendor-other';
+          }
+          // Split by route for better code splitting
+          if (id.includes('/pages/specialist/')) {
+            return 'pages-specialist';
+          }
+          if (id.includes('/pages/customer/')) {
+            return 'pages-customer';
+          }
+          if (id.includes('/pages/booking/')) {
+            return 'pages-booking';
+          }
         }
       }
-    }
+    },
+    chunkSizeWarningLimit: 1000
   },
   esbuild: {
     logOverride: { 'this-is-undefined-in-esm': 'silent' }
