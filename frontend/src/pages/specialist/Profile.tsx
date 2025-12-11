@@ -1786,8 +1786,9 @@ const SpecialistProfile: React.FC = () => {
                                     const newBusinessHours = {
                                       ...profile.businessHours,
                                       [day]: {
-                                        ...hours,
-                                        isOpen: e.target.checked
+                                        isOpen: e.target.checked,
+                                        startTime: hours.startTime || '09:00',
+                                        endTime: hours.endTime || '17:00'
                                       }
                                     };
                                     handleProfileChange('businessHours', newBusinessHours);
@@ -1804,15 +1805,16 @@ const SpecialistProfile: React.FC = () => {
                                 <div className="flex items-center gap-2">
                                   <input
                                     type="time"
-                                    value={hours.startTime}
+                                    value={hours.startTime || '09:00'}
                                     disabled={!isEditing}
                                     onChange={(e) => {
                                       if (isEditing) {
                                         const newBusinessHours = {
                                           ...profile.businessHours,
                                           [day]: {
-                                            ...hours,
-                                            startTime: e.target.value
+                                            isOpen: hours.isOpen,
+                                            startTime: e.target.value,
+                                            endTime: hours.endTime || '17:00'
                                           }
                                         };
                                         handleProfileChange('businessHours', newBusinessHours);
@@ -1823,14 +1825,15 @@ const SpecialistProfile: React.FC = () => {
                                   <span className="text-gray-500">-</span>
                                   <input
                                     type="time"
-                                    value={hours.endTime}
+                                    value={hours.endTime || '17:00'}
                                     disabled={!isEditing}
                                     onChange={(e) => {
                                       if (isEditing) {
                                         const newBusinessHours = {
                                           ...profile.businessHours,
                                           [day]: {
-                                            ...hours,
+                                            isOpen: hours.isOpen,
+                                            startTime: hours.startTime || '09:00',
                                             endTime: e.target.value
                                           }
                                         };
@@ -1841,6 +1844,9 @@ const SpecialistProfile: React.FC = () => {
                                   />
                                 </div>
                                 {(() => {
+                                  // Check if both times are defined before processing
+                                  if (!hours.startTime || !hours.endTime) return null;
+
                                   const [startHour, startMinute] = hours.startTime.split(':').map(Number);
                                   const [endHour, endMinute] = hours.endTime.split(':').map(Number);
                                   const startMinutes = startHour * 60 + startMinute;
