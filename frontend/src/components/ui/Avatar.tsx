@@ -20,10 +20,10 @@ const sizeClasses = {
   xl: 'w-24 h-24'
 };
 
-export const Avatar: React.FC<AvatarProps> = ({ 
-  src, 
-  alt, 
-  size = 'md', 
+export const Avatar: React.FC<AvatarProps> = React.memo(({
+  src,
+  alt,
+  size = 'md',
   className = '',
   fallbackIcon = true,
   lazy = false,
@@ -34,17 +34,15 @@ export const Avatar: React.FC<AvatarProps> = ({
   const [imageLoading, setImageLoading] = useState(!!src);
 
   const handleImageError = useCallback((error: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    console.log('🚨 Avatar image failed to load:', src);
     setImageError(true);
     setImageLoading(false);
     onError?.(error.nativeEvent);
-  }, [onError, src]);
+  }, [onError]);
 
   const handleImageLoad = useCallback(() => {
-    console.log('✅ Avatar image loaded successfully:', src);
     setImageLoading(false);
     onLoad?.();
-  }, [onLoad, src]);
+  }, [onLoad]);
 
   // Reset states when src changes
   useEffect(() => {
@@ -59,14 +57,11 @@ export const Avatar: React.FC<AvatarProps> = ({
 
   // Process the image URL to ensure it's absolute
   const absoluteSrc = src ? getAbsoluteImageUrl(src) : null;
-  
-  console.log('🎯 Avatar simplified - URL:', absoluteSrc?.substring(0, 50) + '...', 'Error:', imageError);
-  
+
   // If no valid src or loading failed, show fallback
   if (!absoluteSrc || imageError) {
-    console.log('⚠️ Avatar: Showing fallback icon');
     return (
-      <UserCircleIcon 
+      <UserCircleIcon
         className={`${sizeClasses[size]} text-gray-400 dark:text-gray-500 ${className}`}
       />
     );
@@ -76,11 +71,11 @@ export const Avatar: React.FC<AvatarProps> = ({
   return (
     <div className={`relative ${sizeClasses[size]}`}>
       {imageLoading && (
-        <div 
+        <div
           className={`absolute inset-0 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse`}
         />
       )}
-      
+
       <img
         src={absoluteSrc}
         alt={alt}
@@ -93,4 +88,4 @@ export const Avatar: React.FC<AvatarProps> = ({
       />
     </div>
   );
-};
+});
