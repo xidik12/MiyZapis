@@ -99,14 +99,6 @@ export default defineConfig({
   preview: {
     port: 3000,
     host: '0.0.0.0',
-    allowedHosts: [
-      'miyzapis-frontend.up.railway.app',
-      'miyzapis.com',
-      'www.miyzapis.com',
-      'localhost',
-      '127.0.0.1',
-      '0.0.0.0'
-    ],
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
       'Cross-Origin-Embedder-Policy': 'credentialless'
@@ -128,54 +120,49 @@ export default defineConfig({
         chunkFileNames: `assets/[name]-[hash].js`,
         assetFileNames: (assetInfo) => {
           // Keep logos and manifest files with original names
-          if (assetInfo.name && (
-            assetInfo.name.includes('logo') ||
-            assetInfo.name.includes('favicon') ||
-            assetInfo.name.includes('manifest')
+          const name = assetInfo.names?.[0] || '';
+          if (name && (
+            name.includes('logo') ||
+            name.includes('favicon') ||
+            name.includes('manifest')
           )) {
             return `[name].[ext]`;
           }
           return `assets/[name]-[hash].[ext]`;
         },
         manualChunks: (id) => {
-          // Vendor chunks
+          // Keep React and React-DOM together in one chunk for proper initialization
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
+            // Core React bundle - must load first
+            if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
               return 'vendor-react';
             }
-            if (id.includes('react-router')) {
-              return 'vendor-router';
+            // React ecosystem that depends on React
+            if (id.includes('react-router') || id.includes('react-redux') || id.includes('@reduxjs')) {
+              return 'vendor-react-eco';
             }
-            if (id.includes('@reduxjs') || id.includes('redux')) {
-              return 'vendor-redux';
+            // Redux without React dependencies
+            if (id.includes('redux') && !id.includes('react')) {
+              return 'vendor-state';
             }
-            if (id.includes('framer-motion')) {
-              return 'vendor-framer';
+            // UI libraries
+            if (id.includes('framer-motion') || id.includes('@heroicons') || id.includes('lucide')) {
+              return 'vendor-ui';
             }
-            if (id.includes('@heroicons') || id.includes('lucide')) {
-              return 'vendor-icons';
-            }
+            // Network libraries
             if (id.includes('axios') || id.includes('socket.io')) {
               return 'vendor-network';
             }
+            // Date/time libraries
             if (id.includes('date-fns')) {
               return 'vendor-date';
             }
+            // Payment libraries
             if (id.includes('@stripe')) {
               return 'vendor-stripe';
             }
-            // Other vendor dependencies
-            return 'vendor-other';
-          }
-          // Split by route for better code splitting
-          if (id.includes('/pages/specialist/')) {
-            return 'pages-specialist';
-          }
-          if (id.includes('/pages/customer/')) {
-            return 'pages-customer';
-          }
-          if (id.includes('/pages/booking/')) {
-            return 'pages-booking';
+            // Everything else
+            return 'vendor';
           }
         }
       }
