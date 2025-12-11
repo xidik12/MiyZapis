@@ -342,9 +342,11 @@ const translations: Translations = {
 
   // Notifications UI
   'notifications.title': { en: 'Notifications', uk: 'Сповіщення', ru: 'Уведомления' },
+  'notifications.subtitle': { en: 'Stay updated with your latest activity', uk: 'Будьте в курсі останніх подій', ru: 'Будьте в курсе последних событий' },
   'notifications.close': { en: 'Close notifications', uk: 'Закрити сповіщення', ru: 'Закрыть уведомления' },
   'notifications.swipeHint': { en: 'Swipe right or press Esc to close', uk: 'Проведіть вправо або натисніть Esc, щоб закрити', ru: 'Проведите вправо или нажмите Esc, чтобы закрыть' },
   'notifications.filter.all': { en: 'All', uk: 'Всі', ru: 'Все' },
+  'notifications.filter.unread': { en: 'Unread', uk: 'Непрочитані', ru: 'Непрочитанные' },
   'notifications.filter.booking': { en: 'Bookings', uk: 'Бронювання', ru: 'Бронирования' },
   'notifications.filter.payment': { en: 'Payments', uk: 'Платежі', ru: 'Платежи' },
   'notifications.filter.review': { en: 'Reviews', uk: 'Відгуки', ru: 'Отзывы' },
@@ -352,6 +354,8 @@ const translations: Translations = {
   'notifications.markAllRead': { en: 'Mark all read', uk: 'Відзначити всі як прочитані', ru: 'Отметить все как прочитанные' },
   'notifications.clearAll': { en: 'Clear all', uk: 'Очистити все', ru: 'Очистить все' },
   'notifications.empty': { en: 'No notifications', uk: 'Немає сповіщень', ru: 'Нет уведомлений' },
+  'notifications.noNotifications': { en: 'No Notifications', uk: 'Немає сповіщень', ru: 'Нет уведомлений' },
+  'notifications.noNotificationsDescription': { en: 'You have no notifications at the moment', uk: 'Наразі у вас немає сповіщень', ru: 'У вас пока нет уведомлений' },
   'notifications.caughtUp': { en: "You're all caught up!", uk: 'У вас немає нових сповіщень', ru: 'У вас нет новых уведомлений' },
   'notifications.markRead': { en: 'Mark as read', uk: 'Позначити як прочитане', ru: 'Отметить как прочитанное' },
   'notifications.delete': { en: 'Delete', uk: 'Видалити', ru: 'Удалить' },
