@@ -131,37 +131,15 @@ export default defineConfig({
           return `assets/[name]-[hash].[ext]`;
         },
         manualChunks: (id) => {
-          // Keep React and React-DOM together in one chunk for proper initialization
           if (id.includes('node_modules')) {
-            // Core React bundle - must load first
-            if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
-              return 'vendor-react';
+            // Large independent libraries that don't depend on React
+            if (id.includes('framer-motion')) {
+              return 'vendor-framer';
             }
-            // React ecosystem that depends on React
-            if (id.includes('react-router') || id.includes('react-redux') || id.includes('@reduxjs')) {
-              return 'vendor-react-eco';
-            }
-            // Redux without React dependencies
-            if (id.includes('redux') && !id.includes('react')) {
-              return 'vendor-state';
-            }
-            // UI libraries
-            if (id.includes('framer-motion') || id.includes('@heroicons') || id.includes('lucide')) {
-              return 'vendor-ui';
-            }
-            // Network libraries
-            if (id.includes('axios') || id.includes('socket.io')) {
-              return 'vendor-network';
-            }
-            // Date/time libraries
-            if (id.includes('date-fns')) {
-              return 'vendor-date';
-            }
-            // Payment libraries
             if (id.includes('@stripe')) {
               return 'vendor-stripe';
             }
-            // Everything else
+            // Everything else stays together to ensure proper dependency loading
             return 'vendor';
           }
         }
