@@ -34,9 +34,16 @@ export class AuthService {
       
       return userData;
     } catch (error: any) {
-      // Extract error message from API response
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Registration failed';
-      throw new Error(errorMessage);
+      // Extract the most detailed error message available
+      const errorDetails = error.response?.data?.errors?.details ||
+                          error.response?.data?.error?.details ||
+                          error.apiError?.details ||
+                          error.response?.data?.errors?.message ||
+                          error.response?.data?.error?.message ||
+                          error.apiError?.message ||
+                          error.message ||
+                          'Registration failed';
+      throw new Error(errorDetails);
     }
   }
 
@@ -56,9 +63,16 @@ export class AuthService {
       
       return userData;
     } catch (error: any) {
-      // Extract error message from API response
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Login failed';
-      throw new Error(errorMessage);
+      // Extract the most detailed error message available
+      const errorDetails = error.response?.data?.errors?.details ||
+                          error.response?.data?.error?.details ||
+                          error.apiError?.details ||
+                          error.response?.data?.errors?.message ||
+                          error.response?.data?.error?.message ||
+                          error.apiError?.message ||
+                          error.message ||
+                          'Login failed';
+      throw new Error(errorDetails);
     }
   }
 
