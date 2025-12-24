@@ -1289,8 +1289,10 @@ const CustomerSettings: React.FC = () => {
         isOpen={showSetPasswordModal}
         onClose={() => setShowSetPasswordModal(false)}
         onSuccess={() => {
-          // Refresh user data after successful password set
-          window.location.reload();
+          // Delay reload to let the user see the success message
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
         }}
       />
 
@@ -1299,8 +1301,10 @@ const CustomerSettings: React.FC = () => {
         isOpen={showChangePasswordModal}
         onClose={() => setShowChangePasswordModal(false)}
         onSuccess={() => {
-          // Refresh user data after successful password change
-          window.location.reload();
+          // Delay reload to let the user see the success message
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
         }}
       />
     </div>
