@@ -56,7 +56,7 @@ const CustomerSettings: React.FC = () => {
     firstName: currentUser?.firstName || '',
     lastName: currentUser?.lastName || '',
     email: currentUser?.email || '',
-    phone: currentUser?.phone || '',
+    phone: currentUser?.phoneNumber || '',
     avatar: currentUser?.avatar || '',
   });
 
@@ -146,6 +146,19 @@ const CustomerSettings: React.FC = () => {
 
     if (currentUser) {
       loadPaymentMethods();
+    }
+  }, [currentUser]);
+
+  // Sync user state when currentUser changes (e.g., after login or refresh)
+  useEffect(() => {
+    if (currentUser) {
+      setUser({
+        firstName: currentUser.firstName || '',
+        lastName: currentUser.lastName || '',
+        email: currentUser.email || '',
+        phone: currentUser.phoneNumber || '',
+        avatar: currentUser.avatar || '',
+      });
     }
   }, [currentUser]);
 
