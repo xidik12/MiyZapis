@@ -6,6 +6,7 @@ const router = Router();
 
 // Public routes
 router.get('/', ServiceController.searchServices);
+router.get('/location', ServiceController.getServicesByLocation); // Must be before /:serviceId
 router.get('/categories', ServiceController.getCategories);
 router.get('/popular', ServiceController.getPopularServices);
 router.get('/loyalty-points', ServiceController.getLoyaltyPointsServices);

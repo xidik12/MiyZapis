@@ -682,6 +682,148 @@ export class ServiceService {
     }
   }
 
+  // Get services by location (nearby search)
+  static async getServicesByLocation(
+    latitude: number,
+    longitude: number,
+    radiusKm: number,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<{
+    services: (ServiceWithDetails & { distance?: number })[];
+    totalServices: number;
+    page: number;
+    totalPages: number;
+  }> {
+    try {
+      // Calculate distance using Haversine formula
+      const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+        const R = 6371; // Earth's radius in km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+          Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+      };
+
+      // Get all active specialists with coordinates
+      const specialists = await prisma.specialist.findMany({
+        where: {
+          AND: [
+            { latitude: { not: null } },
+            { longitude: { not: null } },
+            { user: { isActive: true } },
+          ],
+        },
+        select: {
+          id: true,
+          latitude: true,
+          longitude: true,
+        },
+      });
+
+      // Filter specialists by distance
+      const nearbySpecialists = specialists
+        .filter(s => s.latitude !== null && s.longitude !== null)
+        .map(s => ({
+          ...s,
+          distance: calculateDistance(latitude, longitude, s.latitude!, s.longitude!),
+        }))
+        .filter(s => s.distance <= radiusKm)
+        .sort((a, b) => a.distance - b.distance);
+
+      // If no specialists found nearby, return empty result
+      if (nearbySpecialists.length === 0) {
+        return {
+          services: [],
+          totalServices: 0,
+          page,
+          totalPages: 0,
+        };
+      }
+
+      // Get specialist IDs
+      const specialistIds = nearbySpecialists.map(s => s.id);
+
+      // Create a map of specialist distances
+      const distanceMap = new Map(
+        nearbySpecialists.map(s => [s.id, s.distance])
+      );
+
+      // Get services from nearby specialists
+      const where: any = {
+        isActive: true,
+        isDeleted: false,
+        specialistId: {
+          in: specialistIds,
+        },
+        specialist: {
+          user: {
+            isActive: true,
+          },
+        },
+      };
+
+      const skip = (page - 1) * limit;
+
+      const [services, total] = await Promise.all([
+        prisma.service.findMany({
+          where,
+          include: {
+            specialist: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    email: true,
+                    firstName: true,
+                    lastName: true,
+                    avatar: true,
+                    userType: true,
+                    phoneNumber: true,
+                    isEmailVerified: true,
+                    isPhoneVerified: true,
+                    isActive: true,
+                    loyaltyPoints: true,
+                    language: true,
+                    currency: true,
+                    timezone: true,
+                    createdAt: true,
+                    updatedAt: true,
+                  },
+                },
+              },
+            },
+          },
+          skip,
+          take: limit,
+        }),
+        prisma.service.count({ where }),
+      ]);
+
+      const totalPages = Math.ceil(total / limit);
+
+      // Add distance to each service
+      const servicesWithDistance = services.map(service => ({
+        ...service,
+        distance: distanceMap.get(service.specialistId) || 0,
+      }));
+
+      return {
+        services: servicesWithDistance as (ServiceWithDetails & { distance?: number })[],
+        totalServices: total,
+        page,
+        totalPages,
+      };
+    } catch (error) {
+      logger.error('Error getting services by location:', error);
+      throw error;
+    }
+  }
+
   // Get available service categories
   static async getCategories(): Promise<{
     id: string;

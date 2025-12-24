@@ -496,6 +496,119 @@ export class ServiceController {
     }
   }
 
+  // Get services by location (nearby search)
+  static async getServicesByLocation(req: Request, res: Response): Promise<void> {
+    try {
+      const {
+        lat,
+        lng,
+        radius = 50,
+        page = 1,
+        limit = 20,
+      } = req.query;
+
+      // Validate required parameters
+      if (!lat || !lng) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Latitude and longitude are required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const latitude = parseFloat(lat as string);
+      const longitude = parseFloat(lng as string);
+      const radiusKm = parseFloat(radius as string);
+      const pageNum = parseInt(page as string, 10);
+      const limitNum = parseInt(limit as string, 10);
+
+      // Validate coordinate ranges
+      if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid coordinates',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Limit radius to prevent abuse
+      if (radiusKm < 0 || radiusKm > 500) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Radius must be between 0 and 500 km',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const result = await ServiceService.getServicesByLocation(
+        latitude,
+        longitude,
+        radiusKm,
+        pageNum,
+        limitNum
+      );
+
+      res.json(
+        createSuccessResponse({
+          services: result.services.map(service => ({
+            id: service.id,
+            name: service.name,
+            description: service.description,
+            category: service.category,
+            basePrice: service.basePrice,
+            price: service.basePrice,
+            currency: service.currency,
+            duration: service.duration,
+            images: service.images ? JSON.parse(service.images) : [],
+            specialistId: service.specialist.id,
+            specialist: {
+              id: service.specialist.id,
+              businessName: service.specialist.businessName,
+              rating: service.specialist.rating,
+              reviewCount: service.specialist.reviewCount,
+              completedBookings: service.specialist.completedBookings,
+              isVerified: service.specialist.isVerified,
+              distance: service.distance, // Add distance from search location
+              user: {
+                id: service.specialist.user.id,
+                firstName: service.specialist.user.firstName,
+                lastName: service.specialist.user.lastName,
+                avatar: service.specialist.user.avatar,
+              },
+            },
+          })),
+          pagination: {
+            currentPage: result.page,
+            totalPages: result.totalPages,
+            totalItems: result.totalServices,
+            itemsPerPage: limitNum,
+            hasNext: result.page < result.totalPages,
+            hasPrev: result.page > 1,
+          },
+        })
+      );
+    } catch (error: any) {
+      logger.error('Get services by location error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get services by location',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
   // Get service categories
   static async getCategories(req: Request, res: Response): Promise<void> {
     try {
