@@ -324,6 +324,51 @@ const CustomerSettings: React.FC = () => {
     }
   };
 
+  // Handle account settings save
+  const handleSaveAccountSettings = async () => {
+    try {
+      setLoading(true);
+
+      // Update user profile
+      const updatedUser = await userService.updateProfile({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phoneNumber: user.phone,
+        language: language,
+        currency: currency,
+      });
+
+      // Update Redux store
+      dispatch(updateUserProfile({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phoneNumber: user.phone,
+        language: language,
+        currency: currency,
+      }));
+
+      // Show success message
+      toast.success(
+        language === 'uk' ? 'Налаштування успішно збережено' :
+        language === 'ru' ? 'Настройки успешно сохранены' :
+        'Settings saved successfully'
+      );
+
+    } catch (error: any) {
+      console.error('Error saving account settings:', error);
+      toast.error(
+        error.message ||
+        (language === 'uk' ? 'Помилка збереження налаштувань' :
+         language === 'ru' ? 'Ошибка сохранения настроек' :
+         'Failed to save settings')
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const sections = [
     { id: 'account', label: t('customer.settings.account'), icon: UserCircleIcon },
     { id: 'password', label: t('customer.settings.passwordSecurity'), icon: ShieldCheckIcon },
@@ -533,8 +578,18 @@ const CustomerSettings: React.FC = () => {
                   </div>
 
                   <div className="flex justify-end mt-6">
-                    <button className="bg-primary-600 text-white px-6 py-2 rounded-md font-medium hover:bg-primary-700 transition-colors">
-                      {t('common.saveChanges')}
+                    <button
+                      onClick={handleSaveAccountSettings}
+                      disabled={loading}
+                      className="bg-primary-600 text-white px-6 py-2 rounded-md font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loading ? (
+                        language === 'uk' ? 'Збереження...' :
+                        language === 'ru' ? 'Сохранение...' :
+                        'Saving...'
+                      ) : (
+                        t('common.saveChanges')
+                      )}
                     </button>
                   </div>
                 </div>
