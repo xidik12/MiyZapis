@@ -940,7 +940,7 @@ const BookingFlow: React.FC = () => {
                   </div>
                   <div className="text-right ml-4">
                     <p className="text-lg font-bold text-gray-900 dark:text-white">
-                      {formatPrice(service.price || service.basePrice || 0, 'USD')}
+                      {formatPrice(service.price || service.basePrice || 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                     </p>
                   </div>
                 </div>
@@ -1155,7 +1155,7 @@ const BookingFlow: React.FC = () => {
                             {t('booking.rewardApplied') || 'Reward Applied!'}
                           </p>
                           <p className="text-sm text-green-700 dark:text-green-300">
-                            {t('booking.youSave') || 'You save'} {formatPrice(discount, 'USD')}
+                            {t('booking.youSave') || 'You save'} {formatPrice(discount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                           </p>
                         </div>
                       </div>
@@ -1207,13 +1207,13 @@ const BookingFlow: React.FC = () => {
                       <div className="flex justify-between mb-2">
                         <span className="text-sm text-gray-600 dark:text-gray-400">{t('booking.originalPrice') || 'Original Price'}</span>
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {formatPrice(service.price || service.basePrice || 0, 'USD')}
+                          {formatPrice(service.price || service.basePrice || 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                         </span>
                       </div>
                       <div className="flex justify-between mb-2">
                         <span className="text-sm text-green-600 dark:text-green-400">{t('booking.discount') || 'Reward Discount'}</span>
                         <span className="text-sm text-green-600 dark:text-green-400">
-                          -{formatPrice(discount, 'USD')}
+                          -{formatPrice(discount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                         </span>
                       </div>
                       <div className="border-t border-gray-100 dark:border-gray-800 pt-2 mb-2"></div>
@@ -1222,7 +1222,7 @@ const BookingFlow: React.FC = () => {
                   <div className="flex justify-between">
                     <span className="text-lg font-bold text-gray-900 dark:text-white">{t('booking.total')}</span>
                     <span className="text-lg font-bold text-gray-900 dark:text-white">
-                      {formatPrice(discount > 0 ? finalPrice : (service.price || service.basePrice || 0), 'USD')}
+                      {formatPrice(discount > 0 ? finalPrice : (service.price || service.basePrice || 0), (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                     </span>
                   </div>
                   
@@ -1272,7 +1272,7 @@ const BookingFlow: React.FC = () => {
                 <div className="flex justify-between items-center mb-3">
                   <span className="font-medium text-gray-900 dark:text-white">{service.name}</span>
                   <span className="font-bold text-gray-900 dark:text-white">
-                    {formatPrice(discount > 0 ? finalPrice : (service.price || service.basePrice || 0), 'USD')}
+                    {formatPrice(discount > 0 ? finalPrice : (service.price || service.basePrice || 0), (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                   </span>
                 </div>
 
@@ -1281,11 +1281,11 @@ const BookingFlow: React.FC = () => {
                   <div className="text-sm space-y-1 mb-3 pb-3 border-b border-gray-200 dark:border-gray-600">
                     <div className="flex justify-between text-gray-600 dark:text-gray-400">
                       <span>Original Price:</span>
-                      <span>{formatPrice(service.price || service.basePrice || 0, 'USD')}</span>
+                      <span>{formatPrice(service.price || service.basePrice || 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}</span>
                     </div>
                     <div className="flex justify-between text-green-600 dark:text-green-400">
                       <span>Reward Discount:</span>
-                      <span>-{formatPrice(discount, 'USD')}</span>
+                      <span>-{formatPrice(discount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}</span>
                     </div>
                   </div>
                 )}
@@ -1381,7 +1381,7 @@ const BookingFlow: React.FC = () => {
                             {t('booking.rewardApplied') || 'Reward Applied!'}
                           </p>
                           <p className="text-sm text-green-700 dark:text-green-300">
-                            {t('booking.youSave') || 'You save'} {formatPrice(discount, 'USD')}
+                            {t('booking.youSave') || 'You save'} {formatPrice(discount, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                           </p>
                         </div>
                       </div>
@@ -1499,7 +1499,7 @@ const BookingFlow: React.FC = () => {
                     {paymentMethod === 'paypal' && paymentResult.paymentUrl && (
                       <div className="mb-4">
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                          Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, 'USD')}
+                          Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                         </p>
                         <a
                           href={paymentResult.paymentUrl}
@@ -1541,7 +1541,7 @@ const BookingFlow: React.FC = () => {
                           {paymentResult.paymentUrl && (
                             <div className="mb-4">
                               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                                Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, 'USD')}
+                                Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
                               </p>
                               <a
                                 href={paymentResult.paymentUrl}

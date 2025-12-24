@@ -61,7 +61,7 @@ const getServiceCurrency = (service: Service): 'USD' | 'EUR' | 'UAH' => {
 
 const SpecialistServices: React.FC = () => {
   const { t, language } = useLanguage();
-  const { formatPrice, currency } = useCurrency();
+  const { formatPrice, currency, getCurrencySymbol } = useCurrency();
   const [services, setServices] = useState<Service[]>([]);
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -181,7 +181,7 @@ const SpecialistServices: React.FC = () => {
     descriptionRu: '',
     category: '',
     price: '',
-    currency: 'UAH', // Default to UAH
+    currency: currency, // Default to user's selected currency
     duration: '',
     serviceLocation: '',
     locationNotes: '',
@@ -231,7 +231,7 @@ const SpecialistServices: React.FC = () => {
       serviceLocation: '',
       locationNotes: '',
       price: '',
-      currency: 'UAH', // Default to UAH
+      currency: currency, // Default to user's selected currency
       duration: '',
       isActive: true,
       availability: {
@@ -1415,7 +1415,7 @@ const SpecialistServices: React.FC = () => {
                             <span className="mr-2 text-gray-500 dark:text-gray-400">%</span>
                           )}
                           {formData.discountType === 'FIXED_AMOUNT' && (
-                            <span className="mr-2 text-gray-500 dark:text-gray-400">{formData.currency === 'UAH' ? '₴' : formData.currency === 'USD' ? '$' : '€'}</span>
+                            <span className="mr-2 text-gray-500 dark:text-gray-400">{getCurrencySymbol(formData.currency as 'USD' | 'EUR' | 'UAH')}</span>
                           )}
                           <input
                             type="number"
@@ -1481,7 +1481,7 @@ const SpecialistServices: React.FC = () => {
                           🎉 <strong>Discount Preview:</strong> {' '}
                           {formData.discountType === 'PERCENTAGE'
                             ? `${formData.discountValue}% off`
-                            : `${formData.currency === 'UAH' ? '₴' : formData.currency === 'USD' ? '$' : '€'}${formData.discountValue} off`
+                            : `${getCurrencySymbol(formData.currency as 'USD' | 'EUR' | 'UAH')}${formData.discountValue} off`
                           }
                           {' '}
                           {formData.price && (

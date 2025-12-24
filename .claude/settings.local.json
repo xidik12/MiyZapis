@@ -13,7 +13,15 @@
       "Bash(PGPASSWORD=GVGsHSeKoazyvATppTqvabRFqGniRQsH psql:*)",
       "Bash(python3:*)",
       "Bash(npm install:*)",
-      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" node generate-blocks.js:*)"
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" node generate-blocks.js:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma migrate dev:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge main -m \"$(cat <<''EOF''\nMerge main into development\n\nIncludes:\n- Fix for missing notification translation keys\n- Fix for working hours error when setting times\n- Fix for missing settings page translation keys\n- Fix for loyalty tiers database columns\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git merge:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(cloc:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": [],

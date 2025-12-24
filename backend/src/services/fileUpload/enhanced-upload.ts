@@ -7,6 +7,7 @@ import crypto from 'crypto';
 import fs from 'fs/promises';
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
+import { validateFile, sanitizeFilename } from '@/utils/fileValidation';
 
 interface FileUploadConfig {
   maxFileSize: number;
@@ -128,15 +129,26 @@ export class EnhancedFileUploadService {
         files: maxFiles
       },
       fileFilter: (req, file, cb) => {
+        // Validate MIME type
         const isValidMimeType = config.allowedMimeTypes.includes(file.mimetype);
+        if (!isValidMimeType) {
+          return cb(new Error(`Invalid MIME type: ${file.mimetype}. Allowed types: ${config.allowedMimeTypes.join(', ')}`));
+        }
+
+        // Validate file extension
         const fileExtension = path.extname(file.originalname).toLowerCase();
         const isValidExtension = config.allowedExtensions.includes(fileExtension);
-
-        if (isValidMimeType && isValidExtension) {
-          cb(null, true);
-        } else {
-          cb(new Error(`Invalid file type. Allowed types: ${config.allowedExtensions.join(', ')}`));
+        if (!isValidExtension) {
+          return cb(new Error(`Invalid file extension. Allowed: ${config.allowedExtensions.join(', ')}`));
         }
+
+        // Sanitize filename
+        const safeName = sanitizeFilename(file.originalname);
+        if (!safeName || safeName.length === 0) {
+          return cb(new Error('Invalid filename'));
+        }
+
+        cb(null, true);
       }
     });
   }
@@ -157,7 +169,19 @@ export class EnhancedFileUploadService {
         throw new Error(`Unknown file purpose: ${purpose}`);
       }
 
-      // Generate unique filename
+      // Validate file using magic numbers
+      const validation = validateFile(
+        file.buffer,
+        file.mimetype,
+        file.originalname,
+        config.maxFileSize
+      );
+
+      if (!validation.valid) {
+        throw new Error(`File validation failed: ${validation.error}`);
+      }
+
+      // Generate unique filename with sanitized original name
       const fileId = crypto.randomUUID();
       const extension = path.extname(file.originalname).toLowerCase();
       const filename = `${fileId}${extension}`;

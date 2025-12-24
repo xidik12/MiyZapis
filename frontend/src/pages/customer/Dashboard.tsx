@@ -105,7 +105,7 @@ interface SpecialOffer {
 
 const CustomerDashboard: React.FC = () => {
   const user = useAppSelector(selectUser);
-  const { formatPrice } = useCurrency();
+  const { formatPrice, normalizeMixedCurrencyAmount, currency, getCurrencySymbol } = useCurrency();
   const { t, language } = useLanguage();
   const { theme } = useTheme();
   const navigate = useNavigate();
@@ -463,7 +463,7 @@ const CustomerDashboard: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <StatCard
               title={t('dashboard.customer.totalSpent')}
-              value={stats ? formatPrice(stats.totalSpent, 'UAH') : '₴0'}
+              value={stats ? formatPrice(normalizeMixedCurrencyAmount(stats.totalSpent), currency) : `${getCurrencySymbol()}0`}
               change={`+15% ${t('dashboard.specialist.thisMonthImprovement')}`}
               changeType="positive"
               icon={CreditCardIcon}

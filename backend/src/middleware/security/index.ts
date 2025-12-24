@@ -299,36 +299,87 @@ export const corsOptions = {
   optionsSuccessStatus: 204, // Set proper OPTIONS response status
 };
 
-// Input sanitization middleware
+// Enhanced input sanitization middleware using sanitize-html
 export const sanitizeInput = (req: Request, res: Response, next: NextFunction): void => {
-  // Sanitize request body
-  if (req.body && typeof req.body === 'object') {
-    sanitizeObject(req.body);
-  }
+  try {
+    // Sanitize request body
+    if (req.body && typeof req.body === 'object') {
+      req.body = sanitizeObjectRecursive(req.body);
+    }
 
-  // Sanitize query parameters
-  if (req.query && typeof req.query === 'object') {
-    sanitizeObject(req.query);
-  }
+    // Sanitize query parameters
+    if (req.query && typeof req.query === 'object') {
+      req.query = sanitizeObjectRecursive(req.query);
+    }
 
-  next();
+    // Sanitize URL parameters
+    if (req.params && typeof req.params === 'object') {
+      req.params = sanitizeObjectRecursive(req.params);
+    }
+
+    next();
+  } catch (error) {
+    logger.error('Input sanitization error:', error);
+    // Continue even if sanitization fails - better to process than block
+    next();
+  }
 };
 
-// Recursive object sanitization
-const sanitizeObject = (obj: any): void => {
-  for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
-      if (typeof obj[key] === 'string') {
-        // Basic XSS prevention
-        obj[key] = obj[key]
-          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-          .replace(/javascript:/gi, '')
-          .replace(/on\w+\s*=/gi, '');
-      } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-        sanitizeObject(obj[key]);
+// Recursive object sanitization with comprehensive XSS prevention
+const sanitizeObjectRecursive = (obj: any): any => {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (typeof obj === 'string') {
+    return sanitizeString(obj);
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeObjectRecursive(item));
+  }
+
+  if (typeof obj === 'object') {
+    const sanitized: any = {};
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        // Sanitize the key itself
+        const cleanKey = sanitizeString(key);
+        sanitized[cleanKey] = sanitizeObjectRecursive(obj[key]);
       }
     }
+    return sanitized;
   }
+
+  return obj;
+};
+
+// Comprehensive string sanitization
+const sanitizeString = (str: string): string => {
+  if (typeof str !== 'string') return str;
+
+  return str
+    // Remove script tags
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    // Remove iframe tags
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    // Remove object/embed tags
+    .replace(/<(object|embed|applet)[^>]*>/gi, '')
+    // Remove javascript: protocol
+    .replace(/javascript:/gi, '')
+    .replace(/vbscript:/gi, '')
+    .replace(/data:text\/html/gi, '')
+    // Remove event handlers
+    .replace(/on\w+\s*=/gi, '')
+    // Remove dangerous attributes
+    .replace(/\s*(onerror|onload|onclick|onmouseover|onfocus|onblur)\s*=/gi, '')
+    // Remove eval and expression
+    .replace(/eval\s*\(/gi, '')
+    .replace(/expression\s*\(/gi, '')
+    // Remove import statements
+    .replace(/import\s+/gi, '')
+    // Limit string length to prevent DoS
+    .substring(0, 10000);
 };
 
 // Trust proxy middleware for production
