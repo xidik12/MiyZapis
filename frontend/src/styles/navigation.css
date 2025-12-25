@@ -17,21 +17,7 @@
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
 }
 
-/* Ukrainian gradient backgrounds */
-.ukraine-gradient {
-  background: linear-gradient(135deg, #0057b7 0%, #ffd700 100%);
-}
-
-.ukraine-gradient-soft {
-  background: linear-gradient(135deg, rgba(0, 87, 183, 0.1) 0%, rgba(255, 215, 0, 0.1) 100%);
-}
-
-.ukraine-text-gradient {
-  background: linear-gradient(135deg, #0057b7 0%, #ffd700 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
+/* Removed gradient backgrounds - now using solid colors from theme */
 
 /* Navigation item hover effects */
 .nav-item-hover {
@@ -110,7 +96,7 @@
   right: 0;
   bottom: 0;
   border-radius: inherit;
-  background: linear-gradient(135deg, rgba(0, 87, 183, 0.1) 0%, rgba(255, 215, 0, 0.1) 100%);
+  background: rgba(59, 151, 242, 0.1);
   z-index: -1;
 }
 
@@ -207,9 +193,7 @@
 /* User avatar glow effect */
 .user-avatar {
   position: relative;
-  border: 2px solid transparent;
-  background: linear-gradient(white, white) padding-box,
-              linear-gradient(135deg, #0057b7, #ffd700) border-box;
+  border: 2px solid rgba(59, 151, 242, 0.3);
   transition: all 0.3s ease;
 }
 
@@ -255,8 +239,7 @@
 }
 
 .dark .user-avatar {
-  background: linear-gradient(rgb(17, 24, 39), rgb(17, 24, 39)) padding-box,
-              linear-gradient(135deg, #0057b7, #ffd700) border-box;
+  border-color: rgba(59, 151, 242, 0.5);
 }
 
 /* Responsive adjustments */
@@ -284,10 +267,6 @@
     backdrop-filter: none;
     background: var(--bg-primary);
     border: 2px solid var(--border-primary);
-  }
-  
-  .ukraine-gradient {
-    background: #0057b7;
   }
 }
 

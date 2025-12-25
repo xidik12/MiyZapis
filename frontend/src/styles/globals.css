@@ -531,7 +531,7 @@
   }
 
   .gradient-text {
-    @apply bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent;
+    @apply text-primary-600;
   }
 
   /* Modern Glass Effects */
@@ -560,25 +560,11 @@
     border: 1px solid rgba(248, 250, 252, 0.1);
   }
 
-  /* Ukrainian-themed gradients */
-  .ukraine-gradient {
-    background: linear-gradient(135deg, #3b97f2 0%, #ffc41f 100%);
-  }
-
-  .ukraine-gradient-subtle {
-    background: linear-gradient(135deg, rgba(59, 151, 242, 0.1) 0%, rgba(255, 196, 31, 0.1) 100%);
-  }
-
-  .ukraine-text-gradient {
-    background: linear-gradient(135deg, #3b97f2 0%, #ffc41f 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+  /* Removed gradient backgrounds - now using solid colors from theme */
 
   /* Morphing shapes */
   .morph-shape {
-    background: linear-gradient(45deg, #3b97f2, #ffc41f);
+    background: #3b97f2;
     animation: morph 8s ease-in-out infinite;
   }
 
@@ -752,7 +738,7 @@
 
   /* Handshake loader elements */
   .avatar-circle {
-    @apply w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br shadow-lg shadow-primary-500/10 dark:shadow-primary-500/20;
+    @apply w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary-500 shadow-lg shadow-primary-500/10 dark:shadow-primary-500/20;
     animation: float-y 3s ease-in-out infinite;
   }
 
