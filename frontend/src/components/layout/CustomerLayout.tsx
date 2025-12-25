@@ -167,7 +167,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         ${isCollapsed ? 'w-16' : 'w-72'}
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         transition-all duration-300 ease-in-out
-        bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
+        bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-r border-gray-200/20 dark:border-gray-700/20
         shadow-xl lg:shadow-none
       `}>
         {/* Logo section */}
@@ -210,14 +210,14 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
           
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden lg:flex p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="hidden lg:flex p-1.5 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
           >
             <Bars3Icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
           </button>
 
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="lg:hidden p-1.5 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
           >
             <XMarkIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
           </button>
@@ -268,10 +268,10 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                 key={item.name}
                 to={item.href}
                 className={`
-                  flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200
+                  flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200
                   ${isActive
-                    ? 'bg-primary-500 text-white shadow-lg transform scale-105'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-105'
+                    ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30 transform scale-105'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 hover:scale-105'
                   }
                   ${isCollapsed ? 'justify-center' : 'justify-between'}
                 `}
@@ -312,8 +312,8 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
           <button
             onClick={toggleTheme}
             className={`
-              flex items-center w-full px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
-              text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 mobile-touch-target
+              flex items-center w-full px-3 py-3 text-sm font-semibold rounded-xl transition-all duration-200
+              text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 mobile-touch-target
               ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
             `}
             aria-label={theme === 'dark' ? t('theme.light') : t('theme.dark')}
@@ -350,8 +350,8 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
           <button
             onClick={handleLogout}
             className={`
-              flex items-center w-full px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
-              text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 mobile-touch-target
+              flex items-center w-full px-3 py-3 text-sm font-semibold rounded-xl transition-all duration-200
+              text-red-600 dark:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-900/30 mobile-touch-target
               ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
             `}
           >
@@ -369,7 +369,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 lg:px-6">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-3 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="lg:hidden p-3 sm:p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
           >
             <Bars3Icon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
           </button>
@@ -379,9 +379,9 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
             <NotificationBell />
 
             {/* Settings */}
-            <Link 
+            <Link
               to="/settings"
-              className="p-3 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="p-3 sm:p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
             >
               <Cog6ToothIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
             </Link>
