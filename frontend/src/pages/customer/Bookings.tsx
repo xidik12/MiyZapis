@@ -8,7 +8,7 @@ import { RootState, AppDispatch } from '../../store';
 import { fetchBookings, cancelBooking } from '../../store/slices/bookingSlice';
 import { Booking } from '../../types';
 import { FilterState } from '../../types/booking';
-import { CalendarIcon, EyeIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, EyeIcon, ClockIcon } from '@/components/icons';
 import { Avatar } from '../../components/ui/Avatar';
 import ReviewModal from '../../components/modals/ReviewModal';
 import BookingDetailModal from '../../components/modals/BookingDetailModal';

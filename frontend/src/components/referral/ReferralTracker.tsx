@@ -1,14 +1,6 @@
 import React, { useState } from 'react';
 import { clsx } from 'clsx';
-import {
-  ClockIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  EyeIcon,
-  CursorArrowRaysIcon,
-  CalendarDaysIcon,
-  ChartBarIcon,
-} from '@heroicons/react/24/outline';
+import { ClockIcon, CheckCircleIcon, XCircleIcon, EyeIcon, CursorArrowRaysIcon, CalendarDaysIcon, ChartBarIcon } from '@/components/icons';
 
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';

@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { register as registerUser, selectIsAuthenticated, selectAuthError, selectIsLoading, clearError } from '@/store/slices/authSlice';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import PasswordStrengthIndicator from '@/components/ui/PasswordStrengthIndicator';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { EyeIcon, EyeSlashIcon } from '@/components/icons';
 import { RegisterRequest, UserType } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';

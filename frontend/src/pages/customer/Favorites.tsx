@@ -19,21 +19,13 @@ import {
   optimisticRemoveService,
   clearError
 } from '../../store/slices/favoritesSlice';
-import { 
-  HeartIcon,
-  StarIcon,
-  MapPinIcon,
-  ClockIcon,
-  UserIcon,
-  TrashIcon,
-  MagnifyingGlassIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline';
-import { HeartIcon as HeartIconSolid, StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import { HeartIcon, StarIcon, MapPinIcon, ClockIcon, UserIcon, TrashIcon, MagnifyingGlassIcon, XIcon as XMarkIcon } from '@/components/icons';
+;
 import { Avatar } from '../../components/ui/Avatar';
 import { translateProfession } from '@/utils/profession';
 import { ServiceImage } from '../../components/ui/ServiceImage';
 import { Pagination } from '@/types';
+// Note: Use active prop for filled icons: <Icon active />
 
 const CustomerFavorites: React.FC = () => {
   const { t } = useLanguage();

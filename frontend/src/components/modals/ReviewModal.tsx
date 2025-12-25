@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
-import { XMarkIcon, StarIcon } from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import { XIcon as XMarkIcon, StarIcon } from '@/components/icons';
+;
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
+// Note: Use active prop for filled icons: <Icon active />
 
 interface ReviewModalProps {
   isOpen: boolean;

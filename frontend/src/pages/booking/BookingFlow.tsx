@@ -14,17 +14,7 @@ import { loyaltyService, UserLoyalty } from '@/services/loyalty.service';
 import { RewardsService, type RewardRedemption, type LoyaltyReward } from '@/services/rewards.service';
 import { filterSlotsByDuration, calculateEndTime } from '../../utils/timeSlotUtils';
 import { environment } from '@/config/environment';
-import {
-  CalendarIcon,
-  ClockIcon,
-  MapPinIcon,
-  CreditCardIcon,
-  CheckCircleIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  GiftIcon,
-  StarIcon,
-} from '@heroicons/react/24/outline';
+import { CalendarIcon, ClockIcon, MapPinIcon, CreditCardIcon, CheckCircleIcon, ArrowLeftIcon, ArrowRightIcon, GiftIcon, StarIcon } from '@/components/icons';
 
 interface BookingStep {
   id: string;

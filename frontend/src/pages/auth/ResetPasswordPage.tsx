@@ -3,7 +3,7 @@ import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import PasswordStrengthIndicator from '@/components/ui/PasswordStrengthIndicator';
-import { ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, CheckCircleIcon } from '@/components/icons';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { authService } from '@/services/auth.service';

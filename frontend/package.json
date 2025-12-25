@@ -66,6 +66,7 @@
     "typescript": "^5.2.2",
     "vite": "^5.3.4",
     "vite-plugin-pwa": "^0.17.4",
+    "vite-plugin-svgr": "^4.5.0",
     "ws": "^8.18.3"
   }
 }

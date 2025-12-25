@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { login, selectIsAuthenticated, selectAuthError, selectIsLoading, clearError } from '@/store/slices/authSlice';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { EyeIcon, EyeSlashIcon } from '@/components/icons';
 import { LoginRequest } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';

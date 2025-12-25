@@ -4,15 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { MessagesService, Conversation, Message } from '@/services/messages.service';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import { toast } from 'react-toastify';
-import {
-  ChatBubbleLeftEllipsisIcon,
-  PaperAirplaneIcon,
-  PaperClipIcon,
-  EllipsisVerticalIcon,
-  MagnifyingGlassIcon,
-  InboxIcon,
-  UserCircleIcon,
-} from '@heroicons/react/24/outline';
+import { ChatBubbleLeftEllipsisIcon, PaperAirplaneIcon, PaperClipIcon, EllipsisVerticalIcon, MagnifyingGlassIcon, InboxIcon, UserCircleIcon } from '@/components/icons';
 import { CheckIcon, CheckCheckIcon } from 'lucide-react';
 
 const CustomerMessages: React.FC = () => {

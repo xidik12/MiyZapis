@@ -1,10 +1,7 @@
 import React from 'react';
 import { calculateTier, getTierName } from '@/utils/formatPoints';
-import {
-  StarIcon as StarIconSolid,
-  TrophyIcon as TrophyIconSolid,
-  SparklesIcon as SparklesIconSolid,
-} from '@heroicons/react/24/solid';
+// Note: Use active prop for filled icons: <Icon active />
+;
 
 type TierKey = 'bronze' | 'silver' | 'gold' | 'platinum';
 

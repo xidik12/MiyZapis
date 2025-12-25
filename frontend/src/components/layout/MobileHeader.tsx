@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Bars3Icon } from '@heroicons/react/24/outline';
+import { ListIcon as Bars3Icon } from '@/components/icons';
 import { environment } from '@/config/environment';
 
 interface MobileHeaderProps {

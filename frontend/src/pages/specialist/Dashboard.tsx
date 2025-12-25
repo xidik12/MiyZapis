@@ -19,26 +19,9 @@ const statusColors = {
   inProgress: 'bg-purple-100 text-purple-800 border-purple-200',
   noShow: 'bg-gray-100 text-gray-800 border-gray-200'
 };
-import {
-  CalendarIcon,
-  ChartBarIcon,
-  CurrencyDollarIcon,
-  StarIcon,
-  UserGroupIcon,
-  ClockIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
-  EyeIcon,
-  HeartIcon,
-  ChatBubbleLeftRightIcon,
-  PlusIcon,
-  ArrowDownTrayIcon,
-  Cog6ToothIcon,
-} from '@heroicons/react/24/outline';
-import {
-  CalendarIcon as CalendarIconSolid,
-  StarIcon as StarIconSolid,
-} from '@heroicons/react/24/solid';
+import { CalendarIcon, ChartBarIcon, CurrencyDollarIcon, StarIcon, UserGroupIcon, ClockIcon, ArrowUpIcon, ArrowDownIcon, EyeIcon, HeartIcon, ChatBubbleLeftRightIcon, PlusIcon, ArrowDownTrayIcon, Cog6ToothIcon } from '@/components/icons';
+// Note: Use active prop for filled icons: <Icon active />
+;
 
 // Helper function to get the booking currency
 const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {

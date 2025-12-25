@@ -4,39 +4,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, logout } from '@/store/slices/authSlice';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
-import {
-  HomeIcon,
-  CalendarIcon,
-  CogIcon,
-  ChartBarIcon,
-  PresentationChartLineIcon,
-  CurrencyDollarIcon,
-  StarIcon,
-  ChatBubbleLeftRightIcon,
-  UserIcon,
-  ClockIcon,
-  BellIcon,
-  ArrowRightOnRectangleIcon,
-  Bars3Icon,
-  XMarkIcon,
-  Cog6ToothIcon,
-  WrenchScrewdriverIcon,
-} from '@heroicons/react/24/outline';
-import {
-  HomeIcon as HomeIconSolid,
-  CalendarIcon as CalendarIconSolid,
-  CogIcon as CogIconSolid,
-  ChartBarIcon as ChartBarIconSolid,
-  PresentationChartLineIcon as PresentationChartLineIconSolid,
-  CurrencyDollarIcon as CurrencyDollarIconSolid,
-  StarIcon as StarIconSolid,
-  ChatBubbleLeftRightIcon as ChatBubbleLeftRightIconSolid,
-  UserIcon as UserIconSolid,
-  ClockIcon as ClockIconSolid,
-  BellIcon as BellIconSolid,
-  Cog6ToothIcon as Cog6ToothIconSolid,
-  WrenchScrewdriverIcon as WrenchScrewdriverIconSolid,
-} from '@heroicons/react/24/solid';
+import { HouseIcon as HomeIcon, CalendarIcon, CogIcon, ChartBarIcon, PresentationChartLineIcon, CurrencyDollarIcon, StarIcon, ChatBubbleLeftRightIcon, UserIcon, ClockIcon, BellIcon, ArrowRightOnRectangleIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, Cog6ToothIcon, WrenchScrewdriverIcon } from '@/components/icons';
+// Note: Use active prop for filled icons: <Icon active />
+;
 
 interface SpecialistSidebarProps {
   isOpen?: boolean;

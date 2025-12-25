@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { UserCircleIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon } from '@/components/icons';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 
 interface AvatarProps {

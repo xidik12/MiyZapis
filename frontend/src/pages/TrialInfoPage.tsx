@@ -3,17 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAppSelector } from '../hooks/redux';
 import { selectUser, selectIsAuthenticated } from '../store/slices/authSlice';
 import { useLanguage } from '../contexts/LanguageContext';
-import {
-  SparklesIcon,
-  ClockIcon,
-  ShieldCheckIcon,
-  CreditCardIcon,
-  UserGroupIcon,
-  CheckCircleIcon,
-  RocketLaunchIcon,
-  GiftIcon,
-  ArrowRightIcon,
-} from '@heroicons/react/24/outline';
+import { SparklesIcon, ClockIcon, ShieldCheckIcon, CreditCardIcon, UserGroupIcon, CheckCircleIcon, RocketLaunchIcon, GiftIcon, ArrowRightIcon } from '@/components/icons';
 import { Card } from '../components/ui/Card';
 
 const TrialInfoPage: React.FC = () => {

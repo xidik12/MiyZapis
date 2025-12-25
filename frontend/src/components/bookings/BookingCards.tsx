@@ -2,7 +2,7 @@ import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { Booking } from '../../types';
-import { EyeIcon, CalendarIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { EyeIcon, CalendarIcon, ClockIcon } from '@/components/icons';
 import { Avatar } from '../ui/Avatar';
 import { statusColors, getSpecialistName, getSpecialistAvatar, getTranslatedServiceName, getTranslatedDuration } from '../../utils/bookingUtils';
 

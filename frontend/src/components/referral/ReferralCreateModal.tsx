@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
-import {
-  XMarkIcon,
-  UserGroupIcon,
-  BriefcaseIcon,
-  EnvelopeIcon,
-  ChatBubbleLeftRightIcon,
-  ShareIcon,
-  LinkIcon,
-  DevicePhoneMobileIcon,
-} from '@heroicons/react/24/outline';
+import { XIcon as XMarkIcon, UserGroupIcon, BriefcaseIcon, EnvelopeIcon, ChatBubbleLeftRightIcon, ShareIcon, LinkIcon, DeviceMobileIcon as DevicePhoneMobileIcon } from '@/components/icons';
 
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';

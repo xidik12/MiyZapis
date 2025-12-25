@@ -13,21 +13,7 @@ import { Avatar } from '../../components/ui/Avatar';
 import { LocationPicker } from '../../components/LocationPicker';
 import SetPasswordModal from '../../components/auth/SetPasswordModal';
 import ChangePasswordModal from '../../components/auth/ChangePasswordModal';
-import { 
-  UserCircleIcon,
-  BellIcon,
-  ShieldCheckIcon,
-  GlobeAltIcon,
-  CreditCardIcon,
-  MapPinIcon,
-  DevicePhoneMobileIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  PencilIcon,
-  TrashIcon,
-  PlusIcon,
-  CameraIcon
-} from '@heroicons/react/24/outline';
+import { UserCircleIcon, BellIcon, ShieldCheckIcon, GlobeIcon as GlobeAltIcon, CreditCardIcon, MapPinIcon, DeviceMobileIcon as DevicePhoneMobileIcon, EyeIcon, EyeSlashIcon, PencilIcon, TrashIcon, PlusIcon, CameraIcon } from '@/components/icons';
 
 
 interface Address {

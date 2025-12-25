@@ -1,10 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import {
-  UserIcon,
-  WrenchScrewdriverIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
+import { UserIcon, WrenchScrewdriverIcon, XIcon as XMarkIcon } from '@/components/icons';
 
 interface UserTypeSelectionModalProps {
   isOpen: boolean;

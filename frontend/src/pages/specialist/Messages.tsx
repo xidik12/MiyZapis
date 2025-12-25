@@ -3,17 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { messagesService, Conversation, Message } from '../../services/messages.service';
-import { 
-  ChatBubbleLeftRightIcon, 
-  PaperAirplaneIcon,
-  MagnifyingGlassIcon,
-  EllipsisVerticalIcon,
-  PhoneIcon,
-  VideoCameraIcon,
-  ArchiveBoxIcon,
-  NoSymbolIcon,
-  CheckIcon
-} from '@heroicons/react/24/outline';
+import { ChatBubbleLeftRightIcon, PaperAirplaneIcon, MagnifyingGlassIcon, EllipsisVerticalIcon, PhoneIcon, VideoCameraIcon, ArchiveBoxIcon, NoSymbolIcon, CheckIcon } from '@/components/icons';
 import { socketService } from '@/services/socket.service';
 
 const SpecialistMessages: React.FC = () => {

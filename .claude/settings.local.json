@@ -21,7 +21,14 @@
       "Bash(cat:*)",
       "Bash(ls:*)",
       "Bash(cloc:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(node replace-icons.js:*)",
+      "Bash(for file in *.tsx)",
+      "Bash(do sed -i '' 's|../../../icons/phosphor-icons/SVGs|../../assets/icons/phosphor-icons/SVGs|g' \"$file\")",
+      "Bash(done)",
+      "Bash(do sed -i '' 's|/fill/\\\\\\(.*\\\\\\)\\\\.svg|/fill/\\\\1-fill.svg|g' \"$file\")",
+      "Bash(node create-missing-icons.js:*)",
+      "Bash(node fix-icon-imports.js:*)"
     ],
     "deny": [],
     "ask": [],

@@ -6,15 +6,14 @@ import { selectNotifications } from '@/store/slices/notificationSlice';
 import { environment } from '@/config/environment';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
-import { 
-  Bars3Icon, 
-  XMarkIcon, 
-  BellIcon, 
+import {
+  ListIcon as Bars3Icon,
+  XIcon as XMarkIcon,
+  BellIcon,
   UserCircleIcon,
   ChevronDownIcon,
-  HomeIcon,
-} from '@heroicons/react/24/outline';
-import { BellIcon as BellIconSolid } from '@heroicons/react/24/solid';
+  HouseIcon as HomeIcon,
+} from '@/components/icons';
 import { NotificationDropdown } from '../common/NotificationDropdown';
 import { UserDropdown } from '../common/UserDropdown';
 import { ThemeToggle } from '../ui/ThemeToggle';
@@ -213,11 +212,10 @@ export const Header: React.FC = () => {
                     onClick={() => setIsNotificationOpen(!isNotificationOpen)}
                     className="p-2 sm:p-2 text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-gray-200 relative transition-all duration-300 mobile-touch-target"
                   >
-                    {unreadNotifications > 0 ? (
-                      <BellIconSolid className="w-7 h-7 sm:w-6 sm:h-6 text-primary-600" />
-                    ) : (
-                      <BellIcon className="w-7 h-7 sm:w-6 sm:h-6" />
-                    )}
+                    <BellIcon
+                      active={unreadNotifications > 0}
+                      className={`w-7 h-7 sm:w-6 sm:h-6 ${unreadNotifications > 0 ? 'text-primary-600' : ''}`}
+                    />
                     {unreadNotifications > 0 && (
                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                         {unreadNotifications > 9 ? '9+' : unreadNotifications}

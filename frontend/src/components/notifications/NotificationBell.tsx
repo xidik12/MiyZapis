@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { BellIcon } from '@heroicons/react/24/outline';
+import { BellIcon } from '@/components/icons';
 import { notificationService } from '../../services/notification.service';
 import NotificationCenter from './NotificationCenter';
 

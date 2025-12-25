@@ -7,19 +7,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { notificationService } from '../../services/notification.service';
 import { Notification, NotificationType } from '../../types';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { 
-  BellIcon, 
-  CheckIcon, 
-  TrashIcon,
-  EllipsisHorizontalIcon,
-  ExclamationTriangleIcon,
-  InformationCircleIcon,
-  CreditCardIcon,
-  CalendarIcon,
-  StarIcon,
-  CogIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline';
+import { BellIcon, CheckIcon, TrashIcon, EllipsisHorizontalIcon, WarningIcon as ExclamationTriangleIcon, InformationCircleIcon, CreditCardIcon, CalendarIcon, StarIcon, CogIcon, XIcon as XMarkIcon } from '@/components/icons';
 
 interface NotificationCenterProps {
   isOpen: boolean;

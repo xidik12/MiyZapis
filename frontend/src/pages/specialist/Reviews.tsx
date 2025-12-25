@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StarIcon, ChatBubbleLeftIcon, UserIcon, HeartIcon, FlagIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import { StarIcon, ChatCircleIcon as ChatBubbleLeftIcon, UserIcon, HeartIcon, FlagIcon, WarningIcon as ExclamationTriangleIcon } from '@/components/icons';
+;
 import { useLanguage } from '../../contexts/LanguageContext';
 import { reviewsService, Review, ReviewStats } from '../../services/reviews.service';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { specialistService } from '../../services/specialist.service';
+// Note: Use active prop for filled icons: <Icon active />
 
 const SpecialistReviews: React.FC = () => {
   const { t, language } = useLanguage();

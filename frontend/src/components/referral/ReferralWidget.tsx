@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
-import {
-  UserPlusIcon,
-  GiftIcon,
-  ArrowTopRightOnSquareIcon,
-  ClipboardDocumentIcon,
-} from '@heroicons/react/24/outline';
+import { UserPlusIcon, GiftIcon, ArrowTopRightOnSquareIcon, ClipboardDocumentIcon } from '@/components/icons';
 
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';

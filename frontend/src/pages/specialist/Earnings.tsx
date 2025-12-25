@@ -1,14 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  CurrencyDollarIcon, 
-  ArrowTrendingUpIcon, 
-  DocumentArrowDownIcon, 
-  ClockIcon,
-  ChartBarIcon,
-  UserGroupIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon
-} from '@heroicons/react/24/outline';
+import { CurrencyDollarIcon, ArrowTrendingUpIcon, DocumentArrowDownIcon, ClockIcon, ChartBarIcon, UserGroupIcon, CheckCircleIcon, WarningIcon as ExclamationTriangleIcon } from '@/components/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector } from '../../hooks/redux';

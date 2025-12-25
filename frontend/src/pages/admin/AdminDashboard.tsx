@@ -1,20 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
-import {
-  UsersIcon,
-  UserGroupIcon,
-  ChartBarIcon,
-  MagnifyingGlassIcon,
-  ShieldCheckIcon,
-  ExclamationTriangleIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  EyeIcon,
-  PencilIcon,
-  TrashIcon,
-  FunnelIcon,
-} from '@heroicons/react/24/outline';
+import { UsersIcon, UserGroupIcon, ChartBarIcon, MagnifyingGlassIcon, ShieldCheckIcon, WarningIcon as ExclamationTriangleIcon, CheckCircleIcon, XCircleIcon, EyeIcon, PencilIcon, TrashIcon, FunnelIcon } from '@/components/icons';
 
 interface AdminStats {
   totalUsers: number;

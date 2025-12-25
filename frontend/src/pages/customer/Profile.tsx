@@ -6,25 +6,7 @@ import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { LoyaltyService, UserLoyalty, LoyaltyStats } from '../../services/loyalty.service';
 import { calculateTier, formatPoints } from '../../utils/formatPoints';
-import { 
-  PencilSquareIcon,
-  MapPinIcon,
-  StarIcon,
-  CreditCardIcon,
-  Cog6ToothIcon,
-  UserCircleIcon,
-  PhoneIcon,
-  EnvelopeIcon,
-  CalendarIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  ExclamationTriangleIcon,
-  CameraIcon,
-  EyeIcon,
-  BuildingOfficeIcon,
-  ShieldCheckIcon,
-  DocumentCheckIcon
-} from '@heroicons/react/24/outline';
+import { PencilSquareIcon, MapPinIcon, StarIcon, CreditCardIcon, Cog6ToothIcon, UserCircleIcon, PhoneIcon, EnvelopeIcon, CalendarIcon, CheckCircleIcon, XCircleIcon, WarningIcon as ExclamationTriangleIcon, CameraIcon, EyeIcon, BuildingOfficeIcon, ShieldCheckIcon, DocumentCheckIcon } from '@/components/icons';
 
 interface Address {
   id: string;

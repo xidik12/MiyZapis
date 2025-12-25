@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/redux';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { CheckCircleIcon, XCircleIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, XCircleIcon, EnvelopeIcon } from '@/components/icons';
 
 type VerificationStatus = 'loading' | 'success' | 'pending' | 'error' | 'expired' | 'invalid';
 

@@ -6,24 +6,12 @@ import { serviceService } from '../services';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { selectUser, selectIsAuthenticated } from '@/store/slices/authSlice';
 import { fetchFavoriteSpecialists, selectFavoriteSpecialists } from '../store/slices/favoritesSlice';
-import {
-  MagnifyingGlassIcon,
-  MapPinIcon,
-  StarIcon,
-  ClockIcon,
-  CheckBadgeIcon,
-  AdjustmentsHorizontalIcon,
-  ListBulletIcon,
-  Squares2X2Icon,
-  FunnelIcon,
-  HeartIcon,
-} from '@heroicons/react/24/outline';
-import {
-  StarIcon as StarIconSolid,
-} from '@heroicons/react/24/solid';
+import { MagnifyingGlassIcon, MapPinIcon, StarIcon, ClockIcon, SealCheckIcon as CheckBadgeIcon, SlidersIcon as AdjustmentsHorizontalIcon, ListBulletsIcon as ListBulletIcon, SquaresFourIcon as Squares2X2Icon, FunnelIcon, HeartIcon } from '@/components/icons';
+;
 import { Avatar } from '../components/ui/Avatar';
 import { translateProfession } from '@/utils/profession';
 import Skeleton, { SkeletonText } from '../components/ui/Skeleton';
+// Note: Use active prop for filled icons: <Icon active />
 
 interface ServiceWithSpecialist {
   id: string;

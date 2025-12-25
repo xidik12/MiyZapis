@@ -8,31 +8,31 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Ukrainian-inspired primary colors (blue from flag)
+        // Light Sky Blue primary colors
         primary: {
-          50: '#eff8ff',
-          100: '#dbeefe',
-          200: '#bfe2fd',
-          300: '#92d0fb',
-          400: '#5fb5f7',
-          500: '#3b97f2',
-          600: '#2575e6',
-          700: '#1e5fd4',
-          800: '#1f4eaa',
-          900: '#1e4486',
+          50: '#f0f9ff',
+          100: '#e0f4ff',
+          200: '#bae8ff',
+          300: '#87dcff',
+          400: '#4dc9ff',
+          500: '#87CEEB',  // Light Sky Blue
+          600: '#5eb8db',
+          700: '#3a9bc4',
+          800: '#2a7fa0',
+          900: '#1e6484',
         },
-        // Ukrainian-inspired secondary colors (golden yellow from flag)
+        // Bright Yellow secondary colors
         secondary: {
-          50: '#fffdf2',
-          100: '#fffae6',
-          200: '#fff3c4',
-          300: '#ffe891',
-          400: '#ffd754',
-          500: '#ffc41f',
-          600: '#efab00',
-          700: '#cc8b02',
-          800: '#a16207',
-          900: '#854d0e',
+          50: '#fffef0',
+          100: '#fffce0',
+          200: '#fff9c2',
+          300: '#fff59e',
+          400: '#ffed6b',
+          500: '#FFD700',  // Bright Yellow (Gold)
+          600: '#f0c800',
+          700: '#d4ad00',
+          800: '#b08f00',
+          900: '#8f7400',
         },
         success: {
           50: '#f0fdf4',
@@ -117,13 +117,13 @@ module.exports = {
         'lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
         'xl': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
         '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
-        'primary': '0 4px 14px 0 rgb(59 151 242 / 0.15)',
-        'secondary': '0 4px 14px 0 rgb(255 196 31 / 0.15)',
+        'primary': '0 4px 14px 0 rgb(135 206 235 / 0.15)',
+        'secondary': '0 4px 14px 0 rgb(255 215 0 / 0.15)',
         'success': '0 4px 14px 0 rgb(34 197 94 / 0.15)',
         'error': '0 4px 14px 0 rgb(239 68 68 / 0.15)',
         'glass': '0 8px 32px 0 rgb(31 38 135 / 0.37)',
-        'glow': '0 0 20px rgb(59 151 242 / 0.3)',
-        'glow-secondary': '0 0 20px rgb(255 196 31 / 0.3)',
+        'glow': '0 0 20px rgb(135 206 235 / 0.3)',
+        'glow-secondary': '0 0 20px rgb(255 215 0 / 0.3)',
         'neumorphism': '20px 20px 60px #d1d1e0, -20px -20px 60px #ffffff',
         'neumorphism-inset': 'inset 20px 20px 60px #d1d1e0, inset -20px -20px 60px #ffffff',
       },
@@ -138,10 +138,6 @@ module.exports = {
         'float': 'float 6s ease-in-out infinite',
         'shimmer': 'shimmer 2s infinite',
         'glow-pulse': 'glow-pulse 2s ease-in-out infinite alternate',
-        'ukraine-wave': 'ukraine-wave 3s ease-in-out infinite',
-        'morph': 'morph 4s ease-in-out infinite',
-        'gradient-x': 'gradient-x 15s ease infinite',
-        'gradient-y': 'gradient-y 15s ease infinite',
         'tilt': 'tilt 10s infinite linear',
       },
       keyframes: {
@@ -180,30 +176,8 @@ module.exports = {
           '100%': { transform: 'translateX(100%)' },
         },
         'glow-pulse': {
-          '0%': { boxShadow: '0 0 5px rgb(59 151 242 / 0.5)' },
-          '100%': { boxShadow: '0 0 20px rgb(59 151 242 / 0.8), 0 0 30px rgb(59 151 242 / 0.4)' },
-        },
-        'ukraine-wave': {
-          '0%, 100%': { 
-            background: 'linear-gradient(45deg, #3b97f2 0%, #ffc41f 100%)',
-            transform: 'rotate(0deg)',
-          },
-          '50%': { 
-            background: 'linear-gradient(225deg, #3b97f2 0%, #ffc41f 100%)',
-            transform: 'rotate(5deg)',
-          },
-        },
-        'morph': {
-          '0%, 100%': { borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%' },
-          '50%': { borderRadius: '30% 60% 70% 40% / 50% 60% 30% 60%' },
-        },
-        'gradient-x': {
-          '0%, 100%': { transform: 'translateX(0%)', backgroundPosition: '0% 50%' },
-          '50%': { transform: 'translateX(0%)', backgroundPosition: '100% 50%' },
-        },
-        'gradient-y': {
-          '0%, 100%': { transform: 'translateY(0%)', backgroundPosition: '50% 0%' },
-          '50%': { transform: 'translateY(0%)', backgroundPosition: '50% 100%' },
+          '0%': { boxShadow: '0 0 5px rgb(135 206 235 / 0.5)' },
+          '100%': { boxShadow: '0 0 20px rgb(135 206 235 / 0.8), 0 0 30px rgb(135 206 235 / 0.4)' },
         },
         'tilt': {
           '0%, 50%, 100%': { transform: 'rotate(0deg)' },

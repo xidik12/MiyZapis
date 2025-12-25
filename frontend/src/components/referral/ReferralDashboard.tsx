@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { clsx } from 'clsx';
-import {
-  UserPlusIcon,
-  ChartBarIcon,
-  GiftIcon,
-  ShareIcon,
-  TrophyIcon,
-  CalendarDaysIcon,
-} from '@heroicons/react/24/outline';
+import { UserPlusIcon, ChartBarIcon, GiftIcon, ShareIcon, TrophyIcon, CalendarDaysIcon } from '@/components/icons';
 
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';

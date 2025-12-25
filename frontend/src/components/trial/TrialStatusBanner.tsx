@@ -1,12 +1,7 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { clsx } from 'clsx';
-import {
-  SparklesIcon,
-  ClockIcon,
-  XMarkIcon,
-  InformationCircleIcon,
-} from '@heroicons/react/24/outline';
+import { SparklesIcon, ClockIcon, XIcon as XMarkIcon, InformationCircleIcon } from '@/components/icons';
 import { Card } from '../ui/Card';
 import { useLanguage } from '../../contexts/LanguageContext';
 

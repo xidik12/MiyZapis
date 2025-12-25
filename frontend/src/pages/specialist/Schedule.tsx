@@ -1,19 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
-import {
-  CalendarIcon,
-  ClockIcon,
-  PlusIcon,
-  XMarkIcon,
-  CheckIcon,
-  TrashIcon,
-  PencilIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-} from '@heroicons/react/24/outline';
+import { CalendarIcon, ClockIcon, PlusIcon, XIcon as XMarkIcon, CheckIcon, TrashIcon, PencilIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon } from '@/components/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
@@ -75,8 +63,13 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
       const start = new Date(editingBlock.startDateTime);
       const end = new Date(editingBlock.endDateTime);
 
+      // Extract UTC date and time components (stored times are meant to be displayed as-is)
+      const year = start.getUTCFullYear();
+      const month = (start.getUTCMonth() + 1).toString().padStart(2, '0');
+      const day = start.getUTCDate().toString().padStart(2, '0');
+
       setFormData({
-        date: start.toISOString().split('T')[0],
+        date: `${year}-${month}-${day}`,
         startTime: `${start.getUTCHours().toString().padStart(2, '0')}:${start.getUTCMinutes().toString().padStart(2, '0')}`,
         endTime: `${end.getUTCHours().toString().padStart(2, '0')}:${end.getUTCMinutes().toString().padStart(2, '0')}`,
         isAvailable: editingBlock.isAvailable,
@@ -1000,11 +993,19 @@ const SpecialistSchedule: React.FC = () => {
   );
 };
 
-export default SpecialistSchedule;
   const toUtcIsoString = (date: string, time: string) => {
-    const localDate = new Date(`${date}T${time}`);
-    if (Number.isNaN(localDate.getTime())) {
+    // Parse date and time components
+    const [year, month, day] = date.split('-').map(Number);
+    const [hours, minutes] = time.split(':').map(Number);
+
+    // Create date in UTC to avoid timezone conversion
+    const utcDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0, 0));
+
+    if (Number.isNaN(utcDate.getTime())) {
       throw new Error('Invalid date or time');
     }
-    return localDate.toISOString();
+
+    return utcDate.toISOString();
   };
+
+export default SpecialistSchedule;

@@ -7,16 +7,7 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { RootState, AppDispatch } from '../../store';
 import { fetchBookings, updateBookingStatus, cancelBooking } from '../../store/slices/bookingSlice';
 import { Booking, BookingStatus } from '../../types';
-import {
-  EyeIcon,
-  CheckCircleIcon,
-  CheckIcon,
-  StarIcon,
-  XMarkIcon,
-  MapPinIcon,
-  PhoneIcon,
-  ChatBubbleLeftRightIcon
-} from '@heroicons/react/24/outline';
+import { EyeIcon, CheckCircleIcon, CheckIcon, StarIcon, XIcon as XMarkIcon, MapPinIcon, PhoneIcon, ChatBubbleLeftRightIcon } from '@/components/icons';
 import ReviewModal from '../../components/modals/ReviewModal';
 import { reviewsService } from '../../services/reviews.service';
 import { validateReviewTags } from '../../constants/reviewTags';

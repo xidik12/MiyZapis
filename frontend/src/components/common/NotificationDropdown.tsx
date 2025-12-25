@@ -4,15 +4,7 @@ import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectNotifications, markAsRead, markAllNotificationsAsRead } from '@/store/slices/notificationSlice';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatDistanceToNow } from 'date-fns';
-import { 
-  BellIcon, 
-  CheckIcon,
-  CalendarIcon,
-  CreditCardIcon,
-  StarIcon,
-  UserIcon,
-  ExclamationTriangleIcon,
-} from '@heroicons/react/24/outline';
+import { BellIcon, CheckIcon, CalendarIcon, CreditCardIcon, StarIcon, UserIcon, WarningIcon as ExclamationTriangleIcon } from '@/components/icons';
 
 interface NotificationDropdownProps {
   isOpen: boolean;

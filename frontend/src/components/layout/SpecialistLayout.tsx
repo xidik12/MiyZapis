@@ -9,30 +9,9 @@ import { isFeatureEnabled } from '../../config/features';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
-import {
-  ChartBarIcon,
-  CalendarIcon,
-  ClipboardDocumentListIcon,
-  Cog6ToothIcon,
-  CreditCardIcon,
-  StarIcon,
-  UserIcon,
-  BriefcaseIcon,
-  Bars3Icon,
-  XMarkIcon,
-  SunIcon,
-  MoonIcon,
-  ChevronDownIcon,
-  BellIcon,
-  ChatBubbleLeftRightIcon,
-  MagnifyingGlassIcon,
-  ArrowRightOnRectangleIcon,
-  HomeIcon,
-  PresentationChartLineIcon,
-  GiftIcon,
-  UsersIcon,
-} from '@heroicons/react/24/outline';
-import { ChartBarIcon as ChartBarIconSolid } from '@heroicons/react/24/solid';
+import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, UserIcon, BriefcaseIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon } from '@/components/icons';
+// Note: Use active prop for filled icons: <Icon active />
+;
 
 interface SpecialistLayoutProps {
   children: ReactNode;

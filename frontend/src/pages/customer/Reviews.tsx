@@ -3,18 +3,9 @@ import { toast } from 'react-toastify';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { reviewsService } from '@/services/reviews.service';
-import {
-  StarIcon,
-  ClockIcon,
-  CheckBadgeIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  CalendarIcon,
-  ChartBarIcon,
-  ExclamationTriangleIcon,
-  PlusIcon,
-} from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import { StarIcon, ClockIcon, SealCheckIcon as CheckBadgeIcon, EyeIcon, EyeSlashIcon, CalendarIcon, ChartBarIcon, WarningIcon as ExclamationTriangleIcon, PlusIcon } from '@/components/icons';
+// Note: Use active prop for filled icons: <Icon active />
+;
 
 interface CustomerReview {
   id: string;

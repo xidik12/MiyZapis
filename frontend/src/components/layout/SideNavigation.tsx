@@ -4,24 +4,12 @@ import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, selectIsAuthenticated, logout } from '@/store/slices/authSlice';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { environment } from '@/config/environment';
-import {
-  HomeIcon,
-  MagnifyingGlassIcon,
-  UserCircleIcon,
-  QuestionMarkCircleIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ArrowRightOnRectangleIcon,
-  UserPlusIcon,
-} from '@heroicons/react/24/outline';
-import {
-  HomeIcon as HomeIconSolid,
-  MagnifyingGlassIcon as MagnifyingGlassIconSolid,
-  UserCircleIcon as UserCircleIconSolid,
-} from '@heroicons/react/24/solid';
+import { HouseIcon as HomeIcon, MagnifyingGlassIcon, UserCircleIcon, QuestionMarkCircleIcon, ChevronLeftIcon, ChevronRightIcon, ArrowRightOnRectangleIcon, UserPlusIcon } from '@/components/icons';
+;
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { LanguageToggle } from '../ui/LanguageToggle';
 import { CurrencyToggle } from '../ui/CurrencyToggle';
+// Note: Use active prop for filled icons: <Icon active />
 
 interface SideNavigationProps {
   isCollapsed: boolean;

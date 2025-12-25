@@ -8,30 +8,9 @@ import { selectUser, logout } from '../../store/slices/authSlice';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
-import {
-  HomeIcon,
-  CalendarIcon,
-  UserIcon,
-  Cog6ToothIcon,
-  StarIcon,
-  HeartIcon,
-  QuestionMarkCircleIcon,
-  GiftIcon,
-  Bars3Icon,
-  XMarkIcon,
-  SunIcon,
-  MoonIcon,
-  ChevronDownIcon,
-  BellIcon,
-  ClockIcon,
-  CreditCardIcon,
-  MagnifyingGlassIcon,
-  ArrowRightOnRectangleIcon,
-  ChatBubbleLeftEllipsisIcon,
-  UsersIcon,
-  WalletIcon,
-} from '@heroicons/react/24/outline';
-import { HomeIcon as HomeIconSolid } from '@heroicons/react/24/solid';
+import { HouseIcon as HomeIcon, CalendarIcon, UserIcon, Cog6ToothIcon, StarIcon, HeartIcon, QuestionMarkCircleIcon, GiftIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ClockIcon, CreditCardIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, ChatBubbleLeftEllipsisIcon, UsersIcon, WalletIcon } from '@/components/icons';
+// Note: Use active prop for filled icons: <Icon active />
+;
 
 interface CustomerLayoutProps {
   children: ReactNode;

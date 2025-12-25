@@ -2,17 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { notificationService } from '../../services/notification.service';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
-import {
-  BellIcon,
-  CheckIcon,
-  XMarkIcon,
-  EyeIcon,
-  CalendarIcon,
-  UserIcon,
-  CreditCardIcon,
-  ExclamationTriangleIcon,
-  InformationCircleIcon,
-} from '@heroicons/react/24/outline';
+import { BellIcon, CheckIcon, XIcon as XMarkIcon, EyeIcon, CalendarIcon, UserIcon, CreditCardIcon, WarningIcon as ExclamationTriangleIcon, InformationCircleIcon } from '@/components/icons';
 
 interface Notification {
   id: string;

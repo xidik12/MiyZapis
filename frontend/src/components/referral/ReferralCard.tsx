@@ -1,23 +1,7 @@
 import React, { useState } from 'react';
 import { clsx } from 'clsx';
-import {
-  ClipboardDocumentIcon,
-  ShareIcon,
-  EyeIcon,
-  CursorArrowRaysIcon,
-  ClockIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  UserIcon,
-  CalendarIcon,
-  GiftIcon,
-  ExclamationTriangleIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-} from '@heroicons/react/24/outline';
-import {
-  ClipboardDocumentCheckIcon,
-} from '@heroicons/react/24/solid';
+import { ClipboardDocumentIcon, ShareIcon, EyeIcon, CursorArrowRaysIcon, ClockIcon, CheckCircleIcon, XCircleIcon, UserIcon, CalendarIcon, GiftIcon, WarningIcon as ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@/components/icons';
+;
 
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';

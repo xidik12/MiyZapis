@@ -5,23 +5,13 @@ import { selectUser, selectIsAuthenticated, logout } from '@/store/slices/authSl
 import { selectNotifications } from '@/store/slices/notificationSlice';
 import { environment } from '@/config/environment';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { 
-  HomeIcon,
-  MagnifyingGlassIcon,
-  CalendarDaysIcon,
-  UserCircleIcon,
-  CogIcon,
-  BellIcon,
-  XMarkIcon,
-  ArrowRightOnRectangleIcon,
-  UserPlusIcon,
-  IdentificationIcon,
-} from '@heroicons/react/24/outline';
-import { BellIcon as BellIconSolid } from '@heroicons/react/24/solid';
+import { HouseIcon as HomeIcon, MagnifyingGlassIcon, CalendarDaysIcon, UserCircleIcon, CogIcon, BellIcon, XIcon as XMarkIcon, ArrowRightOnRectangleIcon, UserPlusIcon, IdentificationIcon } from '@/components/icons';
+;
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { LanguageToggle } from '../ui/LanguageToggle';
 import { CurrencyToggle } from '../ui/CurrencyToggle';
 import { NotificationDropdown } from '../common/NotificationDropdown';
+// Note: Use active prop for filled icons: <Icon active />
 
 interface MobileSideNavigationProps {
   isOpen: boolean;

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon } from '@/components/icons';
 
 interface SearchBarProps {
   placeholder?: string;

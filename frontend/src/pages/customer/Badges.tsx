@@ -3,30 +3,9 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { loyaltyService, UserBadge, LoyaltyBadge } from '@/services/loyalty.service';
 import { toast } from 'react-toastify';
-import {
-  TrophyIcon,
-  SparklesIcon,
-  CheckCircleIcon,
-  LockClosedIcon,
-  ClockIcon,
-  InformationCircleIcon,
-  AcademicCapIcon,
-  StarIcon,
-  HeartIcon,
-  CrownIcon,
-  GiftIcon,
-  FireIcon,
-} from '@heroicons/react/24/outline';
-import {
-  TrophyIcon as TrophyIconSolid,
-  SparklesIcon as SparklesIconSolid,
-  CheckCircleIcon as CheckCircleIconSolid,
-  StarIcon as StarIconSolid,
-  HeartIcon as HeartIconSolid,
-  CrownIcon as CrownIconSolid,
-  GiftIcon as GiftIconSolid,
-  FireIcon as FireIconSolid,
-} from '@heroicons/react/24/solid';
+import { TrophyIcon, SparklesIcon, CheckCircleIcon, LockClosedIcon, ClockIcon, InformationCircleIcon, AcademicCapIcon, StarIcon, HeartIcon, CrownIcon, GiftIcon, FireIcon } from '@/components/icons';
+// Note: Use active prop for filled icons: <Icon active />
+;
 
 interface BadgeWithStatus extends LoyaltyBadge {
   isEarned: boolean;

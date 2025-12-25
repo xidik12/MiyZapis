@@ -6,7 +6,7 @@ import {
   type PasswordRequirements,
   type PasswordValidationResult
 } from '@/utils/passwordValidation';
-import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, XIcon as XMarkIcon } from '@/components/icons';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PasswordStrengthIndicatorProps {

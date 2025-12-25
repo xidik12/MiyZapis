@@ -24,31 +24,9 @@ const statusColors = {
   inProgress: 'bg-purple-100 text-purple-800 border-purple-200',
   noShow: 'bg-gray-100 text-gray-800 border-gray-200'
 };
-import {
-  CalendarIcon,
-  HeartIcon,
-  CreditCardIcon,
-  StarIcon,
-  UserGroupIcon,
-  ClockIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
-  GiftIcon,
-  MagnifyingGlassIcon,
-  EyeIcon,
-  ChatBubbleLeftRightIcon,
-  MapPinIcon,
-  ChartBarIcon,
-  PlusIcon,
-  BookOpenIcon,
-  ExclamationTriangleIcon,
-} from '@heroicons/react/24/outline';
-import {
-  CalendarIcon as CalendarIconSolid,
-  HeartIcon as HeartIconSolid,
-  StarIcon as StarIconSolid,
-  GiftIcon as GiftIconSolid,
-} from '@heroicons/react/24/solid';
+import { CalendarIcon, HeartIcon, CreditCardIcon, StarIcon, UserGroupIcon, ClockIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, GiftIcon, MagnifyingGlassIcon, EyeIcon, ChatBubbleLeftRightIcon, MapPinIcon, ChartBarIcon, PlusIcon, BookOpenIcon, WarningIcon as ExclamationTriangleIcon } from '@/components/icons';
+// Note: Use active prop for filled icons: <Icon active />
+;
 
 // Interface definitions for type safety
 interface CustomerStats {

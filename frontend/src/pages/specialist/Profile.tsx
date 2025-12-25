@@ -14,32 +14,7 @@ import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import OptimizedImage from '../../components/ui/OptimizedImage';
 import { Avatar } from '../../components/ui/Avatar';
 import AutoMigrateAvatar from '../../components/AutoMigrateAvatar';
-import { 
-  CheckCircleIcon,
-  XCircleIcon,
-  ExclamationTriangleIcon,
-  EyeIcon,
-  PencilSquareIcon,
-  UserCircleIcon,
-  MapPinIcon,
-  ClockIcon,
-  CreditCardIcon,
-  GlobeAltIcon,
-  AcademicCapIcon,
-  StarIcon,
-  PhotoIcon,
-  DocumentCheckIcon,
-  PhoneIcon,
-  EnvelopeIcon,
-  BriefcaseIcon,
-  BuildingOfficeIcon,
-  CameraIcon,
-  TrashIcon,
-  PlusIcon,
-  ArrowDownTrayIcon,
-  Cog6ToothIcon,
-  ShieldCheckIcon
-} from '@heroicons/react/24/outline';
+import { CheckCircleIcon, XCircleIcon, WarningIcon as ExclamationTriangleIcon, EyeIcon, PencilSquareIcon, UserCircleIcon, MapPinIcon, ClockIcon, CreditCardIcon, GlobeIcon as GlobeAltIcon, AcademicCapIcon, StarIcon, ImageIcon as PhotoIcon, DocumentCheckIcon, PhoneIcon, EnvelopeIcon, BriefcaseIcon, BuildingOfficeIcon, CameraIcon, TrashIcon, PlusIcon, ArrowDownTrayIcon, Cog6ToothIcon, ShieldCheckIcon } from '@/components/icons';
 
 interface SpecialistProfile {
   id: string;

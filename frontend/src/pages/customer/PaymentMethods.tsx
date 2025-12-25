@@ -5,12 +5,7 @@ import { selectUser } from '../../store/slices/authSlice';
 import { PaymentMethod } from '../../types';
 import { PaymentMethodsService } from '../../services/paymentMethods';
 import { toast } from 'react-toastify';
-import { 
-  CreditCardIcon,
-  PlusIcon,
-  PencilIcon,
-  TrashIcon,
-} from '@heroicons/react/24/outline';
+import { CreditCardIcon, PlusIcon, PencilIcon, TrashIcon } from '@/components/icons';
 
 const PaymentMethods: React.FC = () => {
   const { t, language } = useLanguage();

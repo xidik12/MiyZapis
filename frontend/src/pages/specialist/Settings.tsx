@@ -9,23 +9,7 @@ import { Avatar } from '../../components/ui/Avatar';
 import SetPasswordModal from '../../components/auth/SetPasswordModal';
 import ChangePasswordModal from '../../components/auth/ChangePasswordModal';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
-import {
-  UserIcon,
-  BellIcon,
-  ShieldCheckIcon,
-  CreditCardIcon,
-  GlobeAltIcon,
-  CalendarIcon,
-  Cog6ToothIcon,
-  EyeIcon,
-  DevicePhoneMobileIcon,
-  EnvelopeIcon,
-  CheckIcon,
-  CameraIcon,
-  TrashIcon,
-  KeyIcon,
-  LockClosedIcon,
-} from '@heroicons/react/24/outline';
+import { UserIcon, BellIcon, ShieldCheckIcon, CreditCardIcon, GlobeIcon as GlobeAltIcon, CalendarIcon, Cog6ToothIcon, EyeIcon, DeviceMobileIcon as DevicePhoneMobileIcon, EnvelopeIcon, CheckIcon, CameraIcon, TrashIcon, KeyIcon, LockClosedIcon } from '@/components/icons';
 
 const SpecialistSettings: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();

@@ -2,17 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/redux';
 import { selectUser } from '@/store/slices/authSlice';
-import { 
-  UserCircleIcon,
-  CalendarIcon,
-  CogIcon,
-  HeartIcon,
-  QuestionMarkCircleIcon,
-  ArrowRightOnRectangleIcon,
-  ChartBarIcon,
-  WrenchScrewdriverIcon,
-  BuildingStorefrontIcon,
-} from '@heroicons/react/24/outline';
+import { UserCircleIcon, CalendarIcon, CogIcon, HeartIcon, QuestionMarkCircleIcon, ArrowRightOnRectangleIcon, ChartBarIcon, WrenchScrewdriverIcon, BuildingStorefrontIcon } from '@/components/icons';
 
 interface UserDropdownProps {
   isOpen: boolean;

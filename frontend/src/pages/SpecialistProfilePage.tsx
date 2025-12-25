@@ -15,24 +15,12 @@ import {
   optimisticRemoveSpecialist
 } from '../store/slices/favoritesSlice';
 import { selectUser } from '../store/slices/authSlice';
-import {
-  StarIcon,
-  MapPinIcon,
-  ClockIcon,
-  CheckBadgeIcon,
-  CalendarIcon,
-  ChatBubbleLeftRightIcon,
-  HeartIcon,
-  ShareIcon,
-  PlayIcon,
-} from '@heroicons/react/24/outline';
-import {
-  StarIcon as StarIconSolid,
-  HeartIcon as HeartIconSolid,
-} from '@heroicons/react/24/solid';
+import { StarIcon, MapPinIcon, ClockIcon, SealCheckIcon as CheckBadgeIcon, CalendarIcon, ChatBubbleLeftRightIcon, HeartIcon, ShareIcon, PlayIcon } from '@/components/icons';
+;
 import { Avatar } from '../components/ui/Avatar';
 import { translateProfession } from '@/utils/profession';
 import { getAbsoluteImageUrl } from '../utils/imageUrl';
+// Note: Use active prop for filled icons: <Icon active />
 
 const SpecialistProfilePage: React.FC = () => {
   const { specialistId } = useParams();

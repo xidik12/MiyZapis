@@ -3,17 +3,7 @@ import { toast } from 'react-toastify';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { helpService, FAQ, ContactMethod } from '../../services/help.service';
-import { 
-  QuestionMarkCircleIcon,
-  ChatBubbleLeftRightIcon,
-  BookOpenIcon,
-  PaperAirplaneIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  PhoneIcon,
-  EnvelopeIcon,
-  ClockIcon
-} from '@heroicons/react/24/outline';
+import { QuestionMarkCircleIcon, ChatBubbleLeftRightIcon, BookOpenIcon, PaperAirplaneIcon, ChevronDownIcon, ChevronUpIcon, PhoneIcon, EnvelopeIcon, ClockIcon } from '@/components/icons';
 
 // Interfaces are now imported from the service
 

@@ -6,18 +6,7 @@ import { SearchBar } from '@/components/common/SearchBar';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import {
-  MagnifyingGlassIcon,
-  StarIcon,
-  ClockIcon,
-  ShieldCheckIcon,
-  UserGroupIcon,
-  CalendarIcon,
-  CreditCardIcon,
-  ChatBubbleLeftRightIcon,
-  CheckBadgeIcon,
-  ArrowRightIcon,
-} from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, StarIcon, ClockIcon, ShieldCheckIcon, UserGroupIcon, CalendarIcon, CreditCardIcon, ChatBubbleLeftRightIcon, SealCheckIcon as CheckBadgeIcon, ArrowRightIcon } from '@/components/icons';
 
 // Service categories and featured specialists - data from API
 const getServiceCategories = (t: (key: string) => string) => [

@@ -7,31 +7,9 @@ import { RewardsService, LoyaltyReward, CreateRewardData } from '@/services/rewa
 import type { RewardRedemption } from '@/services/rewards.service';
 import { formatPoints as utilFormatPoints } from '@/utils/formatPoints';
 import { toast } from 'react-toastify';
-import {
-  StarIcon,
-  GiftIcon,
-  TrophyIcon,
-  ClockIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
-  ChevronRightIcon,
-  SparklesIcon,
-  CalendarDaysIcon,
-  UsersIcon,
-  CurrencyDollarIcon,
-  FireIcon,
-  BriefcaseIcon,
-  EyeIcon,
-  PlusIcon,
-  PencilIcon,
-  TrashIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
-import {
-  StarIcon as StarIconSolid,
-  TrophyIcon as TrophyIconSolid,
-  FireIcon as FireIconSolid,
-} from '@heroicons/react/24/solid';
+import { StarIcon, GiftIcon, TrophyIcon, ClockIcon, ArrowUpIcon, ArrowDownIcon, ChevronRightIcon, SparklesIcon, CalendarDaysIcon, UsersIcon, CurrencyDollarIcon, FireIcon, BriefcaseIcon, EyeIcon, PlusIcon, PencilIcon, TrashIcon, XIcon as XMarkIcon } from '@/components/icons';
+// Note: Use active prop for filled icons: <Icon active />
+;
 
 const SpecialistLoyalty: React.FC = () => {
   const { theme } = useTheme();

@@ -5,37 +5,9 @@ import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, logout } from '@/store/slices/authSlice';
 import { selectFavoritesCount, fetchFavoritesCount } from '@/store/slices/favoritesSlice';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
-import {
-  HomeIcon,
-  CalendarIcon,
-  HeartIcon,
-  CreditCardIcon,
-  StarIcon,
-  UserIcon,
-  ClockIcon,
-  BellIcon,
-  ArrowRightOnRectangleIcon,
-  Bars3Icon,
-  XMarkIcon,
-  MagnifyingGlassIcon,
-  LifebuoyIcon,
-  GiftIcon,
-  ChatBubbleLeftRightIcon,
-} from '@heroicons/react/24/outline';
-import {
-  HomeIcon as HomeIconSolid,
-  CalendarIcon as CalendarIconSolid,
-  HeartIcon as HeartIconSolid,
-  CreditCardIcon as CreditCardIconSolid,
-  StarIcon as StarIconSolid,
-  UserIcon as UserIconSolid,
-  ClockIcon as ClockIconSolid,
-  BellIcon as BellIconSolid,
-  MagnifyingGlassIcon as MagnifyingGlassIconSolid,
-  LifebuoyIcon as LifebuoyIconSolid,
-  GiftIcon as GiftIconSolid,
-  ChatBubbleLeftRightIcon as ChatBubbleLeftRightIconSolid,
-} from '@heroicons/react/24/solid';
+import { HouseIcon as HomeIcon, CalendarIcon, HeartIcon, CreditCardIcon, StarIcon, UserIcon, ClockIcon, BellIcon, ArrowRightOnRectangleIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, MagnifyingGlassIcon, LifebuoyIcon, GiftIcon, ChatBubbleLeftRightIcon } from '@/components/icons';
+// Note: Use active prop for filled icons: <Icon active />
+;
 
 interface CustomerSidebarProps {
   isOpen?: boolean;
