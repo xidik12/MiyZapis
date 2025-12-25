@@ -164,7 +164,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
               }}
               onLoad={() => console.log('✅ SideNav logo loaded successfully')}
             />
-            <span className="text-lg font-bold ukraine-text-gradient">
+            <span className="text-lg font-bold text-primary-600 dark:text-primary-400">
               {environment.APP_NAME}
             </span>
           </Link>

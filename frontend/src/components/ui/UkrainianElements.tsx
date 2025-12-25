@@ -17,11 +17,11 @@ export const UkrainianTriezub: React.FC<{ className?: string; size?: number }> =
   size = 24 
 }) => {
   return (
-    <svg 
-      width={size} 
-      height={size} 
-      viewBox="0 0 24 24" 
-      className={`ukraine-text-gradient ${className}`}
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      className={`text-primary-600 dark:text-primary-400 ${className}`}
       fill="currentColor"
     >
       <path d="M12 2L8 6h2v4h4V6h2l-4-4zm-2 8v8l2-2 2 2v-8h-4z"/>
@@ -45,7 +45,7 @@ export const SunflowerIcon: React.FC<{ className?: string; animated?: boolean }>
 export const UkrainianOrnament: React.FC<{ className?: string }> = ({ className = '' }) => {
   return (
     <div className={`flex items-center justify-center ${className}`}>
-      <svg viewBox="0 0 100 20" className="w-32 h-4 ukraine-text-gradient">
+      <svg viewBox="0 0 100 20" className="w-32 h-4 text-primary-600 dark:text-primary-400">
         <pattern id="ukrainian-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
           <rect width="20" height="20" fill="#3b97f2" opacity="0.1"/>
           <path d="M10 5 L15 10 L10 15 L5 10 Z" fill="#ffc41f" opacity="0.3"/>

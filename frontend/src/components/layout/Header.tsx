@@ -131,7 +131,7 @@ export const Header: React.FC = () => {
                 onLoad={() => console.log('✅ Logo loaded successfully')}
               />
               <div className="flex items-center space-x-2">
-                <span className="text-lg xs:text-xl font-bold ukraine-text-gradient hidden xs:block group-hover:text-primary-500 transition-colors duration-300">
+                <span className="text-lg xs:text-xl font-bold text-primary-600 dark:text-primary-400 hidden xs:block group-hover:text-primary-500 transition-colors duration-300">
                   {environment.APP_NAME}
                 </span>
                 {/* <UkrainianFlag className="hidden sm:block" animated /> */}
@@ -265,7 +265,7 @@ export const Header: React.FC = () => {
                 </Link>
                 <Link
                   to="/auth/register"
-                  className="ukraine-gradient text-white px-3 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg shadow-primary whitespace-nowrap"
+                  className="bg-primary-500 text-white px-3 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg shadow-primary whitespace-nowrap"
                 >
                   {t('nav.getStarted')}
                 </Link>

@@ -45,7 +45,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuToggle }) => {
             }}
             onLoad={() => console.log('✅ Mobile logo loaded successfully')}
           />
-          <span className="text-lg font-bold ukraine-text-gradient">
+          <span className="text-lg font-bold text-primary-600 dark:text-primary-400">
             {environment.APP_NAME}
           </span>
         </Link>
