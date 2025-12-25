@@ -146,13 +146,13 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen w-full prevent-overflow">
       {/* Hero Section */}
-      <section className="relative ukraine-gradient text-white overflow-hidden min-h-[100vh] xs:min-h-[90vh] sm:min-h-[85vh] lg:min-h-[80vh] flex items-center w-full prevent-overflow">
+      <section className="relative bg-primary-500 text-white overflow-hidden min-h-[100vh] xs:min-h-[90vh] sm:min-h-[85vh] lg:min-h-[80vh] flex items-center w-full prevent-overflow">
         <div className="absolute inset-0 bg-black bg-opacity-10"></div>
         
         {/* Animated background elements - hide some on mobile */}
         <div className="hidden lg:block absolute top-20 right-20 w-32 h-32 rounded-full morph-shape opacity-20 float-animation"></div>
         <div className="hidden lg:block absolute bottom-20 left-20 w-48 h-48 rounded-full bg-white/10 animate-pulse"></div>
-        <div className="hidden lg:block absolute top-1/2 right-1/4 w-16 h-16 ukraine-gradient rounded-full animate-bounce"></div>
+        <div className="hidden lg:block absolute top-1/2 right-1/4 w-16 h-16 bg-primary-500 rounded-full animate-bounce"></div>
         
         <div className="relative w-full max-w-7xl mx-auto mobile-container py-12 xs:py-16 sm:py-20 lg:py-24 prevent-overflow">
           <div className="text-center w-full prevent-overflow">
@@ -225,7 +225,7 @@ const HomePage: React.FC = () => {
       <section className="py-8 xs:py-12 sm:py-20 w-full prevent-overflow" style={{ backgroundColor: 'rgb(var(--bg-secondary))' }}>
         <div className="w-full max-w-7xl mx-auto mobile-container prevent-overflow">
           <div className="text-center mb-8 xs:mb-12 sm:mb-16">
-            <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold ukraine-text-gradient mb-4 px-2 xs:px-0">
+            <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold text-primary-600 dark:text-primary-400 mb-4 px-2 xs:px-0">
               {t('categories.title')}
             </h2>
             <p className="text-base xs:text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-2 xs:px-0">
@@ -241,7 +241,7 @@ const HomePage: React.FC = () => {
                 className="group glass-effect p-4 xs:p-6 sm:p-8 rounded-xl hover:scale-105 transition-all duration-300 block h-full"
               >
                 <div className="text-5xl mb-6 animate-bounce">{category.icon}</div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 group-hover:ukraine-text-gradient transition-all duration-300">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 group-hover:text-primary-600 transition-all duration-300">
                   {category.name}
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
@@ -454,7 +454,7 @@ const HomePage: React.FC = () => {
             {user ? (
               <Link
                 to="/search"
-                className="ukraine-gradient text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl text-center"
+                className="bg-primary-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl text-center"
               >
                 {t('cta.browseServices')}
               </Link>
@@ -462,7 +462,7 @@ const HomePage: React.FC = () => {
               <>
                 <Link
                   to="/auth/register"
-                  className="ukraine-gradient text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl text-center"
+                  className="bg-primary-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl text-center"
                 >
                   {t('cta.signUpCustomer')}
                 </Link>
