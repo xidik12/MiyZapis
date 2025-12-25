@@ -163,7 +163,7 @@ export const Header: React.FC = () => {
                         element?.scrollIntoView({ behavior: 'smooth' });
                       }
                     }}
-                    className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 hover:scale-105 ${
+                    className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 hover:scale-105 ${
                       item.current
                         ? 'text-primary-600 glass-card shadow-lg'
                         : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 hover:glass-effect'
@@ -179,7 +179,7 @@ export const Header: React.FC = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 hover:scale-105 ${
+                  className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 hover:scale-105 ${
                     item.current
                       ? 'text-primary-600 glass-card shadow-lg'
                       : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 hover:glass-effect'
@@ -232,7 +232,7 @@ export const Header: React.FC = () => {
                 <div className="relative" ref={userMenuRef}>
                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center space-x-2 p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 mobile-touch-target"
+                    className="flex items-center space-x-2 p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-xl hover:bg-gray-50/80 dark:hover:bg-gray-700/80 transition-all duration-300 mobile-touch-target"
                   >
                     {user?.avatar ? (
                       <img
@@ -259,13 +259,13 @@ export const Header: React.FC = () => {
               <>
                 <Link
                   to="/auth/login"
-                  className="hidden sm:flex text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 px-3 py-2 rounded-lg transition-all duration-300 hover:glass-effect"
+                  className="hidden sm:flex text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-600 px-3 py-2 rounded-xl transition-all duration-300 hover:glass-effect"
                 >
                   {t('nav.signIn')}
                 </Link>
                 <Link
                   to="/auth/register"
-                  className="bg-primary-500 text-white px-3 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg shadow-primary whitespace-nowrap"
+                  className="bg-primary-600 text-white px-3 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all duration-300 hover:scale-105 whitespace-nowrap"
                 >
                   {t('nav.getStarted')}
                 </Link>
@@ -275,7 +275,7 @@ export const Header: React.FC = () => {
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="sm:hidden mobile-touch-target p-2 text-gray-400 hover:text-primary-500 transition-all duration-300 rounded-lg hover:glass-effect mobile-touch"
+              className="sm:hidden mobile-touch-target p-2 text-gray-400 hover:text-primary-500 transition-all duration-300 rounded-xl hover:glass-effect mobile-touch"
             >
               {isMobileMenuOpen ? (
                 <XMarkIcon className="w-7 h-7" />
@@ -320,10 +320,10 @@ export const Header: React.FC = () => {
                         element?.scrollIntoView({ behavior: 'smooth' });
                       }
                     }}
-                    className={`block px-4 py-3 text-base font-medium rounded-lg cursor-pointer mobile-touch-target transition-colors duration-200 ${
+                    className={`block px-4 py-3 text-base font-semibold rounded-xl cursor-pointer mobile-touch-target transition-colors duration-200 ${
                       item.current
-                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400'
-                        : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                        ? 'text-primary-600 bg-primary-50/80 dark:bg-primary-900/30 dark:text-primary-400 shadow-sm'
+                        : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
                     }`}
                   >
                     {item.name}
@@ -335,10 +335,10 @@ export const Header: React.FC = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`block px-4 py-3 text-base font-medium rounded-lg mobile-touch-target transition-colors duration-200 ${
+                  className={`block px-4 py-3 text-base font-semibold rounded-xl mobile-touch-target transition-colors duration-200 ${
                     item.current
-                      ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400'
-                      : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                      ? 'text-primary-600 bg-primary-50/80 dark:bg-primary-900/30 dark:text-primary-400 shadow-sm'
+                      : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
                   }`}
                 >
                   {item.name}
@@ -364,13 +364,13 @@ export const Header: React.FC = () => {
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
                 <Link
                   to="/auth/login"
-                  className="block w-full text-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 mobile-touch-target transition-colors duration-200"
+                  className="block w-full text-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 mobile-touch-target transition-colors duration-200"
                 >
                   {t('nav.signIn')}
                 </Link>
                 <Link
                   to="/auth/register"
-                  className="block w-full text-center px-4 py-3 bg-primary-600 text-white rounded-lg text-base font-medium hover:bg-primary-700 mobile-touch-target transition-colors duration-200"
+                  className="block w-full text-center px-4 py-3 bg-primary-600 text-white rounded-xl text-base font-semibold hover:bg-primary-700 shadow-lg shadow-primary-500/30 mobile-touch-target transition-colors duration-200"
                 >
                   {t('nav.getStarted')}
                 </Link>

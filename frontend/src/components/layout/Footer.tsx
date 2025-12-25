@@ -48,7 +48,7 @@ export const Footer: React.FC = () => {
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors"
+                    className="block text-gray-400 hover:text-white text-xs sm:text-sm transition-all duration-200 px-2 py-1 rounded-xl hover:bg-gray-800/50"
                   >
                     {link.name}
                   </Link>
@@ -67,7 +67,7 @@ export const Footer: React.FC = () => {
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors"
+                    className="block text-gray-400 hover:text-white text-xs sm:text-sm transition-all duration-200 px-2 py-1 rounded-xl hover:bg-gray-800/50"
                   >
                     {link.name}
                   </Link>
@@ -86,7 +86,7 @@ export const Footer: React.FC = () => {
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors"
+                    className="block text-gray-400 hover:text-white text-xs sm:text-sm transition-all duration-200 px-2 py-1 rounded-xl hover:bg-gray-800/50"
                   >
                     {link.name}
                   </Link>
@@ -105,7 +105,7 @@ export const Footer: React.FC = () => {
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors"
+                    className="block text-gray-400 hover:text-white text-xs sm:text-sm transition-all duration-200 px-2 py-1 rounded-xl hover:bg-gray-800/50"
                   >
                     {link.name}
                   </Link>
@@ -119,7 +119,7 @@ export const Footer: React.FC = () => {
         <div className="mt-6 xs:mt-8 sm:mt-12 pt-4 xs:pt-6 sm:pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <div className="w-6 h-6 xs:w-8 xs:h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+              <div className="w-6 h-6 xs:w-8 xs:h-8 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/30">
                 <span className="text-white font-bold text-xs xs:text-sm">М</span>
               </div>
               <span className="text-lg xs:text-xl font-bold">{environment.APP_NAME}</span>
@@ -129,7 +129,7 @@ export const Footer: React.FC = () => {
             <div className="flex space-x-3 xs:space-x-4 sm:space-x-6">
               <a
                 href="#"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-all duration-200 p-2 rounded-xl hover:bg-gray-800/50"
                 aria-label="Facebook"
               >
                 <svg className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -138,7 +138,7 @@ export const Footer: React.FC = () => {
               </a>
               <a
                 href="#"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-all duration-200 p-2 rounded-xl hover:bg-gray-800/50"
                 aria-label="Twitter"
               >
                 <svg className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -147,7 +147,7 @@ export const Footer: React.FC = () => {
               </a>
               <a
                 href="#"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-all duration-200 p-2 rounded-xl hover:bg-gray-800/50"
                 aria-label="Instagram"
               >
                 <svg className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -156,7 +156,7 @@ export const Footer: React.FC = () => {
               </a>
               <a
                 href="#"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-all duration-200 p-2 rounded-xl hover:bg-gray-800/50"
                 aria-label="LinkedIn"
               >
                 <svg className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 24 24">
