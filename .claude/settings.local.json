@@ -28,7 +28,10 @@
       "Bash(done)",
       "Bash(do sed -i '' 's|/fill/\\\\\\(.*\\\\\\)\\\\.svg|/fill/\\\\1-fill.svg|g' \"$file\")",
       "Bash(node create-missing-icons.js:*)",
-      "Bash(node fix-icon-imports.js:*)"
+      "Bash(node fix-icon-imports.js:*)",
+      "Bash(node fix-solid-icons.js:*)",
+      "Bash(tee:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": [],
