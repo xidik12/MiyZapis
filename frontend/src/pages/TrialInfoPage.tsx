@@ -75,7 +75,7 @@ const TrialInfoPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-primary-600 to-secondary-600 text-white py-12 sm:py-16">
+      <div className="bg-primary-600 text-white py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-white bg-opacity-20 rounded-full mb-4 sm:mb-6">
@@ -94,7 +94,7 @@ const TrialInfoPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Trial Status Card (if authenticated and in trial) */}
         {isAuthenticated && trialInfo && trialInfo.daysRemaining > 0 && (
-          <Card className="mb-8 sm:mb-12 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-700">
+          <Card className="mb-8 sm:mb-12 bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700">
             <div className="p-6 sm:p-8">
               <div className="flex items-center justify-between mb-6">
                 <div>
@@ -122,7 +122,7 @@ const TrialInfoPage: React.FC = () => {
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-primary-500 to-secondary-500 h-3 rounded-full transition-all duration-500"
+                    className="bg-primary-500 h-3 rounded-full transition-all duration-500"
                     style={{ width: `${trialInfo.progress}%` }}
                   />
                 </div>
@@ -251,7 +251,7 @@ const TrialInfoPage: React.FC = () => {
         </div>
 
         {/* After Trial */}
-        <Card className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-gray-200 dark:border-gray-600">
+        <Card className="bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-600">
           <div className="p-6 sm:p-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
               {t('trial.info.afterTrial.title')}
@@ -299,7 +299,7 @@ const TrialInfoPage: React.FC = () => {
         {/* CTA Section */}
         {!isAuthenticated && (
           <div className="mt-12 sm:mt-16 text-center">
-            <Card className="bg-gradient-to-r from-primary-500 to-secondary-500 text-white border-0">
+            <Card className="bg-primary-500 text-white border-0">
               <div className="p-8 sm:p-12">
                 <h2 className="text-2xl sm:text-3xl font-bold mb-4">
                   {t('trial.info.cta.title')}

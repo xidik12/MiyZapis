@@ -1298,9 +1298,9 @@ const BookingFlow: React.FC = () => {
 
               {/* Loyalty Benefits */}
               {loyaltyData && (
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-4 mb-6">
+                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-4 mb-6">
                   <div className="flex items-center space-x-3 mb-3">
-                    <div className="h-8 w-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <div className="h-8 w-8 bg-purple-500 rounded-lg flex items-center justify-center">
                       <GiftIcon className="h-4 w-4 text-white" />
                     </div>
                     <div>
@@ -1778,9 +1778,9 @@ const BookingFlow: React.FC = () => {
 
               {/* Loyalty Points Earned Notification */}
               {loyaltyData && pointsToEarn > 0 && isAutoBooked && (
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-4 mb-6">
+                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-4 mb-6">
                   <div className="flex items-center justify-center space-x-3 mb-2">
-                    <div className="h-10 w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <div className="h-10 w-10 bg-purple-500 rounded-full flex items-center justify-center">
                       <GiftIcon className="h-5 w-5 text-white" />
                     </div>
                     <div className="text-center">

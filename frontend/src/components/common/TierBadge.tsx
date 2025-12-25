@@ -24,25 +24,25 @@ const TIER_STYLES: Record<
   }
 > = {
   bronze: {
-    bg: 'bg-gradient-to-r from-amber-50 to-orange-100 dark:from-amber-900/20 dark:to-orange-900/20',
+    bg: 'bg-amber-50 dark:bg-amber-900/20',
     text: 'text-amber-800 dark:text-amber-300',
     border: 'border border-amber-200 dark:border-amber-800/40',
     iconColor: 'text-amber-600 dark:text-amber-400',
   },
   silver: {
-    bg: 'bg-gradient-to-r from-slate-100 to-gray-100 dark:from-slate-900/30 dark:to-gray-900/30',
+    bg: 'bg-slate-100 dark:bg-slate-900/30',
     text: 'text-slate-800 dark:text-slate-300',
     border: 'border border-slate-200 dark:border-slate-800/40',
     iconColor: 'text-slate-500 dark:text-slate-300',
   },
   gold: {
-    bg: 'bg-gradient-to-r from-yellow-50 to-amber-100 dark:from-yellow-900/20 dark:to-amber-900/20',
+    bg: 'bg-yellow-50 dark:bg-yellow-900/20',
     text: 'text-yellow-800 dark:text-yellow-300',
     border: 'border border-yellow-200 dark:border-yellow-800/40',
     iconColor: 'text-yellow-500 dark:text-yellow-300',
   },
   platinum: {
-    bg: 'bg-gradient-to-r from-indigo-50 to-purple-100 dark:from-indigo-900/20 dark:to-purple-900/20',
+    bg: 'bg-indigo-50 dark:bg-indigo-900/20',
     text: 'text-indigo-800 dark:text-indigo-300',
     border: 'border border-indigo-200 dark:border-indigo-800/40',
     iconColor: 'text-indigo-500 dark:text-indigo-300',

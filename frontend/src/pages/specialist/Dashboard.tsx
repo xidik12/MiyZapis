@@ -498,7 +498,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
         <div className="mt-4 lg:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
           <Link
             to="/specialist/services"
-            className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl hover:from-primary-700 hover:to-secondary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
+            className="inline-flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
           >
             <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             {t('dashboard.specialist.addService')}
@@ -529,7 +529,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           change={dashboardData.stats.totalBookings > 0 ? `+12% ${t('dashboard.specialist.thisMonthImprovement')}` : ''}
           changeType="positive"
           icon={CalendarIcon}
-          iconBg="bg-gradient-to-br from-primary-500 to-primary-600"
+          iconBg="bg-primary-500"
           description={t('dashboard.specialist.allTime')}
         />
         <StatCard
@@ -538,7 +538,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           change={dashboardData.stats.monthlyRevenue > 0 ? `+8% ${t('dashboard.specialist.improvement')}` : ''}
           changeType="positive"
           icon={CurrencyDollarIcon}
-          iconBg="bg-gradient-to-br from-success-500 to-success-600"
+          iconBg="bg-success-500"
           description={language === 'uk' ? 'Серпень 2025' : language === 'ru' ? 'Август 2025' : 'August 2025'}
         />
         <StatCard
@@ -547,7 +547,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           change={dashboardData.stats.reviewCount > 0 ? `+0.2 ${t('dashboard.specialist.thisMonthImprovement')}` : ''}
           changeType="positive"
           icon={StarIcon}
-          iconBg="bg-gradient-to-br from-warning-500 to-warning-600"
+          iconBg="bg-warning-500"
           description={`${dashboardData.stats.reviewCount} ${t('dashboard.nav.reviews').toLowerCase()}`}
         />
         <StatCard
@@ -556,7 +556,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           change={dashboardData.stats.responseTime > 0 ? `-3 ${t('time.minutes')} ${t('dashboard.specialist.improvement')}` : ''}
           changeType="positive"
           icon={ClockIcon}
-          iconBg="bg-gradient-to-br from-info-500 to-info-600"
+          iconBg="bg-info-500"
           description={t('dashboard.specialist.averageTime')}
         />
       </div>
@@ -601,7 +601,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl p-6 text-white shadow-lg">
+        <div className="bg-primary-500 rounded-2xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">{t('dashboard.quickActions')}</h3>
             <UserGroupIcon className="w-5 h-5 opacity-80" />
@@ -649,7 +649,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
             {dashboardData.recentBookings.slice(0, 4).map((booking) => (
               <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
                       {booking.customerName?.split(' ').map(n => n[0]).join('')}
                     </span>
@@ -695,7 +695,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
             {dashboardData.upcomingAppointments.map((appointment) => (
               <div key={appointment.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-success-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
                       {appointment.customerName.split(' ').map(n => n[0]).join('')}
                     </span>
