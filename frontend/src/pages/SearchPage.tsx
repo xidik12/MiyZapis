@@ -805,15 +805,7 @@ const SearchPage: React.FC = () => {
         {isFilterTrayOpen && (
           <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Filters">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setIsFilterTrayOpen(false)} />
-            <div className="absolute right-0 top-0 h-full w-full max-w-md animate-slide-in-right flex flex-col"
-                 style={{
-                   background: 'rgba(255, 255, 255, 0.95)',
-                   backdropFilter: 'blur(20px)',
-                   WebkitBackdropFilter: 'blur(20px)',
-                   borderLeft: '1px solid rgba(0, 0, 0, 0.1)',
-                   boxShadow: '-8px 0 32px 0 rgba(0, 0, 0, 0.2)',
-                 }}
-            >
+            <div className="absolute right-0 top-0 h-full w-full max-w-md bg-white/95 dark:bg-gray-900/95 backdrop-blur-[20px] border-l border-gray-200/50 dark:border-gray-700/50 shadow-2xl animate-slide-in-right flex flex-col">
               {/* Header */}
               <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200/30 dark:border-gray-700/30">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t('search.filters') || 'Filters'}</h3>
