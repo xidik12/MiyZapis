@@ -97,15 +97,15 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
       return (
         <button
           onClick={() => handleHashLink(item.href)}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 group ${
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 group ${
             item.current
-              ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+              ? 'bg-primary-50/80 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 shadow-sm'
               : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400'
           }`}
         >
           <Icon className="w-5 h-5 flex-shrink-0" active={item.current} />
           {showText && (
-            <span className="font-medium text-sm">{item.name}</span>
+            <span className="font-semibold text-sm">{item.name}</span>
           )}
         </button>
       );
@@ -114,15 +114,15 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
     return (
       <Link
         to={item.href}
-        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 group ${
+        className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 group ${
           item.current
-            ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+            ? 'bg-primary-50/80 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 shadow-sm'
             : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400'
         }`}
       >
         <Icon className="w-5 h-5 flex-shrink-0" active={item.current} />
         {showText && (
-          <span className="font-medium text-sm">{item.name}</span>
+          <span className="font-semibold text-sm">{item.name}</span>
         )}
       </Link>
     );
@@ -205,7 +205,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
         
         <button
           onClick={onToggleCollapse}
-          className="p-1.5 rounded-lg text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+          className="p-1.5 rounded-xl text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition-all duration-200"
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isCollapsed ? (
@@ -285,7 +285,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
         {isAuthenticated ? (
           <div className="space-y-2">
             {!isCollapsed && (
-              <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+              <div className="flex items-center space-x-3 p-3 rounded-xl bg-gray-50/80 dark:bg-gray-800/80 backdrop-blur-sm">
                 {user?.avatar ? (
                   <img
                     src={user.avatar}
@@ -296,7 +296,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
                   <UserCircleIcon className="w-8 h-8 text-gray-400" />
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                     {user?.firstName} {user?.lastName}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
@@ -307,33 +307,33 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
             )}
             <button
               onClick={handleLogout}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 ${
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-900/30 transition-all duration-200 ${
                 isCollapsed ? 'justify-center' : ''
               }`}
             >
               <ArrowRightOnRectangleIcon className="w-5 h-5 flex-shrink-0" />
-              {!isCollapsed && <span className="text-sm font-medium">{t('nav.signOut')}</span>}
+              {!isCollapsed && <span className="text-sm font-semibold">{t('nav.signOut')}</span>}
             </button>
           </div>
         ) : (
           <div className="space-y-2">
             <Link
               to="/auth/login"
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 ${
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition-all duration-200 ${
                 isCollapsed ? 'justify-center' : ''
               }`}
             >
               <ArrowRightOnRectangleIcon className="w-5 h-5 flex-shrink-0" />
-              {!isCollapsed && <span className="text-sm font-medium">{t('nav.signIn')}</span>}
+              {!isCollapsed && <span className="text-sm font-semibold">{t('nav.signIn')}</span>}
             </Link>
             <Link
               to="/auth/register"
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-all duration-200 ${
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all duration-200 ${
                 isCollapsed ? 'justify-center' : ''
               }`}
             >
               <UserPlusIcon className="w-5 h-5 flex-shrink-0" />
-              {!isCollapsed && <span className="text-sm font-medium">{t('nav.getStarted')}</span>}
+              {!isCollapsed && <span className="text-sm font-semibold">{t('nav.getStarted')}</span>}
             </Link>
           </div>
         )}

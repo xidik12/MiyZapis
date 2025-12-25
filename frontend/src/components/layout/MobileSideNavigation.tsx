@@ -255,7 +255,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
           
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 mobile-touch-target"
+            className="p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition-colors duration-200 mobile-touch-target"
             aria-label="Close menu"
           >
             <XMarkIcon className="w-6 h-6 text-gray-500" />
@@ -284,13 +284,13 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
                             w-full flex items-center gap-3 px-3 py-3 rounded-xl
                             mobile-touch-target transition-all duration-300 group
                             ${isActive
-                              ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400'
-                              : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                              ? 'text-primary-600 bg-primary-50/80 dark:bg-primary-900/30 dark:text-primary-400 shadow-sm'
+                              : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
                             }
                           `}
                         >
                           <item.icon className="w-5 h-5 flex-shrink-0" />
-                          <span className="font-medium text-base">{item.name}</span>
+                          <span className="font-semibold text-base">{item.name}</span>
                         </button>
                       );
                     }
@@ -303,13 +303,13 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
                           flex items-center gap-3 px-3 py-3 rounded-xl
                           mobile-touch-target transition-all duration-300 group
                           ${isActive
-                            ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400'
-                            : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                            ? 'text-primary-600 bg-primary-50/80 dark:bg-primary-900/30 dark:text-primary-400 shadow-sm'
+                            : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
                           }
                         `}
                       >
                         <item.icon className="w-5 h-5 flex-shrink-0" />
-                        <span className="font-medium text-base">{item.name}</span>
+                        <span className="font-semibold text-base">{item.name}</span>
                       </Link>
                     );
                   })}
@@ -335,13 +335,13 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
                           flex items-center gap-3 px-3 py-3 rounded-xl
                           mobile-touch-target transition-all duration-300 group
                           ${isActive
-                            ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400'
-                            : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                            ? 'text-primary-600 bg-primary-50/80 dark:bg-primary-900/30 dark:text-primary-400 shadow-sm'
+                            : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50/80 dark:hover:bg-gray-800/80'
                           }
                         `}
                       >
                         <item.icon className="w-5 h-5 flex-shrink-0" />
-                        <span className="font-medium text-base">{item.name}</span>
+                        <span className="font-semibold text-base">{item.name}</span>
                       </Link>
                     );
                   })}
@@ -355,7 +355,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
                 <div className="relative">
                   <button
                     onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800 mobile-touch-target transition-all duration-300"
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 mobile-touch-target transition-all duration-300"
                   >
                     <div className="relative">
                       <BellIcon
@@ -368,7 +368,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
                         </span>
                       )}
                     </div>
-                    <span className="font-medium text-base">{t('nav.notifications')}</span>
+                    <span className="font-semibold text-base">{t('nav.notifications')}</span>
                   </button>
                   <NotificationDropdown 
                     isOpen={isNotificationOpen}
@@ -423,7 +423,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
                   <UserCircleIcon className="w-12 h-12 text-gray-400 flex-shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-base font-medium text-gray-900 dark:text-white truncate">
+                  <p className="text-base font-semibold text-gray-900 dark:text-white truncate">
                     {user?.firstName} {user?.lastName}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
@@ -435,28 +435,28 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
               {/* Logout */}
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 mobile-touch-target transition-all duration-300"
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-900/30 mobile-touch-target transition-all duration-300"
               >
                 <ArrowRightOnRectangleIcon className="w-5 h-5 flex-shrink-0" />
-                <span className="font-medium text-base">{t('nav.signOut')}</span>
+                <span className="font-semibold text-base">{t('nav.signOut')}</span>
               </button>
             </div>
           ) : (
             <div className="space-y-3">
               <Link
                 to="/auth/login"
-                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 mobile-touch-target transition-all duration-300"
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 mobile-touch-target transition-all duration-300"
               >
                 <ArrowRightOnRectangleIcon className="w-5 h-5 flex-shrink-0" />
-                <span className="font-medium text-base">{t('nav.signIn')}</span>
+                <span className="font-semibold text-base">{t('nav.signIn')}</span>
               </Link>
-              
+
               <Link
                 to="/auth/register"
-                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-primary-500 text-white mobile-touch-target transition-all duration-300 hover:scale-105 hover:shadow-lg shadow-primary"
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-primary-600 text-white hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 mobile-touch-target transition-all duration-300"
               >
                 <UserPlusIcon className="w-5 h-5 flex-shrink-0" />
-                <span className="font-medium text-base">{t('nav.getStarted')}</span>
+                <span className="font-semibold text-base">{t('nav.getStarted')}</span>
               </Link>
             </div>
           )}
