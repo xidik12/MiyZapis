@@ -6,7 +6,7 @@ import { SearchBar } from '@/components/common/SearchBar';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { MagnifyingGlassIcon, StarIcon, ClockIcon, ShieldCheckIcon, UserGroupIcon, CalendarIcon, CreditCardIcon, ChatBubbleLeftRightIcon, SealCheckIcon as CheckBadgeIcon, ArrowRightIcon } from '@/components/icons';
+import { MagnifyingGlassIcon, StarIcon, ClockIcon, ShieldCheckIcon, UserGroupIcon, CalendarIcon, CreditCardIcon, ChatBubbleLeftRightIcon, SealCheckIcon as CheckBadgeIcon, ArrowRightIcon, SparklesIcon, HeartIcon, HouseIcon as HomeIcon, BriefcaseIcon, BookOpenIcon, ComputerDesktopIcon } from '@/components/icons';
 
 // Service categories and featured specialists - data from API
 const getServiceCategories = (t: (key: string) => string) => [
@@ -14,7 +14,7 @@ const getServiceCategories = (t: (key: string) => string) => [
     id: '1',
     name: t('category.beautyWellness'),
     description: t('category.beautyWellness.desc'),
-    icon: '💄',
+    icon: SparklesIcon,
     serviceCount: 156,
     href: '/search?category=beauty-wellness',
   },
@@ -22,7 +22,7 @@ const getServiceCategories = (t: (key: string) => string) => [
     id: '2',
     name: t('category.healthFitness'),
     description: t('category.healthFitness.desc'),
-    icon: '💪',
+    icon: HeartIcon,
     serviceCount: 89,
     href: '/search?category=health-fitness',
   },
@@ -30,7 +30,7 @@ const getServiceCategories = (t: (key: string) => string) => [
     id: '3',
     name: t('category.homeServices'),
     description: t('category.homeServices.desc'),
-    icon: '🏠',
+    icon: HomeIcon,
     serviceCount: 124,
     href: '/search?category=home-services',
   },
@@ -38,7 +38,7 @@ const getServiceCategories = (t: (key: string) => string) => [
     id: '4',
     name: t('category.professional'),
     description: t('category.professional.desc'),
-    icon: '💼',
+    icon: BriefcaseIcon,
     serviceCount: 78,
     href: '/search?category=professional-services',
   },
@@ -46,7 +46,7 @@ const getServiceCategories = (t: (key: string) => string) => [
     id: '5',
     name: t('category.education'),
     description: t('category.education.desc'),
-    icon: '📚',
+    icon: BookOpenIcon,
     serviceCount: 92,
     href: '/search?category=education',
   },
@@ -54,7 +54,7 @@ const getServiceCategories = (t: (key: string) => string) => [
     id: '6',
     name: t('category.technology'),
     description: t('category.technology.desc'),
-    icon: '💻',
+    icon: ComputerDesktopIcon,
     serviceCount: 67,
     href: '/search?category=technology',
   },
@@ -234,27 +234,46 @@ const HomePage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-6 md:gap-8">
-            {serviceCategories.map((category, index) => (
-              <Link
-                key={category.id}
-                to={category.href}
-                className="group glass-effect p-4 xs:p-6 sm:p-8 rounded-xl hover:scale-105 transition-all duration-300 block h-full"
-              >
-                <div className="text-5xl mb-6 animate-bounce">{category.icon}</div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 group-hover:text-primary-600 transition-all duration-300">
-                  {category.name}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
-                  {category.description}
-                </p>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-primary-600 font-semibold px-3 py-1 bg-primary-50 dark:bg-primary-900/30 rounded-full">
-                    {category.serviceCount} {t('services.count')}
-                  </span>
-                  <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-all duration-300 group-hover:translate-x-1" />
-                </div>
-              </Link>
-            ))}
+            {serviceCategories.map((category, index) => {
+              const CategoryIcon = category.icon;
+              return (
+                <Link
+                  key={category.id}
+                  to={category.href}
+                  className="group relative overflow-hidden rounded-2xl hover:scale-105 transition-all duration-300 block h-full"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
+                  }}
+                >
+                  {/* Glass morphism background overlay */}
+                  <div className="absolute inset-0 bg-white/5 dark:bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                  <div className="relative p-4 xs:p-6 sm:p-8">
+                    {/* Icon with glass circle background */}
+                    <div className="flex items-center justify-center w-16 h-16 mb-6 rounded-2xl bg-white/10 dark:bg-white/5 backdrop-blur-sm border border-white/20 dark:border-white/10 group-hover:scale-110 transition-transform duration-300">
+                      <CategoryIcon className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+                    </div>
+
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 group-hover:text-primary-600 transition-all duration-300">
+                      {category.name}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                      {category.description}
+                    </p>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-primary-600 font-semibold px-3 py-1 bg-primary-50 dark:bg-primary-900/30 rounded-full">
+                        {category.serviceCount} {t('services.count')}
+                      </span>
+                      <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-all duration-300 group-hover:translate-x-1" />
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
