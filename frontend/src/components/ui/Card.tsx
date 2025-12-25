@@ -10,8 +10,8 @@ interface CardProps {
 export const Card: React.FC<CardProps> = ({ className, hover = true, children }) => (
   <div
     className={clsx(
-      'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm',
-      hover && 'transition-shadow transition-transform hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[.99]',
+      'bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-glass',
+      hover && 'transition-all duration-200 hover:shadow-xl hover:scale-105 active:scale-100',
       className
     )}
   >

@@ -81,8 +81,8 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
             value={isKnownCategory ? value : ''}
             onChange={(e) => handleSelectCategory(e.target.value)}
             className={`w-full px-4 py-3 rounded-xl border ${
-              error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-            } focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white appearance-none ${className}`}
+              error ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'
+            } bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 hover:bg-white dark:hover:bg-gray-800 dark:text-white appearance-none font-medium ${className}`}
           >
             <option value="">
               {value && !isKnownCategory ? `✨ ${value} (Custom)` : placeholderLabel}
@@ -141,14 +141,14 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
               onChange={(e) => setCustomValue(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={t('serviceForm.enterCustomCategory') || 'Enter custom category name'}
-              className="flex-1 px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+              className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 hover:bg-white dark:hover:bg-gray-800 dark:text-white font-medium"
               autoFocus
             />
             <button
               type="button"
               onClick={handleCustomSubmit}
               disabled={!customValue.trim()}
-              className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 font-semibold transition-all duration-200 hover:scale-105"
             >
               {t('common.add') || 'Add'}
             </button>
@@ -159,7 +159,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
               setShowCustomInput(false);
               setCustomValue('');
             }}
-            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 px-2 py-1 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition-all duration-200 font-medium"
           >
             ← {t('common.back') || 'Back to categories'}
           </button>
@@ -173,13 +173,13 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
       
       {/* Category suggestions when typing */}
       {searchTerm && filteredCategories.length > 0 && !showCustomInput && (
-        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+        <div className="absolute z-10 w-full mt-1 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-gray-200/20 dark:border-gray-700/20 rounded-xl shadow-glass max-h-48 overflow-y-auto">
           {filteredCategories.slice(0, 10).map((category) => (
             <button
               key={category.id}
               type="button"
               onClick={() => onChange(category.id)}
-              className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full text-left px-4 py-2 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 text-gray-900 dark:text-white font-medium transition-all duration-200 rounded-xl"
             >
               {getCategoryName(category.id, language as 'en' | 'uk' | 'ru')}
             </button>

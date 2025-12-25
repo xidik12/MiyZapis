@@ -88,7 +88,7 @@ export const MobileModal: React.FC<MobileModalProps> = ({
     >
       {/* Overlay */}
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-black/50 backdrop-blur-md transition-opacity"
         onClick={!preventClose ? onClose : undefined}
       />
 
@@ -100,7 +100,8 @@ export const MobileModal: React.FC<MobileModalProps> = ({
         {/* Modal content */}
         <div
           className={clsx(
-            'relative w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl',
+            'relative w-full bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-2xl',
+            'border border-gray-200/20 dark:border-gray-700/20',
             'transform transition-all duration-300 ease-out',
             'max-h-[90vh] overflow-hidden flex flex-col',
             sizeClasses[size],
@@ -130,11 +131,11 @@ export const MobileModal: React.FC<MobileModalProps> = ({
                   onClick={onClose}
                   disabled={preventClose}
                   className={clsx(
-                    'mobile-touch-target absolute top-4 right-4 p-2 rounded-lg',
+                    'mobile-touch-target absolute top-4 right-4 p-2 rounded-xl',
                     'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300',
-                    'hover:bg-gray-100 dark:hover:bg-gray-700',
+                    'hover:bg-gray-100/80 dark:hover:bg-gray-700/80',
                     'focus:outline-none focus:ring-2 focus:ring-primary-500',
-                    'transition-colors duration-200',
+                    'transition-all duration-200',
                     preventClose && 'opacity-50 cursor-not-allowed'
                   )}
                   aria-label="Close modal"
