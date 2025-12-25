@@ -8,31 +8,31 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Light Sky Blue primary colors
+        // Sky Blue primary colors
         primary: {
-          50: '#f0f9ff',
-          100: '#e0f4ff',
-          200: '#bae8ff',
-          300: '#87dcff',
-          400: '#4dc9ff',
-          500: '#87CEEB',  // Light Sky Blue
-          600: '#5eb8db',
-          700: '#3a9bc4',
-          800: '#2a7fa0',
-          900: '#1e6484',
+          50: '#eff8ff',
+          100: '#dbeffe',
+          200: '#bee3fd',
+          300: '#91d1fc',
+          400: '#5db7f8',
+          500: '#3b97f2',  // Sky Blue
+          600: '#2678e7',
+          700: '#1d61d4',
+          800: '#1e4eab',
+          900: '#1e4387',
         },
         // Bright Yellow secondary colors
         secondary: {
           50: '#fffef0',
           100: '#fffce0',
-          200: '#fff9c2',
-          300: '#fff59e',
-          400: '#ffed6b',
-          500: '#FFD700',  // Bright Yellow (Gold)
-          600: '#f0c800',
-          700: '#d4ad00',
-          800: '#b08f00',
-          900: '#8f7400',
+          200: '#fff4b3',
+          300: '#ffe680',
+          400: '#ffd44d',
+          500: '#ffc41f',  // Bright Yellow
+          600: '#f0aa00',
+          700: '#d48c00',
+          800: '#b37000',
+          900: '#8f5a00',
         },
         success: {
           50: '#f0fdf4',
@@ -117,13 +117,13 @@ module.exports = {
         'lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
         'xl': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
         '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
-        'primary': '0 4px 14px 0 rgb(135 206 235 / 0.15)',
-        'secondary': '0 4px 14px 0 rgb(255 215 0 / 0.15)',
+        'primary': '0 4px 14px 0 rgb(59 151 242 / 0.3)',
+        'secondary': '0 4px 14px 0 rgb(255 196 31 / 0.3)',
         'success': '0 4px 14px 0 rgb(34 197 94 / 0.15)',
         'error': '0 4px 14px 0 rgb(239 68 68 / 0.15)',
-        'glass': '0 8px 32px 0 rgb(31 38 135 / 0.37)',
-        'glow': '0 0 20px rgb(135 206 235 / 0.3)',
-        'glow-secondary': '0 0 20px rgb(255 215 0 / 0.3)',
+        'glass': '0 8px 32px 0 rgb(31 38 135 / 0.15)',
+        'glow': '0 0 20px rgb(59 151 242 / 0.3)',
+        'glow-secondary': '0 0 20px rgb(255 196 31 / 0.3)',
         'neumorphism': '20px 20px 60px #d1d1e0, -20px -20px 60px #ffffff',
         'neumorphism-inset': 'inset 20px 20px 60px #d1d1e0, inset -20px -20px 60px #ffffff',
       },
