@@ -171,7 +171,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                   className="w-10 h-10 rounded-xl object-cover"
                 />
               ) : (
-                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center">
                   <span className="text-white font-bold text-lg">
                     {user?.firstName?.charAt(0) || 'C'}
                   </span>
@@ -200,10 +200,10 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
           </div>
 
           {/* Quick Book Section */}
-          <div className="p-4 bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 border-b border-gray-200 dark:border-gray-700">
+          <div className="p-4 bg-primary-50 dark:bg-primary-900/20 border-b border-gray-200 dark:border-gray-700">
             <Link
               to="/search"
-              className="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              className="w-full flex items-center justify-center px-4 py-3 bg-primary-500 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
               onClick={() => {
                 if (onToggle && window.innerWidth < 1024) {
                   onToggle();
@@ -228,7 +228,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                   className={`
                     group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
                     ${isActive
-                      ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg transform scale-105'
+                      ? 'bg-primary-500 text-white shadow-lg transform scale-105'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                     }
                     ${item.comingSoon ? 'opacity-50 cursor-not-allowed' : ''}
@@ -287,7 +287,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                   className={`
                     group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
                     ${isActive
-                      ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg'
+                      ? 'bg-primary-500 text-white shadow-lg'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                     }
                   `}
