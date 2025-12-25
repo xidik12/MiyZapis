@@ -804,29 +804,46 @@ const SearchPage: React.FC = () => {
         {/* Mobile Filter Tray */}
         {isFilterTrayOpen && (
           <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Filters">
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsFilterTrayOpen(false)} />
-            <div className="absolute right-0 top-0 h-full w-full max-w-sm bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-2xl animate-slide-in-right p-4 flex flex-col">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('search.filters') || 'Filters'}</h3>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setIsFilterTrayOpen(false)} />
+            <div className="absolute right-0 top-0 h-full w-full max-w-md animate-slide-in-right flex flex-col"
+                 style={{
+                   background: 'rgba(255, 255, 255, 0.95)',
+                   backdropFilter: 'blur(20px)',
+                   WebkitBackdropFilter: 'blur(20px)',
+                   borderLeft: '1px solid rgba(0, 0, 0, 0.1)',
+                   boxShadow: '-8px 0 32px 0 rgba(0, 0, 0, 0.2)',
+                 }}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200/30 dark:border-gray-700/30">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t('search.filters') || 'Filters'}</h3>
                 <div className="flex items-center gap-3">
                   {(selectedCategory || selectedLocation || selectedRating > 0 || selectedDistance > 0 || showFavoritesOnly || priceRange.min > 0 || priceRange.max < 1000) && (
                     <button
                       onClick={clearFilters}
-                      className="text-sm text-red-600 hover:text-red-700"
+                      className="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                     >
                       {t('search.resetFilters') || 'Reset filters'}
                     </button>
                   )}
-                  <button onClick={() => setIsFilterTrayOpen(false)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 focus-visible-ring" aria-label="Close filters">✕</button>
+                  <button
+                    onClick={() => setIsFilterTrayOpen(false)}
+                    className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800/50 rounded-lg transition-colors focus-visible-ring"
+                    aria-label="Close filters"
+                  >
+                    ✕
+                  </button>
                 </div>
               </div>
-              <div className="space-y-4 overflow-y-auto">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.category') || 'Category'}</label>
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+                {/* Category Filter */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.category') || 'Category'}</label>
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+                    className="w-full px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm font-medium backdrop-blur-sm transition-all hover:bg-white dark:hover:bg-gray-800"
                   >
                     {categories.map((category) => (
                       <option key={category.id} value={category.id === 'all' ? '' : category.id}>
@@ -835,102 +852,124 @@ const SearchPage: React.FC = () => {
                     ))}
                   </select>
                 </div>
-                {/* Saved filters */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('search.savedFilters') || 'Saved filters'}</label>
+                {/* Saved Filters */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.savedFilters') || 'Saved filters'}</label>
                     {!showSaveInput ? (
-                      <button onClick={() => setShowSaveInput(true)} className="text-sm text-primary-600 hover:text-primary-700">{t('actions.save') || 'Save'}</button>
+                      <button
+                        onClick={() => setShowSaveInput(true)}
+                        className="px-3 py-1.5 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                      >
+                        {t('actions.save') || 'Save'}
+                      </button>
                     ) : (
                       <div className="flex items-center gap-2">
                         <input
                           value={presetName}
                           onChange={(e) => setPresetName(e.target.value)}
                           placeholder={t('search.savedFilters') || 'Saved filters'}
-                          className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+                          className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 text-sm backdrop-blur-sm"
                         />
-                        <button onClick={savePreset} className="text-sm text-primary-600 hover:text-primary-700">{t('actions.save') || 'Save'}</button>
-                        <button onClick={() => { setShowSaveInput(false); setPresetName(''); }} className="text-sm text-gray-500 hover:text-gray-700">{t('actions.close') || 'Close'}</button>
+                        <button
+                          onClick={savePreset}
+                          className="px-3 py-1.5 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                        >
+                          {t('actions.save') || 'Save'}
+                        </button>
+                        <button
+                          onClick={() => { setShowSaveInput(false); setPresetName(''); }}
+                          className="px-3 py-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50 rounded-lg transition-colors"
+                        >
+                          {t('actions.close') || 'Close'}
+                        </button>
                       </div>
                     )}
                   </div>
                   {presets.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {presets.map((p) => (
-                        <span key={p.name} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-sm">
-                          <button className="text-primary-600 hover:text-primary-700" onClick={() => applyPreset(p)}>{p.name}</button>
-                          <button className="text-gray-400 hover:text-red-600" aria-label={t('actions.delete') || 'Delete'} onClick={() => deletePreset(p.name)}>×</button>
+                        <span
+                          key={p.name}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 backdrop-blur-sm text-sm font-medium hover:bg-white dark:hover:bg-gray-800 transition-all"
+                        >
+                          <button className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300" onClick={() => applyPreset(p)}>{p.name}</button>
+                          <button className="text-gray-400 hover:text-red-600 dark:hover:text-red-400 font-bold" aria-label={t('actions.delete') || 'Delete'} onClick={() => deletePreset(p.name)}>×</button>
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('search.noSavedFilters') || 'No saved filters yet.'}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('search.noSavedFilters') || 'No saved filters yet.'}</p>
                   )}
                 </div>
                 {/* Price Range */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.priceRange') || 'Price Range'}</label>
-                  <div className="flex flex-wrap gap-2 mb-2">
+                <div className="space-y-3">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.priceRange') || 'Price Range'}</label>
+                  <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => setPriceRange({ min: 0, max: 25 })}
-                      className="px-3 py-1.5 rounded-full text-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      className="px-4 py-2 rounded-xl text-sm font-medium border bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 backdrop-blur-sm transition-all"
                     >
                       {t('search.price.under25') || 'Under ₴25'}
                     </button>
-                    <button onClick={() => setPriceRange({ min: 25, max: 50 })} className="px-3 py-1.5 rounded-full text-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">₴25-₴50</button>
-                    <button onClick={() => setPriceRange({ min: 50, max: 100 })} className="px-3 py-1.5 rounded-full text-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">₴50-₴100</button>
-                    <button onClick={() => setPriceRange({ min: 100, max: 200 })} className="px-3 py-1.5 rounded-full text-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">₴100-₴200</button>
-                    <button onClick={() => setPriceRange({ min: 200, max: 1000 })} className="px-3 py-1.5 rounded-full text-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">{t('search.price.over200') || 'Over ₴200'}</button>
+                    <button onClick={() => setPriceRange({ min: 25, max: 50 })} className="px-4 py-2 rounded-xl text-sm font-medium border bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 backdrop-blur-sm transition-all">₴25-₴50</button>
+                    <button onClick={() => setPriceRange({ min: 50, max: 100 })} className="px-4 py-2 rounded-xl text-sm font-medium border bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 backdrop-blur-sm transition-all">₴50-₴100</button>
+                    <button onClick={() => setPriceRange({ min: 100, max: 200 })} className="px-4 py-2 rounded-xl text-sm font-medium border bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 backdrop-blur-sm transition-all">₴100-₴200</button>
+                    <button onClick={() => setPriceRange({ min: 200, max: 1000 })} className="px-4 py-2 rounded-xl text-sm font-medium border bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 backdrop-blur-sm transition-all">{t('search.price.over200') || 'Over ₴200'}</button>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t('search.minPrice') || 'Min'}</label>
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">{t('search.minPrice') || 'Min'}</label>
                       <input
                         type="number"
                         min={0}
                         value={priceRange.min}
                         onChange={(e) => setPriceRange({ ...priceRange, min: Math.max(0, Number(e.target.value) || 0) })}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+                        className="w-full px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm font-medium backdrop-blur-sm transition-all hover:bg-white dark:hover:bg-gray-800"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t('search.maxPrice') || 'Max'}</label>
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">{t('search.maxPrice') || 'Max'}</label>
                       <input
                         type="number"
                         min={0}
                         value={priceRange.max}
                         onChange={(e) => setPriceRange({ ...priceRange, max: Math.max(0, Number(e.target.value) || 0) })}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+                        className="w-full px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm font-medium backdrop-blur-sm transition-all hover:bg-white dark:hover:bg-gray-800"
                       />
                     </div>
                   </div>
                 </div>
-                {/* Availability toggle */}
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('search.availableNow') || 'Only available now'}</span>
+                {/* Availability Toggle */}
+                <div className="flex items-center justify-between p-4 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 backdrop-blur-sm">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white">{t('search.availableNow') || 'Only available now'}</span>
                   <button
                     onClick={() => setAvailableNow(!availableNow)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${availableNow ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'}`}
+                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-200 ${availableNow ? 'bg-primary-600 shadow-lg shadow-primary-500/30' : 'bg-gray-300 dark:bg-gray-700'}`}
                   >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${availableNow ? 'translate-x-6' : 'translate-x-1'}`} />
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${availableNow ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.location') || 'Location'}</label>
+
+                {/* Location Input */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.location') || 'Location'}</label>
                   <input
                     type="text"
                     value={selectedLocation}
                     onChange={(e) => setSelectedLocation(e.target.value)}
                     placeholder={t('search.locationPlaceholder') || 'City or area'}
-                    className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+                    className="w-full px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm font-medium backdrop-blur-sm transition-all hover:bg-white dark:hover:bg-gray-800"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.sortBy.title') || 'Sort by'}</label>
+
+                {/* Sort By Dropdown */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.sortBy.title') || 'Sort by'}</label>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+                    className="w-full px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm font-medium backdrop-blur-sm transition-all hover:bg-white dark:hover:bg-gray-800"
                   >
                     <option value="rating">{t('search.sortBy.rating')}</option>
                     <option value="price">{t('search.sortBy.price')}</option>
@@ -938,9 +977,11 @@ const SearchPage: React.FC = () => {
                     <option value="reviews">{t('search.sortBy.reviews')}</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.minimumRating') || 'Minimum rating'}</label>
-                  <div className="flex items-center gap-3">
+
+                {/* Minimum Rating Slider */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.minimumRating') || 'Minimum rating'}</label>
+                  <div className="flex items-center gap-4">
                     <input
                       type="range"
                       min={0}
@@ -948,14 +989,16 @@ const SearchPage: React.FC = () => {
                       step={1}
                       value={selectedRating}
                       onChange={(e) => setSelectedRating(Number(e.target.value))}
-                      className="flex-1"
+                      className="flex-1 h-2 rounded-lg appearance-none bg-gray-200 dark:bg-gray-700 outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:hover:scale-110"
                     />
-                    <span className="text-sm text-gray-700 dark:text-gray-300 w-8 text-right">{selectedRating}★</span>
+                    <span className="text-sm font-bold text-primary-600 dark:text-primary-400 min-w-[3rem] text-right">{selectedRating > 0 ? `${selectedRating}★` : 'Any'}</span>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.distance') || 'Distance (km)'}</label>
-                  <div className="flex items-center gap-3">
+
+                {/* Distance Slider */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.distance') || 'Distance (km)'}</label>
+                  <div className="flex items-center gap-4">
                     <input
                       type="range"
                       min={0}
@@ -963,26 +1006,35 @@ const SearchPage: React.FC = () => {
                       step={5}
                       value={selectedDistance}
                       onChange={(e) => setSelectedDistance(Number(e.target.value))}
-                      className="flex-1"
+                      className="flex-1 h-2 rounded-lg appearance-none bg-gray-200 dark:bg-gray-700 outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:hover:scale-110"
                     />
-                    <span className="text-sm text-gray-700 dark:text-gray-300 w-16 text-right">{selectedDistance > 0 ? `≤ ${selectedDistance} km` : t('common.any') || 'Any'}</span>
+                    <span className="text-sm font-bold text-primary-600 dark:text-primary-400 min-w-[4.5rem] text-right">{selectedDistance > 0 ? `≤ ${selectedDistance} km` : t('common.any') || 'Any'}</span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('search.favoritesOnly') || 'Favorites only'}</span>
+
+                {/* Favorites Only Toggle */}
+                <div className="flex items-center justify-between p-4 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 backdrop-blur-sm">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white">{t('search.favoritesOnly') || 'Favorites only'}</span>
                   <button
                     onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showFavoritesOnly ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'}`}
+                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-200 ${showFavoritesOnly ? 'bg-primary-600 shadow-lg shadow-primary-500/30' : 'bg-gray-300 dark:bg-gray-700'}`}
                   >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showFavoritesOnly ? 'translate-x-6' : 'translate-x-1'}`} />
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${showFavoritesOnly ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
                 </div>
               </div>
-              <div className="sticky bottom-0 -mx-4 px-4 pt-3 pb-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex gap-2">
-                <button className="btn btn-secondary flex-1 h-10" onClick={() => setIsFilterTrayOpen(false)}>
+              {/* Bottom Action Buttons */}
+              <div className="p-6 pt-4 border-t border-gray-200/30 dark:border-gray-700/30 flex gap-3">
+                <button
+                  onClick={() => setIsFilterTrayOpen(false)}
+                  className="flex-1 px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 backdrop-blur-sm transition-all"
+                >
                   {t('actions.close') || 'Close'}
                 </button>
-                <button className="btn btn-primary flex-1 h-10" onClick={handleApplyFilters}>
+                <button
+                  onClick={handleApplyFilters}
+                  className="flex-1 px-6 py-3 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-xl shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all"
+                >
                   {t('actions.apply') || 'Apply'}
                 </button>
               </div>

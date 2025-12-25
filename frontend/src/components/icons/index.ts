@@ -101,6 +101,7 @@ export { PencilSquareIcon } from './PencilSquareIcon';
 export { PhoneIcon } from './PhoneIcon';
 export { PlayIcon } from './PlayIcon';
 export { PresentationChartLineIcon } from './PresentationChartLineIcon';
+export { RobotIcon } from './RobotIcon';
 export { RocketLaunchIcon } from './RocketLaunchIcon';
 export { ShareIcon } from './ShareIcon';
 export { SparklesIcon } from './SparklesIcon';
