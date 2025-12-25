@@ -358,11 +358,10 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
                     className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800 mobile-touch-target transition-all duration-300"
                   >
                     <div className="relative">
-                      {unreadNotifications > 0 ? (
-                        <BellIconSolid className="w-5 h-5 text-primary-600" />
-                      ) : (
-                        <BellIcon className="w-5 h-5" />
-                      )}
+                      <BellIcon
+                        className={`w-5 h-5 ${unreadNotifications > 0 ? 'text-primary-600' : ''}`}
+                        active={unreadNotifications > 0}
+                      />
                       {unreadNotifications > 0 && (
                         <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                           {unreadNotifications > 9 ? '9+' : unreadNotifications}

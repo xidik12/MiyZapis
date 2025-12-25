@@ -298,7 +298,7 @@ const CustomerFavorites: React.FC = () => {
           <>
             {filteredSpecialists.length === 0 && !isLoading ? (
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
-                <HeartIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <HeartIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" active />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                   {searchQuery ? 
                     `No specialists found for "${searchQuery}"` : 
@@ -384,7 +384,7 @@ const CustomerFavorites: React.FC = () => {
                               className="text-red-500 hover:text-red-700"
                               title={t('customer.favorites.removeFromFavorites')}
                             >
-                              <HeartIconSolid className="h-5 w-5" />
+                              <HeartIcon className="h-5 w-5" active />
                             </button>
                           </div>
 
@@ -392,7 +392,7 @@ const CustomerFavorites: React.FC = () => {
                           {specialist.rating && (
                             <div className="flex items-center space-x-2 mb-3">
                               <div className="flex items-center space-x-1">
-                                <StarIconSolid className="h-4 w-4 text-yellow-400" />
+                                <StarIcon className="h-4 w-4 text-yellow-400" active />
                                 <span className="text-sm font-medium text-gray-900 dark:text-white">
                                   {specialist.rating.toFixed(1)}
                                 </span>
@@ -457,7 +457,7 @@ const CustomerFavorites: React.FC = () => {
           <>
             {filteredServices.length === 0 && !isLoading ? (
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
-                <HeartIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <HeartIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" active />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                   {searchQuery ? 
                     `No services found for "${searchQuery}"` : 
@@ -511,7 +511,7 @@ const CustomerFavorites: React.FC = () => {
                             className="absolute top-2 right-2 p-2 bg-white dark:bg-gray-700 rounded-full shadow-md text-red-500 hover:text-red-700"
                             title={t('customer.favorites.removeFromFavorites')}
                           >
-                            <HeartIconSolid className="h-4 w-4" />
+                            <HeartIcon className="h-4 w-4" active />
                           </button>
                         </div>
 

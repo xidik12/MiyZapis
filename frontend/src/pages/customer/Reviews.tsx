@@ -87,13 +87,14 @@ const CustomerReviews: React.FC = () => {
     return (
       <div className="flex">
         {[1, 2, 3, 4, 5].map((star) => (
-          <StarIconSolid
+          <StarIcon
             key={star}
             className={`h-4 w-4 ${
-              star <= rating 
-                ? 'text-yellow-400' 
+              star <= rating
+                ? 'text-yellow-400'
                 : 'text-gray-300 dark:text-gray-600'
             }`}
+            active={star <= rating}
           />
         ))}
       </div>
@@ -148,7 +149,7 @@ const CustomerReviews: React.FC = () => {
 
             <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
               <div className="flex items-center">
-                <StarIconSolid className="h-8 w-8 text-yellow-500 mr-3" />
+                <StarIcon className="h-8 w-8 text-yellow-500 mr-3" active />
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">{t('reviews.stats.average')}</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -231,7 +232,7 @@ const CustomerReviews: React.FC = () => {
         <div className="space-y-4">
           {reviews.length === 0 && !loading ? (
             <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center shadow">
-              <StarIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <StarIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" active />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                 {t('reviews.empty.title')}
               </h3>

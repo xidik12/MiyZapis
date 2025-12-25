@@ -210,11 +210,12 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                     onClick={() => setRating(star)}
                     disabled={actualLoading}
                   >
-                    {(hoverRating || rating) >= star ? (
-                      <StarIconSolid className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-400" />
-                    ) : (
-                      <StarIcon className="h-6 w-6 sm:h-8 sm:w-8 text-gray-300" />
-                    )}
+                    <StarIcon
+                      className={`h-6 w-6 sm:h-8 sm:w-8 ${
+                        (hoverRating || rating) >= star ? 'text-yellow-400' : 'text-gray-300'
+                      }`}
+                      active={(hoverRating || rating) >= star}
+                    />
                   </button>
                 ))}
                 <span className={`ml-2 text-xs sm:text-sm ${

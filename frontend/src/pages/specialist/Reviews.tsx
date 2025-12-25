@@ -218,7 +218,7 @@ const SpecialistReviews: React.FC = () => {
         {[1, 2, 3, 4, 5].map((star) => (
           <div key={star}>
             {star <= rating ? (
-              <StarIconSolid className={`${sizeClasses[size]} text-yellow-400`} />
+              <StarIcon className={`${sizeClasses[size]} text-yellow-400`} />
             ) : (
               <StarIcon className={`${sizeClasses[size]} text-gray-300`} />
             )}
@@ -303,12 +303,12 @@ const SpecialistReviews: React.FC = () => {
                     {reviewStats.averageRating.toFixed(1)}
                   </p>
                   <div className="flex items-center">
-                    <StarIconSolid className="w-5 h-5 text-yellow-400" />
+                    <StarIcon className="w-5 h-5 text-yellow-400" active />
                   </div>
                 </div>
               </div>
               <div className="bg-yellow-100 dark:bg-yellow-900/20 p-3 rounded-full">
-                <StarIconSolid className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+                <StarIcon className="w-6 h-6 text-yellow-600 dark:text-yellow-400" active />
               </div>
             </div>
           </div>
@@ -334,7 +334,7 @@ const SpecialistReviews: React.FC = () => {
                 </p>
               </div>
               <div className="bg-purple-100 dark:bg-purple-900/20 p-3 rounded-full">
-                <HeartIconSolid className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                <HeartIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" active />
               </div>
             </div>
           </div>
@@ -368,7 +368,7 @@ const SpecialistReviews: React.FC = () => {
                 >
                   <div className="flex items-center space-x-1 w-16">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{rating}</span>
-                    <StarIconSolid className="w-4 h-4 text-yellow-400" />
+                    <StarIcon className="w-4 h-4 text-yellow-400" active />
                   </div>
                   <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
@@ -497,9 +497,9 @@ const SpecialistReviews: React.FC = () => {
                     className="flex items-center space-x-1 text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors"
                   >
                     {review.isHelpful ? (
-                      <HeartIconSolid className="w-4 h-4 text-red-500" />
+                      <HeartIcon className="w-4 h-4 text-red-500" active />
                     ) : (
-                      <HeartIcon className="w-4 h-4" />
+                      <HeartIcon className="w-4 h-4" active />
                     )}
                     <span className="text-sm">{review.helpfulCount}</span>
                   </button>

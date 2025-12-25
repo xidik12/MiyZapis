@@ -20,8 +20,7 @@ interface SidebarNavItem {
   name: string;
   nameKey: string;
   href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  iconActive: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; active?: boolean }>;
   count?: number;
   isNew?: boolean;
 }
@@ -32,84 +31,72 @@ const navigation: SidebarNavItem[] = [
     nameKey: 'customer.nav.dashboard',
     href: '/dashboard',
     icon: HomeIcon,
-    iconActive: HomeIconSolid,
   },
   {
     name: 'Find Services',
     nameKey: 'customer.nav.searchServices',
     href: '/search',
     icon: MagnifyingGlassIcon,
-    iconActive: MagnifyingGlassIcon,
   },
   {
     name: 'Bookings',
     nameKey: 'customer.nav.bookings',
     href: '/bookings',
     icon: CalendarIcon,
-    iconActive: CalendarIcon,
   },
   {
     name: 'Favorites',
     nameKey: 'customer.nav.favorites',
     href: '/favorites',
     icon: HeartIcon,
-    iconActive: HeartIcon,
   },
   {
     name: 'Reviews',
     nameKey: 'customer.nav.reviews',
     href: '/reviews',
     icon: StarIcon,
-    iconActive: StarIcon,
   },
   {
     name: 'Messages',
     nameKey: 'customer.nav.messages',
     href: '/customer/messages',
     icon: ChatBubbleLeftEllipsisIcon,
-    iconActive: ChatBubbleLeftEllipsisIcon,
   },
   {
     name: 'Wallet',
     nameKey: 'customer.nav.wallet',
     href: '/customer/wallet',
     icon: WalletIcon,
-    iconActive: WalletIcon,
   },
   {
     name: 'Payments',
     nameKey: 'customer.nav.payments',
     href: '/payments',
     icon: CreditCardIcon,
-    iconActive: CreditCardIcon,
   },
   {
     name: 'Loyalty Points',
     nameKey: 'customer.nav.loyalty',
     href: '/loyalty',
     icon: GiftIcon,
-    iconActive: GiftIcon,
   },
   {
     name: 'Referrals',
     nameKey: 'customer.nav.referrals',
     href: '/customer/referrals',
     icon: UsersIcon,
-    iconActive: UsersIcon,
   },
   {
     name: 'Profile',
     nameKey: 'customer.nav.profile',
     href: '/profile',
     icon: UserIcon,
-    iconActive: UserIcon,
   },
   {
     name: 'Settings',
     nameKey: 'customer.nav.settings',
     href: '/settings',
     icon: Cog6ToothIcon,
-    iconActive: Cog6ToothIcon,
   },
 ];
 
@@ -274,8 +261,8 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navigation.map((item) => {
             const isActive = isCurrentPath(item.href);
-            const Icon = isActive ? item.iconActive : item.icon;
-            
+            const Icon = item.icon;
+
             return (
               <Link
                 key={item.name}
@@ -290,19 +277,19 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                 `}
               >
                 <div className="flex items-center space-x-3">
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-white' : ''}`} />
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-white' : ''}`} active={isActive} />
                   {!isCollapsed && (
                     <span>{t(item.nameKey)}</span>
                   )}
                 </div>
-                
+
                 {!isCollapsed && (item.count || item.isNew) && (
                   <div className="flex items-center space-x-1">
                     {item.count && (
                       <span className={`
                         inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full
-                        ${isActive 
-                          ? 'bg-white text-primary-600' 
+                        ${isActive
+                          ? 'bg-white text-primary-600'
                           : 'bg-primary-100 text-primary-700'
                         }
                       `}>

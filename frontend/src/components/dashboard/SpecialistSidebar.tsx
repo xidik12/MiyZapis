@@ -18,8 +18,7 @@ interface NavigationItem {
   name: string;
   translationKey: string;
   href: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  iconSolid: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement> & { active?: boolean }>;
   badge?: number;
   comingSoon?: boolean;
 }
@@ -39,14 +38,12 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.dashboard',
       href: '/specialist/dashboard',
       icon: HomeIcon,
-      iconSolid: HomeIconSolid,
     },
     {
       name: 'Bookings',
       translationKey: 'dashboard.nav.bookings',
       href: '/specialist/bookings',
       icon: CalendarIcon,
-      iconSolid: CalendarIconSolid,
       badge: 0, // Dynamic count from API
     },
     {
@@ -54,35 +51,30 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.services',
       href: '/specialist/services',
       icon: WrenchScrewdriverIcon,
-      iconSolid: WrenchScrewdriverIconSolid,
     },
     {
       name: 'Schedule',
       translationKey: 'dashboard.nav.schedule',
       href: '/specialist/schedule',
       icon: ClockIcon,
-      iconSolid: ClockIconSolid,
     },
     {
       name: 'Analytics',
       translationKey: 'dashboard.nav.analytics',
       href: '/specialist/analytics',
       icon: PresentationChartLineIcon,
-      iconSolid: PresentationChartLineIconSolid,
     },
     {
       name: 'Earnings',
       translationKey: 'dashboard.nav.earnings',
       href: '/specialist/earnings',
       icon: CurrencyDollarIcon,
-      iconSolid: CurrencyDollarIconSolid,
     },
     {
       name: 'Reviews',
       translationKey: 'dashboard.nav.reviews',
       href: '/specialist/reviews',
       icon: StarIcon,
-      iconSolid: StarIconSolid,
       badge: 0, // Dynamic count from API
     },
     {
@@ -90,7 +82,6 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.messages',
       href: '/specialist/messages',
       icon: ChatBubbleLeftRightIcon,
-      iconSolid: ChatBubbleLeftRightIconSolid,
       badge: 0, // Dynamic count from API
     },
     {
@@ -98,14 +89,12 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.profile',
       href: '/specialist/profile',
       icon: UserIcon,
-      iconSolid: UserIconSolid,
     },
     {
       name: 'Settings',
       translationKey: 'dashboard.nav.settings',
       href: '/specialist/settings',
       icon: Cog6ToothIcon,
-      iconSolid: Cog6ToothIconSolid,
     },
   ];
 
@@ -115,7 +104,6 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.notifications',
       href: '/specialist/notifications',
       icon: BellIcon,
-      iconSolid: BellIconSolid,
       badge: 0, // Dynamic count from API
     },
   ];
@@ -195,7 +183,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
           <div className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
             {navigationItems.map((item) => {
               const isActive = isActiveRoute(item.href);
-              const Icon = isActive ? item.iconSolid : item.icon;
+              const Icon = item.icon;
 
               return (
                 <Link
@@ -203,8 +191,8 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
                   to={item.href}
                   className={`
                     group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
-                    ${isActive 
-                      ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg transform scale-105' 
+                    ${isActive
+                      ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg transform scale-105'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                     }
                     ${item.comingSoon ? 'opacity-50 cursor-not-allowed' : ''}
@@ -219,18 +207,21 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
                     }
                   }}
                 >
-                  <Icon className={`
-                    mr-3 flex-shrink-0 h-6 w-6 transition-colors
-                    ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
-                  `} />
+                  <Icon
+                    className={`
+                      mr-3 flex-shrink-0 h-6 w-6 transition-colors
+                      ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
+                    `}
+                    active={isActive}
+                  />
                   <span className="flex-1">
                     {t(item.translationKey)}
                   </span>
                   {item.badge && item.badge > 0 && (
                     <span className={`
                       inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full
-                      ${isActive 
-                        ? 'bg-white bg-opacity-20 text-white' 
+                      ${isActive
+                        ? 'bg-white bg-opacity-20 text-white'
                         : 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200'
                       }
                     `}>
@@ -251,7 +242,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
           <div className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-2">
             {bottomNavigationItems.map((item) => {
               const isActive = isActiveRoute(item.href);
-              const Icon = isActive ? item.iconSolid : item.icon;
+              const Icon = item.icon;
 
               return (
                 <Link
@@ -259,8 +250,8 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
                   to={item.href}
                   className={`
                     group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
-                    ${isActive 
-                      ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg' 
+                    ${isActive
+                      ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                     }
                   `}
@@ -270,18 +261,21 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
                     }
                   }}
                 >
-                  <Icon className={`
-                    mr-3 flex-shrink-0 h-6 w-6 transition-colors
-                    ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
-                  `} />
+                  <Icon
+                    className={`
+                      mr-3 flex-shrink-0 h-6 w-6 transition-colors
+                      ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
+                    `}
+                    active={isActive}
+                  />
                   <span className="flex-1">
                     {t(item.translationKey)}
                   </span>
                   {item.badge && item.badge > 0 && (
                     <span className={`
                       inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full
-                      ${isActive 
-                        ? 'bg-white bg-opacity-20 text-white' 
+                      ${isActive
+                        ? 'bg-white bg-opacity-20 text-white'
                         : 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200'
                       }
                     `}>

@@ -65,21 +65,21 @@ const CustomerBadges: React.FC = () => {
     
     switch (category.toLowerCase()) {
       case 'achievement':
-        return isEarned ? <TrophyIconSolid className={iconClass} /> : <TrophyIcon className={iconClass} />;
+        return isEarned ? <TrophyIcon className={iconClass} /> : <TrophyIcon className={iconClass} />;
       case 'milestone':
-        return isEarned ? <StarIconSolid className={iconClass} /> : <StarIcon className={iconClass} />;
+        return isEarned ? <StarIcon className={iconClass} /> : <StarIcon className={iconClass} />;
       case 'social':
-        return isEarned ? <HeartIconSolid className={iconClass} /> : <HeartIcon className={iconClass} />;
+        return isEarned ? <HeartIcon className={iconClass} /> : <HeartIcon className={iconClass} />;
       case 'loyalty':
-        return isEarned ? <CrownIconSolid className={iconClass} /> : <CrownIcon className={iconClass} />;
+        return isEarned ? <CrownIcon className={iconClass} /> : <CrownIcon className={iconClass} />;
       case 'special':
-        return isEarned ? <SparklesIconSolid className={iconClass} /> : <SparklesIcon className={iconClass} />;
+        return isEarned ? <SparklesIcon className={iconClass} /> : <SparklesIcon className={iconClass} />;
       case 'seasonal':
-        return isEarned ? <GiftIconSolid className={iconClass} /> : <GiftIcon className={iconClass} />;
+        return isEarned ? <GiftIcon className={iconClass} /> : <GiftIcon className={iconClass} />;
       case 'streak':
-        return isEarned ? <FireIconSolid className={iconClass} /> : <FireIcon className={iconClass} />;
+        return isEarned ? <FireIcon className={iconClass} /> : <FireIcon className={iconClass} />;
       default:
-        return isEarned ? <TrophyIconSolid className={iconClass} /> : <TrophyIcon className={iconClass} />;
+        return isEarned ? <TrophyIcon className={iconClass} /> : <TrophyIcon className={iconClass} />;
     }
   };
 
@@ -162,7 +162,7 @@ const CustomerBadges: React.FC = () => {
                 </p>
               </div>
               <div className="h-12 w-12 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
-                <TrophyIconSolid className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+                <TrophyIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" active />
               </div>
             </div>
           </div>
@@ -176,7 +176,7 @@ const CustomerBadges: React.FC = () => {
                 </p>
               </div>
               <div className="h-12 w-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-                <StarIconSolid className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                <StarIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" active />
               </div>
             </div>
           </div>
@@ -190,7 +190,7 @@ const CustomerBadges: React.FC = () => {
                 </p>
               </div>
               <div className="h-12 w-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-                <CheckCircleIconSolid className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" active />
               </div>
             </div>
           </div>
@@ -272,7 +272,7 @@ const CustomerBadges: React.FC = () => {
                   
                   <div className="flex items-center space-x-2">
                     {badge.isEarned ? (
-                      <CheckCircleIconSolid className="h-5 w-5 text-green-500" />
+                      <CheckCircleIcon className="h-5 w-5 text-green-500" active />
                     ) : (
                       <LockClosedIcon className="h-5 w-5 text-gray-400" />
                     )}
@@ -300,7 +300,7 @@ const CustomerBadges: React.FC = () => {
 
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center space-x-1">
-                      <StarIcon className="h-4 w-4 text-yellow-500" />
+                      <StarIcon className="h-4 w-4 text-yellow-500" active />
                       <span className={badge.isEarned ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}>
                         {badge.points} points
                       </span>
@@ -357,7 +357,7 @@ const CustomerBadges: React.FC = () => {
         {/* Empty State */}
         {filteredBadges.length === 0 && (
           <div className="text-center py-12">
-            <TrophyIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <TrophyIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" active />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               No badges found
             </h3>

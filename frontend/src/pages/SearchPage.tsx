@@ -319,11 +319,12 @@ const SearchPage: React.FC = () => {
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
-      <StarIconSolid
+      <StarIcon
         key={i}
         className={`w-4 h-4 ${
           i < Math.floor(rating) ? 'text-yellow-400' : 'text-gray-300'
         }`}
+        active={i < Math.floor(rating)}
       />
     ));
   };
@@ -590,7 +591,7 @@ const SearchPage: React.FC = () => {
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               >
-                <StarIcon className="w-4 h-4" />
+                <StarIcon className="w-4 h-4" active />
                 {t('search.topRated') || 'Top Rated'}
               </button>
               <button
@@ -632,7 +633,7 @@ const SearchPage: React.FC = () => {
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               >
-                <StarIconSolid className="w-4 h-4 text-yellow-400" />
+                <StarIcon className="w-4 h-4 text-yellow-400" active />
                 5★
               </button>
               <button
@@ -643,7 +644,7 @@ const SearchPage: React.FC = () => {
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               >
-                <StarIconSolid className="w-4 h-4 text-yellow-400" />
+                <StarIcon className="w-4 h-4 text-yellow-400" active />
                 4★+
               </button>
               <button
@@ -654,7 +655,7 @@ const SearchPage: React.FC = () => {
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               >
-                <StarIconSolid className="w-4 h-4 text-yellow-400" />
+                <StarIcon className="w-4 h-4 text-yellow-400" active />
                 3★+
               </button>
             </div>
