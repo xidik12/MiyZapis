@@ -392,7 +392,7 @@ const SpecialistProfilePage: React.FC = () => {
                 <button
                   onClick={handleFavoriteToggle}
                   disabled={favoriteLoading}
-                  className={`flex items-center justify-center px-3 sm:px-4 py-2 rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm ${
+                  className={`flex items-center justify-center px-3 sm:px-4 py-2 rounded-xl border transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm ${
                     isFavorite
                       ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
                       : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700'
@@ -414,13 +414,13 @@ const SpecialistProfilePage: React.FC = () => {
                 <Link
                   to={isOwnProfile ? '#' : `/book/${services[0]?.id}`}
                   onClick={(e) => { if (isOwnProfile) e.preventDefault(); }}
-                  className={`${isOwnProfile ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'} text-white px-4 sm:px-6 py-2 rounded-lg transition-colors flex items-center justify-center text-sm sm:text-base`}
+                  className={`${isOwnProfile ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'} text-white px-4 sm:px-6 py-2 rounded-xl transition-colors flex items-center justify-center text-sm sm:text-base`}
                 >
                   <CalendarIcon className="w-4 h-4 mr-1 sm:w-5 sm:h-5 sm:mr-2" />
                   {t('actions.bookNow')}
                 </Link>
               ) : (
-                <div className="bg-gray-400 text-white px-4 sm:px-6 py-2 rounded-lg cursor-not-allowed flex items-center justify-center text-sm sm:text-base">
+                <div className="bg-gray-400 text-white px-4 sm:px-6 py-2 rounded-xl cursor-not-allowed flex items-center justify-center text-sm sm:text-base">
                   <CalendarIcon className="w-4 h-4 mr-1 sm:w-5 sm:h-5 sm:mr-2" />
                   {t('actions.noServicesAvailable') || 'No services available'}
                 </div>
@@ -515,7 +515,7 @@ const SpecialistProfilePage: React.FC = () => {
                       
                       const isAnimatedWebp = typeof finalImageUrl === 'string' && finalImageUrl.toLowerCase().endsWith('.webp');
                       return (
-                        <div key={portfolioItem.id || `portfolio-${index}`} className="relative group aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+                        <div key={portfolioItem.id || `portfolio-${index}`} className="relative group aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700">
                           <img
                             src={finalImageUrl}
                             alt={`Portfolio ${index + 1}`}
@@ -545,7 +545,7 @@ const SpecialistProfilePage: React.FC = () => {
               <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" onClick={() => setLightbox({ ...lightbox, open: false })}>
                 <div className="relative max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
                   <button className="absolute -top-10 right-0 text-white/80 hover:text-white" onClick={() => setLightbox({ ...lightbox, open: false })}>✕</button>
-                  <img src={getAbsoluteImageUrl(lightbox.images[lightbox.index])} alt="Portfolio" className="w-full h-auto rounded-lg shadow-2xl" />
+                  <img src={getAbsoluteImageUrl(lightbox.images[lightbox.index])} alt="Portfolio" className="w-full h-auto rounded-xl shadow-2xl" />
                   <div className="flex justify-between mt-3">
                     <button
                       className="btn btn-secondary"
@@ -571,7 +571,7 @@ const SpecialistProfilePage: React.FC = () => {
                   {services.map((service: any) => (
                     <div
                       key={service.id}
-                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 hover:border-primary-300 transition-colors"
+                      className="border border-gray-200 dark:border-gray-700 rounded-xl p-3 sm:p-4 hover:border-primary-300 transition-colors"
                     >
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
                         <div className="flex-1">

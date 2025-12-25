@@ -345,7 +345,7 @@ const CustomerDashboard: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
           >
             {t('common.tryAgain')}
           </button>
@@ -522,7 +522,7 @@ const CustomerDashboard: React.FC = () => {
                 <div className="sm:text-right">
                   <Link
                     to="/customer/bookings"
-                    className="inline-flex items-center justify-center w-full sm:w-auto px-3 sm:px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors font-medium text-sm sm:text-base"
+                    className="inline-flex items-center justify-center w-full sm:w-auto px-3 sm:px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-xl transition-colors font-medium text-sm sm:text-base"
                   >
                     {t('dashboard.viewAll')}
                   </Link>
@@ -595,7 +595,7 @@ const CustomerDashboard: React.FC = () => {
                   <p className="text-sm">{t('dashboard.customer.startBooking')}</p>
                   <Link
                     to="/search"
-                    className="inline-flex items-center mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                    className="inline-flex items-center mt-4 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
                   >
                     <PlusIcon className="w-4 h-4 mr-2" />
                     {t('dashboard.customer.exploreServices')}
@@ -653,13 +653,13 @@ const CustomerDashboard: React.FC = () => {
                     <div className="flex space-x-1 sm:space-x-2 flex-shrink-0">
                       <Link
                         to={`/specialist/${specialist.id}`}
-                        className="p-1 sm:p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-lg transition-colors"
+                        className="p-1 sm:p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-xl transition-colors"
                       >
                         <EyeIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Link>
                       <button
                         onClick={() => handleMessageFavorite(specialist)}
-                        className="p-1 sm:p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                        className="p-1 sm:p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors"
                         title={t('specialistProfile.sendMessage')}
                       >
                         <ChatBubbleLeftRightIcon className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -680,7 +680,7 @@ const CustomerDashboard: React.FC = () => {
             <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-purple-200 dark:border-purple-700">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
                 <div className="flex items-center space-x-2 sm:space-x-3">
-                  <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
                     <GiftIcon className="h-4 w-4 sm:h-5 sm:w-5 text-white" active />
                   </div>
                   <div>
@@ -692,28 +692,28 @@ const CustomerDashboard: React.FC = () => {
                 </div>
                 <Link
                   to="/loyalty"
-                  className="inline-flex items-center justify-center w-full sm:w-auto px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs sm:text-sm font-medium"
+                  className="inline-flex items-center justify-center w-full sm:w-auto px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors text-xs sm:text-sm font-medium"
                 >
                   {t('dashboard.viewAll')}
                 </Link>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-lg">
+                <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl">
                   <p className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
                     {formatPoints(loyaltyData?.currentPoints || 0)}
                   </p>
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('dashboard.loyalty.currentPoints')}</p>
                 </div>
 
-                <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-lg">
+                <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl">
                   <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
                     {formatPoints(loyaltyStats.monthlyPoints)}
                   </p>
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('dashboard.loyalty.thisMonth')}</p>
                 </div>
 
-                <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-lg">
+                <div className="text-center p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl">
                   <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {formatPoints(loyaltyData?.lifetimePoints || 0)}
                   </p>
@@ -768,7 +768,7 @@ const CustomerDashboard: React.FC = () => {
                     </div>
                     <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{offer.title}</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{offer.description}</p>
-                    <button className="w-full px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium">
+                    <button className="w-full px-3 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors text-sm font-medium">
                       {t('dashboard.customer.viewOffers')}
                     </button>
                   </div>

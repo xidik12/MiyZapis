@@ -273,7 +273,7 @@ const SpecialistReviews: React.FC = () => {
       </div>
 
       {error && (
-        <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg flex items-center">
+        <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl flex items-center">
           <ExclamationTriangleIcon className="w-5 h-5 mr-2" />
           {error}
         </div>
@@ -364,7 +364,7 @@ const SpecialistReviews: React.FC = () => {
                 <button
                   key={rating}
                   onClick={() => handleFilterChange({ ...filters, rating })}
-                  className={`w-full flex items-center space-x-3 text-left rounded-lg px-2 py-1 transition-colors ${active ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
+                  className={`w-full flex items-center space-x-3 text-left rounded-xl px-2 py-1 transition-colors ${active ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
                 >
                   <div className="flex items-center space-x-1 w-16">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{rating}</span>
@@ -393,7 +393,7 @@ const SpecialistReviews: React.FC = () => {
           <select
             value={filters.rating || ''}
             onChange={(e) => handleFilterChange({...filters, rating: e.target.value ? Number(e.target.value) : undefined})}
-            className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500"
+            className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500"
           >
             <option value="">{t('reviews.allRatings')}</option>
             <option value="5">5 {t('reviews.stars')}</option>
@@ -406,7 +406,7 @@ const SpecialistReviews: React.FC = () => {
           <select
             value={filters.sortBy}
             onChange={(e) => handleFilterChange({...filters, sortBy: e.target.value as any})}
-            className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500"
+            className="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500"
           >
             <option value="createdAt">{t('reviews.sortBy.newest')}</option>
             <option value="rating">{t('reviews.sortBy.rating')}</option>
@@ -415,7 +415,7 @@ const SpecialistReviews: React.FC = () => {
 
           <button
             onClick={() => handleFilterChange({...filters, verified: filters.verified ? undefined : true})}
-            className={`px-4 py-2 rounded-lg border transition-colors ${
+            className={`px-4 py-2 rounded-xl border transition-colors ${
               filters.verified
                 ? 'bg-primary-600 text-white border-primary-600'
                 : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -426,7 +426,7 @@ const SpecialistReviews: React.FC = () => {
 
           <button
             onClick={() => handleFilterChange({...filters, withComment: filters.withComment ? undefined : true})}
-            className={`px-4 py-2 rounded-lg border transition-colors ${
+            className={`px-4 py-2 rounded-xl border transition-colors ${
               filters.withComment
                 ? 'bg-primary-600 text-white border-primary-600'
                 : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -532,7 +532,7 @@ const SpecialistReviews: React.FC = () => {
 
               {/* Specialist Response */}
               {review.response ? (
-                <div className="mt-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                <div className="mt-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
                   <div className="flex items-center space-x-2 mb-2">
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
                       {t('reviews.yourResponse')}
@@ -553,14 +553,14 @@ const SpecialistReviews: React.FC = () => {
                         value={responseText}
                         onChange={(e) => setResponseText(e.target.value)}
                         placeholder={t('reviews.writeResponse')}
-                        className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 resize-none"
+                        className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 resize-none"
                         rows={3}
                       />
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => handleSubmitResponse(review.id)}
                           disabled={!responseText.trim() || submittingResponse}
-                          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                           {submittingResponse ? t('reviews.submitting') : t('reviews.submitResponse')}
                         </button>
@@ -569,7 +569,7 @@ const SpecialistReviews: React.FC = () => {
                             setRespondingTo(null);
                             setResponseText('');
                           }}
-                          className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+                          className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
                         >
                           {t('common.cancel')}
                         </button>
@@ -596,7 +596,7 @@ const SpecialistReviews: React.FC = () => {
           <button
             onClick={handleLoadMore}
             disabled={loading}
-            className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors"
+            className="px-6 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-50 transition-colors"
           >
             {loading ? t('common.loading') : t('reviews.loadMore')}
           </button>

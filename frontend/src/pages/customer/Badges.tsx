@@ -161,7 +161,7 @@ const CustomerBadges: React.FC = () => {
                   of {badges.length} total
                 </p>
               </div>
-              <div className="h-12 w-12 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
+              <div className="h-12 w-12 bg-primary-100 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
                 <TrophyIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" active />
               </div>
             </div>
@@ -175,7 +175,7 @@ const CustomerBadges: React.FC = () => {
                   {totalPoints.toLocaleString()}
                 </p>
               </div>
-              <div className="h-12 w-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+              <div className="h-12 w-12 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
                 <StarIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" active />
               </div>
             </div>
@@ -189,7 +189,7 @@ const CustomerBadges: React.FC = () => {
                   {Math.round((earnedCount / badges.length) * 100)}%
                 </p>
               </div>
-              <div className="h-12 w-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+              <div className="h-12 w-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center">
                 <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" active />
               </div>
             </div>
@@ -206,7 +206,7 @@ const CustomerBadges: React.FC = () => {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
                 <option value="all">All Categories</option>
                 {categories.map((category) => (
@@ -224,7 +224,7 @@ const CustomerBadges: React.FC = () => {
               <select
                 value={selectedRarity}
                 onChange={(e) => setSelectedRarity(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
                 <option value="all">All Rarities</option>
                 {rarities.map((rarity) => (

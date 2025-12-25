@@ -19,7 +19,7 @@ const TermsPage: React.FC = () => {
         </div>
 
         <div className="prose prose-lg dark:prose-invert max-w-none">
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-8">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6 mb-8">
             <p className="text-blue-800 dark:text-blue-200 mb-0">
               These Terms of Service ("Terms") govern your use of {environment.APP_NAME} ("we", "our", or "us"), 
               a platform that connects customers with professional service specialists.
@@ -179,13 +179,13 @@ const TermsPage: React.FC = () => {
           <p>
             For questions about these Terms, contact us at:
           </p>
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 mt-6">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 mt-6">
             <p className="mb-2"><strong>Email:</strong> legal@{environment.APP_NAME.toLowerCase()}.com</p>
             <p className="mb-2"><strong>Support:</strong> support@{environment.APP_NAME.toLowerCase()}.com</p>
             <p className="mb-0"><strong>Address:</strong> 123 Legal Street, Terms City, TC 12345</p>
           </div>
 
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 mt-8">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 mt-8">
             <h3 className="text-red-800 dark:text-red-200 font-semibold mb-2">Important</h3>
             <p className="text-red-700 dark:text-red-300 mb-0">
               By using {environment.APP_NAME}, you acknowledge that you have read, 

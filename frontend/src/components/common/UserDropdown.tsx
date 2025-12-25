@@ -44,7 +44,7 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
   const menuItems = user.userType === 'specialist' ? specialistMenuItems : customerMenuItems;
 
   return (
-    <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+    <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 z-50">
       {/* User info */}
       <div className="px-4 py-3 border-b border-gray-200">
         <div className="flex items-center space-x-3">

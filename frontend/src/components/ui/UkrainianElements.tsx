@@ -5,7 +5,7 @@ export const UkrainianFlag: React.FC<{ className?: string; animated?: boolean }>
   animated = false 
 }) => {
   return (
-    <div className={`inline-flex rounded-md overflow-hidden shadow-md ${animated ? 'animate-ukraine-wave' : ''} ${className}`}>
+    <div className={`inline-flex rounded-xl overflow-hidden shadow-md ${animated ? 'animate-ukraine-wave' : ''} ${className}`}>
       <div className="w-8 h-5 bg-primary-500"></div>
       <div className="w-8 h-5 bg-secondary-500"></div>
     </div>

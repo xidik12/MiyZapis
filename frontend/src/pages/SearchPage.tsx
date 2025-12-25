@@ -430,14 +430,14 @@ const SearchPage: React.FC = () => {
           <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Link
               to={`/specialist/${service.specialist.id}`}
-              className="bg-primary-50 hover:bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:hover:bg-primary-900/30 dark:text-primary-300 text-center h-10 inline-flex items-center justify-center px-4 rounded-lg font-medium transition-colors duration-200"
+              className="bg-primary-50 hover:bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:hover:bg-primary-900/30 dark:text-primary-300 text-center h-10 inline-flex items-center justify-center px-4 rounded-xl font-medium transition-colors duration-200"
             >
               {t('actions.viewProfile')}
             </Link>
             {isOwnService ? (
               <button
                 disabled
-                className="text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-lg font-medium bg-gray-400 cursor-not-allowed"
+                className="text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-xl font-medium bg-gray-400 cursor-not-allowed"
                 title={t('booking.cannotBookOwn') || "You can't book your own service"}
               >
                 {t('actions.book')}
@@ -445,7 +445,7 @@ const SearchPage: React.FC = () => {
             ) : (
               <Link
                 to={`/booking/${service.id}`}
-                className={`text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-lg transition-colors font-medium ${
+                className={`text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-xl transition-colors font-medium ${
                   service.isAvailable
                     ? 'bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 shadow-lg hover:shadow-xl'
                     : 'bg-gray-400 cursor-not-allowed'
@@ -464,7 +464,7 @@ const SearchPage: React.FC = () => {
                   {phone && (
                     <a
                       href={`tel:${phone}`}
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
                       aria-label="Call"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -478,7 +478,7 @@ const SearchPage: React.FC = () => {
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationStr)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
                       aria-label="Directions"
                     >
                       <MapPinIcon className="w-4 h-4" />
@@ -517,13 +517,13 @@ const SearchPage: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('search.placeholder')}
-              className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
+              className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
             />
           </div>
         </form>
 
         {/* Enhanced Filters and Controls */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-3 sm:p-4 mb-4 sm:mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-3 sm:p-4 mb-4 sm:mb-6">
           {/* Header with results count and main controls */}
           <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
             <div className="flex items-center justify-between">
@@ -538,7 +538,7 @@ const SearchPage: React.FC = () => {
               {/* Advanced Filters Button - Mobile Priority */}
               <button
                 onClick={() => setIsFilterTrayOpen(true)}
-                className="inline-flex items-center gap-1 sm:gap-2 h-8 sm:h-9 px-3 sm:px-4 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
+                className="inline-flex items-center gap-1 sm:gap-2 h-8 sm:h-9 px-3 sm:px-4 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-xl text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
               >
                 <AdjustmentsHorizontalIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">{t('search.filters') || 'Filters'}</span>
@@ -551,7 +551,7 @@ const SearchPage: React.FC = () => {
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full sm:w-auto h-8 sm:h-9 px-2 sm:px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-xs sm:text-sm"
+                  className="w-full sm:w-auto h-8 sm:h-9 px-2 sm:px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-xs sm:text-sm"
                 >
                   {categories.map((category) => (
                     <option key={category.id} value={category.id === 'all' ? '' : category.id}>
@@ -566,7 +566,7 @@ const SearchPage: React.FC = () => {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full sm:w-auto h-8 sm:h-9 px-2 sm:px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-xs sm:text-sm"
+                  className="w-full sm:w-auto h-8 sm:h-9 px-2 sm:px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-xs sm:text-sm"
                 >
                   <option value="rating">{t('search.sortBy.rating') || 'Rating'}</option>
                   <option value="price">{t('search.sortBy.price') || 'Price'}</option>
@@ -585,7 +585,7 @@ const SearchPage: React.FC = () => {
             <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-1 sm:pb-2">
               <button
                 onClick={() => setSortBy('rating')}
-                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
                   sortBy === 'rating' 
                     ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-sm dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-300' 
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -596,7 +596,7 @@ const SearchPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setSortBy('reviews')}
-                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
                   sortBy === 'reviews'
                     ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-sm dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-300'
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -607,7 +607,7 @@ const SearchPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setSortBy('distance')}
-                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
                   sortBy === 'distance'
                     ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-sm dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-300'
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -627,7 +627,7 @@ const SearchPage: React.FC = () => {
             <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-1 sm:pb-2">
               <button
                 onClick={() => setSelectedRating(selectedRating === 5 ? 0 : 5)}
-                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
                   selectedRating === 5
                     ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300'
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -638,7 +638,7 @@ const SearchPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setSelectedRating(selectedRating === 4 ? 0 : 4)}
-                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
                   selectedRating === 4
                     ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300'
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -649,7 +649,7 @@ const SearchPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setSelectedRating(selectedRating === 3 ? 0 : 3)}
-                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
                   selectedRating === 3
                     ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300'
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -666,7 +666,7 @@ const SearchPage: React.FC = () => {
             {/* Favorites Toggle */}
             <button
               onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
                 showFavoritesOnly
                   ? 'bg-red-50 border-red-200 text-red-700 shadow-sm dark:bg-red-900/20 dark:border-red-800 dark:text-red-400'
                   : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -700,7 +700,7 @@ const SearchPage: React.FC = () => {
             {(selectedCategory || selectedLocation || selectedRating > 0 || showFavoritesOnly || selectedDistance > 0 || priceRange.min > 0 || priceRange.max < 1000) && (
               <button
                 onClick={clearFilters}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/30 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/30 transition-colors"
               >
                 <span>×</span>
                 {t('search.resetFilters') || 'Clear All Filters'}
@@ -813,14 +813,14 @@ const SearchPage: React.FC = () => {
                   {(selectedCategory || selectedLocation || selectedRating > 0 || selectedDistance > 0 || showFavoritesOnly || priceRange.min > 0 || priceRange.max < 1000) && (
                     <button
                       onClick={clearFilters}
-                      className="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      className="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
                     >
                       {t('search.resetFilters') || 'Reset filters'}
                     </button>
                   )}
                   <button
                     onClick={() => setIsFilterTrayOpen(false)}
-                    className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800/50 rounded-lg transition-colors focus-visible-ring"
+                    className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800/50 rounded-xl transition-colors focus-visible-ring"
                     aria-label="Close filters"
                   >
                     ✕
@@ -851,7 +851,7 @@ const SearchPage: React.FC = () => {
                     {!showSaveInput ? (
                       <button
                         onClick={() => setShowSaveInput(true)}
-                        className="px-3 py-1.5 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                        className="px-3 py-1.5 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-colors"
                       >
                         {t('actions.save') || 'Save'}
                       </button>
@@ -861,17 +861,17 @@ const SearchPage: React.FC = () => {
                           value={presetName}
                           onChange={(e) => setPresetName(e.target.value)}
                           placeholder={t('search.savedFilters') || 'Saved filters'}
-                          className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 text-sm backdrop-blur-sm"
+                          className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 text-sm backdrop-blur-sm"
                         />
                         <button
                           onClick={savePreset}
-                          className="px-3 py-1.5 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                          className="px-3 py-1.5 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-colors"
                         >
                           {t('actions.save') || 'Save'}
                         </button>
                         <button
                           onClick={() => { setShowSaveInput(false); setPresetName(''); }}
-                          className="px-3 py-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50 rounded-lg transition-colors"
+                          className="px-3 py-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50 rounded-xl transition-colors"
                         >
                           {t('actions.close') || 'Close'}
                         </button>
@@ -981,7 +981,7 @@ const SearchPage: React.FC = () => {
                       step={1}
                       value={selectedRating}
                       onChange={(e) => setSelectedRating(Number(e.target.value))}
-                      className="flex-1 h-2 rounded-lg appearance-none bg-gray-200 dark:bg-gray-700 outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:hover:scale-110"
+                      className="flex-1 h-2 rounded-xl appearance-none bg-gray-200 dark:bg-gray-700 outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:hover:scale-110"
                     />
                     <span className="text-sm font-bold text-primary-600 dark:text-primary-400 min-w-[3rem] text-right">{selectedRating > 0 ? `${selectedRating}★` : 'Any'}</span>
                   </div>
@@ -998,7 +998,7 @@ const SearchPage: React.FC = () => {
                       step={5}
                       value={selectedDistance}
                       onChange={(e) => setSelectedDistance(Number(e.target.value))}
-                      className="flex-1 h-2 rounded-lg appearance-none bg-gray-200 dark:bg-gray-700 outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:hover:scale-110"
+                      className="flex-1 h-2 rounded-xl appearance-none bg-gray-200 dark:bg-gray-700 outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:hover:scale-110"
                     />
                     <span className="text-sm font-bold text-primary-600 dark:text-primary-400 min-w-[4.5rem] text-right">{selectedDistance > 0 ? `≤ ${selectedDistance} km` : t('common.any') || 'Any'}</span>
                   </div>
@@ -1049,7 +1049,7 @@ const SearchPage: React.FC = () => {
                 </div>
                 <div className="mt-4 flex justify-between items-center">
                   <Skeleton className="h-6 w-24" />
-                  <Skeleton className="h-9 w-24 rounded-md" />
+                  <Skeleton className="h-9 w-24 rounded-xl" />
                 </div>
               </div>
             ))}

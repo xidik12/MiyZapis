@@ -261,32 +261,32 @@ const SpecialistSettings: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Settings Navigation */}
               <div className="lg:col-span-1">
-                <nav className="space-y-1 bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-                  <a href="#profile" className="flex items-center px-3 py-2 text-sm font-medium text-primary-600 bg-primary-50 dark:bg-primary-900/20 rounded-md">
+                <nav className="space-y-1 bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+                  <a href="#profile" className="flex items-center px-3 py-2 text-sm font-medium text-primary-600 bg-primary-50 dark:bg-primary-900/20 rounded-xl">
                     <UserIcon className="w-5 h-5 mr-3" />
                     {t('settings.profile') || 'Profile'}
                   </a>
-                  <a href="#account" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md">
+                  <a href="#account" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl">
                     <Cog6ToothIcon className="w-5 h-5 mr-3" />
                     {t('settings.account')}
                   </a>
-                  <a href="#security" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md">
+                  <a href="#security" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl">
                     <ShieldCheckIcon className="w-5 h-5 mr-3" />
                     {t('customer.settings.passwordSecurity')}
                   </a>
-                  <a href="#notifications" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md">
+                  <a href="#notifications" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl">
                     <BellIcon className="w-5 h-5 mr-3" />
                     {t('settings.notifications')}
                   </a>
-                  <a href="#privacy" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md">
+                  <a href="#privacy" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl">
                     <ShieldCheckIcon className="w-5 h-5 mr-3" />
                     {t('settings.privacy')}
                   </a>
-                  <a href="#business" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md">
+                  <a href="#business" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl">
                     <CreditCardIcon className="w-5 h-5 mr-3" />
                     {t('settings.business')}
                   </a>
-                  <a href="#language" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md">
+                  <a href="#language" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl">
                     <GlobeAltIcon className="w-5 h-5 mr-3" />
                     {t('settings.language')}
                   </a>
@@ -296,7 +296,7 @@ const SpecialistSettings: React.FC = () => {
               {/* Settings Content */}
               <div className="lg:col-span-2 space-y-8">
                 {/* Profile Settings */}
-                <div id="profile" className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div id="profile" className="bg-white dark:bg-gray-800 rounded-xl shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <UserIcon className="w-5 h-5 mr-2" />
@@ -329,7 +329,7 @@ const SpecialistSettings: React.FC = () => {
                         
                         <div className="flex flex-col space-y-3">
                           <div className="flex space-x-3">
-                            <label className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            <label className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                               <input
                                 type="file"
                                 accept="image/*"
@@ -348,7 +348,7 @@ const SpecialistSettings: React.FC = () => {
                               <button
                                 onClick={handleImageRemove}
                                 disabled={isUploadingImage}
-                                className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600"
+                                className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600"
                               >
                                 <TrashIcon className="w-4 h-4 inline mr-2" />
                                 {language === 'uk' ? 'Видалити' : language === 'ru' ? 'Удалить' : 'Remove'}
@@ -364,13 +364,13 @@ const SpecialistSettings: React.FC = () => {
                           
                           {/* Upload Status Messages */}
                           {uploadError && (
-                            <div className="text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg border border-red-200 dark:border-red-800">
+                            <div className="text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-xl border border-red-200 dark:border-red-800">
                               {uploadError}
                             </div>
                           )}
                           
                           {uploadSuccess && (
-                            <div className="text-green-600 dark:text-green-400 text-sm bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-lg border border-green-200 dark:border-green-800">
+                            <div className="text-green-600 dark:text-green-400 text-sm bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-xl border border-green-200 dark:border-green-800">
                               {language === 'uk' ? 'Фото успішно оновлено!' : language === 'ru' ? 'Фото успешно обновлено!' : 'Photo updated successfully!'}
                             </div>
                           )}
@@ -381,7 +381,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Account Settings */}
-                <div id="account" className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div id="account" className="bg-white dark:bg-gray-800 rounded-xl shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <Cog6ToothIcon className="w-5 h-5 mr-2" />
@@ -420,7 +420,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Security Settings */}
-                <div id="security" className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div id="security" className="bg-white dark:bg-gray-800 rounded-xl shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <ShieldCheckIcon className="w-5 h-5 mr-2" />
@@ -440,7 +440,7 @@ const SpecialistSettings: React.FC = () => {
 
                       {/* Google OAuth Users - Set Password */}
                       {(!user?.passwordLastChanged && user?.authProvider === 'google') && (
-                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
                           <div className="flex items-start space-x-3">
                             <LockClosedIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                             <div className="flex-1">
@@ -452,7 +452,7 @@ const SpecialistSettings: React.FC = () => {
                               </p>
                               <button
                                 onClick={() => setShowSetPasswordModal(true)}
-                                className="inline-flex items-center mt-3 px-3 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700 transition-colors"
+                                className="inline-flex items-center mt-3 px-3 py-2 border border-transparent text-sm font-medium rounded-xl text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700 transition-colors"
                               >
                                 <KeyIcon className="w-4 h-4 mr-2" />
                                 {t('customer.settings.setPassword')}
@@ -476,7 +476,7 @@ const SpecialistSettings: React.FC = () => {
                             </div>
                             <button
                               onClick={() => setShowChangePasswordModal(true)}
-                              className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                              className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-xl text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                             >
                               <KeyIcon className="w-4 h-4 mr-2" />
                               {t('customer.settings.changePassword')}
@@ -523,7 +523,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Notification Settings */}
-                <div id="notifications" className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div id="notifications" className="bg-white dark:bg-gray-800 rounded-xl shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <BellIcon className="w-5 h-5 mr-2" />
@@ -568,7 +568,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Privacy Settings */}
-                <div id="privacy" className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div id="privacy" className="bg-white dark:bg-gray-800 rounded-xl shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <ShieldCheckIcon className="w-5 h-5 mr-2" />
@@ -607,7 +607,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Business Settings */}
-                <div id="business" className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div id="business" className="bg-white dark:bg-gray-800 rounded-xl shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <CreditCardIcon className="w-5 h-5 mr-2" />
@@ -639,7 +639,7 @@ const SpecialistSettings: React.FC = () => {
                       <select
                         value={settings.business.cancellationWindow}
                         onChange={(e) => handleSettingChange('business', 'cancellationWindow', parseInt(e.target.value))}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                       >
                         <option value={2}>{t('settings.hours2')}</option>
                         <option value={6}>{t('settings.hours6')}</option>
@@ -655,7 +655,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Language & Currency Settings */}
-                <div id="language" className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div id="language" className="bg-white dark:bg-gray-800 rounded-xl shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <GlobeAltIcon className="w-5 h-5 mr-2" />
@@ -673,7 +673,7 @@ const SpecialistSettings: React.FC = () => {
                       <select
                         value={language}
                         onChange={(e) => setLanguage(e.target.value as 'uk' | 'ru' | 'en')}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                       >
                         <option value="uk">🇺🇦 Українська</option>
                         <option value="en">🇺🇸 English</option>
@@ -688,7 +688,7 @@ const SpecialistSettings: React.FC = () => {
                       <select
                         value={currency}
                         onChange={(e) => setCurrency(e.target.value as 'UAH' | 'USD' | 'EUR')}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                        className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                       >
                         <option value="UAH">₴ {t('currency.uah')}</option>
                         <option value="USD">$ {t('currency.usd')}</option>
@@ -699,14 +699,14 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Save Button */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
                   <div className="flex justify-end space-x-3">
-                    <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                    <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                       {t('common.cancel')}
                     </button>
                     <button 
                       onClick={handleSaveSettings}
-                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
+                      className="px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
                     >
                       {t('common.save')}
                     </button>

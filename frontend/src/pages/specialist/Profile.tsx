@@ -1473,7 +1473,7 @@ const SpecialistProfile: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 mb-6">
                       <div className="flex items-start">
                         <ShieldCheckIcon className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
                         <div>
@@ -1601,7 +1601,7 @@ const SpecialistProfile: React.FC = () => {
                         {profile.languages?.map((lang, index) => (
                           <span
                             key={index}
-                            className="inline-flex items-center gap-2 px-3 py-2 bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300 rounded-lg text-sm font-medium"
+                            className="inline-flex items-center gap-2 px-3 py-2 bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300 rounded-xl text-sm font-medium"
                           >
                             <GlobeAltIcon className="h-4 w-4" />
                             {lang === 'uk' ? 'Українська' : lang === 'en' ? 'English' : lang === 'ru' ? 'Русский' : lang}
@@ -1628,7 +1628,7 @@ const SpecialistProfile: React.FC = () => {
                               }
                               e.target.value = '';
                             }}
-                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                            className="px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                           >
                             <option value="">{language === 'uk' ? 'Додати мову' : language === 'ru' ? 'Добавить язык' : 'Add Language'}</option>
                             <option value="uk">Українська</option>
@@ -1651,7 +1651,7 @@ const SpecialistProfile: React.FC = () => {
                         {profile.specialties?.map((specialty, index) => (
                           <span
                             key={index}
-                            className="inline-flex items-center gap-2 px-3 py-2 bg-secondary-100 text-secondary-700 dark:bg-secondary-900/20 dark:text-secondary-300 rounded-lg text-sm font-medium"
+                            className="inline-flex items-center gap-2 px-3 py-2 bg-secondary-100 text-secondary-700 dark:bg-secondary-900/20 dark:text-secondary-300 rounded-xl text-sm font-medium"
                           >
                             <StarIcon className="h-4 w-4" />
                             {specialty}
@@ -1674,7 +1674,7 @@ const SpecialistProfile: React.FC = () => {
                           <input
                             type="text"
                             placeholder={language === 'uk' ? 'Додати спеціалізацію' : language === 'ru' ? 'Добавить специализацию' : 'Add Specialty'}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                             onKeyPress={(e) => {
                               if (e.key === 'Enter') {
                                 const value = (e.target as HTMLInputElement).value.trim();
@@ -1694,7 +1694,7 @@ const SpecialistProfile: React.FC = () => {
                                 input.value = '';
                               }
                             }}
-                            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
+                            className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors text-sm font-medium"
                           >
                             <PlusIcon className="h-4 w-4" />
                           </button>
@@ -1795,7 +1795,7 @@ const SpecialistProfile: React.FC = () => {
                                         handleProfileChange('businessHours', newBusinessHours);
                                       }
                                     }}
-                                    className="px-2 py-1 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                                    className="px-2 py-1 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
                                   />
                                   <span className="text-gray-500">-</span>
                                   <input
@@ -1815,7 +1815,7 @@ const SpecialistProfile: React.FC = () => {
                                         handleProfileChange('businessHours', newBusinessHours);
                                       }
                                     }}
-                                    className="px-2 py-1 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                                    className="px-2 py-1 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
                                   />
                                 </div>
                                 {(() => {
@@ -1960,7 +1960,7 @@ const SpecialistProfile: React.FC = () => {
                         <button
                           onClick={() => document.getElementById('portfolio-upload')?.click()}
                           disabled={isUploadingPortfolio}
-                          className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="px-4 py-2 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {isUploadingPortfolio ? (
                             <>

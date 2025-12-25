@@ -28,7 +28,7 @@ const BookingFilters: React.FC<BookingFiltersProps> = ({
   const { t } = useLanguage();
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-3 sm:p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow mb-6 p-3 sm:p-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Status Filter */}
         <div>
@@ -38,7 +38,7 @@ const BookingFilters: React.FC<BookingFiltersProps> = ({
           <select
             value={filters.status}
             onChange={(e) => onFiltersChange({ status: e.target.value })}
-            className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+            className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white"
           >
             <option value="all">{t('filters.all')}</option>
             <option value="PENDING">{t('status.pending')}</option>
@@ -57,7 +57,7 @@ const BookingFilters: React.FC<BookingFiltersProps> = ({
           <select
             value={filters.dateRange}
             onChange={(e) => onFiltersChange({ dateRange: e.target.value })}
-            className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+            className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white"
           >
             <option value="all">{t('filters.allTime')}</option>
             <option value="today">{t('filters.today')}</option>
@@ -75,7 +75,7 @@ const BookingFilters: React.FC<BookingFiltersProps> = ({
             value={filters.searchTerm}
             onChange={(e) => onFiltersChange({ searchTerm: e.target.value })}
             placeholder={t('filters.searchPlaceholder')}
-            className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+            className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white"
           />
         </div>
 
@@ -88,7 +88,7 @@ const BookingFilters: React.FC<BookingFiltersProps> = ({
             <select
               value={sortBy}
               onChange={(e) => onSortByChange(e.target.value as 'date' | 'amount' | 'status')}
-              className="flex-1 p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+              className="flex-1 p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white"
             >
               <option value="date">{t('filters.date')}</option>
               <option value="amount">{t('filters.amount')}</option>
@@ -96,7 +96,7 @@ const BookingFilters: React.FC<BookingFiltersProps> = ({
             </select>
             <button
               onClick={onSortOrderToggle}
-              className="px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white text-sm min-w-[3rem] flex items-center justify-center"
+              className="px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white text-sm min-w-[3rem] flex items-center justify-center"
               title={sortOrder === 'asc' ? t('filters.ascending') : t('filters.descending')}
             >
               {sortOrder === 'asc' ? '↑' : '↓'}

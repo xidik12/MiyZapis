@@ -78,7 +78,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div ref={dropdownRef} className="absolute right-0 mt-2 w-96 max-w-[90vw] bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 transition-all duration-200">
+    <div ref={dropdownRef} className="absolute right-0 mt-2 w-96 max-w-[90vw] bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-50 transition-all duration-200">
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">{t('notifications.title')}</h3>

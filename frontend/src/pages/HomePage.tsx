@@ -201,7 +201,7 @@ const HomePage: React.FC = () => {
               {stats.map((stat, index) => (
                 <div
                   key={index} 
-                  className="glass-effect text-center p-3 xs:p-4 sm:p-6 hover:scale-105 transition-all duration-300 rounded-lg border border-white/20"
+                  className="glass-effect text-center p-3 xs:p-4 sm:p-6 hover:scale-105 transition-all duration-300 rounded-xl border border-white/20"
                   style={{
                     background: 'rgba(255, 255, 255, 0.15)',
                     backdropFilter: 'blur(20px)'
@@ -378,7 +378,7 @@ const HomePage: React.FC = () => {
           <div className="text-center mt-12">
             <Link
               to="/search"
-              className="inline-flex items-center bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
+              className="inline-flex items-center bg-primary-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors"
             >
               {t('featuredSpecialists.viewAll')}
               <ArrowRightIcon className="w-5 h-5 ml-2" />
@@ -420,7 +420,7 @@ const HomePage: React.FC = () => {
 
               <Link
                 to="/auth/register?type=specialist"
-                className="inline-flex items-center bg-white text-primary-700 px-8 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors"
+                className="inline-flex items-center bg-white text-primary-700 px-8 py-3 rounded-xl font-semibold hover:bg-primary-50 transition-colors"
               >
                 {t('forSpecialists.joinButton')}
                 <ArrowRightIcon className="w-5 h-5 ml-2" />
@@ -433,19 +433,19 @@ const HomePage: React.FC = () => {
                   {t('forSpecialists.benefitsTitle')}
                 </h3>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-white bg-opacity-10 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-white bg-opacity-10 rounded-xl">
                     <span>{t('forSpecialists.monthlyBookings')}</span>
                     <span className="font-bold">45+</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-white bg-opacity-10 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-white bg-opacity-10 rounded-xl">
                     <span>{t('forSpecialists.responseTime')}</span>
                     <span className="font-bold">&lt; 2 hours</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-white bg-opacity-10 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-white bg-opacity-10 rounded-xl">
                     <span>{t('forSpecialists.satisfaction')}</span>
                     <span className="font-bold">4.8/5 ⭐</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-white bg-opacity-10 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-white bg-opacity-10 rounded-xl">
                     <span>{t('forSpecialists.commission')}</span>
                     <span className="font-bold">{t('forSpecialists.commissionValue')}</span>
                   </div>

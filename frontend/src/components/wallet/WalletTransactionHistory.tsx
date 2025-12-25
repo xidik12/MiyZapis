@@ -140,11 +140,11 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
         <div className="space-y-4">
         {/* Filter Panel */}
         {showFilterPanel && showFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-xl">
             <select
               value={filters.type || ''}
               onChange={(e) => handleFilterChange('type', e.target.value || undefined)}
-              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             >
               <option value="">{t('wallet.transactions.filters.allTypes')}</option>
               <option value="CREDIT">{t('wallet.transactions.filters.credit')}</option>
@@ -170,7 +170,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
         )}
 
         {/* Current Balance */}
-        <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+        <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
           <div className="text-2xl font-bold">{formatPrice(balance)}</div>
           <div className="text-sm text-muted-foreground">{t('wallet.transactions.currentBalance')}</div>
         </div>
@@ -185,7 +185,7 @@ const WalletTransactionHistory: React.FC<WalletTransactionHistoryProps> = ({
             {transactions.map((transaction) => (
               <div
                 key={transaction.id}
-                className={`flex items-center justify-between p-4 rounded-lg border ${
+                className={`flex items-center justify-between p-4 rounded-xl border ${
                   compact ? 'p-3' : 'p-4'
                 } ${
                   transaction.status === 'PENDING'

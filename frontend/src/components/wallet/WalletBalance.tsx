@@ -148,7 +148,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
 
         {/* Pending Transactions */}
         {summary.pendingTransactions > 0 && (
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-md text-center">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-xl text-center">
             <div className="text-sm text-yellow-800 dark:text-yellow-200">
               {summary.pendingTransactions} {t('wallet.balance.pendingTransactions')}
             </div>

@@ -345,7 +345,7 @@ const CustomerLoyalty: React.FC = () => {
                   {formatPoints(loyaltyProfile?.currentPoints || 0)}
                 </p>
               </div>
-              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-primary-100 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
                 <StarIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary-600 dark:text-primary-400" active />
               </div>
             </div>
@@ -360,7 +360,7 @@ const CustomerLoyalty: React.FC = () => {
                   {formatPoints(loyaltyProfile?.lifetimePoints || 0)}
                 </p>
               </div>
-              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
                 <TrophyIcon className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" active />
               </div>
             </div>
@@ -375,7 +375,7 @@ const CustomerLoyalty: React.FC = () => {
                   {loyaltyStats?.currentTier?.name || 'Bronze'}
                 </p>
               </div>
-              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center">
                 <SparklesIcon className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600 dark:text-yellow-400" />
               </div>
             </div>
@@ -390,7 +390,7 @@ const CustomerLoyalty: React.FC = () => {
                   {formatPoints(loyaltyStats?.totalSpentPoints || 0)}
                 </p>
               </div>
-              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-red-100 dark:bg-red-900/20 rounded-xl flex items-center justify-center">
                 <ArrowDownIcon className="h-5 w-5 sm:h-6 sm:w-6 text-red-600 dark:text-red-400" />
               </div>
             </div>
@@ -432,7 +432,7 @@ const CustomerLoyalty: React.FC = () => {
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center">
                 <BriefcaseIcon className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
@@ -442,7 +442,7 @@ const CustomerLoyalty: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
                 <GiftIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
@@ -452,7 +452,7 @@ const CustomerLoyalty: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
                 <UsersIcon className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
@@ -462,7 +462,7 @@ const CustomerLoyalty: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
+              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-orange-100 dark:bg-orange-900/20 rounded-xl flex items-center justify-center">
                 <FireIcon className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 dark:text-orange-400" active />
               </div>
               <div>
@@ -510,7 +510,7 @@ const CustomerLoyalty: React.FC = () => {
               <div className="space-y-4 sm:space-y-6">
                 {/* Quick Stats */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-                  <div className="text-center p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div className="text-center p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                     <CalendarDaysIcon className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
                     <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
                       {formatPoints(loyaltyStats?.monthlyPoints || 0)}
@@ -518,7 +518,7 @@ const CustomerLoyalty: React.FC = () => {
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.pointsThisMonth') || 'Points This Month'}</p>
                   </div>
 
-                  <div className="text-center p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <div className="text-center p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
                     <UsersIcon className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 dark:text-green-400 mx-auto mb-2" />
                     <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
                       {loyaltyStats?.totalReferrals || 0}
@@ -526,7 +526,7 @@ const CustomerLoyalty: React.FC = () => {
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.totalReferrals') || 'Total Referrals'}</p>
                   </div>
 
-                  <div className="text-center p-3 sm:p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                  <div className="text-center p-3 sm:p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
                     <TrophyIcon className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600 dark:text-purple-400 mx-auto mb-2" active />
                     <p className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
                       {loyaltyStats?.totalBadges || 0}
@@ -540,7 +540,7 @@ const CustomerLoyalty: React.FC = () => {
                   <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('loyalty.recentActivity') || 'Recent Activity'}</h4>
                   <div className="space-y-2 sm:space-y-3">
                     {transactions.slice(0, 5).map((transaction) => (
-                      <div key={transaction.id} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div key={transaction.id} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                         <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
                           {getTransactionIcon(transaction.type)}
                           <div className="min-w-0 flex-1">
@@ -570,7 +570,7 @@ const CustomerLoyalty: React.FC = () => {
                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('loyalty.transactionHistory') || 'Transaction History'}</h4>
                 <div className="space-y-3">
                   {transactions.map((transaction) => (
-                    <div key={transaction.id} className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+                    <div key={transaction.id} className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 dark:border-gray-600 rounded-xl">
                       <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
                         {getTransactionIcon(transaction.type)}
                         <div className="min-w-0 flex-1">
@@ -663,11 +663,11 @@ const CustomerLoyalty: React.FC = () => {
                             const accent = getTierSkin(loyaltyStats?.currentTier?.name || 'BRONZE').accentText;
                             return (
                               <div className="grid grid-cols-2 gap-2">
-                                <div className="p-2 rounded-lg bg-white/60 dark:bg-gray-700/60">
+                                <div className="p-2 rounded-xl bg-white/60 dark:bg-gray-700/60">
                                   <p className="text-xs text-gray-600 dark:text-gray-300">{t('labels.amount') || 'Amount'}</p>
                                   <p className={`font-semibold ${accent}`}>{formatPoints(loyaltyProfile?.currentPoints || 0)} {t('loyalty.points') || 'points'}</p>
                                 </div>
-                                <div className="p-2 rounded-lg bg-white/60 dark:bg-gray-700/60">
+                                <div className="p-2 rounded-xl bg-white/60 dark:bg-gray-700/60">
                                   <p className="text-xs text-gray-600 dark:text-gray-300">{t('labels.spent') || 'Spent'}</p>
                                   <p className={`font-semibold ${accent}`}>{formatPoints(loyaltyStats?.totalSpentPoints || 0)} {t('loyalty.pointsShort') || 'pts'}</p>
                                 </div>
@@ -811,7 +811,7 @@ const CustomerLoyalty: React.FC = () => {
                       </div>
 
                       {availableRewards.length === 0 ? (
-                        <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
                           <GiftIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                           <p className="text-gray-600 dark:text-gray-400 text-sm">
                             {t('loyalty.noRewardsAvailable') || 'No rewards available right now.'}
@@ -826,7 +826,7 @@ const CustomerLoyalty: React.FC = () => {
                             return (
                               <div
                                 key={reward.id}
-                                className="p-4 rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 transition-colors"
+                                className="p-4 rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 transition-colors"
                               >
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                   <div className="flex-1">
@@ -859,16 +859,16 @@ const CustomerLoyalty: React.FC = () => {
                                     </div>
 
                                     <div className="flex flex-wrap gap-2 mt-3">
-                                      <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                                      <span className="inline-flex items-center px-2 py-1 rounded-xl text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
                                         {RewardsService.getRewardTypeLabel(reward.type)}
                                       </span>
                                       {reward.usageLimit === 'ONCE_PER_USER' && (
-                                        <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
+                                        <span className="inline-flex items-center px-2 py-1 rounded-xl text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
                                           One time only
                                         </span>
                                       )}
                                       {reward.validUntil && (
-                                        <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
+                                        <span className="inline-flex items-center px-2 py-1 rounded-xl text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
                                           Expires {new Date(reward.validUntil).toLocaleDateString()}
                                         </span>
                                       )}
@@ -879,7 +879,7 @@ const CustomerLoyalty: React.FC = () => {
                                     <button
                                       onClick={() => handleRedeemReward(reward.id)}
                                       disabled={!canAfford || !isAvailable || redeemingId === reward.id}
-                                      className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                                      className={`px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-colors ${
                                         canAfford && isAvailable
                                           ? 'bg-primary-600 text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500'
                                           : 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400'
@@ -906,7 +906,7 @@ const CustomerLoyalty: React.FC = () => {
                       </h5>
 
                       {myRedemptions.length === 0 ? (
-                        <div className="text-center py-6 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <div className="text-center py-6 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
                           <TrophyIcon className="h-10 w-10 text-gray-400 mx-auto mb-2" active />
                           <p className="text-gray-600 dark:text-gray-400 text-sm">
                             {t('loyalty.noRedemptionsYet') || 'You haven\'t redeemed any rewards yet.'}
@@ -918,7 +918,7 @@ const CustomerLoyalty: React.FC = () => {
                             const statusInfo = RewardsService.formatRedemptionStatus(redemption.status);
 
                             return (
-                              <div key={redemption.id} className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                              <div key={redemption.id} className="p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between mb-1">

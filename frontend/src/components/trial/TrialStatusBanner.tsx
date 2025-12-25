@@ -160,7 +160,7 @@ export const TrialStatusBanner: React.FC<TrialStatusBannerProps> = ({
             <button
               onClick={onDismiss}
               className={clsx(
-                'p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 transition-colors',
+                'p-1 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors',
                 getTextStyles()
               )}
               aria-label="Dismiss"

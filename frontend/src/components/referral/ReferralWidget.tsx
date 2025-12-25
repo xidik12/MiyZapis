@@ -127,7 +127,7 @@ const ReferralWidget: React.FC<ReferralWidgetProps> = ({ userType, className }) 
       </div>
 
       {/* Conversion Rate */}
-      <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+      <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
         <div className="flex justify-between items-center">
           <span className="text-sm text-gray-600 dark:text-gray-400">
             Conversion Rate

@@ -609,21 +609,21 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           <div className="space-y-2">
             <Link
               to="/specialist/schedule"
-              className="w-full text-left py-2 px-3 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 text-sm font-medium flex items-center"
+              className="w-full text-left py-2 px-3 rounded-xl bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 text-sm font-medium flex items-center"
             >
               <Cog6ToothIcon className="w-4 h-4 mr-2" />
               {t('dashboard.specialist.manageSchedule')}
             </Link>
             <Link
               to="/specialist/reviews"
-              className="w-full text-left py-2 px-3 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 text-sm font-medium flex items-center"
+              className="w-full text-left py-2 px-3 rounded-xl bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 text-sm font-medium flex items-center"
             >
               <StarIcon className="w-4 h-4 mr-2" />
               {t('dashboard.specialist.viewReviews')}
             </Link>
             <Link
               to="/specialist/messages"
-              className="w-full text-left py-2 px-3 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 text-sm font-medium flex items-center"
+              className="w-full text-left py-2 px-3 rounded-xl bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 text-sm font-medium flex items-center"
             >
               <ChatBubbleLeftRightIcon className="w-4 h-4 mr-2" />
               {t('dashboard.specialist.messageClients')}
@@ -718,10 +718,10 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <button className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-lg transition-colors">
+                  <button className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-xl transition-colors">
                     <ChatBubbleLeftRightIcon className="w-4 h-4" />
                   </button>
-                  <button className="p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                  <button className="p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors">
                     <CalendarIcon className="w-4 h-4" />
                   </button>
                 </div>

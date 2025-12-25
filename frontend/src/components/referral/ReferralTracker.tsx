@@ -150,7 +150,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
 
       {/* Filter Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex flex-wrap gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+        <div className="flex flex-wrap gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
           {[
             { key: 'all', label: t('referral.filters.all') },
             { key: 'pending', label: t('referral.filters.pending') },
@@ -161,7 +161,7 @@ const ReferralTracker: React.FC<ReferralTrackerProps> = ({
               key={filter.key}
               onClick={() => setSelectedFilter(filter.key as any)}
               className={clsx(
-                'px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors whitespace-nowrap',
+                'px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium rounded-xl transition-colors whitespace-nowrap',
                 selectedFilter === filter.key
                   ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'

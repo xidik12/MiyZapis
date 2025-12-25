@@ -398,7 +398,7 @@ const SpecialistLoyalty: React.FC = () => {
                   {formatPoints(loyaltyProfile?.currentPoints || 0)}
                 </p>
               </div>
-              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-primary-100 dark:bg-primary-900/20 rounded-xl flex items-center justify-center">
                 <StarIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary-600 dark:text-primary-400" active />
               </div>
             </div>
@@ -413,7 +413,7 @@ const SpecialistLoyalty: React.FC = () => {
                   {formatPoints(loyaltyProfile?.lifetimePoints || 0)}
                 </p>
               </div>
-              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
                 <TrophyIcon className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" active />
               </div>
             </div>
@@ -428,7 +428,7 @@ const SpecialistLoyalty: React.FC = () => {
                   {loyaltyStats?.currentTier?.name || 'Bronze'}
                 </p>
               </div>
-              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-xl flex items-center justify-center">
                 <SparklesIcon className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600 dark:text-yellow-400" />
               </div>
             </div>
@@ -443,7 +443,7 @@ const SpecialistLoyalty: React.FC = () => {
                   {formatPoints(loyaltyStats?.totalSpentPoints || 0)}
                 </p>
               </div>
-              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-red-100 dark:bg-red-900/20 rounded-xl flex items-center justify-center">
                 <ArrowDownIcon className="h-5 w-5 sm:h-6 sm:w-6 text-red-600 dark:text-red-400" />
               </div>
             </div>
@@ -485,7 +485,7 @@ const SpecialistLoyalty: React.FC = () => {
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center">
                 <StarIcon className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 dark:text-green-400" active />
               </div>
               <div>
@@ -495,7 +495,7 @@ const SpecialistLoyalty: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
                 <GiftIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
@@ -505,7 +505,7 @@ const SpecialistLoyalty: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
                 <UsersIcon className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
@@ -515,7 +515,7 @@ const SpecialistLoyalty: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
+              <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-orange-100 dark:bg-orange-900/20 rounded-xl flex items-center justify-center">
                 <FireIcon className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 dark:text-orange-400" active />
               </div>
               <div>
@@ -563,7 +563,7 @@ const SpecialistLoyalty: React.FC = () => {
               <div className="space-y-4 sm:space-y-6">
                 {/* Quick Stats */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-                  <div className="text-center p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div className="text-center p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                     <CalendarDaysIcon className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
                     <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
                       {formatPoints(loyaltyStats?.monthlyPoints || 0)}
@@ -571,7 +571,7 @@ const SpecialistLoyalty: React.FC = () => {
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.pointsThisMonth') || 'Points This Month'}</p>
                   </div>
 
-                  <div className="text-center p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <div className="text-center p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
                     <BriefcaseIcon className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 dark:text-green-400 mx-auto mb-2" />
                     <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
                       {loyaltyStats?.totalServices || 0}
@@ -579,7 +579,7 @@ const SpecialistLoyalty: React.FC = () => {
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('loyalty.servicesCompleted') || 'Services Completed'}</p>
                   </div>
 
-                  <div className="text-center p-3 sm:p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                  <div className="text-center p-3 sm:p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
                     <TrophyIcon className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600 dark:text-purple-400 mx-auto mb-2" active />
                     <p className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
                       {loyaltyStats?.totalBadges || 0}
@@ -593,7 +593,7 @@ const SpecialistLoyalty: React.FC = () => {
                   <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('loyalty.recentActivity') || 'Recent Activity'}</h4>
                   <div className="space-y-2 sm:space-y-3">
                     {transactions.slice(0, 5).map((transaction) => (
-                      <div key={transaction.id} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div key={transaction.id} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                         <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
                           {getTransactionIcon(transaction.type)}
                           <div className="min-w-0 flex-1">
@@ -623,7 +623,7 @@ const SpecialistLoyalty: React.FC = () => {
                 <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{t('loyalty.transactionHistory') || 'Transaction History'}</h4>
                 <div className="space-y-3">
                   {transactions.map((transaction) => (
-                    <div key={transaction.id} className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
+                    <div key={transaction.id} className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 dark:border-gray-600 rounded-xl">
                       <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
                         {getTransactionIcon(transaction.type)}
                         <div className="min-w-0 flex-1">
@@ -716,11 +716,11 @@ const SpecialistLoyalty: React.FC = () => {
                             const accent = getTierSkin(loyaltyStats?.currentTier?.name || 'BRONZE').accentText;
                             return (
                               <div className="grid grid-cols-2 gap-2">
-                                <div className="p-2 rounded-lg bg-white/60 dark:bg-gray-700/60">
+                                <div className="p-2 rounded-xl bg-white/60 dark:bg-gray-700/60">
                                   <p className="text-xs text-gray-600 dark:text-gray-300">{t('labels.amount') || 'Amount'}</p>
                                   <p className={`font-semibold ${accent}`}>{formatPoints(loyaltyProfile?.currentPoints || 0)} {t('loyalty.points') || 'points'}</p>
                                 </div>
-                                <div className="p-2 rounded-lg bg-white/60 dark:bg-gray-700/60">
+                                <div className="p-2 rounded-xl bg-white/60 dark:bg-gray-700/60">
                                   <p className="text-xs text-gray-600 dark:text-gray-300">{t('labels.spent') || 'Spent'}</p>
                                   <p className={`font-semibold ${accent}`}>{formatPoints(loyaltyStats?.totalSpentPoints || 0)} {t('loyalty.pointsShort') || 'pts'}</p>
                                 </div>
@@ -855,7 +855,7 @@ const SpecialistLoyalty: React.FC = () => {
                   </div>
                   <button
                     onClick={() => setShowCreateReward(true)}
-                    className="inline-flex items-center px-3 sm:px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                    className="inline-flex items-center px-3 sm:px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
                   >
                     <PlusIcon className="h-4 w-4 mr-2" />
                     {t('loyalty.createReward') || 'Create Reward'}
@@ -876,7 +876,7 @@ const SpecialistLoyalty: React.FC = () => {
                     </p>
                     <button
                       onClick={() => setShowCreateReward(true)}
-                      className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                      className="inline-flex items-center px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
                     >
                       <PlusIcon className="h-4 w-4 mr-2" />
                       {t('loyalty.createYourFirstReward') || 'Create Your First Reward'}
@@ -928,16 +928,16 @@ const SpecialistLoyalty: React.FC = () => {
                             </div>
 
                             <div className="flex flex-wrap gap-2">
-                              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                              <span className="inline-flex items-center px-2 py-1 rounded-xl text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
                                 {RewardsService.getRewardTypeLabel(reward.type)}
                               </span>
                               {reward.usageLimit !== 'UNLIMITED' && (
-                                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
+                                <span className="inline-flex items-center px-2 py-1 rounded-xl text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
                                   {reward.usageLimit.replace('_', ' ').toLowerCase()}
                                 </span>
                               )}
                               {reward.validUntil && (
-                                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
+                                <span className="inline-flex items-center px-2 py-1 rounded-xl text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
                                   Expires {new Date(reward.validUntil).toLocaleDateString()}
                                 </span>
                               )}
@@ -948,14 +948,14 @@ const SpecialistLoyalty: React.FC = () => {
                           <div className="flex items-center space-x-2">
                             <button
                               onClick={() => setEditingReward(reward)}
-                              className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                              className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/20 rounded-xl transition-colors"
                               title="Edit reward"
                             >
                               <PencilIcon className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handleToggleRewardStatus(reward)}
-                              className={`p-2 rounded-lg transition-colors ${
+                              className={`p-2 rounded-xl transition-colors ${
                                 reward.isActive
                                   ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-100 dark:hover:bg-yellow-900/20'
                                   : 'text-green-600 hover:text-green-700 hover:bg-green-100 dark:hover:bg-green-900/20'
@@ -970,7 +970,7 @@ const SpecialistLoyalty: React.FC = () => {
                             </button>
                             <button
                               onClick={() => handleDeleteReward(reward.id)}
-                              className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                              className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-xl transition-colors"
                               title="Delete reward"
                             >
                               <TrashIcon className="h-4 w-4" />
@@ -1008,11 +1008,11 @@ const SpecialistLoyalty: React.FC = () => {
                               <h5 className="font-semibold text-gray-900 dark:text-white">{reward.title}</h5>
                               <p className="text-sm text-gray-600 dark:text-gray-400">{reward.description}</p>
                               <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-600 dark:text-gray-400">
-                                <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+                                <span className="inline-flex items-center px-2 py-1 rounded-xl bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
                                   {formatPoints(reward.pointsRequired)} pts
                                 </span>
                                 {reward.validUntil && (
-                                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
+                                  <span className="inline-flex items-center px-2 py-1 rounded-xl bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400">
                                     Expires {new Date(reward.validUntil).toLocaleDateString()}
                                   </span>
                                 )}
@@ -1021,7 +1021,7 @@ const SpecialistLoyalty: React.FC = () => {
                             <button
                               disabled={redeemingId === reward.id}
                               onClick={() => handleRedeem(reward.id)}
-                              className="inline-flex items-center px-3 py-2 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
+                              className="inline-flex items-center px-3 py-2 rounded-xl bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 disabled:opacity-50"
                             >
                               {redeemingId === reward.id ? (t('loyalty.redeeming') || 'Redeeming...') : (t('loyalty.redeem') || 'Redeem')}
                             </button>
@@ -1040,7 +1040,7 @@ const SpecialistLoyalty: React.FC = () => {
                   ) : (
                     <div className="space-y-2">
                       {myRedemptions.slice(0, 5).map((r) => (
-                        <div key={r.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                        <div key={r.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-xl">
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{r.reward.title}</p>
                             <p className="text-xs text-gray-600 dark:text-gray-400">{new Date(r.redeemedAt).toLocaleString()} • {r.status}</p>
@@ -1134,7 +1134,7 @@ const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose}></div>
 
-        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full max-w-[95vw] sm:max-w-lg">
+        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full max-w-[95vw] sm:max-w-lg">
           <form onSubmit={handleSubmit} className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="sm:flex sm:items-start">
               <div className="w-full">
@@ -1150,7 +1150,7 @@ const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit
                     <input
                       type="text"
                       required
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       placeholder="10% OFF next service"
@@ -1164,7 +1164,7 @@ const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit
                     <textarea
                       required
                       rows={3}
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       placeholder={t('loyalty.rewardDescriptionPlaceholder') || 'Describe what customers get with this reward...'}
@@ -1176,7 +1176,7 @@ const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit
                       {t('loyalty.rewardType') || 'Reward Type'}
                     </label>
                     <select
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       value={formData.type}
                       onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
                     >
@@ -1197,7 +1197,7 @@ const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit
                         min="1"
                         max="100"
                         required
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         value={formData.discountPercent}
                         onChange={(e) => setFormData({ ...formData, discountPercent: parseInt(e.target.value) })}
                       />
@@ -1214,7 +1214,7 @@ const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit
                         min="1"
                         step="0.01"
                         required
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         value={formData.discountAmount}
                         onChange={(e) => setFormData({ ...formData, discountAmount: parseFloat(e.target.value) })}
                       />
@@ -1229,7 +1229,7 @@ const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit
                       type="number"
                       min="1"
                       required
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       value={formData.pointsRequired}
                       onChange={(e) => setFormData({ ...formData, pointsRequired: parseInt(e.target.value) })}
                     />
@@ -1240,7 +1240,7 @@ const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit
                       {t('loyalty.usageLimit') || 'Usage Limit'}
                     </label>
                     <select
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       value={formData.usageLimit}
                       onChange={(e) => setFormData({ ...formData, usageLimit: e.target.value as any })}
                     >
@@ -1259,7 +1259,7 @@ const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit
                         type="number"
                         min="1"
                         required
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         value={formData.maxRedemptions}
                         onChange={(e) => setFormData({ ...formData, maxRedemptions: e.target.value })}
                       />
@@ -1272,7 +1272,7 @@ const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit
                     </label>
                     <input
                       type="date"
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       value={formData.validUntil}
                       onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
                       min={new Date().toISOString().split('T')[0]}
@@ -1286,14 +1286,14 @@ const CreateRewardModal: React.FC<CreateRewardModalProps> = ({ onClose, onSubmit
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
               >
                 {isSubmitting ? (t('common.creating') || 'Creating...') : (t('loyalty.createReward') || 'Create Reward')}
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:text-gray-400"
+                className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:text-gray-400"
               >
                 {t('actions.cancel') || 'Cancel'}
               </button>
@@ -1363,7 +1363,7 @@ const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSu
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose}></div>
 
-        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full max-w-[95vw] sm:max-w-lg">
+        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full max-w-[95vw] sm:max-w-lg">
           <form onSubmit={handleSubmit} className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="sm:flex sm:items-start">
               <div className="w-full">
@@ -1379,7 +1379,7 @@ const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSu
                     <input
                       type="text"
                       required
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     />
@@ -1392,7 +1392,7 @@ const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSu
                     <textarea
                       required
                       rows={3}
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     />
@@ -1406,7 +1406,7 @@ const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSu
                       type="number"
                       min="1"
                       required
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       value={formData.pointsRequired}
                       onChange={(e) => setFormData({ ...formData, pointsRequired: parseInt(e.target.value) })}
                     />
@@ -1422,7 +1422,7 @@ const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSu
                         min="1"
                         max="100"
                         required
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         value={formData.discountPercent}
                         onChange={(e) => setFormData({ ...formData, discountPercent: parseInt(e.target.value) })}
                       />
@@ -1439,7 +1439,7 @@ const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSu
                         min="1"
                         step="0.01"
                         required
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         value={formData.discountAmount}
                         onChange={(e) => setFormData({ ...formData, discountAmount: parseFloat(e.target.value) })}
                       />
@@ -1452,7 +1452,7 @@ const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSu
                     </label>
                     <input
                       type="date"
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       value={formData.validUntil}
                       onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
                       min={new Date().toISOString().split('T')[0]}
@@ -1466,14 +1466,14 @@ const EditRewardModal: React.FC<EditRewardModalProps> = ({ reward, onClose, onSu
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
               >
                 {isSubmitting ? 'Updating...' : 'Update Reward'}
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:text-gray-400"
+                className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:w-auto sm:text-sm dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:text-gray-400"
               >
                 Cancel
               </button>

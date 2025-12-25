@@ -173,7 +173,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
             </div>
             <button
               onClick={onToggle}
-              className="lg:hidden p-2 rounded-lg text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="lg:hidden p-2 rounded-xl text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <XMarkIcon className="w-6 h-6" />
             </button>
@@ -314,7 +314,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       {!isOpen && (
         <button
           onClick={onToggle}
-          className="fixed top-4 left-4 z-30 lg:hidden p-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+          className="fixed top-4 left-4 z-30 lg:hidden p-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
         >
           <Bars3Icon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
         </button>

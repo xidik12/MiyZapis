@@ -261,7 +261,7 @@ const TrialInfoPage: React.FC = () => {
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <div className="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                   {t('trial.info.afterTrial.customers.title')}
                 </h3>
@@ -277,7 +277,7 @@ const TrialInfoPage: React.FC = () => {
                 </ul>
               </div>
 
-              <div className="bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <div className="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                   {t('trial.info.afterTrial.specialists.title')}
                 </h3>
@@ -310,14 +310,14 @@ const TrialInfoPage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link
                     to="/auth/register"
-                    className="inline-flex items-center justify-center px-6 py-3 bg-white text-primary-600 rounded-lg hover:bg-gray-100 transition-colors font-semibold text-lg"
+                    className="inline-flex items-center justify-center px-6 py-3 bg-white text-primary-600 rounded-xl hover:bg-gray-100 transition-colors font-semibold text-lg"
                   >
                     {t('trial.info.cta.signUpButton')}
                     <ArrowRightIcon className="w-5 h-5 ml-2" />
                   </Link>
                   <Link
                     to="/auth/login"
-                    className="inline-flex items-center justify-center px-6 py-3 bg-transparent border-2 border-white text-white rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors font-semibold text-lg"
+                    className="inline-flex items-center justify-center px-6 py-3 bg-transparent border-2 border-white text-white rounded-xl hover:bg-white hover:bg-opacity-10 transition-colors font-semibold text-lg"
                   >
                     {t('trial.info.cta.loginButton')}
                   </Link>

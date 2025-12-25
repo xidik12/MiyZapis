@@ -64,7 +64,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
           <div className="flex items-start flex-1">
-            <div className="p-2 bg-primary-100 dark:bg-primary-900/20 rounded-lg mr-3 shrink-0">
+            <div className="p-2 bg-primary-100 dark:bg-primary-900/20 rounded-xl mr-3 shrink-0">
               <GiftIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
             </div>
             <div className="min-w-0 flex-1">
@@ -136,7 +136,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
 
         {/* Expiry Warning */}
         {isExpiringSoon && (
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-3 mb-4">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-3 mb-4">
             <div className="flex">
               <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400 mr-2 mt-0.5" />
               <div className="text-sm text-yellow-700 dark:text-yellow-300">
@@ -180,8 +180,8 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
                 <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                   {t('referral.referredUser')}
                 </h4>
-                <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg mr-3">
+                <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                  <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-xl mr-3">
                     <UserIcon className="h-4 w-4 text-green-600 dark:text-green-400" />
                   </div>
                   <div>
@@ -202,7 +202,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
                 <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                   {t('referral.customMessage')}
                 </h4>
-                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
                   <p className="text-sm text-gray-700 dark:text-gray-300">
                     "{referral.customMessage}"
                   </p>
@@ -216,7 +216,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
                 {t('referral.rewardDetails')}
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+                <div className="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-xl">
                   <div className="text-xs text-primary-600 dark:text-primary-400 mb-1">
                     {t('referral.yourReward')}
                   </div>
@@ -224,7 +224,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
                     {referralService.getRewardDisplayText(referral.referrerRewardType, referral.referrerRewardValue || 0)}
                   </div>
                 </div>
-                <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
                   <div className="text-xs text-green-600 dark:text-green-400 mb-1">
                     {t('referral.theirReward')}
                   </div>
@@ -240,7 +240,7 @@ const ReferralCard: React.FC<ReferralCardProps> = ({
               <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                 {t('referral.shareUrl')}
               </h4>
-              <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
                 <code className="flex-1 text-xs text-gray-600 dark:text-gray-400 break-all">
                   {referral.shareUrl}
                 </code>

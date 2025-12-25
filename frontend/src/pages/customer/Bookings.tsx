@@ -227,7 +227,7 @@ const CustomerBookings: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
           <button
             onClick={() => dispatch(fetchBookings({ filters: {}, userType: 'customer' }))}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
           >
             {t('actions.retry')}
           </button>
@@ -252,7 +252,7 @@ const CustomerBookings: React.FC = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-3 sm:p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow mb-6 p-3 sm:p-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {/* Status Filter */}
             <div>
@@ -262,7 +262,7 @@ const CustomerBookings: React.FC = () => {
               <select
                 value={filters.status}
                 onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-                className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white"
               >
                 <option value="all">{t('filters.all')}</option>
                 <option value="PENDING">{t('status.pending')}</option>
@@ -281,7 +281,7 @@ const CustomerBookings: React.FC = () => {
               <select
                 value={filters.dateRange}
                 onChange={(e) => setFilters(prev => ({ ...prev, dateRange: e.target.value }))}
-                className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white"
               >
                 <option value="all">{t('filters.allTime')}</option>
                 <option value="today">{t('filters.today')}</option>
@@ -299,7 +299,7 @@ const CustomerBookings: React.FC = () => {
                 value={filters.searchTerm}
                 onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
                 placeholder={t('filters.searchPlaceholder')}
-                className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white"
               />
             </div>
 
@@ -312,7 +312,7 @@ const CustomerBookings: React.FC = () => {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as 'date' | 'amount' | 'status')}
-                  className="flex-1 p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                  className="flex-1 p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white"
                 >
                   <option value="date">{t('filters.date')}</option>
                   <option value="amount">{t('filters.amount')}</option>
@@ -320,7 +320,7 @@ const CustomerBookings: React.FC = () => {
                 </select>
                 <button
                   onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                  className="px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white text-sm min-w-[3rem] flex items-center justify-center"
+                  className="px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white text-sm min-w-[3rem] flex items-center justify-center"
                   title={sortOrder === 'asc' ? t('filters.ascending') : t('filters.descending')}
                 >
                   {sortOrder === 'asc' ? '↑' : '↓'}
@@ -331,7 +331,7 @@ const CustomerBookings: React.FC = () => {
         </div>
 
         {/* Bookings List */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow">
           {paginatedBookings.length === 0 ? (
             <div className="p-8 sm:p-12 text-center">
               <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-gray-400">
@@ -521,7 +521,7 @@ const CustomerBookings: React.FC = () => {
               <button
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t('pagination.previous')}
               </button>
@@ -541,7 +541,7 @@ const CustomerBookings: React.FC = () => {
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium border rounded-lg ${
+                    className={`px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium border rounded-xl ${
                       page === currentPage
                         ? 'bg-blue-600 text-white border-blue-600'
                         : 'text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -554,7 +554,7 @@ const CustomerBookings: React.FC = () => {
               <button
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t('pagination.next')}
               </button>

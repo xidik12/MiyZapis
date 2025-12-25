@@ -166,9 +166,9 @@ const AdminDashboard: React.FC = () => {
           <div className="space-y-8">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
                 <div className="flex items-center">
-                  <div className="p-2 bg-primary-100 rounded-lg">
+                  <div className="p-2 bg-primary-100 rounded-xl">
                     <UsersIcon className="w-6 h-6 text-primary-600" />
                   </div>
                   <div className="ml-4">
@@ -180,9 +180,9 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
                 <div className="flex items-center">
-                  <div className="p-2 bg-secondary-100 rounded-lg">
+                  <div className="p-2 bg-secondary-100 rounded-xl">
                     <UserGroupIcon className="w-6 h-6 text-secondary-600" />
                   </div>
                   <div className="ml-4">
@@ -194,9 +194,9 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
                 <div className="flex items-center">
-                  <div className="p-2 bg-green-100 rounded-lg">
+                  <div className="p-2 bg-green-100 rounded-xl">
                     <ChartBarIcon className="w-6 h-6 text-green-600" />
                   </div>
                   <div className="ml-4">
@@ -208,9 +208,9 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
                 <div className="flex items-center">
-                  <div className="p-2 bg-purple-100 rounded-lg">
+                  <div className="p-2 bg-purple-100 rounded-xl">
                     <ChartBarIcon className="w-6 h-6 text-purple-600" />
                   </div>
                   <div className="ml-4">
@@ -225,7 +225,7 @@ const AdminDashboard: React.FC = () => {
 
             {/* Alerts */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4">
                 <div className="flex items-center">
                   <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600" />
                   <h3 className="ml-2 text-sm font-medium text-yellow-800 dark:text-yellow-200">
@@ -237,7 +237,7 @@ const AdminDashboard: React.FC = () => {
                 </p>
               </div>
 
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
                 <div className="flex items-center">
                   <XCircleIcon className="w-5 h-5 text-red-600" />
                   <h3 className="ml-2 text-sm font-medium text-red-800 dark:text-red-200">
@@ -249,7 +249,7 @@ const AdminDashboard: React.FC = () => {
                 </p>
               </div>
 
-              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
                 <div className="flex items-center">
                   <CheckCircleIcon className="w-5 h-5 text-green-600" />
                   <h3 className="ml-2 text-sm font-medium text-green-800 dark:text-green-200">
@@ -263,7 +263,7 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             {/* Popular Searches */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
                 Popular Searches Today
               </h3>
@@ -285,7 +285,7 @@ const AdminDashboard: React.FC = () => {
         {activeTab === 'users' && (
           <div className="space-y-6">
             {/* Filters */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                   <div className="relative">
@@ -295,7 +295,7 @@ const AdminDashboard: React.FC = () => {
                       placeholder="Search users..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
                 </div>
@@ -304,7 +304,7 @@ const AdminDashboard: React.FC = () => {
                   <select
                     value={userFilter}
                     onChange={(e) => setUserFilter(e.target.value as any)}
-                    className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value="all">All Users</option>
                     <option value="customers">Customers</option>
@@ -317,7 +317,7 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             {/* Users Table */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                   <thead className="bg-gray-50 dark:bg-gray-700">
@@ -417,7 +417,7 @@ const AdminDashboard: React.FC = () => {
         {/* Analytics Tab */}
         {activeTab === 'analytics' && (
           <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
                 Search Analytics
               </h3>
@@ -448,13 +448,13 @@ const AdminDashboard: React.FC = () => {
         {/* Verification Tab */}
         {activeTab === 'verification' && (
           <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
                 Pending Verifications
               </h3>
               <div className="space-y-4">
                 {sampleUsers.filter(user => !user.verified || user.status === 'pending').map((user) => (
-                  <div key={user.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                  <div key={user.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl">
                     <div className="flex items-center space-x-4">
                       <div className="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center">
                         <span className="text-sm font-medium text-primary-600">

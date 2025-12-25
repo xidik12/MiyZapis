@@ -893,7 +893,7 @@ const BookingFlow: React.FC = () => {
           </p>
           <button
             onClick={() => navigate(-1)}
-            className="bg-primary-600 text-white py-2 px-6 rounded-lg hover:bg-primary-700 transition-colors"
+            className="bg-primary-600 text-white py-2 px-6 rounded-xl hover:bg-primary-700 transition-colors"
           >
             {t('navigation.goBack')}
           </button>
@@ -914,7 +914,7 @@ const BookingFlow: React.FC = () => {
                 {t('booking.selectedService')}
               </h3>
               
-              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+              <div className="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <h4 className="font-medium text-gray-900 dark:text-white">
@@ -953,7 +953,7 @@ const BookingFlow: React.FC = () => {
                     <button
                       key={date.toISOString()}
                       onClick={() => setSelectedDate(date)}
-                      className={`p-2 sm:p-3 text-xs sm:text-sm rounded-lg border transition-colors relative mobile-touch-target ${
+                      className={`p-2 sm:p-3 text-xs sm:text-sm rounded-xl border transition-colors relative mobile-touch-target ${
                         selectedDate?.toDateString() === date.toDateString()
                           ? 'bg-primary-600 text-white border-primary-600'
                           : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300 active:scale-95'
@@ -993,7 +993,7 @@ const BookingFlow: React.FC = () => {
                   {t('booking.selectTime')}
                 </h3>
                 {conflictHint.active && (
-                  <div className="flex items-center justify-between bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-2 rounded-lg mb-4">
+                  <div className="flex items-center justify-between bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-2 rounded-xl mb-4">
                     <div className="text-sm">{t('booking.timeConflict') || 'That time just got booked. Try next available?'}</div>
                     <button
                       onClick={() => {
@@ -1023,7 +1023,7 @@ const BookingFlow: React.FC = () => {
                         <button
                           key={time}
                           onClick={() => setSelectedTime(time)}
-                          className={`relative px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm rounded-lg border transition-colors mobile-touch-target ${
+                          className={`relative px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm rounded-xl border transition-colors mobile-touch-target ${
                             selectedTime === time
                               ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
                               : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300 active:scale-95'
@@ -1074,7 +1074,7 @@ const BookingFlow: React.FC = () => {
                         max={service.maxParticipants || 999}
                         value={participantCount}
                         onChange={(e) => setParticipantCount(Math.max(1, parseInt(e.target.value) || 1))}
-                        className="w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                        className="w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                       />
                       {service.maxParticipants && (
                         <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -1098,7 +1098,7 @@ const BookingFlow: React.FC = () => {
                     value={bookingNotes}
                     onChange={(e) => setBookingNotes(e.target.value)}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                     placeholder={t('booking.notesPlaceholder')}
                   />
                 </div>
@@ -1121,7 +1121,7 @@ const BookingFlow: React.FC = () => {
                     <select
                       value={selectedRedemptionId}
                       onChange={(e) => setSelectedRedemptionId(e.target.value)}
-                      className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 ${
+                      className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 ${
                         selectedRedemptionId ? 'bg-green-50 border-green-300 dark:bg-green-900/20 dark:border-green-700' : ''
                       } text-gray-900 dark:text-white`}
                     >
@@ -1137,7 +1137,7 @@ const BookingFlow: React.FC = () => {
 
                   {/* Show confirmation when reward is selected */}
                   {selectedRedemptionId && discount > 0 && (
-                    <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
                       <div className="flex items-center">
                         <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
                         <div className="ml-3">
@@ -1258,7 +1258,7 @@ const BookingFlow: React.FC = () => {
               </h3>
               
               {/* Order Summary */}
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 mb-6">
                 <div className="flex justify-between items-center mb-3">
                   <span className="font-medium text-gray-900 dark:text-white">{service.name}</span>
                   <span className="font-bold text-gray-900 dark:text-white">
@@ -1298,9 +1298,9 @@ const BookingFlow: React.FC = () => {
 
               {/* Loyalty Benefits */}
               {loyaltyData && (
-                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-4 mb-6">
+                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-xl p-4 mb-6">
                   <div className="flex items-center space-x-3 mb-3">
-                    <div className="h-8 w-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                    <div className="h-8 w-8 bg-purple-500 rounded-xl flex items-center justify-center">
                       <GiftIcon className="h-4 w-4 text-white" />
                     </div>
                     <div>
@@ -1342,7 +1342,7 @@ const BookingFlow: React.FC = () => {
                   <select
                     value={selectedRedemptionId}
                     onChange={(e) => setSelectedRedemptionId(e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-lg ${
+                    className={`w-full px-3 py-2 border rounded-xl ${
                       selectedRedemptionId
                         ? 'border-green-300 bg-green-50 dark:border-green-600 dark:bg-green-900/20'
                         : 'border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700'
@@ -1359,7 +1359,7 @@ const BookingFlow: React.FC = () => {
 
                   {/* Show confirmation when reward is selected */}
                   {selectedRedemptionId && discount > 0 && (
-                    <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
                       <div className="flex items-center">
                         <div className="flex-shrink-0">
                           <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
@@ -1389,7 +1389,7 @@ const BookingFlow: React.FC = () => {
 
                 <div className="space-y-3">
                   {/* Crypto Payment Option */}
-                  <label className="flex items-start space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <label className="flex items-start space-x-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <input
                       type="radio"
                       name="paymentMethod"
@@ -1400,7 +1400,7 @@ const BookingFlow: React.FC = () => {
                     />
                     <div className="flex-1">
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
                           <CreditCardIcon className="w-4 h-4 text-white" />
                         </div>
                         <div>
@@ -1413,7 +1413,7 @@ const BookingFlow: React.FC = () => {
                   </label>
 
                   {/* PayPal Payment Option */}
-                  <label className="flex items-start space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <label className="flex items-start space-x-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <input
                       type="radio"
                       name="paymentMethod"
@@ -1424,7 +1424,7 @@ const BookingFlow: React.FC = () => {
                     />
                     <div className="flex-1">
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                        <div className="w-8 h-8 bg-blue-500 rounded-xl flex items-center justify-center">
                           <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h8.418c2.508 0 4.514.893 5.835 2.598 1.206 1.557 1.747 3.675 1.567 6.129-.346 4.73-3.558 8.889-8.781 11.378h4.985c.534 0 1.021-.304 1.258-.786l6.097-12.417c.235-.479-.013-1.059-.533-1.249L14.27 1.986c-.52-.19-1.099.055-1.249.533L7.076 21.337z"/>
                           </svg>
@@ -1457,7 +1457,7 @@ const BookingFlow: React.FC = () => {
 
               {/* Payment Information */}
               {paymentOptions && (
-                <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
                   <div className="text-sm">
                     <div className="font-medium text-blue-900 dark:text-blue-100 mb-2">Payment Information</div>
                     <div className="space-y-1 text-blue-800 dark:text-blue-200">
@@ -1472,7 +1472,7 @@ const BookingFlow: React.FC = () => {
               {paymentResult ? (
                 <div className="space-y-4">
                   {/* Payment Section for all external payments */}
-                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4">
                     <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
                       💳 Complete Your {
                         paymentMethod === 'paypal' ? 'PayPal' :
@@ -1511,7 +1511,7 @@ const BookingFlow: React.FC = () => {
                               message: 'Payment processing. You will receive an email confirmation once payment is verified.'
                             });
                           }}
-                          className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                          className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors"
                         >
                           <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h8.418c2.508 0 4.514.893 5.835 2.598 1.206 1.557 1.747 3.675 1.567 6.129-.346 4.73-3.558 8.889-8.781 11.378h4.985c.534 0 1.021-.304 1.258-.786l6.097-12.417c.235-.479-.013-1.059-.533-1.249L14.27 1.986c-.52-.19-1.099.055-1.249.533L7.076 21.337z"/>
@@ -1553,7 +1553,7 @@ const BookingFlow: React.FC = () => {
                                     message: 'Payment processing. You will receive an email confirmation once payment is verified.'
                                   });
                                 }}
-                                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
                               >
                                 <CreditCardIcon className="w-4 h-4 mr-2" />
                                 Pay with Crypto
@@ -1574,7 +1574,7 @@ const BookingFlow: React.FC = () => {
                                 href={paymentResult.onrampSession.onrampURL}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors"
                               >
                                 <CreditCardIcon className="w-4 h-4 mr-2" />
                                 Buy Crypto & Pay
@@ -1621,7 +1621,7 @@ const BookingFlow: React.FC = () => {
 
                   {/* Payment Complete Section */}
                   {!paymentResult.requiresPayment && paymentResult.status === 'COMPLETED' && (
-                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
+                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl p-4">
                       <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">
                         ✅ Payment Complete
                       </h4>
@@ -1630,7 +1630,7 @@ const BookingFlow: React.FC = () => {
                       </p>
                       <button
                         onClick={() => setCurrentStep(steps.length - 1)}
-                        className="mt-3 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
+                        className="mt-3 bg-green-600 text-white py-2 px-4 rounded-xl hover:bg-green-700 transition-colors"
                       >
                         View Booking Details
                       </button>
@@ -1641,7 +1641,7 @@ const BookingFlow: React.FC = () => {
                 <button
                   onClick={handleBookingSubmit}
                   disabled={paymentLoading}
-                  className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                  className="w-full bg-primary-600 text-white py-3 px-4 rounded-xl hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
                 >
                   {paymentLoading ? (
                     <>
@@ -1695,7 +1695,7 @@ const BookingFlow: React.FC = () => {
 
               {/* Payment Required Section */}
               {needsPayment && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-6">
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4 mb-6">
                   <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
                     💳 Payment Required
                   </h4>
@@ -1715,7 +1715,7 @@ const BookingFlow: React.FC = () => {
                         href={paymentResult.paymentUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
                       >
                         <CreditCardIcon className="w-4 h-4 mr-2" />
                         Complete Payment
@@ -1732,7 +1732,7 @@ const BookingFlow: React.FC = () => {
                         href={paymentResult.onrampSession.onrampURL}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors"
                       >
                         💰 Complete Fiat Payment
                       </a>
@@ -1766,7 +1766,7 @@ const BookingFlow: React.FC = () => {
 
               {/* Payment Complete Section */}
               {!needsPayment && paymentResult && (
-                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4 mb-6">
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl p-4 mb-6">
                   <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">
                     ✅ Payment Complete
                   </h4>
@@ -1778,7 +1778,7 @@ const BookingFlow: React.FC = () => {
 
               {/* Loyalty Points Earned Notification */}
               {loyaltyData && pointsToEarn > 0 && isAutoBooked && (
-                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-4 mb-6">
+                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-xl p-4 mb-6">
                   <div className="flex items-center justify-center space-x-3 mb-2">
                     <div className="h-10 w-10 bg-purple-500 rounded-full flex items-center justify-center">
                       <GiftIcon className="h-5 w-5 text-white" />
@@ -1795,7 +1795,7 @@ const BookingFlow: React.FC = () => {
                   <div className="text-center">
                     <button
                       onClick={() => window.open('/loyalty', '_blank')}
-                      className="inline-flex items-center px-3 py-1.5 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
+                      className="inline-flex items-center px-3 py-1.5 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-xl transition-colors"
                     >
                       <StarIcon className="h-4 w-4 mr-1" />
                       View Loyalty Dashboard
@@ -1805,7 +1805,7 @@ const BookingFlow: React.FC = () => {
               )}
               
               {isPending && !isPendingPayment && (
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 mb-6">
                   <p className="text-sm text-yellow-800 dark:text-yellow-200">
                     {t('booking.waitingForSpecialistConfirmation')}
                   </p>
@@ -1813,7 +1813,7 @@ const BookingFlow: React.FC = () => {
               )}
 
               {isPendingPayment && paymentResult?.message && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-6">
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4 mb-6">
                   <p className="text-sm text-blue-800 dark:text-blue-200">
                     {paymentResult.message}
                   </p>
@@ -1822,7 +1822,7 @@ const BookingFlow: React.FC = () => {
 
               <button
                 onClick={() => navigate('/customer/bookings')}
-                className="bg-primary-600 text-white py-2 px-6 rounded-lg hover:bg-primary-700 transition-colors"
+                className="bg-primary-600 text-white py-2 px-6 rounded-xl hover:bg-primary-700 transition-colors"
               >
                 {t('booking.viewBookings')}
               </button>
@@ -1998,7 +1998,7 @@ const BookingFlow: React.FC = () => {
             <button
               onClick={handlePrevStep}
               disabled={currentStep === 0}
-              className={`flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 rounded-lg transition-colors flex-shrink-0 mobile-touch-target ${
+              className={`flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 rounded-xl transition-colors flex-shrink-0 mobile-touch-target ${
                 currentStep === 0
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300 active:scale-95'
@@ -2015,7 +2015,7 @@ const BookingFlow: React.FC = () => {
                 (steps[currentStep]?.id === 'details' && !service) ||
                 (steps[currentStep]?.id === 'payment' && (!paymentResult || (paymentResult.requiresPayment && paymentResult.status !== 'COMPLETED')))
               }
-              className="flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0 mobile-touch-target active:scale-95"
+              className="flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0 mobile-touch-target active:scale-95"
             >
               <span className="text-sm sm:text-base">{t('navigation.next') || 'Next'}</span>
               <ArrowRightIcon className="w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2" />

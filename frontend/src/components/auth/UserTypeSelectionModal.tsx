@@ -47,7 +47,7 @@ const UserTypeSelectionModal: React.FC<UserTypeSelectionModalProps> = ({
 
           {/* User Info */}
           {(userName || userEmail) && (
-            <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                 {t('auth.userType.welcomeMessage')}
               </p>

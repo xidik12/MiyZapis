@@ -54,9 +54,10 @@ export const MobileOptimizedInput = forwardRef<HTMLInputElement, MobileOptimized
             type={type}
             className={clsx(
               // Base styles
-              'w-full border border-gray-300 dark:border-gray-600 rounded-lg',
-              'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100',
+              'w-full border border-gray-200 dark:border-gray-700 rounded-xl',
+              'bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-900 dark:text-gray-100',
               'placeholder:text-gray-500 dark:placeholder:text-gray-400',
+              'hover:bg-white dark:hover:bg-gray-800 transition-all duration-200',
 
               // Mobile-optimized sizing
               'text-base', // Prevents zoom on iOS (must be 16px+)

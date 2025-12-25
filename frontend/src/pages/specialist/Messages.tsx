@@ -251,7 +251,7 @@ const SpecialistMessages: React.FC = () => {
       </div>
 
       {error && (
-        <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg">
+        <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl">
           {error}
         </div>
       )}
@@ -268,7 +268,7 @@ const SpecialistMessages: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('messages.searchConversations')}
-                className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
           </div>
@@ -396,7 +396,7 @@ const SpecialistMessages: React.FC = () => {
                 <div className="flex items-center space-x-2">
                   <button 
                     onClick={() => handleArchiveConversation(selectedConversation.id)}
-                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     title={t('messages.archive')}
                     aria-label={t('messages.archive')}
                   >
@@ -404,14 +404,14 @@ const SpecialistMessages: React.FC = () => {
                   </button>
                   <button 
                     onClick={() => handleBlockConversation(selectedConversation.id)}
-                    className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="p-2 text-gray-400 hover:text-red-600 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     title={t('messages.block')}
                     aria-label={t('messages.block')}
                     disabled={selectedConversation.isBlocked}
                   >
                     <NoSymbolIcon className="w-5 h-5" />
                   </button>
-                  <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" aria-label={t('common.moreOptions') || 'More options'}>
+                  <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" aria-label={t('common.moreOptions') || 'More options'}>
                     <EllipsisVerticalIcon className="w-5 h-5" />
                   </button>
                 </div>

@@ -2,7 +2,7 @@ import React from 'react';
 import { clsx } from 'clsx';
 
 export const Skeleton: React.FC<{ className?: string }> = ({ className }) => (
-  <div className={clsx('animate-pulse rounded-md bg-gray-200 dark:bg-gray-700', className)} />
+  <div className={clsx('animate-pulse rounded-xl bg-gray-200 dark:bg-gray-700', className)} />
 );
 
 export const SkeletonText: React.FC<{ lines?: number; className?: string }> = ({ lines = 3, className }) => (

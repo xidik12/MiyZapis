@@ -731,7 +731,7 @@ const SpecialistServices: React.FC = () => {
       <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
         <button
           onClick={() => openEditModal(service)}
-          className="flex-1 bg-primary-50 hover:bg-primary-100 text-primary-700 px-4 py-2 rounded-lg font-medium transition-colors duration-200 dark:bg-primary-900/20 dark:hover:bg-primary-900/30 dark:text-primary-300"
+          className="flex-1 bg-primary-50 hover:bg-primary-100 text-primary-700 px-4 py-2 rounded-xl font-medium transition-colors duration-200 dark:bg-primary-900/20 dark:hover:bg-primary-900/30 dark:text-primary-300"
         >
           {t('services.edit')}
         </button>
@@ -741,7 +741,7 @@ const SpecialistServices: React.FC = () => {
             console.log('🏷️ Service ID:', service.id);
             handleToggleServiceStatus(service.id, !service.isActive);
           }}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+          className={`px-4 py-2 rounded-xl font-medium transition-colors duration-200 ${
             service.isActive
               ? 'bg-warning-50 hover:bg-warning-100 text-warning-700 dark:bg-warning-900/20 dark:hover:bg-warning-900/30 dark:text-warning-300'
               : 'bg-success-50 hover:bg-success-100 text-success-700 dark:bg-success-900/20 dark:hover:bg-success-900/30 dark:text-success-300'
@@ -751,7 +751,7 @@ const SpecialistServices: React.FC = () => {
         </button>
         <button 
           onClick={() => handleDeleteService(service.id)}
-          className="p-2 bg-error-50 hover:bg-error-100 text-error-600 rounded-lg transition-colors duration-200 dark:bg-error-900/20 dark:hover:bg-error-900/30 dark:text-error-300"
+          className="p-2 bg-error-50 hover:bg-error-100 text-error-600 rounded-xl transition-colors duration-200 dark:bg-error-900/20 dark:hover:bg-error-900/30 dark:text-error-300"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -773,7 +773,7 @@ const SpecialistServices: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-400">{error}</p>
           <button 
             onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+            className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700"
           >
             Retry
           </button>
@@ -950,7 +950,7 @@ const SpecialistServices: React.FC = () => {
 
           {/* Debug Panel - Only show in development or when needed */}
           {process.env.NODE_ENV === 'development' && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-medium text-yellow-800">🔧 Service Deletion Debug Panel</h4>
                 <div className="flex gap-2">
@@ -1015,7 +1015,7 @@ const SpecialistServices: React.FC = () => {
                 </p>
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
+                  className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-xl font-medium transition-colors duration-200"
                 >
                   {t('services.addService')}
                 </button>
@@ -1035,7 +1035,7 @@ const SpecialistServices: React.FC = () => {
               </h2>
               <button
                 onClick={closeModal}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors duration-200"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1344,7 +1344,7 @@ const SpecialistServices: React.FC = () => {
                     </div>
 
                     {formData.loyaltyPointsPrice && (
-                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-3">
                         <p className="text-sm text-blue-700 dark:text-blue-300">
                           💰 This service will be bookable for <strong>{formData.loyaltyPointsPrice} loyalty points</strong>
                           {formData.loyaltyPointsOnly
@@ -1476,7 +1476,7 @@ const SpecialistServices: React.FC = () => {
                     </div>
 
                     {formData.discountValue && (
-                      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-3">
                         <p className="text-sm text-green-700 dark:text-green-300">
                           🎉 <strong>Discount Preview:</strong> {' '}
                           {formData.discountType === 'PERCENTAGE'

@@ -87,13 +87,13 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className={`relative w-full max-w-lg rounded-lg shadow-xl ${
+        <div className={`relative w-full max-w-lg rounded-xl shadow-xl ${
           theme === 'dark' ? 'bg-gray-800' : 'bg-white'
         }`}>
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-primary-100 dark:bg-primary-900/20 rounded-lg">
+              <div className="p-2 bg-primary-100 dark:bg-primary-900/20 rounded-xl">
                 <KeyIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
               </div>
               <div>
@@ -108,7 +108,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
             <button
               onClick={handleClose}
               disabled={isLoading}
-              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg transition-colors"
+              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl transition-colors"
             >
               <XMarkIcon className="h-5 w-5" />
             </button>
@@ -117,7 +117,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
             {/* Info Message */}
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
               <p className="text-sm text-amber-700 dark:text-amber-300">
                 {t('auth.changePasswordModal.info')}
               </p>
@@ -134,7 +134,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                     required: t('auth.error.currentPasswordRequired') || 'Current password is required',
                   })}
                   type={showCurrentPassword ? 'text' : 'password'}
-                  className={`w-full px-3 py-2 pr-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
+                  className={`w-full px-3 py-2 pr-10 border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
                     theme === 'dark'
                       ? 'bg-gray-700 text-gray-100 border-gray-600'
                       : 'bg-white text-gray-900 border-gray-300'
@@ -174,7 +174,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                 <input
                   {...register('newPassword', getPasswordValidationRules(t))}
                   type={showNewPassword ? 'text' : 'password'}
-                  className={`w-full px-3 py-2 pr-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
+                  className={`w-full px-3 py-2 pr-10 border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
                     theme === 'dark'
                       ? 'bg-gray-700 text-gray-100 border-gray-600'
                       : 'bg-white text-gray-900 border-gray-300'
@@ -224,7 +224,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                 <input
                   {...register('confirmPassword', getConfirmPasswordValidationRules(watchedNewPassword, t))}
                   type={showConfirmPassword ? 'text' : 'password'}
-                  className={`w-full px-3 py-2 pr-10 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
+                  className={`w-full px-3 py-2 pr-10 border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
                     theme === 'dark'
                       ? 'bg-gray-700 text-gray-100 border-gray-600'
                       : 'bg-white text-gray-900 border-gray-300'
@@ -261,14 +261,14 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                 type="button"
                 onClick={handleClose}
                 disabled={isLoading}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={isLoading || !watchedNewPassword}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center space-x-2"
+                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-colors flex items-center space-x-2"
               >
                 {isLoading && <LoadingSpinner size="sm" color="white" />}
                 <span>{isLoading ? t('auth.changePasswordModal.submitting') : t('auth.changePasswordModal.submit')}</span>

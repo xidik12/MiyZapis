@@ -154,7 +154,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-end sm:items-start justify-center px-0 sm:px-4 py-0 sm:py-4" onClick={onClose}>
-      <div ref={panelRef} className={`relative w-full max-w-lg shadow-lg rounded-t-lg sm:rounded-lg ${
+      <div ref={panelRef} className={`relative w-full max-w-lg shadow-lg rounded-t-lg sm:rounded-xl ${
         theme === 'dark' 
           ? 'bg-gray-800 border-gray-600' 
           : 'bg-white border-gray-300'
@@ -237,7 +237,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 rows={3}
-                className={`mt-1 block w-full border rounded-md shadow-sm px-2 sm:px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 ${
+                className={`mt-1 block w-full border rounded-xl shadow-sm px-2 sm:px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 ${
                   theme === 'dark' 
                     ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' 
                     : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
@@ -281,7 +281,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                 type="button"
                 onClick={onClose}
                 disabled={actualLoading}
-                className={`w-full sm:w-auto px-3 sm:px-4 py-2 border rounded-md text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 ${
+                className={`w-full sm:w-auto px-3 sm:px-4 py-2 border rounded-xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 ${
                   theme === 'dark'
                     ? 'border-gray-600 text-gray-300 bg-gray-700 hover:bg-gray-600'
                     : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
@@ -292,7 +292,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
               <button
                 type="submit"
                 disabled={actualLoading || rating === 0}
-                className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-transparent rounded-md shadow-sm text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="w-full sm:w-auto px-3 sm:px-4 py-2 border border-transparent rounded-xl shadow-sm text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {actualLoading && <LoadingSpinner size="sm" className="mr-2" />}
                 {t('reviews.submitReview')}

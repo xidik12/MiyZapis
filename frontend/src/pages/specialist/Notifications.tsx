@@ -200,7 +200,7 @@ const SpecialistNotifications: React.FC = () => {
         <div className="flex items-center space-x-3">
           <button
             onClick={markAllAsRead}
-            className="px-3 sm:px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2"
+            className="px-3 sm:px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors flex items-center space-x-2"
           >
             <CheckIcon className="w-4 h-4" />
             <span className="hidden sm:inline">{t('notifications.markAllRead')}</span>
@@ -244,7 +244,7 @@ const SpecialistNotifications: React.FC = () => {
       {loading && (
         <div className="space-y-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow animate-pulse">
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow animate-pulse">
               <div className="flex items-start space-x-4">
                 <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
                 <div className="flex-1 space-y-2">
@@ -269,7 +269,7 @@ const SpecialistNotifications: React.FC = () => {
           </p>
           <button 
             onClick={loadNotifications}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
           >
             {t('common.retry')}
           </button>
@@ -296,7 +296,7 @@ const SpecialistNotifications: React.FC = () => {
               <div
                 key={notification.id}
                 className={`
-                  border-l-4 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md
+                  border-l-4 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md
                   ${getPriorityColor(notification.priority)}
                   ${!notification.isRead ? 'ring-2 ring-primary-500 ring-opacity-20' : ''}
                 `}
@@ -304,7 +304,7 @@ const SpecialistNotifications: React.FC = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-3">
                     <div className={`
-                      p-2 rounded-lg
+                      p-2 rounded-xl
                       ${notification.priority === 'high' ? 'bg-red-100 text-red-600' : ''}
                       ${notification.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' : ''}
                       ${notification.priority === 'low' ? 'bg-blue-100 text-blue-600' : ''}

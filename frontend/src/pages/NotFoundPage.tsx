@@ -23,14 +23,14 @@ const NotFoundPage: React.FC = () => {
           <div className="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
             <Link
               to="/"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-600 transition-colors"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-600 transition-colors"
             >
               <HomeIcon className="w-5 h-5 mr-2" />
               Go Home
             </Link>
             <button
               onClick={() => window.history.back()}
-              className="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="inline-flex items-center px-6 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-xl text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               <ArrowLeftIcon className="w-5 h-5 mr-2" />
               Go Back

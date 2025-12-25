@@ -32,7 +32,7 @@ const BookingPagination: React.FC<BookingPaginationProps> = ({
         <button
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
-          className="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {t('pagination.previous')}
         </button>
@@ -53,7 +53,7 @@ const BookingPagination: React.FC<BookingPaginationProps> = ({
             <button
               key={page}
               onClick={() => onPageChange(page)}
-              className={`px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium border rounded-lg ${
+              className={`px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium border rounded-xl ${
                 page === currentPage
                   ? 'bg-blue-600 text-white border-blue-600'
                   : 'text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -67,7 +67,7 @@ const BookingPagination: React.FC<BookingPaginationProps> = ({
         <button
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
-          className="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {t('pagination.next')}
         </button>

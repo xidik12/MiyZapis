@@ -725,7 +725,7 @@ const SpecialistEarnings: React.FC = () => {
                 <button
                   key={period}
                   onClick={() => setSelectedPeriod(period)}
-                  className={`px-3 py-1 text-sm rounded-lg transition-colors ${
+                  className={`px-3 py-1 text-sm rounded-xl transition-colors ${
                     selectedPeriod === period
                       ? 'bg-primary-600 text-white'
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -744,8 +744,8 @@ const SpecialistEarnings: React.FC = () => {
                 <div key={index} className="flex items-center space-x-3">
                   <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                   <div className="flex-1">
-                    <div className="bg-gray-100 dark:bg-gray-700 rounded-lg h-10 relative overflow-hidden">
-                      <div className="bg-gray-200 dark:bg-gray-600 h-full rounded-lg animate-pulse" style={{ width: `${Math.random() * 80 + 20}%` }}></div>
+                    <div className="bg-gray-100 dark:bg-gray-700 rounded-xl h-10 relative overflow-hidden">
+                      <div className="bg-gray-200 dark:bg-gray-600 h-full rounded-xl animate-pulse" style={{ width: `${Math.random() * 80 + 20}%` }}></div>
                     </div>
                   </div>
                   <div className="w-20 text-right">
@@ -764,9 +764,9 @@ const SpecialistEarnings: React.FC = () => {
                       {getTranslatedMonth(item.month || 'N/A')}
                     </div>
                     <div className="flex-1">
-                      <div className="bg-gray-100 dark:bg-gray-700 rounded-lg h-10 relative overflow-hidden">
+                      <div className="bg-gray-100 dark:bg-gray-700 rounded-xl h-10 relative overflow-hidden">
                         <div 
-                          className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-full rounded-lg flex items-center justify-end pr-3 transition-all duration-500 ease-out"
+                          className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-full rounded-xl flex items-center justify-end pr-3 transition-all duration-500 ease-out"
                           style={{ width: `${Math.max(5, widthPercentage)}%` }}
                         >
                           <span className="text-white text-sm font-semibold shadow-sm">{formatPrice(item.earnings || 0)}</span>
@@ -774,7 +774,7 @@ const SpecialistEarnings: React.FC = () => {
                       </div>
                     </div>
                     <div className="w-20 text-right">
-                      <div className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-md text-xs font-medium">
+                      <div className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-xl text-xs font-medium">
                         {item.bookings || 0} {t('earnings.bookings')}
                       </div>
                     </div>
@@ -796,7 +796,7 @@ const SpecialistEarnings: React.FC = () => {
           <div className="space-y-4">
             {loading.payments ? (
               Array.from({ length: 5 }, (_, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
                   <div>
                     <div className="h-5 w-16 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-2"></div>
                     <div className="h-4 w-24 bg-gray-200 dark:bg-gray-600 rounded animate-pulse"></div>
@@ -806,7 +806,7 @@ const SpecialistEarnings: React.FC = () => {
               ))
             ) : payoutHistory && payoutHistory.length > 0 ? (
               payoutHistory.map((payout) => (
-                <div key={payout.id || Math.random()} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div key={payout.id || Math.random()} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
                   <div>
                     <div className="font-medium text-gray-900 dark:text-white">
                       {formatPrice(payout.amount || 0, payout.currency || 'UAH')}

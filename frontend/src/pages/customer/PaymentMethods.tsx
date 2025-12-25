@@ -110,7 +110,7 @@ const PaymentMethods: React.FC = () => {
         </div>
 
         {/* Payment Methods Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-white/20 dark:border-gray-700/50">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow border border-white/20 dark:border-gray-700/50">
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
@@ -118,7 +118,7 @@ const PaymentMethods: React.FC = () => {
               </h2>
               <button 
                 onClick={handleAddPaymentMethod}
-                className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
+                className="bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
               >
                 <PlusIcon className="h-4 w-4 mr-2" />
                 {language === 'uk' ? 'Додати спосіб оплати' : language === 'ru' ? 'Добавить способ оплаты' : 'Add Payment Method'}
@@ -142,7 +142,7 @@ const PaymentMethods: React.FC = () => {
                   </p>
                   <button 
                     onClick={handleAddPaymentMethod}
-                    className="bg-primary-600 text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
+                    className="bg-primary-600 text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
                   >
                     <PlusIcon className="h-4 w-4 mr-2" />
                     {language === 'uk' ? 'Додати перший спосіб оплати' : language === 'ru' ? 'Добавить первый способ оплаты' : 'Add Your First Payment Method'}
@@ -150,9 +150,9 @@ const PaymentMethods: React.FC = () => {
                 </div>
               ) : (
                 paymentMethods.map((method) => (
-                  <div key={method.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex items-center justify-between">
+                  <div key={method.id} className="border border-gray-200 dark:border-gray-600 rounded-xl p-4 flex items-center justify-between">
                     <div className="flex items-center">
-                      <div className={`p-3 rounded-lg mr-4 ${
+                      <div className={`p-3 rounded-xl mr-4 ${
                         method.type === 'card' ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400' :
                         method.type === 'bank_account' ? 'bg-secondary-100 text-secondary-600 dark:bg-secondary-900/30 dark:text-secondary-400' :
                         'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
@@ -210,7 +210,7 @@ const PaymentMethods: React.FC = () => {
         </div>
 
         {/* Security Notice */}
-        <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
           <div className="flex">
             <div className="flex-shrink-0">
               <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
@@ -237,7 +237,7 @@ const PaymentMethods: React.FC = () => {
       {/* Add Payment Method Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md mx-4">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
               {language === 'uk' ? 'Додати спосіб оплати' : language === 'ru' ? 'Добавить способ оплаты' : 'Add Payment Method'}
             </h3>
@@ -259,7 +259,7 @@ const PaymentMethods: React.FC = () => {
                   </label>
                   <select 
                     name="paymentType"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-primary-500 focus:border-primary-500"
                   >
                     <option value="card">{language === 'uk' ? 'Банківська картка' : language === 'ru' ? 'Банковская карта' : 'Bank Card'}</option>
                     <option value="privat">PrivatBank</option>
@@ -276,7 +276,7 @@ const PaymentMethods: React.FC = () => {
                     type="text"
                     name="cardName"
                     placeholder="Visa •••• 4242"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-primary-500 focus:border-primary-500"
                     required
                   />
                 </div>
@@ -289,7 +289,7 @@ const PaymentMethods: React.FC = () => {
                     name="cardNumber"
                     placeholder="1234 5678 9012 3456"
                     maxLength={19}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-primary-500 focus:border-primary-500"
                     onChange={(e) => {
                       // Format card number with spaces
                       let value = e.target.value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
@@ -305,7 +305,7 @@ const PaymentMethods: React.FC = () => {
                     </label>
                     <select
                       name="expiryMonth"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-primary-500 focus:border-primary-500"
                       required
                     >
                       <option value="">MM</option>
@@ -322,7 +322,7 @@ const PaymentMethods: React.FC = () => {
                     </label>
                     <select
                       name="expiryYear"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-primary-500 focus:border-primary-500"
                       required
                     >
                       <option value="">YYYY</option>
@@ -348,7 +348,7 @@ const PaymentMethods: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+                  className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700"
                 >
                   {language === 'uk' ? 'Додати спосіб оплати' : language === 'ru' ? 'Добавить способ оплаты' : 'Add Payment Method'}
                 </button>

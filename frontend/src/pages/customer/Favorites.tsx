@@ -168,7 +168,7 @@ const CustomerFavorites: React.FC = () => {
           <button
             onClick={() => handlePageChange(pagination.page - 1)}
             disabled={!pagination.hasPreviousPage}
-            className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
           </button>
@@ -176,7 +176,7 @@ const CustomerFavorites: React.FC = () => {
             <button
               key={page}
               onClick={() => handlePageChange(page)}
-              className={`px-3 py-2 text-sm font-medium border rounded-md ${
+              className={`px-3 py-2 text-sm font-medium border rounded-xl ${
                 pagination.page === page
                   ? 'bg-blue-600 text-white border-blue-600'
                   : 'text-gray-500 bg-white border-gray-300 hover:bg-gray-50'
@@ -188,7 +188,7 @@ const CustomerFavorites: React.FC = () => {
           <button
             onClick={() => handlePageChange(pagination.page + 1)}
             disabled={!pagination.hasNextPage}
-            className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
           </button>
@@ -220,7 +220,7 @@ const CustomerFavorites: React.FC = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
             <div className="text-red-800">{error}</div>
             <div className="flex space-x-2 mt-2">
               <button
@@ -248,7 +248,7 @@ const CustomerFavorites: React.FC = () => {
             <input
               type="text"
               placeholder={t('customer.favorites.searchPlaceholder') || `Search your ${activeTab}...`}
-              className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+              className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -297,7 +297,7 @@ const CustomerFavorites: React.FC = () => {
         {activeTab === 'specialists' && (
           <>
             {filteredSpecialists.length === 0 && !isLoading ? (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center">
                 <HeartIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" active />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                   {searchQuery ? 
@@ -315,13 +315,13 @@ const CustomerFavorites: React.FC = () => {
                   <div className="flex justify-center space-x-3">
                     <button
                       onClick={handleClearSearch}
-                      className="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-gray-700"
+                      className="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white hover:bg-gray-700"
                     >
                       {t('search.clearSearch') || 'Clear search'}
                     </button>
                     <button
                       onClick={() => navigate('/search')}
-                      className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700"
+                      className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white hover:bg-blue-700"
                     >
                       {t('empty.browseSpecialists') || 'Browse Specialists'}
                     </button>
@@ -329,7 +329,7 @@ const CustomerFavorites: React.FC = () => {
                 ) : (
                   <button
                     onClick={() => navigate('/search')}
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700"
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white hover:bg-blue-700"
                   >
                     {t('empty.browseSpecialists') || 'Browse Specialists'}
                   </button>
@@ -341,7 +341,7 @@ const CustomerFavorites: React.FC = () => {
                   {filteredSpecialists.map((favorite) => {
                     const specialist = favorite.specialist;
                     return (
-                      <div key={favorite.id} className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow">
+                      <div key={favorite.id} className="bg-white dark:bg-gray-800 rounded-xl shadow hover:shadow-md transition-shadow">
                         <div className="p-6">
                           {/* Header with favorite button */}
                           <div className="flex items-start justify-between mb-4">
@@ -430,13 +430,13 @@ const CustomerFavorites: React.FC = () => {
                           <div className="flex space-x-2">
                             <button
                               onClick={() => handleViewSpecialist(specialist.id)}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                             >
                               {t('action.viewProfile')}
                             </button>
                             <button
                               onClick={() => navigate(`/search?specialist=${specialist.id}`)}
-                              className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700"
+                              className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-blue-700"
                             >
                               {t('action.bookNow')}
                             </button>
@@ -456,7 +456,7 @@ const CustomerFavorites: React.FC = () => {
         {activeTab === 'services' && (
           <>
             {filteredServices.length === 0 && !isLoading ? (
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-8 text-center">
                 <HeartIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" active />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                   {searchQuery ? 
@@ -474,13 +474,13 @@ const CustomerFavorites: React.FC = () => {
                   <div className="flex justify-center space-x-3">
                     <button
                       onClick={handleClearSearch}
-                      className="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-gray-700"
+                      className="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white hover:bg-gray-700"
                     >
                       {t('search.clearSearch') || 'Clear search'}
                     </button>
                     <button
                       onClick={() => navigate('/search')}
-                      className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700"
+                      className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white hover:bg-blue-700"
                     >
                       Browse Services
                     </button>
@@ -488,7 +488,7 @@ const CustomerFavorites: React.FC = () => {
                 ) : (
                   <button
                     onClick={() => navigate('/search')}
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700"
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white hover:bg-blue-700"
                   >
                     {t('empty.browseServices') || 'Browse Services'}
                   </button>
@@ -500,7 +500,7 @@ const CustomerFavorites: React.FC = () => {
                   {filteredServices.map((favorite) => {
                     const service = favorite.service;
                     return (
-                      <div key={favorite.id} className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow overflow-hidden">
+                      <div key={favorite.id} className="bg-white dark:bg-gray-800 rounded-xl shadow hover:shadow-md transition-shadow overflow-hidden">
                         {/* Service Image */}
                         <div className="relative">
                           <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
@@ -562,13 +562,13 @@ const CustomerFavorites: React.FC = () => {
                           <div className="flex space-x-2">
                             <button
                               onClick={() => handleViewService(service.id)}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                             >
                               {t('action.viewDetails')}
                             </button>
                             <button
                               onClick={() => handleBookService(service.id)}
-                              className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700"
+                              className="flex-1 px-3 py-2 bg-blue-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-blue-700"
                             >
                               {t('action.bookNow')}
                             </button>

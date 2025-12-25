@@ -124,7 +124,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-6">
           <div className="flex items-center">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-xl">
               <UserPlusIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="ml-4">
@@ -140,7 +140,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
 
         <Card className="p-6">
           <div className="flex items-center">
-            <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+            <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-xl">
               <TrophyIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
             <div className="ml-4">
@@ -156,7 +156,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
 
         <Card className="p-6">
           <div className="flex items-center">
-            <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+            <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-xl">
               <ChartBarIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </div>
             <div className="ml-4">
@@ -172,7 +172,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
 
         <Card className="p-6">
           <div className="flex items-center">
-            <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
+            <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-xl">
               <GiftIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
             </div>
             <div className="ml-4">
@@ -244,7 +244,7 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({ userType, classNa
             return (
               <div
                 key={type}
-                className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+                className="border border-gray-200 dark:border-gray-700 rounded-xl p-4"
               >
                 <h4 className="font-medium text-gray-900 dark:text-white mb-2">
                   {referralService.getReferralTypeDisplayName(type)}

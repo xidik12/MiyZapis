@@ -136,7 +136,7 @@ const CustomerHelpSupport: React.FC = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+          <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
             <div className="text-red-800 dark:text-red-200">{error}</div>
             <button
               onClick={() => window.location.reload()}
@@ -150,7 +150,7 @@ const CustomerHelpSupport: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* FAQ Section */}
           <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-700 dark:bg-gray-800 rounded-lg shadow">
+            <div className="bg-white dark:bg-gray-700 dark:bg-gray-800 rounded-xl shadow">
               <div className="p-6 border-b border-gray-200 dark:border-gray-600">
                 <div className="flex items-center mb-4">
                   <QuestionMarkCircleIcon className="h-6 w-6 text-blue-600 mr-2" />
@@ -191,7 +191,7 @@ const CustomerHelpSupport: React.FC = () => {
                 ) : (
                   <div className="space-y-4">
                     {filteredFAQs.map((faq) => (
-                      <div key={faq.id} className="border border-gray-200 dark:border-gray-600 rounded-lg">
+                      <div key={faq.id} className="border border-gray-200 dark:border-gray-600 rounded-xl">
                         <button
                           onClick={() => handleFAQToggle(faq.id)}
                           className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -216,7 +216,7 @@ const CustomerHelpSupport: React.FC = () => {
             </div>
 
             {/* User Guides Section */}
-            <div className="bg-white dark:bg-gray-700 dark:bg-gray-800 rounded-lg shadow mt-8">
+            <div className="bg-white dark:bg-gray-700 dark:bg-gray-800 rounded-xl shadow mt-8">
               <div className="p-6">
                 <div className="flex items-center mb-6">
                   <BookOpenIcon className="h-6 w-6 text-blue-600 mr-2" />
@@ -251,7 +251,7 @@ const CustomerHelpSupport: React.FC = () => {
                     <a
                       key={index}
                       href={guide.link}
-                      className="block p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                      className="block p-4 border border-gray-200 dark:border-gray-600 rounded-xl hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                     >
                       <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">{guide.title}</h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400">{guide.description}</p>
@@ -265,7 +265,7 @@ const CustomerHelpSupport: React.FC = () => {
           {/* Contact & Feedback Sidebar */}
           <div className="space-y-8">
             {/* Contact Methods */}
-            <div className="bg-white dark:bg-gray-700 dark:bg-gray-800 rounded-lg shadow">
+            <div className="bg-white dark:bg-gray-700 dark:bg-gray-800 rounded-xl shadow">
               <div className="p-6">
                 <div className="flex items-center mb-6">
                   <ChatBubbleLeftRightIcon className="h-6 w-6 text-blue-600 mr-2" />
@@ -292,7 +292,7 @@ const CustomerHelpSupport: React.FC = () => {
                         <button
                           key={method.id}
                           onClick={() => handleContactMethod(method)}
-                          className="w-full text-left p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                          className="w-full text-left p-4 border border-gray-200 dark:border-gray-600 rounded-xl hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                         >
                           <div className="flex items-start">
                             <Icon className="h-6 w-6 text-blue-600 mr-3 mt-1" />
@@ -318,7 +318,7 @@ const CustomerHelpSupport: React.FC = () => {
             </div>
 
             {/* Feedback Form */}
-            <div className="bg-white dark:bg-gray-700 dark:bg-gray-800 rounded-lg shadow">
+            <div className="bg-white dark:bg-gray-700 dark:bg-gray-800 rounded-xl shadow">
               <div className="p-6">
                 <div className="flex items-center mb-6">
                   <PaperAirplaneIcon className="h-6 w-6 text-blue-600 mr-2" />
@@ -336,7 +336,7 @@ const CustomerHelpSupport: React.FC = () => {
                       type="email"
                       value={feedbackForm.email}
                       onChange={(e) => setFeedbackForm(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       required
                     />
                   </div>
@@ -348,7 +348,7 @@ const CustomerHelpSupport: React.FC = () => {
                     <select
                       value={feedbackForm.category}
                       onChange={(e) => setFeedbackForm(prev => ({ ...prev, category: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="general">{t('feedback.general')}</option>
                       <option value="bug">{t('feedback.bugReport')}</option>
@@ -366,7 +366,7 @@ const CustomerHelpSupport: React.FC = () => {
                       type="text"
                       value={feedbackForm.subject}
                       onChange={(e) => setFeedbackForm(prev => ({ ...prev, subject: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       required
                     />
                   </div>
@@ -379,14 +379,14 @@ const CustomerHelpSupport: React.FC = () => {
                       value={feedbackForm.message}
                       onChange={(e) => setFeedbackForm(prev => ({ ...prev, message: e.target.value }))}
                       rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                       required
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 transition-colors"
+                    className="w-full bg-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-blue-700 transition-colors"
                   >
                     {t('feedback.sendFeedback')}
                   </button>
@@ -395,7 +395,7 @@ const CustomerHelpSupport: React.FC = () => {
             </div>
 
             {/* Quick Stats */}
-            <div className="bg-white dark:bg-gray-700 dark:bg-gray-800 rounded-lg shadow">
+            <div className="bg-white dark:bg-gray-700 dark:bg-gray-800 rounded-xl shadow">
               <div className="p-6">
                 <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">{t('help.supportStats')}</h3>
                 <div className="space-y-3">

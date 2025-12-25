@@ -309,28 +309,28 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
                 ))}
               </div>
             ) : (
-              <div className="h-32 flex items-center justify-center text-muted-foreground border-2 border-dashed rounded-lg">
+              <div className="h-32 flex items-center justify-center text-muted-foreground border-2 border-dashed rounded-xl">
                 {t('wallet.earnings.noEarnings')}
               </div>
             )}
 
             {/* Earnings Categories */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-              <div className="flex items-center justify-between p-2 sm:p-3 rounded-lg border">
+              <div className="flex items-center justify-between p-2 sm:p-3 rounded-xl border">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
                   <span className="text-xs sm:text-sm truncate">{t('wallet.earnings.referralBonuses')}</span>
                 </div>
                 <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2">{formatPrice(earnings.referralEarnings)}</span>
               </div>
-              <div className="flex items-center justify-between p-2 sm:p-3 rounded-lg border">
+              <div className="flex items-center justify-between p-2 sm:p-3 rounded-xl border">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0"></div>
                   <span className="text-xs sm:text-sm truncate">{t('wallet.earnings.loyaltyRewards')}</span>
                 </div>
                 <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2">{formatPrice(earnings.loyaltyEarnings)}</span>
               </div>
-              <div className="flex items-center justify-between p-2 sm:p-3 rounded-lg border sm:col-span-2 md:col-span-1">
+              <div className="flex items-center justify-between p-2 sm:p-3 rounded-xl border sm:col-span-2 md:col-span-1">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-purple-500 rounded-full flex-shrink-0"></div>
                   <span className="text-xs sm:text-sm truncate">{t('wallet.earnings.forfeitureShare')}</span>

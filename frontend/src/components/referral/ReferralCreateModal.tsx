@@ -113,7 +113,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
         />
 
         {/* Modal */}
-        <div className="inline-block transform overflow-hidden rounded-lg bg-white dark:bg-gray-900 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+        <div className="inline-block transform overflow-hidden rounded-xl bg-white dark:bg-gray-900 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
           <form onSubmit={handleSubmit}>
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
@@ -133,7 +133,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
             <div className="px-6 py-4 space-y-6">
               {/* Errors */}
               {errors.length > 0 && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
                   <div className="text-sm text-red-700 dark:text-red-400">
                     <ul className="list-disc list-inside space-y-1">
                       {errors.map((error, index) => (
@@ -160,7 +160,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
                         type="button"
                         onClick={() => handleReferralTypeChange(type)}
                         className={clsx(
-                          'text-left p-4 border-2 rounded-lg transition-all',
+                          'text-left p-4 border-2 rounded-xl transition-all',
                           isSelected
                             ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
                             : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
@@ -168,7 +168,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
                       >
                         <div className="flex items-start">
                           <div className={clsx(
-                            'p-2 rounded-lg mr-3',
+                            'p-2 rounded-xl mr-3',
                             type === 'CUSTOMER_TO_SPECIALIST'
                               ? 'bg-purple-100 dark:bg-purple-900/20'
                               : 'bg-blue-100 dark:bg-blue-900/20'
@@ -213,7 +213,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, inviteChannel: channel }))}
                       className={clsx(
-                        'flex items-center p-3 border rounded-lg transition-all text-sm',
+                        'flex items-center p-3 border rounded-xl transition-all text-sm',
                         formData.inviteChannel === channel
                           ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
                           : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
@@ -237,7 +237,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
                   placeholder="Add a personal message to your referral..."
                   rows={3}
                   maxLength={500}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
                 />
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {formData.customMessage.length}/500 characters
@@ -252,7 +252,7 @@ const ReferralCreateModal: React.FC<ReferralModalProps> = ({
                 <select
                   value={formData.expiresInDays}
                   onChange={(e) => setFormData(prev => ({ ...prev, expiresInDays: parseInt(e.target.value) }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:text-white"
                 >
                   <option value={7}>7 days</option>
                   <option value={14}>14 days</option>

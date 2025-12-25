@@ -370,7 +370,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       <button
         type="button"
         onClick={handleOpenMap}
-        className={`w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg text-left flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors bg-white dark:bg-gray-800 ${className}`}
+        className={`w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl text-left flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors bg-white dark:bg-gray-800 ${className}`}
       >
         <div className="flex items-center space-x-2">
           <MapPin className="h-5 w-5 text-gray-400 dark:text-gray-500" />
@@ -384,13 +384,13 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       {/* Map Modal */}
       {isMapOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-t-lg sm:rounded-lg shadow-xl w-full sm:max-w-4xl h-[90vh] sm:max-h-[90vh] flex flex-col">
+          <div className="bg-white dark:bg-gray-800 rounded-t-lg sm:rounded-xl shadow-xl w-full sm:max-w-4xl h-[90vh] sm:max-h-[90vh] flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky top-0 z-10 rounded-t-lg sm:rounded-none">
               <h3 className="text-lg font-semibold truncate text-gray-900 dark:text-white">Select Your Location</h3>
               <button
                 onClick={handleCloseMap}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex-shrink-0 text-gray-500 dark:text-gray-400"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl flex-shrink-0 text-gray-500 dark:text-gray-400"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -409,7 +409,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                     placeholder="Search for an address or place..."
                     value={searchQuery}
                     onChange={handleSearchInputChange}
-                    className="block w-full pl-10 pr-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:placeholder-gray-400 dark:focus:placeholder-gray-500 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-sm"
+                    className="block w-full pl-10 pr-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-xl leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white focus:outline-none focus:placeholder-gray-400 dark:focus:placeholder-gray-500 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-sm"
                   />
                   {isSearching && (
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -420,7 +420,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
                 
                 {/* Search Results */}
                 {searchResults.length > 0 && (
-                  <div className="mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 sm:max-h-60 overflow-y-auto">
+                  <div className="mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-48 sm:max-h-60 overflow-y-auto">
                     {searchResults.map((place, index) => (
                       <button
                         key={place.place_id || index}
@@ -447,7 +447,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 
             {/* Map Container */}
             <div className="flex-1 p-4 min-h-0">
-              <div className="h-64 sm:h-80 md:h-96 w-full rounded-lg overflow-hidden">
+              <div className="h-64 sm:h-80 md:h-96 w-full rounded-xl overflow-hidden">
                 {mapError ? (
                   <div className="h-full w-full bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center justify-center">
                     <div className="text-center p-4">
@@ -472,7 +472,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
               </div>
               
               {/* Instructions */}
-              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                 <p className="text-sm text-blue-800 dark:text-blue-300">
                   <strong>Instructions:</strong> Search for an address above, click on the map to select your location, or drag the marker to adjust the position. 
                   The address will be automatically extracted from the coordinates.
@@ -481,7 +481,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 
               {/* Selected Location Display */}
               {location.address && (
-                <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
                   <h4 className="font-medium text-green-800 dark:text-green-300 mb-2">Selected Location:</h4>
                   <p className="text-green-700 dark:text-green-400">{displayAddress()}</p>
                   {location.latitude && location.longitude && (
@@ -497,14 +497,14 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             <div className="flex items-center justify-end space-x-3 p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky bottom-0">
               <button
                 onClick={handleCloseMap}
-                className="px-4 py-3 sm:py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex-1 sm:flex-none"
+                className="px-4 py-3 sm:py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl flex-1 sm:flex-none"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCloseMap}
                 disabled={!location.address}
-                className="px-4 py-3 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none"
+                className="px-4 py-3 sm:py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none"
               >
                 Confirm Location
               </button>

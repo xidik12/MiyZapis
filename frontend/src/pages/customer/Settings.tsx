@@ -394,14 +394,14 @@ const CustomerSettings: React.FC = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar */}
           <div className="lg:w-1/4">
-            <nav className="bg-white dark:bg-gray-800 rounded-lg shadow border border-white/20 dark:border-gray-700/50">
+            <nav className="bg-white dark:bg-gray-800 rounded-xl shadow border border-white/20 dark:border-gray-700/50">
               {sections.map((section) => {
                 const Icon = section.icon;
                 return (
                   <button
                     key={section.id}
                     onClick={() => setActiveSection(section.id)}
-                    className={`w-full flex items-center px-4 py-3 text-left text-sm font-medium rounded-lg transition-colors ${
+                    className={`w-full flex items-center px-4 py-3 text-left text-sm font-medium rounded-xl transition-colors ${
                       activeSection === section.id
                         ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 border-r-2 border-primary-700 dark:border-primary-500'
                         : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -417,7 +417,7 @@ const CustomerSettings: React.FC = () => {
 
           {/* Main Content */}
           <div className="lg:w-3/4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-white/20 dark:border-gray-700/50">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow border border-white/20 dark:border-gray-700/50">
               {/* Account Settings */}
               {activeSection === 'account' && (
                 <div className="p-6">
@@ -447,7 +447,7 @@ const CustomerSettings: React.FC = () => {
                       
                       <div className="flex flex-col space-y-3">
                         <div className="flex space-x-3">
-                          <label className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                          <label className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                             <input
                               type="file"
                               accept="image/*"
@@ -463,7 +463,7 @@ const CustomerSettings: React.FC = () => {
                             <button
                               onClick={handleImageRemove}
                               disabled={isUploadingImage}
-                              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600"
+                              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600"
                             >
                               <TrashIcon className="w-4 h-4 inline mr-2" />
                               {t('actions.remove') || 'Remove'}
@@ -477,13 +477,13 @@ const CustomerSettings: React.FC = () => {
                         
                         {/* Upload Status Messages */}
                         {uploadError && (
-                          <div className="text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg border border-red-200 dark:border-red-800">
+                          <div className="text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-xl border border-red-200 dark:border-red-800">
                             {uploadError}
                           </div>
                         )}
                         
                         {uploadSuccess && (
-                          <div className="text-green-600 dark:text-green-400 text-sm bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-lg border border-green-200 dark:border-green-800">
+                          <div className="text-green-600 dark:text-green-400 text-sm bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-xl border border-green-200 dark:border-green-800">
                             {t('settings.upload.photoUpdated') || 'Photo updated successfully!'}
                           </div>
                         )}
@@ -501,7 +501,7 @@ const CustomerSettings: React.FC = () => {
                         type="text"
                         value={user.firstName}
                         onChange={(e) => setUser(prev => ({ ...prev, firstName: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       />
                     </div>
                     <div>
@@ -512,7 +512,7 @@ const CustomerSettings: React.FC = () => {
                         type="text"
                         value={user.lastName}
                         onChange={(e) => setUser(prev => ({ ...prev, lastName: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       />
                     </div>
                     <div>
@@ -523,7 +523,7 @@ const CustomerSettings: React.FC = () => {
                         type="email"
                         value={user.email}
                         onChange={(e) => setUser(prev => ({ ...prev, email: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       />
                     </div>
                     <div>
@@ -534,7 +534,7 @@ const CustomerSettings: React.FC = () => {
                         type="tel"
                         value={user.phone}
                         onChange={(e) => setUser(prev => ({ ...prev, phone: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       />
                     </div>
                   </div>
@@ -552,7 +552,7 @@ const CustomerSettings: React.FC = () => {
                         <select
                           value={language}
                           onChange={(e) => setLanguage(e.target.value as any)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         >
                           <option value="uk">🇺🇦 Українська</option>
                           <option value="en">🇺🇸 English</option>
@@ -566,7 +566,7 @@ const CustomerSettings: React.FC = () => {
                         <select
                           value={currency}
                           onChange={(e) => setCurrency(e.target.value as any)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         >
                           <option value="UAH">₴ {t('currency.uah')}</option>
                           <option value="USD">$ {t('currency.usd')}</option>
@@ -580,7 +580,7 @@ const CustomerSettings: React.FC = () => {
                     <button
                       onClick={handleSaveAccountSettings}
                       disabled={loading}
-                      className="bg-primary-600 text-white px-6 py-2 rounded-md font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-primary-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loading ? (
                         language === 'uk' ? 'Збереження...' :
@@ -604,7 +604,7 @@ const CustomerSettings: React.FC = () => {
 
                   {/* Google OAuth Users - Set Password */}
                   {(!currentUser?.passwordLastChanged && currentUser?.authProvider === 'google') && (
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 mb-6">
                       <div className="flex items-start space-x-3">
                         <ShieldCheckIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                         <div className="flex-1">
@@ -616,7 +616,7 @@ const CustomerSettings: React.FC = () => {
                           </p>
                           <button
                             onClick={() => setShowSetPasswordModal(true)}
-                            className="inline-flex items-center mt-3 px-3 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700 transition-colors"
+                            className="inline-flex items-center mt-3 px-3 py-2 border border-transparent text-sm font-medium rounded-xl text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700 transition-colors"
                           >
                             {t('customer.settings.setPassword')}
                           </button>
@@ -626,7 +626,7 @@ const CustomerSettings: React.FC = () => {
                   )}
 
                   {/* Regular Users - Change Password */}
-                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-6">
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-6">
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -655,7 +655,7 @@ const CustomerSettings: React.FC = () => {
                   </div>
 
                   {/* Password Requirements */}
-                  <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                  <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
                     <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
                       {t('customer.settings.passwordRequirements')}
                     </h3>
@@ -793,7 +793,7 @@ const CustomerSettings: React.FC = () => {
                       <select
                         value={privacy.profileVisibility}
                         onChange={(e) => handlePrivacyChange('profileVisibility', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       >
                         <option value="public">{t('customer.settings.publicProfile')}</option>
                         <option value="private">{t('customer.settings.privateProfile')}</option>
@@ -844,7 +844,7 @@ const CustomerSettings: React.FC = () => {
                       <select
                         value={language}
                         onChange={(e) => setLanguage(e.target.value as any)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       >
                         <option value="uk">🇺🇦 Українська</option>
                         <option value="en">🇺🇸 English</option>
@@ -859,7 +859,7 @@ const CustomerSettings: React.FC = () => {
                       <select
                         value={currency}
                         onChange={(e) => setCurrency(e.target.value as any)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       >
                         <option value="UAH">₴ {t('currency.uah')}</option>
                         <option value="USD">$ {t('currency.usd')}</option>
@@ -874,7 +874,7 @@ const CustomerSettings: React.FC = () => {
                       <select
                         value={theme}
                         onChange={(e) => setTheme(e.target.value as any)}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       >
                         <option value="light">{t('customer.settings.lightTheme')}</option>
                         <option value="dark">{t('customer.settings.darkTheme')}</option>
@@ -894,7 +894,7 @@ const CustomerSettings: React.FC = () => {
                     </h2>
                     <button
                       onClick={handleAddPaymentMethod}
-                      className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
+                      className="bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
                     >
                       <PlusIcon className="h-4 w-4 mr-2" />
                       {t('customer.settings.addPaymentMethod')}
@@ -908,7 +908,7 @@ const CustomerSettings: React.FC = () => {
                         <p className="text-gray-500 dark:text-gray-400 mb-4">{t('customer.settings.noPaymentMethods')}</p>
                         <button
                           onClick={handleAddPaymentMethod}
-                          className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
+                          className="bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
                         >
                           <PlusIcon className="h-4 w-4 mr-2" />
                           {t('customer.settings.addFirstPayment')}
@@ -916,7 +916,7 @@ const CustomerSettings: React.FC = () => {
                       </div>
                     ) : (
                       paymentMethods.map((method) => (
-                      <div key={method.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex items-center justify-between">
+                      <div key={method.id} className="border border-gray-200 dark:border-gray-600 rounded-xl p-4 flex items-center justify-between">
                         <div className="flex items-center">
                           <CreditCardIcon className="h-8 w-8 text-gray-400 dark:text-gray-500 mr-3" />
                           <div>
@@ -963,7 +963,7 @@ const CustomerSettings: React.FC = () => {
                     </h2>
                     <button
                       onClick={handleAddAddress}
-                      className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
+                      className="bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
                     >
                       <PlusIcon className="h-4 w-4 mr-2" />
                       {t('customer.settings.addAddress')}
@@ -977,7 +977,7 @@ const CustomerSettings: React.FC = () => {
                         <p className="text-gray-500 dark:text-gray-400 mb-4">{t('customer.settings.noAddresses')}</p>
                         <button
                           onClick={handleAddAddress}
-                          className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
+                          className="bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
                         >
                           <PlusIcon className="h-4 w-4 mr-2" />
                           {t('customer.settings.addFirstAddress')}
@@ -985,7 +985,7 @@ const CustomerSettings: React.FC = () => {
                       </div>
                     ) : (
                       addresses.map((address) => (
-                      <div key={address.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex items-start justify-between hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                      <div key={address.id} className="border border-gray-200 dark:border-gray-600 rounded-xl p-4 flex items-start justify-between hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                         <div className="flex items-start">
                           <MapPinIcon className="h-8 w-8 text-gray-500 dark:text-gray-400 mr-3 mt-1" />
                           <div>
@@ -1050,7 +1050,7 @@ const CustomerSettings: React.FC = () => {
                   </label>
                   <select 
                     name="paymentType"
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   >
                     <option value="card">{language === 'uk' ? 'Банківська картка' : language === 'ru' ? 'Банковская карта' : 'Bank Card'}</option>
                     <option value="privat">PrivatBank</option>
@@ -1068,7 +1068,7 @@ const CustomerSettings: React.FC = () => {
                     type="text"
                     name="cardName"
                     placeholder={language === 'uk' ? 'Моя картка Visa' : language === 'ru' ? 'Моя карта Visa' : 'My Visa Card'}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                     required
                   />
                 </div>
@@ -1081,7 +1081,7 @@ const CustomerSettings: React.FC = () => {
                     name="cardNumber"
                     placeholder="1234 5678 9012 3456"
                     maxLength={19}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                     onChange={(e) => {
                       // Format card number with spaces
                       let value = e.target.value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
@@ -1095,13 +1095,13 @@ const CustomerSettings: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowAddPaymentModal(false)}
-                  className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium rounded-lg transition-colors"
+                  className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium rounded-xl transition-colors"
                 >
                   {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отмена' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-sm"
+                  className="px-6 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-medium transition-colors shadow-sm"
                 >
                   {t('customer.settings.addPaymentMethod')}
                 </button>
@@ -1162,7 +1162,7 @@ const CustomerSettings: React.FC = () => {
                   </label>
                   <select 
                     name="addressType"
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   >
                     <option value="home">{language === 'uk' ? 'Дім' : language === 'ru' ? 'Дом' : 'Home'}</option>
                     <option value="work">{language === 'uk' ? 'Робота' : language === 'ru' ? 'Работа' : 'Work'}</option>
@@ -1177,7 +1177,7 @@ const CustomerSettings: React.FC = () => {
                     type="text"
                     name="label"
                     placeholder={language === 'uk' ? 'Моя адреса' : language === 'ru' ? 'Мой адрес' : 'My Address'}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                     required
                   />
                 </div>
@@ -1190,7 +1190,7 @@ const CustomerSettings: React.FC = () => {
                     name="street"
                     defaultValue={newAddressLocation.address}
                     placeholder={language === 'uk' ? 'вул. Хрещатик, 1' : language === 'ru' ? 'ул. Крещатик, 1' : '123 Main Street'}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                     required
                   />
                 </div>
@@ -1204,7 +1204,7 @@ const CustomerSettings: React.FC = () => {
                       name="city"
                       defaultValue={newAddressLocation.city}
                       placeholder={language === 'uk' ? 'Київ' : language === 'ru' ? 'Киев' : 'Kyiv'}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                       required
                     />
                   </div>
@@ -1217,7 +1217,7 @@ const CustomerSettings: React.FC = () => {
                       name="postalCode"
                       defaultValue={newAddressLocation.postalCode}
                       placeholder="01001"
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                       required
                     />
                   </div>
@@ -1231,7 +1231,7 @@ const CustomerSettings: React.FC = () => {
                     name="region"
                     defaultValue={newAddressLocation.region}
                     placeholder={language === 'uk' ? 'Київська область' : language === 'ru' ? 'Киевская область' : 'Kyiv Oblast'}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   />
                 </div>
                 <div>
@@ -1241,7 +1241,7 @@ const CustomerSettings: React.FC = () => {
                   <select 
                     name="country"
                     defaultValue={newAddressLocation.country || 'Ukraine'}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   >
                     <option value="Ukraine">{language === 'uk' ? 'Україна' : language === 'ru' ? 'Украина' : 'Ukraine'}</option>
                     <option value="Poland">{language === 'uk' ? 'Польща' : language === 'ru' ? 'Польша' : 'Poland'}</option>
@@ -1254,13 +1254,13 @@ const CustomerSettings: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowAddAddressModal(false)}
-                  className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium rounded-lg transition-colors"
+                  className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium rounded-xl transition-colors"
                 >
                   {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отмена' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-sm"
+                  className="px-6 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-medium transition-colors shadow-sm"
                 >
                   {t('customer.settings.addAddress')}
                 </button>
