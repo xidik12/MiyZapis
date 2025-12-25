@@ -6,7 +6,7 @@ import { SearchBar } from '@/components/common/SearchBar';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { MagnifyingGlassIcon, StarIcon, ClockIcon, ShieldCheckIcon, UserGroupIcon, CalendarIcon, CreditCardIcon, ChatBubbleLeftRightIcon, SealCheckIcon as CheckBadgeIcon, ArrowRightIcon, SparklesIcon, HeartIcon, HouseIcon as HomeIcon, BriefcaseIcon, BookOpenIcon, ComputerDesktopIcon } from '@/components/icons';
+import { MagnifyingGlassIcon, StarIcon, ClockIcon, ShieldCheckIcon, UserGroupIcon, CalendarIcon, CreditCardIcon, ChatBubbleLeftRightIcon, SealCheckIcon as CheckBadgeIcon, ArrowRightIcon, SparklesIcon, HeartIcon, HouseIcon as HomeIcon, BriefcaseIcon, BookOpenIcon, WrenchScrewdriverIcon } from '@/components/icons';
 
 // Service categories and featured specialists - data from API
 const getServiceCategories = (t: (key: string) => string) => [
@@ -54,7 +54,7 @@ const getServiceCategories = (t: (key: string) => string) => [
     id: '6',
     name: t('category.technology'),
     description: t('category.technology.desc'),
-    icon: ComputerDesktopIcon,
+    icon: WrenchScrewdriverIcon,
     serviceCount: 67,
     href: '/search?category=technology',
   },
