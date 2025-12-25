@@ -125,7 +125,7 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder={t('professionForm.searchProfessions') || 'Search professions...'}
-            className="w-full px-4 py-3 pl-10 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+            className="w-full px-4 py-3 pl-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 hover:bg-white dark:hover:bg-gray-800 dark:text-white font-medium"
             autoFocus
           />
           <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,13 +134,13 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
         </div>
         
         {searchTerm && filteredProfessions.length > 0 && (
-          <div className="max-h-64 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-xl">
+          <div className="max-h-64 overflow-y-auto border border-gray-200/20 dark:border-gray-700/20 rounded-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl shadow-glass">
             {filteredProfessions.map((profession) => (
               <button
                 key={profession.id}
                 type="button"
                 onClick={() => handleSelectProfession(profession.id)}
-                className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                className="w-full text-left px-4 py-3 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-all duration-200 font-medium rounded-xl"
               >
                 <div className="font-medium">
                   {getProfessionName(profession.id, language as 'en' | 'uk' | 'ru')}
@@ -160,7 +160,7 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
               setShowSearch(false);
               setSearchTerm('');
             }}
-            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 px-2 py-1 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition-all duration-200 font-medium"
           >
             ← {t('common.back') || 'Back to selection'}
           </button>
@@ -171,7 +171,7 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
                 setShowSearch(false);
                 setShowCustomInput(true);
               }}
-              className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400"
+              className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 px-2 py-1 rounded-xl hover:bg-primary-50/80 dark:hover:bg-primary-900/30 transition-all duration-200 font-medium"
             >
               {t('professionForm.addCustomProfession') || '+ Add custom profession'}
             </button>
@@ -191,14 +191,14 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
             onChange={(e) => setCustomValue(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder={t('professionForm.enterCustomProfession') || 'Enter custom profession'}
-            className="flex-1 px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 hover:bg-white dark:hover:bg-gray-800 dark:text-white font-medium"
             autoFocus
           />
           <button
             type="button"
             onClick={handleCustomSubmit}
             disabled={!customValue.trim()}
-            className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 font-semibold transition-all duration-200 hover:scale-105"
           >
             {t('common.add') || 'Add'}
           </button>
@@ -209,7 +209,7 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
             setShowCustomInput(false);
             setCustomValue('');
           }}
-          className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 px-2 py-1 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition-all duration-200 font-medium"
         >
           ← {t('common.back') || 'Back to professions'}
         </button>
