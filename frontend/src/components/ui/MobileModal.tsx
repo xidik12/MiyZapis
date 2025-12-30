@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { XIcon as XMarkIcon } from '@/components/icons';
 import { clsx } from 'clsx';
@@ -28,6 +28,22 @@ export const MobileModal: React.FC<MobileModalProps> = ({
   preventClose = false,
   position = 'center'
 }) => {
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
+
+  // Handle modal open/close animation
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      // Trigger animation after render
+      setTimeout(() => setIsAnimating(true), 10);
+    } else {
+      setIsAnimating(false);
+      // Remove from DOM after animation
+      setTimeout(() => setShouldRender(false), 300);
+    }
+  }, [isOpen]);
+
   // Prevent scroll when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -60,7 +76,7 @@ export const MobileModal: React.FC<MobileModalProps> = ({
     }
   }, [isOpen, onClose, preventClose]);
 
-  if (!isOpen) return null;
+  if (!shouldRender) return null;
 
   const sizeClasses = {
     sm: 'max-w-sm',
@@ -88,7 +104,9 @@ export const MobileModal: React.FC<MobileModalProps> = ({
     >
       {/* Overlay */}
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-md transition-opacity"
+        className={`fixed inset-0 bg-black/50 backdrop-blur-md transition-opacity duration-300 ${
+          isAnimating ? 'opacity-100' : 'opacity-0'
+        }`}
         onClick={!preventClose ? onClose : undefined}
       />
 
@@ -106,9 +124,18 @@ export const MobileModal: React.FC<MobileModalProps> = ({
             'max-h-[90vh] overflow-hidden flex flex-col',
             sizeClasses[size],
 
-            // Mobile-specific positioning
-            position === 'bottom' && 'sm:mb-8 rounded-b-none sm:rounded-b-2xl',
-            position === 'center' && 'mobile-modal-content',
+            // Animation based on position
+            position === 'bottom' && [
+              'sm:mb-8 rounded-b-none sm:rounded-b-2xl',
+              isAnimating ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+            ],
+            position === 'center' && [
+              'mobile-modal-content',
+              isAnimating ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'
+            ],
+            position === 'top' && [
+              isAnimating ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
+            ],
 
             className
           )}
@@ -135,7 +162,7 @@ export const MobileModal: React.FC<MobileModalProps> = ({
                     'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300',
                     'hover:bg-gray-100/80 dark:hover:bg-gray-700/80',
                     'focus:outline-none focus:ring-2 focus:ring-primary-500',
-                    'transition-all duration-200',
+                    'transition-all duration-200 hover:scale-110 active:scale-90',
                     preventClose && 'opacity-50 cursor-not-allowed'
                   )}
                   aria-label="Close modal"
