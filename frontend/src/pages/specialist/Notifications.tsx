@@ -23,6 +23,8 @@ const SpecialistNotifications: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // Load notifications from service
   const loadNotifications = async () => {
@@ -91,6 +93,13 @@ const SpecialistNotifications: React.FC = () => {
     loadNotifications();
   }, []);
 
+  // Trigger entrance animation when notifications load
+  useEffect(() => {
+    if (!loading && notifications.length > 0) {
+      setIsAnimating(true);
+    }
+  }, [loading, notifications.length]);
+
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'booking':
@@ -154,21 +163,40 @@ const SpecialistNotifications: React.FC = () => {
 
   const deleteNotification = async (id: string) => {
     try {
-      await notificationService.deleteNotification(id);
-      setNotifications(prev => {
-        const filtered = prev.filter(notif => notif.id !== id);
-        const deletedNotif = prev.find(notif => notif.id === id);
-        if (deletedNotif && !deletedNotif.isRead) {
-          setUnreadCount(count => {
-            const next = Math.max(0, count - 1);
-            try { window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: next } })); } catch {}
-            return next;
-          });
-        }
-        return filtered;
-      });
+      // Add to deleting set for animation
+      setDeletingIds(prev => new Set(prev).add(id));
+
+      // Wait for animation to complete
+      setTimeout(async () => {
+        await notificationService.deleteNotification(id);
+        setNotifications(prev => {
+          const filtered = prev.filter(notif => notif.id !== id);
+          const deletedNotif = prev.find(notif => notif.id === id);
+          if (deletedNotif && !deletedNotif.isRead) {
+            setUnreadCount(count => {
+              const next = Math.max(0, count - 1);
+              try { window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: next } })); } catch {}
+              return next;
+            });
+          }
+          return filtered;
+        });
+
+        // Clean up deleting state
+        setDeletingIds(prev => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+      }, 300);
     } catch (err) {
       console.error('Failed to delete notification:', err);
+      // Remove from deleting set on error
+      setDeletingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   };
 
@@ -182,16 +210,16 @@ const SpecialistNotifications: React.FC = () => {
 
   return (
     
-      <div className="p-2 sm:p-6 max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-8 animate-slide-in-down">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             {t('dashboard.nav.notifications')}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-gray-400 font-medium mt-1">
             {t('notifications.subtitle')}
             {unreadCount > 0 && (
-              <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+              <span className="ml-2 inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold bg-red-100/80 text-red-800 dark:bg-red-900/40 dark:text-red-200 border border-red-200/50 dark:border-red-800/50 shadow-sm animate-scale-in">
                 {unreadCount} {t('notifications.unread')}
               </span>
             )}
@@ -200,7 +228,8 @@ const SpecialistNotifications: React.FC = () => {
         <div className="flex items-center space-x-3">
           <button
             onClick={markAllAsRead}
-            className="px-3 sm:px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors flex items-center space-x-2"
+            disabled={unreadCount === 0}
+            className="px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all duration-200 hover:scale-105 active:scale-95 flex items-center space-x-2 font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
             <CheckIcon className="w-4 h-4" />
             <span className="hidden sm:inline">{t('notifications.markAllRead')}</span>
@@ -210,8 +239,8 @@ const SpecialistNotifications: React.FC = () => {
       </div>
 
       {/* Filter tabs */}
-      <div className="mb-6">
-        <nav className="flex flex-wrap gap-2 sm:space-x-8 sm:gap-0">
+      <div className="mb-8 animate-slide-in-up">
+        <nav className="flex flex-wrap gap-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl p-2 shadow-glass border border-gray-200/50 dark:border-gray-700/50">
           {[
             { key: 'all', label: t('notifications.filter.all') },
             { key: 'unread', label: t('notifications.filter.unread') },
@@ -223,15 +252,15 @@ const SpecialistNotifications: React.FC = () => {
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key as any)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+              className={`flex-1 min-w-fit py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-105 active:scale-95 ${
                 filter === tab.key
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
             >
               {tab.label}
               {tab.key === 'unread' && unreadCount > 0 && (
-                <span className="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full bg-red-100 text-red-800">
+                <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold rounded-lg bg-red-500 text-white animate-pulse">
                   {unreadCount}
                 </span>
               )}
@@ -278,76 +307,81 @@ const SpecialistNotifications: React.FC = () => {
 
       {/* Notifications list */}
       {!loading && !error && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {filteredNotifications.length === 0 ? (
-          <div className="text-center py-12">
-            <BellIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          <div className="text-center py-16 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-glass animate-scale-in">
+            <BellIcon className="w-20 h-20 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
               {t('notifications.noNotifications')}
             </h3>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600 dark:text-gray-400 font-medium">
               {t('notifications.noNotificationsDescription')}
             </p>
           </div>
         ) : (
-          filteredNotifications.map((notification) => {
+          filteredNotifications.map((notification, index) => {
             const IconComponent = getNotificationIcon(notification.type);
             return (
               <div
                 key={notification.id}
                 className={`
-                  border-l-4 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 transition-all hover:shadow-md
+                  group border-l-4 p-5 rounded-2xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 backdrop-blur-xl
                   ${getPriorityColor(notification.priority)}
-                  ${!notification.isRead ? 'ring-2 ring-primary-500 ring-opacity-20' : ''}
+                  ${!notification.isRead ? 'ring-2 ring-primary-500/30' : ''}
+                  ${deletingIds.has(notification.id) ? 'opacity-0 translate-x-full scale-90' : 'opacity-100 translate-x-0 scale-100'}
                 `}
+                style={{
+                  animationDelay: `${index * 50}ms`,
+                  animation: isAnimating && !deletingIds.has(notification.id) ? 'slideInRight 0.4s ease-out forwards' : 'none'
+                }}
               >
                 <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3">
+                  <div className="flex items-start space-x-4 flex-1 min-w-0">
                     <div className={`
-                      p-2 rounded-xl
-                      ${notification.priority === 'high' ? 'bg-red-100 text-red-600' : ''}
-                      ${notification.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' : ''}
-                      ${notification.priority === 'low' ? 'bg-blue-100 text-blue-600' : ''}
+                      p-3 rounded-xl transition-all duration-200 group-hover:scale-110 shadow-sm
+                      ${notification.priority === 'high' ? 'bg-red-100/80 dark:bg-red-900/40 text-red-600 dark:text-red-400' : ''}
+                      ${notification.priority === 'medium' ? 'bg-yellow-100/80 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-400' : ''}
+                      ${notification.priority === 'low' ? 'bg-blue-100/80 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400' : ''}
                     `}>
-                      <IconComponent className="w-5 h-5" />
+                      <IconComponent className="w-6 h-6" />
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <h4 className={`font-medium ${
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <h4 className={`font-bold text-base truncate ${
                           !notification.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'
                         }`}>
                           {notification.title}
                         </h4>
                         {!notification.isRead && (
-                          <span className="w-2 h-2 bg-primary-600 rounded-full"></span>
+                          <span className="w-2.5 h-2.5 bg-primary-600 rounded-full flex-shrink-0 animate-pulse"></span>
                         )}
                       </div>
-                      <p className={`text-sm mt-1 ${
-                        !notification.isRead ? 'text-gray-900 dark:text-gray-100' : 'text-gray-600 dark:text-gray-400'
+                      <p className={`text-sm leading-relaxed ${
+                        !notification.isRead ? 'text-gray-900 dark:text-gray-100 font-medium' : 'text-gray-600 dark:text-gray-400'
                       }`}>
                         {notification.message}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 font-semibold">
                         {notification.timestamp}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center gap-1 ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     {!notification.isRead && (
                       <button
                         onClick={() => markAsRead(notification.id)}
-                        className="p-1 text-gray-400 hover:text-primary-600 transition-colors"
+                        className="p-2 rounded-xl text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-100/80 dark:hover:bg-green-900/30 transition-all duration-200 hover:scale-110 active:scale-90"
                         title={t('notifications.markAsRead')}
                       >
-                        <EyeIcon className="w-4 h-4" />
+                        <EyeIcon className="w-5 h-5" />
                       </button>
                     )}
                     <button
                       onClick={() => deleteNotification(notification.id)}
-                      className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                      className="p-2 rounded-xl text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100/80 dark:hover:bg-red-900/30 transition-all duration-200 hover:scale-110 active:scale-90"
                       title={t('notifications.delete')}
                     >
-                      <XMarkIcon className="w-4 h-4" />
+                      <XMarkIcon className="w-5 h-5" />
                     </button>
                   </div>
                 </div>

@@ -24,15 +24,15 @@ const BookingPagination: React.FC<BookingPaginationProps> = ({
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
-    <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row sm:items-center justify-between space-y-3 sm:space-y-0">
-      <div className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 text-center sm:text-left">
-        {t('pagination.showing')} {startItem} {t('pagination.to')} {endItem} {t('pagination.of')} {totalItems} {t('pagination.results')}
+    <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0 animate-fade-in">
+      <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 text-center sm:text-left px-4 py-2 bg-gray-50/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-600/50">
+        {t('pagination.showing')} <span className="text-primary-600 dark:text-primary-400">{startItem}</span> {t('pagination.to')} <span className="text-primary-600 dark:text-primary-400">{endItem}</span> {t('pagination.of')} <span className="text-primary-600 dark:text-primary-400">{totalItems}</span> {t('pagination.results')}
       </div>
-      <div className="flex flex-wrap justify-center sm:justify-end gap-1 sm:gap-2">
+      <div className="flex flex-wrap justify-center sm:justify-end gap-2">
         <button
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
-          className="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-gray-700/80 border border-gray-200 dark:border-gray-600 rounded-xl hover:bg-primary-50/80 dark:hover:bg-primary-900/30 hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-300 dark:hover:border-primary-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white/80 dark:disabled:hover:bg-gray-700/80 disabled:hover:text-gray-700 dark:disabled:hover:text-gray-300 transition-all duration-200 hover:scale-105 active:scale-95 backdrop-blur-sm shadow-sm hover:shadow-md"
         >
           {t('pagination.previous')}
         </button>
@@ -53,10 +53,10 @@ const BookingPagination: React.FC<BookingPaginationProps> = ({
             <button
               key={page}
               onClick={() => onPageChange(page)}
-              className={`px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium border rounded-xl ${
+              className={`min-w-[2.75rem] px-3 py-2.5 text-sm font-bold border rounded-xl transition-all duration-200 hover:scale-110 active:scale-95 backdrop-blur-sm ${
                 page === currentPage
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  ? 'bg-primary-600 text-white border-primary-600 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:bg-primary-700'
+                  : 'text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-gray-700/80 border-gray-200 dark:border-gray-600 hover:bg-primary-50/80 dark:hover:bg-primary-900/30 hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-300 dark:hover:border-primary-600 shadow-sm hover:shadow-md'
               }`}
             >
               {page}
@@ -67,7 +67,7 @@ const BookingPagination: React.FC<BookingPaginationProps> = ({
         <button
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
-          className="px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-gray-700/80 border border-gray-200 dark:border-gray-600 rounded-xl hover:bg-primary-50/80 dark:hover:bg-primary-900/30 hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-300 dark:hover:border-primary-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white/80 dark:disabled:hover:bg-gray-700/80 disabled:hover:text-gray-700 dark:disabled:hover:text-gray-300 transition-all duration-200 hover:scale-105 active:scale-95 backdrop-blur-sm shadow-sm hover:shadow-md"
         >
           {t('pagination.next')}
         </button>
