@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { APP_CONSTANTS } from '../../config/environment';
 
 interface FilterState {
   status: string;
@@ -17,7 +18,7 @@ interface BookingFiltersProps {
   onSortOrderToggle: () => void;
 }
 
-const BookingFilters: React.FC<BookingFiltersProps> = ({
+const BookingFilters: React.FC<BookingFiltersProps> = React.memo(({
   filters,
   sortBy,
   sortOrder,
@@ -26,6 +27,25 @@ const BookingFilters: React.FC<BookingFiltersProps> = ({
   onSortOrderToggle
 }) => {
   const { t } = useLanguage();
+
+  // Local state for search input to enable instant UI updates
+  const [localSearchTerm, setLocalSearchTerm] = useState(filters.searchTerm);
+
+  // Sync local state when filters prop changes from external source
+  useEffect(() => {
+    setLocalSearchTerm(filters.searchTerm);
+  }, [filters.searchTerm]);
+
+  // Debounce search term updates to reduce filter trigger frequency
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localSearchTerm !== filters.searchTerm) {
+        onFiltersChange({ searchTerm: localSearchTerm });
+      }
+    }, APP_CONSTANTS.SEARCH_DEBOUNCE_MS);
+
+    return () => clearTimeout(timer);
+  }, [localSearchTerm, filters.searchTerm, onFiltersChange]);
 
   return (
     <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-glass border border-gray-200/50 dark:border-gray-700/50 mb-6 p-4 sm:p-6 animate-fade-in">
@@ -65,15 +85,15 @@ const BookingFilters: React.FC<BookingFiltersProps> = ({
           </select>
         </div>
 
-        {/* Search */}
+        {/* Search (with debouncing) */}
         <div className="group">
           <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-200 group-focus-within:text-primary-600 dark:group-focus-within:text-primary-400">
             {t('filters.search')}
           </label>
           <input
             type="text"
-            value={filters.searchTerm}
-            onChange={(e) => onFiltersChange({ searchTerm: e.target.value })}
+            value={localSearchTerm}
+            onChange={(e) => setLocalSearchTerm(e.target.value)}
             placeholder={t('filters.searchPlaceholder')}
             className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-700/80 dark:text-white font-medium backdrop-blur-sm hover:bg-white dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 hover:shadow-md placeholder:text-gray-400 dark:placeholder:text-gray-500"
           />
@@ -106,6 +126,8 @@ const BookingFilters: React.FC<BookingFiltersProps> = ({
       </div>
     </div>
   );
-};
+});
+
+BookingFilters.displayName = 'BookingFilters';
 
 export default BookingFilters;

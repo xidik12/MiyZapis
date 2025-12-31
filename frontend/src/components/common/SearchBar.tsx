@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MagnifyingGlassIcon } from '@/components/icons';
+import { APP_CONSTANTS } from '@/config/environment';
 
 interface SearchBarProps {
   placeholder?: string;
@@ -7,14 +8,27 @@ interface SearchBarProps {
   onSearch: (query: string) => void;
   className?: string;
   autoFocus?: boolean;
+  /**
+   * Enable auto-search with debouncing (default: false)
+   * When true, searches automatically as user types (debounced)
+   * When false, only searches on form submit
+   */
+  enableAutoSearch?: boolean;
+  /**
+   * Custom debounce delay in milliseconds
+   * Only applies when enableAutoSearch is true
+   */
+  debounceMs?: number;
 }
 
-export const SearchBar: React.FC<SearchBarProps> = ({
+export const SearchBar: React.FC<SearchBarProps> = React.memo(({
   placeholder = "Search...",
   defaultValue = "",
   onSearch,
   className = "",
   autoFocus = false,
+  enableAutoSearch = false,
+  debounceMs = APP_CONSTANTS.SEARCH_DEBOUNCE_MS,
 }) => {
   const [query, setQuery] = useState(defaultValue);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -26,7 +40,20 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     }
   };
 
-  React.useEffect(() => {
+  // Auto-search with debouncing (only if enabled)
+  useEffect(() => {
+    if (!enableAutoSearch) return;
+
+    const timer = setTimeout(() => {
+      if (query.trim()) {
+        onSearch(query.trim());
+      }
+    }, debounceMs);
+
+    return () => clearTimeout(timer);
+  }, [query, enableAutoSearch, debounceMs, onSearch]);
+
+  useEffect(() => {
     if (autoFocus && inputRef.current) {
       inputRef.current.focus();
     }
@@ -47,4 +74,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       </div>
     </form>
   );
-};
+});
+
+SearchBar.displayName = 'SearchBar';

@@ -133,16 +133,44 @@ export default defineConfig({
           return `assets/[name]-[hash].[ext]`;
         },
         manualChunks: (id) => {
+          // Route-based code splitting for better caching and parallel loading
+          if (id.includes('/pages/customer/')) return 'route-customer';
+          if (id.includes('/pages/specialist/')) return 'route-specialist';
+          if (id.includes('/pages/admin/')) return 'route-admin';
+          if (id.includes('/pages/auth/')) return 'route-auth';
+          if (id.includes('/pages/booking/')) return 'route-booking';
+
           if (id.includes('node_modules')) {
-            // Large independent libraries that don't depend on React
+            // Core React libraries (most frequently used, cache separately)
+            if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
+              return 'vendor-react';
+            }
+            // Router library
+            if (id.includes('react-router')) {
+              return 'vendor-router';
+            }
+            // State management
+            if (id.includes('redux') || id.includes('@reduxjs')) {
+              return 'vendor-redux';
+            }
+            // HTTP client
+            if (id.includes('axios')) {
+              return 'vendor-http';
+            }
+            // Animation library
             if (id.includes('framer-motion')) {
               return 'vendor-framer';
             }
+            // Payment processing
             if (id.includes('@stripe')) {
               return 'vendor-stripe';
             }
-            // Everything else stays together to ensure proper dependency loading
-            return 'vendor';
+            // UI components and utilities
+            if (id.includes('react-toastify') || id.includes('react-window')) {
+              return 'vendor-ui';
+            }
+            // Everything else (smaller dependencies)
+            return 'vendor-misc';
           }
         }
       }
