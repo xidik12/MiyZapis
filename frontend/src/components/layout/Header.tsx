@@ -14,7 +14,7 @@ import {
   ChevronDownIcon,
   HouseIcon as HomeIcon,
 } from '@/components/icons';
-import { NotificationDropdown } from '../common/NotificationDropdown';
+import { NotificationDropdownV2 } from '../notifications/NotificationDropdownV2';
 import { UserDropdown } from '../common/UserDropdown';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { LanguageToggle } from '../ui/LanguageToggle';
@@ -222,7 +222,7 @@ export const Header: React.FC = () => {
                       </span>
                     )}
                   </button>
-                  <NotificationDropdown 
+                  <NotificationDropdownV2
                     isOpen={isNotificationOpen}
                     onClose={() => setIsNotificationOpen(false)}
                   />
