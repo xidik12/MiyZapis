@@ -1112,4 +1112,104 @@
   .animate-fade-in {
     animation: fadeIn 0.2s ease-out;
   }
+
+  /* Smooth micro-interactions for specialist pages */
+  .smooth-hover {
+    @apply transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg;
+  }
+
+  .smooth-press {
+    @apply transition-transform duration-100 active:scale-95;
+  }
+
+  .smooth-button {
+    @apply transition-all duration-200 ease-out hover:scale-105 hover:shadow-md active:scale-95;
+  }
+
+  .smooth-card {
+    @apply transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl;
+  }
+
+  .smooth-fade-in-up {
+    animation: fadeInUp 0.4s ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Stagger animation delays for lists */
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
+  .stagger-5 { animation-delay: 0.25s; }
+  .stagger-6 { animation-delay: 0.3s; }
+
+  /* Smooth loading skeleton with better shimmer */
+  @keyframes smooth-shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .smooth-skeleton {
+    background: linear-gradient(90deg,
+      rgb(243 244 246) 25%,
+      rgb(229 231 235) 50%,
+      rgb(243 244 246) 75%
+    );
+    background-size: 200% 100%;
+    animation: smooth-shimmer 1.5s ease-in-out infinite;
+    @apply rounded-lg;
+  }
+
+  .dark .smooth-skeleton {
+    background: linear-gradient(90deg,
+      rgb(31 41 55) 25%,
+      rgb(55 65 81) 50%,
+      rgb(31 41 55) 75%
+    );
+  }
+
+  /* Smooth page transitions */
+  .page-enter {
+    animation: pageEnter 0.3s ease-out;
+  }
+
+  @keyframes pageEnter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Smooth stat counters */
+  .stat-card {
+    @apply smooth-card bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-200/50 dark:border-gray-700/50;
+  }
+
+  /* Better focus states */
+  .focus-smooth {
+    @apply transition-shadow duration-200 focus:ring-2 focus:ring-primary-500/50 focus:outline-none;
+  }
+
+  /* Smooth disabled state */
+  .disabled-smooth {
+    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none transition-opacity duration-200;
+  }
 }

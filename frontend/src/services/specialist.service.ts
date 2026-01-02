@@ -10,6 +10,7 @@ import {
   Pagination,
   ApiResponse
 } from '@/types';
+import { logger } from '@/utils/logger';
 
 export class SpecialistService {
   // Get specialist profile (for specialists accessing their own profile)
@@ -30,11 +31,11 @@ export class SpecialistService {
     
     // Extract the specialist data from the nested response
     const specialistData = response.data.specialist;
-    console.log('🔍 Raw specialist data from API:', specialistData);
-    
+    logger.debug('Raw specialist data from API:', specialistData);
+
     // Check if avatar URLs are accessible (basic validation)
     if (specialistData.user?.avatar && specialistData.user.avatar.includes('/uploads/')) {
-      console.log('⚠️ Avatar URL points to uploads directory - may not be accessible if files were lost');
+      logger.warn('Avatar URL points to uploads directory - may not be accessible if files were lost');
     }
     
     // Transform the response to match frontend expectations
@@ -91,32 +92,30 @@ export class SpecialistService {
             if (typeof item === 'string' && item.startsWith('data:image/')) {
               const sizeKB = Math.round(item.length / 1024);
               if (item.length >= 500000) {
-                console.warn(`⚠️ Skipping large base64 portfolio image: ${sizeKB}KB (max 488KB)`);
-                console.warn('💡 Suggestion: Convert large images to files and upload via backend');
+                logger.warn(`Skipping large base64 portfolio image: ${sizeKB}KB (max 488KB). Suggestion: Convert large images to files and upload via backend`);
                 return false;
               }
               return true;
             } else if (typeof item === 'object' && item.imageUrl && item.imageUrl.startsWith('data:image/')) {
               const sizeKB = Math.round(item.imageUrl.length / 1024);
               if (item.imageUrl.length >= 500000) {
-                console.warn(`⚠️ Skipping large base64 portfolio image: ${sizeKB}KB (max 488KB)`);
-                console.warn('💡 Suggestion: Convert large images to files and upload via backend');
+                logger.warn(`Skipping large base64 portfolio image: ${sizeKB}KB (max 488KB). Suggestion: Convert large images to files and upload via backend`);
                 return false;
               }
               return true;
             }
             return true; // Keep all non-base64 images
           });
-          
-          console.log('📸 Portfolio images processed:', {
+
+          logger.debug('Portfolio images processed:', {
             original: portfolioData.length,
             filtered: filteredPortfolio.length,
             removed: portfolioData.length - filteredPortfolio.length
           });
-          
+
           return filteredPortfolio;
         } catch (error) {
-          console.error('❌ Error processing portfolio images:', error);
+          logger.error('Error processing portfolio images:', error);
           return [];
         }
       })(),
@@ -132,8 +131,8 @@ export class SpecialistService {
       experience: specialistData.experience || 0,
       responseTime: normalizeResponseTime(specialistData.responseTime)
     };
-    
-    console.log('✅ Transformed specialist data:', transformedSpecialist);
+
+    logger.debug('Transformed specialist data:', transformedSpecialist);
     return transformedSpecialist;
   }
 
@@ -148,58 +147,58 @@ export class SpecialistService {
 
   // Update specialist profile
   async updateProfile(data: Partial<Specialist>): Promise<Specialist> {
-    console.log('💾 API: Updating specialist profile...');
-    console.log('📝 API: Profile data size:', JSON.stringify(data).length, 'chars');
-    
+    logger.debug('API: Updating specialist profile...');
+    logger.debug('API: Profile data size:', JSON.stringify(data).length, 'chars');
+
     // Check for large portfolio data
     if (data.portfolio) {
       const portfolioSize = JSON.stringify(data.portfolio).length;
-      console.log('💼 API: Portfolio data size:', portfolioSize, 'chars');
+      logger.debug('API: Portfolio data size:', portfolioSize, 'chars');
       if (portfolioSize > 1000000) { // 1MB
-        console.warn('⚠️ API: Portfolio data is very large, this might cause issues');
+        logger.warn('API: Portfolio data is very large, this might cause issues');
       }
     }
-    
+
     const response = await apiClient.put<Specialist>('/specialists/profile', data);
-    console.log('📦 API: Update response:', response);
-    
+    logger.debug('API: Update response:', response);
+
     if (!response.success || !response.data) {
-      console.error('❌ API: Profile update failed:', response.error);
+      logger.error('API: Profile update failed:', response.error);
       throw new Error(response.error?.message || 'Failed to update specialist profile');
     }
-    
-    console.log('✅ API: Profile updated successfully');
+
+    logger.debug('API: Profile updated successfully');
     return response.data;
   }
 
   // Upload specialist portfolio images
   async uploadPortfolioImage(file: File): Promise<{ imageUrl: string }> {
-    console.log('📸 Processing portfolio image:', file.name, 'Size:', file.size);
-    
+    logger.debug('Processing portfolio image:', file.name, 'Size:', file.size);
+
     // Import fileUploadService dynamically to avoid circular dependencies
     const { fileUploadService } = await import('./fileUpload.service');
-    
+
     // Use the proper backend file upload service
     const result = await fileUploadService.uploadPortfolioImage(file);
-    
-    console.log('✅ Portfolio image uploaded successfully:', result.url);
+
+    logger.debug('Portfolio image uploaded successfully:', result.url);
     return { imageUrl: result.url };
   }
 
   // Get specialist's services (for own profile)
   async getServices(): Promise<Service[]> {
-    console.log('📡 API: Getting specialist services...');
+    logger.debug('API: Getting specialist services...');
     const response = await apiClient.get<{services: Service[]}>('/specialists/services');
-    console.log('📦 API: Response received:', response);
-    
+    logger.debug('API: Response received:', response);
+
     if (!response.success || !response.data) {
-      console.error('❌ API: Failed response:', response.error);
+      logger.error('API: Failed response:', response.error);
       throw new Error(response.error?.message || 'Failed to get specialist services');
     }
-    
+
     const services = response.data.services || [];
-    console.log('🔍 API: Extracted services:', services);
-    console.log('🏷️ API: Service IDs:', services.map(s => ({ id: s.id, name: s.name })));
+    logger.debug('API: Extracted services:', services);
+    logger.debug('API: Service IDs:', services.map(s => ({ id: s.id, name: s.name })));
     return services;
   }
 
@@ -233,25 +232,25 @@ export class SpecialistService {
   // Delete service
   async deleteService(serviceId: string): Promise<{ message: string }> {
     try {
-      console.log('🗑️ API: Deleting service:', serviceId);
-      
+      logger.debug('API: Deleting service:', serviceId);
+
       if (!serviceId || serviceId.trim() === '') {
         throw new Error('Service ID is required for deletion');
       }
-      
+
       const response = await apiClient.delete<{ message: string }>(`/specialists/services/${serviceId}`);
-      console.log('📦 API: Delete response:', response);
-      
+      logger.debug('API: Delete response:', response);
+
       if (!response.success || !response.data) {
         const errorMessage = response.error?.message || 'Failed to delete service';
-        console.error('❌ API: Delete failed:', response.error);
+        logger.error('API: Delete failed:', response.error);
         throw new Error(errorMessage);
       }
-      
-      console.log('✅ API: Service deleted successfully');
+
+      logger.debug('API: Service deleted successfully');
       return response.data;
     } catch (error: any) {
-      console.error('🚨 API: Service deletion error:', {
+      logger.error('API: Service deletion error:', {
         serviceId,
         error: error.message,
         response: error.response?.data,
@@ -282,24 +281,24 @@ export class SpecialistService {
 
   // Toggle service active status
   async toggleServiceStatus(serviceId: string, isActive: boolean): Promise<Service> {
-    console.log('🔄 API: Toggling service status:', { serviceId, isActive });
-    
+    logger.debug('API: Toggling service status:', { serviceId, isActive });
+
     if (!serviceId) {
       throw new Error('Service ID is required');
     }
-    
+
     const response = await apiClient.patch<{service: Service, message: string}>(`/specialists/services/${serviceId}/status`, { isActive });
-    console.log('📦 API: Toggle response:', response);
-    
+    logger.debug('API: Toggle response:', response);
+
     if (!response.success || !response.data) {
-      console.error('❌ API: Toggle failed:', response.error);
+      logger.error('API: Toggle failed:', response.error);
       throw new Error(response.error?.message || 'Failed to update service status');
     }
-    
-    console.log('✅ API: Service status updated successfully');
+
+    logger.debug('API: Service status updated successfully');
     // Extract the service object from the response
     const serviceData = response.data.service || response.data;
-    console.log('🔍 API: Extracted service data:', serviceData);
+    logger.debug('API: Extracted service data:', serviceData);
     return serviceData;
   }
 
@@ -376,18 +375,18 @@ export class SpecialistService {
 
     try {
       // Use the correct /specialists/blocks endpoint
-      console.log('📦 Fetching availability blocks from /specialists/blocks endpoint...');
+      logger.debug('Fetching availability blocks from /specialists/blocks endpoint...');
       const response = await apiClient.get<{ blocks: BlockedSlot[] }>(`/specialists/blocks?${params}`);
       if (response.success && response.data) {
         const blocks = response.data.blocks || [];
-        console.log('📦 getAvailabilityBlocks response:', {
+        logger.debug('getAvailabilityBlocks response:', {
           blocksCount: blocks.length,
           blocks: blocks.slice(0, 3) // Show first 3 blocks for debugging
         });
         return Array.isArray(blocks) ? blocks : [];
       }
     } catch (error: any) {
-      console.warn('📦 Failed to fetch availability blocks:', error);
+      logger.warn('Failed to fetch availability blocks:', error);
     }
 
     return [];
@@ -413,15 +412,15 @@ export class SpecialistService {
       recurringDays: data.recurringDays,
       recurringUntil: data.recurringUntil,
     };
-    
-    console.log('📤 Creating availability block:', backendData);
-    
+
+    logger.debug('Creating availability block:', backendData);
+
     const response = await apiClient.post<{ message: string; block: BlockedSlot }>('/specialists/blocks', backendData);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to create availability block');
     }
-    
-    console.log('✅ Block created successfully:', response.data);
+
+    logger.debug('Block created successfully:', response.data);
     return response.data;
   }
 
@@ -445,15 +444,15 @@ export class SpecialistService {
       recurringDays: data.recurringDays,
       recurringUntil: data.recurringUntil,
     };
-    
-    console.log('📤 Updating availability block:', blockId, backendData);
-    
+
+    logger.debug('Updating availability block:', blockId, backendData);
+
     const response = await apiClient.put<{ message: string; block: BlockedSlot }>(`/specialists/blocks/${blockId}`, backendData);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to update availability block');
     }
-    
-    console.log('✅ Block updated successfully:', response.data);
+
+    logger.debug('Block updated successfully:', response.data);
     return response.data;
   }
 
@@ -468,12 +467,12 @@ export class SpecialistService {
 
   // Generate availability blocks from working hours
   async generateAvailabilityFromWorkingHours(): Promise<{ message: string; blocksCreated: number }> {
-    console.log('📤 Generating availability blocks from working hours');
+    logger.debug('Generating availability blocks from working hours');
     const response = await apiClient.post<{ message: string; blocksCreated: number }>('/specialists/availability/generate', {});
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to generate availability blocks');
     }
-    console.log('✅ Generated availability blocks:', response.data);
+    logger.debug('Generated availability blocks:', response.data);
     return response.data;
   }
 
@@ -668,27 +667,27 @@ export class SpecialistService {
   // Get available dates for a specialist (for booking flow)
   async getAvailableDates(specialistId: string): Promise<{ availableDates: string[] }> {
     try {
-      console.log('📅 API: Getting available dates for specialist:', specialistId);
-      
+      logger.debug('API: Getting available dates for specialist:', specialistId);
+
       const response = await apiClient.get<{ availableDates: string[] }>(
         `/specialists/${specialistId}/available-dates`
       );
-      
+
       if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Failed to get available dates');
       }
-      
-      console.log('✅ API: Available dates received:', response.data.availableDates);
+
+      logger.debug('API: Available dates received:', response.data.availableDates);
       return { availableDates: response.data.availableDates || [] };
     } catch (error: any) {
-      console.error('❌ API: Error getting available dates:', error);
+      logger.error('API: Error getting available dates:', error);
       throw error;
     }
   }
 
   async getAvailableSlots(specialistId: string, date: string): Promise<string[]> {
     try {
-      console.log('📅 API: Getting available slots for specialist:', specialistId, 'date:', date);
+      logger.debug('API: Getting available slots for specialist:', specialistId, 'date:', date);
 
       // Calculate start and end of the day for the availability query
       const startDate = `${date}T00:00:00.000Z`;
@@ -699,18 +698,18 @@ export class SpecialistService {
       const response = await apiClient.get<{ availableSlots: string[] }>(
         `/specialists/${specialistId}/slots?date=${date}&_t=${cacheBuster}`
       );
-      
+
       if (!response.success || !response.data) {
-        console.warn('⚠️ API: No available slots data, returning empty array');
+        logger.warn('API: No available slots data, returning empty array');
         // Return empty array instead of throwing error to handle gracefully
         return [];
       }
-      
+
       const slots = response.data.availableSlots || [];
-      console.log('✅ API: Available slots received:', slots);
+      logger.debug('API: Available slots received:', slots);
       return slots;
     } catch (error) {
-      console.error('❌ API: Error getting available slots:', error);
+      logger.error('API: Error getting available slots:', error);
       // Return empty array to handle errors gracefully
       return [];
     }

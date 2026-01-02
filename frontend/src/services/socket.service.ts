@@ -1,3 +1,4 @@
+import { logger } from '@/utils/logger';
 import { io, Socket } from 'socket.io-client';
 import { getAuthToken } from './api';
 import { environment } from '@/config/environment';
@@ -27,13 +28,13 @@ class SocketService {
 
     const token = getAuthToken();
     if (!token) {
-      console.warn('No auth token available for socket connection');
+      logger.warn('No auth token available for socket connection');
       return;
     }
 
     try {
-      console.log('[Socket] Connecting to:', environment.WS_URL);
-      console.log('[Socket] Token available:', !!token);
+      logger.debug('[Socket] Connecting to:', environment.WS_URL);
+      logger.debug('[Socket] Token available:', !!token);
 
       this.socket = io(environment.WS_URL, {
         auth: {
@@ -50,9 +51,9 @@ class SocketService {
 
       this.setupEventListeners();
 
-      console.log('[Socket] Attempting to connect to', environment.WS_URL);
+      logger.debug('[Socket] Attempting to connect to', environment.WS_URL);
     } catch (error) {
-      console.error('[Socket] Connection error:', error);
+      logger.error('[Socket] Connection error:', error);
     }
   }
 
@@ -65,7 +66,7 @@ class SocketService {
       this.eventHandlers.clear();
       
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] Disconnected');
+        logger.debug('[Socket] Disconnected');
       }
     }
   }
@@ -85,7 +86,7 @@ class SocketService {
       this.reconnectAttempts = 0;
       
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] Connected successfully');
+        logger.debug('[Socket] Connected successfully');
       }
       
       this.emit('socket:connected', { connected: true });
@@ -95,7 +96,7 @@ class SocketService {
       this.isConnected = false;
       
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] Disconnected:', reason);
+        logger.debug('[Socket] Disconnected:', reason);
       }
       
       this.emit('socket:disconnected', { reason });
@@ -104,18 +105,18 @@ class SocketService {
     this.socket.on('connect_error', (error) => {
       this.reconnectAttempts++;
 
-      console.error('[Socket] Connection error:', error);
-      console.error('[Socket] Error details:', {
+      logger.error('[Socket] Connection error:', error);
+      logger.error('[Socket] Error details:', {
         message: error.message,
         description: error.description,
         context: error.context,
         type: error.type
       });
-      console.error('[Socket] WS_URL:', environment.WS_URL);
-      console.error('[Socket] Attempt #:', this.reconnectAttempts);
+      logger.error('[Socket] WS_URL:', environment.WS_URL);
+      logger.error('[Socket] Attempt #:', this.reconnectAttempts);
 
       if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-        console.error('[Socket] Max reconnection attempts reached');
+        logger.error('[Socket] Max reconnection attempts reached');
         this.emit('socket:connection_failed', { error: error.message });
       }
     });
@@ -123,40 +124,40 @@ class SocketService {
     // Authentication events
     this.socket.on('auth:success', (data) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] Authentication successful:', data);
+        logger.debug('[Socket] Authentication successful:', data);
       }
     });
 
     this.socket.on('auth:error', (error) => {
-      console.error('[Socket] Authentication error:', error);
+      logger.error('[Socket] Authentication error:', error);
       this.emit('socket:auth_error', { error });
     });
 
     // Booking events
     this.socket.on('booking:status_changed', (data: BookingSocketEvent['data']) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] Booking status changed:', data);
+        logger.debug('[Socket] Booking status changed:', data);
       }
       this.emit('booking:status_changed', data);
     });
 
     this.socket.on('booking:new', (data: BookingSocketEvent['data']) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] New booking:', data);
+        logger.debug('[Socket] New booking:', data);
       }
       this.emit('booking:new', data);
     });
 
     this.socket.on('booking:updated', (data: BookingSocketEvent['data']) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] Booking updated:', data);
+        logger.debug('[Socket] Booking updated:', data);
       }
       this.emit('booking:updated', data);
     });
 
     this.socket.on('booking:reminder', (data) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] Booking reminder:', data);
+        logger.debug('[Socket] Booking reminder:', data);
       }
       this.emit('booking:reminder', data);
     });
@@ -164,7 +165,7 @@ class SocketService {
     // Payment events
     this.socket.on('payment:status_changed', (data: PaymentSocketEvent['data']) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] Payment status changed:', data);
+        logger.debug('[Socket] Payment status changed:', data);
       }
       this.emit('payment:status_changed', data);
     });
@@ -173,13 +174,13 @@ class SocketService {
     // Backend may emit a generic 'notification' event
     this.socket.on('notification', (data: any) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] Notification:', data);
+        logger.debug('[Socket] Notification:', data);
       }
 
       // Check if this is a payment completion notification
       if (data.type === 'PAYMENT_COMPLETED') {
         if (import.meta.env.VITE_DEBUG === 'true') {
-          console.log('[Socket] Payment completion notification:', data);
+          logger.debug('[Socket] Payment completion notification:', data);
         }
         this.emit('payment:completed', data.data);
       }
@@ -190,7 +191,7 @@ class SocketService {
 
     this.socket.on('notification:new', (data: NotificationSocketEvent['data']) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] New notification:', data);
+        logger.debug('[Socket] New notification:', data);
       }
       this.emit('notification:new', data);
     });
@@ -199,28 +200,28 @@ class SocketService {
     // Underscore variant from backend
     this.socket.on('notification_read', (data: any) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] Notification read:', data);
+        logger.debug('[Socket] Notification read:', data);
       }
       this.emit('notification:read', data);
     });
 
     this.socket.on('notification:read', (data: any) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] Notification read:', data);
+        logger.debug('[Socket] Notification read:', data);
       }
       this.emit('notification:read', data);
     });
 
     this.socket.on('notification:mark_all_read', (data: any) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] Notifications mark all read:', data);
+        logger.debug('[Socket] Notifications mark all read:', data);
       }
       this.emit('notification:mark_all_read', data);
     });
 
     this.socket.on('notification:deleted', (data: any) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] Notification deleted:', data);
+        logger.debug('[Socket] Notification deleted:', data);
       }
       this.emit('notification:deleted', data);
     });
@@ -228,7 +229,7 @@ class SocketService {
     // Server initial unread notifications count
     this.socket.on('unread_notifications', (data: any) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] Unread notifications count:', data);
+        logger.debug('[Socket] Unread notifications count:', data);
       }
       this.emit('unread_notifications', data);
     });
@@ -236,7 +237,7 @@ class SocketService {
     // Specialist availability events
     this.socket.on('availability:updated', (data) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] Availability updated:', data);
+        logger.debug('[Socket] Availability updated:', data);
       }
       this.emit('availability:updated', data);
     });
@@ -244,7 +245,7 @@ class SocketService {
     // Chat/messaging events (if implemented)
     this.socket.on('message:new', (data) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] New message:', data);
+        logger.debug('[Socket] New message:', data);
       }
       this.emit('message:new', data);
     });
@@ -256,20 +257,20 @@ class SocketService {
     // Review events
     this.socket.on('review:new', (data) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] New review:', data);
+        logger.debug('[Socket] New review:', data);
       }
       this.emit('review:new', data);
     });
 
     // System events
     this.socket.on('system:maintenance', (data) => {
-      console.warn('[Socket] System maintenance:', data);
+      logger.warn('[Socket] System maintenance:', data);
       this.emit('system:maintenance', data);
     });
 
     this.socket.on('system:announcement', (data) => {
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log('[Socket] System announcement:', data);
+        logger.debug('[Socket] System announcement:', data);
       }
       this.emit('system:announcement', data);
     });
@@ -287,7 +288,7 @@ class SocketService {
   subscribeToPayment(paymentId: string, handler: SocketEventHandler): () => void {
     // Ensure connection is active
     if (!this.isSocketConnected()) {
-      console.log('[Socket] Attempting to reconnect for payment subscription');
+      logger.debug('[Socket] Attempting to reconnect for payment subscription');
       this.ensureConnection();
     }
 
@@ -324,7 +325,7 @@ class SocketService {
       // Try to reconnect
       const token = getAuthToken();
       if (!token) {
-        console.warn('[Socket] No auth token for reconnection');
+        logger.warn('[Socket] No auth token for reconnection');
         resolve(false);
         return;
       }
@@ -362,7 +363,7 @@ class SocketService {
           }
         }, 5000);
       } catch (error) {
-        console.error('[Socket] Error during reconnection:', error);
+        logger.error('[Socket] Error during reconnection:', error);
         resolve(false);
       }
     });
@@ -387,7 +388,7 @@ class SocketService {
         try {
           handler(data);
         } catch (error) {
-          console.error(`[Socket] Error in event handler for ${event}:`, error);
+          logger.error(`[Socket] Error in event handler for ${event}:`, error);
         }
       });
     }
@@ -399,10 +400,10 @@ class SocketService {
       this.socket.emit(event, data);
       
       if (import.meta.env.VITE_DEBUG === 'true') {
-        console.log(`[Socket] Sent ${event}:`, data);
+        logger.debug(`[Socket] Sent ${event}:`, data);
       }
     } else {
-      console.warn(`[Socket] Cannot send ${event}: not connected`);
+      logger.warn(`[Socket] Cannot send ${event}: not connected`);
     }
   }
 

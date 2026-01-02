@@ -11,6 +11,7 @@ import { isFeatureEnabled } from '../../config/features';
 import { ProfessionDropdown } from '../../components/ui/ProfessionDropdown';
 import { LocationPicker } from '../../components/LocationPicker';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
+import { logger } from '@/utils/logger';
 import OptimizedImage from '../../components/ui/OptimizedImage';
 import { Avatar } from '../../components/ui/Avatar';
 import AutoMigrateAvatar from '../../components/AutoMigrateAvatar';
@@ -184,8 +185,8 @@ const getEmptyProfile = (): SpecialistProfile => ({
 const mergeProfileData = (apiData: any): SpecialistProfile => {
   const defaultProfile = getEmptyProfile();
   
-  console.log('🔄 mergeProfileData input:', apiData);
-  console.log('🔄 defaultProfile:', defaultProfile);
+  logger.debug('🔄 mergeProfileData input:', apiData);
+  logger.debug('🔄 defaultProfile:', defaultProfile);
   
   // Extract specialist data from nested structure
   const specialist = apiData?.specialist || apiData;
@@ -196,7 +197,7 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
       try {
         return JSON.parse(field);
       } catch (e) {
-        console.warn('⚠️ Failed to parse JSON field:', field, e);
+        logger.warn('⚠️ Failed to parse JSON field:', field, e);
         return fallback;
       }
     }
@@ -249,7 +250,7 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
     },
   };
   
-  console.log('🔄 mergeProfileData result:', result);
+  logger.debug('🔄 mergeProfileData result:', result);
   return result;
 };
 
@@ -364,18 +365,18 @@ const SpecialistProfile: React.FC = () => {
 
     const loadProfile = async () => {
       try {
-        console.log('📥 Starting profile load, user:', user);
+        logger.debug('📥 Starting profile load, user:', user);
         setLoading(true);
         
         if (user && isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
-          console.log('📡 API feature enabled, fetching specialist profile...');
+          logger.debug('📡 API feature enabled, fetching specialist profile...');
           try {
             const specialistData = await specialistService.getProfile();
-            console.log('📡 Raw data from backend getProfile:', specialistData);
+            logger.debug('📡 Raw data from backend getProfile:', specialistData);
             
             // Extract specialist data from nested response
             const specialist = specialistData.specialist || specialistData;
-            console.log('📦 Extracted specialist data:', specialist);
+            logger.debug('📦 Extracted specialist data:', specialist);
             
             const profileInput = {
               // Use nested specialist data
@@ -404,15 +405,15 @@ const SpecialistProfile: React.FC = () => {
               },
             };
             
-            console.log('📥 Profile input before merge:', profileInput);
+            logger.debug('📥 Profile input before merge:', profileInput);
             const updatedProfile = mergeProfileData(profileInput);
-            console.log('📥 Final merged profile:', updatedProfile);
+            logger.debug('📥 Final merged profile:', updatedProfile);
             
             setProfile(updatedProfile);
             setOriginalProfile(updatedProfile);
-            console.log('✅ Profile loaded successfully');
+            logger.debug('✅ Profile loaded successfully');
           } catch (specialistError) {
-            console.warn('Specialist API not available, using user data only:', specialistError);
+            logger.warn('Specialist API not available, using user data only:', specialistError);
             const basicProfile = mergeProfileData({
               firstName: user.firstName || '',
               lastName: user.lastName || '',
@@ -433,7 +434,7 @@ const SpecialistProfile: React.FC = () => {
           setOriginalProfile(basicProfile);
         }
       } catch (error) {
-        console.error('Error loading profile:', error);
+        logger.error('Error loading profile:', error);
         showErrorNotification(
           language === 'uk' 
             ? 'Не вдалося завантажити профіль' 
@@ -451,13 +452,13 @@ const SpecialistProfile: React.FC = () => {
 
   // Handle profile changes
   const handleProfileChange = (field: string, value: any) => {
-    console.log(`📝 Profile field changed: ${field} =`, value);
+    logger.debug(`📝 Profile field changed: ${field} =`, value);
     setProfile(prev => {
       const newProfile = {
         ...prev,
         [field]: value
       };
-      console.log('📝 New profile state:', newProfile);
+      logger.debug('📝 New profile state:', newProfile);
       return newProfile;
     });
     setHasUnsavedChanges(true);
@@ -597,23 +598,23 @@ const SpecialistProfile: React.FC = () => {
             certifications: Array.isArray(profile.certifications) ? profile.certifications : []
           };
 
-          console.log('💾 Sending specialist data to backend:', specialistData);
-          console.log('💾 Current profile state before save:', profile);
+          logger.debug('💾 Sending specialist data to backend:', specialistData);
+          logger.debug('💾 Current profile state before save:', profile);
 
           // Call the API to update the specialist profile
           try {
             const updateResult = await specialistService.updateProfile(specialistData);
-            console.log('✅ Backend response for specialist update:', updateResult);
+            logger.debug('✅ Backend response for specialist update:', updateResult);
           } catch (updateError: any) {
-            console.error('❌ Update failed, error:', updateError);
+            logger.error('❌ Update failed, error:', updateError);
             // If specialist profile doesn't exist, try to create it first
             if (updateError.message?.includes('SPECIALIST_NOT_FOUND') || updateError.message?.includes('not found')) {
-              console.log('Specialist profile not found, attempting to create...');
+              logger.debug('Specialist profile not found, attempting to create...');
               try {
                 await specialistService.createProfile(specialistData);
-                console.log('Specialist profile created successfully');
+                logger.debug('Specialist profile created successfully');
               } catch (createError: any) {
-                console.error('Failed to create specialist profile:', createError);
+                logger.error('Failed to create specialist profile:', createError);
                 throw createError;
               }
             } else {
@@ -634,25 +635,25 @@ const SpecialistProfile: React.FC = () => {
               phoneNumber: profile.phone?.trim() || null
             };
             
-            console.log('Updating user profile with data:', userUpdateData);
+            logger.debug('Updating user profile with data:', userUpdateData);
             
             try {
               // Import userService dynamically to avoid circular dependencies
               const { userService } = await import('../../services/user.service');
               await userService.updateProfile(userUpdateData);
-              console.log('User profile updated successfully');
+              logger.debug('User profile updated successfully');
               
               // Update Redux store so changes persist
               dispatch(updateUserProfile(userUpdateData));
             } catch (userError: any) {
-              console.error('Failed to update user info:', userError);
-              console.error('Error details:', userError.message);
+              logger.error('Failed to update user info:', userError);
+              logger.error('Error details:', userError.message);
               // Don't throw error here - let specialist profile save continue
             }
           }
           
         } catch (apiError: any) {
-          console.error('API call failed:', apiError);
+          logger.error('API call failed:', apiError);
           throw new Error(apiError.message || 'Failed to save profile');
         }
       }
@@ -662,11 +663,11 @@ const SpecialistProfile: React.FC = () => {
         try {
           // Reload the profile from the API to ensure we have the latest data
           const apiData = await specialistService.getProfile();
-          console.log('Profile data after save reload:', apiData);
+          logger.debug('Profile data after save reload:', apiData);
           
           // Extract specialist data from nested response
           const specialist = apiData.specialist || apiData;
-          console.log('📦 Extracted specialist after save:', specialist);
+          logger.debug('📦 Extracted specialist after save:', specialist);
           
           const updatedProfile = mergeProfileData({
             ...specialist,
@@ -678,11 +679,11 @@ const SpecialistProfile: React.FC = () => {
             bio: specialist.bio || '',
             experience: specialist.experience || 0,
           });
-          console.log('Merged profile after save:', updatedProfile);
+          logger.debug('Merged profile after save:', updatedProfile);
           setProfile(updatedProfile);
           setOriginalProfile(updatedProfile);
         } catch (reloadError) {
-          console.warn('Failed to reload profile after save:', reloadError);
+          logger.warn('Failed to reload profile after save:', reloadError);
           // Still continue with success, just use local data
           setOriginalProfile(profile);
         }
@@ -704,7 +705,7 @@ const SpecialistProfile: React.FC = () => {
       );
       
     } catch (error) {
-      console.error('Error saving profile:', error);
+      logger.error('Error saving profile:', error);
       showErrorNotification(
         language === 'uk' 
           ? 'Не вдалося зберегти зміни'
@@ -778,7 +779,7 @@ const SpecialistProfile: React.FC = () => {
       event.target.value = '';
       
     } catch (error: any) {
-      console.error('❤️ Avatar upload error:', error);
+      logger.error('❤️ Avatar upload error:', error);
       showErrorNotification(
         error.message || 
         (language === 'uk' ? 'Помилка завантаження аватара' :
@@ -818,11 +819,11 @@ const SpecialistProfile: React.FC = () => {
 
     try {
       setIsUploadingPortfolio(true);
-      console.log('📸 Uploading portfolio image:', file.name, 'Size:', file.size);
+      logger.debug('📸 Uploading portfolio image:', file.name, 'Size:', file.size);
       
       const result = await specialistService.uploadPortfolioImage(file);
-      console.log('✅ Portfolio image uploaded, imageUrl length:', result.imageUrl?.length);
-      console.log('🔍 Image URL preview:', result.imageUrl?.substring(0, 100) + '...');
+      logger.debug('✅ Portfolio image uploaded, imageUrl length:', result.imageUrl?.length);
+      logger.debug('🔍 Image URL preview:', result.imageUrl?.substring(0, 100) + '...');
       
       // Add the new image to the portfolio
       const newPortfolioItem = {
@@ -833,10 +834,10 @@ const SpecialistProfile: React.FC = () => {
         tags: []
       };
       
-      console.log('💼 New portfolio item:', newPortfolioItem);
+      logger.debug('💼 New portfolio item:', newPortfolioItem);
       
       const updatedPortfolio = [...profile.portfolio, newPortfolioItem];
-      console.log('📋 Updated portfolio array:', updatedPortfolio.length, 'items');
+      logger.debug('📋 Updated portfolio array:', updatedPortfolio.length, 'items');
       handleProfileChange('portfolio', updatedPortfolio);
       
       showSuccessNotification(
@@ -849,7 +850,7 @@ const SpecialistProfile: React.FC = () => {
       event.target.value = '';
       
     } catch (error: any) {
-      console.error('❌ Portfolio upload error:', error);
+      logger.error('❌ Portfolio upload error:', error);
       showErrorNotification(
         error.message || 
         (language === 'uk' ? 'Помилка завантаження зображення' :
@@ -1040,10 +1041,10 @@ const SpecialistProfile: React.FC = () => {
                       // Open specialist's public profile in a new tab - use specialist profile ID
                       const specialistId = (profile as any).id || user.id;
                       const publicProfileUrl = `/specialist/${specialistId}`;
-                      console.log('🔍 Opening preview for specialist ID:', specialistId);
+                      logger.debug('🔍 Opening preview for specialist ID:', specialistId);
                       window.open(publicProfileUrl, '_blank');
                     } else {
-                      console.warn('User is not a specialist');
+                      logger.warn('User is not a specialist');
                       showErrorNotification(
                         language === 'uk' ? 'Профіль недоступний для перегляду' : 
                         language === 'ru' ? 'Профиль недоступен для просмотра' : 
@@ -1996,12 +1997,12 @@ const SpecialistProfile: React.FC = () => {
                               alt={item.title || `Portfolio item ${index + 1}`}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               onError={(e) => {
-                                console.error('Portfolio image failed to load:', item.imageUrl);
+                                logger.error('Portfolio image failed to load:', item.imageUrl);
                                 // Hide broken images
                                 e.currentTarget.style.display = 'none';
                               }}
                               onLoad={(e) => {
-                                console.log('✅ Portfolio image loaded successfully:', item.imageUrl);
+                                logger.debug('✅ Portfolio image loaded successfully:', item.imageUrl);
                               }}
                             />
                           </div>

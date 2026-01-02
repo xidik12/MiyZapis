@@ -148,16 +148,36 @@ export const STORAGE_KEYS = {
 
 // Application constants
 export const APP_CONSTANTS = {
+  // File handling
   MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
   SUPPORTED_IMAGE_TYPES: ['image/jpeg', 'image/png', 'image/webp'],
+
+  // Pagination & Search
   PAGINATION_LIMIT: 20,
   SEARCH_DEBOUNCE_MS: 300,
   AUTO_SAVE_DEBOUNCE_MS: 1000,
+
+  // API & Caching
+  API_TIMEOUT: 15000, // 15 seconds
+  CACHE_TTL: 30000, // 30 seconds
+  CACHE_MAX_SIZE: 100, // Maximum cache entries
+
+  // Session & Timeouts
   SESSION_TIMEOUT_MS: 30 * 60 * 1000, // 30 minutes
+  SUCCESS_MESSAGE_TIMEOUT: 3000, // 3 seconds
+  NOTIFICATION_CHECK_INTERVAL: 60000, // 1 minute
+
+  // Date/Time
+  WEEK_IN_MS: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+
+  // Loyalty & Bookings
   LOYALTY_POINTS_PER_DOLLAR: 10,
   MIN_BOOKING_ADVANCE_HOURS: 24,
   MAX_BOOKING_ADVANCE_DAYS: 90,
   CANCELLATION_DEADLINE_HOURS: 24,
+
+  // Misc
+  CARD_NUMBER_MAX_LENGTH: 19,
   RATING_SCALE: [1, 2, 3, 4, 5],
 };
 

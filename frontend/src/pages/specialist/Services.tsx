@@ -5,6 +5,7 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { specialistService } from '../../services/specialist.service';
 import { serviceService } from '../../services/service.service';
 import { isFeatureEnabled } from '../../config/features';
+import { logger } from '@/utils/logger';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
 import { FloatingElements, UkrainianOrnament } from '../../components/ui/UkrainianElements';
 import { CategoryDropdown } from '../../components/ui/CategoryDropdown';
@@ -86,21 +87,21 @@ const SpecialistServices: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        console.log('📡 Loading services...');
+        logger.debug('Loading services...');
         const servicesData = await specialistService.getServices();
-        console.log('📦 Services data received:', servicesData);
-        console.log('🔍 First service structure:', servicesData?.[0]);
-        console.log('🏷️ Service IDs and metadata:', servicesData?.map(s => ({ 
-          id: s.id, 
+        logger.debug('Services data received:', servicesData);
+        logger.debug('First service structure:', servicesData?.[0]);
+        logger.debug('Service IDs and metadata:', servicesData?.map(s => ({
+          id: s.id,
           name: s.name,
           createdAt: s.createdAt,
-          updatedAt: s.updatedAt 
+          updatedAt: s.updatedAt
         })));
-        console.log('📊 Total services loaded:', servicesData?.length || 0);
+        logger.debug('Total services loaded:', servicesData?.length || 0);
         setServices(Array.isArray(servicesData) ? servicesData : []);
       } catch (err: any) {
         setError(err.message || 'Failed to load services');
-        console.error('❌ Error loading services:', err);
+        logger.error('Error loading services:', err);
       } finally {
         setLoading(false);
       }
@@ -119,7 +120,7 @@ const SpecialistServices: React.FC = () => {
         setCategories(Array.isArray(categoriesData) ? categoriesData : []);
       } catch (err: any) {
         setCategoriesError(err.message || 'Failed to load categories');
-        console.error('Error loading categories:', err);
+        logger.error('Error loading categories:', err);
         // Fallback to empty array if API fails
         setCategories([]);
       } finally {
@@ -164,7 +165,7 @@ const SpecialistServices: React.FC = () => {
           return s;
         }));
       } catch (e) {
-        console.warn('Unable to enhance service ratings from reviews:', e);
+        logger.warn('Unable to enhance service ratings from reviews:', e);
       }
     };
 
@@ -272,9 +273,9 @@ const SpecialistServices: React.FC = () => {
   };
 
   const openEditModal = (service: Service) => {
-    console.log('🔧 Opening edit modal for service:', service);
-    console.log('⏰ Service duration value:', service.duration);
-    
+    logger.debug('Opening edit modal for service:', service);
+    logger.debug('Service duration value:', service.duration);
+
     // Check if the service category exists in our loaded categories
     const existingCategory = categories.find(cat => cat.id === service.category || cat.name === service.category);
     
@@ -314,10 +315,10 @@ const SpecialistServices: React.FC = () => {
       discountValidUntil: service.discountValidUntil ? service.discountValidUntil.split('T')[0] : '',
       discountDescription: service.discountDescription || '',
     };
-    
-    console.log('📝 Form data being set:', formDataToSet);
-    console.log('⏰ Duration in form data:', formDataToSet.duration);
-    
+
+    logger.debug('Form data being set:', formDataToSet);
+    logger.debug('Duration in form data:', formDataToSet.duration);
+
     setFormData(formDataToSet);
     
     // If category doesn't exist in our list, show it as custom
@@ -342,7 +343,7 @@ const SpecialistServices: React.FC = () => {
   const validateForm = () => {
     // Only run validation if user has attempted to submit
     if (!hasAttemptedSubmit) {
-      console.log('🔒 Validation skipped - user has not attempted submit yet');
+      logger.debug('Validation skipped - user has not attempted submit yet');
       return true;
     }
 
@@ -357,7 +358,7 @@ const SpecialistServices: React.FC = () => {
     }
 
     // Check category validation - formData.category should always contain the value (custom or regular)
-    console.log('🔍 Category validation:', {
+    logger.debug('Category validation:', {
       showCustomCategory,
       customCategory: customCategory.trim(),
       formDataCategory: formData.category,
@@ -368,9 +369,9 @@ const SpecialistServices: React.FC = () => {
     // Always check formData.category since both regular and custom categories are stored there
     if (!formData.category) {
       errors.category = t('serviceForm.required');
-      console.log('❌ Category validation failed - no category in formData.category');
+      logger.debug('Category validation failed - no category in formData.category');
     } else {
-      console.log('✅ Category validation passed:', formData.category);
+      logger.debug('Category validation passed:', formData.category);
     }
     
     const price = parseFloat(formData.price);
@@ -410,8 +411,8 @@ const SpecialistServices: React.FC = () => {
     }
 
     // Removed availability and timeSlots validation as they're not part of backend schema
-    
-    console.log('🔍 Validation result:', {
+
+    logger.debug('Validation result:', {
       hasErrors: Object.keys(errors).length > 0,
       errors,
       totalErrors: Object.keys(errors).length
@@ -432,7 +433,7 @@ const SpecialistServices: React.FC = () => {
     }
 
     if (!isFeatureEnabled('ENABLE_SPECIALIST_SERVICES_API')) {
-      console.warn('Services API is disabled. Enable ENABLE_SPECIALIST_SERVICES_API to use this feature.');
+      logger.warn('Services API is disabled. Enable ENABLE_SPECIALIST_SERVICES_API to use this feature.');
       closeModal();
       return;
     }
@@ -442,15 +443,15 @@ const SpecialistServices: React.FC = () => {
       ? customCategory.trim()
       : formData.category;
 
-    console.log('📋 Form data before submission:', formData);
-    console.log('🏷️ Category data:', {
+    logger.debug('Form data before submission:', formData);
+    logger.debug('Category data:', {
       originalCategory: formData.category,
       showCustomCategory,
       customCategory,
       finalCategory
     });
-    console.log('⏰ Duration from form:', formData.duration, typeof formData.duration);
-    console.log('⏰ Duration parsed as int:', parseInt(formData.duration));
+    logger.debug('Duration from form:', formData.duration, typeof formData.duration);
+    logger.debug('Duration parsed as int:', parseInt(formData.duration));
     
     const serviceData = {
       name: formData.name,
@@ -484,30 +485,30 @@ const SpecialistServices: React.FC = () => {
       maxParticipants: formData.isGroupSession ? formData.maxParticipants : undefined,
       minParticipants: formData.isGroupSession ? formData.minParticipants : 1,
     };
-    
-    console.log('🚀 Service data being sent to backend:', serviceData);
-    console.log('⏰ Duration in service data:', serviceData.duration);
-    
+
+    logger.debug('Service data being sent to backend:', serviceData);
+    logger.debug('Duration in service data:', serviceData.duration);
+
     try {
       let updatedService;
       if (editingService) {
-        console.log('📝 Updating existing service:', editingService.id);
+        logger.debug('Updating existing service:', editingService.id);
         updatedService = await specialistService.updateService(editingService.id, serviceData);
-        console.log('✅ Service updated, response from backend:', updatedService);
-        console.log('⏰ Duration in updated service:', updatedService.duration);
-        setServices(prev => prev.map(service => 
+        logger.debug('Service updated, response from backend:', updatedService);
+        logger.debug('Duration in updated service:', updatedService.duration);
+        setServices(prev => prev.map(service =>
           service.id === editingService.id ? updatedService : service
         ));
       } else {
-        console.log('🆕 Creating new service');
+        logger.debug('Creating new service');
         updatedService = await specialistService.createService(serviceData);
-        console.log('✅ Service created, response from backend:', updatedService);
-        console.log('⏰ Duration in created service:', updatedService.duration);
+        logger.debug('Service created, response from backend:', updatedService);
+        logger.debug('Duration in created service:', updatedService.duration);
         setServices(prev => [updatedService, ...prev]);
       }
       closeModal();
     } catch (err: any) {
-      console.error('Error saving service:', err);
+      logger.error('Error saving service:', err);
       setError(err.message || 'Failed to save service');
     }
   };
@@ -541,68 +542,68 @@ const SpecialistServices: React.FC = () => {
     // Show loading state
     setLoading(true);
     setError(null);
-    
+
     try {
-      console.log('🗑️ Starting service deletion for ID:', serviceId);
-      
+      logger.debug('Starting service deletion for ID:', serviceId);
+
       // Debug: Check if service exists before deletion
       const servicesBefore = services.length;
       const serviceToDelete = services.find(s => s.id === serviceId);
-      console.log('📊 Pre-deletion state:', {
+      logger.debug('Pre-deletion state:', {
         totalServices: servicesBefore,
         serviceToDelete: serviceToDelete ? { id: serviceToDelete.id, name: serviceToDelete.name } : 'NOT FOUND',
         allServiceIds: services.map(s => s.id)
       });
-      
+
       const result = await specialistService.deleteService(serviceId);
-      console.log('📦 Backend deletion result:', result);
-      
+      logger.debug('Backend deletion result:', result);
+
       // Verify deletion by fetching services again from backend
-      console.log('🔍 Verifying deletion by re-fetching services...');
+      logger.debug('Verifying deletion by re-fetching services...');
       const refreshedServices = await specialistService.getServices();
-      console.log('📊 Post-deletion verification:', {
+      logger.debug('Post-deletion verification:', {
         backendServicesCount: refreshedServices.length,
         deletedServiceStillExists: refreshedServices.some(s => s.id === serviceId),
         backendServiceIds: refreshedServices.map(s => s.id)
       });
-      
+
       // Check if service was actually deleted from backend
       const serviceStillExists = refreshedServices.some(s => s.id === serviceId);
-      
+
       if (serviceStillExists) {
         // Backend says success but service still exists - this is the bug!
-        console.error('🚨 DELETION BUG DETECTED: Backend returned success but service still exists!', {
+        logger.error('DELETION BUG DETECTED: Backend returned success but service still exists!', {
           serviceId,
           backendResponse: result,
           serviceStillInBackend: true
         });
-        
+
         // Update UI to reflect actual backend state
         setServices(refreshedServices);
-        
+
         throw new Error(
           `Deletion failed: Backend returned success but service still exists in database. ` +
           `This indicates a backend bug. Please check server logs and database state. ` +
           `Service ID: ${serviceId}`
         );
       }
-      
+
       // If we reach here, deletion was actually successful
       setServices(refreshedServices); // Use fresh data from backend
-      console.log('✅ Service deletion verified: Service no longer exists on backend');
+      logger.debug('Service deletion verified: Service no longer exists on backend');
       // toast.success('Service deleted successfully and verified!');
-      
+
     } catch (err: any) {
-      console.error('❌ Service deletion failed:', {
+      logger.error('Service deletion failed:', {
         serviceId,
         error: err.message,
         response: err.response?.data,
         status: err.response?.status
       });
-      
+
       // Handle 404 error - service already deleted
       if (err.response?.status === 404) {
-        console.log('🔄 Service already deleted (404), removing from local state');
+        logger.debug('Service already deleted (404), removing from local state');
         // Remove the service from local state since it's already deleted on backend
         setServices(prevServices => prevServices.filter(s => s.id !== serviceId));
         // toast.info('Service was already deleted. Refreshing the list.');
@@ -634,22 +635,22 @@ const SpecialistServices: React.FC = () => {
   };
 
   const handleToggleServiceStatus = async (serviceId: string, isActive: boolean) => {
-    console.log('🔄 Toggling service status:', { serviceId, isActive });
-    
+    logger.debug('Toggling service status:', { serviceId, isActive });
+
     if (!serviceId) {
-      console.error('❌ Service ID is undefined or null');
+      logger.error('Service ID is undefined or null');
       setError('Service ID is missing. Cannot update service status.');
       return;
     }
-    
+
     try {
       const updatedService = await specialistService.toggleServiceStatus(serviceId, isActive);
-      console.log('✅ Service status updated:', updatedService);
-      setServices(prev => prev.map(service => 
+      logger.debug('Service status updated:', updatedService);
+      setServices(prev => prev.map(service =>
         service.id === serviceId ? updatedService : service
       ));
     } catch (err: any) {
-      console.error('❌ Error toggling service status:', err);
+      logger.error('Error toggling service status:', err);
       setError(err.message || 'Failed to update service status');
     }
   };
@@ -737,8 +738,8 @@ const SpecialistServices: React.FC = () => {
         </button>
         <button
           onClick={() => {
-            console.log('📝 Service object before toggle:', service);
-            console.log('🏷️ Service ID:', service.id);
+            logger.debug('Service object before toggle:', service);
+            logger.debug('Service ID:', service.id);
             handleToggleServiceStatus(service.id, !service.isActive);
           }}
           className={`px-4 py-2 rounded-xl font-medium transition-colors duration-200 ${
@@ -956,14 +957,14 @@ const SpecialistServices: React.FC = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={async () => {
-                      console.log('🔄 Manual service refresh initiated...');
+                      logger.debug('Manual service refresh initiated...');
                       try {
                         const freshServices = await specialistService.getServices();
-                        console.log('📦 Fresh services from backend:', freshServices.map(s => ({ id: s.id, name: s.name })));
+                        logger.debug('Fresh services from backend:', freshServices.map(s => ({ id: s.id, name: s.name })));
                         setServices(freshServices);
                         // toast.success(`Refreshed! Found ${freshServices.length} services on backend`);
                       } catch (error) {
-                        console.error('❌ Refresh failed:', error);
+                        logger.error('Refresh failed:', error);
                         // toast.error('Refresh failed - check console');
                       }
                     }}
@@ -973,7 +974,7 @@ const SpecialistServices: React.FC = () => {
                   </button>
                   <button
                     onClick={() => {
-                      console.log('📊 Current frontend state:', {
+                      logger.debug('Current frontend state:', {
                         totalServices: services.length,
                         serviceIds: services.map(s => s.id),
                         services: services.map(s => ({ id: s.id, name: s.name, createdAt: s.createdAt }))
@@ -1096,7 +1097,7 @@ const SpecialistServices: React.FC = () => {
                       }
                     }}
                     onCustomCategory={(customValue) => {
-                      console.log('📝 Services.tsx: onCustomCategory called with:', customValue);
+                      logger.debug('Services.tsx: onCustomCategory called with:', customValue);
                       setFormData(prev => ({ ...prev, category: customValue }));
                       setCustomCategory(customValue);
                       setShowCustomCategory(true);
@@ -1106,7 +1107,7 @@ const SpecialistServices: React.FC = () => {
                         delete newErrors.category;
                         return newErrors;
                       });
-                      console.log('📝 Services.tsx: States updated - showCustomCategory: true, customCategory:', customValue);
+                      logger.debug('Services.tsx: States updated - showCustomCategory: true, customCategory:', customValue);
                     }}
                     placeholder={t('serviceForm.selectCategory') || 'Select a category'}
                     error={formErrors.category}
@@ -1141,7 +1142,7 @@ const SpecialistServices: React.FC = () => {
                       type="checkbox"
                       checked={formData.isGroupSession}
                       onChange={(e) => {
-                        console.log('Group Session checkbox clicked:', e.target.checked);
+                        logger.debug('Group Session checkbox clicked:', e.target.checked);
                         setFormData(prev => ({
                           ...prev,
                           isGroupSession: e.target.checked,

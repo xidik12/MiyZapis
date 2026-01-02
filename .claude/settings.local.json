@@ -31,7 +31,9 @@
       "Bash(node fix-icon-imports.js:*)",
       "Bash(node fix-solid-icons.js:*)",
       "Bash(tee:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(sort:*)",
+      "Bash(git show:*)"
     ],
     "deny": [],
     "ask": [],

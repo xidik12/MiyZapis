@@ -16,6 +16,7 @@ import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLo
 import { getTranslatedServiceName, getTranslatedDuration, statusColors } from '../../utils/bookingUtils';
 import { validateReviewTags } from '../../constants/reviewTags';
 import { reviewsService } from '../../services/reviews.service';
+import { logger } from '@/utils/logger';
 
 
 const CustomerBookings: React.FC = () => {
@@ -101,11 +102,14 @@ const CustomerBookings: React.FC = () => {
     return filtered;
   }, [bookings, filters, sortBy, sortOrder]);
   
-  // Pagination
+  // Pagination (memoized for performance)
   const totalPages = Math.ceil(filteredAndSortedBookings.length / itemsPerPage);
-  const paginatedBookings = filteredAndSortedBookings.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+  const paginatedBookings = useMemo(() =>
+    filteredAndSortedBookings.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+    ),
+    [filteredAndSortedBookings, currentPage, itemsPerPage]
   );
   
   const handleRescheduleBooking = (_bookingId: string) => {
@@ -120,7 +124,7 @@ const CustomerBookings: React.FC = () => {
         toast.success(t('bookings.cancelledSuccessfully'));
       }
     } catch (error) {
-      console.error('Failed to cancel booking:', error);
+      logger.error('Failed to cancel booking:', error);
       toast.error(t('bookings.cancelFailed') || 'Failed to cancel booking. Please try again.');
     }
   };
@@ -197,7 +201,7 @@ const CustomerBookings: React.FC = () => {
       
       toast.success(t('reviews.reviewSubmitted'));
     } catch (error: any) {
-      console.error('Failed to submit review:', error);
+      logger.error('Failed to submit review:', error);
 
       // Handle specific error codes
       if (error?.response?.status === 409 || error?.status === 409) {

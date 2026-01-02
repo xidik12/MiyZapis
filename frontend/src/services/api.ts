@@ -1,12 +1,14 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'react-toastify';
 import { ApiResponse, ApiError } from '../types';
-import { environment, STORAGE_KEYS } from '../config/environment';
+import { environment, STORAGE_KEYS, APP_CONSTANTS } from '../config/environment';
+import { LRUCache } from '../utils/LRUCache';
+import { logger } from '../utils/logger';
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
   baseURL: environment.API_URL,
-  timeout: 15000, // Reduced timeout to 15 seconds for faster failure detection
+  timeout: APP_CONSTANTS.API_TIMEOUT,
   withCredentials: true, // Enable cookies and credentials for CORS requests
   headers: {
     'Content-Type': 'application/json',
@@ -16,15 +18,20 @@ const api: AxiosInstance = axios.create({
   },
 });
 
-// Request deduplication and caching
+// Request deduplication and caching with LRU eviction
 interface CacheEntry {
   data: any;
   timestamp: number;
 }
 
-const requestCache = new Map<string, CacheEntry>();
-const pendingRequests = new Map<string, Promise<any>>();
-const CACHE_TTL = 30000; // 30 seconds cache TTL
+interface PendingRequest {
+  promise: Promise<any>;
+  timeout: NodeJS.Timeout;
+}
+
+// Use LRU cache to prevent unbounded memory growth
+const requestCache = new LRUCache<string, CacheEntry>(APP_CONSTANTS.CACHE_MAX_SIZE);
+const pendingRequests = new Map<string, PendingRequest>();
 
 const getCacheKey = (config: AxiosRequestConfig): string => {
   return `${config.method}:${config.url}:${JSON.stringify(config.params || {})}`;
@@ -32,7 +39,7 @@ const getCacheKey = (config: AxiosRequestConfig): string => {
 
 const getCachedResponse = (key: string): any | null => {
   const entry = requestCache.get(key);
-  if (entry && Date.now() - entry.timestamp < CACHE_TTL) {
+  if (entry && Date.now() - entry.timestamp < APP_CONSTANTS.CACHE_TTL) {
     return entry.data;
   }
   if (entry) {
@@ -43,14 +50,13 @@ const getCachedResponse = (key: string): any | null => {
 
 const setCachedResponse = (key: string, data: any): void => {
   requestCache.set(key, { data, timestamp: Date.now() });
-  // Clean up old entries periodically
-  if (requestCache.size > 100) {
-    const now = Date.now();
-    for (const [k, v] of requestCache.entries()) {
-      if (now - v.timestamp > CACHE_TTL) {
-        requestCache.delete(k);
-      }
-    }
+};
+
+const clearPendingRequest = (key: string): void => {
+  const pending = pendingRequests.get(key);
+  if (pending) {
+    clearTimeout(pending.timeout);
+    pendingRequests.delete(key);
   }
 };
 
@@ -138,7 +144,7 @@ api.interceptors.request.use(
         // Check if there's a pending request for the same endpoint
         const pendingRequest = pendingRequests.get(cacheKey);
         if (pendingRequest) {
-          (config as any).pendingRequest = pendingRequest;
+          (config as any).pendingRequest = pendingRequest.promise;
         } else {
           // Store cache key for response interceptor
           (config as any).cacheKey = cacheKey;
@@ -157,20 +163,17 @@ api.interceptors.request.use(
     };
 
     if (environment.DEBUG && !(config as any).cachedResponse) {
-      console.group(`🚀 [API Request] ${requestId}`);
-      console.log(`Method: ${config.method?.toUpperCase()}`);
-      console.log(`URL: ${config.url}`);
-      console.log(`Cached:`, !!(config as any).cachedResponse);
-      if (!config.headers.Authorization) {
-        console.log(`Full URL: ${config.baseURL}${config.url}`);
-      }
-      console.groupEnd();
+      logger.debug(`[API Request] ${requestId}`, {
+        method: config.method?.toUpperCase(),
+        url: config.url,
+        cached: !!(config as any).cachedResponse
+      });
     }
 
     return config;
   },
   (error) => {
-    console.error('[API Request Error]', error);
+    logger.error('[API Request Error]', error);
     return Promise.reject(error);
   }
 );
@@ -200,17 +203,17 @@ api.interceptors.response.use(
     // Cache successful GET responses
     if (config.method?.toLowerCase() === 'get' && config.cacheKey && response.status === 200) {
       setCachedResponse(config.cacheKey, response.data);
-      // Remove from pending requests
-      pendingRequests.delete(config.cacheKey);
+      // Clean up pending request with timeout
+      clearPendingRequest(config.cacheKey);
     }
 
     if (environment.DEBUG) {
-      console.group(`✅ [API Response] ${metadata?.requestId || 'unknown'}`);
-      console.log(`Method: ${response.config.method?.toUpperCase()}`);
-      console.log(`URL: ${response.config.url}`);
-      console.log(`Status: ${response.status} ${response.statusText}`);
-      console.log(`Response Time: ${responseTime}ms`);
-      console.groupEnd();
+      logger.debug(`[API Response] ${metadata?.requestId || 'unknown'}`, {
+        method: response.config.method?.toUpperCase(),
+        url: response.config.url,
+        status: `${response.status} ${response.statusText}`,
+        responseTime: `${responseTime}ms`
+      });
     }
 
     return response;
@@ -228,33 +231,32 @@ api.interceptors.response.use(
                              error.response?.status === 404;
 
       if (!isExpectedError) {
-        console.group(`❌ [API ERROR] ${metadata?.requestId || 'unknown'}`);
-        console.error(`Method: ${originalRequest?.method?.toUpperCase()}`);
-        console.error(`URL: ${originalRequest?.url}`);
-        console.error(`Response Time: ${responseTime}ms`);
+        const errorDetails: any = {
+          requestId: metadata?.requestId || 'unknown',
+          method: originalRequest?.method?.toUpperCase(),
+          url: originalRequest?.url,
+          responseTime: `${responseTime}ms`
+        };
 
-      if (error.response) {
-        console.error(`Status: ${error.response.status} ${error.response.statusText}`);
+        if (error.response) {
+          errorDetails.status = `${error.response.status} ${error.response.statusText}`;
 
-        // Special detailed logging for 500 errors
-        if (error.response.status >= 500) {
-          console.error(`🚨 CRITICAL SERVER ERROR 🚨`);
-          console.error(`Error Details:`, {
-            status: error.response.status,
-            statusText: error.response.statusText,
-            url: `${originalRequest?.baseURL}${originalRequest?.url}`,
-            method: originalRequest?.method?.toUpperCase(),
-            responseData: error.response.data,
-            timestamp: new Date().toISOString()
-          });
+          // Special detailed logging for 500 errors
+          if (error.response.status >= 500) {
+            logger.error('CRITICAL SERVER ERROR', {
+              ...errorDetails,
+              fullUrl: `${originalRequest?.baseURL}${originalRequest?.url}`,
+              responseData: error.response.data,
+              timestamp: new Date().toISOString()
+            });
+          } else {
+            logger.error('[API ERROR]', errorDetails);
+          }
+        } else if (error.request) {
+          logger.error('[API ERROR] Network Error - No response received', errorDetails);
+        } else {
+          logger.error(`[API ERROR] Request Setup Error: ${error.message}`, errorDetails);
         }
-      } else if (error.request) {
-        console.error(`Network Error - No response received`);
-      } else {
-        console.error(`Request Setup Error:`, error.message);
-      }
-
-        console.groupEnd();
       }
     }
 
@@ -444,7 +446,7 @@ export const checkApiHealth = async (): Promise<boolean> => {
     await api.get('/health');
     return true;
   } catch (error) {
-    console.error('API health check failed:', error);
+    logger.error('API health check failed:', error);
     return false;
   }
 };
@@ -483,19 +485,19 @@ export const isRequestCancelled = (error: any): boolean => {
 
 // Debug utilities for 500 error diagnosis
 export const debugApiConnection = async () => {
-  console.group('🔍 API Connection Debug Info');
-
-  console.log('Environment:', environment);
-  console.log('Base URL:', api.defaults.baseURL);
-  console.log('Timeout:', api.defaults.timeout);
-  console.log('Headers:', api.defaults.headers);
+  logger.info('API Connection Debug Info', {
+    environment: environment,
+    baseURL: api.defaults.baseURL,
+    timeout: api.defaults.timeout,
+    headers: api.defaults.headers
+  });
 
   // Test basic connectivity
   try {
     const healthResponse = await axios.get(`${environment.API_URL.replace('/api/v1', '')}/health`, { timeout: 5000 });
-    console.log('Health Check Response:', healthResponse.data);
+    logger.info('Health Check Response:', healthResponse.data);
   } catch (error: any) {
-    console.error('Health Check Failed:', {
+    logger.error('Health Check Failed:', {
       status: error.response?.status,
       statusText: error.response?.statusText,
       data: error.response?.data,
@@ -506,54 +508,49 @@ export const debugApiConnection = async () => {
   // Test API v1 endpoint
   try {
     const apiResponse = await axios.get(`${environment.API_URL}`, { timeout: 5000 });
-    console.log('API v1 Response:', apiResponse.data);
+    logger.info('API v1 Response:', apiResponse.data);
   } catch (error: any) {
-    console.error('API v1 Check Failed:', {
+    logger.error('API v1 Check Failed:', {
       status: error.response?.status,
       statusText: error.response?.statusText,
       data: error.response?.data,
       message: error.message
     });
   }
-
-  console.groupEnd();
 };
 
 export const debugAuthStatus = () => {
-  console.group('🔐 Authentication Debug Info');
-
   const authToken = getAuthToken();
   const refreshToken = getRefreshToken();
 
-  console.log('Auth Token Present:', !!authToken);
-  console.log('Auth Token Preview:', authToken ? `${authToken.substring(0, 20)}...` : 'None');
-  console.log('Refresh Token Present:', !!refreshToken);
-  console.log('Refresh Token Preview:', refreshToken ? `${refreshToken.substring(0, 20)}...` : 'None');
-  console.log('LocalStorage Keys:', Object.keys(localStorage).filter(key => key.includes('auth') || key.includes('token')));
-
-  console.groupEnd();
+  logger.info('Authentication Debug Info', {
+    authTokenPresent: !!authToken,
+    authTokenPreview: authToken ? `${authToken.substring(0, 20)}...` : 'None',
+    refreshTokenPresent: !!refreshToken,
+    refreshTokenPreview: refreshToken ? `${refreshToken.substring(0, 20)}...` : 'None',
+    localStorageKeys: Object.keys(localStorage).filter(key => key.includes('auth') || key.includes('token'))
+  });
 };
 
 export const debugBrowserInfo = () => {
-  console.group('🌐 Browser Debug Info');
-
-  console.log('User Agent:', navigator.userAgent);
-  console.log('Language:', navigator.language);
-  console.log('Languages:', navigator.languages);
-  console.log('Cookie Enabled:', navigator.cookieEnabled);
-  console.log('Online Status:', navigator.onLine);
-  console.log('URL:', window.location.href);
-  console.log('Protocol:', window.location.protocol);
-  console.log('Host:', window.location.host);
-  console.log('Pathname:', window.location.pathname);
-  console.log('Search:', window.location.search);
-
-  console.groupEnd();
+  logger.info('Browser Debug Info', {
+    userAgent: navigator.userAgent,
+    language: navigator.language,
+    languages: navigator.languages,
+    cookieEnabled: navigator.cookieEnabled,
+    onlineStatus: navigator.onLine,
+    url: window.location.href,
+    protocol: window.location.protocol,
+    host: window.location.host,
+    pathname: window.location.pathname,
+    search: window.location.search
+  });
 };
 
 export const runFullDiagnostics = async () => {
-  console.group('🚨 FULL API DIAGNOSTICS - 500 Error Investigation');
-  console.log('Timestamp:', new Date().toISOString());
+  logger.info('FULL API DIAGNOSTICS - 500 Error Investigation', {
+    timestamp: new Date().toISOString()
+  });
 
   await debugApiConnection();
   debugAuthStatus();
@@ -567,20 +564,20 @@ export const runFullDiagnostics = async () => {
     '/bookings'
   ];
 
-  console.group('🧪 Testing Common Endpoints');
+  logger.info('Testing Common Endpoints');
 
   for (const endpoint of testEndpoints) {
     try {
-      console.log(`Testing ${endpoint}...`);
+      logger.debug(`Testing ${endpoint}...`);
       const response = await axios.get(`${environment.API_URL}${endpoint}`, {
         timeout: 10000,
         headers: {
           Authorization: getAuthToken() ? `Bearer ${getAuthToken()}` : undefined
         }
       });
-      console.log(`✅ ${endpoint}: ${response.status} - ${response.statusText}`);
+      logger.info(`${endpoint}: ${response.status} - ${response.statusText}`);
     } catch (error: any) {
-      console.error(`❌ ${endpoint}:`, {
+      logger.error(`${endpoint} failed:`, {
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data,
@@ -588,9 +585,6 @@ export const runFullDiagnostics = async () => {
       });
     }
   }
-
-  console.groupEnd();
-  console.groupEnd();
 };
 
 // Make debug functions available globally for easy access
@@ -600,11 +594,7 @@ if (environment.DEBUG) {
   (window as any).debugBrowserInfo = debugBrowserInfo;
   (window as any).runFullDiagnostics = runFullDiagnostics;
 
-  console.log('🔧 Debug functions available:');
-  console.log('- debugApiConnection()');
-  console.log('- debugAuthStatus()');
-  console.log('- debugBrowserInfo()');
-  console.log('- runFullDiagnostics()');
+  logger.info('Debug functions available: debugApiConnection(), debugAuthStatus(), debugBrowserInfo(), runFullDiagnostics()');
 }
 
 export default apiClient;

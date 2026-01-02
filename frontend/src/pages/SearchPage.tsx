@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
@@ -11,6 +11,8 @@ import { MagnifyingGlassIcon, MapPinIcon, StarIcon, ClockIcon, SealCheckIcon as 
 import { Avatar } from '../components/ui/Avatar';
 import { translateProfession } from '@/utils/profession';
 import Skeleton, { SkeletonText } from '../components/ui/Skeleton';
+import { logger } from '@/utils/logger';
+import { APP_CONSTANTS } from '../config/environment';
 // Note: Use active prop for filled icons: <Icon active />
 
 interface ServiceWithSpecialist {
@@ -59,6 +61,7 @@ const SearchPage: React.FC = () => {
   const [services, setServices] = useState<ServiceWithSpecialist[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
   const [selectedLocation, setSelectedLocation] = useState(searchParams.get('location') || '');
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
@@ -92,7 +95,7 @@ const SearchPage: React.FC = () => {
           ...(Array.isArray(categoriesData) ? categoriesData : [])
         ]);
       } catch (err: any) {
-        console.error('Failed to fetch categories:', err);
+        logger.error('Failed to fetch categories:', err);
         // Fallback to default categories
         setCategories([
           { id: 'all', name: t('category.all') },
@@ -110,6 +113,15 @@ const SearchPage: React.FC = () => {
 
     fetchCategories();
   }, [t]);
+
+  // Debounce search query (memoization optimization)
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, APP_CONSTANTS.SEARCH_DEBOUNCE_MS);
+
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
 
   // Close filter tray on Esc
   useEffect(() => {
@@ -131,7 +143,7 @@ const SearchPage: React.FC = () => {
       try {
         setLoading(true);
         const filters = {
-          query: searchQuery,
+          query: debouncedSearchQuery,
           category: selectedCategory || undefined,
           location: selectedLocation || undefined,
           minPrice: priceRange.min > 0 ? priceRange.min : undefined,
@@ -150,7 +162,7 @@ const SearchPage: React.FC = () => {
             const byLoc = await serviceService.getServicesByLocation(coords.latitude, coords.longitude, selectedDistance || 50, 1, 20);
             data = { services: byLoc.services, pagination: byLoc.pagination };
           } catch (e) {
-            console.warn('Geolocation denied/unavailable. Fallback to normal search.', e);
+            logger.warn('Geolocation denied/unavailable. Fallback to normal search.', e);
             data = await serviceService.searchServices(filters);
           }
         } else {
@@ -217,12 +229,12 @@ const SearchPage: React.FC = () => {
 
         setServices(servicesWithSpecialists);
       } catch (error) {
-        console.error('Error fetching services:', error);
+        logger.error('Error fetching services:', error);
         setServices([]);
       } finally {
         setLoading(false);
       }
-  }, [searchQuery, selectedCategory, selectedLocation, priceRange, selectedRating, sortBy, selectedDistance, availableNow]);
+  }, [debouncedSearchQuery, selectedCategory, selectedLocation, priceRange, selectedRating, sortBy, selectedDistance, availableNow]);
 
   // Fetch on first mount and when deps change
   useEffect(() => {
@@ -350,14 +362,6 @@ const SearchPage: React.FC = () => {
             fallbackIcon={false}
             lazy={true}
           />
-          {/* Debug search card avatar data */}
-          {console.log('🔍 SearchPage - Avatar debug for service:', service.id, {
-            specialistUserAvatar: service.specialist.user.avatar,
-            specialistUserKeys: service.specialist.user ? Object.keys(service.specialist.user) : 'No user',
-            specialistKeys: Object.keys(service.specialist),
-            serviceId: service.id,
-            specialistId: service.specialist.id
-          })}
           {service.specialist.user.isVerified && (
             <CheckBadgeIcon className="absolute -bottom-1 -right-1 w-6 h-6 text-primary-600 bg-white rounded-full" />
           )}

@@ -14,6 +14,7 @@ import { loyaltyService, UserLoyalty } from '@/services/loyalty.service';
 import { RewardsService, type RewardRedemption, type LoyaltyReward } from '@/services/rewards.service';
 import { filterSlotsByDuration, calculateEndTime } from '../../utils/timeSlotUtils';
 import { environment } from '@/config/environment';
+import { logger } from '@/utils/logger';
 import { CalendarIcon, ClockIcon, MapPinIcon, CreditCardIcon, CheckCircleIcon, ArrowLeftIcon, ArrowRightIcon, GiftIcon, StarIcon } from '@/components/icons';
 
 interface BookingStep {
@@ -72,7 +73,7 @@ const BookingFlow: React.FC = () => {
 
   // Reset payment state when payment method changes
   useEffect(() => {
-    console.log(`🔄 BookingFlow: Payment method changed to ${paymentMethod}, resetting payment state`);
+    logger.debug(`🔄 BookingFlow: Payment method changed to ${paymentMethod}, resetting payment state`);
     setPaymentResult(null);
     setShowQRCode(false);
     setPaymentTimeRemaining(0);
@@ -147,27 +148,27 @@ const BookingFlow: React.FC = () => {
         if (serviceId) {
           // Primary flow: fetch by service ID
           try {
-            console.log('🔍 BookingFlow: Fetching service with ID:', serviceId);
+            logger.debug('🔍 BookingFlow: Fetching service with ID:', serviceId);
             const serviceData = await serviceService.getService(serviceId);
-            console.log('✅ BookingFlow: Service fetched successfully:', serviceData);
+            logger.debug('✅ BookingFlow: Service fetched successfully:', serviceData);
             setService(serviceData);
             
             // Fetch specialist data from the service
             const currentSpecialistId = serviceData.specialistId || serviceData.specialist?.id;
             if (currentSpecialistId) {
-              console.log('🔍 BookingFlow: Fetching specialist with ID:', currentSpecialistId);
+              logger.debug('🔍 BookingFlow: Fetching specialist with ID:', currentSpecialistId);
               const specialistData = await specialistService.getPublicProfile(currentSpecialistId);
-              console.log('✅ BookingFlow: Specialist fetched successfully:', specialistData);
+              logger.debug('✅ BookingFlow: Specialist fetched successfully:', specialistData);
               setSpecialist(specialistData);
             } else if (serviceData.specialist) {
               // Use embedded specialist data if available
-              console.log('✅ BookingFlow: Using embedded specialist data:', serviceData.specialist);
+              logger.debug('✅ BookingFlow: Using embedded specialist data:', serviceData.specialist);
               setSpecialist(serviceData.specialist);
             } else {
-              console.warn('⚠️ BookingFlow: Service has no specialistId or specialist data:', serviceData);
+              logger.warn('⚠️ BookingFlow: Service has no specialistId or specialist data:', serviceData);
             }
           } catch (error) {
-            console.warn('Service not found by ID, trying specialist approach:', error);
+            logger.warn('Service not found by ID, trying specialist approach:', error);
             // If service fetch fails, try to find specialist services
             if (specialistId) {
               const specialistData = await specialistService.getPublicProfile(specialistId);
@@ -194,7 +195,7 @@ const BookingFlow: React.FC = () => {
         }
 
       } catch (error) {
-        console.error('Error fetching booking data:', error);
+        logger.error('Error fetching booking data:', error);
       } finally {
         setLoading(false);
       }
@@ -217,7 +218,7 @@ const BookingFlow: React.FC = () => {
         const earnedPoints = Math.floor(servicePrice * 0.01); // 1 point per 1 currency unit spent
         setPointsToEarn(earnedPoints);
       } catch (error) {
-        console.error('Error fetching loyalty data:', error);
+        logger.error('Error fetching loyalty data:', error);
       }
     };
 
@@ -264,21 +265,21 @@ const BookingFlow: React.FC = () => {
       const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
       
       if (!currentSpecialistId) {
-        console.log('🔍 BookingFlow: Cannot fetch dates - specialistId not found');
+        logger.debug('🔍 BookingFlow: Cannot fetch dates - specialistId not found');
         return;
       }
 
       try {
-        console.log('📅 BookingFlow: Fetching available dates for specialist:', currentSpecialistId);
+        logger.debug('📅 BookingFlow: Fetching available dates for specialist:', currentSpecialistId);
         const dateData = await specialistService.getAvailableDates(currentSpecialistId);
-        console.log('✅ BookingFlow: Available dates received:', dateData.availableDates);
+        logger.debug('✅ BookingFlow: Available dates received:', dateData.availableDates);
         const dates = dateData.availableDates || [];
         setAvailableDates(dates);
 
         // Auto-select the first available date if none is selected
         if (!selectedDate && dates.length > 0) {
           const firstDate = new Date(dates[0].date);
-          console.log('📅 BookingFlow: Auto-selecting first available date:', firstDate);
+          logger.debug('📅 BookingFlow: Auto-selecting first available date:', firstDate);
           setSelectedDate(firstDate);
 
           // Show a subtle notification about auto-selection
@@ -287,7 +288,7 @@ const BookingFlow: React.FC = () => {
           }, 1000);
         }
       } catch (error) {
-        console.error('❌ BookingFlow: Error fetching available dates:', error);
+        logger.error('❌ BookingFlow: Error fetching available dates:', error);
         setAvailableDates([]);
       }
     };
@@ -300,7 +301,7 @@ const BookingFlow: React.FC = () => {
       try {
         socketService.subscribeToAvailability(sid);
       } catch (error) {
-        console.warn('Failed to subscribe to availability updates:', error);
+        logger.warn('Failed to subscribe to availability updates:', error);
       }
     }
     const onAvail = (data: any) => {
@@ -320,7 +321,7 @@ const BookingFlow: React.FC = () => {
         try {
           socketService.unsubscribeFromAvailability(sid);
         } catch (error) {
-          console.warn('Failed to unsubscribe from availability updates:', error);
+          logger.warn('Failed to unsubscribe from availability updates:', error);
         }
       }
     };
@@ -332,26 +333,26 @@ const BookingFlow: React.FC = () => {
       const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
       
       if (!currentSpecialistId || !selectedDate) {
-        console.log('🔍 BookingFlow: Cannot fetch slots - specialistId:', currentSpecialistId, 'selectedDate:', selectedDate);
+        logger.debug('🔍 BookingFlow: Cannot fetch slots - specialistId:', currentSpecialistId, 'selectedDate:', selectedDate);
         setSlotsLoading(false);
         return;
       }
 
       setSlotsLoading(true);
       try {
-        console.log('📅 BookingFlow: Fetching available slots for specialist:', currentSpecialistId, 'date:', selectedDate.toISOString().split('T')[0]);
+        logger.debug('📅 BookingFlow: Fetching available slots for specialist:', currentSpecialistId, 'date:', selectedDate.toISOString().split('T')[0]);
         const dateStr = selectedDate.toISOString().split('T')[0];
         const slots = await specialistService.getAvailableSlots(currentSpecialistId, dateStr);
-        console.log('✅ BookingFlow: Available slots received:', slots);
+        logger.debug('✅ BookingFlow: Available slots received:', slots);
 
         // Filter slots based on service duration to ensure consecutive availability
         const serviceDuration = service?.duration || 60;
         const filteredSlots = filterSlotsByDuration(slots || [], serviceDuration);
-        console.log('🔍 BookingFlow: Filtered slots for duration', serviceDuration, 'minutes:', filteredSlots);
+        logger.debug('🔍 BookingFlow: Filtered slots for duration', serviceDuration, 'minutes:', filteredSlots);
 
         setAvailableSlots(filteredSlots);
       } catch (error) {
-        console.error('❌ BookingFlow: Error fetching available slots:', error);
+        logger.error('❌ BookingFlow: Error fetching available slots:', error);
         // Don't show any slots if there's an error - better to show empty than incorrect availability
         setAvailableSlots([]);
         toast.error(t('booking.loadSlotsError') || 'Unable to load available time slots. Please try again.');
@@ -365,7 +366,7 @@ const BookingFlow: React.FC = () => {
     // Auto-refresh slots every 30 seconds to catch newly booked slots
     const refreshInterval = setInterval(() => {
       if (currentStep === 2 && selectedDate) {
-        console.log('🔄 BookingFlow: Auto-refreshing available slots...');
+        logger.debug('🔄 BookingFlow: Auto-refreshing available slots...');
         fetchAvailableSlots();
       }
     }, 30000); // Refresh every 30 seconds
@@ -401,16 +402,16 @@ const BookingFlow: React.FC = () => {
           rewardRedemptionId: selectedRedemptionId || undefined
         };
 
-        console.log('📝 BookingFlow: Creating free booking (payments disabled)', bookingData);
+        logger.debug('📝 BookingFlow: Creating free booking (payments disabled)', bookingData);
         const result = await bookingService.createBooking(bookingData);
-        console.log('✅ BookingFlow: Booking created successfully:', result);
+        logger.debug('✅ BookingFlow: Booking created successfully:', result);
 
         setBookingResult(result);
         toast.success('Booking created successfully!');
         setPaymentLoading(false);
         setCurrentStep(currentStep + 1);
       } catch (error: any) {
-        console.error('❌ BookingFlow: Error creating booking:', error);
+        logger.error('❌ BookingFlow: Error creating booking:', error);
         toast.error(error.message || 'Failed to create booking');
         setPaymentLoading(false);
         return;
@@ -445,7 +446,7 @@ const BookingFlow: React.FC = () => {
 
   // Handle payment timeout
   const handlePaymentTimeout = async () => {
-    console.log('⏰ BookingFlow: Payment timeout reached');
+    logger.debug('⏰ BookingFlow: Payment timeout reached');
 
     try {
       // Clear any existing timeouts
@@ -470,15 +471,15 @@ const BookingFlow: React.FC = () => {
       await refreshSlots();
 
     } catch (error) {
-      console.error('❌ BookingFlow: Error handling payment timeout:', error);
+      logger.error('❌ BookingFlow: Error handling payment timeout:', error);
     }
   };
 
   const handleBookingSubmit = async () => {
     const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
 
-    console.log('📋 BookingFlow: Starting booking process...');
-    console.log('🔍 BookingFlow: Booking data check:', {
+    logger.debug('📋 BookingFlow: Starting booking process...');
+    logger.debug('🔍 BookingFlow: Booking data check:', {
       specialist: !!specialist,
       service: !!service,
       selectedDate: selectedDate,
@@ -487,7 +488,7 @@ const BookingFlow: React.FC = () => {
     });
 
     if (!specialist || !service || !selectedDate || !selectedTime) {
-      console.error('❌ BookingFlow: Missing required booking data');
+      logger.error('❌ BookingFlow: Missing required booking data');
       return;
     }
 
@@ -495,7 +496,7 @@ const BookingFlow: React.FC = () => {
       setPaymentLoading(true);
 
       // Step 1: Check slot availability before starting payment process
-      console.log('🕒 BookingFlow: Checking slot availability...');
+      logger.debug('🕒 BookingFlow: Checking slot availability...');
       const currentSlots = await specialistService.getAvailableSlots(currentSpecialistId, selectedDate);
       const serviceDuration = service.duration || 60;
       const filteredAvailableSlots = filterSlotsByDuration(currentSlots, serviceDuration);
@@ -503,10 +504,10 @@ const BookingFlow: React.FC = () => {
       if (!filteredAvailableSlots.includes(selectedTime)) {
         throw new Error('SLOT_NO_LONGER_AVAILABLE');
       }
-      console.log('✅ BookingFlow: Slot still available, proceeding with payment...');
+      logger.debug('✅ BookingFlow: Slot still available, proceeding with payment...');
 
       // Optimistic UI update: Immediately remove the selected slot to prevent double booking
-      console.log('🔒 BookingFlow: Optimistically removing slot from UI');
+      logger.debug('🔒 BookingFlow: Optimistically removing slot from UI');
       setAvailableSlots(prev => prev.filter(slot => slot !== selectedTime));
 
       // Combine date and time into scheduledAt DateTime
@@ -515,10 +516,10 @@ const BookingFlow: React.FC = () => {
       scheduledAt.setHours(hours, minutes, 0, 0);
 
       // Step 2: Start payment process (will check wallet first if useWalletFirst=true)
-      console.log('💳 BookingFlow: Creating payment intent...');
-      console.log('💰 BookingFlow: Wallet-first enabled:', useWalletFirst);
+      logger.debug('💳 BookingFlow: Creating payment intent...');
+      logger.debug('💰 BookingFlow: Wallet-first enabled:', useWalletFirst);
       if (user?.walletBalance > 0) {
-        console.log('💰 BookingFlow: User wallet balance: $', user.walletBalance);
+        logger.debug('💰 BookingFlow: User wallet balance: $', user.walletBalance);
       }
 
       // Deposit amount is $1 = 100 cents (finalPrice is already in cents)
@@ -544,7 +545,7 @@ const BookingFlow: React.FC = () => {
       let depositResult;
       if (paymentMethod === 'paypal') {
         // Handle PayPal payment
-        console.log('💳 BookingFlow: Creating PayPal order...');
+        logger.debug('💳 BookingFlow: Creating PayPal order...');
 
         // Deposit is always $1 USD (100 cents) regardless of service currency
         // PayPal doesn't support UAH, so always use USD for deposits
@@ -569,7 +570,7 @@ const BookingFlow: React.FC = () => {
         };
 
         const paypalResult = await paymentService.createPayPalOrder(paypalOrderData);
-        console.log('✅ BookingFlow: PayPal order created:', paypalResult);
+        logger.debug('✅ BookingFlow: PayPal order created:', paypalResult);
 
         // For PayPal, open approval URL in new window or redirect
         if (paypalResult.approvalUrl) {
@@ -604,9 +605,9 @@ const BookingFlow: React.FC = () => {
         }
       } else {
         // Handle crypto payment with Coinbase Commerce
-        console.log('💳 BookingFlow: Creating Coinbase Commerce charge...');
+        logger.debug('💳 BookingFlow: Creating Coinbase Commerce charge...');
         depositResult = await paymentService.createCryptoPaymentIntent(paymentData);
-        console.log('✅ BookingFlow: Coinbase charge created:', depositResult);
+        logger.debug('✅ BookingFlow: Coinbase charge created:', depositResult);
       }
 
       // Store payment result for UI
@@ -639,7 +640,7 @@ const BookingFlow: React.FC = () => {
 
         // Listen for payment completion via socket
         const handlePaymentCompleted = (paymentData: any) => {
-          console.log('💳 BookingFlow: Payment completed via socket:', paymentData);
+          logger.debug('💳 BookingFlow: Payment completed via socket:', paymentData);
 
           if (paymentData.paymentId === depositResult.paymentId) {
             // Clear timeout using fresh timeoutId reference
@@ -659,14 +660,14 @@ const BookingFlow: React.FC = () => {
             if (paymentData.bookingId) {
               bookingService.getBooking(paymentData.bookingId)
                 .then(booking => {
-                  console.log('✅ BookingFlow: Booking created via webhook:', booking);
+                  logger.debug('✅ BookingFlow: Booking created via webhook:', booking);
                   setBookingResult(booking);
                   // Navigate to confirmation
                   setCurrentStep(steps.length - 1);
                   toast.success('Payment completed! Your booking is confirmed.');
                 })
                 .catch(err => {
-                  console.error('❌ BookingFlow: Error fetching booking after payment:', err);
+                  logger.error('❌ BookingFlow: Error fetching booking after payment:', err);
                   toast.error('Payment completed but booking details unavailable. Check your bookings page.');
                 });
             } else {
@@ -686,7 +687,7 @@ const BookingFlow: React.FC = () => {
 
         // Also listen to notifications for payment completion (fallback)
         const handleNotificationReceived = (notificationData: any) => {
-          console.log('💳 BookingFlow: Notification received via socket:', notificationData);
+          logger.debug('💳 BookingFlow: Notification received via socket:', notificationData);
 
           // Check if this is a payment completion notification
           if (notificationData.type === 'PAYMENT_COMPLETED' && notificationData.data) {
@@ -696,7 +697,7 @@ const BookingFlow: React.FC = () => {
         };
 
         // Enhanced WebSocket subscription with auto-reconnection
-        console.log('💳 BookingFlow: Setting up enhanced payment subscription for payment:', depositResult.paymentId);
+        logger.debug('💳 BookingFlow: Setting up enhanced payment subscription for payment:', depositResult.paymentId);
         const unsubscribePayment = subscribeToPaymentUpdates(depositResult.paymentId, handlePaymentCompleted);
 
         // Also listen to general notifications as fallback
@@ -718,11 +719,11 @@ const BookingFlow: React.FC = () => {
         // Set up polling as fallback mechanism
         const pollPaymentStatus = async () => {
           try {
-            console.log('🔍 BookingFlow: Polling payment status for:', depositResult.paymentId);
+            logger.debug('🔍 BookingFlow: Polling payment status for:', depositResult.paymentId);
             const paymentStatus = await paymentService.getPaymentStatus(depositResult.paymentId);
 
             if (paymentStatus.status === 'PAID' || paymentStatus.status === 'COMPLETED') {
-              console.log('✅ BookingFlow: Payment confirmed via polling:', paymentStatus);
+              logger.debug('✅ BookingFlow: Payment confirmed via polling:', paymentStatus);
               handlePaymentCompleted({
                 paymentId: depositResult.paymentId,
                 bookingId: paymentStatus.bookingId,
@@ -735,7 +736,7 @@ const BookingFlow: React.FC = () => {
               return true; // Stop polling
             }
           } catch (error) {
-            console.warn('🔍 BookingFlow: Error polling payment status:', error);
+            logger.warn('🔍 BookingFlow: Error polling payment status:', error);
           }
           return false; // Continue polling
         };
@@ -765,7 +766,7 @@ const BookingFlow: React.FC = () => {
       // Step 3: Handle payment result
       if (depositResult.status === 'COMPLETED') {
         // Payment completed with wallet balance - create booking immediately
-        console.log('💰 BookingFlow: Payment completed with wallet, creating booking...');
+        logger.debug('💰 BookingFlow: Payment completed with wallet, creating booking...');
         const bookingData = {
           serviceId: service.id,
           scheduledAt: scheduledAt.toISOString(),
@@ -779,15 +780,15 @@ const BookingFlow: React.FC = () => {
           ...bookingData,
           paymentId: depositResult.paymentId
         });
-        console.log('✅ BookingFlow: Booking created after wallet payment:', bookingResult);
+        logger.debug('✅ BookingFlow: Booking created after wallet payment:', bookingResult);
         setBookingResult(bookingResult);
 
         // Navigate to confirmation step
         setCurrentStep(steps.length - 1);
       } else {
         // Payment requires crypto/external payment - navigate to payment step to show payment interface
-        console.log('⏳ BookingFlow: External payment required, navigating to payment step');
-        console.log('💳 BookingFlow: Payment details:', {
+        logger.debug('⏳ BookingFlow: External payment required, navigating to payment step');
+        logger.debug('💳 BookingFlow: Payment details:', {
           amount: depositResult.finalAmount,
           paymentUrl: depositResult.paymentUrl,
           qrCode: !!depositResult.qrCodeData,
@@ -800,12 +801,12 @@ const BookingFlow: React.FC = () => {
 
       return depositResult;
     } catch (error: any) {
-      console.error('❌ BookingFlow: Error in booking/payment flow:', error);
+      logger.error('❌ BookingFlow: Error in booking/payment flow:', error);
       const code = error?.apiError?.code;
       const status = error?.response?.status || error?.apiError?.status;
 
       // Refresh slots to show current availability after any error
-      console.log('🔄 BookingFlow: Refreshing slots after error');
+      logger.debug('🔄 BookingFlow: Refreshing slots after error');
       await refreshSlots();
 
       if (error?.message === 'SLOT_NO_LONGER_AVAILABLE') {
@@ -841,9 +842,9 @@ const BookingFlow: React.FC = () => {
   }
 
   if (!specialist || !service) {
-    console.log('❌ BookingFlow: Missing data - specialist:', specialist, 'service:', service);
-    console.log('🔍 BookingFlow: Service ID from params:', serviceId);
-    console.log('🔍 BookingFlow: Specialist ID from params:', specialistId);
+    logger.debug('❌ BookingFlow: Missing data - specialist:', specialist, 'service:', service);
+    logger.debug('🔍 BookingFlow: Service ID from params:', serviceId);
+    logger.debug('🔍 BookingFlow: Specialist ID from params:', specialistId);
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -873,7 +874,7 @@ const BookingFlow: React.FC = () => {
   
   // Debug logging for specialists
   if (user?.userType === 'specialist' && (specialist || service)) {
-    console.log('🔍 BookingFlow: Specialist booking check:', {
+    logger.debug('🔍 BookingFlow: Specialist booking check:', {
       userId: user.id,
       specialistUserId: specialist?.user?.id,
       serviceSpecialistUserId: service?.specialist?.user?.id,

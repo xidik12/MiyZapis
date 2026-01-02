@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { UserCircleIcon } from '@/components/icons';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 
@@ -20,7 +20,7 @@ const sizeClasses = {
   xl: 'w-24 h-24'
 };
 
-export const Avatar: React.FC<AvatarProps> = React.memo(({
+const AvatarComponent: React.FC<AvatarProps> = ({
   src,
   alt,
   size = 'md',
@@ -55,8 +55,11 @@ export const Avatar: React.FC<AvatarProps> = React.memo(({
     }
   }, [src]);
 
-  // Process the image URL to ensure it's absolute
-  const absoluteSrc = src ? getAbsoluteImageUrl(src) : null;
+  // Process the image URL to ensure it's absolute (memoized for performance)
+  const absoluteSrc = useMemo(() =>
+    src ? getAbsoluteImageUrl(src) : null,
+    [src]
+  );
 
   // If no valid src or loading failed, show fallback
   if (!absoluteSrc || imageError) {
@@ -87,5 +90,17 @@ export const Avatar: React.FC<AvatarProps> = React.memo(({
         loading={lazy ? 'lazy' : 'eager'}
       />
     </div>
+  );
+};
+
+// Export with custom comparison function for better memoization
+export const Avatar = React.memo(AvatarComponent, (prevProps, nextProps) => {
+  // Only re-render if these props change
+  return (
+    prevProps.src === nextProps.src &&
+    prevProps.size === nextProps.size &&
+    prevProps.className === nextProps.className &&
+    prevProps.lazy === nextProps.lazy &&
+    prevProps.alt === nextProps.alt
   );
 });
