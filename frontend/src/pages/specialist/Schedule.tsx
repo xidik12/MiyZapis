@@ -290,7 +290,7 @@ const SpecialistSchedule: React.FC = () => {
   const [preSelectedTime, setPreSelectedTime] = useState<string | undefined>();
   const [showGeneratePrompt, setShowGeneratePrompt] = useState(false);
   const [expandedHours, setExpandedHours] = useState<Record<string, boolean>>({});
-  const [viewMode, setViewMode] = useState<'card' | 'week'>('week');
+  const [viewMode, setViewMode] = useState<'card' | 'week'>('card');
 
   function getWeekStart(date: Date): Date {
     const d = new Date(date);
