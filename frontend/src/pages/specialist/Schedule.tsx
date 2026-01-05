@@ -874,24 +874,24 @@ const SpecialistSchedule: React.FC = () => {
                           isCurrentHour ? 'bg-primary-50/50 dark:bg-primary-900/20' : ''
                         }`}
                       >
-                        <div className="flex items-center space-x-3 flex-1">
-                          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30">
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex-shrink-0">
                             <ClockIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                           </div>
-                          <div className="flex-1">
-                            <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                          <div className="flex-1 min-w-0">
+                            <div className="text-lg font-semibold text-gray-900 dark:text-white leading-tight">
                               {`${hour.toString().padStart(2, '0')}:00`}
                             </div>
-                            <div className="flex items-center space-x-3 mt-1">
+                            <div className="flex items-center gap-2 mt-1">
                               {availableCount > 0 && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
-                                  <CheckIcon className="w-3 h-3 mr-1" />
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 leading-none">
+                                  <CheckIcon className="w-3 h-3" />
                                   {availableCount}
                                 </span>
                               )}
                               {blockedCount > 0 && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
-                                  <XMarkIcon className="w-3 h-3 mr-1" />
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 leading-none">
+                                  <XMarkIcon className="w-3 h-3" />
                                   {blockedCount}
                                 </span>
                               )}
@@ -1032,12 +1032,12 @@ const SpecialistSchedule: React.FC = () => {
       {/* Stats Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 dark:bg-green-900 rounded-xl">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center p-2 bg-green-100 dark:bg-green-900 rounded-xl w-9 h-9 flex-shrink-0">
               <CheckIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
-            <div className="ml-3">
-              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">{t('schedule.availableSlots')}</p>
+            <div className="flex flex-col justify-center min-w-0">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 leading-tight">{t('schedule.availableSlots')}</p>
               <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {availabilityBlocks.filter(b => b.isAvailable).length}
               </p>
