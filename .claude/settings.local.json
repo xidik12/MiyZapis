@@ -33,7 +33,13 @@
       "Bash(tee:*)",
       "Bash(grep:*)",
       "Bash(sort:*)",
-      "Bash(git show:*)"
+      "Bash(git show:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm ls:*)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "ask": [],
