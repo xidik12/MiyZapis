@@ -16,7 +16,7 @@ const SpecialistMessages: React.FC = () => {
     <MessageInterface
       currentUserId={user.id}
       userRole="specialist"
-      title={t('specialist.nav.messages') || 'Messages'}
+      title={t('dashboard.nav.messages') || 'Messages'}
       emptyTitle={t('messages.empty.title') || 'No conversations'}
       emptyDescription={t('messages.empty.description') || 'Your conversations with customers will appear here'}
     />
