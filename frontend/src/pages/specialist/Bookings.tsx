@@ -7,13 +7,14 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { RootState, AppDispatch } from '../../store';
 import { fetchBookings, updateBookingStatus, cancelBooking } from '../../store/slices/bookingSlice';
 import { Booking, BookingStatus } from '../../types';
-import { EyeIcon, CheckCircleIcon, CheckIcon, StarIcon, XIcon as XMarkIcon, MapPinIcon, PhoneIcon, ChatBubbleLeftRightIcon } from '@/components/icons';
+import { EyeIcon, CheckCircleIcon, CheckIcon, StarIcon, XIcon as XMarkIcon, MapPinIcon, PhoneIcon, ChatBubbleLeftRightIcon, SquaresFourIcon, ListBulletsIcon } from '@/components/icons';
 import ReviewModal from '../../components/modals/ReviewModal';
 import { reviewsService } from '../../services/reviews.service';
 import { validateReviewTags } from '../../constants/reviewTags';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { messagesService } from '../../services/messages.service';
 import TierBadge from '@/components/common/TierBadge';
+import { BookingKanban } from '@/components/bookings/BookingKanban';
 
 // Status colors for bookings (matching backend status values)
 const statusColors = {
@@ -730,6 +731,7 @@ const SpecialistBookings: React.FC = () => {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [bookingToComplete, setBookingToComplete] = useState<Booking | null>(null);
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const itemsPerPage = 10;
   
   // Filter and sort bookings
@@ -1026,6 +1028,34 @@ const SpecialistBookings: React.FC = () => {
               {t('bookings.subtitle')}
             </p>
           </div>
+
+          {/* View Toggle */}
+          <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1 mt-4 lg:mt-0">
+            <button
+              onClick={() => setViewMode('kanban')}
+              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all ${
+                viewMode === 'kanban'
+                  ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+              title="Kanban View"
+            >
+              <SquaresFourIcon className="w-4 h-4" />
+              <span className="text-sm font-medium hidden sm:inline">Kanban</span>
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all ${
+                viewMode === 'list'
+                  ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+              title="List View"
+            >
+              <ListBulletsIcon className="w-4 h-4" />
+              <span className="text-sm font-medium hidden sm:inline">List</span>
+            </button>
+          </div>
         </div>
 
         {/* Tab Navigation */}
@@ -1189,9 +1219,28 @@ const SpecialistBookings: React.FC = () => {
             </div>
           </div>
         )}
-        
-        {/* Mobile Bookings Cards */}
-        <div className="lg:hidden space-y-4">
+
+        {/* Kanban or List View */}
+        {viewMode === 'kanban' ? (
+          <BookingKanban
+            bookings={filteredAndSortedBookings}
+            onBookingClick={(booking) => {
+              setSelectedBooking(booking);
+              setShowDetailModal(true);
+            }}
+            onStatusChange={(bookingId, newStatus) => {
+              dispatch(updateBookingStatus({
+                bookingId,
+                status: newStatus as BookingStatus,
+                userType: activeTab === 'provider' ? 'specialist' : 'customer'
+              }));
+            }}
+            userRole={activeTab === 'provider' ? 'specialist' : 'customer'}
+          />
+        ) : (
+          <>
+            {/* Mobile Bookings Cards */}
+            <div className="lg:hidden space-y-4">
           {paginatedBookings.map((booking) => (
             <div key={booking.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4">
               {/* Header with checkbox and customer */}
@@ -1553,9 +1602,9 @@ const SpecialistBookings: React.FC = () => {
             </div>
           </div>
         )}
-        
-        {/* No Results */}
-        {filteredAndSortedBookings.length === 0 && (
+
+            {/* No Results */}
+            {filteredAndSortedBookings.length === 0 && (
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-12 text-center">
             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -1565,9 +1614,11 @@ const SpecialistBookings: React.FC = () => {
               {t('bookings.noBookingsDescription')}
             </p>
           </div>
+            )}
+          </>
         )}
       </div>
-      
+
       {/* Booking Detail Modal */}
       <BookingDetailModal
         booking={selectedBooking}

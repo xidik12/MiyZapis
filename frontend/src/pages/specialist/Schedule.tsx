@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
-import { CalendarIcon, ClockIcon, PlusIcon, XIcon as XMarkIcon, CheckIcon, TrashIcon, PencilIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon } from '@/components/icons';
+import { CalendarIcon, ClockIcon, PlusIcon, XIcon as XMarkIcon, CheckIcon, TrashIcon, PencilIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon, SquaresFourIcon, ListBulletsIcon } from '@/components/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { specialistService } from '../../services/specialist.service';
 import { isFeatureEnabled } from '../../config/features';
 import { retryRequest } from '../../services/api';
+import { WeekView } from '@/components/calendar/WeekView';
 
 interface TimeSlot {
   id: string;
@@ -289,6 +290,7 @@ const SpecialistSchedule: React.FC = () => {
   const [preSelectedTime, setPreSelectedTime] = useState<string | undefined>();
   const [showGeneratePrompt, setShowGeneratePrompt] = useState(false);
   const [expandedHours, setExpandedHours] = useState<Record<string, boolean>>({});
+  const [viewMode, setViewMode] = useState<'card' | 'week'>('week');
 
   function getWeekStart(date: Date): Date {
     const d = new Date(date);
@@ -647,27 +649,58 @@ const SpecialistSchedule: React.FC = () => {
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">{t('dashboard.nav.schedule')}</h1>
           <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm md:text-base">{t('schedule.subtitle')}</p>
         </div>
-        <button
-          onClick={() => {
-            setPreSelectedDate(undefined);
-            setPreSelectedTime(undefined);
-            setEditingBlock(null);
-            setShowAddModal(true);
-          }}
-          disabled={operationInProgress}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-colors ${
-            operationInProgress
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-primary-600 hover:bg-primary-700'
-          } text-white whitespace-nowrap`}
-        >
-          {operationInProgress && (
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
-          )}
-          <PlusIcon className="w-5 h-5" />
-          <span className="hidden sm:inline">{t('schedule.addTime')}</span>
-          <span className="sm:hidden">Add</span>
-        </button>
+        <div className="flex items-center gap-3">
+          {/* View Toggle */}
+          <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
+            <button
+              onClick={() => setViewMode('week')}
+              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all ${
+                viewMode === 'week'
+                  ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+              title="Week View"
+            >
+              <CalendarIcon className="w-4 h-4" />
+              <span className="text-sm font-medium hidden sm:inline">Week</span>
+            </button>
+            <button
+              onClick={() => setViewMode('card')}
+              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all ${
+                viewMode === 'card'
+                  ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+              title="Card View"
+            >
+              <ListBulletsIcon className="w-4 h-4" />
+              <span className="text-sm font-medium hidden sm:inline">Cards</span>
+            </button>
+          </div>
+
+          {/* Add Time Button */}
+          <button
+            onClick={() => {
+              setPreSelectedDate(undefined);
+              setPreSelectedTime(undefined);
+              setEditingBlock(null);
+              setShowAddModal(true);
+            }}
+            disabled={operationInProgress}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-colors ${
+              operationInProgress
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-primary-600 hover:bg-primary-700'
+            } text-white whitespace-nowrap`}
+          >
+            {operationInProgress && (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
+            )}
+            <PlusIcon className="w-5 h-5" />
+            <span className="hidden sm:inline">{t('schedule.addTime')}</span>
+            <span className="sm:hidden">Add</span>
+          </button>
+        </div>
       </div>
 
       {/* Error Alert */}
@@ -761,8 +794,31 @@ const SpecialistSchedule: React.FC = () => {
         </button>
       </div>
 
-      {/* Calendar - Card Based Design */}
-      <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
+      {/* Calendar Views */}
+      {viewMode === 'week' ? (
+        <WeekView
+          currentDate={currentWeekStart}
+          timeBlocks={availabilityBlocks.map(block => ({
+            id: block.id,
+            startTime: block.startDateTime,
+            endTime: block.endDateTime,
+            title: block.isAvailable ? 'Available' : (block.reason || 'Blocked'),
+            type: block.isAvailable ? 'available' as const : 'blocked' as const,
+            isRecurring: block.isRecurring,
+          }))}
+          onBlockClick={(block) => {
+            const originalBlock = availabilityBlocks.find(b => b.id === block.id);
+            if (originalBlock) {
+              openEditModal(originalBlock);
+            }
+          }}
+          onTimeSlotClick={(date, time) => {
+            handleCellClick(date, parseInt(time.split(':')[0]));
+          }}
+        />
+      ) : (
+        // Card Based Design
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-4">
         {weekDays.map((day, dayIndex) => {
           const isToday = day.toDateString() === new Date().toDateString();
           const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -930,7 +986,8 @@ const SpecialistSchedule: React.FC = () => {
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
 
       {/* Stats Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-6">
