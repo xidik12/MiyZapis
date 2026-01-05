@@ -800,10 +800,10 @@ const SpecialistSchedule: React.FC = () => {
           currentDate={currentWeekStart}
           timeBlocks={availabilityBlocks.map(block => ({
             id: block.id,
-            startTime: block.startDateTime,
-            endTime: block.endDateTime,
-            title: block.isAvailable ? 'Available' : (block.reason || 'Blocked'),
-            type: block.isAvailable ? 'available' as const : 'blocked' as const,
+            startDateTime: block.startDateTime,
+            endDateTime: block.endDateTime,
+            isAvailable: block.isAvailable,
+            reason: block.reason,
             isRecurring: block.isRecurring,
           }))}
           onBlockClick={(block) => {
