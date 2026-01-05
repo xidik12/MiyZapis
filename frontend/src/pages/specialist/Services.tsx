@@ -9,6 +9,7 @@ import { logger } from '@/utils/logger';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
 import { FloatingElements, UkrainianOrnament } from '../../components/ui/UkrainianElements';
 import { CategoryDropdown } from '../../components/ui/CategoryDropdown';
+import { LocationPicker } from '../../components/LocationPicker';
 import { getCategoryName } from '@/data/serviceCategories';
 import { ServiceCategory } from '../../types';
 import { specialistService } from '../../services/specialist.service';
@@ -213,6 +214,17 @@ const SpecialistServices: React.FC = () => {
     maxParticipants: undefined as number | undefined,
     minParticipants: 1,
   });
+
+  // Location state for LocationPicker
+  const [locationData, setLocationData] = useState({
+    address: '',
+    city: '',
+    region: '',
+    country: '',
+    postalCode: '',
+    latitude: undefined as number | undefined,
+    longitude: undefined as number | undefined,
+  });
   const [customCategory, setCustomCategory] = useState('');
   const [showCustomCategory, setShowCustomCategory] = useState(false);
 
@@ -261,6 +273,15 @@ const SpecialistServices: React.FC = () => {
       maxParticipants: undefined,
       minParticipants: 1,
     });
+    setLocationData({
+      address: '',
+      city: '',
+      region: '',
+      country: '',
+      postalCode: '',
+      latitude: undefined,
+      longitude: undefined,
+    });
     setCustomCategory('');
     setShowCustomCategory(false);
     setFormErrors({});
@@ -278,7 +299,7 @@ const SpecialistServices: React.FC = () => {
 
     // Check if the service category exists in our loaded categories
     const existingCategory = categories.find(cat => cat.id === service.category || cat.name === service.category);
-    
+
     const formDataToSet = {
       name: service.name,
       nameUk: '', // These localized fields aren't used in the backend yet
@@ -320,7 +341,18 @@ const SpecialistServices: React.FC = () => {
     logger.debug('Duration in form data:', formDataToSet.duration);
 
     setFormData(formDataToSet);
-    
+
+    // Set location data from service
+    setLocationData({
+      address: service.serviceLocation || '',
+      city: '',
+      region: '',
+      country: '',
+      postalCode: '',
+      latitude: (service as any).latitude,
+      longitude: (service as any).longitude,
+    });
+
     // If category doesn't exist in our list, show it as custom
     if (!existingCategory) {
       setShowCustomCategory(true);
@@ -329,7 +361,7 @@ const SpecialistServices: React.FC = () => {
       setShowCustomCategory(false);
       setCustomCategory('');
     }
-    
+
     setEditingService(service);
     setShowAddModal(true);
   };
@@ -460,8 +492,10 @@ const SpecialistServices: React.FC = () => {
       basePrice: parseFloat(formData.price),
       currency: formData.currency,
       duration: parseInt(formData.duration),
-      serviceLocation: formData.serviceLocation || undefined,
+      serviceLocation: locationData.address || formData.serviceLocation || undefined,
       locationNotes: formData.locationNotes || undefined,
+      latitude: locationData.latitude,
+      longitude: locationData.longitude,
       isActive: formData.isActive,
       requirements: [], // Empty for now, can be extended later
       deliverables: [], // Empty for now, can be extended later
@@ -1251,17 +1285,22 @@ const SpecialistServices: React.FC = () => {
                   {language === 'uk' ? 'Ця інформація буде показана клієнтам після оплати' : language === 'ru' ? 'Эта информация будет показана клиентам после оплаты' : 'This information will be shown to customers after payment'}
                 </p>
                 <div className="grid grid-cols-1 gap-6">
-                  {/* Service Location */}
+                  {/* Service Location with Google Maps */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       {language === 'uk' ? 'Адреса або місце надання послуги' : language === 'ru' ? 'Адрес или место предоставления услуги' : 'Service Location Address'}
                     </label>
-                    <input
-                      type="text"
-                      value={formData.serviceLocation}
-                      onChange={(e) => setFormData(prev => ({ ...prev, serviceLocation: e.target.value }))}
-                      placeholder={language === 'uk' ? 'напр. вул. Хрещатик 1, Київ' : language === 'ru' ? 'напр. ул. Крещатик 1, Киев' : 'e.g. 123 Main St, City'}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
+                    <LocationPicker
+                      location={locationData}
+                      onLocationChange={(newLocation) => {
+                        setLocationData(newLocation);
+                        // Also update formData.serviceLocation for backwards compatibility
+                        setFormData(prev => ({
+                          ...prev,
+                          serviceLocation: newLocation.address
+                        }));
+                      }}
+                      className="w-full"
                     />
                   </div>
 

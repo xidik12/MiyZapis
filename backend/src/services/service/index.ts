@@ -18,6 +18,8 @@ interface CreateServiceData {
   minAdvanceBooking?: number;
   serviceLocation?: string;
   locationNotes?: string;
+  latitude?: number;
+  longitude?: number;
   // Group Session Settings
   isGroupSession?: boolean;
   maxParticipants?: number | null;
@@ -49,6 +51,10 @@ interface UpdateServiceData {
   requiresApproval?: boolean;
   maxAdvanceBooking?: number;
   minAdvanceBooking?: number;
+  serviceLocation?: string;
+  locationNotes?: string;
+  latitude?: number;
+  longitude?: number;
   // Loyalty Points pricing
   loyaltyPointsEnabled?: boolean;
   loyaltyPointsPrice?: number;
@@ -96,6 +102,8 @@ export class ServiceService {
           duration: data.duration,
           serviceLocation: data.serviceLocation || null,
           locationNotes: data.locationNotes || null,
+          latitude: data.latitude || null,
+          longitude: data.longitude || null,
           requirements: JSON.stringify(data.requirements || []),
           deliverables: JSON.stringify(data.deliverables || []),
           images: JSON.stringify(data.images || []),
@@ -199,6 +207,8 @@ export class ServiceService {
       }
       if (data.serviceLocation !== undefined) updateData.serviceLocation = data.serviceLocation;
       if (data.locationNotes !== undefined) updateData.locationNotes = data.locationNotes;
+      if (data.latitude !== undefined) updateData.latitude = data.latitude;
+      if (data.longitude !== undefined) updateData.longitude = data.longitude;
       if (data.requirements !== undefined) updateData.requirements = JSON.stringify(data.requirements);
       if (data.deliverables !== undefined) updateData.deliverables = JSON.stringify(data.deliverables);
       if (data.images !== undefined) updateData.images = JSON.stringify(data.images);

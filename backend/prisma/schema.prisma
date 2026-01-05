@@ -223,6 +223,8 @@ model Service {
   // Location details (shown to customer after payment)
   serviceLocation String? // Physical address or location details for this service
   locationNotes   String? // Additional instructions for finding the location
+  latitude        Float?  // Geographic latitude coordinate
+  longitude       Float?  // Geographic longitude coordinate
 
   // Requirements and deliverables
   requirements  String // JSON string of requirements

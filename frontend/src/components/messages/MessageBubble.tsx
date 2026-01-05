@@ -35,11 +35,11 @@ const MessageBubbleComponent: React.FC<MessageBubbleProps> = ({
       initial={{ opacity: 0, y: 10, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
-      className={`flex items-end gap-2 ${isOwnMessage ? 'justify-end' : 'justify-start'} mb-2`}
+      className={`flex items-start gap-2 ${isOwnMessage ? 'justify-end' : 'justify-start'} mb-2`}
     >
       {/* Avatar (for received messages) */}
       {!isOwnMessage && showAvatar && (
-        <div className="flex-shrink-0 mb-1">
+        <div className="flex-shrink-0">
           {avatarUrl ? (
             <img
               src={avatarUrl}
@@ -55,7 +55,7 @@ const MessageBubbleComponent: React.FC<MessageBubbleProps> = ({
       )}
 
       {/* Placeholder for alignment when avatar is hidden */}
-      {!isOwnMessage && !showAvatar && <div className="w-8" />}
+      {!isOwnMessage && !showAvatar && <div className="w-8 flex-shrink-0" />}
 
       {/* Message Bubble */}
       <div
@@ -71,9 +71,9 @@ const MessageBubbleComponent: React.FC<MessageBubbleProps> = ({
         </p>
 
         {/* Time and Read Status */}
-        <div className={`flex items-center gap-1 mt-1 ${isOwnMessage ? 'justify-end' : ''}`}>
+        <div className={`flex items-center gap-1.5 mt-1.5 ${isOwnMessage ? 'justify-end' : ''}`}>
           <span
-            className={`text-xs ${
+            className={`text-xs leading-none ${
               isOwnMessage
                 ? 'text-white/80'
                 : 'text-gray-500 dark:text-gray-400'
@@ -84,13 +84,13 @@ const MessageBubbleComponent: React.FC<MessageBubbleProps> = ({
 
           {/* Read Status (for own messages) */}
           {isOwnMessage && (
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 flex items-center">
               {message.readAt ? (
                 // Double check (read)
-                <CheckCheck className="w-4 h-4 text-blue-300" />
+                <CheckCheck className="w-3.5 h-3.5 text-blue-300" />
               ) : (
                 // Double check (delivered but not read)
-                <CheckCheck className="w-4 h-4 text-white/60" />
+                <CheckCheck className="w-3.5 h-3.5 text-white/60" />
               )}
             </div>
           )}

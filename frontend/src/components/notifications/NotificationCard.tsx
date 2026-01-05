@@ -133,7 +133,7 @@ const NotificationCardComponent: React.FC<NotificationCardProps> = ({
         onClick={onClick}
         className={`
           px-4 py-3.5 cursor-pointer transition-all duration-200
-          flex items-start gap-3
+          flex items-center gap-3
           ${notification.isRead
             ? 'bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 opacity-70'
             : `bg-primary-50/50 dark:bg-primary-900/20 hover:bg-primary-100/50 dark:hover:bg-primary-900/30`
@@ -143,7 +143,7 @@ const NotificationCardComponent: React.FC<NotificationCardProps> = ({
         `}
       >
         {/* Avatar or Icon */}
-        <div className="flex-shrink-0 mt-0.5">
+        <div className="flex-shrink-0">
           {avatarUrl ? (
             <Avatar
               src={avatarUrl}
@@ -163,7 +163,7 @@ const NotificationCardComponent: React.FC<NotificationCardProps> = ({
         {/* Content */}
         <div className="flex-1 min-w-0">
           {/* Primary message */}
-          <p className={`text-sm leading-relaxed transition-colors duration-200 ${
+          <p className={`text-sm leading-snug transition-colors duration-200 ${
             notification.isRead
               ? 'text-gray-600 dark:text-gray-300'
               : 'text-gray-900 dark:text-white font-semibold'
@@ -173,26 +173,26 @@ const NotificationCardComponent: React.FC<NotificationCardProps> = ({
 
           {/* Secondary info */}
           {notification.data?.serviceName && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5 leading-tight">
               {notification.data.serviceName}
             </p>
           )}
 
           {/* Timestamp */}
-          <div className="flex items-center gap-2 mt-1.5">
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+          <div className="flex items-center gap-2 mt-2">
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium leading-none">
               {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
             </p>
 
             {/* Unread indicator dot */}
             {!notification.isRead && (
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary-500" />
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary-500 flex-shrink-0" />
             )}
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="flex-shrink-0 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           {notification.actionUrl && (
             <button
               onClick={(e) => {

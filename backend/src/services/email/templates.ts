@@ -621,6 +621,24 @@ export const emailTemplates = {
               <p style="margin: 5px 0;"><strong>Total Amount:</strong> {{totalAmount}} {{currency}}</p>
               {{#if customerNotes}}<p style="margin: 5px 0;"><strong>Your Notes:</strong> {{customerNotes}}</p>{{/if}}
             </div>
+
+            {{#if serviceLocation}}
+            <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+              <h3 style="color: #374151; margin-top: 0;">📍 Service Location</h3>
+              <p style="margin: 5px 0; color: #374151; font-size: 16px;"><strong>{{serviceLocation}}</strong></p>
+              {{#if locationNotes}}
+              <p style="margin: 10px 0 5px 0; color: #6b7280; font-style: italic;">{{locationNotes}}</p>
+              {{/if}}
+              {{#if latitude}}
+              <div style="margin-top: 15px;">
+                <a href="https://www.google.com/maps?q={{latitude}},{{longitude}}"
+                   style="display: inline-block; background: #10b981; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-right: 10px;">
+                  Open in Google Maps
+                </a>
+              </div>
+              {{/if}}
+            </div>
+            {{/if}}
             
             <div style="text-align: center; margin: 30px 0;">
               <a href="{{bookingUrl}}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-right: 10px;">
@@ -641,11 +659,11 @@ export const emailTemplates = {
       `,
       text: `
         Booking Confirmed!
-        
+
         Hello {{customerName}},
-        
+
         Great news! Your booking has been confirmed.
-        
+
         Booking Details:
         - Service: {{serviceName}}
         - Specialist: {{specialistName}}
@@ -653,10 +671,21 @@ export const emailTemplates = {
         - Duration: {{duration}} minutes
         - Total Amount: {{totalAmount}} {{currency}}
         {{#if customerNotes}}- Your Notes: {{customerNotes}}{{/if}}
-        
+
+        {{#if serviceLocation}}
+        📍 Service Location:
+        {{serviceLocation}}
+        {{#if locationNotes}}
+        Additional Instructions: {{locationNotes}}
+        {{/if}}
+        {{#if latitude}}
+        View on Google Maps: https://www.google.com/maps?q={{latitude}},{{longitude}}
+        {{/if}}
+
+        {{/if}}
         View your booking: {{bookingUrl}}
         Chat with specialist: {{chatUrl}}
-        
+
         Important: Please arrive 10 minutes before your scheduled time. If you need to reschedule or cancel, please do so at least 24 hours in advance.
       `
     },

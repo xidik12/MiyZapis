@@ -206,6 +206,21 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   </div>
                 )}
 
+                {/* Google Maps Link */}
+                {(booking.service as any).latitude && (booking.service as any).longitude && (
+                  <div className="mt-3">
+                    <a
+                      href={`https://www.google.com/maps?q=${(booking.service as any).latitude},${(booking.service as any).longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 text-sm"
+                    >
+                      <MapPinIcon className="w-4 h-4 mr-2" />
+                      {t('bookings.openInGoogleMaps') || 'Open in Google Maps'}
+                    </a>
+                  </div>
+                )}
+
                 <div className="mt-3 pt-2 border-t border-blue-200 dark:border-blue-700">
                   <p className="text-xs text-blue-700 dark:text-blue-300 italic">
                     ℹ️ {t('bookings.locationInfoNote') || 'This location information is available after payment confirmation'}
