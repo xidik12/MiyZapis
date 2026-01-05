@@ -52,7 +52,7 @@ interface BookingCardProps {
   isDragging?: boolean;
 }
 
-export const BookingCard: React.FC<BookingCardProps> = ({
+const BookingCardComponent: React.FC<BookingCardProps> = ({
   booking,
   userRole,
   onClick,
@@ -63,7 +63,7 @@ export const BookingCard: React.FC<BookingCardProps> = ({
   const displayName = userRole === 'customer'
     ? booking.specialist?.businessName || `${booking.specialist?.firstName} ${booking.specialist?.lastName}`
     : `${booking.customer?.firstName} ${booking.customer?.lastName}`;
-  const initial = displayName?.charAt(0).toUpperCase() || '?';
+  const hasAvatar = otherParty?.avatar;
 
   const statusColors = {
     PENDING: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-300',
@@ -91,13 +91,20 @@ export const BookingCard: React.FC<BookingCardProps> = ({
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <Avatar
-            src={otherParty?.avatar}
-            alt={displayName}
-            size="md"
-            className="w-10 h-10 flex-shrink-0"
-            fallback={initial}
-          />
+          {hasAvatar ? (
+            <Avatar
+              src={otherParty?.avatar}
+              alt={displayName}
+              size="md"
+              className="w-10 h-10 flex-shrink-0"
+            />
+          ) : (
+            <div className="w-10 h-10 flex-shrink-0 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-sm">
+                {displayName?.charAt(0).toUpperCase() || '?'}
+              </span>
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <h3 className="font-bold text-gray-900 dark:text-white text-sm truncate">
               {displayName}
@@ -158,3 +165,13 @@ export const BookingCard: React.FC<BookingCardProps> = ({
     </motion.div>
   );
 };
+
+export const BookingCard = React.memo(BookingCardComponent, (prevProps, nextProps) => {
+  // Only re-render if these props change
+  return (
+    prevProps.booking.id === nextProps.booking.id &&
+    prevProps.booking.status === nextProps.booking.status &&
+    prevProps.isDragging === nextProps.isDragging &&
+    prevProps.userRole === nextProps.userRole
+  );
+});

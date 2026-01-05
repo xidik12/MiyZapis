@@ -53,7 +53,7 @@ interface ReviewCardProps {
   index?: number;
 }
 
-export const ReviewCard: React.FC<ReviewCardProps> = ({
+const ReviewCardComponent: React.FC<ReviewCardProps> = ({
   review,
   onMarkHelpful,
   onMarkResponseHelpful,
@@ -64,6 +64,7 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
 
   const customerName = `${review.customer.firstName} ${review.customer.lastName}`;
   const customerInitial = review.customer.firstName.charAt(0).toUpperCase();
+  const hasAvatar = review.customer.avatar;
   const isLongComment = review.comment && review.comment.length > 200;
   const displayComment = showFullComment || !isLongComment
     ? review.comment
@@ -104,13 +105,20 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
       <div className="p-6 pb-4">
         <div className="flex items-start gap-4 mb-4">
           {/* Avatar */}
-          <Avatar
-            src={review.customer.avatar}
-            alt={customerName}
-            size="lg"
-            className="w-12 h-12"
-            fallback={customerInitial}
-          />
+          {hasAvatar ? (
+            <Avatar
+              src={review.customer.avatar}
+              alt={customerName}
+              size="lg"
+              className="w-12 h-12"
+            />
+          ) : (
+            <div className="w-12 h-12 flex-shrink-0 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-lg">
+                {customerInitial}
+              </span>
+            </div>
+          )}
 
           {/* Customer Info */}
           <div className="flex-1 min-w-0">
@@ -221,3 +229,14 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({
     </motion.div>
   );
 };
+
+export const ReviewCard = React.memo(ReviewCardComponent, (prevProps, nextProps) => {
+  // Only re-render if these props change
+  return (
+    prevProps.review.id === nextProps.review.id &&
+    prevProps.review.isHelpful === nextProps.review.isHelpful &&
+    prevProps.review.helpfulCount === nextProps.review.helpfulCount &&
+    prevProps.review.response?.isHelpful === nextProps.review.response?.isHelpful &&
+    prevProps.index === nextProps.index
+  );
+});

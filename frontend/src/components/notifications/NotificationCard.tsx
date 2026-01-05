@@ -102,7 +102,7 @@ const getPriorityLevel = (type: string): 'urgent' | 'important' | 'normal' => {
   return 'normal';
 };
 
-export const NotificationCard: React.FC<NotificationCardProps> = ({
+const NotificationCardComponent: React.FC<NotificationCardProps> = ({
   notification,
   onClick,
   onMarkAsRead,
@@ -231,3 +231,12 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
     </motion.div>
   );
 };
+
+export const NotificationCard = React.memo(NotificationCardComponent, (prevProps, nextProps) => {
+  // Only re-render if these props change
+  return (
+    prevProps.notification.id === nextProps.notification.id &&
+    prevProps.notification.isRead === nextProps.notification.isRead &&
+    prevProps.isDeleting === nextProps.isDeleting
+  );
+});

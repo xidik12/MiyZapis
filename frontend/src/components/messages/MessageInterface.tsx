@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ConversationList } from './ConversationList';
 import { ChatArea } from './ChatArea';
 import { MessagesService } from '@/services/messages.service';
@@ -59,46 +59,65 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
   const [sendingMessage, setSendingMessage] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
 
+  const isMountedRef = useRef(true);
   const messagesService = new MessagesService();
 
   useEffect(() => {
-    fetchConversations();
+    isMountedRef.current = true;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await messagesService.getConversations();
+        if (isMountedRef.current) {
+          setConversations(response.conversations || []);
+        }
+      } catch (error) {
+        if (isMountedRef.current) {
+          console.error('Error fetching conversations:', error);
+          toast.error('Failed to load conversations');
+        }
+      } finally {
+        if (isMountedRef.current) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   useEffect(() => {
     filterConversations();
   }, [conversations, searchQuery]);
 
-  const fetchConversations = async () => {
-    try {
-      setLoading(true);
-      const response = await messagesService.getConversations();
-      setConversations(response.conversations || []);
-    } catch (error) {
-      console.error('Error fetching conversations:', error);
-      toast.error('Failed to load conversations');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const fetchConversationMessages = async (conversationId: string) => {
     try {
       const response = await messagesService.getConversation(conversationId);
-      setMessages(response.messages || []);
+      if (isMountedRef.current) {
+        setMessages(response.messages || []);
+      }
 
       // Mark messages as read
       await messagesService.markAsRead(conversationId);
 
       // Update conversation unread count
-      setConversations(prev => prev.map(conv =>
-        conv.id === conversationId
-          ? { ...conv, unreadCount: 0 }
-          : conv
-      ));
+      if (isMountedRef.current) {
+        setConversations(prev => prev.map(conv =>
+          conv.id === conversationId
+            ? { ...conv, unreadCount: 0 }
+            : conv
+        ));
+      }
     } catch (error) {
-      console.error('Error fetching messages:', error);
-      toast.error('Failed to load messages');
+      if (isMountedRef.current) {
+        console.error('Error fetching messages:', error);
+        toast.error('Failed to load messages');
+      }
     }
   };
 
@@ -120,24 +139,30 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
         messageText
       );
 
-      setMessages(prev => [...prev, sentMessage]);
+      if (isMountedRef.current) {
+        setMessages(prev => [...prev, sentMessage]);
 
-      // Update conversation's last message
-      setConversations(prev => prev.map(conv =>
-        conv.id === selectedConversation.id
-          ? {
-              ...conv,
-              lastMessage: sentMessage,
-              lastMessageAt: sentMessage.createdAt
-            }
-          : conv
-      ));
+        // Update conversation's last message
+        setConversations(prev => prev.map(conv =>
+          conv.id === selectedConversation.id
+            ? {
+                ...conv,
+                lastMessage: sentMessage,
+                lastMessageAt: sentMessage.createdAt
+              }
+            : conv
+        ));
+      }
     } catch (error) {
-      console.error('Error sending message:', error);
-      toast.error('Failed to send message');
-      setNewMessage(messageText); // Restore message
+      if (isMountedRef.current) {
+        console.error('Error sending message:', error);
+        toast.error('Failed to send message');
+        setNewMessage(messageText); // Restore message
+      }
     } finally {
-      setSendingMessage(false);
+      if (isMountedRef.current) {
+        setSendingMessage(false);
+      }
     }
   };
 

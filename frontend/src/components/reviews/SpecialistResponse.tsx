@@ -39,6 +39,7 @@ export const SpecialistResponse: React.FC<SpecialistResponseProps> = ({
 }) => {
   const businessName = response.respondedBy.businessName || `${response.respondedBy.firstName} ${response.respondedBy.lastName}`;
   const initial = response.respondedBy.firstName.charAt(0).toUpperCase();
+  const hasAvatar = response.respondedBy.avatar;
 
   const handleHelpfulClick = () => {
     if (onMarkHelpful) {
@@ -82,13 +83,20 @@ export const SpecialistResponse: React.FC<SpecialistResponseProps> = ({
             <div className="px-6 pb-4">
               {/* Specialist Info */}
               <div className="flex items-start gap-3 mb-3">
-                <Avatar
-                  src={response.respondedBy.avatar}
-                  alt={businessName}
-                  size="md"
-                  className="w-10 h-10"
-                  fallback={initial}
-                />
+                {hasAvatar ? (
+                  <Avatar
+                    src={response.respondedBy.avatar}
+                    alt={businessName}
+                    size="md"
+                    className="w-10 h-10"
+                  />
+                ) : (
+                  <div className="w-10 h-10 flex-shrink-0 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">
+                      {initial}
+                    </span>
+                  </div>
+                )}
                 <div className="flex-1">
                   <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-0.5">
                     {businessName}

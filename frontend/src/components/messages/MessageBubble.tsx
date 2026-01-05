@@ -18,7 +18,7 @@ interface MessageBubbleProps {
   senderName?: string;
 }
 
-export const MessageBubble: React.FC<MessageBubbleProps> = ({
+const MessageBubbleComponent: React.FC<MessageBubbleProps> = ({
   message,
   isOwnMessage,
   showAvatar = false,
@@ -99,3 +99,13 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     </motion.div>
   );
 };
+
+export const MessageBubble = React.memo(MessageBubbleComponent, (prevProps, nextProps) => {
+  // Only re-render if these props change
+  return (
+    prevProps.message.id === nextProps.message.id &&
+    prevProps.message.readAt === nextProps.message.readAt &&
+    prevProps.isOwnMessage === nextProps.isOwnMessage &&
+    prevProps.showAvatar === nextProps.showAvatar
+  );
+});

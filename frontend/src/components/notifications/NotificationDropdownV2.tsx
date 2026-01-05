@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectNotifications, markAsRead, markAllAsRead, removeNotification } from '@/store/slices/notificationSlice';
@@ -73,6 +73,7 @@ export const NotificationDropdownV2: React.FC<NotificationDropdownV2Props> = ({
   const dispatch = useAppDispatch();
   const notifications = useAppSelector(selectNotifications);
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
   // Group notifications by time
@@ -118,7 +119,7 @@ export const NotificationDropdownV2: React.FC<NotificationDropdownV2Props> = ({
       dispatch(markAsRead(notification.id));
     }
     if (notification.actionUrl) {
-      window.location.href = notification.actionUrl;
+      navigate(notification.actionUrl);
     }
     onClose();
   };
