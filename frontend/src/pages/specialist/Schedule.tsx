@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { CalendarIcon, ClockIcon, PlusIcon, XIcon as XMarkIcon, CheckIcon, TrashIcon, PencilIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon, SquaresFourIcon, ListBulletsIcon } from '@/components/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -850,16 +851,28 @@ const SpecialistSchedule: React.FC = () => {
                   const blocks = getBlocksForCell(day, hour);
                   const expanded = isHourExpanded(dayIndex, hour);
                   const isPast = new Date(new Date(day).setHours(hour, 0, 0, 0)) < new Date();
+                  const isCurrentHour = isToday && new Date().getHours() === hour;
 
                   // Skip hours with no slots
                   if (totalCount === 0) return null;
 
+                  // Auto-expand current hour or if it's the only slot today
+                  const shouldAutoExpand = isCurrentHour || (isToday && totalCount <= 3);
+
                   return (
-                    <div key={hour} className={`${isPast ? 'opacity-50' : ''}`}>
+                    <motion.div
+                      key={hour}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: isPast ? 0.5 : 1, y: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className={isCurrentHour ? 'ring-2 ring-primary-400 dark:ring-primary-600 rounded-lg' : ''}
+                    >
                       {/* Hour Card Header */}
                       <button
                         onClick={() => toggleHourExpanded(dayIndex, hour)}
-                        className="w-full p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors text-left flex items-center justify-between group"
+                        className={`w-full p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors text-left flex items-center justify-between group ${
+                          isCurrentHour ? 'bg-primary-50/50 dark:bg-primary-900/20' : ''
+                        }`}
                       >
                         <div className="flex items-center space-x-3 flex-1">
                           <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30">
@@ -892,24 +905,48 @@ const SpecialistSchedule: React.FC = () => {
                             <ChevronDownIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
                           )}
                         </div>
+                        {/* Event Preview when collapsed */}
+                        {!expanded && blocks.length > 0 && (
+                          <div className="px-4 pb-3">
+                            <div className={`text-xs truncate ${
+                              blocks[0].isAvailable
+                                ? 'text-green-700 dark:text-green-300'
+                                : 'text-red-700 dark:text-red-300'
+                            }`}>
+                              {blocks[0].isAvailable ? '✓ Available' : '✗ ' + (blocks[0].reason || 'Blocked')}
+                              {blocks.length > 1 && ` +${blocks.length - 1} more`}
+                            </div>
+                          </div>
+                        )}
                       </button>
 
-                      {/* Expanded Time Slots */}
-                      {expanded && (
-                        <div className="px-4 pb-4 space-y-2 bg-gray-50 dark:bg-gray-900/30">
-                          {blocks.map(block => {
-                            const blockStart = new Date(block.startDateTime);
-                            const blockEnd = new Date(block.endDateTime);
+                      {/* Expanded Time Slots with Animation */}
+                      <AnimatePresence>
+                        {(expanded || shouldAutoExpand) && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3, ease: 'easeInOut' }}
+                            className="overflow-hidden"
+                          >
+                            <div className="px-4 pb-4 space-y-2 bg-gray-50 dark:bg-gray-900/30">
+                              {blocks.map((block, idx) => {
+                                const blockStart = new Date(block.startDateTime);
+                                const blockEnd = new Date(block.endDateTime);
 
-                            return (
-                              <div
-                                key={block.id}
-                                className={`p-3 rounded-xl border-2 transition-all hover:shadow-md ${
-                                  block.isAvailable
-                                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                                    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                                }`}
-                              >
+                                return (
+                                  <motion.div
+                                    key={block.id}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    className={`p-3 rounded-xl border-2 transition-all hover:shadow-md cursor-pointer ${
+                                      block.isAvailable
+                                        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30'
+                                        : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30'
+                                    }`}
+                                  >
                                 <div className="flex items-center justify-between">
                                   <div className="flex-1">
                                     <div className={`text-sm font-medium ${
@@ -957,12 +994,14 @@ const SpecialistSchedule: React.FC = () => {
                                     </button>
                                   </div>
                                 </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
+                                  </motion.div>
+                                );
+                              })}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
                   );
                 })}
               </div>
