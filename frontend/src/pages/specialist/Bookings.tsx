@@ -15,6 +15,7 @@ import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLo
 import { messagesService } from '../../services/messages.service';
 import TierBadge from '@/components/common/TierBadge';
 import { BookingKanban } from '@/components/bookings/BookingKanban';
+import type { BookingData } from '@/components/bookings/BookingCard';
 
 // Status colors for bookings (matching backend status values)
 const statusColors = {
@@ -672,6 +673,44 @@ const getBookingCurrency = (booking: Booking): 'USD' | 'EUR' | 'UAH' => {
   return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
 };
 
+// Helper function to map Booking to BookingData for Kanban
+const mapBookingToBookingData = (booking: Booking): BookingData => {
+  const scheduledDate = new Date(booking.scheduledAt);
+
+  return {
+    id: booking.id,
+    status: booking.status,
+    scheduledDate: scheduledDate.toISOString().split('T')[0], // YYYY-MM-DD
+    scheduledTime: scheduledDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+    customer: booking.customer ? {
+      id: booking.customer.id,
+      firstName: booking.customer.firstName,
+      lastName: booking.customer.lastName,
+      avatar: booking.customer.avatar,
+      phoneNumber: booking.customer.phoneNumber
+    } : undefined,
+    specialist: booking.specialist ? {
+      id: booking.specialist.id,
+      firstName: booking.specialist.user?.firstName || '',
+      lastName: booking.specialist.user?.lastName || '',
+      businessName: booking.specialist.businessName,
+      avatar: booking.specialist.user?.avatar
+    } : undefined,
+    service: {
+      id: booking.service?.id || booking.serviceId,
+      name: booking.service?.name || 'Unknown Service',
+      duration: booking.duration,
+      price: booking.service?.price
+    },
+    location: booking.specialist?.location ? {
+      address: booking.specialist.location.address,
+      city: booking.specialist.location.city
+    } : undefined,
+    totalPrice: booking.totalAmount,
+    paymentStatus: booking.depositPaid ? 'paid' : 'pending'
+  };
+};
+
 const SpecialistBookings: React.FC = () => {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
@@ -1223,10 +1262,14 @@ const SpecialistBookings: React.FC = () => {
         {/* Kanban or List View */}
         {viewMode === 'kanban' ? (
           <BookingKanban
-            bookings={filteredAndSortedBookings}
-            onBookingClick={(booking) => {
-              setSelectedBooking(booking);
-              setShowDetailModal(true);
+            bookings={filteredAndSortedBookings.map(mapBookingToBookingData)}
+            onBookingClick={(bookingData) => {
+              // Find the original booking by ID
+              const originalBooking = bookings.find(b => b.id === bookingData.id);
+              if (originalBooking) {
+                setSelectedBooking(originalBooking);
+                setShowDetailModal(true);
+              }
             }}
             onStatusChange={(bookingId, newStatus) => {
               dispatch(updateBookingStatus({

@@ -905,20 +905,21 @@ const SpecialistSchedule: React.FC = () => {
                             <ChevronDownIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
                           )}
                         </div>
-                        {/* Event Preview when collapsed */}
-                        {!expanded && blocks.length > 0 && (
-                          <div className="px-4 pb-3">
-                            <div className={`text-xs truncate ${
-                              blocks[0].isAvailable
-                                ? 'text-green-700 dark:text-green-300'
-                                : 'text-red-700 dark:text-red-300'
-                            }`}>
-                              {blocks[0].isAvailable ? '✓ Available' : '✗ ' + (blocks[0].reason || 'Blocked')}
-                              {blocks.length > 1 && ` +${blocks.length - 1} more`}
-                            </div>
-                          </div>
-                        )}
                       </button>
+
+                      {/* Event Preview when collapsed */}
+                      {!expanded && blocks.length > 0 && (
+                        <div className="px-4 pb-3">
+                          <div className={`text-xs truncate ${
+                            blocks[0].isAvailable
+                              ? 'text-green-700 dark:text-green-300'
+                              : 'text-red-700 dark:text-red-300'
+                          }`}>
+                            {blocks[0].isAvailable ? '✓ Available' : '✗ ' + (blocks[0].reason || 'Blocked')}
+                            {blocks.length > 1 && ` +${blocks.length - 1} more`}
+                          </div>
+                        </div>
+                      )}
 
                       {/* Expanded Time Slots with Animation */}
                       <AnimatePresence>
