@@ -89,7 +89,7 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
       }`}
     >
       {/* Header */}
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {hasAvatar ? (
             <Avatar
@@ -100,16 +100,16 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
             />
           ) : (
             <div className="w-10 h-10 flex-shrink-0 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">
+              <span className="text-white font-bold text-sm leading-none">
                 {displayName?.charAt(0).toUpperCase() || '?'}
               </span>
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-gray-900 dark:text-white text-sm truncate">
+            <h3 className="font-bold text-gray-900 dark:text-white text-sm truncate leading-tight">
               {displayName}
             </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+            <p className="text-xs text-gray-600 dark:text-gray-400 truncate leading-tight mt-0.5">
               {booking.service.name}
             </p>
           </div>
@@ -128,24 +128,24 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
       {/* Date & Time */}
       <div className="space-y-2 mb-3">
         <div className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
-          <CalendarIcon className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-          <span className="font-medium">
+          <CalendarIcon className="w-4 h-4 text-primary-600 dark:text-primary-400 flex-shrink-0" />
+          <span className="font-medium leading-none">
             {format(new Date(booking.scheduledDate), 'MMM d, yyyy')}
           </span>
         </div>
         <div className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
-          <ClockIcon className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-          <span className="font-medium">{booking.scheduledTime}</span>
+          <ClockIcon className="w-4 h-4 text-primary-600 dark:text-primary-400 flex-shrink-0" />
+          <span className="font-medium leading-none">{booking.scheduledTime}</span>
           {booking.service.duration && (
-            <span className="text-gray-500 dark:text-gray-500">
+            <span className="text-gray-500 dark:text-gray-500 leading-none">
               ({booking.service.duration} min)
             </span>
           )}
         </div>
         {booking.location?.address && (
           <div className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
-            <MapPinIcon className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-            <span className="truncate">{booking.location.address}</span>
+            <MapPinIcon className="w-4 h-4 text-primary-600 dark:text-primary-400 flex-shrink-0" />
+            <span className="truncate leading-none">{booking.location.address}</span>
           </div>
         )}
       </div>
@@ -153,12 +153,12 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
       {/* Footer */}
       <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-1.5">
-          <CurrencyDollarIcon className="w-4 h-4 text-green-600 dark:text-green-400" />
-          <span className="font-bold text-sm text-gray-900 dark:text-white">
+          <CurrencyDollarIcon className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+          <span className="font-bold text-sm text-gray-900 dark:text-white leading-none">
             ${booking.totalPrice.toFixed(2)}
           </span>
         </div>
-        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColor}`}>
+        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border leading-none ${statusColor}`}>
           {booking.status.replace('_', ' ')}
         </span>
       </div>
