@@ -324,6 +324,11 @@ export class EnhancedEmailService {
           customerNotes: booking.customerNotes,
           bookingUrl,
           chatUrl,
+          // Service location information
+          serviceLocation: booking.service.serviceLocation,
+          locationNotes: booking.service.locationNotes,
+          latitude: (booking.service as any).latitude,
+          longitude: (booking.service as any).longitude,
         },
       });
 
