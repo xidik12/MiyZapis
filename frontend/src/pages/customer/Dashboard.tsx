@@ -41,13 +41,13 @@ import {
   PlusIcon,
   BookOpenIcon,
   ExclamationTriangleIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 import {
-  CalendarIcon as CalendarIconSolid,
-  HeartIcon as HeartIconSolid,
-  StarIcon as StarIconSolid,
-  GiftIcon as GiftIconSolid,
-} from '@heroicons/react/24/solid';
+  CalendarIcon,
+  HeartIcon,
+  StarIcon,
+  GiftIcon,
+} from '@/components/icons';
 
 // Interface definitions for type safety
 interface CustomerStats {
@@ -466,7 +466,7 @@ const CustomerDashboard: React.FC = () => {
               value={stats ? stats.loyaltyPoints.toLocaleString() : '0'}
               change={`+${stats?.monthlyPoints || 0} this month`}
               changeType="positive"
-              icon={GiftIconSolid}
+              icon={GiftIcon}
               iconBg="bg-gradient-to-br from-purple-500 to-purple-600"
               description={`${stats?.currentTier || 'Bronze'} Tier • ${stats?.nextTierPoints || 0} to next`}
               onClick={() => navigate('/loyalty')}
@@ -476,7 +476,7 @@ const CustomerDashboard: React.FC = () => {
               value={stats ? stats.servicesUsed : 0}
               change={`${stats ? stats.completedBookings : 0}/${stats ? stats.totalBookings : 0} ${t('dashboard.booking.status.completed').toLowerCase()}`}
               changeType="positive"
-              icon={StarIconSolid}
+              icon={StarIcon}
               iconBg="bg-gradient-to-br from-warning-500 to-warning-600"
               description={`${stats ? stats.averageRating : 0}/5.0 ${t('dashboard.customer.averageRating').toLowerCase()}`}
             />
@@ -485,7 +485,7 @@ const CustomerDashboard: React.FC = () => {
             value={stats ? stats.favoriteSpecialists : 0}
             change={`${stats ? stats.reviewsWritten : 0} ${t('dashboard.nav.reviews').toLowerCase()}`}
             changeType="positive"
-            icon={HeartIconSolid}
+            icon={HeartIcon}
             iconBg="bg-gradient-to-br from-info-500 to-info-600"
             description={`${t('dashboard.customer.memberSince')} 2024`}
           />
@@ -632,7 +632,7 @@ const CustomerDashboard: React.FC = () => {
               <div className="space-y-3 sm:space-y-4">
                 {favoriteSpecialists.length === 0 ? (
                 <div className="text-center py-6 sm:py-8 text-gray-500 dark:text-gray-400">
-                  <HeartIconSolid className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <HeartIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
                   <p>{t('customer.favorites.noSpecialists')}</p>
                   <Link 
                     to="/search" 
@@ -694,7 +694,7 @@ const CustomerDashboard: React.FC = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
                 <div className="flex items-center space-x-2 sm:space-x-3">
                   <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <GiftIconSolid className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                    <GiftIcon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
                   <div>
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Loyalty Progress</h3>

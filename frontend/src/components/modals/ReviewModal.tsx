@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
-import { XMarkIcon, StarIcon } from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import { XMarkIcon, StarIcon } from '@/components/icons';
+import { StarIcon } from '@/components/icons';
 import Modal from '@/components/ui/Modal';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -230,7 +230,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                     disabled={actualLoading}
                   >
                     {(hoverRating || rating) >= star ? (
-                      <StarIconSolid className="h-6 w-6 text-yellow-400 sm:h-8 sm:w-8" />
+                      <StarIcon className="h-6 w-6 text-yellow-400 sm:h-8 sm:w-8" />
                     ) : (
                       <StarIcon className="h-6 w-6 text-gray-300 sm:h-8 sm:w-8" />
                     )}

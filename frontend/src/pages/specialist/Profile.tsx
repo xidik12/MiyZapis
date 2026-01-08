@@ -39,7 +39,7 @@ import {
   ArrowDownTrayIcon,
   Cog6ToothIcon,
   ShieldCheckIcon
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 
 interface SpecialistProfile {
   id: string;

@@ -23,7 +23,7 @@ import {
   ArrowRightIcon,
   GiftIcon,
   StarIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 
 interface BookingStep {
   id: string;

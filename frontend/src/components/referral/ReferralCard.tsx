@@ -14,10 +14,10 @@ import {
   ExclamationTriangleIcon,
   ChevronDownIcon,
   ChevronUpIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 import {
   ClipboardDocumentCheckIcon,
-} from '@heroicons/react/24/solid';
+} from '@/components/icons';
 
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';

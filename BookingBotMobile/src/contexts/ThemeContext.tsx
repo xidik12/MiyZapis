@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Theme } from '../types';
+import { PRIMARY_COLORS, SECONDARY_COLORS, ACCENT_COLORS, NEUTRAL_COLORS, SUCCESS_COLOR, ERROR_COLOR } from '../utils/design';
 
 interface ThemeContextType {
   theme: Theme;
@@ -24,31 +25,31 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-// Panhaha color scheme
+// Panhaha color scheme - using design system constants
 const lightColors = {
-  primary: '#1E40AF', // Navy Blue
-  secondary: '#DC2626', // Crimson Red
-  accent: '#EAB308', // Gold
-  background: '#FAFAFA',
+  primary: PRIMARY_COLORS[500], // Dark Navy Blue
+  secondary: SECONDARY_COLORS[500], // Bright Crimson Red
+  accent: ACCENT_COLORS[500], // Gold
+  background: NEUTRAL_COLORS[50],
   surface: '#FFFFFF',
-  text: '#18181B',
-  textSecondary: '#71717A',
-  border: '#E4E4E7',
-  error: '#DC2626',
-  success: '#16A34A',
+  text: NEUTRAL_COLORS[900],
+  textSecondary: NEUTRAL_COLORS[500],
+  border: NEUTRAL_COLORS[200],
+  error: ERROR_COLOR,
+  success: SUCCESS_COLOR,
 };
 
 const darkColors = {
-  primary: '#3B82F6', // Lighter Navy Blue
-  secondary: '#EF4444', // Lighter Crimson Red
-  accent: '#FACC15', // Lighter Gold
-  background: '#18181B',
-  surface: '#27272A',
-  text: '#FAFAFA',
-  textSecondary: '#A1A1AA',
-  border: '#3F3F46',
-  error: '#EF4444',
-  success: '#22C55E',
+  primary: PRIMARY_COLORS[400], // Lighter Navy Blue
+  secondary: SECONDARY_COLORS[400], // Lighter Crimson Red
+  accent: ACCENT_COLORS[400], // Lighter Gold
+  background: NEUTRAL_COLORS[900],
+  surface: NEUTRAL_COLORS[800],
+  text: NEUTRAL_COLORS[50],
+  textSecondary: NEUTRAL_COLORS[400],
+  border: NEUTRAL_COLORS[700],
+  error: SECONDARY_COLORS[400],
+  success: PRIMARY_COLORS[400],
 };
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

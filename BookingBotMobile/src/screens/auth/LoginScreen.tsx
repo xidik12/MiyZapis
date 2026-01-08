@@ -19,6 +19,7 @@ import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { login, selectIsAuthenticated, selectAuthError, selectIsLoading, clearError } from '../../store/slices/authSlice';
 import { useTheme } from '../../contexts/ThemeContext';
 import { LoginRequest } from '../../types';
+import { GoogleSignInButton } from '../../components/auth/GoogleSignInButton';
 
 interface LoginFormData {
   email: string;
@@ -344,6 +345,19 @@ export const LoginScreen: React.FC = () => {
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </Text>
             </TouchableOpacity>
+
+            <View style={{ marginTop: 16, alignItems: 'center' }}>
+              <Text style={{ color: colors.textSecondary, marginBottom: 8 }}>or</Text>
+              <GoogleSignInButton
+                disabled={isLoading}
+                onSuccess={() => {
+                  // Navigation will be handled by AppNavigator
+                }}
+                onError={(error) => {
+                  Alert.alert('Google Sign-In Error', error);
+                }}
+              />
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

@@ -13,7 +13,7 @@ import {
   EyeIcon,
   EyeSlashIcon,
   KeyIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 
 interface ChangePasswordModalProps {
   isOpen: boolean;

@@ -7,15 +7,14 @@ import { selectNotifications } from '@/store/slices/notificationSlice';
 import { environment } from '@/config/environment';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
-import { 
-  Bars3Icon, 
-  XMarkIcon, 
-  BellIcon, 
+import {
+  Bars3Icon,
+  XMarkIcon,
+  BellIcon,
   UserCircleIcon,
   ChevronDownIcon,
   HomeIcon,
-} from '@heroicons/react/24/outline';
-import { BellIcon as BellIconSolid } from '@heroicons/react/24/solid';
+} from '@/components/icons';
 import { NotificationDropdown } from '../common/NotificationDropdown';
 import { UserDropdown } from '../common/UserDropdown';
 import { ThemeToggle } from '../ui/ThemeToggle';
@@ -176,11 +175,10 @@ export const Header: React.FC = () => {
                     onClick={() => setIsNotificationOpen(!isNotificationOpen)}
                     className="p-2.5 sm:p-2.5 rounded-2xl bg-white/60 dark:bg-[rgba(35,28,52,0.8)] border border-[rgba(223,214,207,0.45)] dark:border-[rgba(90,70,110,0.55)] text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)] hover:-translate-y-0.5 hover:shadow-primary transition-all duration-300 mobile-touch-target"
                   >
-                    {unreadNotifications > 0 ? (
-                      <BellIconSolid className="w-7 h-7 sm:w-6 sm:h-6 text-primary-500" />
-                    ) : (
-                      <BellIcon className="w-7 h-7 sm:w-6 sm:h-6" />
-                    )}
+                    <BellIcon
+                      className={`w-7 h-7 sm:w-6 sm:h-6 ${unreadNotifications > 0 ? 'text-primary-500' : ''}`}
+                      active={unreadNotifications > 0}
+                    />
                     {unreadNotifications > 0 && (
                       <span className="absolute -top-1 -right-1 bg-primary-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shadow-primary">
                         {unreadNotifications > 9 ? '9+' : unreadNotifications}

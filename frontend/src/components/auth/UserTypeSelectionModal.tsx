@@ -6,7 +6,7 @@ import {
   WrenchScrewdriverIcon,
   BuildingOfficeIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 
 interface UserTypeSelectionModalProps {
   isOpen: boolean;

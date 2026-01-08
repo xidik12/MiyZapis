@@ -19,10 +19,10 @@ import {
   HeartIcon,
   BoltIcon,
   PhoneIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 import {
-  StarIcon as StarIconSolid,
-} from '@heroicons/react/24/solid';
+  StarIcon,
+} from '@/components/icons';
 import { Avatar } from '../components/ui/Avatar';
 import { translateProfession } from '@/utils/profession';
 import Skeleton, { SkeletonText } from '../components/ui/Skeleton';
@@ -332,7 +332,7 @@ const SearchPage: React.FC = () => {
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
-      <StarIconSolid
+      <StarIcon
         key={i}
         className={`w-4 h-4 ${
           i < Math.floor(rating) ? 'text-yellow-400' : 'text-gray-300'
@@ -442,7 +442,7 @@ const SearchPage: React.FC = () => {
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <div className="inline-flex items-center gap-1.5 lg:gap-2 px-3 lg:px-4 py-1.5 lg:py-2 rounded-xl lg:rounded-2xl bg-white/70 dark:bg-white/10 border border-white/30 dark:border-white/10 shadow-sm">
-                  <StarIconSolid className="w-4 h-4 lg:w-5 lg:h-5 text-yellow-400 flex-shrink-0" />
+                  <StarIcon className="w-4 h-4 lg:w-5 lg:h-5 text-yellow-400 flex-shrink-0" />
                   <span className="text-xs lg:text-sm font-semibold text-[rgb(31,33,36)] dark:text-white">
                     {service.rating.toFixed(1)}
                   </span>
@@ -746,7 +746,7 @@ const SearchPage: React.FC = () => {
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               >
-                <StarIconSolid className="w-4 h-4 text-yellow-400" />
+                <StarIcon className="w-4 h-4 text-yellow-400" />
                 5★
               </button>
               <button
@@ -757,7 +757,7 @@ const SearchPage: React.FC = () => {
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               >
-                <StarIconSolid className="w-4 h-4 text-yellow-400" />
+                <StarIcon className="w-4 h-4 text-yellow-400" />
                 4★+
               </button>
               <button
@@ -768,7 +768,7 @@ const SearchPage: React.FC = () => {
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               >
-                <StarIconSolid className="w-4 h-4 text-yellow-400" />
+                <StarIcon className="w-4 h-4 text-yellow-400" />
                 3★+
               </button>
             </div>

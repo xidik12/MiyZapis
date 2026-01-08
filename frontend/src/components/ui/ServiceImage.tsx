@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { PhotoIcon } from '@heroicons/react/24/outline';
+import { PhotoIcon } from '@/components/icons';
 
 interface ServiceImageProps {
   src?: string | null;

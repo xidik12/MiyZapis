@@ -13,7 +13,7 @@ import {
   PhoneIcon,
   EnvelopeIcon,
   ClockIcon
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 
 // Interfaces are now imported from the service
 

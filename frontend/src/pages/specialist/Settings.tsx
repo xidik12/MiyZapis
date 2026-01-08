@@ -26,7 +26,7 @@ import {
   TrashIcon,
   KeyIcon,
   LockClosedIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 
 const interfaceLanguageOptions: Array<{ value: Language; label: { en: string; kh: string }; flag: string }> = [
   { value: 'en', label: { en: 'English', kh: 'អង់គ្លេស' }, flag: '🇺🇸' },

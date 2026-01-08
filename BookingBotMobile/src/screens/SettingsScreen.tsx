@@ -13,10 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { logout, selectUser } from '../store/slices/authSlice';
-import { useTheme, useTheme as useThemeHook } from '../contexts/ThemeContext';
-import { useTheme as useUISelector } from '../store/slices/uiSlice';
-import { selectTheme, setTheme } from '../store/slices/uiSlice';
-import { useAppDispatch as useUIDispatch } from '../store/hooks';
+import { useTheme } from '../contexts/ThemeContext';
 
 export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation();

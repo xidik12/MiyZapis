@@ -8,7 +8,7 @@ import {
   UserGroupIcon,
   WrenchScrewdriverIcon,
   ClockIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 
 const API_URL = import.meta.env.VITE_API_URL;
 

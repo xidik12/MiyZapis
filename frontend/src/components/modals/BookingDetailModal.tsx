@@ -13,7 +13,7 @@ import {
   ChatBubbleLeftRightIcon,
   StarIcon,
   ArrowPathIcon
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 import { Avatar } from '../ui/Avatar';
 
 const statusColors = {

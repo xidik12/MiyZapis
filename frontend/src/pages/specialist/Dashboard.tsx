@@ -34,11 +34,11 @@ import {
   PlusIcon,
   ArrowDownTrayIcon,
   Cog6ToothIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 import {
-  CalendarIcon as CalendarIconSolid,
-  StarIcon as StarIconSolid,
-} from '@heroicons/react/24/solid';
+  CalendarIcon,
+  StarIcon,
+} from '@/components/icons';
 
 // Helper function to get the booking currency
 const getBookingCurrency = (booking: any): 'USD' | 'KHR' | 'UAH' | 'EUR' => {
@@ -551,7 +551,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           value={dashboardData.stats.totalBookings}
           change={dashboardData.stats.totalBookings > 0 ? `+12% ${t('dashboard.specialist.thisMonthImprovement')}` : ''}
           changeType="positive"
-          icon={CalendarIconSolid}
+          icon={CalendarIcon}
           iconBg="bg-gradient-to-br from-primary-500 to-primary-600"
           description={t('dashboard.specialist.allTime')}
         />
@@ -569,7 +569,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           value={`${dashboardData.stats.rating}/5.0`}
           change={dashboardData.stats.reviewCount > 0 ? `+0.2 ${t('dashboard.specialist.thisMonthImprovement')}` : ''}
           changeType="positive"
-          icon={StarIconSolid}
+          icon={StarIcon}
           iconBg="bg-gradient-to-br from-warning-500 to-warning-600"
           description={`${dashboardData.stats.reviewCount} ${t('dashboard.nav.reviews').toLowerCase()}`}
         />

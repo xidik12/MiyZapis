@@ -1,10 +1,10 @@
 import React from 'react';
 import { calculateTier, getTierName } from '@/utils/formatPoints';
 import {
-  StarIcon as StarIconSolid,
-  TrophyIcon as TrophyIconSolid,
-  SparklesIcon as SparklesIconSolid,
-} from '@heroicons/react/24/solid';
+  StarIcon,
+  TrophyIcon,
+  SparklesIcon,
+} from '@/components/icons';
 
 type TierKey = 'bronze' | 'silver' | 'gold' | 'platinum';
 
@@ -55,14 +55,14 @@ const TIER_STYLES: Record<
 const TierIcon: React.FC<{ tier: TierKey; className?: string }> = ({ tier, className }) => {
   switch (tier) {
     case 'gold':
-      return <TrophyIconSolid className={className} />;
+      return <TrophyIcon className={className} />;
     case 'platinum':
-      return <StarIconSolid className={className} />;
+      return <StarIcon className={className} />;
     case 'silver':
-      return <SparklesIconSolid className={className} />;
+      return <SparklesIcon className={className} />;
     case 'bronze':
     default:
-      return <SparklesIconSolid className={className} />;
+      return <SparklesIcon className={className} />;
   }
 };
 

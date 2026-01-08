@@ -1,7 +1,7 @@
 // Auth slice - adapted for React Native
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { authService } from '../../services/auth.service';
-import { setAuthTokens, clearAuthTokens } from '../../services';
+import { setAuthTokens, clearAuthTokens } from '../../services/api';
 import {
   User,
   AuthTokens,
@@ -45,6 +45,23 @@ export const register = createAsyncThunk(
       return response;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Registration failed');
+    }
+  }
+);
+
+export const googleLogin = createAsyncThunk(
+  'auth/googleLogin',
+  async ({ credential, userType }: { credential: string; userType?: 'customer' | 'specialist' | 'business' }, { rejectWithValue }) => {
+    try {
+      const response = await authService.googleAuth(credential, userType);
+      if ('requiresUserTypeSelection' in response && response.requiresUserTypeSelection) {
+        // Return special response indicating user type selection is needed
+        return { requiresUserTypeSelection: true, googleData: response.googleData };
+      }
+      setAuthTokens(response.tokens);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Google authentication failed');
     }
   }
 );

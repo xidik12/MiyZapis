@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Bars3Icon } from '@heroicons/react/24/outline';
+import { Bars3Icon } from '@/components/icons';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Logo } from '../common/Logo';
 

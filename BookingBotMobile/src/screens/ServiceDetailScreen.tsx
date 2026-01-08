@@ -286,25 +286,25 @@ export const ServiceDetailScreen: React.FC = () => {
                 onPress={() => navigation.navigate('SpecialistProfile' as never, { specialistId: service.specialist?.id } as never)}
               >
                 <View style={styles.specialistHeader}>
-                  {service.specialist.avatar ? (
+                  {service.specialist.user?.avatar ? (
                     <Image
-                      source={{ uri: service.specialist.avatar }}
+                      source={{ uri: service.specialist.user.avatar }}
                       style={styles.specialistAvatar}
                     />
                   ) : (
                     <View style={[styles.specialistAvatar, { justifyContent: 'center', alignItems: 'center' }]}>
                       <Text style={{ fontSize: 24, color: colors.textSecondary }}>
-                        {service.specialist.firstName?.[0]?.toUpperCase() || 'S'}
+                        {service.specialist.user?.firstName?.[0]?.toUpperCase() || service.specialist.businessName?.[0]?.toUpperCase() || 'S'}
                       </Text>
                     </View>
                   )}
                   <View style={styles.specialistInfo}>
                     <Text style={styles.specialistName}>
-                      {service.specialist.firstName} {service.specialist.lastName}
+                      {service.specialist.user?.firstName || ''} {service.specialist.user?.lastName || ''}
                     </Text>
                     {service.specialist.rating && (
                       <Text style={styles.specialistRating}>
-                        ⭐ {service.specialist.rating.toFixed(1)} ({service.specialist.reviewCount || 0} reviews)
+                        ⭐ {service.specialist.rating.toFixed(1)} ({service.specialist.totalReviews || 0} reviews)
                       </Text>
                     )}
                   </View>

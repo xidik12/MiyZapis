@@ -26,12 +26,53 @@ export interface WalletTransactionHistory {
   balance: number;
 }
 
+export interface WalletSummary {
+  balance: number;
+  pendingBalance: number;
+  totalCredits: number;
+  totalDebits: number;
+  totalEarned: number;
+  totalSpent: number;
+  totalWithdrawn?: number;
+  currency: string;
+}
+
 export class WalletService {
   // Get wallet balance
   async getBalance(): Promise<WalletBalance> {
     const response = await apiClient.get<WalletBalance>('/payments/wallet/balance');
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get wallet balance');
+    }
+    return response.data;
+  }
+
+  // Get wallet summary
+  async getWalletSummary(): Promise<WalletSummary> {
+    const response = await apiClient.get<WalletSummary>('/payments/wallet/summary');
+    if (!response.success || !response.data) {
+      // Fallback: calculate from balance and transaction history
+      const balance = await this.getBalance();
+      const history = await this.getTransactionHistory({ limit: 100 });
+      
+      const totalCredits = history.transactions
+        .filter(t => t.type === 'CREDIT')
+        .reduce((sum, t) => sum + t.amount, 0);
+      const totalDebits = history.transactions
+        .filter(t => t.type === 'DEBIT')
+        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      
+      return {
+        balance: balance.balance,
+        pendingBalance: history.transactions
+          .filter(t => t.status === 'PENDING')
+          .reduce((sum, t) => sum + (t.type === 'CREDIT' ? t.amount : -t.amount), 0),
+        totalCredits,
+        totalDebits,
+        totalEarned: totalCredits,
+        totalSpent: totalDebits,
+        currency: balance.currency,
+      };
     }
     return response.data;
   }

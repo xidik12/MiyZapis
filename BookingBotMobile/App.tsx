@@ -4,6 +4,9 @@ import { StatusBar } from 'expo-status-bar';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
+import { LanguageProvider } from './src/contexts/LanguageContext';
+import { CurrencyProvider } from './src/contexts/CurrencyContext';
+import { SocketProvider } from './src/providers/SocketProvider';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { store, persistor } from './src/store';
 import { View, ActivityIndicator } from 'react-native';
@@ -15,7 +18,13 @@ const AppContent: React.FC = () => {
   return (
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      <AppNavigator />
+      <LanguageProvider>
+        <CurrencyProvider>
+          <SocketProvider>
+            <AppNavigator />
+          </SocketProvider>
+        </CurrencyProvider>
+      </LanguageProvider>
     </>
   );
 };

@@ -63,6 +63,62 @@ export class SpecialistService {
     return response.data;
   }
 
+  // Get availability blocks (both available and blocked)
+  async getAvailabilityBlocks(startDate?: string, endDate?: string): Promise<BlockedSlot[]> {
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    params.append('limit', '1000');
+
+    const response = await apiClient.get<{ blocks: BlockedSlot[] }>(`/specialists/blocks?${params}`);
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get availability blocks');
+    }
+    return response.data.blocks || [];
+  }
+
+  // Create availability block
+  async createAvailabilityBlock(data: {
+    startDateTime: string;
+    endDateTime: string;
+    isAvailable: boolean;
+    reason?: string;
+    isRecurring?: boolean;
+    recurringDays?: string[];
+    recurringUntil?: string;
+  }): Promise<BlockedSlot> {
+    const response = await apiClient.post<{ block: BlockedSlot }>('/specialists/blocks', data);
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to create availability block');
+    }
+    return response.data.block;
+  }
+
+  // Update availability block
+  async updateAvailabilityBlock(blockId: string, data: {
+    startDateTime: string;
+    endDateTime: string;
+    isAvailable: boolean;
+    reason?: string;
+    isRecurring?: boolean;
+    recurringDays?: string[];
+    recurringUntil?: string;
+  }): Promise<BlockedSlot> {
+    const response = await apiClient.put<{ block: BlockedSlot }>(`/specialists/blocks/${blockId}`, data);
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to update availability block');
+    }
+    return response.data.block;
+  }
+
+  // Delete availability block
+  async deleteAvailabilityBlock(blockId: string): Promise<void> {
+    const response = await apiClient.delete(`/specialists/blocks/${blockId}`);
+    if (!response.success) {
+      throw new Error(response.error?.message || 'Failed to delete availability block');
+    }
+  }
+
   // Get specialist analytics
   async getAnalytics(period: 'week' | 'month' | 'year' = 'month'): Promise<SpecialistAnalytics> {
     const response = await apiClient.get<SpecialistAnalytics>(`/specialists/analytics?period=${period}`);

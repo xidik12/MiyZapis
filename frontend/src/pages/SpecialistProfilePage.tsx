@@ -25,11 +25,11 @@ import {
   HeartIcon,
   ShareIcon,
   PlayIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 import {
-  StarIcon as StarIconSolid,
-  HeartIcon as HeartIconSolid,
-} from '@heroicons/react/24/solid';
+  StarIcon,
+  HeartIcon,
+} from '@/components/icons';
 import { Avatar } from '../components/ui/Avatar';
 import { translateProfession } from '@/utils/profession';
 import { getAbsoluteImageUrl } from '../utils/imageUrl';
@@ -264,7 +264,7 @@ const SpecialistProfilePage: React.FC = () => {
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
-      <StarIconSolid
+      <StarIcon
         key={i}
         className={`w-5 h-5 ${
           i < Math.floor(rating) ? 'text-yellow-400' : 'text-gray-300'
@@ -286,7 +286,7 @@ const SpecialistProfilePage: React.FC = () => {
                   {specialist.user?.firstName} {specialist.user?.lastName}
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 sm:gap-3">
-                  <span className="inline-flex items-center gap-0.5 sm:gap-1"><StarIconSolid className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-400" />{(specialist.rating || 0).toFixed(1)}</span>
+                  <span className="inline-flex items-center gap-0.5 sm:gap-1"><StarIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-400" />{(specialist.rating || 0).toFixed(1)}</span>
                   {typeof specialist.completedBookings === 'number' && (
                     <span className="inline-flex items-center gap-0.5 sm:gap-1 hidden sm:flex"><CalendarIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />{specialist.completedBookings} {t('specialist.completedJobs') || 'Completed'}</span>
                   )}
@@ -412,7 +412,7 @@ const SpecialistProfilePage: React.FC = () => {
                   {favoriteLoading ? (
                     <div className="w-4 h-4 mr-1 sm:w-5 sm:h-5 sm:mr-2 animate-spin rounded-full border-2 border-gray-300 border-t-current"></div>
                   ) : isFavorite ? (
-                    <HeartIconSolid className="w-4 h-4 mr-1 sm:w-5 sm:h-5 sm:mr-2" />
+                    <HeartIcon className="w-4 h-4 mr-1 sm:w-5 sm:h-5 sm:mr-2" />
                   ) : (
                     <HeartIcon className="w-4 h-4 mr-1 sm:w-5 sm:h-5 sm:mr-2" />
                   )}

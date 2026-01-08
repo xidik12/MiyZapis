@@ -29,7 +29,7 @@ import {
   TrashIcon,
   PlusIcon,
   ArrowDownTrayIcon
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 
 interface SpecialistProfile {
   id: string;

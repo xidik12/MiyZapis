@@ -6,6 +6,7 @@ import { CustomDrawerContent } from '../components/CustomDrawerContent';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppSelector } from '../store/hooks';
 import { selectUser } from '../store/slices/authSlice';
+import { UserType } from '../types';
 
 // Import screens
 import { HomeScreen } from '../screens/HomeScreen';
@@ -17,6 +18,9 @@ import { SettingsScreen } from '../screens/SettingsScreen';
 
 // Customer screens
 import { CustomerDashboardScreen } from '../screens/customer/DashboardScreen';
+import { CustomerReferralsScreen } from '../screens/customer/ReferralsScreen';
+import { CustomerWalletScreen } from '../screens/customer/WalletScreen';
+import { CustomerMessagesScreen } from '../screens/customer/MessagesScreen';
 
 // Specialist screens
 import { SpecialistDashboardScreen } from '../screens/specialist/SpecialistDashboardScreen';
@@ -25,6 +29,13 @@ import { MyServicesScreen } from '../screens/specialist/MyServicesScreen';
 import { MyClientsScreen } from '../screens/specialist/MyClientsScreen';
 import { EarningsScreen } from '../screens/specialist/EarningsScreen';
 import { EmployeesScreen } from '../screens/specialist/EmployeesScreen';
+import { LoyaltyScreen } from '../screens/specialist/LoyaltyScreen';
+import { ScheduleScreen } from '../screens/specialist/ScheduleScreen';
+import { AnalyticsScreen } from '../screens/specialist/AnalyticsScreen';
+import { ReviewsScreen } from '../screens/specialist/ReviewsScreen';
+import { SpecialistReferralsScreen } from '../screens/specialist/ReferralsScreen';
+import { SpecialistWalletScreen } from '../screens/specialist/WalletScreen';
+import { SpecialistMessagesScreen } from '../screens/specialist/MessagesScreen';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -46,7 +57,7 @@ export const DrawerNavigator: React.FC = () => {
       drawerContent={(props) => (
         <CustomDrawerContent
           {...props}
-          userType={userType as 'CUSTOMER' | 'SPECIALIST'}
+          userType={userType.toLowerCase() as UserType}
           userName={userName}
           userEmail={userEmail}
         />
@@ -98,6 +109,21 @@ export const DrawerNavigator: React.FC = () => {
             component={FavoritesScreen}
             options={{ title: 'Favorites' }}
           />
+          <Drawer.Screen
+            name="Referrals"
+            component={CustomerReferralsScreen}
+            options={{ title: 'Referrals' }}
+          />
+          <Drawer.Screen
+            name="Wallet"
+            component={CustomerWalletScreen}
+            options={{ title: 'Wallet' }}
+          />
+          <Drawer.Screen
+            name="Messages"
+            component={CustomerMessagesScreen}
+            options={{ title: 'Messages' }}
+          />
         </>
       )}
       
@@ -113,6 +139,11 @@ export const DrawerNavigator: React.FC = () => {
             name="Calendar"
             component={CalendarScreen}
             options={{ title: 'Calendar' }}
+          />
+          <Drawer.Screen
+            name="Schedule"
+            component={ScheduleScreen}
+            options={{ title: 'Schedule' }}
           />
           <Drawer.Screen
             name="Bookings"
@@ -133,6 +164,36 @@ export const DrawerNavigator: React.FC = () => {
             name="Earnings"
             component={EarningsScreen}
             options={{ title: 'Earnings' }}
+          />
+          <Drawer.Screen
+            name="Loyalty"
+            component={LoyaltyScreen}
+            options={{ title: 'Loyalty Rewards' }}
+          />
+          <Drawer.Screen
+            name="Analytics"
+            component={AnalyticsScreen}
+            options={{ title: 'Analytics' }}
+          />
+          <Drawer.Screen
+            name="Reviews"
+            component={ReviewsScreen}
+            options={{ title: 'Reviews' }}
+          />
+          <Drawer.Screen
+            name="Referrals"
+            component={SpecialistReferralsScreen}
+            options={{ title: 'Referrals' }}
+          />
+          <Drawer.Screen
+            name="Wallet"
+            component={SpecialistWalletScreen}
+            options={{ title: 'Wallet' }}
+          />
+          <Drawer.Screen
+            name="Messages"
+            component={SpecialistMessagesScreen}
+            options={{ title: 'Messages' }}
           />
           {/* Business-only: Employees management */}
           {isBusiness && (

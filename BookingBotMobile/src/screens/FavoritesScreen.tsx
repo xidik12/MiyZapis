@@ -282,25 +282,25 @@ export const FavoritesScreen: React.FC = () => {
                 style={styles.card}
                 onPress={() => navigation.navigate('SpecialistProfile' as never, { specialistId: specialist.id } as never)}
               >
-                {specialist.avatar ? (
-                  <Image source={{ uri: specialist.avatar }} style={styles.cardImage} />
+                {specialist.user?.avatar ? (
+                  <Image source={{ uri: specialist.user.avatar }} style={styles.cardImage} />
                 ) : (
                   <View style={[styles.cardImage, { justifyContent: 'center', alignItems: 'center' }]}>
                     <Text style={{ fontSize: 32 }}>
-                      {specialist.firstName?.[0]?.toUpperCase() || 'S'}
+                      {specialist.user?.firstName?.[0]?.toUpperCase() || specialist.businessName?.[0]?.toUpperCase() || 'S'}
                     </Text>
                   </View>
                 )}
                 <View style={styles.cardContent}>
                   <Text style={styles.cardTitle}>
-                    {specialist.firstName} {specialist.lastName}
+                    {specialist.user?.firstName || ''} {specialist.user?.lastName || ''}
                   </Text>
                   {specialist.businessName && (
                     <Text style={styles.cardSubtitle}>{specialist.businessName}</Text>
                   )}
                   {specialist.rating && (
                     <Text style={styles.cardSubtitle}>
-                      ⭐ {specialist.rating.toFixed(1)} ({specialist.reviewCount || 0} reviews)
+                      ⭐ {specialist.rating.toFixed(1)} ({specialist.totalReviews || 0} reviews)
                     </Text>
                   )}
                 </View>

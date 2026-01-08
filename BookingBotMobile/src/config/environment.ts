@@ -4,11 +4,13 @@ import Constants from 'expo-constants';
 const extra = Constants.expoConfig?.extra || {};
 
 export const environment = {
-  API_URL: extra.apiUrl || 'https://panhaha-backend-production.up.railway.app/api/v1',
-  WS_URL: extra.wsUrl || 'wss://panhaha-backend-production.up.railway.app',
+  API_URL: extra.apiUrl || 'https://huddle-backend-production.up.railway.app/api/v1',
+  WS_URL: extra.wsUrl || 'wss://huddle-backend-production.up.railway.app',
   APP_NAME: 'Panhaha',
   APP_VERSION: '1.0.0',
   DEBUG: __DEV__ || false,
+  GOOGLE_CLIENT_ID: extra.googleClientId || null, // Will be set in app.json
+  GOOGLE_AUTH_ENABLED: Boolean(extra.googleClientId),
 };
 
 // API endpoints - matching web version exactly
@@ -21,6 +23,7 @@ export const API_ENDPOINTS = {
     FORGOT_PASSWORD: '/auth/request-password-reset',
     RESET_PASSWORD: '/auth/reset-password',
     VERIFY_EMAIL: '/auth-enhanced/verify-email',
+    GOOGLE_AUTH: '/auth-enhanced/google',
     TELEGRAM_AUTH: '/auth-enhanced/telegram',
   },
   USERS: {

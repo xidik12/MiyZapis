@@ -17,8 +17,8 @@ import {
   ArrowRightOnRectangleIcon,
   UserPlusIcon,
   IdentificationIcon,
-} from '@heroicons/react/24/outline';
-import { BellIcon as BellIconSolid } from '@heroicons/react/24/solid';
+} from '@/components/icons';
+import { BellIcon } from '@/components/icons';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { LanguageToggle } from '../ui/LanguageToggle';
 import { CurrencyToggle } from '../ui/CurrencyToggle';
@@ -338,7 +338,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
                   >
                     <div className="relative">
                       {unreadNotifications > 0 ? (
-                        <BellIconSolid className="w-5 h-5 text-primary-600" />
+                        <BellIcon className="w-5 h-5 text-primary-600" />
                       ) : (
                         <BellIcon className="w-5 h-5" />
                       )}

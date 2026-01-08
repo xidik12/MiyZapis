@@ -17,23 +17,25 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.panhaha.bookingbot",
-      "buildNumber": "1.0.0"
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1a237e"
       },
-      "package": "com.panhaha.bookingbot"
+      "package": "com.panhaha.bookingbot",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "apiUrl": "https://panhaha-backend-production.up.railway.app/api/v1",
-      "wsUrl": "wss://panhaha-backend-production.up.railway.app",
-      "environment": "production"
-    }
+      "apiUrl": "https://huddle-backend-production.up.railway.app/api/v1",
+      "wsUrl": "wss://huddle-backend-production.up.railway.app",
+      "environment": "production",
+      "googleClientId": null
+    },
+    "scheme": "panhaha"
   }
 }
-

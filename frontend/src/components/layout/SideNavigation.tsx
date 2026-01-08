@@ -14,12 +14,7 @@ import {
   ChevronRightIcon,
   ArrowRightOnRectangleIcon,
   UserPlusIcon,
-} from '@heroicons/react/24/outline';
-import {
-  HomeIcon as HomeIconSolid,
-  MagnifyingGlassIcon as MagnifyingGlassIconSolid,
-  UserCircleIcon as UserCircleIconSolid,
-} from '@heroicons/react/24/solid';
+} from '@/components/icons';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { LanguageToggle } from '../ui/LanguageToggle';
 import { CurrencyToggle } from '../ui/CurrencyToggle';
@@ -47,21 +42,18 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
       name: t('nav.home'),
       href: '/',
       icon: HomeIcon,
-      activeIcon: HomeIconSolid,
       current: location.pathname === '/',
     },
     {
       name: t('nav.services'),
       href: '/search',
       icon: MagnifyingGlassIcon,
-      activeIcon: MagnifyingGlassIconSolid,
       current: location.pathname === '/search',
     },
     {
       name: t('nav.howItWorks'),
       href: '#how-it-works',
       icon: QuestionMarkCircleIcon,
-      activeIcon: QuestionMarkCircleIcon,
       current: false,
       isHashLink: true,
     },
@@ -69,7 +61,6 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
       name: t('nav.forSpecialists'),
       href: '#for-specialists',
       icon: UserPlusIcon,
-      activeIcon: UserPlusIcon,
       current: false,
       isHashLink: true,
     },
@@ -77,10 +68,9 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
 
   const userNavItems = isAuthenticated ? [
     {
-      name: user?.userType === 'specialist' ? t('nav.dashboard') : t('nav.dashboard'), 
+      name: user?.userType === 'specialist' ? t('nav.dashboard') : t('nav.dashboard'),
       href: user?.userType === 'specialist' ? '/specialist/dashboard' : '/dashboard',
       icon: UserCircleIcon,
-      activeIcon: UserCircleIconSolid,
       current: location.pathname.includes('/dashboard'),
     },
   ] : [];
@@ -117,15 +107,15 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
   };
 
   const NavItem = ({ item, showText = true }: { item: any; showText?: boolean }) => {
-    const Icon = item.current ? item.activeIcon : item.icon;
-    
+    const Icon = item.icon;
+
     if (item.isHashLink) {
       return (
         <button
           onClick={() => handleHashLink(item.href)}
           className={clsx('w-full', navItemBase, item.current ? navItemActive : navItemIdle)}
         >
-          <Icon className="w-5 h-5 flex-shrink-0" />
+          <Icon className="w-5 h-5 flex-shrink-0" active={item.current} />
           {showText && (
             <span className="font-medium text-sm">{item.name}</span>
           )}
@@ -138,7 +128,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
         to={item.href}
         className={clsx(navItemBase, item.current ? navItemActive : navItemIdle)}
       >
-        <Icon className="w-5 h-5 flex-shrink-0" />
+        <Icon className="w-5 h-5 flex-shrink-0" active={item.current} />
         {showText && (
           <span className="font-medium text-sm">{item.name}</span>
         )}

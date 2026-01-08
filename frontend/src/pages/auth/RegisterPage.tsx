@@ -12,7 +12,7 @@ import {
   WrenchScrewdriverIcon,
   BuildingOfficeIcon,
   CheckCircleIcon
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 import { RegisterRequest, UserType } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';

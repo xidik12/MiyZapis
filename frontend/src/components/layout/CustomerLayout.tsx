@@ -30,8 +30,8 @@ import {
   ChatBubbleLeftEllipsisIcon,
   UsersIcon,
   WalletIcon,
-} from '@heroicons/react/24/outline';
-import { HomeIcon as HomeIconSolid } from '@heroicons/react/24/solid';
+} from '@/components/icons';
+import { HomeIcon } from '@/components/icons';
 
 interface CustomerLayoutProps {
   children: ReactNode;
@@ -53,7 +53,7 @@ const navigation: SidebarNavItem[] = [
     nameKey: 'customer.nav.dashboard',
     href: '/dashboard',
     icon: HomeIcon,
-    iconActive: HomeIconSolid,
+    iconActive: HomeIcon,
   },
   {
     name: 'Find Services',

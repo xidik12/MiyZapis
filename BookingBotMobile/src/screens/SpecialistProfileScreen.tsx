@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { specialistService } from '../services/specialist.service';
+import { serviceService } from '../services/service.service';
 import { addSpecialistToFavorites, removeSpecialistFromFavorites, selectIsSpecialistFavorited } from '../store/slices/favoritesSlice';
 import { useTheme } from '../contexts/ThemeContext';
 import { Specialist, Service } from '../types';
@@ -42,18 +43,30 @@ export const SpecialistProfileScreen: React.FC = () => {
   const loadSpecialist = async () => {
     try {
       setLoading(true);
-      const [profile, specialistServices] = await Promise.all([
-        specialistService.getPublicProfile(specialistId),
-        specialistService.getSpecialists({ limit: 20 }).then(res => {
-          const spec = res.specialists.find(s => s.id === specialistId);
-          return spec ? [] : [];
-        }).catch(() => []),
-      ]);
+      const profile = await specialistService.getPublicProfile(specialistId);
+      
+      // Ensure user object exists - handle different API response structures
+      if (!profile.user && profile.userId) {
+        // If user is missing but userId exists, create a minimal user object
+        profile.user = {
+          id: profile.userId,
+          firstName: '',
+          lastName: '',
+          email: '',
+          userType: 'specialist' as const,
+        } as any;
+      }
+      
       setSpecialist(profile);
+      
       // Load services for this specialist
-      const { serviceService } = await import('../services/service.service');
-      const specServices = await serviceService.getSpecialistServices(specialistId).catch(() => []);
-      setServices(specServices);
+      try {
+        const specServices = await serviceService.getSpecialistServices(specialistId);
+        setServices(specServices || []);
+      } catch (error) {
+        console.error('Failed to load specialist services:', error);
+        setServices([]);
+      }
     } catch (error) {
       console.error('Failed to load specialist:', error);
       Alert.alert('Error', 'Failed to load specialist profile');
@@ -240,25 +253,25 @@ export const SpecialistProfileScreen: React.FC = () => {
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <View style={styles.headerTop}>
-            {specialist.avatar ? (
-              <Image source={{ uri: specialist.avatar }} style={styles.avatar} />
+            {specialist.user?.avatar ? (
+              <Image source={{ uri: specialist.user.avatar }} style={styles.avatar} />
             ) : (
               <View style={[styles.avatar, { justifyContent: 'center', alignItems: 'center' }]}>
                 <Text style={{ fontSize: 40, color: colors.textSecondary }}>
-                  {specialist.firstName?.[0]?.toUpperCase() || 'S'}
+                  {specialist.user?.firstName?.[0]?.toUpperCase() || specialist.businessName?.[0]?.toUpperCase() || 'S'}
                 </Text>
               </View>
             )}
             <View style={styles.headerInfo}>
               <Text style={styles.name}>
-                {specialist.firstName} {specialist.lastName}
+                {(specialist.user?.firstName || specialist.businessName || 'Specialist')} {specialist.user?.lastName || ''}
               </Text>
               {specialist.businessName && (
                 <Text style={styles.businessName}>{specialist.businessName}</Text>
               )}
               {specialist.rating && (
                 <Text style={styles.rating}>
-                  ⭐ {specialist.rating.toFixed(1)} ({specialist.reviewCount || 0} reviews)
+                  ⭐ {specialist.rating.toFixed(1)} ({specialist.totalReviews || 0} reviews)
                 </Text>
               )}
             </View>

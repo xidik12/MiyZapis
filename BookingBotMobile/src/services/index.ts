@@ -1,7 +1,7 @@
 // Services index - export all services
 export { apiClient, setAuthTokens, getAuthToken, clearAuthTokens, checkApiHealth, retryRequest } from './api';
 export { authService } from './auth.service';
-export { bookingService } from './booking.service';
+export { bookingService, BookingFilters } from './booking.service';
 export { serviceService } from './service.service';
 export { specialistService } from './specialist.service';
 export { paymentService } from './payment.service';
@@ -15,6 +15,7 @@ export { referralService } from './referral.service';
 export { loyaltyService } from './loyalty.service';
 export { walletService } from './wallet.service';
 export { favoritesService } from './favorites.service';
+export { socketService } from './socket.service';
 
 // Create a services object for easy access
 export const services = {
@@ -33,6 +34,7 @@ export const services = {
   loyalty: loyaltyService,
   wallet: walletService,
   favorites: favoritesService,
+  socket: socketService,
 } as const;
 
 export default services;

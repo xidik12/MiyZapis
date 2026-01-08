@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@/components/icons';
 import clsx from 'clsx';
 
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';

@@ -12,7 +12,7 @@ import {
   CreditCardIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 
 interface Notification {
   id: string;

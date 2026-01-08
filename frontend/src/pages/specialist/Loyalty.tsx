@@ -26,12 +26,12 @@ import {
   PencilIcon,
   TrashIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 import {
-  StarIcon as StarIconSolid,
-  TrophyIcon as TrophyIconSolid,
-  FireIcon as FireIconSolid,
-} from '@heroicons/react/24/solid';
+  StarIcon,
+  TrophyIcon,
+  FireIcon,
+} from '@/components/icons';
 
 const SpecialistLoyalty: React.FC = () => {
   const { theme } = useTheme();
@@ -280,11 +280,11 @@ const SpecialistLoyalty: React.FC = () => {
       case 'REFERRAL':
         return <UsersIcon className="h-5 w-5 text-blue-500" />;
       case 'CAMPAIGN':
-        return <FireIconSolid className="h-5 w-5 text-orange-500" />;
+        return <FireIcon className="h-5 w-5 text-orange-500" />;
       case 'SERVICE':
         return <BriefcaseIcon className="h-5 w-5 text-indigo-500" />;
       case 'BOOKING_COMPLETION':
-        return <StarIconSolid className="h-5 w-5 text-yellow-500" />;
+        return <StarIcon className="h-5 w-5 text-yellow-500" />;
       case 'PROFILE_VIEW':
         return <EyeIcon className="h-5 w-5 text-cyan-500" />;
       default:
@@ -426,7 +426,7 @@ const SpecialistLoyalty: React.FC = () => {
                 </p>
               </div>
               <div className="h-10 w-10 sm:h-12 sm:w-12 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
-                <StarIconSolid className="h-5 w-5 sm:h-6 sm:w-6 text-primary-600 dark:text-primary-400" />
+                <StarIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary-600 dark:text-primary-400" />
               </div>
             </div>
           </div>
@@ -441,7 +441,7 @@ const SpecialistLoyalty: React.FC = () => {
                 </p>
               </div>
               <div className="h-10 w-10 sm:h-12 sm:w-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-                <TrophyIconSolid className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
+                <TrophyIcon className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
           </div>
@@ -513,7 +513,7 @@ const SpecialistLoyalty: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-                <StarIconSolid className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 dark:text-green-400" />
+                <StarIcon className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
                 <h4 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">{t('loyalty.bookServices') || 'Book Services'}</h4>
@@ -543,7 +543,7 @@ const SpecialistLoyalty: React.FC = () => {
 
             <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
-                <FireIconSolid className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 dark:text-orange-400" />
+                <FireIcon className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
                 <h4 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">{t('loyalty.specialCampaigns') || 'Special Campaigns'}</h4>
@@ -705,7 +705,7 @@ const SpecialistLoyalty: React.FC = () => {
                               {loyaltyStats?.currentTier?.name || 'BRONZE'}
                             </p>
                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-semibold ${skin.chipBg}`}>
-                              <TrophyIconSolid className="h-3 w-3 mr-1" />
+                              <TrophyIcon className="h-3 w-3 mr-1" />
                               {t('nav.level') || 'Level'}
                             </span>
                           </div>

@@ -1,5 +1,6 @@
 // Auth service - adapted for React Native
-import { apiClient } from './api';
+import { apiClient, getRefreshToken, clearAuthTokens } from './api';
+import { fileUploadService } from './fileUpload.service';
 import { API_ENDPOINTS, environment } from '../config/environment';
 import {
   User,
@@ -60,6 +61,42 @@ export class AuthService {
     }
   }
 
+  // Google authentication - Pure API call, same as web version
+  // Gets Google ID token from OAuth flow and sends it to backend API endpoint
+  async googleAuth(credential: string, userType?: 'customer' | 'specialist' | 'business'): Promise<{ user: User; tokens: AuthTokens } | { requiresUserTypeSelection: true; googleData: any }> {
+    try {
+      // Prepare payload exactly like web version: { credential, userType? }
+      const payload: any = { credential };
+      if (userType) {
+        payload.userType = userType === 'customer' ? 'CUSTOMER' :
+                          userType === 'business' ? 'BUSINESS' :
+                          userType === 'specialist' ? 'SPECIALIST' : 'CUSTOMER';
+      }
+      
+      // API call to /auth-enhanced/google - same endpoint as web version
+      const response = await apiClient.post<{ user: User; tokens: AuthTokens } | { requiresUserTypeSelection: true; googleData: any }>(API_ENDPOINTS.AUTH.GOOGLE_AUTH, payload);
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Google authentication failed');
+      }
+      
+      // Check if user type selection is required
+      if ('requiresUserTypeSelection' in response.data) {
+        return response.data;
+      }
+      
+      // Transform backend user format to frontend format
+      const userData = response.data as { user: User; tokens: AuthTokens };
+      if (userData.user) {
+        userData.user = this.transformUserFromBackend(userData.user);
+      }
+      
+      return userData;
+    } catch (error: any) {
+      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Google authentication failed';
+      throw new Error(errorMessage);
+    }
+  }
+
   // Telegram authentication
   async telegramAuth(data: TelegramAuthRequest): Promise<{ user: User; tokens: AuthTokens; isNewUser: boolean }> {
     try {
@@ -94,7 +131,6 @@ export class AuthService {
   // Logout user
   async logout(): Promise<void> {
     try {
-      const { getRefreshToken, clearAuthTokens } = await import('./api');
       const refreshTokenValue = await getRefreshToken();
       
       if (refreshTokenValue && refreshTokenValue.trim()) {
@@ -107,7 +143,6 @@ export class AuthService {
     } catch (error) {
       // Silently handle logout errors
     } finally {
-      const { clearAuthTokens } = await import('./api');
       await clearAuthTokens();
     }
   }
@@ -189,14 +224,7 @@ export class AuthService {
   // Upload user avatar (React Native)
   async uploadAvatar(fileUri: string): Promise<{ avatarUrl: string }> {
     try {
-      const { upload } = await import('./api');
-      const response = await upload<any>('/files/upload?purpose=avatar', fileUri);
-
-      if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
-        throw new Error(response.error?.message || 'Failed to upload avatar');
-      }
-
-      const uploadedFile = response.data[0];
+      const uploadedFile = await fileUploadService.uploadFile(fileUri, 'avatar');
       return { avatarUrl: uploadedFile.url || uploadedFile.path };
     } catch (error: any) {
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to upload avatar';

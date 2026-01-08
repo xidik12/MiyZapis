@@ -17,6 +17,7 @@ import { VerifyEmailScreen } from '../screens/auth/VerifyEmailScreen';
 // Public screens
 import { ServiceDetailScreen } from '../screens/ServiceDetailScreen';
 import { SpecialistProfileScreen } from '../screens/SpecialistProfileScreen';
+import { BookingFlowScreen } from '../screens/BookingFlowScreen';
 
 // Customer screens
 import { CustomerDashboardScreen } from '../screens/customer/DashboardScreen';
@@ -70,6 +71,11 @@ export const AppNavigator: React.FC = () => {
               component={SpecialistProfileScreen}
               options={{ title: 'Specialist Profile' }}
             />
+            <Stack.Screen
+              name="BookingFlow"
+              component={BookingFlowScreen}
+              options={{ title: 'Book Service' }}
+            />
           </>
         ) : (
           <>
@@ -108,6 +114,11 @@ export const AppNavigator: React.FC = () => {
               name="SpecialistProfile"
               component={SpecialistProfileScreen}
               options={{ title: 'Specialist Profile' }}
+            />
+            <Stack.Screen
+              name="BookingFlow"
+              component={BookingFlowScreen}
+              options={{ title: 'Book Service' }}
             />
           </>
         )}

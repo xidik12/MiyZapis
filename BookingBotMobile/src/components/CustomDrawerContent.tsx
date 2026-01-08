@@ -100,6 +100,34 @@ export const CustomDrawerContent: React.FC<CustomDrawerContentProps> = ({
           <Text style={[styles.menuIcon]}>⭐</Text>
           <Text style={[styles.menuText, { color: colors.text }]}>Favorites</Text>
         </TouchableOpacity>
+
+        {normalizedUserType === 'CUSTOMER' && (
+          <>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => navigateTo('Referrals')}
+            >
+              <Text style={[styles.menuIcon]}>🎁</Text>
+              <Text style={[styles.menuText, { color: colors.text }]}>Referrals</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => navigateTo('Wallet')}
+            >
+              <Text style={[styles.menuIcon]}>💳</Text>
+              <Text style={[styles.menuText, { color: colors.text }]}>Wallet</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => navigateTo('Messages')}
+            >
+              <Text style={[styles.menuIcon]}>💬</Text>
+              <Text style={[styles.menuText, { color: colors.text }]}>Messages</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
 
       {/* Specialist/Business Section */}
@@ -147,6 +175,62 @@ export const CustomDrawerContent: React.FC<CustomDrawerContentProps> = ({
           >
             <Text style={[styles.menuIcon]}>💰</Text>
             <Text style={[styles.menuText, { color: colors.text }]}>Earnings</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigateTo('Schedule')}
+          >
+            <Text style={[styles.menuIcon]}>📋</Text>
+            <Text style={[styles.menuText, { color: colors.text }]}>Schedule</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigateTo('Loyalty')}
+          >
+            <Text style={[styles.menuIcon]}>🎁</Text>
+            <Text style={[styles.menuText, { color: colors.text }]}>Loyalty</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigateTo('Analytics')}
+          >
+            <Text style={[styles.menuIcon]}>📊</Text>
+            <Text style={[styles.menuText, { color: colors.text }]}>Analytics</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigateTo('Reviews')}
+          >
+            <Text style={[styles.menuIcon]}>⭐</Text>
+            <Text style={[styles.menuText, { color: colors.text }]}>Reviews</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigateTo('Referrals')}
+          >
+            <Text style={[styles.menuIcon]}>🎁</Text>
+            <Text style={[styles.menuText, { color: colors.text }]}>Referrals</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigateTo('Wallet')}
+          >
+            <Text style={[styles.menuIcon]}>💳</Text>
+            <Text style={[styles.menuText, { color: colors.text }]}>Wallet</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigateTo('Messages')}
+          >
+            <Text style={[styles.menuIcon]}>💬</Text>
+            <Text style={[styles.menuText, { color: colors.text }]}>Messages</Text>
           </TouchableOpacity>
 
           {/* Business-only: Employees */}

@@ -11,8 +11,8 @@ import { CategoryDropdown } from '../../components/ui/CategoryDropdown';
 import { getCategoryName } from '@/data/serviceCategories';
 import { ServiceCategory } from '../../types';
 import { reviewsService } from '../../services/reviews.service';
-import { ClockIcon, ListBulletIcon } from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import { ClockIcon, ListBulletIcon } from '@/components/icons';
+import { StarIcon } from '@/components/icons';
 
 interface Service {
   id: string;
@@ -768,7 +768,7 @@ const SpecialistServices: React.FC = () => {
               </div>
             </div>
             <div className={metricCardClass}>
-              <StarIconSolid className="w-5 h-5 text-yellow-400" />
+              <StarIcon className="w-5 h-5 text-yellow-400" />
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-[rgba(78,80,86,0.6)] dark:text-white/50">
                   {ratingLabel}

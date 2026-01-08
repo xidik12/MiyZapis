@@ -32,8 +32,8 @@ import {
   GiftIcon,
   UsersIcon,
   UserGroupIcon,
-} from '@heroicons/react/24/outline';
-import { ChartBarIcon as ChartBarIconSolid } from '@heroicons/react/24/solid';
+} from '@/components/icons';
+import { ChartBarIcon } from '@/components/icons';
 
 interface SpecialistLayoutProps {
   children: ReactNode;

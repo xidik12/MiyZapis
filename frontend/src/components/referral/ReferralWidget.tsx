@@ -5,7 +5,7 @@ import {
   GiftIcon,
   ArrowTopRightOnSquareIcon,
   ClipboardDocumentIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';

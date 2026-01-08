@@ -12,7 +12,7 @@ import {
   StarIcon,
   UserIcon,
   ExclamationTriangleIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 
 interface NotificationDropdownProps {
   isOpen: boolean;

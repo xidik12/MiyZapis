@@ -13,7 +13,7 @@ import {
   ArchiveBoxIcon,
   NoSymbolIcon,
   CheckIcon
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 import { socketService } from '@/services/socket.service';
 
 const SpecialistMessages: React.FC = () => {

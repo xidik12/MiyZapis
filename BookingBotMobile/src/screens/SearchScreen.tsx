@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { searchServices, selectSearchResults, selectServiceLoading } from '../store/slices/serviceSlice';
+import { serviceService } from '../services/service.service';
 import { useTheme } from '../contexts/ThemeContext';
 import { Service } from '../types';
 
@@ -52,7 +53,6 @@ export const SearchScreen: React.FC = () => {
 
   const loadCategories = async () => {
     try {
-      const { serviceService } = await import('../services/service.service');
       const cats = await serviceService.getCategories();
       setCategories(cats);
     } catch (error) {
