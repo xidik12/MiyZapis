@@ -252,11 +252,7 @@ const SpecialistMessages: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      {/* Animated background orbs */}
-      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDuration: '4s' }}></div>
-      <div className="fixed bottom-0 left-0 w-[600px] h-[600px] bg-accent-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDuration: '5s', animationDelay: '2s' }}></div>
-
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="relative p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -271,11 +267,11 @@ const SpecialistMessages: React.FC = () => {
         </div>
       )}
 
-      <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 h-[600px] flex">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg h-[600px] flex">
         {/* Conversations List */}
         <div className="w-1/3 border-r border-gray-200 dark:border-gray-700 flex flex-col">
           {/* Search */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 backdrop-blur bg-white/80 dark:bg-gray-800/80">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 bg-white dark:bg-gray-800">
             <div className="relative">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -321,7 +317,7 @@ const SpecialistMessages: React.FC = () => {
                     key={conversation.id}
                     onClick={() => setSelectedChat(conversation.id)}
                     className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
-                      selectedChat === conversation.id ? 'bg-primary-50 dark:bg-primary-900' : ''
+                      selectedChat === conversation.id ? 'bg-primary-50 dark:bg-primary-900/20' : ''
                     }`}
                   >
                     <div className="flex items-center space-x-3">
@@ -382,7 +378,7 @@ const SpecialistMessages: React.FC = () => {
           {selectedConversation && otherParticipant ? (
             <>
               {/* Chat Header */}
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between sticky top-0 z-10 backdrop-blur bg-white/80 dark:bg-gray-800/80">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between sticky top-0 z-10 bg-white dark:bg-gray-800">
                 <div className="flex items-center space-x-3">
                   <div className="relative">
                     {otherParticipant.avatar ? (

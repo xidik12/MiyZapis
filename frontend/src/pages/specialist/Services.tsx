@@ -676,7 +676,7 @@ const SpecialistServices: React.FC = () => {
 
   const ServiceCard: React.FC<{ service: Service }> = ({ service }) => {
     const metricCardClass =
-      'flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/55 dark:bg-white/10 border border-white/30 dark:border-white/10 text-sm font-medium text-[rgba(31,33,36,0.85)] dark:text-white/80 backdrop-blur-lg shadow-[0_18px_40px_-28px_rgba(4,0,151,0.35)]';
+      'flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-sm font-medium text-gray-900 dark:text-white shadow-sm';
     const baseActionButton =
       'btn-sheen inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300';
     const statusClasses = service.isActive
@@ -695,7 +695,7 @@ const SpecialistServices: React.FC = () => {
 
     return (
       <div
-        className={`glass-panel group relative overflow-hidden p-6 sm:p-7 transition-all duration-500 ${
+        className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm group relative overflow-hidden p-6 sm:p-7 transition-all duration-300 hover:shadow-md ${
           !service.isActive ? 'opacity-75' : ''
         }`}
       >
@@ -817,7 +817,7 @@ const SpecialistServices: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-500 text-xl mb-4">Error loading services</div>
           <p className="text-gray-600 dark:text-gray-400">{error}</p>
@@ -833,11 +833,7 @@ const SpecialistServices: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      {/* Animated background orbs */}
-      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDuration: '4s' }}></div>
-      <div className="fixed bottom-0 left-0 w-[600px] h-[600px] bg-accent-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDuration: '5s', animationDelay: '2s' }}></div>
-
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="relative p-4 sm:p-6 max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
@@ -868,7 +864,7 @@ const SpecialistServices: React.FC = () => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
               <div className="flex items-center">
                 <div className="p-3 bg-primary-100 rounded-xl mr-4">
                   <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -883,7 +879,7 @@ const SpecialistServices: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
               <div className="flex items-center">
                 <div className="p-3 bg-secondary-100 rounded-xl mr-4">
                   <svg className="w-6 h-6 text-secondary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -898,7 +894,7 @@ const SpecialistServices: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
               <div className="flex items-center">
                 <div className="p-3 bg-success-100 rounded-xl mr-4">
                   <svg className="w-6 h-6 text-success-600" fill="currentColor" viewBox="0 0 24 24">
@@ -923,7 +919,7 @@ const SpecialistServices: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
               <div className="flex items-center">
                 <div className="p-3 bg-warning-100 rounded-xl mr-4">
                   <svg className="w-6 h-6 text-warning-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -957,7 +953,7 @@ const SpecialistServices: React.FC = () => {
           </div>
 
           {/* Filters */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20 mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
             <div className="flex flex-col lg:flex-row gap-4">
               {/* Search */}
               <div className="flex-1">
@@ -1079,8 +1075,8 @@ const SpecialistServices: React.FC = () => {
 
       {/* Add/Edit Service Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {editingService ? t('serviceForm.editService') : t('serviceForm.addService')}

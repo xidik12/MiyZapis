@@ -379,7 +379,7 @@ const SearchPage: React.FC = () => {
     return (
       <div
         key={service.id}
-        className="glass-panel group relative overflow-hidden transition-all duration-500 p-4 sm:p-6 lg:p-8"
+        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm group relative overflow-hidden transition-all duration-300 hover:shadow-md p-4 sm:p-6 lg:p-8"
       >
         <div
           aria-hidden="true"
@@ -605,11 +605,7 @@ const SearchPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      {/* Animated background orbs */}
-      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDuration: '4s' }}></div>
-      <div className="fixed bottom-0 left-0 w-[600px] h-[600px] bg-accent-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDuration: '5s', animationDelay: '2s' }}></div>
-
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">

@@ -262,11 +262,7 @@ const SpecialistReviews: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      {/* Animated background orbs */}
-      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDuration: '4s' }}></div>
-      <div className="fixed bottom-0 left-0 w-[600px] h-[600px] bg-accent-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDuration: '5s', animationDelay: '2s' }}></div>
-
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="relative p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -285,7 +281,7 @@ const SpecialistReviews: React.FC = () => {
       {/* Statistics Overview */}
       {reviewStats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('reviews.totalReviews')}</p>
@@ -297,7 +293,7 @@ const SpecialistReviews: React.FC = () => {
             </div>
           </div>
 
-          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('reviews.averageRating')}</p>
@@ -316,7 +312,7 @@ const SpecialistReviews: React.FC = () => {
             </div>
           </div>
 
-          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('reviews.verifiedReviews')}</p>
@@ -328,7 +324,7 @@ const SpecialistReviews: React.FC = () => {
             </div>
           </div>
 
-          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('reviews.recommendationRate')}</p>
@@ -346,7 +342,7 @@ const SpecialistReviews: React.FC = () => {
 
       {/* Rating Distribution */}
       {reviewStats && (
-        <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('reviews.ratingDistribution')}</h3>
             {filters.rating && (
@@ -390,7 +386,7 @@ const SpecialistReviews: React.FC = () => {
       )}
 
       {/* Filters */}
-      <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-6 mb-8">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('reviews.filters')}</h3>
         <div className="flex flex-wrap gap-4">
           <select
@@ -443,7 +439,7 @@ const SpecialistReviews: React.FC = () => {
       {/* Reviews List */}
       <div className="space-y-6">
         {reviews.length === 0 ? (
-          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-12 text-center">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-12 text-center">
             <ChatBubbleLeftIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
               {t('reviews.noReviews')}
@@ -454,7 +450,7 @@ const SpecialistReviews: React.FC = () => {
           </div>
         ) : (
           reviews.map((review) => (
-            <div key={review.id} className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
+            <div key={review.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-4">
                   {review.customer.avatar ? (

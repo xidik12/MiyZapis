@@ -1018,11 +1018,7 @@ const SpecialistBookings: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      {/* Animated background orbs */}
-      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-primary-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDuration: '4s' }}></div>
-      <div className="fixed bottom-0 left-0 w-[600px] h-[600px] bg-accent-500/10 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDuration: '5s', animationDelay: '2s' }}></div>
-
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="relative p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       <ConfirmModal
         open={!!cancelTarget}
@@ -1036,10 +1032,10 @@ const SpecialistBookings: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div>
-            <h1 className="font-display text-3xl sm:text-4xl font-semibold vichea-text-gradient mb-2">
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">
               {t('dashboard.nav.bookings')}
             </h1>
-            <p className="text-[rgba(45,37,32,0.75)] dark:text-[rgba(242,241,244,0.7)]">
+            <p className="text-gray-600 dark:text-gray-300">
               {t('bookings.subtitle')}
             </p>
           </div>
@@ -1047,14 +1043,14 @@ const SpecialistBookings: React.FC = () => {
 
         {/* Tab Navigation */}
         <div className="mb-6">
-          <nav className="inline-flex items-center glass-effect rounded-full p-1 shadow-[0_18px_32px_-20px_rgba(4,0,151,0.25)]" aria-label="Tabs">
+          <nav className="inline-flex items-center bg-white dark:bg-gray-800 rounded-lg p-1 border border-gray-200 dark:border-gray-700 shadow-sm" aria-label="Tabs">
             <button
               onClick={() => setActiveTab('provider')}
               className={clsx(
-                'px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300',
+                'px-5 py-2 rounded-md text-sm font-medium transition-all',
                 activeTab === 'provider'
-                  ? 'vichea-gradient text-white shadow-primary'
-                  : 'text-[rgba(45,37,32,0.65)] dark:text-[rgba(242,241,244,0.65)] hover:text-[rgb(45,37,32)] dark:hover:text-white'
+                  ? 'bg-primary-600 text-white'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700'
               )}
             >
               {t('bookings.myServices')}
@@ -1062,10 +1058,10 @@ const SpecialistBookings: React.FC = () => {
             <button
               onClick={() => setActiveTab('customer')}
               className={clsx(
-                'px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300',
+                'px-5 py-2 rounded-md text-sm font-medium transition-all',
                 activeTab === 'customer'
-                  ? 'vichea-gradient text-white shadow-primary'
-                  : 'text-[rgba(45,37,32,0.65)] dark:text-[rgba(242,241,244,0.65)] hover:text-[rgb(45,37,32)] dark:hover:text-white'
+                  ? 'bg-primary-600 text-white'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700'
               )}
             >
               {t('bookings.myBookings')}
@@ -1076,25 +1072,25 @@ const SpecialistBookings: React.FC = () => {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           {/* Quick Stats */}
           <div className="mt-4 lg:mt-0 grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="glass-panel p-4">
-              <p className="text-sm text-[rgba(78,80,86,0.85)] dark:text-[rgba(196,198,210,0.82)]">{t('bookings.total')}</p>
-              <p className="text-xl font-bold text-[rgb(31,33,36)] dark:text-[rgb(238,240,250)]">{filteredAndSortedBookings.length}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.total')}</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{filteredAndSortedBookings.length}</p>
             </div>
-            <div className="glass-panel p-4">
-              <p className="text-sm text-[rgba(78,80,86,0.85)] dark:text-[rgba(196,198,210,0.82)]">{t('bookings.confirmed')}</p>
-              <p className="text-xl font-bold text-[#22c55e]">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.confirmed')}</p>
+              <p className="text-xl font-bold text-green-600">
                 {filteredAndSortedBookings.filter(b => b.status === 'CONFIRMED' || b.status === 'confirmed').length}
               </p>
             </div>
-            <div className="glass-panel p-4">
-              <p className="text-sm text-[rgba(78,80,86,0.85)] dark:text-[rgba(196,198,210,0.82)]">{t('bookings.pending')}</p>
-              <p className="text-xl font-bold text-[#eab308]">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.pending')}</p>
+              <p className="text-xl font-bold text-yellow-600">
                 {filteredAndSortedBookings.filter(b => b.status === 'PENDING' || b.status === 'pending').length}
               </p>
             </div>
-            <div className="glass-panel p-4">
-              <p className="text-sm text-[rgba(78,80,86,0.85)] dark:text-[rgba(196,198,210,0.82)]">{t('bookings.completed')}</p>
-              <p className="text-xl font-bold text-[#3b82f6]">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.completed')}</p>
+              <p className="text-xl font-bold text-blue-600">
                 {filteredAndSortedBookings.filter(b => b.status === 'COMPLETED' || b.status === 'completed').length}
               </p>
             </div>
@@ -1102,11 +1098,11 @@ const SpecialistBookings: React.FC = () => {
         </div>
         
         {/* Filters and Search */}
-        <div className="glass-panel shadow-lg p-6 mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Search */}
             <div className="lg:col-span-2">
-              <label className="block text-sm font-semibold text-[rgba(45,37,32,0.75)] dark:text-[rgba(242,241,244,0.7)] mb-2">{t('bookings.search')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('bookings.search')}</label>
               <div className="relative">
                 <input
                   type="text"
@@ -1123,7 +1119,7 @@ const SpecialistBookings: React.FC = () => {
             
             {/* Status Filter */}
             <div>
-              <label className="block text-sm font-semibold text-[rgba(45,37,32,0.75)] dark:text-[rgba(242,241,244,0.7)] mb-2">{t('bookings.status')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('bookings.status')}</label>
               <select
                 value={filters.status}
                 onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
@@ -1141,7 +1137,7 @@ const SpecialistBookings: React.FC = () => {
             
             {/* Date Range Filter */}
             <div>
-              <label className="block text-sm font-semibold text-[rgba(45,37,32,0.75)] dark:text-[rgba(242,241,244,0.7)] mb-2">{t('bookings.dateRange')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('bookings.dateRange')}</label>
               <select
                 value={filters.dateRange}
                 onChange={(e) => setFilters(prev => ({ ...prev, dateRange: e.target.value }))}
@@ -1156,7 +1152,7 @@ const SpecialistBookings: React.FC = () => {
             
             {/* Sort */}
             <div>
-              <label className="block text-sm font-semibold text-[rgba(45,37,32,0.75)] dark:text-[rgba(242,241,244,0.7)] mb-2">{t('bookings.sortBy')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('bookings.sortBy')}</label>
               <div className="flex space-x-1">
                 <select
                   value={sortBy}
@@ -1212,7 +1208,7 @@ const SpecialistBookings: React.FC = () => {
         {/* Mobile Bookings Cards */}
         <div className="lg:hidden space-y-4">
           {paginatedBookings.map((booking) => (
-            <div key={booking.id} className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-accent-500/40 dark:border-accent-500/30 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-xl p-4 relative overflow-hidden transition-all duration-300">
+            <div key={booking.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-4 relative overflow-hidden transition-all hover:shadow-md">
               {/* Header with checkbox and customer */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-3">
@@ -1315,10 +1311,10 @@ const SpecialistBookings: React.FC = () => {
         </div>
 
         {/* Desktop Bookings Table */}
-        <div className="hidden lg:block backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-accent-500/40 dark:border-accent-500/30 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-xl relative overflow-hidden">
+        <div className="hidden lg:block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg relative overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-accent-200/50 dark:divide-accent-500/20">
-              <thead className="bg-white/40 dark:bg-white/5">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
                   <th className="px-6 py-3 text-left">
                     <input
@@ -1351,9 +1347,9 @@ const SpecialistBookings: React.FC = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-transparent divide-y divide-amber-200/50 dark:divide-amber-500/20">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {paginatedBookings.map((booking) => (
-                  <tr key={booking.id} className="hover:bg-white/30 dark:hover:bg-white/5 transition-colors">
+                  <tr key={booking.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <td className="px-6 py-4">
                       <input
                         type="checkbox"
@@ -1508,7 +1504,7 @@ const SpecialistBookings: React.FC = () => {
         {/* Pagination */}
         {totalPages > 1 && filteredAndSortedBookings.length > 0 && (
           <div className="mt-6">
-            <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border-2 border-accent-500/40 dark:border-accent-500/30 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-xl px-4 py-3 sm:px-6 relative overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg px-4 py-3 sm:px-6 relative overflow-hidden">
               <div className="flex items-center justify-between">
                 <div className="flex justify-between flex-1 sm:hidden">
                   <button

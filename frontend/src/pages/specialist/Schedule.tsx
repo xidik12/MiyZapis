@@ -144,8 +144,8 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
-      <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-2xl max-w-md w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden border border-gray-200/50 dark:border-gray-700/50 animate-slideUp">
+    <div className="fixed inset-0 bg-black/60 dark:bg-black/80 z-50 flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-700 animate-slideUp">
         <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(95vh-2rem)] sm:max-h-[calc(90vh-2rem)]">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
@@ -169,7 +169,7 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                 type="date"
                 value={formData.date}
                 onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                className="w-full px-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700/50 dark:text-white text-base touch-manipulation transition-all backdrop-blur-sm"
+                className="w-full px-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base touch-manipulation transition-all"
                 required
               />
             </div>
@@ -183,7 +183,7 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                   type="time"
                   value={formData.startTime}
                   onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
-                  className="w-full px-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700/50 dark:text-white text-base touch-manipulation transition-all backdrop-blur-sm"
+                  className="w-full px-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base touch-manipulation transition-all"
                   required
                 />
               </div>
@@ -195,7 +195,7 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                   type="time"
                   value={formData.endTime}
                   onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
-                  className="w-full px-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700/50 dark:text-white text-base touch-manipulation transition-all backdrop-blur-sm"
+                  className="w-full px-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base touch-manipulation transition-all"
                   required
                 />
               </div>
@@ -223,7 +223,7 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
                   value={formData.reason}
                   onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
                   placeholder={t('schedule.reasonPlaceholder')}
-                  className="w-full px-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700/50 dark:text-white text-base touch-manipulation transition-all backdrop-blur-sm"
+                  className="w-full px-3 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white text-base touch-manipulation transition-all"
                 />
               </div>
             )}
@@ -265,13 +265,13 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 active:bg-gray-100 dark:active:bg-gray-600 transition-all font-medium touch-manipulation backdrop-blur-sm"
+                className="flex-1 px-4 py-3 sm:py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 transition-all font-medium touch-manipulation"
               >
                 {t('schedule.cancel')}
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-3 sm:py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg hover:from-primary-700 hover:to-primary-800 active:from-primary-800 active:to-primary-900 transition-all font-medium touch-manipulation shadow-lg shadow-primary-500/30"
+                className="flex-1 px-4 py-3 sm:py-2 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white rounded-lg transition-all font-medium touch-manipulation shadow-sm"
               >
                 {editingBlock ? t('schedule.update') : t('schedule.add')}
               </button>
@@ -633,11 +633,11 @@ const SpecialistSchedule: React.FC = () => {
   }
 
   return (
-    <div className="p-2 sm:p-4 md:p-6 w-full overflow-hidden min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="p-2 sm:p-4 md:p-6 w-full overflow-hidden min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent truncate">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white truncate">
             {t('dashboard.nav.schedule')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm md:text-base mt-1">{t('schedule.subtitle')}</p>
@@ -650,10 +650,10 @@ const SpecialistSchedule: React.FC = () => {
             setShowAddModal(true);
           }}
           disabled={operationInProgress}
-          className={`flex items-center space-x-2 px-6 py-3 rounded-xl transition-all ${
+          className={`flex items-center space-x-2 px-6 py-3 rounded-lg transition-all ${
             operationInProgress
               ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 shadow-lg shadow-primary-500/30'
+              : 'bg-primary-600 hover:bg-primary-700 active:bg-primary-800 shadow-sm hover:shadow-md'
           } text-white whitespace-nowrap font-medium`}
         >
           {operationInProgress && (
@@ -667,7 +667,7 @@ const SpecialistSchedule: React.FC = () => {
 
       {/* Error Alert */}
       {error && (
-        <div className="mb-6 p-5 bg-red-50/90 dark:bg-red-900/30 backdrop-blur-sm border border-red-200 dark:border-red-700 rounded-xl shadow-lg animate-slideDown">
+        <div className="mb-6 p-5 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-xl shadow-sm animate-slideDown">
           <div className="flex">
             <div className="flex-shrink-0">
               <XMarkIcon className="h-5 w-5 text-red-400" />
@@ -693,7 +693,7 @@ const SpecialistSchedule: React.FC = () => {
 
       {/* Generate from Working Hours Prompt */}
       {showGeneratePrompt && (
-        <div className="mb-6 p-5 bg-blue-50/90 dark:bg-blue-900/30 backdrop-blur-sm border border-blue-200 dark:border-blue-700 rounded-xl shadow-lg animate-slideDown">
+        <div className="mb-6 p-5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-xl shadow-sm animate-slideDown">
           <div className="flex">
             <div className="flex-shrink-0">
               <CalendarIcon className="h-5 w-5 text-blue-400" />
@@ -728,11 +728,11 @@ const SpecialistSchedule: React.FC = () => {
       )}
 
       {/* Week Navigation */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg p-6 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-2 sm:space-x-4">
           <button
             onClick={goToPreviousWeek}
-            className="p-3 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all shadow-sm hover:shadow-md"
+            className="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all"
           >
             <ChevronLeftIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
@@ -743,14 +743,14 @@ const SpecialistSchedule: React.FC = () => {
           </div>
           <button
             onClick={goToNextWeek}
-            className="p-3 hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded-xl transition-all shadow-sm hover:shadow-md"
+            className="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all"
           >
             <ChevronRightIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
         </div>
         <button
           onClick={goToToday}
-          className="px-5 py-2.5 bg-gradient-to-r from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/30 text-primary-700 dark:text-primary-300 rounded-xl hover:from-primary-200 hover:to-primary-300 dark:hover:from-primary-900/50 dark:hover:to-primary-800/50 transition-all font-medium text-sm shadow-md"
+          className="px-5 py-2.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-lg hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-all font-medium text-sm"
         >
           {t('schedule.today') || 'Today'}
         </button>
@@ -765,10 +765,10 @@ const SpecialistSchedule: React.FC = () => {
           const dayLabel = t(`weekday.${dayName}`) || day.toLocaleDateString('en-US', { weekday: 'long' });
 
           return (
-            <div key={dayIndex} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 overflow-hidden hover:shadow-xl transition-all">
+            <div key={dayIndex} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-all">
               {/* Day Header */}
               <div className={`p-5 border-b border-gray-200 dark:border-gray-700 ${
-                isToday ? 'bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/30 dark:to-primary-800/30' : 'bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-750'
+                isToday ? 'bg-primary-50 dark:bg-primary-900/30' : 'bg-gray-50 dark:bg-gray-800'
               }`}>
                 <div className={`text-sm font-medium ${
                   isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-gray-400'
@@ -798,10 +798,10 @@ const SpecialistSchedule: React.FC = () => {
                       {/* Hour Card Header */}
                       <button
                         onClick={() => toggleHourExpanded(dayIndex, hour)}
-                        className="w-full p-4 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-750 dark:hover:to-gray-700 transition-all text-left flex items-center justify-between group"
+                        className="w-full p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all text-left flex items-center justify-between group"
                       >
                         <div className="flex items-center space-x-3 flex-1">
-                          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/40 dark:to-primary-800/40 shadow-md group-hover:shadow-lg transition-all">
+                          <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary-100 dark:bg-primary-900/40 shadow-sm transition-all">
                             <ClockIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                           </div>
                           <div className="flex-1">
@@ -810,13 +810,13 @@ const SpecialistSchedule: React.FC = () => {
                             </div>
                             <div className="flex items-center space-x-3 mt-1">
                               {availableCount > 0 && (
-                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-green-100 to-green-200 dark:from-green-900/40 dark:to-green-800/40 text-green-800 dark:text-green-300 shadow-sm">
+                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300">
                                   <CheckIcon className="w-3 h-3 mr-1" />
                                   {availableCount}
                                 </span>
                               )}
                               {blockedCount > 0 && (
-                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-red-100 to-red-200 dark:from-red-900/40 dark:to-red-800/40 text-red-800 dark:text-red-300 shadow-sm">
+                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300">
                                   <XMarkIcon className="w-3 h-3 mr-1" />
                                   {blockedCount}
                                 </span>
@@ -835,7 +835,7 @@ const SpecialistSchedule: React.FC = () => {
 
                       {/* Expanded Time Slots */}
                       {expanded && (
-                        <div className="px-4 pb-4 space-y-3 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/50 dark:to-gray-800/50 backdrop-blur-sm animate-slideDown">
+                        <div className="px-4 pb-4 space-y-3 bg-gray-50 dark:bg-gray-900/50 animate-slideDown">
                           {blocks.map(block => {
                             const blockStart = new Date(block.startDateTime);
                             const blockEnd = new Date(block.endDateTime);
@@ -843,10 +843,10 @@ const SpecialistSchedule: React.FC = () => {
                             return (
                               <div
                                 key={block.id}
-                                className={`p-4 rounded-xl border-2 transition-all hover:shadow-lg backdrop-blur-sm ${
+                                className={`p-4 rounded-lg border-2 transition-all hover:shadow-md ${
                                   block.isAvailable
-                                    ? 'bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 border-green-300 dark:border-green-700'
-                                    : 'bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 border-red-300 dark:border-red-700'
+                                    ? 'bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-700'
+                                    : 'bg-red-50 dark:bg-red-900/30 border-red-300 dark:border-red-700'
                                 }`}
                               >
                                 <div className="flex items-center justify-between">
@@ -873,7 +873,7 @@ const SpecialistSchedule: React.FC = () => {
                                   <div className="flex items-center space-x-2 ml-3">
                                     <button
                                       onClick={() => openEditModal(block)}
-                                      className={`p-2 rounded-xl transition-all shadow-sm hover:shadow-md ${
+                                      className={`p-2 rounded-lg transition-all ${
                                         block.isAvailable
                                           ? 'hover:bg-green-200 dark:hover:bg-green-800/50 text-green-700 dark:text-green-300'
                                           : 'hover:bg-red-200 dark:hover:bg-red-800/50 text-red-700 dark:text-red-300'
@@ -885,7 +885,7 @@ const SpecialistSchedule: React.FC = () => {
                                     <button
                                       onClick={() => handleDeleteTimeSlot(block.id)}
                                       disabled={operationInProgress}
-                                      className={`p-2 rounded-xl transition-all shadow-sm hover:shadow-md ${
+                                      className={`p-2 rounded-lg transition-all ${
                                         block.isAvailable
                                           ? 'hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400'
                                           : 'hover:bg-red-200 dark:hover:bg-red-800/50 text-red-700 dark:text-red-300'
@@ -907,7 +907,7 @@ const SpecialistSchedule: React.FC = () => {
               </div>
 
               {/* Add Time for This Day */}
-              <div className="p-5 border-t border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-750">
+              <div className="p-5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                 <button
                   onClick={() => {
                     setPreSelectedDate(day);
@@ -916,7 +916,7 @@ const SpecialistSchedule: React.FC = () => {
                     setShowAddModal(true);
                   }}
                   disabled={operationInProgress}
-                  className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/30 dark:to-primary-800/30 text-primary-700 dark:text-primary-400 rounded-xl hover:from-primary-100 hover:to-primary-200 dark:hover:from-primary-900/50 dark:hover:to-primary-800/50 transition-all disabled:opacity-50 shadow-sm hover:shadow-md font-medium"
+                  className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-all disabled:opacity-50 font-medium"
                 >
                   <PlusIcon className="w-4 h-4" />
                   <span className="text-sm">Add Time</span>
@@ -929,42 +929,42 @@ const SpecialistSchedule: React.FC = () => {
 
       {/* Stats Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-6">
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-5 shadow-lg border border-gray-200/50 dark:border-gray-700/50 hover:shadow-xl transition-all">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all">
           <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/40 dark:to-green-800/40 rounded-xl shadow-md">
+            <div className="p-3 bg-green-100 dark:bg-green-900/40 rounded-lg shadow-sm">
               <CheckIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <div className="ml-4">
               <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">{t('schedule.availableSlots')}</p>
-              <p className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-green-600 to-green-700 dark:from-green-400 dark:to-green-500 bg-clip-text text-transparent">
+              <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
                 {availabilityBlocks.filter(b => b.isAvailable).length}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-5 shadow-lg border border-gray-200/50 dark:border-gray-700/50 hover:shadow-xl transition-all">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all">
           <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/40 dark:to-red-800/40 rounded-xl shadow-md">
+            <div className="p-3 bg-red-100 dark:bg-red-900/40 rounded-lg shadow-sm">
               <XMarkIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
             </div>
             <div className="ml-4">
               <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">{t('schedule.blockedSlots')}</p>
-              <p className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-red-600 to-red-700 dark:from-red-400 dark:to-red-500 bg-clip-text text-transparent">
+              <p className="text-lg sm:text-2xl font-bold text-red-600 dark:text-red-400">
                 {availabilityBlocks.filter(b => !b.isAvailable).length}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-5 shadow-lg border border-gray-200/50 dark:border-gray-700/50 hover:shadow-xl transition-all col-span-2 sm:col-span-1">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all col-span-2 sm:col-span-1">
           <div className="flex items-center">
-            <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-800/40 rounded-xl shadow-md">
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/40 rounded-lg shadow-sm">
               <CalendarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="ml-4">
               <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">{t('schedule.totalSlots')}</p>
-              <p className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-400 dark:to-blue-500 bg-clip-text text-transparent">{availabilityBlocks.length}</p>
+              <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">{availabilityBlocks.length}</p>
             </div>
           </div>
         </div>
