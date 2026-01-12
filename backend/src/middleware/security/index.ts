@@ -6,6 +6,7 @@ import { redis } from '@/config/redis';
 import { RateLimitConfigs, ErrorCodes } from '@/types';
 import { createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
+import DOMPurify from 'isomorphic-dompurify';
 
 // Security headers middleware
 export const securityHeaders = helmet({
@@ -235,6 +236,17 @@ export const searchRateLimit = createRateLimiter({
   skipSuccessfulRequests: true,
 });
 
+// ✅ SECURITY FIX: File upload rate limiter
+export const uploadRateLimit = createRateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 uploads per 15 minutes per user
+  keyGenerator: (req: Request) => {
+    const userId = (req as any).user?.id;
+    return userId ? `upload:${userId}` : `upload:${req.ip}`;
+  },
+  skipSuccessfulRequests: false, // Count all upload attempts
+});
+
 // Request ID middleware
 export const requestId = (req: Request, res: Response, next: NextFunction): void => {
   const requestId = req.headers['x-request-id'] as string || 
@@ -298,6 +310,8 @@ export const corsOptions = {
     'Authorization',
     'X-Request-ID',
     'X-Correlation-ID',
+    'X-CSRF-Token', // Allow CSRF token header
+    'X-XSRF-Token', // Allow alternative CSRF token header
     'x-platform', // Allow x-platform header for frontend platform identification
     'x-client-version', // Allow x-client-version header for client version tracking
   ],
@@ -322,18 +336,80 @@ export const sanitizeInput = (req: Request, res: Response, next: NextFunction): 
   next();
 };
 
-// Recursive object sanitization
-const sanitizeObject = (obj: any): void => {
+// Fields that should allow limited HTML (like descriptions, bio, etc.)
+const HTML_ALLOWED_FIELDS = [
+  'description',
+  'bio',
+  'about',
+  'content',
+  'message',
+  'notes',
+  'details'
+];
+
+// Sanitize a single string value
+const sanitizeString = (value: string, fieldName: string = ''): string => {
+  // Check if this field allows HTML
+  const allowHtml = HTML_ALLOWED_FIELDS.some(field =>
+    fieldName.toLowerCase().includes(field.toLowerCase())
+  );
+
+  if (allowHtml) {
+    // ✅ SECURITY FIX: Use DOMPurify for HTML content with limited tags
+    return DOMPurify.sanitize(value, {
+      ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br', 'ul', 'ol', 'li', 'a'],
+      ALLOWED_ATTR: ['href', 'target', 'rel'],
+      ALLOW_DATA_ATTR: false,
+      ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i
+    });
+  } else {
+    // ✅ SECURITY FIX: For non-HTML fields, strip all tags and encode special chars
+    // First pass: Remove all HTML tags
+    let sanitized = value.replace(/<[^>]*>/g, '');
+
+    // Second pass: Use DOMPurify to clean any remaining dangerous content
+    sanitized = DOMPurify.sanitize(sanitized, {
+      ALLOWED_TAGS: [],
+      ALLOWED_ATTR: [],
+      KEEP_CONTENT: true
+    });
+
+    // Third pass: Additional encoding for extra safety
+    sanitized = sanitized
+      .replace(/&(?!#?\w+;)/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;')
+      .replace(/\//g, '&#x2F;');
+
+    return sanitized;
+  }
+};
+
+// Recursive object sanitization with DOMPurify
+const sanitizeObject = (obj: any, parentKey: string = ''): void => {
   for (const key in obj) {
     if (obj.hasOwnProperty(key)) {
+      const fullKey = parentKey ? `${parentKey}.${key}` : key;
+
       if (typeof obj[key] === 'string') {
-        // Basic XSS prevention
-        obj[key] = obj[key]
-          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-          .replace(/javascript:/gi, '')
-          .replace(/on\w+\s*=/gi, '');
+        // ✅ SECURITY FIX: Enhanced sanitization with DOMPurify
+        obj[key] = sanitizeString(obj[key], fullKey);
+      } else if (Array.isArray(obj[key])) {
+        // Sanitize arrays
+        obj[key] = obj[key].map((item: any, index: number) => {
+          if (typeof item === 'string') {
+            return sanitizeString(item, `${fullKey}[${index}]`);
+          } else if (typeof item === 'object' && item !== null) {
+            sanitizeObject(item, `${fullKey}[${index}]`);
+            return item;
+          }
+          return item;
+        });
       } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-        sanitizeObject(obj[key]);
+        // Recursively sanitize nested objects
+        sanitizeObject(obj[key], fullKey);
       }
     }
   }
@@ -347,3 +423,9 @@ export const trustProxy = (req: Request, res: Response, next: NextFunction): voi
   }
   next();
 };
+
+// Export CSRF protection
+export { generateCSRFToken, validateCSRFToken, getCSRFToken } from './csrf';
+
+// Export Content-Length validation
+export { validateContentLength, CONTENT_TYPE_LIMITS, DEFAULT_MAX_CONTENT_LENGTH } from './content-length';

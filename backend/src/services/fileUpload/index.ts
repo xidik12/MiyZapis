@@ -3,6 +3,7 @@ import { config } from '@/config';
 import { logger } from '@/utils/logger';
 import fs from 'fs/promises';
 import path from 'path';
+import { fileTypeFromBuffer } from 'file-type';
 
 // Optional AWS SDK import
 let AWS: any = null;
@@ -59,17 +60,20 @@ export class FileUploadService {
         Key: filename,
         Body: buffer,
         ContentType: mimeType,
-        ACL: 'public-read'
+        ACL: 'private', // ✅ SECURITY FIX: Changed from 'public-read' to 'private'
+        ServerSideEncryption: 'AES256' // ✅ SECURITY FIX: Add encryption at rest
       };
 
       const result = await this.s3!.upload(params).promise();
-      
-      logger.info('File uploaded to S3 successfully', {
+
+      logger.info('File uploaded to S3 successfully (private)', {
         filename,
-        location: result.Location
+        bucket: config.aws.s3.bucket,
+        // Don't log full URL as files are now private
       });
 
-      return result.Location;
+      // Return the S3 key instead of public URL (presigned URLs will be generated on demand)
+      return filename;
     } catch (error) {
       logger.error('Error uploading to S3:', error);
       throw new Error('Failed to upload file to S3');
@@ -249,9 +253,10 @@ export class FileUploadService {
     }
   }
 
-  async getFileUrl(filename: string): Promise<string> {
+  async getFileUrl(filename: string, expiresIn = 3600): Promise<string> {
     if (this.useS3) {
-      return `${config.aws.s3.url}/${filename}`;
+      // ✅ SECURITY FIX: Use presigned URLs for private S3 files
+      return this.generatePresignedUrl(filename, expiresIn);
     } else {
       return `/uploads/${filename}`;
     }
@@ -291,12 +296,23 @@ export class FileUploadService {
   }
 
   async validateFile(buffer: Buffer, mimeType: string, maxSize: number): Promise<boolean> {
-    // Check file size
+    // ✅ SECURITY FIX: Check file size first
     if (buffer.length > maxSize) {
       throw new Error(`File size exceeds maximum allowed size of ${maxSize} bytes`);
     }
 
-    // Additional validation based on mime type
+    // ✅ SECURITY FIX: Validate magic bytes (actual file content)
+    const detectedType = await fileTypeFromBuffer(buffer);
+
+    if (!detectedType) {
+      logger.warn('Unable to determine file type from buffer', {
+        claimedMimeType: mimeType,
+        bufferSize: buffer.length
+      });
+      throw new Error('Unable to determine file type. File may be corrupted or invalid.');
+    }
+
+    // Define allowed MIME types with their expected magic bytes
     const allowedTypes = [
       'image/jpeg',
       'image/png',
@@ -308,14 +324,61 @@ export class FileUploadService {
       'video/mp4',
       'video/quicktime',
       'audio/mpeg',
-      'audio/wav'
+      'audio/wav',
+      'audio/mp4' // M4A files
     ];
 
-    if (!allowedTypes.includes(mimeType)) {
-      throw new Error(`File type ${mimeType} is not allowed`);
+    // ✅ SECURITY FIX: Check if detected type matches allowed types
+    if (!allowedTypes.includes(detectedType.mime)) {
+      logger.warn('File type not allowed', {
+        detectedMime: detectedType.mime,
+        detectedExt: detectedType.ext,
+        claimedMimeType: mimeType
+      });
+      throw new Error(`File type ${detectedType.mime} is not allowed (detected from file content)`);
     }
 
+    // ✅ SECURITY FIX: Verify that claimed MIME type matches detected type
+    // Allow some flexibility for compatible types
+    const isCompatible = this.areTypesCompatible(mimeType, detectedType.mime);
+
+    if (!isCompatible) {
+      logger.warn('MIME type mismatch detected - possible file upload attack', {
+        claimedMimeType: mimeType,
+        detectedMime: detectedType.mime,
+        detectedExt: detectedType.ext,
+        bufferSize: buffer.length
+      });
+      throw new Error(
+        `File type mismatch: claimed ${mimeType} but detected ${detectedType.mime}. ` +
+        `This may indicate a malicious file.`
+      );
+    }
+
+    logger.info('File validation successful', {
+      mimeType: detectedType.mime,
+      extension: detectedType.ext,
+      size: buffer.length
+    });
+
     return true;
+  }
+
+  // Helper method to check if MIME types are compatible
+  private areTypesCompatible(claimed: string, detected: string): boolean {
+    // Exact match
+    if (claimed === detected) return true;
+
+    // Allow some compatible type variations
+    const compatibleTypes: Record<string, string[]> = {
+      'image/jpg': ['image/jpeg'],
+      'image/jpeg': ['image/jpg'],
+      'audio/mp4': ['audio/mpeg', 'audio/m4a'],
+      'audio/mpeg': ['audio/mp3', 'audio/mp4'],
+    };
+
+    const allowedVariations = compatibleTypes[claimed] || [];
+    return allowedVariations.includes(detected);
   }
 
   async getStorageStats(): Promise<any> {

@@ -11,12 +11,13 @@ import { testRedisConnection, closeRedisConnection } from '@/config/redis';
 import { logger, requestLogger } from '@/utils/logger';
 
 // Middleware imports
-import { 
-  securityHeaders, 
-  corsOptions, 
-  requestId, 
-  sanitizeInput, 
-  trustProxy
+import {
+  securityHeaders,
+  corsOptions,
+  requestId,
+  sanitizeInput,
+  trustProxy,
+  validateContentLength
 } from '@/middleware/security';
 import { errorHandler, notFoundHandler } from '@/middleware/error';
 
@@ -39,6 +40,9 @@ app.use(trustProxy);
 app.use(securityHeaders);
 app.use(cors(corsOptions));
 app.use(requestId);
+
+// ✅ SECURITY FIX: Content-Length validation (before body parsing)
+app.use(validateContentLength());
 
 // Body parsing middleware with raw body preservation for webhooks
 // For webhook routes, we need the raw body for signature verification

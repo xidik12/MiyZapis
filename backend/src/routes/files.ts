@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { param, query } from 'express-validator';
 import { authenticateToken as authMiddleware, optionalAuth as optionalAuthMiddleware } from '@/middleware/auth/jwt';
+import { uploadRateLimit } from '@/middleware/security'; // ✅ SECURITY FIX: Add upload rate limiting
 import { validateRequest } from '@/middleware/validation';
 import { fileController } from '@/controllers/files';
 import * as s3UploadController from '@/controllers/files/s3-upload.controller';
@@ -343,7 +344,7 @@ router.get('/test-db', authMiddleware, async (req, res) => {
 });
 
 // Robust file upload that works on Railway
-router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, async (req, res) => {
+router.post('/upload-robust', authMiddleware, uploadRateLimit, fileController.uploadMiddleware, async (req, res) => {
   try {
     console.log('🔍 Upload request details:', {
       userId: req.user?.id,
@@ -560,7 +561,7 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
 });
 
 // Simplified upload route that actually saves files
-router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, async (req, res) => {
+router.post('/upload-simple', authMiddleware, uploadRateLimit, fileController.uploadMiddleware, async (req, res) => {
   try {
     const files = req.files as Express.Multer.File[];
     if (!files || !Array.isArray(files) || files.length === 0) {
@@ -676,20 +677,20 @@ if (process.env.ENABLE_S3_STORAGE === 'true') {
   console.log('🌅 S3 storage enabled - adding S3 upload routes');
   
   // S3 file upload endpoint
-  router.post('/upload-s3', authMiddleware, s3UploadController.uploadMiddleware, s3UploadController.uploadFiles);
-  
+  router.post('/upload-s3', authMiddleware, uploadRateLimit, s3UploadController.uploadMiddleware, s3UploadController.uploadFiles);
+
   // S3 presigned URL endpoint
-  router.post('/presigned-upload', authMiddleware, s3UploadController.getPresignedUploadUrl);
-  
+  router.post('/presigned-upload', authMiddleware, uploadRateLimit, s3UploadController.getPresignedUploadUrl);
+
   // S3 file deletion endpoint
   router.delete('/s3/:id', authMiddleware, s3UploadController.deleteFile);
-  
+
   // Use S3 upload as the main upload endpoint when S3 is enabled
-  router.post('/upload', authMiddleware, s3UploadController.uploadMiddleware, s3UploadController.uploadFiles);
+  router.post('/upload', authMiddleware, uploadRateLimit, s3UploadController.uploadMiddleware, s3UploadController.uploadFiles);
 } else {
   console.log('📁 Using local file storage');
   // Main upload endpoint using proper FileController (local storage)
-  router.post('/upload', authMiddleware, fileController.uploadMiddleware, fileController.uploadFiles);
+  router.post('/upload', authMiddleware, uploadRateLimit, fileController.uploadMiddleware, fileController.uploadFiles);
 }
 
 // Proxy S3 images to handle CORS issues

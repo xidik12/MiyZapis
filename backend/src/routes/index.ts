@@ -33,8 +33,12 @@ import debugEmailRoutes from './debug-email';
 import advertisementRoutes from './advertisements';
 import premiumListingRoutes from './premium-listings';
 import employeeRoutes from './employee.routes';
+import { generateCSRFToken, getCSRFToken } from '@/middleware/security';
 
 const router = Router();
+
+// CSRF token endpoint (must be before other routes)
+router.get('/csrf-token', generateCSRFToken, getCSRFToken);
 
 // Health check routes
 router.use('/', healthRoutes);

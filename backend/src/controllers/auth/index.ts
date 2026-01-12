@@ -153,6 +153,19 @@ export class AuthController {
         return;
       }
 
+      // ✅ SECURITY FIX: Handle account lockout due to failed login attempts
+      if (error.message.startsWith('ACCOUNT_LOCKED')) {
+        const minutes = error.message.split(':')[1] || '15';
+        res.status(429).json(
+          createErrorResponse(
+            ErrorCodes.RATE_LIMIT_EXCEEDED,
+            `Account temporarily locked due to multiple failed login attempts. Please try again in ${minutes} minutes.`,
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
       if (error.message === 'ACCOUNT_DEACTIVATED') {
         res.status(403).json(
           createErrorResponse(

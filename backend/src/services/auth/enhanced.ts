@@ -3,7 +3,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
 import { config } from '@/config';
 import { prisma } from '@/config/database';
-import { cacheUtils } from '@/config/redis';
+import { cacheUtils, redis } from '@/config/redis';
 import { logger } from '@/utils/logger';
 // Use enhanced email service for verification emails
 import { emailService } from '@/services/email/enhanced-email';
@@ -82,6 +82,91 @@ export class EnhancedAuthService {
 
     const expiresIn = 3600; // 1 hour in seconds
     return { accessToken, refreshToken, expiresIn };
+  }
+
+  // ✅ SECURITY FIX: Account lockout mechanism - Check login attempts
+  private static async checkLoginAttempts(email: string): Promise<void> {
+    const key = `login_attempts:${email.toLowerCase()}`;
+
+    if (redis) {
+      try {
+        const attempts = await redis.get(key);
+        const attemptCount = attempts ? parseInt(attempts, 10) : 0;
+
+        if (attemptCount >= 5) {
+          const ttl = await redis.ttl(key);
+          const minutesRemaining = Math.ceil(ttl / 60);
+
+          logger.warn('Account temporarily locked due to failed login attempts', {
+            email,
+            attempts: attemptCount,
+            lockTimeRemaining: `${minutesRemaining} minutes`
+          });
+
+          throw new Error(`ACCOUNT_LOCKED:${minutesRemaining}`);
+        }
+      } catch (error) {
+        // If error is the account locked error, re-throw it
+        if (error instanceof Error && error.message.startsWith('ACCOUNT_LOCKED')) {
+          throw error;
+        }
+        // Otherwise log and continue (fail open for Redis errors)
+        logger.error('Error checking login attempts (continuing):', error);
+      }
+    }
+    // If Redis not available, fail open (no lockout)
+  }
+
+  // ✅ SECURITY FIX: Record failed login attempt
+  private static async recordFailedLogin(email: string): Promise<void> {
+    const key = `login_attempts:${email.toLowerCase()}`;
+
+    if (redis) {
+      try {
+        const attempts = await redis.incr(key);
+
+        // Set expiration on first attempt (15 minutes lockout window)
+        if (attempts === 1) {
+          await redis.expire(key, 15 * 60);
+        }
+
+        logger.warn('Failed login attempt recorded', {
+          email,
+          attempts,
+          lockoutThreshold: 5
+        });
+
+        // Additional warning when approaching lockout
+        if (attempts === 4) {
+          logger.warn('User approaching account lockout', {
+            email,
+            attemptsRemaining: 1
+          });
+        }
+      } catch (error) {
+        logger.error('Error recording failed login attempt:', error);
+      }
+    }
+  }
+
+  // ✅ SECURITY FIX: Clear login attempts on successful login
+  private static async clearLoginAttempts(email: string): Promise<void> {
+    const key = `login_attempts:${email.toLowerCase()}`;
+
+    if (redis) {
+      try {
+        const clearedAttempts = await redis.get(key);
+        if (clearedAttempts) {
+          await redis.del(key);
+          logger.info('Login attempts cleared after successful login', {
+            email,
+            previousAttempts: parseInt(clearedAttempts, 10)
+          });
+        }
+      } catch (error) {
+        logger.error('Error clearing login attempts:', error);
+      }
+    }
   }
 
   // Register new user with email verification
@@ -473,6 +558,9 @@ export class EnhancedAuthService {
         throw new Error('ACCOUNT_DEACTIVATED');
       }
 
+      // ✅ SECURITY FIX: Check if account is locked due to failed login attempts
+      await this.checkLoginAttempts(data.email);
+
       // Verify password
       if (!user.password) {
         throw new Error('INVALID_CREDENTIALS');
@@ -480,6 +568,8 @@ export class EnhancedAuthService {
 
       const isPasswordValid = await bcrypt.compare(data.password, user.password);
       if (!isPasswordValid) {
+        // ✅ SECURITY FIX: Record failed login attempt
+        await this.recordFailedLogin(data.email);
         throw new Error('INVALID_CREDENTIALS');
       }
 
@@ -528,8 +618,11 @@ export class EnhancedAuthService {
       // Create tokens
       const tokens = await this.createTokens(userWithoutPassword);
 
-      logger.info('User logged in successfully', { 
-        userId: user.id, 
+      // ✅ SECURITY FIX: Clear failed login attempts on successful login
+      await this.clearLoginAttempts(data.email);
+
+      logger.info('User logged in successfully', {
+        userId: user.id,
         platform: data.platform,
         selectedRole: targetUserType
       });
