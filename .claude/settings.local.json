@@ -39,7 +39,14 @@
       "Bash(npx tsc:*)",
       "Bash(npm audit:*)",
       "Bash(npm ls:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(npx playwright install:*)",
+      "Bash(lsof:*)",
+      "Bash(node /Users/salakhitdinovkhidayotullo/MiyZapis/MiyZapis/verify-ui.js:*)",
+      "Bash(node:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma migrate:*)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:GVGsHSeKoazyvATppTqvabRFqGniRQsH@caboose.proxy.rlwy.net:51538/railway\" npx prisma db push:*)",
+      "Bash(npx prisma:*)"
     ],
     "deny": [],
     "ask": [],

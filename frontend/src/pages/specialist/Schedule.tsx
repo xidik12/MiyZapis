@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
-import { CalendarIcon, ClockIcon, PlusIcon, XIcon as XMarkIcon, CheckIcon, TrashIcon, PencilIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon, SquaresFourIcon, ListBulletsIcon, FunnelIcon } from '@/components/icons';
+import { CalendarIcon, ClockIcon, PlusIcon, XIcon as XMarkIcon, CheckIcon, TrashIcon, PencilIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon, SquaresFourIcon, ListBulletsIcon, FunnelIcon, ArrowPathIcon, ExclamationTriangleIcon, ArrowDownTrayIcon, EllipsisVerticalIcon, CalendarDaysIcon } from '@/components/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
@@ -10,10 +10,15 @@ import { specialistService } from '../../services/specialist.service';
 import { isFeatureEnabled } from '../../config/features';
 import { retryRequest } from '../../services/api';
 import { WeekView } from '@/components/calendar/WeekView';
+import { MonthView } from '@/components/calendar/MonthView';
 import { fetchBookings } from '../../store/slices/bookingSlice';
 import { RootState } from '../../store';
 import BookingDetailModal from '../../components/modals/BookingDetailModal';
+import { RecurringBookingModal, RecurrenceData } from '../../components/modals/RecurringBookingModal';
+import { ContextMenu, ContextMenuItem } from '../../components/ui/ContextMenu';
 import { Booking } from '../../types';
+import { findBookingConflicts, hasConflict } from '../../utils/bookingConflicts';
+import { downloadICalFile, openInGoogleCalendar, exportMultipleBookings } from '../../utils/calendarExport';
 
 interface TimeSlot {
   id: string;
