@@ -4,12 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { CalendarIcon, ClockIcon, PlusIcon, XIcon as XMarkIcon, CheckIcon, TrashIcon, PencilIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon, SquaresFourIcon, ListBulletsIcon } from '@/components/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { useAppSelector } from '../../hooks/redux';
+import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { specialistService } from '../../services/specialist.service';
 import { isFeatureEnabled } from '../../config/features';
 import { retryRequest } from '../../services/api';
 import { WeekView } from '@/components/calendar/WeekView';
+import { fetchBookings } from '../../store/slices/bookingSlice';
+import { RootState } from '../../store';
 
 interface TimeSlot {
   id: string;
@@ -280,6 +282,8 @@ const AddTimeModal: React.FC<AddTimeModalProps> = ({
 const SpecialistSchedule: React.FC = () => {
   const { t } = useLanguage();
   const user = useAppSelector(selectUser);
+  const dispatch = useAppDispatch();
+  const bookings = useAppSelector((state: RootState) => state.booking.bookings);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingBlock, setEditingBlock] = useState<CalendarBlock | null>(null);
   const [availabilityBlocks, setAvailabilityBlocks] = useState<CalendarBlock[]>([]);
@@ -395,13 +399,18 @@ const SpecialistSchedule: React.FC = () => {
     loadAvailabilityBlocks();
   }, [currentWeekStart]);
 
+  // Load bookings for the week
+  useEffect(() => {
+    dispatch(fetchBookings({ filters: {}, userType: 'specialist' }));
+  }, [dispatch, currentWeekStart]);
+
   // Check if we should prompt to generate availability from working hours
   useEffect(() => {
-    if (!loading && availabilityBlocks.length === 0 && user?.workingHours) {
+    if (!loading && availabilityBlocks.length === 0 && (user as any)?.workingHours) {
       // User has working hours but no availability blocks - offer to generate
       setShowGeneratePrompt(true);
     }
-  }, [loading, availabilityBlocks.length, user?.workingHours]);
+  }, [loading, availabilityBlocks.length, user]);
 
   const handleGenerateFromWorkingHours = async () => {
     if (!isFeatureEnabled('ENABLE_SPECIALIST_SCHEDULE_API')) {
@@ -807,11 +816,16 @@ const SpecialistSchedule: React.FC = () => {
             reason: block.reason,
             isRecurring: block.isRecurring,
           }))}
+          bookings={bookings}
           onBlockClick={(block) => {
             const originalBlock = availabilityBlocks.find(b => b.id === block.id);
             if (originalBlock) {
               openEditModal(originalBlock);
             }
+          }}
+          onBookingClick={(booking) => {
+            // Navigate to bookings page or show booking details
+            toast.info(`Booking: ${booking.service.name} with ${booking.customer.firstName}`);
           }}
           onTimeSlotClick={(date, time) => {
             handleCellClick(date, parseInt(time.split(':')[0]));

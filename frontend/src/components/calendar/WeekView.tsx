@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { format, startOfWeek, addDays, isSameDay, isToday, isPast } from 'date-fns';
+import { format, startOfWeek, addDays, isSameDay, isToday, isPast, parseISO } from 'date-fns';
 import { PlusIcon } from '@/components/icons';
 
 interface TimeBlock {
@@ -12,11 +12,27 @@ interface TimeBlock {
   isRecurring: boolean;
 }
 
+interface Booking {
+  id: string;
+  scheduledAt: string;
+  duration: number;
+  service: {
+    name: string;
+  };
+  customer: {
+    firstName: string;
+    lastName: string;
+  };
+  status: string;
+}
+
 interface WeekViewProps {
   currentDate: Date;
   timeBlocks: TimeBlock[];
+  bookings?: Booking[];
   onBlockClick?: (block: TimeBlock) => void;
   onTimeSlotClick?: (date: Date, time: string) => void;
+  onBookingClick?: (booking: Booking) => void;
 }
 
 const HOURS = Array.from({ length: 16 }, (_, i) => i + 6); // 6 AM to 10 PM
@@ -24,8 +40,10 @@ const HOURS = Array.from({ length: 16 }, (_, i) => i + 6); // 6 AM to 10 PM
 export const WeekView: React.FC<WeekViewProps> = ({
   currentDate,
   timeBlocks,
+  bookings = [],
   onBlockClick,
-  onTimeSlotClick
+  onTimeSlotClick,
+  onBookingClick
 }) => {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Monday
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -34,6 +52,13 @@ export const WeekView: React.FC<WeekViewProps> = ({
     return timeBlocks.filter(block =>
       isSameDay(new Date(block.startDateTime), day)
     );
+  };
+
+  const getBookingsForDay = (day: Date) => {
+    return bookings.filter(booking => {
+      const bookingDate = parseISO(booking.scheduledAt);
+      return isSameDay(bookingDate, day);
+    });
   };
 
   const getBlockStyle = (block: TimeBlock, day: Date) => {
@@ -48,6 +73,23 @@ export const WeekView: React.FC<WeekViewProps> = ({
     // Calculate position and height
     const top = ((startHour - 6) * 60 + startMinute) / 60; // hours from 6 AM
     const duration = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
+    const height = duration / 60;
+
+    return {
+      top: `${top * 4}rem`, // 4rem per hour
+      height: `${height * 4}rem`,
+      minHeight: '2rem'
+    };
+  };
+
+  const getBookingStyle = (booking: Booking) => {
+    const bookingTime = parseISO(booking.scheduledAt);
+    const hours = bookingTime.getHours();
+    const minutes = bookingTime.getMinutes();
+    const duration = booking.duration; // in minutes
+
+    // Calculate position and height
+    const top = ((hours - 6) * 60 + minutes) / 60; // hours from 6 AM
     const height = duration / 60;
 
     return {
@@ -175,6 +217,45 @@ export const WeekView: React.FC<WeekViewProps> = ({
                             🔄 Recurring
                           </div>
                         )}
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {/* Bookings overlay */}
+                <div className="absolute inset-0 pointer-events-none">
+                  {getBookingsForDay(day).map((booking, index) => {
+                    const style = getBookingStyle(booking);
+                    const statusColors = {
+                      confirmed: 'bg-blue-500 border-blue-600',
+                      pending: 'bg-yellow-500 border-yellow-600',
+                      completed: 'bg-green-500 border-green-600',
+                      cancelled: 'bg-gray-500 border-gray-600',
+                    };
+                    const statusColor = statusColors[booking.status as keyof typeof statusColors] || 'bg-blue-500 border-blue-600';
+
+                    return (
+                      <motion.div
+                        key={booking.id}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.05 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onBookingClick) onBookingClick(booking);
+                        }}
+                        style={style}
+                        className={`absolute left-1 right-1 rounded-lg p-2 shadow-lg pointer-events-auto cursor-pointer transition-all duration-200 hover:shadow-xl hover:scale-105 text-white border-2 ${statusColor}`}
+                      >
+                        <div className="text-xs font-bold truncate">
+                          {booking.service.name}
+                        </div>
+                        <div className="text-xs truncate">
+                          {booking.customer.firstName} {booking.customer.lastName}
+                        </div>
+                        <div className="text-xs opacity-90">
+                          {format(parseISO(booking.scheduledAt), 'h:mm a')} • {booking.duration}min
+                        </div>
                       </motion.div>
                     );
                   })}
