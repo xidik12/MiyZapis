@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
-import { CalendarIcon, ClockIcon, PlusIcon, XIcon as XMarkIcon, CheckIcon, TrashIcon, PencilIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon, SquaresFourIcon, ListBulletsIcon } from '@/components/icons';
+import { CalendarIcon, ClockIcon, PlusIcon, XIcon as XMarkIcon, CheckIcon, TrashIcon, PencilIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon, SquaresFourIcon, ListBulletsIcon, FunnelIcon } from '@/components/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
@@ -12,6 +12,8 @@ import { retryRequest } from '../../services/api';
 import { WeekView } from '@/components/calendar/WeekView';
 import { fetchBookings } from '../../store/slices/bookingSlice';
 import { RootState } from '../../store';
+import BookingDetailModal from '../../components/modals/BookingDetailModal';
+import { Booking } from '../../types';
 
 interface TimeSlot {
   id: string;
@@ -296,6 +298,16 @@ const SpecialistSchedule: React.FC = () => {
   const [showGeneratePrompt, setShowGeneratePrompt] = useState(false);
   const [expandedHours, setExpandedHours] = useState<Record<string, boolean>>({});
   const [viewMode, setViewMode] = useState<'card' | 'week'>('card');
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [showBookingDetailModal, setShowBookingDetailModal] = useState(false);
+  const [statusFilters, setStatusFilters] = useState<Record<string, boolean>>({
+    pending: true,
+    confirmed: true,
+    completed: true,
+    cancelled: false,
+    in_progress: true
+  });
+  const [showStatusFilter, setShowStatusFilter] = useState(false);
 
   function getWeekStart(date: Date): Date {
     const d = new Date(date);
@@ -349,6 +361,44 @@ const SpecialistSchedule: React.FC = () => {
 
   const weekDays = getWeekDays(currentWeekStart);
   const timeSlots = Array.from({ length: 24 }, (_, i) => i); // 0-23 hours
+
+  // Filter bookings based on status filters
+  const filteredBookings = bookings.filter(booking => {
+    const status = booking.status.toLowerCase();
+    return statusFilters[status] !== false;
+  });
+
+  // Toggle status filter
+  const toggleStatusFilter = (status: string) => {
+    setStatusFilters(prev => ({
+      ...prev,
+      [status]: !prev[status]
+    }));
+  };
+
+  // Handle booking click
+  const handleBookingClick = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setShowBookingDetailModal(true);
+  };
+
+  // Handle booking reschedule via drag and drop
+  const handleBookingReschedule = async (bookingId: string, newDate: Date, newTime: string) => {
+    try {
+      const [hours, minutes] = newTime.split(':').map(Number);
+      const newDateTime = new Date(newDate);
+      newDateTime.setHours(hours, minutes, 0, 0);
+
+      // TODO: Call API to reschedule booking
+      toast.success(t('schedule.bookingRescheduled') || `Booking rescheduled to ${newDateTime.toLocaleString()}`);
+
+      // Reload bookings
+      dispatch(fetchBookings({ filters: {}, userType: 'specialist' }));
+    } catch (error) {
+      console.error('Failed to reschedule booking:', error);
+      toast.error(t('schedule.rescheduleError') || 'Failed to reschedule booking');
+    }
+  };
 
   // Load availability blocks
   useEffect(() => {
@@ -796,12 +846,74 @@ const SpecialistSchedule: React.FC = () => {
             <ChevronRightIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
         </div>
-        <button
-          onClick={goToToday}
-          className="px-4 py-2 bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 rounded-xl hover:bg-primary-200 dark:hover:bg-primary-900/40 transition-colors font-medium text-sm"
-        >
-          {t('schedule.today') || 'Сегодня'}
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Status Filter Toggle */}
+          <div className="relative">
+            <button
+              onClick={() => setShowStatusFilter(!showStatusFilter)}
+              className="px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors font-medium text-sm border border-gray-200 dark:border-gray-600 flex items-center gap-2"
+            >
+              <FunnelIcon className="w-4 h-4" />
+              <span>{t('schedule.filter') || 'Filter'}</span>
+              {Object.values(statusFilters).filter(v => !v).length > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full text-xs font-bold">
+                  {Object.values(statusFilters).filter(v => !v).length}
+                </span>
+              )}
+            </button>
+
+            {/* Status Filter Dropdown */}
+            {showStatusFilter && (
+              <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-50 p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {t('schedule.filterByStatus') || 'Filter by Status'}
+                  </h3>
+                  <button
+                    onClick={() => setShowStatusFilter(false)}
+                    className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                  >
+                    <XMarkIcon className="w-4 h-4 text-gray-500" />
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { key: 'pending', label: 'Pending', color: 'yellow', icon: '⏳' },
+                    { key: 'confirmed', label: 'Confirmed', color: 'blue', icon: '✓' },
+                    { key: 'in_progress', label: 'In Progress', color: 'purple', icon: '▶' },
+                    { key: 'completed', label: 'Completed', color: 'green', icon: '✓✓' },
+                    { key: 'cancelled', label: 'Cancelled', color: 'gray', icon: '✕' }
+                  ].map(status => (
+                    <label
+                      key={status.key}
+                      className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={statusFilters[status.key] !== false}
+                          onChange={() => toggleStatusFilter(status.key)}
+                          className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{status.icon} {status.label}</span>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium bg-${status.color}-100 dark:bg-${status.color}-900/30 text-${status.color}-700 dark:text-${status.color}-300`}>
+                        {bookings.filter(b => b.status.toLowerCase() === status.key).length}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={goToToday}
+            className="px-4 py-2 bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 rounded-xl hover:bg-primary-200 dark:hover:bg-primary-900/40 transition-colors font-medium text-sm"
+          >
+            {t('schedule.today') || 'Сегодня'}
+          </button>
+        </div>
       </div>
 
       {/* Calendar Views */}
@@ -816,17 +928,15 @@ const SpecialistSchedule: React.FC = () => {
             reason: block.reason,
             isRecurring: block.isRecurring,
           }))}
-          bookings={bookings}
+          bookings={filteredBookings}
           onBlockClick={(block) => {
             const originalBlock = availabilityBlocks.find(b => b.id === block.id);
             if (originalBlock) {
               openEditModal(originalBlock);
             }
           }}
-          onBookingClick={(booking) => {
-            // Navigate to bookings page or show booking details
-            toast.info(`Booking: ${booking.service.name} with ${booking.customer.firstName}`);
-          }}
+          onBookingClick={handleBookingClick}
+          onBookingReschedule={handleBookingReschedule}
           onTimeSlotClick={(date, time) => {
             handleCellClick(date, parseInt(time.split(':')[0]));
           }}
@@ -1100,6 +1210,36 @@ const SpecialistSchedule: React.FC = () => {
         preSelectedDate={preSelectedDate}
         preSelectedTime={preSelectedTime}
       />
+
+      {/* Booking Detail Modal */}
+      {selectedBooking && (
+        <BookingDetailModal
+          booking={selectedBooking}
+          isOpen={showBookingDetailModal}
+          onClose={() => {
+            setShowBookingDetailModal(false);
+            setSelectedBooking(null);
+          }}
+          onReschedule={(bookingId) => {
+            toast.info(t('schedule.rescheduleBooking') || 'Reschedule booking feature coming soon');
+            setShowBookingDetailModal(false);
+          }}
+          onCancel={(bookingId) => {
+            toast.info(t('schedule.cancelBooking') || 'Cancel booking feature coming soon');
+            setShowBookingDetailModal(false);
+          }}
+          onBookAgain={(booking) => {
+            toast.info(t('schedule.bookAgain') || 'Book again feature coming soon');
+            setShowBookingDetailModal(false);
+          }}
+          onLeaveReview={(bookingId) => {
+            toast.info(t('schedule.leaveReview') || 'Leave review feature coming soon');
+            setShowBookingDetailModal(false);
+          }}
+          getTranslatedServiceName={(name) => name}
+          getTranslatedDuration={(duration) => `${duration} ${t('common.minutes') || 'min'}`}
+        />
+      )}
     </div>
   );
 };

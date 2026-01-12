@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { format, startOfWeek, addDays, isSameDay, isToday, isPast, parseISO } from 'date-fns';
 import { PlusIcon } from '@/components/icons';
+import { Booking } from '../../types';
 
 interface TimeBlock {
   id: string;
@@ -12,20 +13,6 @@ interface TimeBlock {
   isRecurring: boolean;
 }
 
-interface Booking {
-  id: string;
-  scheduledAt: string;
-  duration: number;
-  service: {
-    name: string;
-  };
-  customer: {
-    firstName: string;
-    lastName: string;
-  };
-  status: string;
-}
-
 interface WeekViewProps {
   currentDate: Date;
   timeBlocks: TimeBlock[];
@@ -33,6 +20,7 @@ interface WeekViewProps {
   onBlockClick?: (block: TimeBlock) => void;
   onTimeSlotClick?: (date: Date, time: string) => void;
   onBookingClick?: (booking: Booking) => void;
+  onBookingReschedule?: (bookingId: string, newDate: Date, newTime: string) => void;
 }
 
 const HOURS = Array.from({ length: 16 }, (_, i) => i + 6); // 6 AM to 10 PM
@@ -43,8 +31,12 @@ export const WeekView: React.FC<WeekViewProps> = ({
   bookings = [],
   onBlockClick,
   onTimeSlotClick,
-  onBookingClick
+  onBookingClick,
+  onBookingReschedule
 }) => {
+  const [draggedBooking, setDraggedBooking] = useState<Booking | null>(null);
+  const [dropTarget, setDropTarget] = useState<{date: Date; time: string} | null>(null);
+
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Monday
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
@@ -160,19 +152,40 @@ export const WeekView: React.FC<WeekViewProps> = ({
                 key={day.toISOString()}
                 className="border-r border-gray-200 dark:border-gray-700 last:border-r-0 relative"
               >
-                {HOURS.map((hour) => (
+                {HOURS.map((hour) => {
+                  const timeStr = `${hour.toString().padStart(2, '0')}:00`;
+                  const isDropTarget = dropTarget && isSameDay(dropTarget.date, day) && dropTarget.time === timeStr;
+
+                  return (
                   <div
                     key={`${day.toISOString()}-${hour}`}
                     onClick={() => {
                       if (!dayIsPast && onTimeSlotClick) {
-                        onTimeSlotClick(day, `${hour.toString().padStart(2, '0')}:00`);
+                        onTimeSlotClick(day, timeStr);
+                      }
+                    }}
+                    onDragOver={(e) => {
+                      if (!dayIsPast && draggedBooking && onBookingReschedule) {
+                        e.preventDefault();
+                        setDropTarget({ date: day, time: timeStr });
+                      }
+                    }}
+                    onDragLeave={() => {
+                      setDropTarget(null);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (draggedBooking && onBookingReschedule && !dayIsPast) {
+                        onBookingReschedule(draggedBooking.id, day, timeStr);
+                        setDraggedBooking(null);
+                        setDropTarget(null);
                       }
                     }}
                     className={`h-16 border-b border-gray-100 dark:border-gray-800 relative group ${
                       !dayIsPast
                         ? 'hover:bg-primary-50/30 dark:hover:bg-primary-900/10 cursor-pointer'
                         : 'bg-gray-50/50 dark:bg-gray-900/30 cursor-not-allowed'
-                    }`}
+                    } ${isDropTarget ? 'bg-primary-100/50 dark:bg-primary-900/30 ring-2 ring-primary-500' : ''}`}
                   >
                     {/* Add button on hover */}
                     {!dayIsPast && (
@@ -183,7 +196,8 @@ export const WeekView: React.FC<WeekViewProps> = ({
                       </div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
 
                 {/* Time blocks overlay */}
                 <div className="absolute inset-0 pointer-events-none">
@@ -234,28 +248,62 @@ export const WeekView: React.FC<WeekViewProps> = ({
                     };
                     const statusColor = statusColors[booking.status as keyof typeof statusColors] || 'bg-blue-500 border-blue-600';
 
+                    const isDraggable = booking.status !== 'completed' && booking.status !== 'cancelled';
+
                     return (
                       <motion.div
                         key={booking.id}
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: index * 0.05 }}
+                        draggable={isDraggable && !!onBookingReschedule}
+                        onDragStart={(e) => {
+                          if (isDraggable && onBookingReschedule) {
+                            setDraggedBooking(booking);
+                            e.currentTarget.style.opacity = '0.5';
+                          }
+                        }}
+                        onDragEnd={(e) => {
+                          e.currentTarget.style.opacity = '1';
+                          setDraggedBooking(null);
+                          setDropTarget(null);
+                        }}
                         onClick={(e) => {
                           e.stopPropagation();
                           if (onBookingClick) onBookingClick(booking);
                         }}
                         style={style}
-                        className={`absolute left-1 right-1 rounded-lg p-2 shadow-lg pointer-events-auto cursor-pointer transition-all duration-200 hover:shadow-xl hover:scale-105 text-white border-2 ${statusColor}`}
+                        className={`absolute left-1 right-1 rounded-lg p-2 shadow-lg pointer-events-auto transition-all duration-200 hover:shadow-xl text-white border-2 ${statusColor} ${
+                          isDraggable && onBookingReschedule ? 'cursor-move hover:scale-105' : 'cursor-pointer'
+                        } ${draggedBooking?.id === booking.id ? 'ring-2 ring-primary-500' : ''}`}
                       >
+                        {/* Status Badge */}
+                        <div className="absolute -top-1 -left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold uppercase bg-white dark:bg-gray-800 shadow-sm">
+                          {booking.status === 'confirmed' && <span className="text-blue-600">✓</span>}
+                          {booking.status === 'pending' && <span className="text-yellow-600">⏳</span>}
+                          {booking.status === 'completed' && <span className="text-green-600">✓✓</span>}
+                          {booking.status === 'cancelled' && <span className="text-gray-600">✕</span>}
+                          {booking.status === 'in_progress' && <span className="text-purple-600">▶</span>}
+                        </div>
                         <div className="text-xs font-bold truncate">
-                          {booking.service.name}
+                          {booking.service?.name || 'Service'}
                         </div>
                         <div className="text-xs truncate">
-                          {booking.customer.firstName} {booking.customer.lastName}
+                          {booking.customer?.firstName || ''} {booking.customer?.lastName || ''}
                         </div>
                         <div className="text-xs opacity-90">
                           {format(parseISO(booking.scheduledAt), 'h:mm a')} • {booking.duration}min
                         </div>
+                        {/* Avatar overlay */}
+                        {booking.customer?.avatar && (
+                          <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full border-2 border-white dark:border-gray-800 overflow-hidden">
+                            <img
+                              src={booking.customer.avatar}
+                              alt={`${booking.customer.firstName} ${booking.customer.lastName}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
                       </motion.div>
                     );
                   })}
