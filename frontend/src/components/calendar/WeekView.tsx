@@ -21,6 +21,7 @@ interface WeekViewProps {
   onTimeSlotClick?: (date: Date, time: string) => void;
   onBookingClick?: (booking: Booking) => void;
   onBookingReschedule?: (bookingId: string, newDate: Date, newTime: string) => void;
+  onBookingRightClick?: (booking: Booking, e: React.MouseEvent) => void;
 }
 
 const HOURS = Array.from({ length: 16 }, (_, i) => i + 6); // 6 AM to 10 PM
@@ -32,7 +33,8 @@ export const WeekView: React.FC<WeekViewProps> = ({
   onBlockClick,
   onTimeSlotClick,
   onBookingClick,
-  onBookingReschedule
+  onBookingReschedule,
+  onBookingRightClick
 }) => {
   const [draggedBooking, setDraggedBooking] = useState<Booking | null>(null);
   const [dropTarget, setDropTarget] = useState<{date: Date; time: string} | null>(null);
@@ -271,6 +273,10 @@ export const WeekView: React.FC<WeekViewProps> = ({
                         onClick={(e) => {
                           e.stopPropagation();
                           if (onBookingClick) onBookingClick(booking);
+                        }}
+                        onContextMenu={(e) => {
+                          e.stopPropagation();
+                          if (onBookingRightClick) onBookingRightClick(booking, e);
                         }}
                         style={style}
                         className={`absolute left-1 right-1 rounded-lg p-2 shadow-lg pointer-events-auto transition-all duration-200 hover:shadow-xl text-white border-2 ${statusColor} ${

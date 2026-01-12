@@ -15,9 +15,9 @@ import { fetchBookings } from '../../store/slices/bookingSlice';
 import { RootState } from '../../store';
 import BookingDetailModal from '../../components/modals/BookingDetailModal';
 import { RecurringBookingModal, RecurrenceData } from '../../components/modals/RecurringBookingModal';
-import { ContextMenu, ContextMenuItem } from '../../components/ui/ContextMenu';
+import { ContextMenu } from '../../components/ui/ContextMenu';
 import { Booking } from '../../types';
-import { findBookingConflicts, hasConflict } from '../../utils/bookingConflicts';
+import { findBookingConflicts } from '../../utils/bookingConflicts';
 import { downloadICalFile, openInGoogleCalendar, exportMultipleBookings } from '../../utils/calendarExport';
 
 interface TimeSlot {
@@ -302,7 +302,7 @@ const SpecialistSchedule: React.FC = () => {
   const [preSelectedTime, setPreSelectedTime] = useState<string | undefined>();
   const [showGeneratePrompt, setShowGeneratePrompt] = useState(false);
   const [expandedHours, setExpandedHours] = useState<Record<string, boolean>>({});
-  const [viewMode, setViewMode] = useState<'card' | 'week'>('card');
+  const [viewMode, setViewMode] = useState<'card' | 'week' | 'month'>('week');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showBookingDetailModal, setShowBookingDetailModal] = useState(false);
   const [statusFilters, setStatusFilters] = useState<Record<string, boolean>>({
@@ -313,6 +313,14 @@ const SpecialistSchedule: React.FC = () => {
     in_progress: true
   });
   const [showStatusFilter, setShowStatusFilter] = useState(false);
+  const [showRecurringModal, setShowRecurringModal] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ isOpen: boolean; x: number; y: number; booking: Booking | null }>({
+    isOpen: false,
+    x: 0,
+    y: 0,
+    booking: null
+  });
+  const [conflicts, setConflicts] = useState<any[]>([]);
 
   function getWeekStart(date: Date): Date {
     const d = new Date(date);
@@ -458,6 +466,16 @@ const SpecialistSchedule: React.FC = () => {
   useEffect(() => {
     dispatch(fetchBookings({ filters: {}, userType: 'specialist' }));
   }, [dispatch, currentWeekStart]);
+
+  // Detect conflicts when bookings change
+  useEffect(() => {
+    const bookingConflicts = findBookingConflicts(bookings);
+    setConflicts(bookingConflicts);
+
+    if (bookingConflicts.length > 0) {
+      toast.warning(`⚠️ ${bookingConflicts.length} booking conflict(s) detected`);
+    }
+  }, [bookings]);
 
   // Check if we should prompt to generate availability from working hours
   useEffect(() => {
@@ -730,6 +748,18 @@ const SpecialistSchedule: React.FC = () => {
               <span className="text-sm font-medium hidden sm:inline">Week</span>
             </button>
             <button
+              onClick={() => setViewMode('month')}
+              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all ${
+                viewMode === 'month'
+                  ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+              title="Month View"
+            >
+              <CalendarDaysIcon className="w-4 h-4" />
+              <span className="text-sm font-medium hidden sm:inline">Month</span>
+            </button>
+            <button
               onClick={() => setViewMode('card')}
               className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all ${
                 viewMode === 'card'
@@ -742,6 +772,17 @@ const SpecialistSchedule: React.FC = () => {
               <span className="text-sm font-medium hidden sm:inline">Cards</span>
             </button>
           </div>
+
+          {/* Export Button */}
+          <button
+            onClick={() => exportMultipleBookings(filteredBookings)}
+            disabled={filteredBookings.length === 0}
+            className="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors font-medium text-sm border border-gray-200 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Export bookings to calendar"
+          >
+            <ArrowDownTrayIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">{t('schedule.export') || 'Export'}</span>
+          </button>
 
           {/* Add Time Button */}
           <button
@@ -945,6 +986,22 @@ const SpecialistSchedule: React.FC = () => {
           onTimeSlotClick={(date, time) => {
             handleCellClick(date, parseInt(time.split(':')[0]));
           }}
+          onBookingRightClick={(booking, e) => {
+            e.preventDefault();
+            setContextMenu({ isOpen: true, x: e.clientX, y: e.clientY, booking });
+          }}
+        />
+      ) : viewMode === 'month' ? (
+        <MonthView
+          currentDate={currentWeekStart}
+          bookings={filteredBookings}
+          onDateClick={(date) => {
+            setPreSelectedDate(date);
+            setPreSelectedTime('09:00');
+            setEditingBlock(null);
+            setShowAddModal(true);
+          }}
+          onBookingClick={handleBookingClick}
         />
       ) : (
         // Card Based Design
@@ -1244,6 +1301,101 @@ const SpecialistSchedule: React.FC = () => {
           getTranslatedServiceName={(name) => name}
           getTranslatedDuration={(duration) => `${duration} ${t('common.minutes') || 'min'}`}
         />
+      )}
+
+      {/* Context Menu */}
+      {contextMenu.booking && (
+        <ContextMenu
+          isOpen={contextMenu.isOpen}
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu({ isOpen: false, x: 0, y: 0, booking: null })}
+          items={[
+            {
+              label: t('schedule.viewDetails') || 'View Details',
+              icon: <CalendarIcon className="w-5 h-5" />,
+              onClick: () => {
+                if (contextMenu.booking) {
+                  setSelectedBooking(contextMenu.booking);
+                  setShowBookingDetailModal(true);
+                }
+              }
+            },
+            {
+              label: t('schedule.exportToCalendar') || 'Export to Calendar',
+              icon: <ArrowDownTrayIcon className="w-5 h-5" />,
+              onClick: () => {
+                if (contextMenu.booking) {
+                  downloadICalFile(contextMenu.booking);
+                  toast.success(t('schedule.exportSuccess') || 'Booking exported successfully');
+                }
+              }
+            },
+            {
+              label: t('schedule.openInGoogle') || 'Open in Google Calendar',
+              icon: <CalendarDaysIcon className="w-5 h-5" />,
+              onClick: () => {
+                if (contextMenu.booking) {
+                  openInGoogleCalendar(contextMenu.booking);
+                }
+              }
+            },
+            { divider: true, label: '', onClick: () => {} },
+            {
+              label: t('schedule.reschedule') || 'Reschedule',
+              icon: <ClockIcon className="w-5 h-5" />,
+              onClick: () => {
+                toast.info(t('schedule.rescheduleBooking') || 'Reschedule feature coming soon');
+              },
+              disabled: contextMenu.booking?.status === 'completed' || contextMenu.booking?.status === 'cancelled'
+            },
+            {
+              label: t('schedule.cancel') || 'Cancel Booking',
+              icon: <XMarkIcon className="w-5 h-5" />,
+              onClick: () => {
+                toast.info(t('schedule.cancelBooking') || 'Cancel booking feature coming soon');
+              },
+              danger: true,
+              disabled: contextMenu.booking?.status === 'completed' || contextMenu.booking?.status === 'cancelled'
+            }
+          ]}
+        />
+      )}
+
+      {/* Recurring Booking Modal */}
+      <RecurringBookingModal
+        isOpen={showRecurringModal}
+        onClose={() => setShowRecurringModal(false)}
+        onSave={(recurrenceData: RecurrenceData) => {
+          console.log('Create recurring bookings:', recurrenceData);
+          toast.info(t('schedule.recurringFeature') || 'Recurring booking feature coming soon');
+          // TODO: Implement recurring booking creation logic
+        }}
+      />
+
+      {/* Conflict Warning */}
+      {conflicts.length > 0 && (
+        <div className="fixed bottom-4 right-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-xl shadow-lg p-4 max-w-sm z-40">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0">
+              <ExclamationTriangleIcon className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
+                {t('schedule.conflictsDetected') || 'Booking Conflicts Detected'}
+              </h3>
+              <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                {conflicts.length} {conflicts.length === 1 ? 'conflict' : 'conflicts'} found in your schedule
+              </p>
+              <button
+                onClick={() => setConflicts([])}
+                className="text-xs font-medium text-yellow-800 dark:text-yellow-200 hover:text-yellow-600 dark:hover:text-yellow-400 mt-2"
+              >
+                {t('common.dismiss') || 'Dismiss'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
