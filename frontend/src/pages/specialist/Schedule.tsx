@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
-import { CalendarIcon, ClockIcon, PlusIcon, XIcon as XMarkIcon, CheckIcon, TrashIcon, PencilIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon, SquaresFourIcon, ListBulletsIcon, FunnelIcon, ArrowPathIcon, ExclamationTriangleIcon, ArrowDownTrayIcon, EllipsisVerticalIcon, CalendarDaysIcon } from '@/components/icons';
+import { CalendarIcon, ClockIcon, PlusIcon, XIcon as XMarkIcon, CheckIcon, TrashIcon, PencilIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ChevronUpIcon, SquaresFourIcon, ListBulletsIcon, FunnelIcon, ArrowPathIcon, WarningIcon, ArrowDownTrayIcon, EllipsisVerticalIcon, CalendarDaysIcon } from '@/components/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
@@ -1378,7 +1378,7 @@ const SpecialistSchedule: React.FC = () => {
         <div className="fixed bottom-4 right-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-xl shadow-lg p-4 max-w-sm z-40">
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0">
-              <ExclamationTriangleIcon className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+              <WarningIcon className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
             </div>
             <div className="flex-1">
               <h3 className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
