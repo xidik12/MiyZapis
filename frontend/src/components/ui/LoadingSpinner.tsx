@@ -1,35 +1,32 @@
 import React from 'react';
-import { clsx } from 'clsx';
+import { LoadingAnimation, LoadingAnimationType } from './LoadingAnimation';
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   color?: 'primary' | 'secondary' | 'white' | 'gray';
   className?: string;
+  type?: LoadingAnimationType;
+  text?: string;
 }
 
+/**
+ * LoadingSpinner - Modern loading spinner with multiple animation types
+ * @deprecated Use LoadingAnimation directly for more control
+ */
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   size = 'md',
   color = 'primary',
   className,
+  type = 'spinner',
+  text,
 }) => {
-  const sizeClass = {
-    sm: 'loader-sm',
-    md: 'loader-md',
-    lg: 'loader-lg',
-    xl: 'loader-xl',
-  }[size];
-
-  const colorClass = {
-    primary: 'text-primary-600 dark:text-primary-400',
-    secondary: 'text-secondary-600 dark:text-secondary-400',
-    white: 'text-white',
-    gray: 'text-gray-600 dark:text-gray-300',
-  }[color];
-
   return (
-    <div className={clsx('inline-flex items-center', className)} role="status" aria-label="Loading">
-      <div className={clsx('loader', sizeClass, colorClass)} />
-      <span className="sr-only">Loading...</span>
-    </div>
+    <LoadingAnimation
+      type={type}
+      size={size}
+      color={color}
+      className={className}
+      text={text}
+    />
   );
 };
