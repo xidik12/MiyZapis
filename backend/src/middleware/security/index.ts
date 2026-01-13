@@ -6,7 +6,7 @@ import { redis } from '@/config/redis';
 import { RateLimitConfigs, ErrorCodes } from '@/types';
 import { createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
-import DOMPurify from 'isomorphic-dompurify';
+import sanitizeHtml from 'sanitize-html';
 
 // Security headers middleware
 export const securityHeaders = helmet({
@@ -355,26 +355,27 @@ const sanitizeString = (value: string, fieldName: string = ''): string => {
   );
 
   if (allowHtml) {
-    // ✅ SECURITY FIX: Use DOMPurify for HTML content with limited tags
-    return DOMPurify.sanitize(value, {
-      ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br', 'ul', 'ol', 'li', 'a'],
-      ALLOWED_ATTR: ['href', 'target', 'rel'],
-      ALLOW_DATA_ATTR: false,
-      ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i
+    // ✅ SECURITY FIX: Use sanitize-html for HTML content with limited tags
+    return sanitizeHtml(value, {
+      allowedTags: ['b', 'i', 'em', 'strong', 'p', 'br', 'ul', 'ol', 'li', 'a'],
+      allowedAttributes: {
+        'a': ['href', 'target', 'rel']
+      },
+      allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+      allowedSchemesByTag: {
+        'a': ['http', 'https', 'mailto', 'tel']
+      },
+      allowProtocolRelative: false
     });
   } else {
-    // ✅ SECURITY FIX: For non-HTML fields, strip all tags and encode special chars
-    // First pass: Remove all HTML tags
-    let sanitized = value.replace(/<[^>]*>/g, '');
-
-    // Second pass: Use DOMPurify to clean any remaining dangerous content
-    sanitized = DOMPurify.sanitize(sanitized, {
-      ALLOWED_TAGS: [],
-      ALLOWED_ATTR: [],
-      KEEP_CONTENT: true
+    // ✅ SECURITY FIX: For non-HTML fields, strip all tags completely
+    // Use sanitize-html to strip all HTML tags and keep only text
+    let sanitized = sanitizeHtml(value, {
+      allowedTags: [],
+      allowedAttributes: {}
     });
 
-    // Third pass: Additional encoding for extra safety
+    // Additional encoding for extra safety
     sanitized = sanitized
       .replace(/&(?!#?\w+;)/g, '&amp;')
       .replace(/</g, '&lt;')
@@ -387,14 +388,14 @@ const sanitizeString = (value: string, fieldName: string = ''): string => {
   }
 };
 
-// Recursive object sanitization with DOMPurify
+// Recursive object sanitization with sanitize-html
 const sanitizeObject = (obj: any, parentKey: string = ''): void => {
   for (const key in obj) {
     if (obj.hasOwnProperty(key)) {
       const fullKey = parentKey ? `${parentKey}.${key}` : key;
 
       if (typeof obj[key] === 'string') {
-        // ✅ SECURITY FIX: Enhanced sanitization with DOMPurify
+        // ✅ SECURITY FIX: Enhanced sanitization with sanitize-html
         obj[key] = sanitizeString(obj[key], fullKey);
       } else if (Array.isArray(obj[key])) {
         // Sanitize arrays
