@@ -5,89 +5,80 @@ interface FullScreenHandshakeLoaderProps {
   subtitle?: string;
 }
 
-// Panhaha themed loader with Gen-Z glass-morph aesthetic
+// Smooth, elegant loader with minimal motion
 export const FullScreenHandshakeLoader: React.FC<FullScreenHandshakeLoaderProps> = ({
   title = 'Loading...',
   subtitle = 'Connect & Book',
 }) => (
   <div
-    className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden backdrop-blur-2xl bg-white/50 dark:bg-secondary-900/50"
+    className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden backdrop-blur-md bg-white/80 dark:bg-secondary-900/80 transition-opacity duration-300"
     aria-busy="true"
     aria-live="polite"
   >
-    {/* Animated gradient orbs */}
+    {/* Subtle background glow - slower, more gentle */}
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute -top-32 -left-32 h-[480px] w-[480px] rounded-full bg-[radial-gradient(circle_at_center,rgba(255,0,81,0.2),rgba(255,0,81,0))] blur-[140px] opacity-70 animate-pulse"
-      style={{ animationDuration: '3s' }}
-    />
-    <div
-      aria-hidden="true"
-      className="pointer-events-none absolute -bottom-48 -right-48 h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle_at_center,rgba(0,245,255,0.2),rgba(0,245,255,0))] blur-[160px] opacity-65 animate-pulse"
-      style={{ animationDuration: '4s', animationDelay: '1s' }}
-    />
-
-    {/* Center glow */}
-    <div
-      aria-hidden="true"
-      className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-[radial-gradient(circle_at_center,rgba(255,0,81,0.15),transparent)] blur-[100px] opacity-50 animate-pulse"
-      style={{ animationDuration: '2.5s' }}
+      className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle_at_center,rgba(255,0,81,0.08),transparent)] blur-[80px] opacity-60"
+      style={{ animation: 'gentle-pulse 4s ease-in-out infinite' }}
     />
 
     <div className="relative z-10 flex flex-col items-center text-center px-6">
-      {/* Glass-morph loader container */}
-      <div className="relative mb-10">
-        {/* Glass effect background */}
-        <div className="absolute inset-[-40px] rounded-full backdrop-blur-xl bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-2xl" />
-
-        {/* Panhaha animated logo */}
+      {/* Simplified loader container */}
+      <div className="relative mb-8">
+        {/* Single smooth rotating ring */}
         <div className="relative">
-          {/* Outer rotating ring - Primary color */}
-          <div className="absolute inset-0 w-24 h-24 rounded-full border-4 border-primary-500/30 border-t-primary-500 animate-spin" />
-
-          {/* Inner rotating ring - Accent color */}
+          {/* Outer circle - subtle gradient border */}
           <div
-            className="absolute inset-0 w-24 h-24 rounded-full border-4 border-accent-500/30 border-t-accent-500 animate-spin"
-            style={{ transform: 'scale(0.75)', animationDuration: '1.5s', animationDirection: 'reverse' }}
-          />
+            className="w-20 h-20 rounded-full bg-gradient-to-tr from-primary-500/20 via-accent-500/20 to-primary-500/20 p-0.5"
+            style={{ animation: 'smooth-rotate 3s cubic-bezier(0.4, 0, 0.2, 1) infinite' }}
+          >
+            <div className="w-full h-full rounded-full bg-white dark:bg-secondary-900" />
+          </div>
 
-          {/* Center icon */}
-          <div className="relative flex items-center justify-center w-24 h-24">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-display font-bold text-2xl bg-panhaha-gradient shadow-2xl shadow-primary-500/50 animate-pulse">
+          {/* Center icon - gentle breathing effect */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-display font-bold text-xl bg-gradient-to-br from-primary-500 to-accent-500 shadow-lg"
+              style={{ animation: 'gentle-breathe 2s ease-in-out infinite' }}
+            >
               H
             </div>
-          </div>
-
-          {/* Orbiting dots */}
-          <div className="absolute inset-0 w-24 h-24 animate-spin" style={{ animationDuration: '3s' }}>
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary-500 shadow-lg shadow-primary-500/50" />
-          </div>
-          <div className="absolute inset-0 w-24 h-24 animate-spin" style={{ animationDuration: '3s', animationDelay: '1s' }}>
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-accent-500 shadow-lg shadow-accent-500/50" />
           </div>
         </div>
       </div>
 
-      {/* Text with glass effect */}
-      <div className="backdrop-blur-md bg-white/30 dark:bg-white/5 px-6 py-3 rounded-2xl border border-white/20 dark:border-white/10 shadow-xl">
-        <h2 className="text-lg sm:text-2xl font-display font-semibold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent animate-fade-in">
+      {/* Text with fade-in */}
+      <div className="backdrop-blur-sm bg-white/40 dark:bg-white/5 px-6 py-3 rounded-xl border border-white/30 dark:border-white/10 shadow-lg">
+        <h2
+          className="text-lg sm:text-2xl font-display font-semibold bg-gradient-to-r from-primary-600 to-secondary-600 dark:from-primary-400 dark:to-secondary-400 bg-clip-text text-transparent"
+          style={{ animation: 'fade-in 0.5s ease-out' }}
+        >
           {title}
         </h2>
         {subtitle && (
           <p
-            className="mt-2 text-sm sm:text-base text-secondary-600 dark:text-secondary-300 animate-fade-in"
-            style={{ animationDelay: '100ms' }}
+            className="mt-1.5 text-sm sm:text-base text-secondary-600 dark:text-secondary-400"
+            style={{ animation: 'fade-in 0.5s ease-out 0.1s backwards' }}
           >
             {subtitle}
           </p>
         )}
       </div>
 
-      {/* Loading dots animation */}
-      <div className="flex gap-2 mt-6 animate-fade-in" style={{ animationDelay: '200ms' }}>
-        <div className="w-2 h-2 rounded-full bg-primary-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-        <div className="w-2 h-2 rounded-full bg-accent-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-        <div className="w-2 h-2 rounded-full bg-primary-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+      {/* Smooth progress dots */}
+      <div className="flex gap-1.5 mt-6" style={{ animation: 'fade-in 0.5s ease-out 0.2s backwards' }}>
+        <div
+          className="w-1.5 h-1.5 rounded-full bg-primary-500/70"
+          style={{ animation: 'smooth-dot-pulse 1.5s ease-in-out infinite' }}
+        />
+        <div
+          className="w-1.5 h-1.5 rounded-full bg-accent-500/70"
+          style={{ animation: 'smooth-dot-pulse 1.5s ease-in-out 0.2s infinite' }}
+        />
+        <div
+          className="w-1.5 h-1.5 rounded-full bg-primary-500/70"
+          style={{ animation: 'smooth-dot-pulse 1.5s ease-in-out 0.4s infinite' }}
+        />
       </div>
     </div>
   </div>

@@ -697,13 +697,58 @@
     }
   }
 
+  }
+
   /* Simple fade-in used by loaders and page transitions */
   @keyframes fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
   }
 
-  /* Universal loader */
+  /* Smooth, elegant loader animations */
+  @keyframes gentle-pulse {
+    0%, 100% {
+      opacity: 0.4;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: translate(-50%, -50%) scale(1.05);
+    }
+  }
+
+  @keyframes smooth-rotate {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes gentle-breathe {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 0.95;
+    }
+  }
+
+  @keyframes smooth-dot-pulse {
+    0%, 100% {
+      opacity: 0.5;
+      transform: scale(0.8);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+
+  /* Universal loader - smoother version */
   .loader,
   .loader-sm,
   .loader-md,
@@ -716,15 +761,15 @@
     mask:
       radial-gradient(#0000 47%, #000 48% 71%, #0000 72%) exclude,
       conic-gradient(#000 0 0) no-clip;
-    animation: l11 1.5s linear infinite;
+    animation: smooth-loader-spin 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     /* Allow blur to scale with size */
-    --loader-blur: 15px;
+    --loader-blur: 12px;
   }
   .loader { height: 80px; }
   .loader-xl { height: 80px; }
-  .loader-lg { height: 32px; --loader-blur: 10px; }
-  .loader-md { height: 24px; --loader-blur: 6px; }
-  .loader-sm { height: 16px; --loader-blur: 4px; }
+  .loader-lg { height: 32px; --loader-blur: 8px; }
+  .loader-md { height: 24px; --loader-blur: 5px; }
+  .loader-sm { height: 16px; --loader-blur: 3px; }
   .loader::before,
   .loader-sm::before,
   .loader-md::before,
@@ -737,7 +782,14 @@
     background: currentColor;
     filter: blur(var(--loader-blur));
   }
-  @keyframes l11 { to { rotate: 1turn } }
+  @keyframes smooth-loader-spin {
+    0% {
+      rotate: 0deg;
+    }
+    100% {
+      rotate: 360deg;
+    }
+  }
 
   /* Handshake loader elements */
   .avatar-circle {
