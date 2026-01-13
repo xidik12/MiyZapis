@@ -1792,7 +1792,25 @@ const translations: Translations = {
 
   // Schedule reasons
   'schedule.personalAppointment': { en: 'Personal appointment', uk: 'Особиста зустріч', ru: 'Личная встреча' },
-  
+
+  // Schedule additional features
+  'schedule.export': { en: 'Export', uk: 'Експорт', ru: 'Экспорт' },
+  'schedule.filter': { en: 'Filter', uk: 'Фільтр', ru: 'Фильтр' },
+  'schedule.filterByStatus': { en: 'Filter by Status', uk: 'Фільтр за статусом', ru: 'Фильтр по статусу' },
+  'schedule.viewDetails': { en: 'View Details', uk: 'Переглянути деталі', ru: 'Просмотреть детали' },
+  'schedule.exportToCalendar': { en: 'Export to Calendar', uk: 'Експортувати в календар', ru: 'Экспортировать в календарь' },
+  'schedule.openInGoogle': { en: 'Open in Google Calendar', uk: 'Відкрити в Google Calendar', ru: 'Открыть в Google Calendar' },
+  'schedule.reschedule': { en: 'Reschedule', uk: 'Перенести', ru: 'Перенести' },
+  'schedule.exportSuccess': { en: 'Booking exported successfully', uk: 'Бронювання успішно експортовано', ru: 'Бронирование успешно экспортировано' },
+  'schedule.rescheduleBooking': { en: 'Reschedule booking feature coming soon', uk: 'Функція перенесення бронювання скоро з\'явиться', ru: 'Функция переноса бронирования скоро появится' },
+  'schedule.cancelBooking': { en: 'Cancel booking feature coming soon', uk: 'Функція скасування бронювання скоро з\'явиться', ru: 'Функция отмены бронирования скоро появится' },
+  'schedule.bookAgain': { en: 'Book again feature coming soon', uk: 'Функція повторного бронювання скоро з\'явиться', ru: 'Функция повторного бронирования скоро появится' },
+  'schedule.leaveReview': { en: 'Leave review feature coming soon', uk: 'Функція залишення відгуку скоро з\'явиться', ru: 'Функция оставления отзыва скоро появится' },
+  'schedule.recurringFeature': { en: 'Recurring booking feature coming soon', uk: 'Функція повторюваних бронювань скоро з\'явиться', ru: 'Функция повторяющихся бронирований скоро появится' },
+  'schedule.conflictsDetected': { en: 'Booking Conflicts Detected', uk: 'Виявлено конфлікти бронювань', ru: 'Обнаружены конфликты бронирований' },
+  'schedule.bookingRescheduled': { en: 'Booking rescheduled successfully', uk: 'Бронювання успішно перенесено', ru: 'Бронирование успешно перенесено' },
+  'schedule.rescheduleError': { en: 'Failed to reschedule booking', uk: 'Не вдалося перенести бронювання', ru: 'Не удалось перенести бронирование' },
+
       // Time abbreviations (fixed duplicate)
     'time.hrs': { en: 'hr', uk: 'год', ru: 'ч' },
   

@@ -8,95 +8,17 @@ export const Footer: React.FC = () => {
   const { t } = useLanguage();
 
   const footerLinks = {
-    company: [
-      { name: t('footer.aboutUs'), href: '/about' },
-      { name: t('footer.careers'), href: '/careers' },
-      { name: t('footer.contact'), href: '/contact' },
-      { name: t('footer.blog'), href: '/blog' },
-    ],
-    support: [
-      { name: t('footer.helpCenter'), href: '/help' },
-      { name: t('footer.safety'), href: '/safety' },
-      { name: t('footer.communityGuidelines'), href: '/guidelines' },
-      { name: t('footer.termsOfService'), href: '/terms' },
-    ],
-    legal: [
-      { name: t('footer.privacyPolicy'), href: '/privacy' },
-      { name: t('footer.cookiePolicy'), href: '/cookies' },
-      { name: t('footer.accessibility'), href: '/accessibility' },
-      { name: t('footer.disputeResolution'), href: '/disputes' },
-    ],
     specialists: [
       { name: t('footer.joinAsSpecialist'), href: '/auth/register?type=specialist' },
-      { name: t('footer.specialistResources'), href: '/specialist-resources' },
-      { name: t('footer.successStories'), href: '/success-stories' },
-      { name: t('footer.community'), href: '/community' },
     ],
   };
 
   return (
     <footer className="bg-gray-900 text-white w-full prevent-overflow">
       <div className="max-w-7xl mx-auto mobile-container py-6 xs:py-8 sm:py-12 prevent-overflow">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 xs:gap-6 sm:gap-8">
-          {/* Company */}
-          <div>
-            <h3 className="text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3 sm:mb-4">
-              {t('footer.company')}
-            </h3>
-            <ul className="space-y-2 sm:space-y-3">
-              {footerLinks.company.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="block text-gray-400 hover:text-white text-xs sm:text-sm transition-all duration-200 px-2 py-1 rounded-xl hover:bg-gray-800/50"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Support */}
-          <div>
-            <h3 className="text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3 sm:mb-4">
-              {t('footer.support')}
-            </h3>
-            <ul className="space-y-2 sm:space-y-3">
-              {footerLinks.support.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="block text-gray-400 hover:text-white text-xs sm:text-sm transition-all duration-200 px-2 py-1 rounded-xl hover:bg-gray-800/50"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Legal */}
-          <div>
-            <h3 className="text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3 sm:mb-4">
-              {t('footer.legal')}
-            </h3>
-            <ul className="space-y-2 sm:space-y-3">
-              {footerLinks.legal.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="block text-gray-400 hover:text-white text-xs sm:text-sm transition-all duration-200 px-2 py-1 rounded-xl hover:bg-gray-800/50"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
+        <div className="text-center mb-6 xs:mb-8">
           {/* For Specialists */}
-          <div>
+          <div className="inline-block">
             <h3 className="text-xs sm:text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3 sm:mb-4">
               {t('footer.forSpecialists')}
             </h3>
@@ -105,7 +27,7 @@ export const Footer: React.FC = () => {
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="block text-gray-400 hover:text-white text-xs sm:text-sm transition-all duration-200 px-2 py-1 rounded-xl hover:bg-gray-800/50"
+                    className="block text-gray-400 hover:text-white text-sm sm:text-base transition-all duration-200 px-4 py-2 rounded-xl hover:bg-gray-800/50"
                   >
                     {link.name}
                   </Link>
