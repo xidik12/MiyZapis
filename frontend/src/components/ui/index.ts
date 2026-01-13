@@ -9,6 +9,7 @@ export { LoadingAnimation } from './LoadingAnimation';
 export { InlineLoader } from './InlineLoader';
 export { FullScreenLoader } from './FullScreenLoader';
 export { FullScreenHandshakeLoader } from './FullScreenHandshakeLoader';
+export { LoadingShowcase } from './LoadingShowcase';
 export { ThemeToggle } from './ThemeToggle';
 export { UkrainianElements } from './UkrainianElements';
 
