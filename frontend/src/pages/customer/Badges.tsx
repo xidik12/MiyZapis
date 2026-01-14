@@ -4,6 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { loyaltyService, UserBadge, LoyaltyBadge } from '@/services/loyalty.service';
 import { toast } from 'react-toastify';
 import { TrophyIcon, SparklesIcon, CheckCircleIcon, LockClosedIcon, ClockIcon, InformationCircleIcon, AcademicCapIcon, StarIcon, HeartIcon, CrownIcon, GiftIcon, FireIcon } from '@/components/icons';
+import { PageLoader } from '@/components/ui';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -125,14 +126,7 @@ const CustomerBadges: React.FC = () => {
   const rarities = ['COMMON', 'RARE', 'EPIC', 'LEGENDARY'];
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading badges...</p>
-        </div>
-      </div>
-    );
+    return <PageLoader text="Loading badges..." />;
   }
 
   return (

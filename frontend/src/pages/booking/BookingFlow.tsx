@@ -16,6 +16,7 @@ import { filterSlotsByDuration, calculateEndTime } from '../../utils/timeSlotUti
 import { environment } from '@/config/environment';
 import { logger } from '@/utils/logger';
 import { CalendarIcon, ClockIcon, MapPinIcon, CreditCardIcon, CheckCircleIcon, ArrowLeftIcon, ArrowRightIcon, GiftIcon, StarIcon } from '@/components/icons';
+import { PageLoader } from '@/components/ui';
 
 interface BookingStep {
   id: string;
@@ -834,11 +835,7 @@ const BookingFlow: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (!specialist || !service) {

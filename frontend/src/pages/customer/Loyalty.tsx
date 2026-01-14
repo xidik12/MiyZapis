@@ -7,6 +7,7 @@ import { RewardsService, LoyaltyReward, RewardRedemption } from '@/services/rewa
 import { formatPoints as utilFormatPoints } from '@/utils/formatPoints';
 import { toast } from 'react-toastify';
 import { StarIcon, GiftIcon, TrophyIcon, ClockIcon, ArrowUpIcon, ArrowDownIcon, ChevronRightIcon, SparklesIcon, CalendarDaysIcon, UsersIcon, CurrencyDollarIcon, FireIcon, BriefcaseIcon, EyeIcon } from '@/components/icons';
+import { PageLoader } from '@/components/ui';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -311,14 +312,7 @@ const CustomerLoyalty: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">{t('loyalty.loading') || 'Loading loyalty program...'}</p>
-        </div>
-      </div>
-    );
+    return <PageLoader text={t('loyalty.loading') || 'Loading loyalty program...'} />;
   }
 
     return (

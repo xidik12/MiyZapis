@@ -7,6 +7,7 @@ import { selectUser } from '../../store/slices/authSlice';
 import { LoyaltyService, UserLoyalty, LoyaltyStats } from '../../services/loyalty.service';
 import { calculateTier, formatPoints } from '../../utils/formatPoints';
 import { PencilSquareIcon, MapPinIcon, StarIcon, CreditCardIcon, Cog6ToothIcon, UserCircleIcon, PhoneIcon, EnvelopeIcon, CalendarIcon, CheckCircleIcon, XCircleIcon, WarningIcon as ExclamationTriangleIcon, CameraIcon, EyeIcon, BuildingOfficeIcon, ShieldCheckIcon, DocumentCheckIcon } from '@/components/icons';
+import { ContentLoader } from '@/components/ui';
 
 interface Address {
   id: string;
@@ -466,10 +467,7 @@ const CustomerProfile: React.FC = () => {
             {/* Loyalty Program Card */}
             <div className="bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-gray-800 dark:to-gray-800 rounded-2xl shadow-sm border border-primary-200 dark:border-gray-700 p-8">
               {loadingLoyalty ? (
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-                  <p className="text-gray-600 dark:text-gray-400">Loading loyalty data...</p>
-                </div>
+                <ContentLoader text="Loading loyalty data..." minHeight="300px" />
               ) : (
                 <>
                   <div className="text-center mb-6">

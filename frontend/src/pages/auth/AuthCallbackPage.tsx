@@ -5,6 +5,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { setAuthTokens } from '@/services';
 import { toast } from 'react-toastify';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { PageLoader } from '@/components/ui';
 
 /**
  * AuthCallbackPage - Handles OAuth callback redirects
@@ -74,19 +75,7 @@ const AuthCallbackPage: React.FC = () => {
     handleAuthCallback();
   }, [searchParams, navigate, dispatch]);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-      <div className="text-center bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl px-8 py-10 rounded-2xl shadow-glass border border-gray-200/20 dark:border-gray-700/20 max-w-md w-full">
-        <div className="animate-spin rounded-full h-14 w-14 border-b-2 border-t-2 border-primary-600 mx-auto mb-6"></div>
-        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-          {t('auth.completingSignIn') || 'Completing sign in...'}
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400">
-          {t('auth.pleaseWait') || 'Please wait while we complete your authentication.'}
-        </p>
-      </div>
-    </div>
-  );
+  return <PageLoader text={t('auth.completingSignIn') || 'Completing sign in...'} />;
 };
 
 export default AuthCallbackPage;

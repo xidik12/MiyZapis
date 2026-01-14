@@ -25,6 +25,7 @@ const statusColors = {
   noShow: 'bg-gray-100 text-gray-800 border-gray-200'
 };
 import { CalendarIcon, HeartIcon, CreditCardIcon, StarIcon, UserGroupIcon, ClockIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, GiftIcon, MagnifyingGlassIcon, EyeIcon, ChatBubbleLeftRightIcon, MapPinIcon, ChartBarIcon, PlusIcon, BookOpenIcon, WarningIcon as ExclamationTriangleIcon } from '@/components/icons';
+import { PageLoader } from '@/components/ui';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -325,14 +326,7 @@ const CustomerDashboard: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">{t('dashboard.loading')}</p>
-        </div>
-      </div>
-    );
+    return <PageLoader text={t('dashboard.loading')} />;
   }
 
   if (error) {
