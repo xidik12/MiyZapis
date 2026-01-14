@@ -159,26 +159,22 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen w-full prevent-overflow">
       {/* Hero Section */}
-      <section className="relative bg-primary-600 text-white overflow-hidden min-h-[100vh] xs:min-h-[90vh] sm:min-h-[85vh] lg:min-h-[80vh] flex items-center w-full prevent-overflow">
-        <div className="absolute inset-0 bg-black bg-opacity-10"></div>
+      <section className="relative bg-primary-600 text-white overflow-hidden min-h-[85vh] flex items-center w-full">
+        <div className="absolute inset-0 bg-primary-700/30"></div>
 
-        {/* Animated background elements - hide some on mobile */}
-        <div className="hidden lg:block absolute top-20 right-20 w-32 h-32 rounded-full morph-shape opacity-20 float-animation"></div>
-        <div className="hidden lg:block absolute bottom-20 left-20 w-48 h-48 rounded-full bg-white/10 animate-pulse"></div>
-
-        <div className="relative w-full max-w-7xl mx-auto mobile-container py-12 xs:py-16 sm:py-20 lg:py-24 prevent-overflow">
-          <div className="text-center w-full prevent-overflow">
-            <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-6xl font-bold mb-4 xs:mb-6 leading-tight animate-fade-in px-2 xs:px-0">
+        <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+          <div className="text-center w-full">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
               {t('hero.title1')}
               <br />
               <span className="text-white">{t('hero.title2')}</span>
             </h1>
-            <p className="text-base xs:text-lg sm:text-xl md:text-2xl text-primary-100 mb-6 xs:mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-2 xs:px-0">
+            <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-10 max-w-3xl mx-auto">
               {t('hero.subtitle')}
             </p>
 
             {/* Search Bar */}
-            <div className="w-full max-w-2xl mx-auto mb-8 px-4 sm:px-0">
+            <div className="w-full max-w-2xl mx-auto mb-10">
               <SearchBar
                 placeholder={t('hero.searchPlaceholder')}
                 onSearch={handleSearch}
@@ -187,50 +183,42 @@ const HomePage: React.FC = () => {
             </div>
 
             {/* Quick Actions */}
-            <div className="flex flex-wrap justify-center gap-2 xs:gap-3 sm:gap-4 mb-6 xs:mb-8 sm:mb-12 px-2 xs:px-0">
+            <div className="flex flex-wrap justify-center gap-3 mb-12">
               <Link
                 to="/search?category=beauty-wellness"
-                className="glass-effect text-white px-3 xs:px-4 sm:px-6 py-2 xs:py-2 sm:py-3 rounded-full font-semibold hover:scale-105 transition-all duration-300 hover:glow-primary text-xs xs:text-sm sm:text-base whitespace-nowrap"
+                className="bg-white/20 hover:bg-white/30 text-white px-5 py-2.5 rounded-full font-medium transition-colors text-sm sm:text-base"
               >
                 {t('category.beautyWellness')}
               </Link>
               <Link
                 to="/search?category=health-fitness"
-                className="glass-effect text-white px-3 xs:px-4 sm:px-6 py-2 xs:py-2 sm:py-3 rounded-full font-semibold hover:scale-105 transition-all duration-300 hover:glow-primary text-xs xs:text-sm sm:text-base whitespace-nowrap"
+                className="bg-white/20 hover:bg-white/30 text-white px-5 py-2.5 rounded-full font-medium transition-colors text-sm sm:text-base"
               >
                 {t('category.healthFitness')}
               </Link>
               <Link
                 to="/search?category=home-services"
-                className="glass-effect text-white px-3 xs:px-4 sm:px-6 py-2 xs:py-2 sm:py-3 rounded-full font-semibold hover:scale-105 transition-all duration-300 hover:glow-primary text-xs xs:text-sm sm:text-base whitespace-nowrap"
+                className="bg-white/20 hover:bg-white/30 text-white px-5 py-2.5 rounded-full font-medium transition-colors text-sm sm:text-base"
               >
                 {t('category.homeServices')}
               </Link>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 xs:gap-4 sm:gap-6 max-w-4xl mx-auto px-2 xs:px-0">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 max-w-4xl mx-auto">
               {stats.map((stat, index) => (
                 <div
-                  key={index} 
-                  className="glass-effect text-center p-3 xs:p-4 sm:p-6 hover:scale-105 transition-all duration-300 rounded-lg border border-white/20"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.15)',
-                    backdropFilter: 'blur(20px)'
-                  }}
+                  key={index}
+                  className="bg-white/10 text-center p-4 sm:p-6 rounded-xl border border-white/20"
                 >
-                  <stat.icon className="w-6 h-6 xs:w-8 xs:h-8 sm:w-10 sm:h-10 mx-auto mb-2 xs:mb-2 sm:mb-3 text-secondary-200" />
-                  <div className="text-lg xs:text-xl sm:text-2xl font-bold mb-1 text-white drop-shadow-lg">{stat.value}</div>
-                  <div className="text-white/90 text-xs xs:text-xs sm:text-sm font-medium drop-shadow-md leading-tight">{stat.label}</div>
+                  <stat.icon className="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-3 text-white" />
+                  <div className="text-2xl sm:text-3xl font-bold mb-1 text-white">{stat.value}</div>
+                  <div className="text-white/90 text-sm font-medium">{stat.label}</div>
                 </div>
               ))}
             </div>
           </div>
         </div>
-
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-primary-500 opacity-20 transform translate-x-32 -translate-y-32"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-secondary-500 opacity-10 transform -translate-x-48 translate-y-48"></div>
       </section>
 
       {/* Service Categories */}
@@ -245,19 +233,19 @@ const HomePage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-6 md:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {serviceCategories.map((category, index) => {
               const IconComponent = category.icon;
               return (
                 <Link
                   key={category.id}
                   to={category.href}
-                  className="group glass-effect p-4 xs:p-6 sm:p-8 rounded-xl hover:scale-105 transition-all duration-300 block h-full"
+                  className="group bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary-500 hover:shadow-lg transition-all block h-full"
                 >
                   <div className="mb-6">
                     <IconComponent className="w-12 h-12 text-primary-600 dark:text-primary-400" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 group-hover:text-primary-600 transition-all duration-300">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
                     {category.name}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
@@ -267,7 +255,7 @@ const HomePage: React.FC = () => {
                     <span className="text-primary-600 font-semibold px-3 py-1 bg-primary-50 dark:bg-primary-900/30 rounded-full">
                       {category.serviceCount} {t('services.count')}
                     </span>
-                    <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-all duration-300 group-hover:translate-x-1" />
+                    <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-colors" />
                   </div>
                 </Link>
               );
@@ -426,24 +414,24 @@ const HomePage: React.FC = () => {
             </div>
 
             <div className="relative">
-              <div className="bg-white bg-opacity-10 rounded-xl p-8 backdrop-blur-sm">
+              <div className="bg-white/10 rounded-xl p-8 border border-white/20">
                 <h3 className="text-2xl font-semibold mb-6 text-center">
                   {t('forSpecialists.benefitsTitle')}
                 </h3>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-white bg-opacity-10 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-white/10 rounded-lg">
                     <span>{t('forSpecialists.monthlyBookings')}</span>
                     <span className="font-bold">45+</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-white bg-opacity-10 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-white/10 rounded-lg">
                     <span>{t('forSpecialists.responseTime')}</span>
                     <span className="font-bold">&lt; 2 hours</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-white bg-opacity-10 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-white/10 rounded-lg">
                     <span>{t('forSpecialists.satisfaction')}</span>
                     <span className="font-bold">4.8/5 ⭐</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-white bg-opacity-10 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-white/10 rounded-lg">
                     <span>{t('forSpecialists.commission')}</span>
                     <span className="font-bold">{t('forSpecialists.commissionValue')}</span>
                   </div>
@@ -471,7 +459,7 @@ const HomePage: React.FC = () => {
             {user ? (
               <Link
                 to="/search"
-                className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl text-center"
+                className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-colors shadow-lg hover:shadow-xl text-center"
               >
                 {t('cta.browseServices')}
               </Link>
@@ -479,13 +467,13 @@ const HomePage: React.FC = () => {
               <>
                 <Link
                   to="/auth/register"
-                  className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl text-center"
+                  className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-colors shadow-lg hover:shadow-xl text-center"
                 >
                   {t('cta.signUpCustomer')}
                 </Link>
                 <Link
                   to="/auth/register?type=specialist"
-                  className="border-2 border-primary-500 text-primary-600 dark:text-primary-400 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all duration-300 text-center"
+                  className="border-2 border-primary-500 text-primary-600 dark:text-primary-400 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors text-center"
                 >
                   {t('cta.joinSpecialist')}
                 </Link>
