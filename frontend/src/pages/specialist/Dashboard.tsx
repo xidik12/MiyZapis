@@ -27,21 +27,20 @@ import {
   ClockIcon,
   ArrowUpIcon,
   ArrowDownIcon,
-  ArrowRightIcon,
   EyeIcon,
   HeartIcon,
   ChatBubbleLeftRightIcon,
   PlusIcon,
   ArrowDownTrayIcon,
   Cog6ToothIcon,
-} from '@/components/icons';
+} from '@heroicons/react/24/outline';
 import {
-  CalendarIcon,
-  StarIcon,
-} from '@/components/icons';
+  CalendarIcon as CalendarIconSolid,
+  StarIcon as StarIconSolid,
+} from '@heroicons/react/24/solid';
 
 // Helper function to get the booking currency
-const getBookingCurrency = (booking: any): 'USD' | 'KHR' | 'UAH' | 'EUR' => {
+const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
   // Debug logging to see what currency is stored
   console.log(`🔍 getBookingCurrency for booking ${booking.id}:`, {
     serviceName: booking.service?.name || booking.serviceName,
@@ -49,12 +48,8 @@ const getBookingCurrency = (booking: any): 'USD' | 'KHR' | 'UAH' | 'EUR' => {
     totalAmount: booking.totalAmount
   });
   
-  // Use the service's stored currency, defaulting to USD if not specified
-  const detected = (booking.service?.currency || booking.currency || '').toUpperCase();
-  const currency: 'USD' | 'KHR' | 'UAH' | 'EUR' =
-    detected === 'KHR' ? 'KHR' :
-    detected === 'EUR' ? 'EUR' :
-    detected === 'UAH' ? 'UAH' : 'USD';
+  // Use the service's stored currency, defaulting to UAH if not specified
+  const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
   console.log(`💱 Final currency for ${booking.service?.name || booking.serviceName}: ${currency}`);
   return currency;
 };
@@ -459,86 +454,80 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
   };
 
   const StatCard = ({ title, value, change, changeType, icon: Icon, iconBg, description }: any) => (
-    <div className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wider line-clamp-1">{title}</p>
+    <div className="bg-surface rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-1 truncate">{title}</p>
           {loading ? (
             <div className="mb-2">
               <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-24"></div>
             </div>
           ) : (
-            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2 break-words">{value}</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">{value}</p>
           )}
           {description && !loading && (
-            <p className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 line-clamp-1">{description}</p>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{description}</p>
           )}
           {loading && (
             <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-16"></div>
           )}
           {change && !loading && (
-            <div className={`flex items-center mt-2 text-xs sm:text-sm font-semibold ${
+            <div className={`flex items-center mt-2 text-xs sm:text-sm ${
               changeType === 'positive' ? 'text-success-600' : 'text-error-600'
             }`}>
               {changeType === 'positive' ? (
-                <ArrowUpIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
+                <ArrowUpIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
               ) : (
-                <ArrowDownIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
+                <ArrowDownIcon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
               )}
-              <span className="truncate">{change}</span>
+              <span>{change}</span>
             </div>
           )}
         </div>
-        <div className={`p-2 sm:p-3 lg:p-4 rounded-xl ${iconBg} flex-shrink-0 shadow-sm`}>
-          <Icon className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-white" />
+        <div className={`p-2 sm:p-3 rounded-xl ${iconBg} flex-shrink-0`}>
+          <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
         </div>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
-                  {getGreeting()}, {user?.firstName}!
-                </h1>
-                <span className="text-3xl">👋</span>
-              </div>
-              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 font-medium">
-                📅 {t('dashboard.today')} {currentTime.toLocaleDateString(
-                  language === 'kh' ? 'km-KH' : 'en-US',
-                  {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  }
-                )}
-              </p>
-            </div>
-            <div className="mt-4 lg:mt-0 flex flex-col sm:flex-row gap-3">
-              <Link
-                to="/specialist/services"
-                className="inline-flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white rounded-lg transition-all duration-200 font-bold shadow-sm hover:shadow-md text-sm sm:text-base whitespace-nowrap"
-              >
-                <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
-                <span className="truncate">{t('dashboard.specialist.addService')}</span>
-              </Link>
-              <button
-                onClick={handleExportReport}
-                className="inline-flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 font-bold text-sm sm:text-base shadow-sm whitespace-nowrap"
-              >
-                <ArrowDownTrayIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
-                <span className="truncate">{t('dashboard.specialist.exportReport')}</span>
-              </button>
-            </div>
-          </div>
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            {getGreeting()}, {user?.firstName}! 👋
+          </h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+            {t('dashboard.today')} {currentTime.toLocaleDateString(
+              language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
+              { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              }
+            )}
+          </p>
         </div>
+        <div className="mt-4 lg:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+          <Link
+            to="/specialist/services"
+            className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl hover:from-primary-700 hover:to-secondary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
+          >
+            <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+            {t('dashboard.specialist.addService')}
+          </Link>
+          <button 
+            onClick={handleExportReport}
+            className="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium text-sm sm:text-base"
+          >
+            <ArrowDownTrayIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+            {t('dashboard.specialist.exportReport')}
+          </button>
+        </div>
+      </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -547,8 +536,8 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           value={dashboardData.stats.totalBookings}
           change={dashboardData.stats.totalBookings > 0 ? `+12% ${t('dashboard.specialist.thisMonthImprovement')}` : ''}
           changeType="positive"
-          icon={CalendarIcon}
-          iconBg="bg-primary-600"
+          icon={CalendarIconSolid}
+          iconBg="bg-gradient-to-br from-primary-500 to-primary-600"
           description={t('dashboard.specialist.allTime')}
         />
         <StatCard
@@ -557,7 +546,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           change={dashboardData.stats.monthlyRevenue > 0 ? `+8% ${t('dashboard.specialist.improvement')}` : ''}
           changeType="positive"
           icon={CurrencyDollarIcon}
-          iconBg="bg-success-600"
+          iconBg="bg-gradient-to-br from-success-500 to-success-600"
           description={language === 'uk' ? 'Серпень 2025' : language === 'ru' ? 'Август 2025' : 'August 2025'}
         />
         <StatCard
@@ -565,8 +554,8 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           value={`${dashboardData.stats.rating}/5.0`}
           change={dashboardData.stats.reviewCount > 0 ? `+0.2 ${t('dashboard.specialist.thisMonthImprovement')}` : ''}
           changeType="positive"
-          icon={StarIcon}
-          iconBg="bg-warning-600"
+          icon={StarIconSolid}
+          iconBg="bg-gradient-to-br from-warning-500 to-warning-600"
           description={`${dashboardData.stats.reviewCount} ${t('dashboard.nav.reviews').toLowerCase()}`}
         />
         <StatCard
@@ -575,82 +564,76 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           change={dashboardData.stats.responseTime > 0 ? `-3 ${t('time.minutes')} ${t('dashboard.specialist.improvement')}` : ''}
           changeType="positive"
           icon={ClockIcon}
-          iconBg="bg-info-600"
+          iconBg="bg-gradient-to-br from-info-500 to-info-600"
           description={t('dashboard.specialist.averageTime')}
         />
       </div>
 
       {/* Additional Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">👁️ {t('dashboard.specialist.profileActivity')}</h3>
-            <div className="p-2 rounded-lg bg-primary-50 dark:bg-primary-900/20">
-              <EyeIcon className="w-5 h-5 text-primary-600" />
-            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.profileActivity')}</h3>
+            <EyeIcon className="w-5 h-5 text-gray-400" />
           </div>
           <div className="space-y-3">
-            <div className="flex justify-between items-center p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-              <span className="text-gray-600 dark:text-gray-400 font-medium">{t('dashboard.specialist.profileViews')}</span>
-              <span className="font-bold text-gray-900 dark:text-white text-lg">{dashboardData.stats.profileViews}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.profileViews')}</span>
+              <span className="font-semibold text-gray-900 dark:text-white">{dashboardData.stats.profileViews}</span>
             </div>
-            <div className="flex justify-between items-center p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-              <span className="text-gray-600 dark:text-gray-400 font-medium">{t('dashboard.specialist.favoriteCount')}</span>
-              <span className="font-bold text-gray-900 dark:text-white text-lg">{dashboardData.stats.favoriteCount}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.favoriteCount')}</span>
+              <span className="font-semibold text-gray-900 dark:text-white">{dashboardData.stats.favoriteCount}</span>
             </div>
-            <div className="flex justify-between items-center p-3 rounded-lg bg-success-50 dark:bg-success-900/20">
-              <span className="text-gray-600 dark:text-gray-400 font-medium">{t('dashboard.specialist.conversionRate')}</span>
-              <span className="font-bold text-success-600 text-lg">{dashboardData.stats.conversionRate}%</span>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.conversionRate')}</span>
+              <span className="font-semibold text-success-600">{dashboardData.stats.conversionRate}%</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">📊 {t('dashboard.specialist.qualityMetrics')}</h3>
-            <div className="p-2 rounded-lg bg-accent-50 dark:bg-accent-900/20">
-              <ChartBarIcon className="w-5 h-5 text-accent-600" />
-            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.qualityMetrics')}</h3>
+            <ChartBarIcon className="w-5 h-5 text-gray-400" />
           </div>
           <div className="space-y-3">
-            <div className="flex justify-between items-center p-3 rounded-lg bg-success-50 dark:bg-success-900/20">
-              <span className="text-gray-600 dark:text-gray-400 font-medium">{t('dashboard.specialist.completionRate')}</span>
-              <span className="font-bold text-success-600 text-lg">{dashboardData.stats.completionRate}%</span>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.completionRate')}</span>
+              <span className="font-semibold text-success-600">{dashboardData.stats.completionRate}%</span>
             </div>
-            <div className="flex justify-between items-center p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
-              <span className="text-gray-600 dark:text-gray-400 font-medium">{t('dashboard.specialist.repeatClients')}</span>
-              <span className="font-bold text-gray-900 dark:text-white text-lg">{dashboardData.stats.repeatClients}%</span>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.repeatClients')}</span>
+              <span className="font-semibold text-gray-900 dark:text-white">{dashboardData.stats.repeatClients}%</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-primary-600 rounded-xl p-6 text-white shadow-sm hover:shadow-md transition-all duration-200">
+        <div className="bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold">⚡ {t('dashboard.quickActions')}</h3>
-            <div className="p-2 rounded-lg bg-white/10">
-              <UserGroupIcon className="w-5 h-5" />
-            </div>
+            <h3 className="text-lg font-semibold">{t('dashboard.quickActions')}</h3>
+            <UserGroupIcon className="w-5 h-5 opacity-80" />
           </div>
           <div className="space-y-2">
             <Link
               to="/specialist/schedule"
-              className="block w-full text-left py-3 px-4 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 font-semibold flex items-center"
+              className="w-full text-left py-2 px-3 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 text-sm font-medium flex items-center"
             >
-              <Cog6ToothIcon className="w-5 h-5 mr-3" />
+              <Cog6ToothIcon className="w-4 h-4 mr-2" />
               {t('dashboard.specialist.manageSchedule')}
             </Link>
             <Link
               to="/specialist/reviews"
-              className="block w-full text-left py-3 px-4 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 font-semibold flex items-center"
+              className="w-full text-left py-2 px-3 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 text-sm font-medium flex items-center"
             >
-              <StarIcon className="w-5 h-5 mr-3" />
+              <StarIcon className="w-4 h-4 mr-2" />
               {t('dashboard.specialist.viewReviews')}
             </Link>
             <Link
               to="/specialist/messages"
-              className="block w-full text-left py-3 px-4 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 font-semibold flex items-center"
+              className="w-full text-left py-2 px-3 rounded-lg bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 text-sm font-medium flex items-center"
             >
-              <ChatBubbleLeftRightIcon className="w-5 h-5 mr-3" />
+              <ChatBubbleLeftRightIcon className="w-4 h-4 mr-2" />
               {t('dashboard.specialist.messageClients')}
             </Link>
           </div>
@@ -660,42 +643,35 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Bookings */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <span>📋</span>
-              {t('dashboard.specialist.recentBookings')}
-            </h3>
-            <Link
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.recentBookings')}</h3>
+            <Link 
               to="/specialist/bookings"
-              className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 text-sm font-bold transition-colors duration-200"
+              className="text-primary-600 hover:text-primary-700 text-sm font-medium"
             >
               {t('dashboard.viewAll')}
-              <ArrowRightIcon className="w-4 h-4" />
             </Link>
           </div>
-          <div className="space-y-3">
-            {dashboardData.recentBookings.slice(0, 4).map((booking, index) => (
-              <div key={booking.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 border border-gray-200 dark:border-gray-600">
+          <div className="space-y-4">
+            {dashboardData.recentBookings.slice(0, 4).map((booking) => (
+              <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                 <div className="flex items-center space-x-3">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white shadow-sm ${
-                    index % 2 === 0 ? 'bg-primary-600' : 'bg-secondary-600'
-                  }`}>
-                    <span className="text-sm">
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-semibold text-sm">
                       {booking.customerName?.split(' ').map(n => n[0]).join('')}
                     </span>
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900 dark:text-white">{booking.customerName}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{booking.serviceName}</p>
-                    <p className="text-xs text-gray-400 flex items-center gap-1">
-                      <span>🕐</span>
+                    <p className="font-medium text-gray-900 dark:text-white">{booking.customerName}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{booking.serviceName}</p>
+                    <p className="text-xs text-gray-400">
                       {booking.date} {language === 'uk' ? 'о' : language === 'ru' ? 'в' : 'at'} {booking.time}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-gray-900 dark:text-white text-lg">
+                  <p className="font-semibold text-gray-900 dark:text-white">
                     {(() => {
                       const currency = getBookingCurrency(booking);
                       const formatted = formatPrice(booking.totalAmount, currency);
@@ -703,7 +679,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                       return formatted;
                     })()}
                   </p>
-                  <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full ${getStatusColor(booking.status)}`}>
+                  <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
                     {getStatusText(booking.status)}
                   </span>
                 </div>
@@ -713,44 +689,36 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
         </div>
 
         {/* Today's Schedule */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <span>📅</span>
-              {t('dashboard.specialist.todaysSchedule')}
-            </h3>
-            <span className="text-sm font-bold text-gray-500 dark:text-gray-400 px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.todaysSchedule')}</h3>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
               {currentTime.toLocaleDateString(
-                language === 'kh' ? 'km-KH' : 'en-US',
+                language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
                 { day: 'numeric', month: 'short' }
               )}
             </span>
           </div>
-          <div className="space-y-3">
-            {dashboardData.upcomingAppointments.map((appointment, index) => (
-              <div key={appointment.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 transition-all duration-200">
+          <div className="space-y-4">
+            {dashboardData.upcomingAppointments.map((appointment) => (
+              <div key={appointment.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl">
                 <div className="flex items-center space-x-3">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white shadow-sm ${
-                    index % 2 === 0 ? 'bg-success-600' : 'bg-info-600'
-                  }`}>
-                    <span className="text-sm">
+                  <div className="w-10 h-10 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center">
+                    <span className="text-white font-semibold text-sm">
                       {appointment.customerName.split(' ').map(n => n[0]).join('')}
                     </span>
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900 dark:text-white">{appointment.customerName}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{appointment.serviceName}</p>
-                    <div className="flex items-center space-x-2 text-xs text-gray-400 font-medium">
-                      <span className="flex items-center gap-1">
-                        <span>🕐</span>
-                        {appointment.time}
-                      </span>
+                    <p className="font-medium text-gray-900 dark:text-white">{appointment.customerName}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{appointment.serviceName}</p>
+                    <div className="flex items-center space-x-2 text-xs text-gray-400">
+                      <span>{appointment.time}</span>
                       <span>•</span>
                       <span>{appointment.duration}</span>
                       <span>•</span>
-                      <span className={`${appointment.type === 'online' ? 'text-primary-600' : 'text-accent-600'} font-semibold`}>
-                        {appointment.type === 'online'
-                          ? `🔗 ${t('dashboard.specialist.online')}`
+                      <span className={appointment.type === 'online' ? 'text-primary-600' : 'text-secondary-600'}>
+                        {appointment.type === 'online' 
+                          ? `🔗 ${t('dashboard.specialist.online')}` 
                           : `🏢 ${t('dashboard.specialist.offline')}`
                         }
                       </span>
@@ -758,27 +726,24 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <button className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-all duration-200">
-                    <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                  <button className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900 rounded-lg transition-colors">
+                    <ChatBubbleLeftRightIcon className="w-4 h-4" />
                   </button>
-                  <button className="p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200">
-                    <CalendarIcon className="w-5 h-5" />
+                  <button className="p-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    <CalendarIcon className="w-4 h-4" />
                   </button>
                 </div>
               </div>
             ))}
             {dashboardData.upcomingAppointments.length === 0 && (
-              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center">
-                  <CalendarIcon className="w-8 h-8 text-primary-600" />
-                </div>
-                <p className="font-bold text-lg mb-2">{t('dashboard.specialist.noAppointments')}</p>
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>{t('dashboard.specialist.noAppointments')}</p>
                 <p className="text-sm">{t('dashboard.specialist.freeTimeMessage')}</p>
               </div>
             )}
           </div>
         </div>
-      </div>
       </div>
     </div>
   );

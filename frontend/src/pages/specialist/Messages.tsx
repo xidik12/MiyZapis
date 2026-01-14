@@ -13,7 +13,7 @@ import {
   ArchiveBoxIcon,
   NoSymbolIcon,
   CheckIcon
-} from '@/components/icons';
+} from '@heroicons/react/24/outline';
 import { socketService } from '@/services/socket.service';
 
 const SpecialistMessages: React.FC = () => {
@@ -252,8 +252,7 @@ const SpecialistMessages: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="relative p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard.nav.messages')}</h1>
@@ -267,11 +266,11 @@ const SpecialistMessages: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg h-[600px] flex">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 h-[600px] flex">
         {/* Conversations List */}
         <div className="w-1/3 border-r border-gray-200 dark:border-gray-700 flex flex-col">
           {/* Search */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 bg-white dark:bg-gray-800">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 backdrop-blur bg-white/80 dark:bg-gray-800/80">
             <div className="relative">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -317,7 +316,7 @@ const SpecialistMessages: React.FC = () => {
                     key={conversation.id}
                     onClick={() => setSelectedChat(conversation.id)}
                     className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
-                      selectedChat === conversation.id ? 'bg-primary-50 dark:bg-primary-900/20' : ''
+                      selectedChat === conversation.id ? 'bg-primary-50 dark:bg-primary-900' : ''
                     }`}
                   >
                     <div className="flex items-center space-x-3">
@@ -378,7 +377,7 @@ const SpecialistMessages: React.FC = () => {
           {selectedConversation && otherParticipant ? (
             <>
               {/* Chat Header */}
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between sticky top-0 z-10 bg-white dark:bg-gray-800">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between sticky top-0 z-10 backdrop-blur bg-white/80 dark:bg-gray-800/80">
                 <div className="flex items-center space-x-3">
                   <div className="relative">
                     {otherParticipant.avatar ? (
@@ -548,7 +547,6 @@ const SpecialistMessages: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
       </div>
     </div>
   );

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { XMarkIcon, StarIcon } from '@/components/icons';
-import { StarIcon } from '@/components/icons';
 import Modal from '@/components/ui/Modal';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';

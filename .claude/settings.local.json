@@ -83,7 +83,10 @@
       "Bash(do if [ -f \"$file\" ])",
       "Bash(then echo \"=== $file ===\" grep -n \"from ''@heroicons\" \"$file\")",
       "Bash(grep:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(npx tsc:*)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "ask": [],

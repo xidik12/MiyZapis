@@ -17,20 +17,20 @@
   box-shadow: 0 25px 60px -32px rgba(147, 197, 253, 0.35);
 }
 
-/* Vichea gradients */
-.vichea-gradient,
+/* Panhaha gradients - Deep Sea Blue to Red */
+.panhaha-gradient,
 .ukraine-gradient {
-  background: linear-gradient(135deg, #C8102E 0%, #FFD700 52%, #003893 100%);
+  background: linear-gradient(135deg, #00739B 0%, #DC2626 100%);
 }
 
-.vichea-gradient-soft,
+.panhaha-gradient-soft,
 .ukraine-gradient-soft {
-  background: linear-gradient(135deg, rgba(200, 16, 46, 0.12) 0%, rgba(255, 215, 0, 0.15) 45%, rgba(0, 56, 147, 0.18) 100%);
+  background: linear-gradient(135deg, rgba(0, 115, 155, 0.12) 0%, rgba(220, 38, 38, 0.15) 100%);
 }
 
-.vichea-text-gradient,
+.panhaha-text-gradient,
 .ukraine-text-gradient {
-  background: linear-gradient(135deg, rgba(200, 16, 46, 0.95) 0%, rgba(255, 215, 0, 0.95) 52%, rgba(0, 56, 147, 0.9) 100%);
+  background: linear-gradient(135deg, #00739B 0%, #DC2626 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -289,9 +289,9 @@
     border: 2px solid rgb(var(--role-border));
   }
   
-  .vichea-gradient,
+  .panhaha-gradient,
   .ukraine-gradient {
-    background: linear-gradient(135deg, rgb(var(--color-primary)) 0%, rgb(var(--color-secondary)) 50%, rgb(var(--color-accent)) 100%);
+    background: linear-gradient(135deg, #00739B 0%, #DC2626 100%);
   }
 }
 

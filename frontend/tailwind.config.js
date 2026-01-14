@@ -11,19 +11,19 @@ module.exports = {
         // Panhaha - 2 Color System + Gold Outlines
         // Dark Blue & Bright Red with Gold accents only for borders/outlines
 
-        // PRIMARY - Dark Navy Blue (Trust, Professional, Deep)
+        // PRIMARY - Deep Sea Blue (Ocean depths, Professional, Trust)
         primary: {
-          50: '#EFF6FF',
-          100: '#DBEAFE',
-          200: '#BFDBFE',
-          300: '#93C5FD',
-          400: '#60A5FA',
-          500: '#1E40AF', // Dark Navy Blue - Main primary
-          600: '#1E3A8A',
-          700: '#1D4ED8',
-          800: '#1E40AF',
-          900: '#172554',
-          950: '#0F1729', // Very dark for dark mode
+          50: '#E6F1F5',
+          100: '#CCE3EB',
+          200: '#99C7D7',
+          300: '#66ABC3',
+          400: '#338FAF',
+          500: '#00739B', // Deep Sea Blue - Main primary
+          600: '#005C7C',
+          700: '#00455D',
+          800: '#002E3E',
+          900: '#00171F',
+          950: '#000B0F', // Very dark for dark mode
         },
 
         // SECONDARY - Bright Crimson Red (Energy, Bold, Action)
@@ -73,16 +73,16 @@ module.exports = {
 
         // Semantic mappings
         success: {
-          50: '#EFF6FF',
-          100: '#DBEAFE',
-          200: '#BFDBFE',
-          300: '#93C5FD',
-          400: '#60A5FA',
-          500: '#1E40AF', // Dark Blue for success
-          600: '#1E3A8A',
-          700: '#1D4ED8',
-          800: '#1E40AF',
-          900: '#172554',
+          50: '#E6F1F5',
+          100: '#CCE3EB',
+          200: '#99C7D7',
+          300: '#66ABC3',
+          400: '#338FAF',
+          500: '#00739B', // Deep Sea Blue for success (matches primary)
+          600: '#005C7C',
+          700: '#00455D',
+          800: '#002E3E',
+          900: '#00171F',
         },
         warning: {
           50: '#FEF2F2',
@@ -109,16 +109,16 @@ module.exports = {
           900: '#450A0A',
         },
         info: {
-          50: '#EFF6FF',
-          100: '#DBEAFE',
-          200: '#BFDBFE',
-          300: '#93C5FD',
-          400: '#60A5FA',
-          500: '#1E40AF', // Dark Blue for info
-          600: '#1E3A8A',
-          700: '#1D4ED8',
-          800: '#1E40AF',
-          900: '#172554',
+          50: '#E6F1F5',
+          100: '#CCE3EB',
+          200: '#99C7D7',
+          300: '#66ABC3',
+          400: '#338FAF',
+          500: '#00739B', // Deep Sea Blue for info (matches primary)
+          600: '#005C7C',
+          700: '#00455D',
+          800: '#002E3E',
+          900: '#00171F',
         }
       },
       fontFamily: {

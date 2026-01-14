@@ -1,6 +1,5 @@
 import React, { useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { clsx } from 'clsx';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, selectIsAuthenticated, logout } from '@/store/slices/authSlice';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -14,11 +13,15 @@ import {
   ChevronRightIcon,
   ArrowRightOnRectangleIcon,
   UserPlusIcon,
-} from '@/components/icons';
+} from '@heroicons/react/24/outline';
+import {
+  HomeIcon as HomeIconSolid,
+  MagnifyingGlassIcon as MagnifyingGlassIconSolid,
+  UserCircleIcon as UserCircleIconSolid,
+} from '@heroicons/react/24/solid';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { LanguageToggle } from '../ui/LanguageToggle';
 import { CurrencyToggle } from '../ui/CurrencyToggle';
-import { LogoIcon } from '../common/Logo';
 
 interface SideNavigationProps {
   isCollapsed: boolean;
@@ -42,18 +45,21 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
       name: t('nav.home'),
       href: '/',
       icon: HomeIcon,
+      activeIcon: HomeIconSolid,
       current: location.pathname === '/',
     },
     {
       name: t('nav.services'),
       href: '/search',
       icon: MagnifyingGlassIcon,
+      activeIcon: MagnifyingGlassIconSolid,
       current: location.pathname === '/search',
     },
     {
       name: t('nav.howItWorks'),
       href: '#how-it-works',
       icon: QuestionMarkCircleIcon,
+      activeIcon: QuestionMarkCircleIcon,
       current: false,
       isHashLink: true,
     },
@@ -61,6 +67,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
       name: t('nav.forSpecialists'),
       href: '#for-specialists',
       icon: UserPlusIcon,
+      activeIcon: UserPlusIcon,
       current: false,
       isHashLink: true,
     },
@@ -68,19 +75,13 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
 
   const userNavItems = isAuthenticated ? [
     {
-      name: user?.userType === 'specialist' ? t('nav.dashboard') : t('nav.dashboard'),
+      name: user?.userType === 'specialist' ? t('nav.dashboard') : t('nav.dashboard'), 
       href: user?.userType === 'specialist' ? '/specialist/dashboard' : '/dashboard',
       icon: UserCircleIcon,
+      activeIcon: UserCircleIconSolid,
       current: location.pathname.includes('/dashboard'),
     },
   ] : [];
-
-  const navItemBase =
-    'flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-all duration-300 group border border-transparent transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-secondary-400 hover:-translate-y-0.5';
-  const navItemActive =
-    'bg-white/75 dark:bg-[rgba(35,28,52,0.9)] border-[rgba(223,214,207,0.45)] dark:border-[rgba(90,70,110,0.55)] text-[rgb(45,37,32)] dark:text-white shadow-primary';
-  const navItemIdle =
-    'text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)] hover:text-[rgb(45,37,32)] dark:hover:text-white hover:bg-white/60 dark:hover:bg-[rgba(147,197,253,0.12)]';
 
   const handleLogout = async () => {
     try {
@@ -107,15 +108,19 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
   };
 
   const NavItem = ({ item, showText = true }: { item: any; showText?: boolean }) => {
-    const Icon = item.icon;
-
+    const Icon = item.current ? item.activeIcon : item.icon;
+    
     if (item.isHashLink) {
       return (
         <button
           onClick={() => handleHashLink(item.href)}
-          className={clsx('w-full', navItemBase, item.current ? navItemActive : navItemIdle)}
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 group ${
+            item.current
+              ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+              : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400'
+          }`}
         >
-          <Icon className="w-5 h-5 flex-shrink-0" active={item.current} />
+          <Icon className="w-5 h-5 flex-shrink-0" />
           {showText && (
             <span className="font-medium text-sm">{item.name}</span>
           )}
@@ -126,9 +131,13 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
     return (
       <Link
         to={item.href}
-        className={clsx(navItemBase, item.current ? navItemActive : navItemIdle)}
+        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 group ${
+          item.current
+            ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+            : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400'
+        }`}
       >
-        <Icon className="w-5 h-5 flex-shrink-0" active={item.current} />
+        <Icon className="w-5 h-5 flex-shrink-0" />
         {showText && (
           <span className="font-medium text-sm">{item.name}</span>
         )}
@@ -137,34 +146,83 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
   };
 
   return (
-    <aside
-      className={`hidden lg:flex fixed left-0 top-0 h-full backdrop-blur-xl border-r border-[rgba(223,214,207,0.35)] dark:border-[rgba(90,70,110,0.55)] z-30 transition-all duration-300 flex-col ${
-        isCollapsed ? 'w-16' : 'w-64'
-      }`}
-      style={{
-        background: 'rgba(var(--bg-primary), 0.82)',
-      }}
-    >
+    <aside className={`hidden lg:flex fixed left-0 top-0 h-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-r border-gray-200/20 dark:border-gray-700/20 z-30 transition-all duration-300 flex-col ${
+      isCollapsed ? 'w-16' : 'w-64'
+    }`}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-[rgba(223,214,207,0.35)] dark:border-[rgba(90,70,110,0.55)]">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200/20 dark:border-gray-700/20">
         {!isCollapsed && (
-          <Link to="/" className="flex items-center gap-3 group">
-            <LogoIcon size={36} />
-            <span className="text-lg font-semibold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">
-              {t('brand.name')}
+          <Link to="/" className="flex items-center space-x-2 group">
+            <img 
+              src="/miyzapis_logo.png" 
+              alt="МійЗапис Logo" 
+              className="w-8 h-8 group-hover:scale-110 transition-all duration-300"
+              onError={(e) => {
+                const img = e.currentTarget as HTMLImageElement;
+                const currentSrc = img.src;
+                
+                if (currentSrc.includes('miyzapis_logo.png')) {
+                  console.log('🖼️ SideNav logo failed, trying SVG fallback');
+                  img.src = '/logo.svg';
+                } else if (currentSrc.includes('logo.svg')) {
+                  console.log('🖼️ SideNav SVG logo failed, trying favicon fallback');
+                  img.src = '/favicon.svg';
+                } else {
+                  console.log('🖼️ SideNav all logos failed, replacing with text fallback');
+                  img.style.display = 'none';
+                  const parent = img.parentElement;
+                  if (parent && !parent.querySelector('.logo-fallback')) {
+                    const fallback = document.createElement('div');
+                    fallback.className = 'logo-fallback w-8 h-8 bg-blue-600 text-white rounded flex items-center justify-center text-xs font-bold';
+                    fallback.textContent = 'МЗ';
+                    parent.insertBefore(fallback, img);
+                  }
+                }
+              }}
+              onLoad={() => console.log('✅ SideNav logo loaded successfully')}
+            />
+            <span className="text-lg font-bold panhaha-text-gradient">
+              {environment.APP_NAME}
             </span>
           </Link>
         )}
-
+        
         {isCollapsed && (
           <Link to="/" className="flex justify-center w-full">
-            <LogoIcon size={36} />
+            <img 
+              src="/miyzapis_logo.png" 
+              alt="МійЗапис Logo" 
+              className="w-8 h-8 hover:scale-110 transition-all duration-300"
+              onError={(e) => {
+                const img = e.currentTarget as HTMLImageElement;
+                const currentSrc = img.src;
+                
+                if (currentSrc.includes('miyzapis_logo.png')) {
+                  console.log('🖼️ SideNav collapsed logo failed, trying SVG fallback');
+                  img.src = '/logo.svg';
+                } else if (currentSrc.includes('logo.svg')) {
+                  console.log('🖼️ SideNav collapsed SVG logo failed, trying favicon fallback');
+                  img.src = '/favicon.svg';
+                } else {
+                  console.log('🖼️ SideNav collapsed all logos failed, replacing with text fallback');
+                  img.style.display = 'none';
+                  const parent = img.parentElement;
+                  if (parent && !parent.querySelector('.logo-fallback')) {
+                    const fallback = document.createElement('div');
+                    fallback.className = 'logo-fallback w-8 h-8 bg-blue-600 text-white rounded flex items-center justify-center text-xs font-bold';
+                    fallback.textContent = 'МЗ';
+                    parent.insertBefore(fallback, img);
+                  }
+                }
+              }}
+              onLoad={() => console.log('✅ SideNav collapsed logo loaded successfully')}
+            />
           </Link>
         )}
         
         <button
           onClick={onToggleCollapse}
-          className="p-2 rounded-2xl bg-white/60 dark:bg-[rgba(35,28,52,0.85)] border border-[rgba(223,214,207,0.45)] dark:border-[rgba(90,70,110,0.55)] text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)] hover:-translate-y-0.5 hover:shadow-primary transition-all duration-300"
+          className="p-1.5 rounded-lg text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isCollapsed ? (
@@ -179,7 +237,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
       <div className="flex-1 p-4 space-y-6">
         <div>
           {!isCollapsed && (
-            <h3 className="text-xs font-semibold uppercase tracking-[0.28em] text-[rgba(92,83,77,0.7)] dark:text-[rgba(206,199,216,0.7)] mb-3">
+            <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
               {t('nav.main')}
             </h3>
           )}
@@ -194,7 +252,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
         {isAuthenticated && userNavItems.length > 0 && (
           <div>
             {!isCollapsed && (
-              <h3 className="text-xs font-semibold uppercase tracking-[0.28em] text-[rgba(92,83,77,0.7)] dark:text-[rgba(206,199,216,0.7)] mb-3">
+              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                 {t('nav.myAccount')}
               </h3>
             )}
@@ -209,7 +267,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
         {/* Settings */}
         <div>
           {!isCollapsed && (
-            <h3 className="text-xs font-semibold uppercase tracking-[0.28em] text-[rgba(92,83,77,0.7)] dark:text-[rgba(206,199,216,0.7)] mb-3">
+            <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
               {t('nav.settings')}
             </h3>
           )}
@@ -217,20 +275,20 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
             {isCollapsed ? (
               <div className="flex flex-col items-center space-y-2">
                 <ThemeToggle size="sm" />
-                <div className="w-4 h-px bg-[rgba(223,214,207,0.6)] dark:bg-[rgba(90,70,110,0.6)]"></div>
+                <div className="w-4 h-px bg-gray-200 dark:bg-gray-700"></div>
               </div>
             ) : (
               <>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)]">{t('settings.language')}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('settings.language')}</span>
                   <LanguageToggle />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)]">{t('settings.currency')}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('settings.currency')}</span>
                   <CurrencyToggle />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)]">{t('settings.theme')}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('settings.theme')}</span>
                   <ThemeToggle size="sm" />
                 </div>
               </>
@@ -240,11 +298,11 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
       </div>
 
       {/* User Section */}
-      <div className="p-4 border-t border-[rgba(223,214,207,0.35)] dark:border-[rgba(90,70,110,0.55)]">
+      <div className="p-4 border-t border-gray-200/20 dark:border-gray-700/20">
         {isAuthenticated ? (
           <div className="space-y-2">
             {!isCollapsed && (
-              <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/70 dark:bg-[rgba(35,28,52,0.85)] border border-[rgba(223,214,207,0.45)] dark:border-[rgba(90,70,110,0.55)] shadow-sm">
+              <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
                 {user?.avatar ? (
                   <img
                     src={user.avatar}
@@ -252,13 +310,13 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
                     className="w-8 h-8 rounded-full object-cover"
                   />
                 ) : (
-                  <UserCircleIcon className="w-8 h-8 text-[rgba(200,16,46,0.4)]" />
+                  <UserCircleIcon className="w-8 h-8 text-gray-400" />
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[rgb(45,37,32)] dark:text-[rgb(242,241,244)] truncate">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                     {user?.firstName} {user?.lastName}
                   </p>
-                  <p className="text-xs text-[rgba(92,83,77,0.8)] dark:text-[rgba(206,199,216,0.7)] truncate">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                     {user?.email}
                   </p>
                 </div>
@@ -266,7 +324,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
             )}
             <button
               onClick={handleLogout}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)] hover:text-[rgb(200,16,46)] dark:hover:text-[rgb(241,149,162)] hover:bg-[rgba(200,16,46,0.08)] dark:hover:bg-[rgba(200,16,46,0.2)] border border-transparent transition-all duration-300 transform hover:-translate-y-0.5 ${
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 ${
                 isCollapsed ? 'justify-center' : ''
               }`}
             >
@@ -278,7 +336,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
           <div className="space-y-2">
             <Link
               to="/auth/login"
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[rgb(92,83,77)] dark:text-[rgb(206,199,216)] hover:text-[rgb(45,37,32)] dark:hover:text-white hover:bg-white/60 dark:hover:bg-[rgba(147,197,253,0.12)] border border-transparent transition-all duration-300 transform hover:-translate-y-0.5 ${
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 ${
                 isCollapsed ? 'justify-center' : ''
               }`}
             >
@@ -287,7 +345,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
             </Link>
             <Link
               to="/auth/register"
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl bg-panhaha-gradient text-white shadow-primary hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 ${
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-all duration-200 ${
                 isCollapsed ? 'justify-center' : ''
               }`}
             >

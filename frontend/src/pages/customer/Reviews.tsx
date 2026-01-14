@@ -13,8 +13,8 @@ import {
   ChartBarIcon,
   ExclamationTriangleIcon,
   PlusIcon,
-} from '@/components/icons';
-import { StarIcon } from '@/components/icons';
+} from '@heroicons/react/24/outline';
+import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
 interface CustomerReview {
   id: string;
@@ -78,7 +78,7 @@ const CustomerReviews: React.FC = () => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString(
-      language === 'kh' ? 'km-KH' : 'en-US',
+      language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
       { 
         year: 'numeric', 
         month: 'long', 
@@ -96,7 +96,7 @@ const CustomerReviews: React.FC = () => {
     return (
       <div className="flex">
         {[1, 2, 3, 4, 5].map((star) => (
-          <StarIcon
+          <StarIconSolid
             key={star}
             className={`h-4 w-4 ${
               star <= rating 
@@ -157,7 +157,7 @@ const CustomerReviews: React.FC = () => {
             
             <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
               <div className="flex items-center">
-                <StarIcon className="h-8 w-8 text-yellow-500 mr-3" />
+                <StarIconSolid className="h-8 w-8 text-yellow-500 mr-3" />
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Average Rating</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">

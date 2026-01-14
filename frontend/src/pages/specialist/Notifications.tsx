@@ -12,7 +12,7 @@ import {
   CreditCardIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
-} from '@/components/icons';
+} from '@heroicons/react/24/outline';
 
 interface Notification {
   id: string;
@@ -191,9 +191,8 @@ const SpecialistNotifications: React.FC = () => {
   // Unread count is now managed by state from the service
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-
-      <div className="relative p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+    
+      <div className="p-2 sm:p-6 max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -255,7 +254,7 @@ const SpecialistNotifications: React.FC = () => {
       {loading && (
         <div className="space-y-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-lg p-4 shadow animate-pulse">
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow animate-pulse">
               <div className="flex items-start space-x-4">
                 <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
                 <div className="flex-1 space-y-2">
@@ -369,7 +368,7 @@ const SpecialistNotifications: React.FC = () => {
         </div>
       )}
       </div>
-    </div>
+    
   );
 };
 

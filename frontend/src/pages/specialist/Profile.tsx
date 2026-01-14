@@ -39,7 +39,7 @@ import {
   ArrowDownTrayIcon,
   Cog6ToothIcon,
   ShieldCheckIcon
-} from '@/components/icons';
+} from '@heroicons/react/24/outline';
 
 interface SpecialistProfile {
   id: string;
@@ -331,7 +331,7 @@ const SpecialistProfile: React.FC = () => {
     try {
       const dateObj = new Date(date);
       if (isNaN(dateObj.getTime())) return null;
-      return dateObj.toLocaleDateString(language === 'kh' ? 'km-KH' : 'en-US', {
+      return dateObj.toLocaleDateString(language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
@@ -897,9 +897,7 @@ const SpecialistProfile: React.FC = () => {
   const completionPercentage = getProfileCompletion();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-
-      <div className="relative p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900">
       {/* Auto-migrate Google avatars */}
       <AutoMigrateAvatar 
         showStatus={true} 
@@ -913,7 +911,7 @@ const SpecialistProfile: React.FC = () => {
       {/* Success/Error Notifications */}
       {showSuccessMessage && (
         <div className="fixed top-4 right-4 z-50 animate-slide-in">
-          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-2xl shadow-xl border border-success-200 dark:border-success-800 p-4 flex items-center gap-3 max-w-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-success-200 dark:border-success-800 p-4 flex items-center gap-3 max-w-sm">
             <div className="w-10 h-10 rounded-full bg-success-100 dark:bg-success-900/30 flex items-center justify-center flex-shrink-0">
               <CheckCircleIcon className="h-6 w-6 text-success-600 dark:text-success-400" />
             </div>
@@ -931,7 +929,7 @@ const SpecialistProfile: React.FC = () => {
 
       {showErrorMessage && (
         <div className="fixed top-4 right-4 z-50 animate-slide-in">
-          <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-2xl shadow-xl border border-error-200 dark:border-error-800 p-4 flex items-center gap-3 max-w-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-error-200 dark:border-error-800 p-4 flex items-center gap-3 max-w-sm">
             <div className="w-10 h-10 rounded-full bg-error-100 dark:bg-error-900/30 flex items-center justify-center flex-shrink-0">
               <XCircleIcon className="h-6 w-6 text-error-600 dark:text-error-400" />
             </div>
@@ -949,7 +947,7 @@ const SpecialistProfile: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Modern Profile Header */}
-        <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-8">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
             {/* Profile Info Section */}
             <div className="flex items-start gap-6">
@@ -1101,7 +1099,7 @@ const SpecialistProfile: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar Navigation */}
           <div className="lg:col-span-1">
-            <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sticky top-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sticky top-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 {language === 'uk' ? 'Розділи профілю' : language === 'ru' ? 'Разделы профиля' : 'Profile Sections'}
               </h3>
@@ -1131,7 +1129,7 @@ const SpecialistProfile: React.FC = () => {
 
           {/* Main Content Area */}
           <div className="lg:col-span-3">
-            <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
               
               {/* Personal Information Tab */}
               {activeTab === 'personal' && (
@@ -1589,25 +1587,7 @@ const SpecialistProfile: React.FC = () => {
                             className="inline-flex items-center gap-2 px-3 py-2 bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300 rounded-lg text-sm font-medium"
                           >
                             <GlobeAltIcon className="h-4 w-4" />
-                            {(() => {
-                              const languageNames: Record<string, string> = {
-                                en: 'English', uk: 'Українська', ru: 'Русский', de: 'Deutsch', fr: 'Français',
-                                es: 'Español', it: 'Italiano', pt: 'Português', pl: 'Polski', nl: 'Nederlands',
-                                sv: 'Svenska', no: 'Norsk', da: 'Dansk', fi: 'Suomi', cs: 'Čeština',
-                                ro: 'Română', el: 'Ελληνικά', tr: 'Türkçe', zh: '中文', ja: '日本語',
-                                ko: '한국어', th: 'ไทย', vi: 'Tiếng Việt', id: 'Bahasa Indonesia',
-                                ms: 'Bahasa Melayu', tl: 'Tagalog', km: 'ភាសាខ្មែរ', lo: 'ລາວ',
-                                my: 'မြန်မာဘာသာ', hi: 'हिन्दी', bn: 'বাংলা', ur: 'اردو', ta: 'தமிழ்',
-                                te: 'తెలుగు', mr: 'मराठी', pa: 'ਪੰਜਾਬੀ', gu: 'ગુજરાતી', kn: 'ಕನ್ನಡ',
-                                ml: 'മലയാളം', si: 'සිංහල', ne: 'नेपाली', ar: 'العربية', fa: 'فارسی',
-                                he: 'עברית', sw: 'Kiswahili', af: 'Afrikaans', am: 'አማርኛ', az: 'Azərbaycan',
-                                be: 'Беларуская', bg: 'Български', ca: 'Català', hr: 'Hrvatski', et: 'Eesti',
-                                ka: 'ქართული', hu: 'Magyar', is: 'Íslenska', kk: 'Қазақ', lv: 'Latviešu',
-                                lt: 'Lietuvių', mk: 'Македонски', mn: 'Монгол', sk: 'Slovenčina',
-                                sl: 'Slovenščina', sr: 'Српски', sq: 'Shqip', uz: 'O\'zbek'
-                              };
-                              return languageNames[lang] || lang;
-                            })()}
+                            {lang === 'uk' ? 'Українська' : lang === 'en' ? 'English' : lang === 'ru' ? 'Русский' : lang}
                             {isEditing && (
                               <button
                                 onClick={() => {
@@ -1634,78 +1614,12 @@ const SpecialistProfile: React.FC = () => {
                             className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                           >
                             <option value="">{language === 'uk' ? 'Додати мову' : language === 'ru' ? 'Добавить язык' : 'Add Language'}</option>
-
-                            {/* European Languages */}
+                            <option value="uk">Українська</option>
+                            <option value="ru">Русский</option>
                             <option value="en">English</option>
-                            <option value="uk">Українська (Ukrainian)</option>
-                            <option value="ru">Русский (Russian)</option>
-                            <option value="de">Deutsch (German)</option>
-                            <option value="fr">Français (French)</option>
-                            <option value="es">Español (Spanish)</option>
-                            <option value="it">Italiano (Italian)</option>
-                            <option value="pt">Português (Portuguese)</option>
-                            <option value="pl">Polski (Polish)</option>
-                            <option value="nl">Nederlands (Dutch)</option>
-                            <option value="sv">Svenska (Swedish)</option>
-                            <option value="no">Norsk (Norwegian)</option>
-                            <option value="da">Dansk (Danish)</option>
-                            <option value="fi">Suomi (Finnish)</option>
-                            <option value="cs">Čeština (Czech)</option>
-                            <option value="ro">Română (Romanian)</option>
-                            <option value="el">Ελληνικά (Greek)</option>
-                            <option value="tr">Türkçe (Turkish)</option>
-
-                            {/* Asian Languages */}
-                            <option value="zh">中文 (Chinese)</option>
-                            <option value="ja">日本語 (Japanese)</option>
-                            <option value="ko">한국어 (Korean)</option>
-                            <option value="th">ไทย (Thai)</option>
-                            <option value="vi">Tiếng Việt (Vietnamese)</option>
-                            <option value="id">Bahasa Indonesia (Indonesian)</option>
-                            <option value="ms">Bahasa Melayu (Malay)</option>
-                            <option value="tl">Tagalog (Filipino)</option>
-                            <option value="km">ភាសាខ្មែរ (Khmer/Cambodian)</option>
-                            <option value="lo">ລາວ (Lao)</option>
-                            <option value="my">မြန်မာဘာသာ (Burmese)</option>
-                            <option value="hi">हिन्दी (Hindi)</option>
-                            <option value="bn">বাংলা (Bengali)</option>
-                            <option value="ur">اردو (Urdu)</option>
-                            <option value="ta">தமிழ் (Tamil)</option>
-                            <option value="te">తెలుగు (Telugu)</option>
-                            <option value="mr">मराठी (Marathi)</option>
-                            <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
-                            <option value="gu">ગુજરાતી (Gujarati)</option>
-                            <option value="kn">ಕನ್ನಡ (Kannada)</option>
-                            <option value="ml">മലയാളം (Malayalam)</option>
-                            <option value="si">සිංහල (Sinhala)</option>
-                            <option value="ne">नेपाली (Nepali)</option>
-                            <option value="ar">العربية (Arabic)</option>
-                            <option value="fa">فارسی (Persian)</option>
-                            <option value="he">עברית (Hebrew)</option>
-
-                            {/* Other Languages */}
-                            <option value="sw">Kiswahili (Swahili)</option>
-                            <option value="af">Afrikaans</option>
-                            <option value="am">አማርኛ (Amharic)</option>
-                            <option value="az">Azərbaycan (Azerbaijani)</option>
-                            <option value="be">Беларуская (Belarusian)</option>
-                            <option value="bg">Български (Bulgarian)</option>
-                            <option value="ca">Català (Catalan)</option>
-                            <option value="hr">Hrvatski (Croatian)</option>
-                            <option value="et">Eesti (Estonian)</option>
-                            <option value="ka">ქართული (Georgian)</option>
-                            <option value="hu">Magyar (Hungarian)</option>
-                            <option value="is">Íslenska (Icelandic)</option>
-                            <option value="kk">Қазақ (Kazakh)</option>
-                            <option value="lv">Latviešu (Latvian)</option>
-                            <option value="lt">Lietuvių (Lithuanian)</option>
-                            <option value="mk">Македонски (Macedonian)</option>
-                            <option value="mn">Монгол (Mongolian)</option>
-                            <option value="sk">Slovenčina (Slovak)</option>
-                            <option value="sl">Slovenščina (Slovenian)</option>
-                            <option value="sr">Српски (Serbian)</option>
-                            <option value="sq">Shqip (Albanian)</option>
-                            <option value="uz">O'zbek (Uzbek)</option>
+                            <option value="de">Deutsch</option>
+                            <option value="fr">Français</option>
+                            <option value="es">Español</option>
                           </select>
                         </div>
                       )}
@@ -1896,14 +1810,14 @@ const SpecialistProfile: React.FC = () => {
                         {language === 'uk' ? 'Способи оплати' : language === 'ru' ? 'Способы оплаты' : 'Payment Methods'}
                       </h3>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {['cash', 'card', 'transfer', 'aba', 'khqr', 'apple_pay'].map((method) => (
-                          <div
+                        {['cash', 'card', 'transfer', 'paypal', 'crypto', 'apple_pay'].map((method) => (
+                          <div 
                             key={method}
                             onClick={() => {
                               if (!isEditing) return;
                               const currentMethods = profile.paymentMethods || [];
                               const isSelected = currentMethods.includes(method);
-                              const newMethods = isSelected
+                              const newMethods = isSelected 
                                 ? currentMethods.filter(m => m !== method)
                                 : [...currentMethods, method];
                               handleProfileChange('paymentMethods', newMethods);
@@ -1919,8 +1833,8 @@ const SpecialistProfile: React.FC = () => {
                                 {method === 'cash' ? (language === 'uk' ? 'Готівка' : language === 'ru' ? 'Наличные' : 'Cash')
                                 : method === 'card' ? (language === 'uk' ? 'Картка' : language === 'ru' ? 'Карта' : 'Card')
                                 : method === 'transfer' ? (language === 'uk' ? 'Переказ' : language === 'ru' ? 'Перевод' : 'Transfer')
-                                : method === 'aba' ? 'ABA Bank'
-                                : method === 'khqr' ? 'KHQR/Bakong'
+                                : method === 'paypal' ? 'PayPal'
+                                : method === 'crypto' ? (language === 'uk' ? 'Крипто' : language === 'ru' ? 'Крипто' : 'Crypto')
                                 : method === 'apple_pay' ? 'Apple Pay'
                                 : method}
                               </div>
@@ -2110,7 +2024,6 @@ const SpecialistProfile: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
       </div>
     </div>
   );

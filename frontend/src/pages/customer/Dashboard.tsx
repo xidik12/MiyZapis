@@ -13,7 +13,6 @@ import { messagesService } from '@/services/messages.service';
 import { loyaltyService, UserLoyalty, LoyaltyStats } from '@/services/loyalty.service';
 import { translateProfession } from '@/utils/profession';
 import { formatPoints } from '@/utils/formatPoints';
-import WalletBalance from '@/components/wallet/WalletBalance';
 // Status colors for bookings
 const statusColors = {
   confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -41,13 +40,13 @@ import {
   PlusIcon,
   BookOpenIcon,
   ExclamationTriangleIcon,
-} from '@/components/icons';
+} from '@heroicons/react/24/outline';
 import {
-  CalendarIcon,
-  HeartIcon,
-  StarIcon,
-  GiftIcon,
-} from '@/components/icons';
+  CalendarIcon as CalendarIconSolid,
+  HeartIcon as HeartIconSolid,
+  StarIcon as StarIconSolid,
+  GiftIcon as GiftIconSolid,
+} from '@heroicons/react/24/solid';
 
 // Interface definitions for type safety
 interface CustomerStats {
@@ -141,14 +140,11 @@ const CustomerDashboard: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch essential data first, then optional data with timeout protection
-        const essentialPromise = Promise.allSettled([
-          bookingService.getBookings({ limit: 10, status: 'confirmed,pending,inProgress' }, 'customer'),
-          bookingService.getBookings({ limit: 5, status: 'COMPLETED' }, 'customer'),
+        // Fetch customer's bookings and loyalty data
+        const [upcomingRes, completedRes, allRes, favoritesCount, myReviews, favSpecs, unread, loyaltyProfile, loyaltyStatsData] = await Promise.all([
+          bookingService.getBookings({ limit: 10, status: 'confirmed,pending,inProgress' as any }, 'customer'),
+          bookingService.getBookings({ limit: 5, status: 'COMPLETED' as any }, 'customer'),
           bookingService.getBookings({ limit: 1 }, 'customer'),
-        ]);
-
-        const optionalPromise = Promise.allSettled([
           favoritesService.getFavoritesCount().catch(() => ({ specialists: 0, services: 0 })),
           reviewsService.getMyReviews(1, 100).catch(() => ({ reviews: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 100, hasNext: false, hasPrev: false } } as any)),
           favoritesService.getFavoriteSpecialists(1, 6).catch(() => ({ specialists: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 6, hasNext: false, hasPrev: false } } as any)),
@@ -156,39 +152,6 @@ const CustomerDashboard: React.FC = () => {
           loyaltyService.getUserLoyalty().catch(() => null),
           loyaltyService.getLoyaltyStats().catch(() => null),
         ]);
-
-        // Wait for essential data with timeout
-        const essentialResults = await Promise.race([
-          essentialPromise,
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Essential data timeout')), 10000))
-        ]);
-
-        const [upcomingResult, completedResult, allResult] = essentialResults;
-        const upcomingRes = upcomingResult.status === 'fulfilled' ? upcomingResult.value : { bookings: [] };
-        const completedRes = completedResult.status === 'fulfilled' ? completedResult.value : { bookings: [] };
-        const allRes = allResult.status === 'fulfilled' ? allResult.value : { pagination: { total: 0 } };
-
-        // Wait for optional data with timeout (don't fail if this times out)
-        const optionalResults = await Promise.race([
-          optionalPromise,
-          new Promise(resolve => setTimeout(() => resolve([
-            { status: 'rejected' as const, reason: 'timeout' },
-            { status: 'rejected' as const, reason: 'timeout' },
-            { status: 'rejected' as const, reason: 'timeout' },
-            { status: 'rejected' as const, reason: 'timeout' },
-            { status: 'rejected' as const, reason: 'timeout' },
-            { status: 'rejected' as const, reason: 'timeout' },
-          ]), 5000))
-        ]) as PromiseSettledResult<any>[];
-
-        const [favoritesCountResult, myReviewsResult, favSpecsResult, unreadResult, loyaltyProfileResult, loyaltyStatsResult] = optionalResults;
-
-        const favoritesCount = favoritesCountResult.status === 'fulfilled' ? favoritesCountResult.value : { specialists: 0, services: 0 };
-        const myReviews = myReviewsResult.status === 'fulfilled' ? myReviewsResult.value : { reviews: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 100, hasNext: false, hasPrev: false } };
-        const favSpecs = favSpecsResult.status === 'fulfilled' ? favSpecsResult.value : { specialists: [], pagination: { currentPage: 1, totalPages: 0, totalItems: 0, limit: 6, hasNext: false, hasPrev: false } };
-        const unread = unreadResult.status === 'fulfilled' ? unreadResult.value : { count: 0 };
-        const loyaltyProfile = loyaltyProfileResult.status === 'fulfilled' ? loyaltyProfileResult.value : null;
-        const loyaltyStatsData = loyaltyStatsResult.status === 'fulfilled' ? loyaltyStatsResult.value : null;
 
         // Set loyalty data
         setLoyaltyData(loyaltyProfile);
@@ -422,7 +385,7 @@ const CustomerDashboard: React.FC = () => {
               </h1>
               <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                 {t('dashboard.today')} {currentTime.toLocaleDateString(
-                  language === 'kh' ? 'km-KH' : 'en-US',
+                  language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
                   { 
                     weekday: 'long', 
                     year: 'numeric', 
@@ -466,7 +429,7 @@ const CustomerDashboard: React.FC = () => {
               value={stats ? stats.loyaltyPoints.toLocaleString() : '0'}
               change={`+${stats?.monthlyPoints || 0} this month`}
               changeType="positive"
-              icon={GiftIcon}
+              icon={GiftIconSolid}
               iconBg="bg-gradient-to-br from-purple-500 to-purple-600"
               description={`${stats?.currentTier || 'Bronze'} Tier • ${stats?.nextTierPoints || 0} to next`}
               onClick={() => navigate('/loyalty')}
@@ -476,7 +439,7 @@ const CustomerDashboard: React.FC = () => {
               value={stats ? stats.servicesUsed : 0}
               change={`${stats ? stats.completedBookings : 0}/${stats ? stats.totalBookings : 0} ${t('dashboard.booking.status.completed').toLowerCase()}`}
               changeType="positive"
-              icon={StarIcon}
+              icon={StarIconSolid}
               iconBg="bg-gradient-to-br from-warning-500 to-warning-600"
               description={`${stats ? stats.averageRating : 0}/5.0 ${t('dashboard.customer.averageRating').toLowerCase()}`}
             />
@@ -485,7 +448,7 @@ const CustomerDashboard: React.FC = () => {
             value={stats ? stats.favoriteSpecialists : 0}
             change={`${stats ? stats.reviewsWritten : 0} ${t('dashboard.nav.reviews').toLowerCase()}`}
             changeType="positive"
-            icon={HeartIcon}
+            icon={HeartIconSolid}
             iconBg="bg-gradient-to-br from-info-500 to-info-600"
             description={`${t('dashboard.customer.memberSince')} 2024`}
           />
@@ -545,23 +508,7 @@ const CustomerDashboard: React.FC = () => {
           )}
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-            {/* Wallet Balance */}
-            <div className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Wallet</h3>
-                <Link
-                  to="/customer/wallet"
-                  className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-                >
-                  View Details
-                </Link>
-              </div>
-              <WalletBalance
-                showTransactions={true}
-                onTransactionsClick={() => navigate('/customer/wallet')}
-              />
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Recent Bookings */}
             <div className="bg-surface rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg">
               <div className="flex items-center justify-between mb-4 sm:mb-6">
@@ -632,7 +579,7 @@ const CustomerDashboard: React.FC = () => {
               <div className="space-y-3 sm:space-y-4">
                 {favoriteSpecialists.length === 0 ? (
                 <div className="text-center py-6 sm:py-8 text-gray-500 dark:text-gray-400">
-                  <HeartIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <HeartIconSolid className="w-12 h-12 mx-auto mb-3 opacity-50" />
                   <p>{t('customer.favorites.noSpecialists')}</p>
                   <Link 
                     to="/search" 
@@ -694,7 +641,7 @@ const CustomerDashboard: React.FC = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
                 <div className="flex items-center space-x-2 sm:space-x-3">
                   <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <GiftIcon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                    <GiftIconSolid className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
                   <div>
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Loyalty Progress</h3>

@@ -21,22 +21,22 @@ import {
   XMarkIcon,
   Cog6ToothIcon,
   WrenchScrewdriverIcon,
-} from '@/components/icons';
+} from '@heroicons/react/24/outline';
 import {
-  HomeIcon,
-  CalendarIcon,
-  CogIcon,
-  ChartBarIcon,
-  PresentationChartLineIcon,
-  CurrencyDollarIcon,
-  StarIcon,
-  ChatBubbleLeftRightIcon,
-  UserIcon,
-  ClockIcon,
-  BellIcon,
-  Cog6ToothIcon as Cog6ToothIcon,
-  WrenchScrewdriverIcon,
-} from '@/components/icons';
+  HomeIcon as HomeIconSolid,
+  CalendarIcon as CalendarIconSolid,
+  CogIcon as CogIconSolid,
+  ChartBarIcon as ChartBarIconSolid,
+  PresentationChartLineIcon as PresentationChartLineIconSolid,
+  CurrencyDollarIcon as CurrencyDollarIconSolid,
+  StarIcon as StarIconSolid,
+  ChatBubbleLeftRightIcon as ChatBubbleLeftRightIconSolid,
+  UserIcon as UserIconSolid,
+  ClockIcon as ClockIconSolid,
+  BellIcon as BellIconSolid,
+  Cog6ToothIcon as Cog6ToothIconSolid,
+  WrenchScrewdriverIcon as WrenchScrewdriverIconSolid,
+} from '@heroicons/react/24/solid';
 
 interface SpecialistSidebarProps {
   isOpen?: boolean;
@@ -49,6 +49,7 @@ interface NavigationItem {
   translationKey: string;
   href: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  iconSolid: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   badge?: number;
   comingSoon?: boolean;
 }
@@ -68,12 +69,14 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.dashboard',
       href: '/specialist/dashboard',
       icon: HomeIcon,
+      iconSolid: HomeIconSolid,
     },
     {
       name: 'Bookings',
       translationKey: 'dashboard.nav.bookings',
       href: '/specialist/bookings',
       icon: CalendarIcon,
+      iconSolid: CalendarIconSolid,
       badge: 0, // Dynamic count from API
     },
     {
@@ -81,30 +84,35 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.services',
       href: '/specialist/services',
       icon: WrenchScrewdriverIcon,
+      iconSolid: WrenchScrewdriverIconSolid,
     },
     {
       name: 'Schedule',
       translationKey: 'dashboard.nav.schedule',
       href: '/specialist/schedule',
       icon: ClockIcon,
+      iconSolid: ClockIconSolid,
     },
     {
       name: 'Analytics',
       translationKey: 'dashboard.nav.analytics',
       href: '/specialist/analytics',
       icon: PresentationChartLineIcon,
+      iconSolid: PresentationChartLineIconSolid,
     },
     {
       name: 'Earnings',
       translationKey: 'dashboard.nav.earnings',
       href: '/specialist/earnings',
       icon: CurrencyDollarIcon,
+      iconSolid: CurrencyDollarIconSolid,
     },
     {
       name: 'Reviews',
       translationKey: 'dashboard.nav.reviews',
       href: '/specialist/reviews',
       icon: StarIcon,
+      iconSolid: StarIconSolid,
       badge: 0, // Dynamic count from API
     },
     {
@@ -112,6 +120,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.messages',
       href: '/specialist/messages',
       icon: ChatBubbleLeftRightIcon,
+      iconSolid: ChatBubbleLeftRightIconSolid,
       badge: 0, // Dynamic count from API
     },
     {
@@ -119,12 +128,14 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.profile',
       href: '/specialist/profile',
       icon: UserIcon,
+      iconSolid: UserIconSolid,
     },
     {
       name: 'Settings',
       translationKey: 'dashboard.nav.settings',
       href: '/specialist/settings',
       icon: Cog6ToothIcon,
+      iconSolid: Cog6ToothIconSolid,
     },
   ];
 
@@ -134,6 +145,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.notifications',
       href: '/specialist/notifications',
       icon: BellIcon,
+      iconSolid: BellIconSolid,
       badge: 0, // Dynamic count from API
     },
   ];
@@ -213,7 +225,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
           <div className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
             {navigationItems.map((item) => {
               const isActive = isActiveRoute(item.href);
-              const Icon = item.icon;
+              const Icon = isActive ? item.iconSolid : item.icon;
 
               return (
                 <Link
@@ -237,13 +249,10 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
                     }
                   }}
                 >
-                  <Icon
-                    className={`
-                      mr-3 flex-shrink-0 h-6 w-6 transition-colors
-                      ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
-                    `}
-                    active={isActive}
-                  />
+                  <Icon className={`
+                    mr-3 flex-shrink-0 h-6 w-6 transition-colors
+                    ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
+                  `} />
                   <span className="flex-1">
                     {t(item.translationKey)}
                   </span>
@@ -272,7 +281,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
           <div className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-2">
             {bottomNavigationItems.map((item) => {
               const isActive = isActiveRoute(item.href);
-              const Icon = item.icon;
+              const Icon = isActive ? item.iconSolid : item.icon;
 
               return (
                 <Link
@@ -291,13 +300,10 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
                     }
                   }}
                 >
-                  <Icon
-                    className={`
-                      mr-3 flex-shrink-0 h-6 w-6 transition-colors
-                      ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
-                    `}
-                    active={isActive}
-                  />
+                  <Icon className={`
+                    mr-3 flex-shrink-0 h-6 w-6 transition-colors
+                    ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
+                  `} />
                   <span className="flex-1">
                     {t(item.translationKey)}
                   </span>

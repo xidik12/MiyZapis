@@ -10,7 +10,7 @@ import {
   PlusIcon,
   PencilIcon,
   TrashIcon,
-} from '@/components/icons';
+} from '@heroicons/react/24/outline';
 
 const PaymentMethods: React.FC = () => {
   const { t, language } = useLanguage();

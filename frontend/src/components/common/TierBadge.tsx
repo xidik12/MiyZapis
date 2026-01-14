@@ -27,25 +27,25 @@ const TIER_STYLES: Record<
   }
 > = {
   bronze: {
-    bg: 'bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-900/20',
+    bg: 'bg-red-100 dark:bg-red-900/20',
     text: 'text-red-800 dark:text-red-300',
     border: 'border border-red-200 dark:border-red-800/40',
     iconColor: 'text-red-600 dark:text-red-400',
   },
   silver: {
-    bg: 'bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-900/30',
+    bg: 'bg-blue-100 dark:bg-blue-900/30',
     text: 'text-blue-800 dark:text-blue-300',
     border: 'border border-blue-200 dark:border-blue-800/40',
     iconColor: 'text-blue-500 dark:text-blue-300',
   },
   gold: {
-    bg: 'bg-gradient-to-r from-accent-50 to-accent-100 dark:from-accent-900/20 dark:to-accent-900/20',
+    bg: 'bg-accent-100 dark:bg-accent-900/20',
     text: 'text-accent-800 dark:text-accent-300',
     border: 'border-2 border-accent-500 dark:border-accent-400',
     iconColor: 'text-accent-600 dark:text-accent-400',
   },
   platinum: {
-    bg: 'bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-900/20',
+    bg: 'bg-primary-100 dark:bg-primary-900/20',
     text: 'text-primary-800 dark:text-primary-300',
     border: 'border border-primary-200 dark:border-primary-800/40',
     iconColor: 'text-primary-500 dark:text-primary-300',

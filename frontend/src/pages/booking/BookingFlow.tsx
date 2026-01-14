@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { socketService, subscribeToPaymentUpdates, ensureSocketConnection } from '../../services/socket.service';
+import { socketService } from '../../services/socket.service';
 import { translateProfession } from '@/utils/profession';
 import { toast } from 'react-toastify';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
@@ -8,11 +8,8 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { specialistService, serviceService, bookingService } from '../../services';
-import { paymentService } from '../../services/payment.service';
-import { paypalService } from '../../services/paypal.service';
 import { loyaltyService, UserLoyalty } from '@/services/loyalty.service';
 import { RewardsService, type RewardRedemption, type LoyaltyReward } from '@/services/rewards.service';
-import { filterSlotsByDuration, calculateEndTime } from '../../utils/timeSlotUtils';
 import {
   CalendarIcon,
   ClockIcon,
@@ -23,7 +20,7 @@ import {
   ArrowRightIcon,
   GiftIcon,
   StarIcon,
-} from '@/components/icons';
+} from '@heroicons/react/24/outline';
 
 interface BookingStep {
   id: string;
@@ -64,50 +61,6 @@ const BookingFlow: React.FC = () => {
   const [pointsToEarn, setPointsToEarn] = useState<number>(0);
   const [redemptions, setRedemptions] = useState<RewardRedemption[]>([]);
   const [selectedRedemptionId, setSelectedRedemptionId] = useState<string>('');
-
-  // Payment states
-  const [useWalletFirst, setUseWalletFirst] = useState<boolean>(true);
-  const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'paypal' | 'wayforpay'>('crypto');
-  const [paymentLoading, setPaymentLoading] = useState<boolean>(false);
-  const [paymentResult, setPaymentResult] = useState<any>(null);
-  const [showQRCode, setShowQRCode] = useState<boolean>(false);
-  const [paymentOptions, setPaymentOptions] = useState<any>(null);
-  const [paymentTimeoutId, setPaymentTimeoutId] = useState<NodeJS.Timeout | null>(null);
-  const [paymentTimeRemaining, setPaymentTimeRemaining] = useState<number>(0);
-  const [slotsLoading, setSlotsLoading] = useState<boolean>(false);
-  const [pollingIntervalId, setPollingIntervalId] = useState<NodeJS.Timeout | null>(null);
-
-
-  // Reset payment state when payment method changes
-  useEffect(() => {
-    console.log(`🔄 BookingFlow: Payment method changed to ${paymentMethod}, resetting payment state`);
-    setPaymentResult(null);
-    setShowQRCode(false);
-    setPaymentTimeRemaining(0);
-    if (paymentTimeoutId) {
-      clearTimeout(paymentTimeoutId);
-      setPaymentTimeoutId(null);
-    }
-    if (pollingIntervalId) {
-      clearInterval(pollingIntervalId);
-      setPollingIntervalId(null);
-    }
-  }, [paymentMethod]);
-
-  // Cleanup timeouts and socket listeners on component unmount
-  useEffect(() => {
-    return () => {
-      if (paymentTimeoutId) {
-        clearTimeout(paymentTimeoutId);
-      }
-      if (pollingIntervalId) {
-        clearInterval(pollingIntervalId);
-      }
-      // Clean up any active socket listeners
-      socketService.off('payment:completed');
-      socketService.off('notification:new');
-    };
-  }, [paymentTimeoutId, pollingIntervalId]);
 
   // Calculate discount preview
   const calculateDiscount = () => {
@@ -261,8 +214,6 @@ const BookingFlow: React.FC = () => {
     fetchRedemptions();
   }, [service]);
 
-  // Payment options removed - using direct Coinbase Commerce only
-
   useEffect(() => {
     // Fetch available dates when specialist is loaded
     const fetchAvailableDates = async () => {
@@ -277,20 +228,7 @@ const BookingFlow: React.FC = () => {
         console.log('📅 BookingFlow: Fetching available dates for specialist:', currentSpecialistId);
         const dateData = await specialistService.getAvailableDates(currentSpecialistId);
         console.log('✅ BookingFlow: Available dates received:', dateData.availableDates);
-        const dates = dateData.availableDates || [];
-        setAvailableDates(dates);
-
-        // Auto-select the first available date if none is selected
-        if (!selectedDate && dates.length > 0) {
-          const firstDate = new Date(dates[0].date);
-          console.log('📅 BookingFlow: Auto-selecting first available date:', firstDate);
-          setSelectedDate(firstDate);
-
-          // Show a subtle notification about auto-selection
-          setTimeout(() => {
-            toast.info(`Auto-selected ${firstDate.toLocaleDateString()} - earliest available date`);
-          }, 1000);
-        }
+        setAvailableDates(dateData.availableDates || []);
       } catch (error) {
         console.error('❌ BookingFlow: Error fetching available dates:', error);
         setAvailableDates([]);
@@ -301,12 +239,8 @@ const BookingFlow: React.FC = () => {
 
     // Subscribe to availability updates (if backend emits)
     const sid = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
-    if (sid && socketService.isSocketConnected()) {
-      try {
-        socketService.subscribeToAvailability(sid);
-      } catch (error) {
-        console.warn('Failed to subscribe to availability updates:', error);
-      }
+    if (sid) {
+      try { socketService.subscribeToAvailability(sid); } catch {}
     }
     const onAvail = (data: any) => {
       const sidData = data?.specialistId || data?.id;
@@ -321,12 +255,8 @@ const BookingFlow: React.FC = () => {
     socketService.on('availability:updated', onAvail as any);
     return () => {
       socketService.off('availability:updated', onAvail as any);
-      if (sid && socketService.isSocketConnected()) {
-        try {
-          socketService.unsubscribeFromAvailability(sid);
-        } catch (error) {
-          console.warn('Failed to unsubscribe from availability updates:', error);
-        }
+      if (sid) {
+        try { socketService.unsubscribeFromAvailability(sid); } catch {}
       }
     };
   }, [specialist, service, specialistId]);
@@ -338,56 +268,27 @@ const BookingFlow: React.FC = () => {
       
       if (!currentSpecialistId || !selectedDate) {
         console.log('🔍 BookingFlow: Cannot fetch slots - specialistId:', currentSpecialistId, 'selectedDate:', selectedDate);
-        setSlotsLoading(false);
         return;
       }
 
-      setSlotsLoading(true);
       try {
         console.log('📅 BookingFlow: Fetching available slots for specialist:', currentSpecialistId, 'date:', selectedDate.toISOString().split('T')[0]);
         const dateStr = selectedDate.toISOString().split('T')[0];
         const slots = await specialistService.getAvailableSlots(currentSpecialistId, dateStr);
         console.log('✅ BookingFlow: Available slots received:', slots);
-
-        // Filter slots based on service duration to ensure consecutive availability
-        const serviceDuration = service?.duration || 60;
-        const filteredSlots = filterSlotsByDuration(slots || [], serviceDuration);
-        console.log('🔍 BookingFlow: Filtered slots for duration', serviceDuration, 'minutes:', filteredSlots);
-
-        setAvailableSlots(filteredSlots);
+        setAvailableSlots(slots || []);
       } catch (error) {
         console.error('❌ BookingFlow: Error fetching available slots:', error);
         // Don't show any slots if there's an error - better to show empty than incorrect availability
         setAvailableSlots([]);
         toast.error(t('booking.loadSlotsError') || 'Unable to load available time slots. Please try again.');
-      } finally {
-        setSlotsLoading(false);
       }
     };
 
     fetchAvailableSlots();
-
-    // Auto-refresh slots every 30 seconds to catch newly booked slots
-    const refreshInterval = setInterval(() => {
-      if (currentStep === 2 && selectedDate) {
-        console.log('🔄 BookingFlow: Auto-refreshing available slots...');
-        fetchAvailableSlots();
-      }
-    }, 30000); // Refresh every 30 seconds
-
-    return () => clearInterval(refreshInterval);
-  }, [specialist, service, specialistId, selectedDate, currentStep]);
+  }, [specialist, service, specialistId, selectedDate]);
 
   const handleNextStep = () => {
-    // Security check: Prevent bypassing payment step
-    if (currentStep === 3) {
-      // Step 3 is payment - user cannot proceed without completing payment
-      if (!paymentResult || (paymentResult.requiresPayment && paymentResult.status !== 'COMPLETED')) {
-        toast.error('Please complete payment before proceeding to confirmation.');
-        return;
-      }
-    }
-
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -405,49 +306,14 @@ const BookingFlow: React.FC = () => {
       if (!currentSpecialistId || !selectedDate) return;
       const dateStr = selectedDate.toISOString().split('T')[0];
       const slots = await specialistService.getAvailableSlots(currentSpecialistId, dateStr);
-
-      // Filter slots based on service duration
-      const serviceDuration = service?.duration || 60;
-      const filteredSlots = filterSlotsByDuration(slots || [], serviceDuration);
-      setAvailableSlots(filteredSlots);
+      setAvailableSlots(slots || []);
     } catch (e) {}
-  };
-
-  // Handle payment timeout
-  const handlePaymentTimeout = async () => {
-    console.log('⏰ BookingFlow: Payment timeout reached');
-
-    try {
-      // Clear any existing timeouts
-      if (paymentTimeoutId) {
-        clearTimeout(paymentTimeoutId);
-        setPaymentTimeoutId(null);
-      }
-
-      setPaymentTimeRemaining(0);
-
-      // Show timeout message
-      toast.error('Payment time expired. Your booking slot has been released. Please start over.');
-
-      // Reset payment states
-      setPaymentResult(null);
-      setPaymentLoading(false);
-
-      // Go back to time selection to choose a new slot
-      setCurrentStep(1);
-
-      // Refresh available slots
-      await refreshSlots();
-
-    } catch (error) {
-      console.error('❌ BookingFlow: Error handling payment timeout:', error);
-    }
   };
 
   const handleBookingSubmit = async () => {
     const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
-
-    console.log('📋 BookingFlow: Starting booking process...');
+    
+    console.log('📋 BookingFlow: Attempting to create booking...');
     console.log('🔍 BookingFlow: Booking data check:', {
       specialist: !!specialist,
       service: !!service,
@@ -455,381 +321,51 @@ const BookingFlow: React.FC = () => {
       selectedTime: selectedTime,
       currentSpecialistId
     });
-
+    
     if (!specialist || !service || !selectedDate || !selectedTime) {
       console.error('❌ BookingFlow: Missing required booking data');
       return;
     }
 
     try {
-      setPaymentLoading(true);
-
-      // Step 1: Check slot availability before starting payment process
-      console.log('🕒 BookingFlow: Checking slot availability...');
-      const currentSlots = await specialistService.getAvailableSlots(currentSpecialistId, selectedDate);
-      const serviceDuration = service.duration || 60;
-      const filteredAvailableSlots = filterSlotsByDuration(currentSlots, serviceDuration);
-
-      if (!filteredAvailableSlots.includes(selectedTime)) {
-        throw new Error('SLOT_NO_LONGER_AVAILABLE');
-      }
-      console.log('✅ BookingFlow: Slot still available, proceeding with payment...');
-
-      // Optimistic UI update: Immediately remove the selected slot to prevent double booking
-      console.log('🔒 BookingFlow: Optimistically removing slot from UI');
-      setAvailableSlots(prev => prev.filter(slot => slot !== selectedTime));
-
       // Combine date and time into scheduledAt DateTime
       const [hours, minutes] = selectedTime.split(':').map(Number);
       const scheduledAt = new Date(selectedDate);
       scheduledAt.setHours(hours, minutes, 0, 0);
-
-      // Step 2: Start payment process (will check wallet first if useWalletFirst=true)
-      console.log('💳 BookingFlow: Creating payment intent...');
-      console.log('💰 BookingFlow: Wallet-first enabled:', useWalletFirst);
-      if (user?.walletBalance > 0) {
-        console.log('💰 BookingFlow: User wallet balance: $', user.walletBalance);
-      }
-
-      // Deposit amount is $1 = 100 cents (finalPrice is already in cents)
-      const depositAmount = 100; // $1 deposit in cents
-
-      const paymentData = {
+      
+      const bookingData: any = {
         serviceId: service.id,
-        specialistId: currentSpecialistId,
         scheduledAt: scheduledAt.toISOString(),
-        duration: service.duration || 60,
+        duration: service.duration || 60, // Default to 60 minutes if not specified
         customerNotes: bookingNotes || undefined,
-        loyaltyPointsUsed: 0,
-        useWalletFirst,
-        amount: depositAmount, // $1 deposit in cents
-        currency: service.currency || 'USD',
-        serviceName: service.name,
-        specialistName: specialist.user?.firstName && specialist.user?.lastName
-          ? `${specialist.user.firstName} ${specialist.user.lastName}`
-          : specialist.businessName || 'Specialist'
+        loyaltyPointsUsed: 0, // Default to 0
       };
 
-      let depositResult;
-      if (paymentMethod === 'paypal') {
-        // Handle PayPal payment
-        console.log('💳 BookingFlow: Creating PayPal order...');
-
-        // Deposit is always $1 USD (100 cents) regardless of service currency
-        // PayPal doesn't support UAH, so always use USD for deposits
-        const paypalOrderData = {
-          bookingId: `booking-${Date.now()}`, // Temporary booking ID
-          amount: depositAmount, // Always 100 cents = $1.00 USD
-          currency: 'USD', // Always USD for deposits
-          description: `${service.name} - ${paymentData.specialistName}`,
-          bookingData: {
-            serviceId: service.id,
-            specialistId: currentSpecialistId,
-            scheduledAt: scheduledAt.toISOString(),
-            duration: service.duration || 60,
-            customerNotes: bookingNotes || undefined,
-            serviceName: service.name,
-            specialistName: paymentData.specialistName,
-            servicePrice: service.price,
-            serviceCurrency: service.currency || 'USD',
-            loyaltyPointsUsed: 0,
-            rewardRedemptionId: selectedRedemptionId || undefined
-          }
-        };
-
-        const paypalResult = await paymentService.createPayPalOrder(paypalOrderData);
-        console.log('✅ BookingFlow: PayPal order created:', paypalResult);
-
-        // For PayPal, open approval URL in new window or redirect
-        if (paypalResult.approvalUrl) {
-          // Open PayPal in new window
-          window.open(paypalResult.approvalUrl, '_blank');
-
-          // Immediately show payment pending confirmation
-          setCurrentStep(4);
-          setBookingResult({
-            status: 'PENDING_PAYMENT',
-            paymentMethod: 'paypal',
-            service,
-            specialist,
-            scheduledAt: scheduledAt.toISOString(),
-            message: 'Payment link opened. Complete payment to confirm your booking.'
-          });
-
-          setPaymentResult({
-            paymentUrl: paypalResult.approvalUrl,
-            finalAmount: depositAmount,
-            status: 'pending',
-            remainingAmount: depositAmount,
-            paymentMethod: 'PAYPAL',
-            message: 'Payment processing. You will receive an email confirmation once payment is verified.'
-          });
-
-          setPaymentLoading(false);
-          // Return early - no need for timeout/socket logic since we're showing immediate confirmation
-          return;
-        } else {
-          throw new Error('PayPal order created but no approval URL received');
-        }
-      } else if (paymentMethod === 'wayforpay') {
-        // Handle WayForPay payment
-        console.log('💳 BookingFlow: Creating WayForPay invoice...');
-        // Convert USD cents to UAH kopecks (1 USD = 40 UAH, so 100 cents = 4000 kopecks)
-        const wayforpayAmount = depositAmount * 40; // Convert $1 (100 cents) to 40 UAH (4000 kopecks)
-        const wayforpayInvoiceData = {
-          bookingId: `booking-${Date.now()}`, // Temporary booking ID
-          amount: wayforpayAmount, // Amount in UAH kopecks
-          currency: 'UAH',
-          description: `${service.name} - ${paymentData.specialistName}`,
-          customerEmail: user?.email || '', // Will be filled from user context if available
-          customerPhone: user?.phone || '',
-          bookingData: {
-            serviceId: service.id,
-            specialistId: currentSpecialistId,
-            scheduledAt: scheduledAt.toISOString(),
-            duration: service.duration || 60,
-            customerNotes: bookingNotes || undefined,
-            serviceName: service.name,
-            specialistName: paymentData.specialistName,
-            servicePrice: service.price,
-            serviceCurrency: service.currency || 'USD',
-            loyaltyPointsUsed: 0,
-            rewardRedemptionId: selectedRedemptionId || undefined
-          }
-        };
-
-        const wayforpayResult = await paymentService.createWayForPayInvoice(wayforpayInvoiceData);
-        console.log('✅ BookingFlow: WayForPay invoice created:', wayforpayResult);
-
-        // Store result for UI with proper structure
-        depositResult = {
-          paymentUrl: wayforpayResult.paymentUrl || wayforpayResult.invoice?.paymentUrl,
-          finalAmount: depositAmount,
-          status: 'PENDING',
-          remainingAmount: depositAmount,
-          paymentMethod: 'WAYFORPAY',
-          wayforpayPayment: wayforpayResult.invoice, // Include invoice with formData
-          message: 'Complete your WayForPay payment'
-        };
-      } else {
-        // Handle crypto payment with Coinbase Commerce
-        console.log('💳 BookingFlow: Creating Coinbase Commerce charge...');
-        depositResult = await paymentService.createCryptoPaymentIntent(paymentData);
-        console.log('✅ BookingFlow: Coinbase charge created:', depositResult);
+      if (selectedRedemptionId) {
+        bookingData.rewardRedemptionId = selectedRedemptionId;
       }
-
-      // Store payment result for UI
-      setPaymentResult(depositResult);
-
-      // Start payment timeout for external payments (15 minutes)
-      if (depositResult.requiresPayment) {
-        const timeoutDuration = 15 * 60 * 1000; // 15 minutes in milliseconds
-        setPaymentTimeRemaining(timeoutDuration);
-
-        // Start countdown timer
-        const countdownInterval = setInterval(() => {
-          setPaymentTimeRemaining(prev => {
-            if (prev <= 1000) {
-              clearInterval(countdownInterval);
-              handlePaymentTimeout();
-              return 0;
-            }
-            return prev - 1000;
-          });
-        }, 1000);
-
-        // Set main timeout
-        const timeoutId = setTimeout(() => {
-          clearInterval(countdownInterval);
-          handlePaymentTimeout();
-        }, timeoutDuration);
-
-        setPaymentTimeoutId(timeoutId);
-
-        // Listen for payment completion via socket
-        const handlePaymentCompleted = (paymentData: any) => {
-          console.log('💳 BookingFlow: Payment completed via socket:', paymentData);
-
-          if (paymentData.paymentId === depositResult.paymentId) {
-            // Clear timeout using fresh timeoutId reference
-            clearTimeout(timeoutId);
-            clearInterval(countdownInterval);
-            setPaymentTimeoutId(null);
-            setPaymentTimeRemaining(0);
-
-            // Update payment result
-            setPaymentResult({
-              ...depositResult,
-              status: 'COMPLETED',
-              requiresPayment: false
-            });
-
-            // Booking should be created by webhook, fetch the booking result
-            if (paymentData.bookingId) {
-              bookingService.getBooking(paymentData.bookingId)
-                .then(booking => {
-                  console.log('✅ BookingFlow: Booking created via webhook:', booking);
-                  setBookingResult(booking);
-                  // Navigate to confirmation
-                  setCurrentStep(steps.length - 1);
-                  toast.success('Payment completed! Your booking is confirmed.');
-                })
-                .catch(err => {
-                  console.error('❌ BookingFlow: Error fetching booking after payment:', err);
-                  toast.error('Payment completed but booking details unavailable. Check your bookings page.');
-                });
-            } else {
-              // Navigate to confirmation even without booking details
-              setCurrentStep(steps.length - 1);
-              toast.success('Payment completed! Your booking is being processed.');
-            }
-
-            // Clean up listeners and polling using enhanced cleanup
-            cleanupSocketListeners();
-            if (pollingIntervalId) {
-              clearInterval(pollingIntervalId);
-              setPollingIntervalId(null);
-            }
-          }
-        };
-
-        // Also listen to notifications for payment completion (fallback)
-        const handleNotificationReceived = (notificationData: any) => {
-          console.log('💳 BookingFlow: Notification received via socket:', notificationData);
-
-          // Check if this is a payment completion notification
-          if (notificationData.type === 'PAYMENT_COMPLETED' && notificationData.data) {
-            const paymentData = notificationData.data;
-            handlePaymentCompleted(paymentData);
-          }
-        };
-
-        // Enhanced WebSocket subscription with auto-reconnection
-        console.log('💳 BookingFlow: Setting up enhanced payment subscription for payment:', depositResult.paymentId);
-        const unsubscribePayment = subscribeToPaymentUpdates(depositResult.paymentId, handlePaymentCompleted);
-
-        // Also listen to general notifications as fallback
-        socketService.on('notification:new', handleNotificationReceived);
-
-        // Store unsubscribe function for cleanup
-        const cleanupSocketListeners = () => {
-          unsubscribePayment();
-          socketService.off('notification:new', handleNotificationReceived);
-        };
-
-        // Update existing cleanup to use the new function
-        const originalHandlePaymentCompleted = handlePaymentCompleted;
-        const enhancedHandlePaymentCompleted = (paymentData: any) => {
-          originalHandlePaymentCompleted(paymentData);
-          cleanupSocketListeners();
-        };
-
-        // Set up polling as fallback mechanism
-        const pollPaymentStatus = async () => {
-          try {
-            console.log('🔍 BookingFlow: Polling payment status for:', depositResult.paymentId);
-            const paymentStatus = await paymentService.getPaymentStatus(depositResult.paymentId);
-
-            if (paymentStatus.status === 'PAID' || paymentStatus.status === 'COMPLETED') {
-              console.log('✅ BookingFlow: Payment confirmed via polling:', paymentStatus);
-              handlePaymentCompleted({
-                paymentId: depositResult.paymentId,
-                bookingId: paymentStatus.bookingId,
-                status: 'PAID',
-                amount: paymentStatus.amount,
-                currency: paymentStatus.currency,
-                type: 'DEPOSIT',
-                confirmedAt: new Date(),
-              });
-              return true; // Stop polling
-            }
-          } catch (error) {
-            console.warn('🔍 BookingFlow: Error polling payment status:', error);
-          }
-          return false; // Continue polling
-        };
-
-        // Start polling every 10 seconds as fallback
-        const pollingInterval = setInterval(async () => {
-          const completed = await pollPaymentStatus();
-          if (completed) {
-            clearInterval(pollingInterval);
-            setPollingIntervalId(null);
-          }
-        }, 10000);
-
-        setPollingIntervalId(pollingInterval);
-
-        // Clear polling when component unmounts or payment times out
-        const originalTimeoutHandler = () => {
-          clearInterval(pollingInterval);
-          setPollingIntervalId(null);
-          handlePaymentTimeout();
-        };
-
-        // Update the timeout to clear polling - but handlePaymentCompleted already clears it
-        // No need to recreate timeout since handlePaymentCompleted handles cleanup
-      }
-
-      // Step 3: Handle payment result
-      if (depositResult.status === 'COMPLETED') {
-        // Payment completed with wallet balance - create booking immediately
-        console.log('💰 BookingFlow: Payment completed with wallet, creating booking...');
-        const bookingData = {
-          serviceId: service.id,
-          scheduledAt: scheduledAt.toISOString(),
-          duration: service.duration || 60,
-          customerNotes: bookingNotes || undefined,
-          loyaltyPointsUsed: 0,
-          rewardRedemptionId: selectedRedemptionId
-        };
-
-        const bookingResult = await bookingService.createBookingWithPayment({
-          ...bookingData,
-          paymentId: depositResult.paymentId
-        });
-        console.log('✅ BookingFlow: Booking created after wallet payment:', bookingResult);
-        setBookingResult(bookingResult);
-
-        // Navigate to confirmation step
-        setCurrentStep(steps.length - 1);
-      } else {
-        // Payment requires crypto/external payment - navigate to payment step to show payment interface
-        console.log('⏳ BookingFlow: External payment required, navigating to payment step');
-        console.log('💳 BookingFlow: Payment details:', {
-          amount: depositResult.finalAmount,
-          paymentUrl: depositResult.paymentUrl,
-          qrCode: !!depositResult.qrCodeData,
-          status: depositResult.status
-        });
-
-        // Navigate to payment step (step 3) to show payment interface
-        setCurrentStep(3);
-      }
-
-      return depositResult;
+      
+      console.log('📤 BookingFlow: Sending booking data:', bookingData);
+      const result = await bookingService.createBooking(bookingData);
+      console.log('✅ BookingFlow: Booking created successfully:', result);
+      
+      // Store booking result for confirmation step
+      setBookingResult(result);
+      
+      // Navigate to confirmation step
+      setCurrentStep(steps.length - 1);
     } catch (error: any) {
-      console.error('❌ BookingFlow: Error in booking/payment flow:', error);
+      console.error('❌ BookingFlow: Error creating booking:', error);
       const code = error?.apiError?.code;
       const status = error?.response?.status || error?.apiError?.status;
-
-      // Refresh slots to show current availability after any error
-      console.log('🔄 BookingFlow: Refreshing slots after error');
-      await refreshSlots();
-
-      if (error?.message === 'SLOT_NO_LONGER_AVAILABLE') {
+      if (code === 'BOOKING_CONFLICT' || status === 409 || error?.message?.includes('time slot')) {
         toast.warning(t('booking.slotConflict') || 'This time slot was just booked by someone else. Please choose another.');
-        setCurrentStep(1); // Go back to time selection
-        setConflictHint({ active: true, lastTried: selectedTime });
-      } else if (code === 'BOOKING_CONFLICT' || status === 409 || error?.message?.includes('time slot')) {
-        toast.warning(t('booking.slotConflict') || 'This time slot was just booked by someone else. Please choose another.');
-        setCurrentStep(1); // Go back to time selection
+        await refreshSlots();
+        setCurrentStep(1); // Ensure user stays on time selection
         setConflictHint({ active: true, lastTried: selectedTime });
       } else {
-        toast.error(error?.message || t('booking.createFailed') || 'Failed to process booking. Please try again.');
+        toast.error(t('booking.createFailed') || 'Failed to create booking. Please try again.');
       }
-    } finally {
-      setPaymentLoading(false);
     }
   };
 
@@ -955,20 +491,20 @@ const BookingFlow: React.FC = () => {
               </h3>
               
               {getDisplayDates().length > 0 ? (
-                <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
                   {getDisplayDates().slice(0, 14).map(({ date, dateInfo }) => (
                     <button
                       key={date.toISOString()}
                       onClick={() => setSelectedDate(date)}
-                      className={`p-2 sm:p-3 text-xs sm:text-sm rounded-lg border transition-colors relative mobile-touch-target ${
+                      className={`p-2 text-sm rounded-lg border transition-colors relative ${
                         selectedDate?.toDateString() === date.toDateString()
                           ? 'bg-primary-600 text-white border-primary-600'
-                          : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300 active:scale-95'
+                          : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300'
                       }`}
                       title={`${dateInfo.availableSlots} available slots (${dateInfo.workingHours})`}
                     >
                       <div className="text-center">
-                        <div className="font-medium text-sm sm:text-base">{date.getDate()}</div>
+                        <div className="font-medium">{date.getDate()}</div>
                         <div className="text-xs opacity-75">
                           {date.toLocaleDateString(language || 'en', { weekday: 'short' })}
                         </div>
@@ -977,7 +513,7 @@ const BookingFlow: React.FC = () => {
                         </div>
                       </div>
                       {dateInfo.availableSlots === 1 && (
-                        <span className="absolute -top-1 -right-1 text-[10px] px-1 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">1</span>
+                        <span className="absolute -top-2 -right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">Only 1</span>
                       )}
                     </button>
                   ))}
@@ -1019,31 +555,23 @@ const BookingFlow: React.FC = () => {
                 )}
                 
                 {availableSlots.length > 0 ? (
-                  <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {availableSlots.map((slot: any) => {
                       const time = typeof slot === 'string' ? slot : slot.time;
                       const count = typeof slot === 'string' ? undefined : slot.count;
-                      const serviceDuration = service?.duration || 60;
-                      const endTime = calculateEndTime(time, serviceDuration);
-
                       return (
                         <button
                           key={time}
                           onClick={() => setSelectedTime(time)}
-                          className={`relative px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm rounded-lg border transition-colors mobile-touch-target ${
+                          className={`relative px-3 py-1.5 text-sm rounded-full border transition-colors ${
                             selectedTime === time
                               ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
-                              : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300 active:scale-95'
+                              : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300'
                           }`}
                         >
-                          <div className="text-center">
-                            <div className="font-medium">{time}</div>
-                            {serviceDuration > 15 && (
-                              <div className="text-xs opacity-75">to {endTime}</div>
-                            )}
-                          </div>
+                          {time}
                           {count === 1 && (
-                            <span className="absolute -top-1 -right-1 text-[10px] px-1 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">1</span>
+                            <span className="absolute -top-2 -right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">1</span>
                           )}
                         </button>
                       );
@@ -1358,473 +886,46 @@ const BookingFlow: React.FC = () => {
                 </div>
               )}
 
-              {/* Payment Method Selection */}
-              <div className="mb-6">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                  <CreditCardIcon className="w-5 h-5 mr-2 text-blue-600" />
-                  Payment Method
-                </h4>
-
-                <div className="space-y-3">
-                  {/* Crypto Payment Option */}
-                  <label className="flex items-start space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="crypto"
-                      checked={paymentMethod === 'crypto'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal' | 'wayforpay')}
-                      className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                          <CreditCardIcon className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">Cryptocurrency Payment</div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">Secure payment via Coinbase Commerce</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Supports Bitcoin, Ethereum, and other cryptocurrencies</div>
-                        </div>
-                      </div>
-                    </div>
-                  </label>
-
-                  {/* PayPal Payment Option */}
-                  <label className="flex items-start space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="paypal"
-                      checked={paymentMethod === 'paypal'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal' | 'wayforpay')}
-                      className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                          <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h8.418c2.508 0 4.514.893 5.835 2.598 1.206 1.557 1.747 3.675 1.567 6.129-.346 4.73-3.558 8.889-8.781 11.378h4.985c.534 0 1.021-.304 1.258-.786l6.097-12.417c.235-.479-.013-1.059-.533-1.249L14.27 1.986c-.52-.19-1.099.055-1.249.533L7.076 21.337z"/>
-                          </svg>
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">PayPal</div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">Pay with PayPal, credit cards, or bank account</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Fast and secure traditional payment</div>
-                        </div>
-                      </div>
-                    </div>
-                  </label>
-
-                  {/* WayForPay Payment Option */}
-                  <label className="flex items-start space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="wayforpay"
-                      checked={paymentMethod === 'wayforpay'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal' | 'wayforpay')}
-                      className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
-                          <CreditCardIcon className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 dark:text-white">WayForPay</div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">Ukrainian payment system with cards and banking</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Support for UAH and other local payment methods</div>
-                        </div>
-                      </div>
-                    </div>
-                  </label>
-                </div>
+              <div className="text-center py-4 mb-6">
+                <p className="text-gray-600 dark:text-gray-400 mb-2">
+                  {t('booking.paymentIntegrationPending')}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-500">
+                  Complete booking to earn your loyalty points
+                </p>
               </div>
-
-              {/* Wallet First Option */}
-              <div className="mb-6">
-                <label className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    checked={useWalletFirst}
-                    onChange={(e) => setUseWalletFirst(e.target.checked)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
-                    Use my wallet balance first (if available)
-                  </span>
-                </label>
-              </div>
-
-              {/* Payment Information */}
-              {paymentOptions && (
-                <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
-                  <div className="text-sm">
-                    <div className="font-medium text-blue-900 dark:text-blue-100 mb-2">Payment Information</div>
-                    <div className="space-y-1 text-blue-800 dark:text-blue-200">
-                      <div>Deposit Amount: ${paymentOptions.depositConfiguration.amountUSD} / ₴{paymentOptions.depositConfiguration.amountUAH}</div>
-                      <div>Currency: {paymentOptions.depositConfiguration.currency}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Show payment interface if payment result exists */}
-              {paymentResult ? (
-                <div className="space-y-4">
-                  {/* Payment Section for all external payments */}
-                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
-                    <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
-                      💳 Complete Your {
-                        paymentMethod === 'paypal' ? 'PayPal' :
-                        paymentMethod === 'wayforpay' ? 'WayForPay' :
-                        'Cryptocurrency'
-                      } Payment
-                    </h4>
-                    {paymentResult.message && (
-                      <p className="text-sm text-blue-800 dark:text-blue-200 mb-4">
-                        {paymentResult.message}
-                      </p>
-                    )}
-
-                    {/* PayPal Payment Interface */}
-                    {paymentMethod === 'paypal' && paymentResult.paymentUrl && (
-                      <div className="mb-4">
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                          Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, service.currency)}
-                        </p>
-                        <a
-                          href={paymentResult.paymentUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => {
-                            // Immediately show payment pending confirmation
-                            setCurrentStep(4);
-                            setBookingResult({
-                              status: 'PENDING_PAYMENT',
-                              paymentMethod: 'paypal',
-                              service,
-                              specialist,
-                              scheduledAt: `${selectedDate?.toISOString().split('T')[0]}T${selectedTime}`,
-                              message: 'Payment link opened. Complete payment to confirm your booking.'
-                            });
-                            setPaymentResult({
-                              status: 'pending',
-                              message: 'Payment processing. You will receive an email confirmation once payment is verified.'
-                            });
-                          }}
-                          className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                        >
-                          <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h8.418c2.508 0 4.514.893 5.835 2.598 1.206 1.557 1.747 3.675 1.567 6.129-.346 4.73-3.558 8.889-8.781 11.378h4.985c.534 0 1.021-.304 1.258-.786l6.097-12.417c.235-.479-.013-1.059-.533-1.249L14.27 1.986c-.52-.19-1.099.055-1.249.533L7.076 21.337z"/>
-                          </svg>
-                          Pay with PayPal
-                        </a>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                          You'll receive an email confirmation once payment is verified.
-                        </p>
-                      </div>
-                    )}
-
-                    {/* WayForPay Payment Interface */}
-                    {paymentMethod === 'wayforpay' && paymentResult.paymentUrl && (
-                      <div className="mb-4">
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                          Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, service.currency)}
-                        </p>
-                        <form
-                          id="wayforpayForm"
-                          action={paymentResult.paymentUrl}
-                          method="POST"
-                          target="_blank"
-                        >
-                          {/* Add form fields from wayforpayPayment.formData if available */}
-                          {paymentResult.wayforpayPayment?.formData && Object.entries(paymentResult.wayforpayPayment.formData).map(([key, value]: [string, any]) => {
-                            if (Array.isArray(value)) {
-                              return value.map((item: any, index: number) => (
-                                <input
-                                  key={`${key}-${index}`}
-                                  type="hidden"
-                                  name={`${key}[${index}]`}
-                                  value={String(item)}
-                                />
-                              ));
-                            }
-                            return (
-                              <input
-                                key={key}
-                                type="hidden"
-                                name={key}
-                                value={String(value)}
-                              />
-                            );
-                          })}
-                          <button
-                            type="submit"
-                            className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                          >
-                            <CreditCardIcon className="w-4 h-4 mr-2" />
-                            Pay with WayForPay
-                          </button>
-                        </form>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                          Click to complete your payment securely on WayForPay.
-                        </p>
-                      </div>
-                    )}
-
-                      {/* Crypto Payment Interface (existing logic) */}
-                      {paymentMethod === 'crypto' && (
-                        <>
-                          {/* Payment URL for direct crypto payments */}
-                          {paymentResult.paymentUrl && (
-                            <div className="mb-4">
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                                Amount: {formatPrice(paymentResult.finalAmount / 100 || 1, service.currency)}
-                              </p>
-                              <a
-                                href={paymentResult.paymentUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={() => {
-                                  // Immediately show payment pending confirmation
-                                  setCurrentStep(4);
-                                  setBookingResult({
-                                    status: 'PENDING_PAYMENT',
-                                    paymentMethod: 'crypto',
-                                    service,
-                                    specialist,
-                                    scheduledAt: `${selectedDate?.toISOString().split('T')[0]}T${selectedTime}`,
-                                    message: 'Payment link opened. Complete payment to confirm your booking.'
-                                  });
-                                  setPaymentResult({
-                                    status: 'pending',
-                                    message: 'Payment processing. You will receive an email confirmation once payment is verified.'
-                                  });
-                                }}
-                                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                              >
-                                <CreditCardIcon className="w-4 h-4 mr-2" />
-                                Pay with Crypto
-                              </a>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                                You'll receive an email confirmation once payment is verified.
-                              </p>
-                            </div>
-                          )}
-
-                          {/* Coinbase Onramp Session */}
-                          {paymentResult.onrampSession && (
-                            <div className="mb-4">
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                                Don't have crypto? Buy and pay in one step:
-                              </p>
-                              <a
-                                href={paymentResult.onrampSession.onrampURL}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                              >
-                                <CreditCardIcon className="w-4 h-4 mr-2" />
-                                Buy Crypto & Pay
-                              </a>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                Session expires: {new Date(paymentResult.onrampSession.expiresAt).toLocaleString()}
-                              </p>
-                            </div>
-                          )}
-
-                          {/* QR Code Display */}
-                          {paymentResult.qrCodeData && (
-                            <div className="mt-4">
-                              <button
-                                onClick={() => setShowQRCode(!showQRCode)}
-                                className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
-                              >
-                                {showQRCode ? 'Hide' : 'Show'} QR Code
-                              </button>
-                              {showQRCode && (
-                                <div className="mt-3 text-center">
-                                  <img
-                                    src={paymentResult.qrCodeData}
-                                    alt="Payment QR Code"
-                                    className="max-w-48 h-auto border border-gray-200 rounded mx-auto"
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-3">
-                            {paymentTimeRemaining > 0 && (
-                              <p className="font-medium text-orange-600 dark:text-orange-400">
-                                ⏱️ Time remaining: {Math.floor(paymentTimeRemaining / 60000)}:{String(Math.floor((paymentTimeRemaining % 60000) / 1000)).padStart(2, '0')}
-                              </p>
-                            )}
-                            <p>📧 You'll receive confirmation once payment is verified.</p>
-                            <p className="text-xs text-gray-400 mt-1">Your booking slot is temporarily reserved during payment.</p>
-                          </div>
-                        </>
-                      )}
-                  </div>
-
-                  {/* Payment Complete Section */}
-                  {!paymentResult.requiresPayment && paymentResult.status === 'COMPLETED' && (
-                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
-                      <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">
-                        ✅ Payment Complete
-                      </h4>
-                      <p className="text-sm text-green-800 dark:text-green-200">
-                        {paymentResult.message || 'Payment processed successfully with wallet balance'}
-                      </p>
-                      <button
-                        onClick={() => setCurrentStep(steps.length - 1)}
-                        className="mt-3 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
-                      >
-                        View Booking Details
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <button
-                  onClick={handleBookingSubmit}
-                  disabled={paymentLoading}
-                  className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg hover:bg-primary-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-                >
-                  {paymentLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      {paymentMethod === 'paypal' ? (
-                        <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h8.418c2.508 0 4.514.893 5.835 2.598 1.206 1.557 1.747 3.675 1.567 6.129-.346 4.73-3.558 8.889-8.781 11.378h4.985c.534 0 1.021-.304 1.258-.786l6.097-12.417c.235-.479-.013-1.059-.533-1.249L14.27 1.986c-.52-.19-1.099.055-1.249.533L7.076 21.337z"/>
-                        </svg>
-                      ) : (
-                        <CreditCardIcon className="w-5 h-5 mr-2" />
-                      )}
-                      {paymentMethod === 'paypal' ? 'Pay with PayPal' : t('booking.confirmBooking')}
-                    </>
-                  )}
-                </button>
-              )}
+              
+              <button
+                onClick={handleBookingSubmit}
+                className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center"
+              >
+                <CreditCardIcon className="w-5 h-5 mr-2" />
+                {t('booking.confirmBooking')}
+              </button>
             </div>
           </div>
         );
 
       case 4: // Confirmation
-        const booking = bookingResult?.booking || bookingResult;
+        const booking = bookingResult?.booking;
         const isAutoBooked = booking?.status === 'CONFIRMED';
         const isPending = booking?.status === 'PENDING';
-        const isPendingPayment = booking?.status === 'PENDING_PAYMENT';
-        const needsPayment = paymentResult?.requiresPayment;
-        const hasPaymentUrl = paymentResult?.paymentUrl;
-        const hasOnrampSession = paymentResult?.onrampSession;
-
+        
         return (
           <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 text-center">
-              <CheckCircleIcon className={`w-16 h-16 mx-auto mb-4 ${isAutoBooked ? 'text-green-600' : isPendingPayment ? 'text-blue-600' : 'text-yellow-600'}`} />
-
+              <CheckCircleIcon className={`w-16 h-16 mx-auto mb-4 ${isAutoBooked ? 'text-green-600' : 'text-yellow-600'}`} />
+              
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                {isAutoBooked ? t('booking.bookingConfirmed') : isPendingPayment ? 'Payment Processing' : t('booking.bookingRequested')}
+                {isAutoBooked ? t('booking.bookingConfirmed') : t('booking.bookingRequested')}
               </h3>
-
+              
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {isAutoBooked
-                  ? t('booking.autoBookingConfirmed')
-                  : isPendingPayment
-                  ? 'Your payment is being processed. You will receive an email confirmation once the payment is verified and your booking is confirmed.'
+                {isAutoBooked 
+                  ? t('booking.autoBookingConfirmed') 
                   : t('booking.manualBookingMessage')
                 }
               </p>
-
-              {/* Payment Required Section */}
-              {needsPayment && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-6">
-                  <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
-                    💳 Payment Required
-                  </h4>
-
-                  {paymentResult?.message && (
-                    <p className="text-sm text-blue-800 dark:text-blue-200 mb-4">
-                      {paymentResult.message}
-                    </p>
-                  )}
-
-                  {hasPaymentUrl && (
-                    <div className="space-y-3">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Amount: ${paymentResult.finalAmount ? (paymentResult.finalAmount / 100).toFixed(2) : 'N/A'}
-                      </p>
-                      <a
-                        href={paymentResult.paymentUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        <CreditCardIcon className="w-4 h-4 mr-2" />
-                        Complete Payment
-                      </a>
-                    </div>
-                  )}
-
-                  {hasOnrampSession && (
-                    <div className="space-y-3">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Fiat-to-Crypto Session Created
-                      </p>
-                      <a
-                        href={paymentResult.onrampSession.onrampURL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                      >
-                        💰 Complete Fiat Payment
-                      </a>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Session expires: {new Date(paymentResult.onrampSession.expiresAt).toLocaleString()}
-                      </p>
-                    </div>
-                  )}
-
-                  {paymentResult?.qrCodeData && (
-                    <div className="mt-4">
-                      <button
-                        onClick={() => setShowQRCode(!showQRCode)}
-                        className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-                      >
-                        {showQRCode ? 'Hide' : 'Show'} QR Code
-                      </button>
-                      {showQRCode && (
-                        <div className="mt-2 flex justify-center">
-                          <img
-                            src={paymentResult.qrCodeData}
-                            alt="Payment QR Code"
-                            className="max-w-48 h-auto border border-gray-200 rounded"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Payment Complete Section */}
-              {!needsPayment && paymentResult && (
-                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4 mb-6">
-                  <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">
-                    ✅ Payment Complete
-                  </h4>
-                  <p className="text-sm text-green-800 dark:text-green-200">
-                    {paymentResult.message || 'Payment processed successfully'}
-                  </p>
-                </div>
-              )}
 
               {/* Loyalty Points Earned Notification */}
               {loyaltyData && pointsToEarn > 0 && isAutoBooked && (
@@ -1854,22 +955,14 @@ const BookingFlow: React.FC = () => {
                 </div>
               )}
               
-              {isPending && !isPendingPayment && (
+              {isPending && (
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
                   <p className="text-sm text-yellow-800 dark:text-yellow-200">
                     {t('booking.waitingForSpecialistConfirmation')}
                   </p>
                 </div>
               )}
-
-              {isPendingPayment && paymentResult?.message && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-6">
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
-                    {paymentResult.message}
-                  </p>
-                </div>
-              )}
-
+              
               <button
                 onClick={() => navigate('/customer/bookings')}
                 className="bg-primary-600 text-white py-2 px-6 rounded-lg hover:bg-primary-700 transition-colors"
@@ -1952,12 +1045,12 @@ const BookingFlow: React.FC = () => {
         </div>
 
         {/* Progress Steps */}
-        <div className="mb-6 md:mb-8">
-          <div className="flex items-center justify-between overflow-x-auto pb-2 px-1">
+        <div className="mb-8">
+          <div className="flex items-center justify-between overflow-x-auto pb-2">
             {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center min-w-0">
+              <div key={step.id} className="flex items-center">
                 <div
-                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium flex-shrink-0 ${
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
                     index <= currentStep
                       ? 'bg-primary-600 text-white'
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
@@ -1965,9 +1058,9 @@ const BookingFlow: React.FC = () => {
                 >
                   {index + 1}
                 </div>
-                <div className="ml-2 sm:ml-3 hidden sm:block">
+                <div className="ml-3 hidden md:block">
                   <p
-                    className={`text-xs sm:text-sm font-medium whitespace-nowrap ${
+                    className={`text-sm font-medium whitespace-nowrap ${
                       index <= currentStep
                         ? 'text-primary-600'
                         : 'text-gray-500 dark:text-gray-400'
@@ -1978,7 +1071,7 @@ const BookingFlow: React.FC = () => {
                 </div>
                 {index < steps.length - 1 && (
                   <div
-                    className={`w-4 sm:w-8 md:w-12 h-0.5 mx-1 sm:mx-2 md:mx-4 flex-shrink-0 ${
+                    className={`w-8 sm:w-12 h-0.5 mx-2 sm:mx-4 flex-shrink-0 ${
                       index < currentStep
                         ? 'bg-primary-600'
                         : 'bg-gray-200 dark:bg-gray-700'
@@ -1987,12 +1080,6 @@ const BookingFlow: React.FC = () => {
                 )}
               </div>
             ))}
-          </div>
-          {/* Mobile step indicator */}
-          <div className="sm:hidden mt-2 text-center">
-            <p className="text-xs text-gray-600 dark:text-gray-400">
-              Step {currentStep + 1} of {steps.length}: {steps[currentStep].title}
-            </p>
           </div>
         </div>
 
@@ -2003,31 +1090,32 @@ const BookingFlow: React.FC = () => {
 
         {/* Navigation Buttons */}
         {currentStep < steps.length - 1 && (
-          <div className="flex justify-between gap-3 sm:gap-4 pb-safe-bottom">
+          <div className="flex justify-between gap-4">
             <button
               onClick={handlePrevStep}
               disabled={currentStep === 0}
-              className={`flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 rounded-lg transition-colors flex-shrink-0 mobile-touch-target ${
+              className={`flex items-center px-4 sm:px-6 py-2 rounded-lg transition-colors flex-shrink-0 ${
                 currentStep === 0
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 active:scale-95'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
-              <ArrowLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-              <span className="text-sm sm:text-base">{t('navigation.prev') || 'Prev'}</span>
+              <ArrowLeftIcon className="w-5 h-5 mr-2" />
+              <span className="hidden sm:inline">{t('navigation.previous')}</span>
+              <span className="sm:hidden">{t('navigation.prev') || 'Prev'}</span>
             </button>
-
+            
             <button
               onClick={handleNextStep}
               disabled={
                 (currentStep === 1 && (!selectedDate || !selectedTime)) ||
-                (currentStep === 2 && !service) ||
-                (currentStep === 3 && (!paymentResult || (paymentResult.requiresPayment && paymentResult.status !== 'COMPLETED')))
+                (currentStep === 2 && !service)
               }
-              className="flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0 mobile-touch-target active:scale-95"
+              className="flex items-center px-4 sm:px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0"
             >
-              <span className="text-sm sm:text-base">{t('navigation.next') || 'Next'}</span>
-              <ArrowRightIcon className="w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2" />
+              <span className="hidden sm:inline">{t('navigation.next')}</span>
+              <span className="sm:hidden">{t('navigation.next') || 'Next'}</span>
+              <ArrowRightIcon className="w-5 h-5 ml-2" />
             </button>
           </div>
         )}

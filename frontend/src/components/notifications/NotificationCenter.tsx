@@ -7,17 +7,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { notificationService } from '../../services/notification.service';
 import { Notification, NotificationType } from '../../types';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { 
-  BellIcon, 
-  CheckIcon, 
+import {
+  BellIcon,
+  CheckIcon,
   TrashIcon,
-  EllipsisHorizontalIcon,
+  EllipsisVerticalIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
   CreditCardIcon,
   CalendarIcon,
   StarIcon,
-  CogIcon,
   XMarkIcon
 } from '@/components/icons';
 

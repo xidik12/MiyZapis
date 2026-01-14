@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import type { Language } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
@@ -28,7 +27,7 @@ import {
   TrashIcon,
   PlusIcon,
   CameraIcon
-} from '@/components/icons';
+} from '@heroicons/react/24/outline';
 
 
 interface Address {
@@ -44,11 +43,6 @@ interface Address {
   latitude?: number;
   longitude?: number;
 }
-
-const interfaceLanguageOptions: Array<{ value: Language; label: { en: string; kh: string }; flag: string }> = [
-  { value: 'en', label: { en: 'English', kh: 'អង់គ្លេស' }, flag: '🇺🇸' },
-  { value: 'kh', label: { en: 'Khmer', kh: 'ខ្មែរ' }, flag: '🇰🇭' },
-];
 
 const CustomerSettings: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
@@ -505,23 +499,21 @@ const CustomerSettings: React.FC = () => {
                   {/* Language Preference in Personal Information */}
                   <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-600">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
-                      {t('settings.languagePreferences')}
+                      {language === 'uk' ? 'Налаштування мови' : language === 'ru' ? 'Настройки языка' : 'Language Settings'}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {t('settings.interfaceLanguage')}
+                          {language === 'uk' ? 'Мова інтерфейсу' : language === 'ru' ? 'Язык интерфейса' : 'Interface Language'}
                         </label>
                         <select
                           value={language}
-                          onChange={(e) => setLanguage(e.target.value as Language)}
+                          onChange={(e) => setLanguage(e.target.value as any)}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         >
-                          {interfaceLanguageOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.flag} {language === 'kh' ? option.label.kh : option.label.en}
-                            </option>
-                          ))}
+                          <option value="uk">🇺🇦 Українська</option>
+                          <option value="ru">🇷🇺 Русский</option>
+                          <option value="en">🇺🇸 English</option>
                         </select>
                       </div>
                       <div>
@@ -533,8 +525,9 @@ const CustomerSettings: React.FC = () => {
                           onChange={(e) => setCurrency(e.target.value as any)}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         >
+                          <option value="UAH">₴ {t('currency.uah')}</option>
                           <option value="USD">$ {t('currency.usd')}</option>
-                          <option value="KHR">៛ {t('currency.khr')}</option>
+                          <option value="EUR">€ {t('currency.eur')}</option>
                         </select>
                       </div>
                     </div>
@@ -787,14 +780,12 @@ const CustomerSettings: React.FC = () => {
                       </label>
                       <select
                         value={language}
-                        onChange={(e) => setLanguage(e.target.value as Language)}
+                        onChange={(e) => setLanguage(e.target.value as any)}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       >
-                        {interfaceLanguageOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.flag} {language === 'kh' ? option.label.kh : option.label.en}
-                          </option>
-                        ))}
+                        <option value="uk">🇺🇦 Українська</option>
+                        <option value="ru">🇷🇺 Русский</option>
+                        <option value="en">🇺🇸 English</option>
                       </select>
                     </div>
 
@@ -807,8 +798,9 @@ const CustomerSettings: React.FC = () => {
                         onChange={(e) => setCurrency(e.target.value as any)}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       >
+                        <option value="UAH">₴ {t('currency.uah')}</option>
                         <option value="USD">$ {t('currency.usd')}</option>
-                        <option value="KHR">៛ {t('currency.khr')}</option>
+                        <option value="EUR">€ {t('currency.eur')}</option>
                       </select>
                     </div>
 

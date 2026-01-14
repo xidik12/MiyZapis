@@ -13,7 +13,7 @@ import {
   PhoneIcon,
   EnvelopeIcon,
   ClockIcon
-} from '@/components/icons';
+} from '@heroicons/react/24/outline';
 
 // Interfaces are now imported from the service
 
@@ -125,14 +125,14 @@ const CustomerHelpSupport: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-700 flex items-center justify-center">
         <LoadingSpinner />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-12">

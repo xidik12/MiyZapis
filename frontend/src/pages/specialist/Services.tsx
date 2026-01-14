@@ -10,9 +10,8 @@ import { FloatingElements, UkrainianOrnament } from '../../components/ui/Ukraini
 import { CategoryDropdown } from '../../components/ui/CategoryDropdown';
 import { getCategoryName } from '@/data/serviceCategories';
 import { ServiceCategory } from '../../types';
+import { specialistService } from '../../services/specialist.service';
 import { reviewsService } from '../../services/reviews.service';
-import { ClockIcon, ListBulletIcon } from '@/components/icons';
-import { StarIcon } from '@/components/icons';
 
 interface Service {
   id: string;
@@ -23,8 +22,6 @@ interface Service {
   price?: number; // For backwards compatibility
   currency: string;
   duration: number;
-  serviceLocation?: string;
-  locationNotes?: string;
   isActive: boolean;
   bookings?: number;
   _count?: {
@@ -48,10 +45,6 @@ interface Service {
   discountValidFrom?: string;
   discountValidUntil?: string;
   discountDescription?: string;
-  // Group Session fields
-  isGroupSession?: boolean;
-  maxParticipants?: number;
-  minParticipants?: number;
 }
 
 const sampleServices: Service[] = [
@@ -59,12 +52,9 @@ const sampleServices: Service[] = [
 ];
 
 // Helper function to get the service currency
-const getServiceCurrency = (service: Service): 'USD' | 'KHR' | 'UAH' | 'EUR' => {
-  const detected = (service.currency || '').toUpperCase();
-  if (detected === 'KHR') return 'KHR';
-  if (detected === 'EUR') return 'EUR';
-  if (detected === 'UAH') return 'UAH';
-  return 'USD';
+const getServiceCurrency = (service: Service): 'USD' | 'EUR' | 'UAH' => {
+  // Use the service's stored currency, defaulting to UAH if not specified
+  return (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
 };
 
 const SpecialistServices: React.FC = () => {
@@ -189,10 +179,8 @@ const SpecialistServices: React.FC = () => {
     descriptionRu: '',
     category: '',
     price: '',
-    currency: 'USD', // Default to USD
+    currency: 'UAH', // Default to UAH
     duration: '',
-    serviceLocation: '',
-    locationNotes: '',
     isActive: true,
     // Loyalty Points pricing
     loyaltyPointsEnabled: false,
@@ -205,10 +193,6 @@ const SpecialistServices: React.FC = () => {
     discountValidFrom: '',
     discountValidUntil: '',
     discountDescription: '',
-    // Group Session fields
-    isGroupSession: false,
-    maxParticipants: undefined as number | undefined,
-    minParticipants: 1,
     availability: {
       monday: false,
       tuesday: false,
@@ -236,10 +220,8 @@ const SpecialistServices: React.FC = () => {
       descriptionUk: '',
       descriptionRu: '',
       category: '',
-      serviceLocation: '',
-      locationNotes: '',
       price: '',
-      currency: 'USD', // Default to USD
+      currency: 'UAH', // Default to UAH
       duration: '',
       isActive: true,
       availability: {
@@ -262,11 +244,7 @@ const SpecialistServices: React.FC = () => {
       discountValue: '',
       discountValidFrom: '',
       discountValidUntil: '',
-      discountDescription: '',
-      // Group Session fields
-      isGroupSession: false,
-      maxParticipants: undefined,
-      minParticipants: 1
+      discountDescription: ''
     });
     setCustomCategory('');
     setShowCustomCategory(false);
@@ -295,10 +273,8 @@ const SpecialistServices: React.FC = () => {
       descriptionRu: '',
       category: existingCategory ? existingCategory.id : '',
       price: service.basePrice?.toString() || service.price?.toString() || '',
-      currency: service.currency || 'USD',
+      currency: service.currency || 'UAH',
       duration: service.duration.toString(),
-      serviceLocation: service.serviceLocation || '',
-      locationNotes: service.locationNotes || '',
       isActive: service.isActive,
       availability: {
         monday: false,
@@ -467,8 +443,6 @@ const SpecialistServices: React.FC = () => {
       basePrice: parseFloat(formData.price),
       currency: formData.currency,
       duration: parseInt(formData.duration),
-      serviceLocation: formData.serviceLocation || undefined,
-      locationNotes: formData.locationNotes || undefined,
       isActive: formData.isActive,
       requirements: [], // Empty for now, can be extended later
       deliverables: [], // Empty for now, can be extended later
@@ -486,11 +460,7 @@ const SpecialistServices: React.FC = () => {
       discountValue: formData.discountEnabled ? parseFloat(formData.discountValue) : undefined,
       discountValidFrom: formData.discountEnabled && formData.discountValidFrom ? formData.discountValidFrom : undefined,
       discountValidUntil: formData.discountEnabled && formData.discountValidUntil ? formData.discountValidUntil : undefined,
-      discountDescription: formData.discountEnabled && formData.discountDescription ? formData.discountDescription : undefined,
-      // Group Session fields
-      isGroupSession: formData.isGroupSession,
-      maxParticipants: formData.isGroupSession ? formData.maxParticipants : undefined,
-      minParticipants: formData.isGroupSession ? formData.minParticipants : 1
+      discountDescription: formData.discountEnabled && formData.discountDescription ? formData.discountDescription : undefined
     };
     
     console.log('🚀 Service data being sent to backend:', serviceData);
@@ -674,142 +644,91 @@ const SpecialistServices: React.FC = () => {
 
   // Removed getDayName function as availability is no longer supported
 
-  const ServiceCard: React.FC<{ service: Service }> = ({ service }) => {
-    const metricCardClass =
-      'flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-sm font-medium text-gray-900 dark:text-white shadow-sm';
-    const baseActionButton =
-      'btn-sheen inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300';
-    const statusClasses = service.isActive
-      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-400/30'
-      : 'bg-white/20 text-white/60 border border-white/20 dark:border-white/10';
-    const priceLabel = language === 'kh' ? 'តម្លៃចាប់ផ្តើម' : 'Base price';
-    const durationLabel = language === 'kh' ? 'រយៈពេល' : 'Duration';
-    const bookingsLabel = (() => {
-      const value = t('services.bookings');
-      if (value && value !== 'services.bookings') {
-        return value;
-      }
-      return language === 'kh' ? 'ការកក់' : 'Bookings';
-    })();
-    const ratingLabel = language === 'kh' ? 'ការវាយតម្លៃ' : 'Rating';
-
-    return (
-      <div
-        className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm group relative overflow-hidden p-6 sm:p-7 transition-all duration-300 hover:shadow-md ${
-          !service.isActive ? 'opacity-75' : ''
-        }`}
-      >
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -top-32 right-0 h-36 w-36 rounded-full bg-[radial-gradient(circle_at_center,rgba(4,0,151,0.3),rgba(4,0,151,0))] blur-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-70"
-        />
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <h3 className="text-xl font-semibold text-[rgb(31,33,36)] dark:text-white">
-                  {getLocalizedText(service, 'name')}
-                </h3>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-[0.18em] ${statusClasses}`}>
-                  {service.isActive ? t('services.active') : t('services.inactive')}
-                </span>
-                {service.isGroupSession && (
-                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    {t('services.groupSession')}
-                    {service.maxParticipants && ` (${service.maxParticipants})`}
-                  </span>
-                )}
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-white/50 dark:bg-white/10 border border-white/30 dark:border-white/10 text-[rgba(31,33,36,0.75)] dark:text-white/70">
-                  {getLocalizedText(service, 'category')}
-                </span>
-              </div>
-              <p className="text-sm leading-relaxed text-[rgba(45,37,32,0.7)] dark:text-white/70">
-                {getLocalizedText(service, 'description')}
-              </p>
-            </div>
-            <div className="flex flex-col items-start lg:items-end gap-2">
-              <span className="text-xs uppercase tracking-[0.18em] text-[rgba(78,80,86,0.6)] dark:text-white/50">
-                {priceLabel}
-              </span>
-              <div className="inline-flex items-baseline gap-2 px-5 py-2 rounded-2xl bg-white/75 dark:bg-white/10 border border-white/30 dark:border-white/10 shadow-[0_22px_52px_-32px_rgba(4,0,151,0.45)]">
-                <span className="text-2xl font-bold text-[rgb(31,33,36)] dark:text-white">
-                  {service.basePrice && !isNaN(service.basePrice)
-                    ? formatPrice(service.basePrice, getServiceCurrency(service))
-                    : (t('common.notAvailable') || 'N/A')}
-                </span>
-              </div>
-            </div>
+  const ServiceCard: React.FC<{ service: Service }> = ({ service }) => (
+    <div className={`bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20 dark:border-gray-700/20 ${!service.isActive ? 'opacity-60' : ''}`}>
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-2">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+              {getLocalizedText(service, 'name')}
+            </h3>
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+              service.isActive 
+                ? 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-300'
+                : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+            }`}>
+              {service.isActive ? t('services.active') : t('services.inactive')}
+            </span>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className={metricCardClass}>
-              <ClockIcon className="w-5 h-5 text-[#c62418]" />
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-[rgba(78,80,86,0.6)] dark:text-white/50">
-                  {durationLabel}
-                </p>
-                <p className="text-sm font-semibold text-[rgb(31,33,36)] dark:text-white">
-                  {service.duration} {t('services.min')}
-                </p>
-              </div>
-            </div>
-            <div className={metricCardClass}>
-              <ListBulletIcon className="w-5 h-5 text-[#040097]" />
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-[rgba(78,80,86,0.6)] dark:text-white/50">
-                  {bookingsLabel}
-                </p>
-                <p className="text-sm font-semibold text-[rgb(31,33,36)] dark:text-white">
-                  {getBookingCount(service)}
-                </p>
-              </div>
-            </div>
-            <div className={metricCardClass}>
-              <StarIcon className="w-5 h-5 text-yellow-400" />
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-[rgba(78,80,86,0.6)] dark:text-white/50">
-                  {ratingLabel}
-                </p>
-                <p className="text-sm font-semibold text-[rgb(31,33,36)] dark:text-white">
-                  {service.rating && !isNaN(service.rating)
-                    ? service.rating.toFixed(1)
-                    : (t('common.notAvailable') || 'N/A')}
-                </p>
-              </div>
-            </div>
+          <p className="text-gray-600 dark:text-gray-300 mb-3 text-sm leading-relaxed">
+            {getLocalizedText(service, 'description')}
+          </p>
+          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-3">
+            <span className="flex items-center gap-1">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {service.duration} {t('services.min')}
+            </span>
+            <span className="flex items-center gap-1">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {getBookingCount(service)} {t('services.bookings')}
+            </span>
+            <span className="flex items-center gap-1">
+              <svg className="w-4 h-4 text-secondary-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              {service.rating && !isNaN(service.rating) ? service.rating.toFixed(1) : (t('common.notAvailable') || 'N/A')}
+            </span>
           </div>
-
-          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-white/30 dark:border-white/10">
-            <button
-              onClick={() => openEditModal(service)}
-              className={`${baseActionButton} flex-1 text-white bg-gradient-to-r from-[#040097] via-[#3d3dff] to-[#c62418] shadow-[0_26px_60px_-28px_rgba(4,0,151,0.55)] hover:-translate-y-0.5`}
-            >
-              {t('services.edit')}
-            </button>
-            <button
-              onClick={() => handleToggleServiceStatus(service.id, !service.isActive)}
-              className={`${baseActionButton} ${
-                service.isActive
-                  ? 'text-amber-400 bg-amber-500/10 border border-amber-400/30 hover:bg-amber-500/15'
-                  : 'text-emerald-400 bg-emerald-500/10 border border-emerald-400/30 hover:bg-emerald-500/15'
-              }`}
-            >
-              {service.isActive ? t('services.deactivate') : t('services.activate')}
-            </button>
-            <button
-              onClick={() => handleDeleteService(service.id)}
-              className={`${baseActionButton} text-rose-400 bg-rose-500/10 border border-rose-400/30 hover:bg-rose-500/15`}
-            >
-              {t('services.delete') || 'Delete'}
-            </button>
+        </div>
+        <div className="text-right ml-4">
+          <div className="text-2xl font-bold text-primary-600 mb-2">
+            {service.basePrice && !isNaN(service.basePrice) ? formatPrice(service.basePrice, getServiceCurrency(service)) : (t('common.notAvailable') || 'N/A')}
+          </div>
+          <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+            {getLocalizedText(service, 'category')}
           </div>
         </div>
       </div>
-    );
-  };
+
+      {/* Removed availability and timeSlots display as they're not part of backend schema */}
+
+      {/* Action Buttons */}
+      <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <button
+          onClick={() => openEditModal(service)}
+          className="flex-1 bg-primary-50 hover:bg-primary-100 text-primary-700 px-4 py-2 rounded-lg font-medium transition-colors duration-200 dark:bg-primary-900/20 dark:hover:bg-primary-900/30 dark:text-primary-300"
+        >
+          {t('services.edit')}
+        </button>
+        <button
+          onClick={() => {
+            console.log('📝 Service object before toggle:', service);
+            console.log('🏷️ Service ID:', service.id);
+            handleToggleServiceStatus(service.id, !service.isActive);
+          }}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+            service.isActive
+              ? 'bg-warning-50 hover:bg-warning-100 text-warning-700 dark:bg-warning-900/20 dark:hover:bg-warning-900/30 dark:text-warning-300'
+              : 'bg-success-50 hover:bg-success-100 text-success-700 dark:bg-success-900/20 dark:hover:bg-success-900/30 dark:text-success-300'
+          }`}
+        >
+          {service.isActive ? t('services.deactivate') : t('services.activate')}
+        </button>
+        <button 
+          onClick={() => handleDeleteService(service.id)}
+          className="p-2 bg-error-50 hover:bg-error-100 text-error-600 rounded-lg transition-colors duration-200 dark:bg-error-900/20 dark:hover:bg-error-900/30 dark:text-error-300"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
 
   if (loading) {
     return <FullScreenHandshakeLoader title={t('common.loading')} subtitle={t('dashboard.nav.services')} />;
@@ -817,7 +736,7 @@ const SpecialistServices: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-500 text-xl mb-4">Error loading services</div>
           <p className="text-gray-600 dark:text-gray-400">{error}</p>
@@ -833,8 +752,12 @@ const SpecialistServices: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="relative p-4 sm:p-6 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
+        <FloatingElements />
+      
+      <div className="relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
@@ -864,7 +787,7 @@ const SpecialistServices: React.FC = () => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
               <div className="flex items-center">
                 <div className="p-3 bg-primary-100 rounded-xl mr-4">
                   <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -879,7 +802,7 @@ const SpecialistServices: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
               <div className="flex items-center">
                 <div className="p-3 bg-secondary-100 rounded-xl mr-4">
                   <svg className="w-6 h-6 text-secondary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -894,7 +817,7 @@ const SpecialistServices: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
               <div className="flex items-center">
                 <div className="p-3 bg-success-100 rounded-xl mr-4">
                   <svg className="w-6 h-6 text-success-600" fill="currentColor" viewBox="0 0 24 24">
@@ -919,7 +842,7 @@ const SpecialistServices: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20">
               <div className="flex items-center">
                 <div className="p-3 bg-warning-100 rounded-xl mr-4">
                   <svg className="w-6 h-6 text-warning-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -940,10 +863,7 @@ const SpecialistServices: React.FC = () => {
                           });
                           return validPrices.length === 0 
                             ? t('services.noDataYet') || 'No data yet'
-                            : formatPrice(
-                                validPrices.reduce((sum, s) => sum + (s.basePrice || s.price), 0) / validPrices.length,
-                                (validPrices[0]?.currency as 'USD' | 'KHR' | 'UAH' | 'EUR') || 'USD'
-                              );
+                            : formatPrice(validPrices.reduce((sum, s) => sum + (s.basePrice || s.price), 0) / validPrices.length, validPrices[0]?.currency as 'USD' | 'EUR' | 'UAH' || 'UAH');
                         })()
                     }
                   </p>
@@ -953,7 +873,7 @@ const SpecialistServices: React.FC = () => {
           </div>
 
           {/* Filters */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20 mb-8">
             <div className="flex flex-col lg:flex-row gap-4">
               {/* Search */}
               <div className="flex-1">
@@ -1072,11 +992,12 @@ const SpecialistServices: React.FC = () => {
             </div>
           )}
         </div>
+      </div>
 
       {/* Add/Edit Service Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {editingService ? t('serviceForm.editService') : t('serviceForm.addService')}
@@ -1200,8 +1121,9 @@ const SpecialistServices: React.FC = () => {
                         onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
                         className="px-3 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
                       >
+                        <option value="UAH">₴ UAH</option>
                         <option value="USD">$ USD</option>
-                        <option value="KHR">៛ KHR</option>
+                        <option value="EUR">€ EUR</option>
                       </select>
                     </div>
                     {formErrors.price && <p className="mt-1 text-sm text-red-500">{formErrors.price}</p>}
@@ -1219,45 +1141,6 @@ const SpecialistServices: React.FC = () => {
                       className={`w-full px-4 py-3 rounded-xl border ${formErrors.duration ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
                     />
                     {formErrors.duration && <p className="mt-1 text-sm text-red-500">{formErrors.duration}</p>}
-                  </div>
-                </div>
-              </div>
-
-              {/* Location Information */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  {language === 'uk' ? 'Місцезнаходження' : language === 'ru' ? 'Местоположение' : 'Location Information'}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  {language === 'uk' ? 'Ця інформація буде показана клієнтам після оплати' : language === 'ru' ? 'Эта информация будет показана клиентам после оплаты' : 'This information will be shown to customers after payment'}
-                </p>
-                <div className="grid grid-cols-1 gap-6">
-                  {/* Service Location */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {language === 'uk' ? 'Адреса або місце надання послуги' : language === 'ru' ? 'Адрес или место предоставления услуги' : 'Service Location Address'}
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.serviceLocation}
-                      onChange={(e) => setFormData(prev => ({ ...prev, serviceLocation: e.target.value }))}
-                      placeholder={language === 'uk' ? 'напр. вул. Хрещатик 1, Київ' : language === 'ru' ? 'напр. ул. Крещатик 1, Киев' : 'e.g. 123 Main St, City'}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
-
-                  {/* Location Notes */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {language === 'uk' ? 'Додаткові інструкції' : language === 'ru' ? 'Дополнительные инструкции' : 'Additional Instructions'}
-                    </label>
-                    <textarea
-                      value={formData.locationNotes}
-                      onChange={(e) => setFormData(prev => ({ ...prev, locationNotes: e.target.value }))}
-                      placeholder={language === 'uk' ? 'напр. Паркування позаду будівлі, домофон 15' : language === 'ru' ? 'напр. Парковка за зданием, домофон 15' : 'e.g. Parking behind building, buzzer #15'}
-                      rows={3}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
-                    />
                   </div>
                 </div>
               </div>
@@ -1397,9 +1280,7 @@ const SpecialistServices: React.FC = () => {
                             <span className="mr-2 text-gray-500 dark:text-gray-400">%</span>
                           )}
                           {formData.discountType === 'FIXED_AMOUNT' && (
-                            <span className="mr-2 text-gray-500 dark:text-gray-400">
-                              {formData.currency === 'KHR' ? '៛' : formData.currency === 'UAH' ? '₴' : formData.currency === 'EUR' ? '€' : '$'}
-                            </span>
+                            <span className="mr-2 text-gray-500 dark:text-gray-400">{formData.currency === 'UAH' ? '₴' : formData.currency === 'USD' ? '$' : '€'}</span>
                           )}
                           <input
                             type="number"
@@ -1465,7 +1346,7 @@ const SpecialistServices: React.FC = () => {
                           🎉 <strong>Discount Preview:</strong> {' '}
                           {formData.discountType === 'PERCENTAGE'
                             ? `${formData.discountValue}% off`
-                            : `${formData.currency === 'KHR' ? '៛' : formData.currency === 'UAH' ? '₴' : formData.currency === 'EUR' ? '€' : '$'}${formData.discountValue} off`
+                            : `${formData.currency === 'UAH' ? '₴' : formData.currency === 'USD' ? '$' : '€'}${formData.discountValue} off`
                           }
                           {' '}
                           {formData.price && (
@@ -1474,11 +1355,11 @@ const SpecialistServices: React.FC = () => {
                               {formData.discountType === 'PERCENTAGE'
                                 ? formatPrice(
                                     parseFloat(formData.price) * (1 - parseFloat(formData.discountValue) / 100),
-                                    formData.currency as 'USD' | 'KHR' | 'UAH' | 'EUR'
+                                    formData.currency as 'USD' | 'EUR' | 'UAH'
                                   )
                                 : formatPrice(
                                     parseFloat(formData.price) - parseFloat(formData.discountValue),
-                                    formData.currency as 'USD' | 'KHR' | 'UAH' | 'EUR'
+                                    formData.currency as 'USD' | 'EUR' | 'UAH'
                                   )
                               })
                             </span>
@@ -1491,83 +1372,6 @@ const SpecialistServices: React.FC = () => {
                         </p>
                       </div>
                     )}
-                  </div>
-                )}
-              </div>
-
-              {/* Group Session Settings */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  Group Session Settings
-                </h3>
-
-                {/* Enable Group Session */}
-                <div className="mb-4">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.isGroupSession}
-                      onChange={(e) => {
-                        console.log('Group Session checkbox clicked:', e.target.checked);
-                        setFormData(prev => ({
-                          ...prev,
-                          isGroupSession: e.target.checked,
-                          maxParticipants: e.target.checked ? prev.maxParticipants : undefined,
-                          minParticipants: e.target.checked ? (prev.minParticipants || 1) : 1
-                        }));
-                      }}
-                      className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                    />
-                    <span className="ml-3 text-sm text-gray-700 dark:text-gray-300">
-                      {t('serviceForm.groupSession')}
-                    </span>
-                  </label>
-                  <p className="ml-8 mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Allow multiple customers to book the same time slot for this service
-                  </p>
-                </div>
-
-                {/* Group Session Options */}
-                {formData.isGroupSession && (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 ml-8">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('serviceForm.maxParticipants')}
-                      </label>
-                      <input
-                        type="number"
-                        value={formData.maxParticipants || ''}
-                        onChange={(e) => setFormData(prev => ({
-                          ...prev,
-                          maxParticipants: e.target.value ? parseInt(e.target.value) : undefined
-                        }))}
-                        min="1"
-                        placeholder={t('serviceForm.maxParticipantsPlaceholder')}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Maximum number of participants per session
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('serviceForm.minParticipants')}
-                      </label>
-                      <input
-                        type="number"
-                        value={formData.minParticipants || 1}
-                        onChange={(e) => setFormData(prev => ({
-                          ...prev,
-                          minParticipants: e.target.value ? parseInt(e.target.value) : 1
-                        }))}
-                        min="1"
-                        max={formData.maxParticipants || undefined}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Minimum participants required to confirm session
-                      </p>
-                    </div>
                   </div>
                 )}
               </div>
@@ -1594,6 +1398,7 @@ const SpecialistServices: React.FC = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

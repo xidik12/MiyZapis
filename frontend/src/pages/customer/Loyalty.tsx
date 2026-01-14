@@ -21,12 +21,12 @@ import {
   FireIcon,
   BriefcaseIcon,
   EyeIcon,
-} from '@/components/icons';
+} from '@heroicons/react/24/outline';
 import {
-  StarIcon,
-  TrophyIcon,
-  FireIcon,
-} from '@/components/icons';
+  StarIcon as StarIconSolid,
+  TrophyIcon as TrophyIconSolid,
+  FireIcon as FireIconSolid,
+} from '@heroicons/react/24/solid';
 
 const CustomerLoyalty: React.FC = () => {
   const { theme } = useTheme();
@@ -180,7 +180,7 @@ const CustomerLoyalty: React.FC = () => {
   const formatPoints = utilFormatPoints;
 
   const formatDate = (dateString: string) => {
-    const locale = language === 'kh' ? 'km-KH' : 'en-US';
+    const locale = language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US';
     return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'short',
@@ -225,11 +225,11 @@ const CustomerLoyalty: React.FC = () => {
       case 'REFERRAL':
         return <UsersIcon className="h-5 w-5 text-blue-500" />;
       case 'CAMPAIGN':
-        return <FireIcon className="h-5 w-5 text-orange-500" />;
+        return <FireIconSolid className="h-5 w-5 text-orange-500" />;
       case 'SERVICE':
         return <BriefcaseIcon className="h-5 w-5 text-indigo-500" />;
       case 'BOOKING_COMPLETION':
-        return <StarIcon className="h-5 w-5 text-yellow-500" />;
+        return <StarIconSolid className="h-5 w-5 text-yellow-500" />;
       case 'PROFILE_VIEW':
         return <EyeIcon className="h-5 w-5 text-cyan-500" />;
       default:
@@ -296,34 +296,34 @@ const CustomerLoyalty: React.FC = () => {
         };
       case 'GOLD':
         return {
-          summaryGradient: 'from-accent-50 to-accent-50 dark:from-accent-900/20 dark:to-accent-900/20',
-          donutStroke: 'stroke-accent-500',
-          accentText: 'text-accent-700 dark:text-accent-300',
-          chipBg: 'bg-accent-600 text-white',
-          benefitCheck: 'bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300',
-          currentCard: 'border-accent-500 bg-accent-50 dark:bg-accent-900/20',
-          nextCard: 'border-accent-400 bg-accent-50 dark:bg-accent-900/20',
+          summaryGradient: 'from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20',
+          donutStroke: 'stroke-yellow-500',
+          accentText: 'text-yellow-700 dark:text-yellow-300',
+          chipBg: 'bg-yellow-600 text-white',
+          benefitCheck: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300',
+          currentCard: 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20',
+          nextCard: 'border-amber-400 bg-amber-50 dark:bg-amber-900/20',
         };
       case 'PLATINUM':
         return {
-          summaryGradient: 'from-primary-50 to-primary-50 dark:from-primary-900/20 dark:to-primary-900/20',
-          donutStroke: 'stroke-primary-500',
-          accentText: 'text-primary-700 dark:text-primary-300',
-          chipBg: 'bg-primary-600 text-white',
-          benefitCheck: 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300',
-          currentCard: 'border-primary-500 bg-primary-50 dark:bg-primary-900/20',
-          nextCard: 'border-primary-400 bg-primary-50 dark:bg-primary-900/20',
+          summaryGradient: 'from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20',
+          donutStroke: 'stroke-indigo-500',
+          accentText: 'text-indigo-700 dark:text-indigo-300',
+          chipBg: 'bg-indigo-600 text-white',
+          benefitCheck: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300',
+          currentCard: 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20',
+          nextCard: 'border-purple-400 bg-purple-50 dark:bg-purple-900/20',
         };
       case 'BRONZE':
       default:
         return {
-          summaryGradient: 'from-secondary-50 to-secondary-50 dark:from-secondary-900/20 dark:to-secondary-900/20',
-          donutStroke: 'stroke-secondary-500',
-          accentText: 'text-secondary-700 dark:text-secondary-300',
-          chipBg: 'bg-secondary-600 text-white',
-          benefitCheck: 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300',
-          currentCard: 'border-secondary-500 bg-secondary-50 dark:bg-secondary-900/20',
-          nextCard: 'border-secondary-400 bg-secondary-50 dark:bg-secondary-900/20',
+          summaryGradient: 'from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20',
+          donutStroke: 'stroke-amber-500',
+          accentText: 'text-amber-700 dark:text-amber-300',
+          chipBg: 'bg-amber-600 text-white',
+          benefitCheck: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
+          currentCard: 'border-amber-500 bg-amber-50 dark:bg-amber-900/20',
+          nextCard: 'border-orange-400 bg-orange-50 dark:bg-orange-900/20',
         };
     }
   };
@@ -364,7 +364,7 @@ const CustomerLoyalty: React.FC = () => {
                 </p>
               </div>
               <div className="h-10 w-10 sm:h-12 sm:w-12 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
-                <StarIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary-600 dark:text-primary-400" />
+                <StarIconSolid className="h-5 w-5 sm:h-6 sm:w-6 text-primary-600 dark:text-primary-400" />
               </div>
             </div>
           </div>
@@ -379,7 +379,7 @@ const CustomerLoyalty: React.FC = () => {
                 </p>
               </div>
               <div className="h-10 w-10 sm:h-12 sm:w-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-                <TrophyIcon className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
+                <TrophyIconSolid className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
           </div>
@@ -481,7 +481,7 @@ const CustomerLoyalty: React.FC = () => {
 
             <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
-                <FireIcon className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 dark:text-orange-400" />
+                <FireIconSolid className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
                 <h4 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white">{t('loyalty.specialCampaigns') || 'Special Campaigns'}</h4>
@@ -643,7 +643,7 @@ const CustomerLoyalty: React.FC = () => {
                               {loyaltyStats?.currentTier?.name || 'BRONZE'}
                             </p>
                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-semibold ${skin.chipBg}`}>
-                              <TrophyIcon className="h-3 w-3 mr-1" />
+                              <TrophyIconSolid className="h-3 w-3 mr-1" />
                               {t('nav.level') || 'Level'}
                             </span>
                           </div>

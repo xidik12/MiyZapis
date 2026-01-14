@@ -12,7 +12,7 @@ import {
   MagnifyingGlassIcon,
   InboxIcon,
   UserCircleIcon,
-} from '@/components/icons';
+} from '@heroicons/react/24/outline';
 import { CheckIcon, CheckCheckIcon } from 'lucide-react';
 
 const CustomerMessages: React.FC = () => {

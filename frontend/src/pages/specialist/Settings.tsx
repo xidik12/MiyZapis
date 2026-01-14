@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import type { Language } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser, updateUserProfile } from '../../store/slices/authSlice';
@@ -26,12 +25,7 @@ import {
   TrashIcon,
   KeyIcon,
   LockClosedIcon,
-} from '@/components/icons';
-
-const interfaceLanguageOptions: Array<{ value: Language; label: { en: string; kh: string }; flag: string }> = [
-  { value: 'en', label: { en: 'English', kh: 'អង់គ្លេស' }, flag: '🇺🇸' },
-  { value: 'kh', label: { en: 'Khmer', kh: 'ខ្មែរ' }, flag: '🇰🇭' },
-];
+} from '@heroicons/react/24/outline';
 
 const SpecialistSettings: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
@@ -267,10 +261,9 @@ const SpecialistSettings: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-
-      <div className="relative p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
-        <div>
+    
+      <div className="bg-gray-50 dark:bg-gray-900 p-4 lg:p-8">
+        <div className="max-w-4xl mx-auto">
             {/* Header */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
@@ -315,7 +308,7 @@ const SpecialistSettings: React.FC = () => {
               {/* Settings Content */}
               <div className="lg:col-span-2 space-y-8">
                 {/* Profile Settings */}
-                <div id="profile" className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-lg shadow">
+                <div id="profile" className="bg-white dark:bg-gray-800 rounded-lg shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <UserIcon className="w-5 h-5 mr-2" />
@@ -400,7 +393,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Account Settings */}
-                <div id="account" className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-lg shadow">
+                <div id="account" className="bg-white dark:bg-gray-800 rounded-lg shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <Cog6ToothIcon className="w-5 h-5 mr-2" />
@@ -439,7 +432,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Security Settings */}
-                <div id="security" className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-lg shadow">
+                <div id="security" className="bg-white dark:bg-gray-800 rounded-lg shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <ShieldCheckIcon className="w-5 h-5 mr-2" />
@@ -542,7 +535,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Notification Settings */}
-                <div id="notifications" className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-lg shadow">
+                <div id="notifications" className="bg-white dark:bg-gray-800 rounded-lg shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <BellIcon className="w-5 h-5 mr-2" />
@@ -587,7 +580,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Privacy Settings */}
-                <div id="privacy" className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-lg shadow">
+                <div id="privacy" className="bg-white dark:bg-gray-800 rounded-lg shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <ShieldCheckIcon className="w-5 h-5 mr-2" />
@@ -626,7 +619,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Business Settings */}
-                <div id="business" className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-lg shadow">
+                <div id="business" className="bg-white dark:bg-gray-800 rounded-lg shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <CreditCardIcon className="w-5 h-5 mr-2" />
@@ -674,7 +667,7 @@ const SpecialistSettings: React.FC = () => {
                 </div>
 
                 {/* Language & Currency Settings */}
-                <div id="language" className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-lg shadow">
+                <div id="language" className="bg-white dark:bg-gray-800 rounded-lg shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
                       <GlobeAltIcon className="w-5 h-5 mr-2" />
@@ -691,14 +684,12 @@ const SpecialistSettings: React.FC = () => {
                       </label>
                       <select
                         value={language}
-                        onChange={(e) => setLanguage(e.target.value as Language)}
+                        onChange={(e) => setLanguage(e.target.value as 'uk' | 'ru' | 'en')}
                         className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                       >
-                        {interfaceLanguageOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.flag} {language === 'kh' ? option.label.kh : option.label.en}
-                          </option>
-                        ))}
+                        <option value="uk">🇺🇦 Українська</option>
+                        <option value="ru">🇷🇺 Русский</option>
+                        <option value="en">🇺🇸 English</option>
                       </select>
                     </div>
                     
@@ -708,18 +699,19 @@ const SpecialistSettings: React.FC = () => {
                       </label>
                       <select
                         value={currency}
-                        onChange={(e) => setCurrency(e.target.value as 'USD' | 'KHR')}
+                        onChange={(e) => setCurrency(e.target.value as 'UAH' | 'USD' | 'EUR')}
                         className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                       >
-                        <option value="USD">$ {t('currency.usd') || 'US Dollar'}</option>
-                        <option value="KHR">៛ {t('currency.khr') || 'Khmer Riel'}</option>
+                        <option value="UAH">₴ {t('currency.uah')}</option>
+                        <option value="USD">$ {t('currency.usd')}</option>
+                        <option value="EUR">€ {t('currency.eur')}</option>
                       </select>
                     </div>
                   </div>
                 </div>
 
                 {/* Save Button */}
-                <div className="backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 dark:shadow-black/20 rounded-lg shadow p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                   <div className="flex justify-end space-x-3">
                     <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                       {t('common.cancel')}
@@ -756,7 +748,7 @@ const SpecialistSettings: React.FC = () => {
           }}
         />
       </div>
-    </div>
+
   );
 };
 

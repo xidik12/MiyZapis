@@ -80,7 +80,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       size="xl"
       position="bottom"
       ariaLabel={t('bookings.bookingDetails')}
-      containerClassName="bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 border border-white/20 dark:border-white/10"
+      containerClassName="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700"
       contentClassName="flex flex-col"
     >
       <div className="flex h-full flex-col">

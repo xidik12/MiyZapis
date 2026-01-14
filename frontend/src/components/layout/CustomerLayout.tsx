@@ -29,9 +29,8 @@ import {
   ArrowRightOnRectangleIcon,
   ChatBubbleLeftEllipsisIcon,
   UsersIcon,
-  WalletIcon,
-} from '@/components/icons';
-import { HomeIcon } from '@/components/icons';
+} from '@heroicons/react/24/outline';
+import { HomeIcon as HomeIconSolid } from '@heroicons/react/24/solid';
 
 interface CustomerLayoutProps {
   children: ReactNode;
@@ -53,7 +52,7 @@ const navigation: SidebarNavItem[] = [
     nameKey: 'customer.nav.dashboard',
     href: '/dashboard',
     icon: HomeIcon,
-    iconActive: HomeIcon,
+    iconActive: HomeIconSolid,
   },
   {
     name: 'Find Services',
@@ -89,13 +88,6 @@ const navigation: SidebarNavItem[] = [
     href: '/customer/messages',
     icon: ChatBubbleLeftEllipsisIcon,
     iconActive: ChatBubbleLeftEllipsisIcon,
-  },
-  {
-    name: 'Wallet',
-    nameKey: 'customer.nav.wallet',
-    href: '/customer/wallet',
-    icon: WalletIcon,
-    iconActive: WalletIcon,
   },
   {
     name: 'Payments',
@@ -160,13 +152,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  const isCurrentPath = (path: string) => {
-    // Handle wallet routes - both /wallet and /customer/wallet should highlight the wallet nav item
-    if (path === '/customer/wallet') {
-      return location.pathname === '/customer/wallet' || location.pathname === '/wallet';
-    }
-    return location.pathname === path;
-  };
+  const isCurrentPath = (path: string) => location.pathname === path;
 
   const handleLogout = async () => {
     try {
@@ -180,12 +166,13 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
   };
 
   const currencyOptions = [
-    { value: 'USD', label: 'US Dollar ($)', flag: '🇺🇸' },
-    { value: 'KHR', label: 'Khmer Riel (៛)', flag: '🇰🇭' },
+    { value: 'UAH', label: 'Гривня (₴)', flag: '🇺🇦' },
+    { value: 'USD', label: 'Dollar ($)', flag: '🇺🇸' },
+    { value: 'EUR', label: 'Euro (€)', flag: '🇪🇺' },
   ];
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
@@ -207,11 +194,36 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
           {!isCollapsed && (
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 vichea-gradient text-white rounded-lg flex items-center justify-center text-sm font-bold">
-                H
-              </div>
+              <img 
+                src="/miyzapis_logo.png" 
+                alt="МійЗапис Logo" 
+                className="w-8 h-8"
+                onError={(e) => {
+                  const img = e.currentTarget as HTMLImageElement;
+                  const currentSrc = img.src;
+                  
+                  if (currentSrc.includes('miyzapis_logo.png')) {
+                    console.log('🖼️ CustomerLayout logo failed, trying SVG fallback');
+                    img.src = '/logo.svg';
+                  } else if (currentSrc.includes('logo.svg')) {
+                    console.log('🖼️ CustomerLayout SVG logo failed, trying favicon fallback');
+                    img.src = '/favicon.svg';
+                  } else {
+                    console.log('🖼️ CustomerLayout all logos failed, replacing with text fallback');
+                    img.style.display = 'none';
+                    const parent = img.parentElement;
+                    if (parent && !parent.querySelector('.logo-fallback')) {
+                      const fallback = document.createElement('div');
+                      fallback.className = 'logo-fallback w-8 h-8 bg-blue-600 text-white rounded flex items-center justify-center text-xs font-bold';
+                      fallback.textContent = 'МЗ';
+                      parent.insertBefore(fallback, img);
+                    }
+                  }
+                }}
+                onLoad={() => console.log('✅ CustomerLayout logo loaded successfully')}
+              />
               <span className="text-lg font-bold text-gray-900 dark:text-white">
-                Panhaha
+                МійЗапис
               </span>
             </div>
           )}
@@ -397,7 +409,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
           {children}
         </main>
       </div>

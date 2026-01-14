@@ -1,5 +1,6 @@
-                                                                                                                import React, { useState, useEffect } from 'react';
-import { ChatBubbleLeftIcon, UserIcon, HeartIcon, FlagIcon, ExclamationTriangleIcon } from '@/components/icons';
+import React, { useState, useEffect } from 'react';
+import { StarIcon, ChatBubbleLeftIcon, UserIcon, HeartIcon, FlagIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { StarIcon as StarIconSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { reviewsService, Review, ReviewStats } from '../../services/reviews.service';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
@@ -33,7 +34,7 @@ const SpecialistReviews: React.FC = () => {
         const profile = await specialistService.getProfile();
         console.log('✅ [Reviews] Specialist profile loaded:', profile);
         
-        // The API returns { specialist: { id: ... } }, so we need to extract the spe                                                     QQQQQQQQcialist object
+        // The API returns { specialist: { id: ... } }, so we need to extract the specialist object
         const specialistData = profile.specialist || profile;
         console.log('🔧 [Reviews] Extracted specialist data:', specialistData);
         console.log('🆔 [Reviews] Specialist ID:', specialistData.id);
@@ -216,7 +217,7 @@ const SpecialistReviews: React.FC = () => {
         {[1, 2, 3, 4, 5].map((star) => (
           <div key={star}>
             {star <= rating ? (
-              <StarIcon className={`${sizeClasses[size]} text-yellow-400`} />
+              <StarIconSolid className={`${sizeClasses[size]} text-yellow-400`} />
             ) : (
               <StarIcon className={`${sizeClasses[size]} text-gray-300`} />
             )}
@@ -228,7 +229,7 @@ const SpecialistReviews: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString(language === 'kh' ? 'km-KH' : 'en-US', {
+    return date.toLocaleDateString(language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -262,8 +263,7 @@ const SpecialistReviews: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="relative p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('dashboard.nav.reviews')}</h1>
@@ -281,7 +281,7 @@ const SpecialistReviews: React.FC = () => {
       {/* Statistics Overview */}
       {reviewStats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('reviews.totalReviews')}</p>
@@ -293,7 +293,7 @@ const SpecialistReviews: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('reviews.averageRating')}</p>
@@ -302,17 +302,17 @@ const SpecialistReviews: React.FC = () => {
                     {reviewStats.averageRating.toFixed(1)}
                   </p>
                   <div className="flex items-center">
-                    <StarIcon className="w-5 h-5 text-yellow-400" />
+                    <StarIconSolid className="w-5 h-5 text-yellow-400" />
                   </div>
                 </div>
               </div>
               <div className="bg-yellow-100 dark:bg-yellow-900/20 p-3 rounded-full">
-                <StarIcon className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+                <StarIconSolid className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('reviews.verifiedReviews')}</p>
@@ -324,7 +324,7 @@ const SpecialistReviews: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('reviews.recommendationRate')}</p>
@@ -333,7 +333,7 @@ const SpecialistReviews: React.FC = () => {
                 </p>
               </div>
               <div className="bg-purple-100 dark:bg-purple-900/20 p-3 rounded-full">
-                <HeartIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                <HeartIconSolid className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
           </div>
@@ -342,7 +342,7 @@ const SpecialistReviews: React.FC = () => {
 
       {/* Rating Distribution */}
       {reviewStats && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-6 mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('reviews.ratingDistribution')}</h3>
             {filters.rating && (
@@ -367,7 +367,7 @@ const SpecialistReviews: React.FC = () => {
                 >
                   <div className="flex items-center space-x-1 w-16">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{rating}</span>
-                    <StarIcon className="w-4 h-4 text-yellow-400" />
+                    <StarIconSolid className="w-4 h-4 text-yellow-400" />
                   </div>
                   <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
@@ -386,7 +386,7 @@ const SpecialistReviews: React.FC = () => {
       )}
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-6 mb-8">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('reviews.filters')}</h3>
         <div className="flex flex-wrap gap-4">
           <select
@@ -439,7 +439,7 @@ const SpecialistReviews: React.FC = () => {
       {/* Reviews List */}
       <div className="space-y-6">
         {reviews.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-12 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-12 text-center">
             <ChatBubbleLeftIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
               {t('reviews.noReviews')}
@@ -450,7 +450,7 @@ const SpecialistReviews: React.FC = () => {
           </div>
         ) : (
           reviews.map((review) => (
-            <div key={review.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-lg p-6">
+            <div key={review.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-4">
                   {review.customer.avatar ? (
@@ -496,7 +496,7 @@ const SpecialistReviews: React.FC = () => {
                     className="flex items-center space-x-1 text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors"
                   >
                     {review.isHelpful ? (
-                      <HeartIcon className="w-4 h-4 text-red-500" />
+                      <HeartIconSolid className="w-4 h-4 text-red-500" />
                     ) : (
                       <HeartIcon className="w-4 h-4" />
                     )}
@@ -601,7 +601,6 @@ const SpecialistReviews: React.FC = () => {
           </button>
         </div>
       )}
-      </div>
     </div>
   );
 };
