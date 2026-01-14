@@ -17,6 +17,8 @@ import {
   ChatBubbleLeftRightIcon,
   CheckBadgeIcon,
   ArrowRightIcon,
+  SparklesIcon,
+  HeartIcon,
 } from '@/components/icons';
 
 // Service categories and featured specialists - data from API
