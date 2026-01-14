@@ -25,7 +25,7 @@ const getServiceCategories = (t: (key: string) => string) => [
     id: '1',
     name: t('category.beautyWellness'),
     description: t('category.beautyWellness.desc'),
-    icon: '💄',
+    icon: SparklesIcon,
     serviceCount: 156,
     href: '/search?category=beauty-wellness',
   },
@@ -33,7 +33,7 @@ const getServiceCategories = (t: (key: string) => string) => [
     id: '2',
     name: t('category.healthFitness'),
     description: t('category.healthFitness.desc'),
-    icon: '💪',
+    icon: HeartIcon,
     serviceCount: 89,
     href: '/search?category=health-fitness',
   },
@@ -41,7 +41,7 @@ const getServiceCategories = (t: (key: string) => string) => [
     id: '3',
     name: t('category.homeServices'),
     description: t('category.homeServices.desc'),
-    icon: '🏠',
+    icon: UserGroupIcon,
     serviceCount: 124,
     href: '/search?category=home-services',
   },
@@ -49,7 +49,7 @@ const getServiceCategories = (t: (key: string) => string) => [
     id: '4',
     name: t('category.professional'),
     description: t('category.professional.desc'),
-    icon: '💼',
+    icon: CheckBadgeIcon,
     serviceCount: 78,
     href: '/search?category=professional-services',
   },
@@ -57,7 +57,7 @@ const getServiceCategories = (t: (key: string) => string) => [
     id: '5',
     name: t('category.education'),
     description: t('category.education.desc'),
-    icon: '📚',
+    icon: ChatBubbleLeftRightIcon,
     serviceCount: 92,
     href: '/search?category=education',
   },
@@ -65,7 +65,7 @@ const getServiceCategories = (t: (key: string) => string) => [
     id: '6',
     name: t('category.technology'),
     description: t('category.technology.desc'),
-    icon: '💻',
+    icon: CreditCardIcon,
     serviceCount: 67,
     href: '/search?category=technology',
   },
@@ -157,20 +157,19 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen w-full prevent-overflow">
       {/* Hero Section */}
-      <section className="relative panhaha-gradient text-white overflow-hidden min-h-[100vh] xs:min-h-[90vh] sm:min-h-[85vh] lg:min-h-[80vh] flex items-center w-full prevent-overflow">
+      <section className="relative bg-primary-600 text-white overflow-hidden min-h-[100vh] xs:min-h-[90vh] sm:min-h-[85vh] lg:min-h-[80vh] flex items-center w-full prevent-overflow">
         <div className="absolute inset-0 bg-black bg-opacity-10"></div>
-        
+
         {/* Animated background elements - hide some on mobile */}
         <div className="hidden lg:block absolute top-20 right-20 w-32 h-32 rounded-full morph-shape opacity-20 float-animation"></div>
         <div className="hidden lg:block absolute bottom-20 left-20 w-48 h-48 rounded-full bg-white/10 animate-pulse"></div>
-        <div className="hidden lg:block absolute top-1/2 right-1/4 w-16 h-16 panhaha-gradient rounded-full animate-bounce"></div>
-        
+
         <div className="relative w-full max-w-7xl mx-auto mobile-container py-12 xs:py-16 sm:py-20 lg:py-24 prevent-overflow">
           <div className="text-center w-full prevent-overflow">
             <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-6xl font-bold mb-4 xs:mb-6 leading-tight animate-fade-in px-2 xs:px-0">
               {t('hero.title1')}
               <br />
-              <span className="text-secondary-200 shimmer">{t('hero.title2')}</span>
+              <span className="text-white">{t('hero.title2')}</span>
             </h1>
             <p className="text-base xs:text-lg sm:text-xl md:text-2xl text-primary-100 mb-6 xs:mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-2 xs:px-0">
               {t('hero.subtitle')}
@@ -236,7 +235,7 @@ const HomePage: React.FC = () => {
       <section className="py-8 xs:py-12 sm:py-20 w-full prevent-overflow" style={{ backgroundColor: 'rgb(var(--bg-secondary))' }}>
         <div className="w-full max-w-7xl mx-auto mobile-container prevent-overflow">
           <div className="text-center mb-8 xs:mb-12 sm:mb-16">
-            <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold panhaha-text-gradient mb-4 px-2 xs:px-0">
+            <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 px-2 xs:px-0">
               {t('categories.title')}
             </h2>
             <p className="text-base xs:text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-2 xs:px-0">
@@ -245,27 +244,32 @@ const HomePage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-6 md:gap-8">
-            {serviceCategories.map((category, index) => (
-              <Link
-                key={category.id}
-                to={category.href}
-                className="group glass-effect p-4 xs:p-6 sm:p-8 rounded-xl hover:scale-105 transition-all duration-300 block h-full"
-              >
-                <div className="text-5xl mb-6 animate-bounce">{category.icon}</div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 group-hover:panhaha-text-gradient transition-all duration-300">
-                  {category.name}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
-                  {category.description}
-                </p>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-primary-600 font-semibold px-3 py-1 bg-primary-50 dark:bg-primary-900/30 rounded-full">
-                    {category.serviceCount} {t('services.count')}
-                  </span>
-                  <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-all duration-300 group-hover:translate-x-1" />
-                </div>
-              </Link>
-            ))}
+            {serviceCategories.map((category, index) => {
+              const IconComponent = category.icon;
+              return (
+                <Link
+                  key={category.id}
+                  to={category.href}
+                  className="group glass-effect p-4 xs:p-6 sm:p-8 rounded-xl hover:scale-105 transition-all duration-300 block h-full"
+                >
+                  <div className="mb-6">
+                    <IconComponent className="w-12 h-12 text-primary-600 dark:text-primary-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 group-hover:text-primary-600 transition-all duration-300">
+                    {category.name}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                    {category.description}
+                  </p>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-primary-600 font-semibold px-3 py-1 bg-primary-50 dark:bg-primary-900/30 rounded-full">
+                      {category.serviceCount} {t('services.count')}
+                    </span>
+                    <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-all duration-300 group-hover:translate-x-1" />
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -465,7 +469,7 @@ const HomePage: React.FC = () => {
             {user ? (
               <Link
                 to="/search"
-                className="panhaha-gradient text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl text-center"
+                className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl text-center"
               >
                 {t('cta.browseServices')}
               </Link>
@@ -473,7 +477,7 @@ const HomePage: React.FC = () => {
               <>
                 <Link
                   to="/auth/register"
-                  className="panhaha-gradient text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl text-center"
+                  className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl text-center"
                 >
                   {t('cta.signUpCustomer')}
                 </Link>
