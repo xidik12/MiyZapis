@@ -257,7 +257,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
               }}
               onLoad={() => console.log('✅ MobileSideNav logo loaded successfully')}
             />
-            <span className="text-xl font-bold panhaha-text-gradient group-hover:text-primary-500 transition-colors duration-300">
+            <span className="text-xl font-bold text-primary-600 dark:text-primary-400 group-hover:text-primary-500 transition-colors duration-300">
               {environment.APP_NAME}
             </span>
           </Link>
@@ -463,7 +463,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
               
               <Link
                 to="/auth/register"
-                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl panhaha-gradient text-white mobile-touch-target transition-all duration-300 hover:scale-105 hover:shadow-lg shadow-primary"
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-primary-600 text-white mobile-touch-target transition-colors duration-300 hover:shadow-lg shadow-primary"
               >
                 <UserPlusIcon className="w-5 h-5 flex-shrink-0" />
                 <span className="font-medium text-base">{t('nav.getStarted')}</span>

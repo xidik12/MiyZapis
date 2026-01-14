@@ -183,7 +183,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
                   className="w-10 h-10 rounded-xl object-cover"
                 />
               ) : (
-                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
                   <span className="text-white font-bold text-lg">
                     {user?.firstName?.charAt(0) || 'S'}
                   </span>
@@ -218,8 +218,8 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
                   to={item.href}
                   className={`
                     group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
-                    ${isActive 
-                      ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg transform scale-105' 
+                    ${isActive
+                      ? 'bg-primary-600 text-white shadow-lg'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                     }
                     ${item.comingSoon ? 'opacity-50 cursor-not-allowed' : ''}

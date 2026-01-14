@@ -252,7 +252,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                 className="w-10 h-10 rounded-full object-cover"
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center">
                 <span className="text-white font-semibold">
                   {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
                 </span>
@@ -289,8 +289,8 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                 className={`
                   flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200
                   ${isActive
-                    ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-primary transform scale-105'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-105'
+                    ? 'bg-primary-600 text-white shadow-primary'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }
                   ${isCollapsed ? 'justify-center' : 'justify-between'}
                 `}
