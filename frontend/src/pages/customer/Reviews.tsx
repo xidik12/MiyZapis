@@ -13,8 +13,7 @@ import {
   ChartBarIcon,
   ExclamationTriangleIcon,
   PlusIcon,
-} from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+} from '@/components/icons';
 
 interface CustomerReview {
   id: string;
@@ -96,7 +95,7 @@ const CustomerReviews: React.FC = () => {
     return (
       <div className="flex">
         {[1, 2, 3, 4, 5].map((star) => (
-          <StarIconSolid
+          <StarIcon
             key={star}
             className={`h-4 w-4 ${
               star <= rating 
@@ -157,7 +156,7 @@ const CustomerReviews: React.FC = () => {
             
             <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
               <div className="flex items-center">
-                <StarIconSolid className="h-8 w-8 text-yellow-500 mr-3" />
+                <StarIcon className="h-8 w-8 text-yellow-500 mr-3" />
                 <div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Average Rating</p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">

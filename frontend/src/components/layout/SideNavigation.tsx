@@ -13,12 +13,7 @@ import {
   ChevronRightIcon,
   ArrowRightOnRectangleIcon,
   UserPlusIcon,
-} from '@heroicons/react/24/outline';
-import {
-  HomeIcon as HomeIconSolid,
-  MagnifyingGlassIcon as MagnifyingGlassIconSolid,
-  UserCircleIcon as UserCircleIconSolid,
-} from '@heroicons/react/24/solid';
+} from '@/components/icons';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { LanguageToggle } from '../ui/LanguageToggle';
 import { CurrencyToggle } from '../ui/CurrencyToggle';
@@ -45,14 +40,14 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
       name: t('nav.home'),
       href: '/',
       icon: HomeIcon,
-      activeIcon: HomeIconSolid,
+      activeIcon: HomeIcon,
       current: location.pathname === '/',
     },
     {
       name: t('nav.services'),
       href: '/search',
       icon: MagnifyingGlassIcon,
-      activeIcon: MagnifyingGlassIconSolid,
+      activeIcon: MagnifyingGlassIcon,
       current: location.pathname === '/search',
     },
     {
@@ -78,7 +73,7 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
       name: user?.userType === 'specialist' ? t('nav.dashboard') : t('nav.dashboard'), 
       href: user?.userType === 'specialist' ? '/specialist/dashboard' : '/dashboard',
       icon: UserCircleIcon,
-      activeIcon: UserCircleIconSolid,
+      activeIcon: UserCircleIcon,
       current: location.pathname.includes('/dashboard'),
     },
   ] : [];

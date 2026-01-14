@@ -17,7 +17,7 @@ import {
   ChatBubbleLeftRightIcon,
   CheckBadgeIcon,
   ArrowRightIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 
 // Service categories and featured specialists - data from API
 const getServiceCategories = (t: (key: string) => string) => [

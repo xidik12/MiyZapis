@@ -16,7 +16,7 @@ import {
   MapPinIcon,
   PhoneIcon,
   ChatBubbleLeftRightIcon
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 import ReviewModal from '../../components/modals/ReviewModal';
 import { reviewsService } from '../../services/reviews.service';
 import { validateReviewTags } from '../../constants/reviewTags';

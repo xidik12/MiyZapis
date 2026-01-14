@@ -24,7 +24,7 @@ import {
   BuildingOfficeIcon,
   ShieldCheckIcon,
   DocumentCheckIcon
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 
 interface Address {
   id: string;

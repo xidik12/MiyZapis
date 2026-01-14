@@ -8,7 +8,7 @@ import {
   CheckIcon,
   TrashIcon,
   PencilIcon
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';

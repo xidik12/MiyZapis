@@ -17,12 +17,7 @@ import {
   EnvelopeIcon,
   ChatBubbleLeftRightIcon,
   DevicePhoneMobileIcon,
-} from '@heroicons/react/24/outline';
-import {
-  UsersIcon as UsersIconSolid,
-  GiftIcon as GiftIconSolid,
-  CheckCircleIcon as CheckCircleIconSolid,
-} from '@heroicons/react/24/solid';
+} from '@/components/icons';
 
 const CustomerReferrals: React.FC = () => {
   const { theme } = useTheme();
@@ -92,7 +87,7 @@ const CustomerReferrals: React.FC = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'COMPLETED':
-        return <CheckCircleIconSolid className="h-5 w-5 text-green-500" />;
+        return <CheckCircleIcon className="h-5 w-5 text-green-500" />;
       case 'PENDING':
         return <ClockIcon className="h-5 w-5 text-yellow-500" />;
       case 'EXPIRED':
@@ -154,7 +149,7 @@ const CustomerReferrals: React.FC = () => {
                 </p>
               </div>
               <div className="h-12 w-12 bg-primary-100 dark:bg-primary-900/20 rounded-lg flex items-center justify-center">
-                <UsersIconSolid className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+                <UsersIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
             </div>
           </div>
@@ -168,7 +163,7 @@ const CustomerReferrals: React.FC = () => {
                 </p>
               </div>
               <div className="h-12 w-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-                <CheckCircleIconSolid className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
             </div>
           </div>
@@ -196,7 +191,7 @@ const CustomerReferrals: React.FC = () => {
                 </p>
               </div>
               <div className="h-12 w-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-                <GiftIconSolid className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                <GiftIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
           </div>

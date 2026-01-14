@@ -21,21 +21,7 @@ import {
   LifebuoyIcon,
   GiftIcon,
   ChatBubbleLeftRightIcon,
-} from '@heroicons/react/24/outline';
-import {
-  HomeIcon as HomeIconSolid,
-  CalendarIcon as CalendarIconSolid,
-  HeartIcon as HeartIconSolid,
-  CreditCardIcon as CreditCardIconSolid,
-  StarIcon as StarIconSolid,
-  UserIcon as UserIconSolid,
-  ClockIcon as ClockIconSolid,
-  BellIcon as BellIconSolid,
-  MagnifyingGlassIcon as MagnifyingGlassIconSolid,
-  LifebuoyIcon as LifebuoyIconSolid,
-  GiftIcon as GiftIconSolid,
-  ChatBubbleLeftRightIcon as ChatBubbleLeftRightIconSolid,
-} from '@heroicons/react/24/solid';
+} from '@/components/icons';
 
 interface CustomerSidebarProps {
   isOpen?: boolean;
@@ -77,28 +63,28 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       translationKey: 'dashboard.nav.dashboard',
       href: '/customer/dashboard',
       icon: HomeIcon,
-      iconSolid: HomeIconSolid,
+      iconSolid: HomeIcon,
     },
     {
       name: 'Messages',
       translationKey: 'dashboard.nav.messages',
       href: '/customer/messages',
       icon: ChatBubbleLeftRightIcon,
-      iconSolid: ChatBubbleLeftRightIconSolid,
+      iconSolid: ChatBubbleLeftRightIcon,
     },
     {
       name: 'Search Services',
       translationKey: 'search.title',
       href: '/search',
       icon: MagnifyingGlassIcon,
-      iconSolid: MagnifyingGlassIconSolid,
+      iconSolid: MagnifyingGlassIcon,
     },
     {
       name: 'My Bookings',
       translationKey: 'dashboard.nav.bookings',
       href: '/customer/bookings',
       icon: CalendarIcon,
-      iconSolid: CalendarIconSolid,
+      iconSolid: CalendarIcon,
       badge: 0, // Dynamic count from API
     },
     {
@@ -106,14 +92,14 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       translationKey: 'dashboard.nav.history',
       href: '/customer/bookings',
       icon: ClockIcon,
-      iconSolid: ClockIconSolid,
+      iconSolid: ClockIcon,
     },
     {
       name: 'Favorites',
       translationKey: 'dashboard.nav.favorites',
       href: '/customer/favorites',
       icon: HeartIcon,
-      iconSolid: HeartIconSolid,
+      iconSolid: HeartIcon,
       badge: favoritesCount.specialists + favoritesCount.services,
     },
     {
@@ -121,21 +107,21 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       translationKey: 'dashboard.nav.reviews',
       href: '/customer/reviews',
       icon: StarIcon,
-      iconSolid: StarIconSolid,
+      iconSolid: StarIcon,
     },
     {
       name: 'Payments',
       translationKey: 'dashboard.nav.payments',
       href: '/customer/payments',
       icon: CreditCardIcon,
-      iconSolid: CreditCardIconSolid,
+      iconSolid: CreditCardIcon,
     },
     {
       name: 'Loyalty Program',
       translationKey: 'dashboard.customer.loyaltyPoints',
       href: '/customer/loyalty',
       icon: GiftIcon,
-      iconSolid: GiftIconSolid,
+      iconSolid: GiftIcon,
       badge: 0, // Dynamic count from API
     },
     {
@@ -143,7 +129,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       translationKey: 'dashboard.nav.profile',
       href: '/customer/profile',
       icon: UserIcon,
-      iconSolid: UserIconSolid,
+      iconSolid: UserIcon,
     },
   ];
 
@@ -153,7 +139,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       translationKey: 'dashboard.nav.notifications',
       href: '/customer/notifications',
       icon: BellIcon,
-      iconSolid: BellIconSolid,
+      iconSolid: BellIcon,
       badge: 0, // Dynamic count from API
     },
     {
@@ -161,7 +147,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       translationKey: 'dashboard.nav.support',
       href: '/customer/support',
       icon: LifebuoyIcon,
-      iconSolid: LifebuoyIconSolid,
+      iconSolid: LifebuoyIcon,
     },
   ];
 

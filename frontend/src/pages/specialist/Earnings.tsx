@@ -8,7 +8,7 @@ import {
   UserGroupIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector } from '../../hooks/redux';

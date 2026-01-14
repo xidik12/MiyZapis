@@ -25,7 +25,7 @@ import {
   TrashIcon,
   KeyIcon,
   LockClosedIcon,
-} from '@heroicons/react/24/outline';
+} from '@/components/icons';
 
 const SpecialistSettings: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();

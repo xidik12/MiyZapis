@@ -28,8 +28,7 @@ import {
   TrashIcon,
   MagnifyingGlassIcon,
   XMarkIcon
-} from '@heroicons/react/24/outline';
-import { HeartIcon as HeartIconSolid, StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+} from '@/components/icons';
 import { Avatar } from '../../components/ui/Avatar';
 import { translateProfession } from '@/utils/profession';
 import { ServiceImage } from '../../components/ui/ServiceImage';
@@ -392,7 +391,7 @@ const CustomerFavorites: React.FC = () => {
                               className="text-red-500 hover:text-red-700"
                               title={t('customer.favorites.removeFromFavorites')}
                             >
-                              <HeartIconSolid className="h-5 w-5" />
+                              <HeartIcon className="h-5 w-5" />
                             </button>
                           </div>
 
@@ -400,7 +399,7 @@ const CustomerFavorites: React.FC = () => {
                           {specialist.rating && (
                             <div className="flex items-center space-x-2 mb-3">
                               <div className="flex items-center space-x-1">
-                                <StarIconSolid className="h-4 w-4 text-yellow-400" />
+                                <StarIcon className="h-4 w-4 text-yellow-400" />
                                 <span className="text-sm font-medium text-gray-900 dark:text-white">
                                   {specialist.rating.toFixed(1)}
                                 </span>
@@ -519,7 +518,7 @@ const CustomerFavorites: React.FC = () => {
                             className="absolute top-2 right-2 p-2 bg-white dark:bg-gray-700 rounded-full shadow-md text-red-500 hover:text-red-700"
                             title={t('customer.favorites.removeFromFavorites')}
                           >
-                            <HeartIconSolid className="h-4 w-4" />
+                            <HeartIcon className="h-4 w-4" />
                           </button>
                         </div>
 

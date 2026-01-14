@@ -21,22 +21,7 @@ import {
   XMarkIcon,
   Cog6ToothIcon,
   WrenchScrewdriverIcon,
-} from '@heroicons/react/24/outline';
-import {
-  HomeIcon as HomeIconSolid,
-  CalendarIcon as CalendarIconSolid,
-  CogIcon as CogIconSolid,
-  ChartBarIcon as ChartBarIconSolid,
-  PresentationChartLineIcon as PresentationChartLineIconSolid,
-  CurrencyDollarIcon as CurrencyDollarIconSolid,
-  StarIcon as StarIconSolid,
-  ChatBubbleLeftRightIcon as ChatBubbleLeftRightIconSolid,
-  UserIcon as UserIconSolid,
-  ClockIcon as ClockIconSolid,
-  BellIcon as BellIconSolid,
-  Cog6ToothIcon as Cog6ToothIconSolid,
-  WrenchScrewdriverIcon as WrenchScrewdriverIconSolid,
-} from '@heroicons/react/24/solid';
+} from '@/components/icons';
 
 interface SpecialistSidebarProps {
   isOpen?: boolean;
@@ -69,14 +54,14 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.dashboard',
       href: '/specialist/dashboard',
       icon: HomeIcon,
-      iconSolid: HomeIconSolid,
+      iconSolid: HomeIcon,
     },
     {
       name: 'Bookings',
       translationKey: 'dashboard.nav.bookings',
       href: '/specialist/bookings',
       icon: CalendarIcon,
-      iconSolid: CalendarIconSolid,
+      iconSolid: CalendarIcon,
       badge: 0, // Dynamic count from API
     },
     {
@@ -84,35 +69,35 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.services',
       href: '/specialist/services',
       icon: WrenchScrewdriverIcon,
-      iconSolid: WrenchScrewdriverIconSolid,
+      iconSolid: WrenchScrewdriverIcon,
     },
     {
       name: 'Schedule',
       translationKey: 'dashboard.nav.schedule',
       href: '/specialist/schedule',
       icon: ClockIcon,
-      iconSolid: ClockIconSolid,
+      iconSolid: ClockIcon,
     },
     {
       name: 'Analytics',
       translationKey: 'dashboard.nav.analytics',
       href: '/specialist/analytics',
       icon: PresentationChartLineIcon,
-      iconSolid: PresentationChartLineIconSolid,
+      iconSolid: PresentationChartLineIcon,
     },
     {
       name: 'Earnings',
       translationKey: 'dashboard.nav.earnings',
       href: '/specialist/earnings',
       icon: CurrencyDollarIcon,
-      iconSolid: CurrencyDollarIconSolid,
+      iconSolid: CurrencyDollarIcon,
     },
     {
       name: 'Reviews',
       translationKey: 'dashboard.nav.reviews',
       href: '/specialist/reviews',
       icon: StarIcon,
-      iconSolid: StarIconSolid,
+      iconSolid: StarIcon,
       badge: 0, // Dynamic count from API
     },
     {
@@ -120,7 +105,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.messages',
       href: '/specialist/messages',
       icon: ChatBubbleLeftRightIcon,
-      iconSolid: ChatBubbleLeftRightIconSolid,
+      iconSolid: ChatBubbleLeftRightIcon,
       badge: 0, // Dynamic count from API
     },
     {
@@ -128,14 +113,14 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.profile',
       href: '/specialist/profile',
       icon: UserIcon,
-      iconSolid: UserIconSolid,
+      iconSolid: UserIcon,
     },
     {
       name: 'Settings',
       translationKey: 'dashboard.nav.settings',
       href: '/specialist/settings',
       icon: Cog6ToothIcon,
-      iconSolid: Cog6ToothIconSolid,
+      iconSolid: Cog6ToothIcon,
     },
   ];
 
@@ -145,7 +130,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.notifications',
       href: '/specialist/notifications',
       icon: BellIcon,
-      iconSolid: BellIconSolid,
+      iconSolid: BellIcon,
       badge: 0, // Dynamic count from API
     },
   ];
