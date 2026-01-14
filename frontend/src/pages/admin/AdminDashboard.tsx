@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { UsersIcon, UserGroupIcon, ChartBarIcon, MagnifyingGlassIcon, ShieldCheckIcon, WarningIcon as ExclamationTriangleIcon, CheckCircleIcon, XCircleIcon, EyeIcon, PencilIcon, TrashIcon, FunnelIcon } from '@/components/icons';
+import { PageLoader } from '@/components/ui';
 
 interface AdminStats {
   totalUsers: number;
@@ -104,14 +105,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading admin dashboard...</p>
-        </div>
-      </div>
-    );
+    return <PageLoader text="Loading admin dashboard..." />;
   }
 
   const getStatusBadge = (status: string) => {

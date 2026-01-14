@@ -17,7 +17,7 @@ import {
 import { selectUser } from '../store/slices/authSlice';
 import { StarIcon, MapPinIcon, ClockIcon, SealCheckIcon as CheckBadgeIcon, CalendarIcon, ChatBubbleLeftRightIcon, HeartIcon, ShareIcon, PlayIcon } from '@/components/icons';
 ;
-import { Avatar } from '../components/ui/Avatar';
+import { Avatar, PageLoader } from '../components/ui';
 import { translateProfession } from '@/utils/profession';
 import { getAbsoluteImageUrl } from '../utils/imageUrl';
 // Note: Use active prop for filled icons: <Icon active />
@@ -219,11 +219,7 @@ const SpecialistProfilePage: React.FC = () => {
   }, [specialistId, specialist]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    );
+    return <PageLoader text="Loading specialist profile..." />;
   }
 
   if (!specialist) {

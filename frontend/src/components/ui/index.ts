@@ -7,6 +7,8 @@ export { LanguageToggle } from './LanguageToggle';
 export { LoadingSpinner } from './LoadingSpinner';
 export { LoadingAnimation } from './LoadingAnimation';
 export { InlineLoader } from './InlineLoader';
+export { PageLoader } from './PageLoader';
+export { ContentLoader } from './ContentLoader';
 export { FullScreenLoader } from './FullScreenLoader';
 export { FullScreenHandshakeLoader } from './FullScreenHandshakeLoader';
 export { LoadingShowcase } from './LoadingShowcase';
