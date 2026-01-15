@@ -152,7 +152,7 @@ const VerifyEmailPage: React.FC = () => {
             </p>
             <Link
               to="/auth/login"
-              className="inline-block mt-4 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+              className="inline-block mt-4 px-6 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 font-semibold transition-all duration-200 hover:scale-105"
             >
               Go to Login
             </Link>
@@ -173,7 +173,7 @@ const VerifyEmailPage: React.FC = () => {
               Please check your email ({email}) and click the verification link to activate your account.
             </p>
             
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+            <div className="bg-gray-50/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-xl p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                 Didn't receive the email?
               </h3>
@@ -181,7 +181,7 @@ const VerifyEmailPage: React.FC = () => {
               <button
                 onClick={handleResendVerification}
                 disabled={isResending}
-                className="w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-semibold rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-200 hover:scale-105"
               >
                 {isResending ? (
                   <>
@@ -206,7 +206,7 @@ const VerifyEmailPage: React.FC = () => {
             <div className="mt-6">
               <Link
                 to="/auth/login"
-                className="text-primary-600 hover:text-primary-500 text-sm font-medium"
+                className="text-primary-600 hover:text-primary-500 text-sm font-semibold px-2 py-1 rounded-xl hover:bg-primary-50/80 dark:hover:bg-primary-900/30 transition-all duration-200"
               >
                 Back to Login
               </Link>
@@ -228,14 +228,14 @@ const VerifyEmailPage: React.FC = () => {
             </p>
 
             {(status === 'expired' || status === 'error') && (
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+              <div className="bg-gray-50/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
                   Request New Verification Email
                 </h3>
                 
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                       Email Address
                     </label>
                     <input
@@ -243,7 +243,7 @@ const VerifyEmailPage: React.FC = () => {
                       id="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700"
+                      className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 font-medium"
                       placeholder="Enter your email address"
                     />
                   </div>
@@ -251,7 +251,7 @@ const VerifyEmailPage: React.FC = () => {
                   <button
                     onClick={handleResendVerification}
                     disabled={isResending || !email.trim()}
-                    className="w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-semibold rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-200 hover:scale-105"
                   >
                     {isResending ? (
                       <>
@@ -278,7 +278,7 @@ const VerifyEmailPage: React.FC = () => {
             <div className="mt-6">
               <Link
                 to="/auth/login"
-                className="text-primary-600 hover:text-primary-500 text-sm font-medium"
+                className="text-primary-600 hover:text-primary-500 text-sm font-semibold px-2 py-1 rounded-xl hover:bg-primary-50/80 dark:hover:bg-primary-900/30 transition-all duration-200"
               >
                 Back to Login
               </Link>
@@ -294,7 +294,7 @@ const VerifyEmailPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow dark:shadow-gray-900/20 sm:rounded-lg sm:px-10">
+        <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl py-8 px-4 shadow-glass border border-gray-200/20 dark:border-gray-700/20 sm:rounded-2xl sm:px-10">
           {renderContent()}
         </div>
       </div>
