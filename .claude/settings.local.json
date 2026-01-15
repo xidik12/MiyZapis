@@ -86,7 +86,8 @@
       "Bash(npm run build:*)",
       "Bash(git ls-tree:*)",
       "Bash(npx tsc:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": [],
