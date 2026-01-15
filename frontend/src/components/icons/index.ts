@@ -76,6 +76,7 @@ export { PhotoIcon } from './PhotoIcon';
 export { CameraIcon } from './CameraIcon';
 export { MapPinIcon } from './MapPinIcon';
 export { PhoneIcon } from './PhoneIcon';
+export { VideoCameraIcon } from './VideoCameraIcon';
 export { DevicePhoneMobileIcon } from './DevicePhoneMobileIcon';
 export { BoltIcon } from './BoltIcon';
 export { AdjustmentsHorizontalIcon } from './AdjustmentsHorizontalIcon';
