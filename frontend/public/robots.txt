@@ -5,5 +5,5 @@ Allow: /
 Disallow: /assets/
 
 # Sitemap
-Sitemap: https://miyzapis.com/sitemap.xml
+Sitemap: https://panhaha.com/sitemap.xml
 

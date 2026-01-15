@@ -148,34 +148,9 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
       <div className="flex items-center justify-between p-4 border-b border-gray-200/20 dark:border-gray-700/20">
         {!isCollapsed && (
           <Link to="/" className="flex items-center space-x-2 group">
-            <img 
-              src="/miyzapis_logo.png" 
-              alt="МійЗапис Logo" 
-              className="w-8 h-8 group-hover:scale-110 transition-all duration-300"
-              onError={(e) => {
-                const img = e.currentTarget as HTMLImageElement;
-                const currentSrc = img.src;
-                
-                if (currentSrc.includes('miyzapis_logo.png')) {
-                  console.log('🖼️ SideNav logo failed, trying SVG fallback');
-                  img.src = '/logo.svg';
-                } else if (currentSrc.includes('logo.svg')) {
-                  console.log('🖼️ SideNav SVG logo failed, trying favicon fallback');
-                  img.src = '/favicon.svg';
-                } else {
-                  console.log('🖼️ SideNav all logos failed, replacing with text fallback');
-                  img.style.display = 'none';
-                  const parent = img.parentElement;
-                  if (parent && !parent.querySelector('.logo-fallback')) {
-                    const fallback = document.createElement('div');
-                    fallback.className = 'logo-fallback w-8 h-8 bg-blue-600 text-white rounded flex items-center justify-center text-xs font-bold';
-                    fallback.textContent = 'МЗ';
-                    parent.insertBefore(fallback, img);
-                  }
-                }
-              }}
-              onLoad={() => console.log('✅ SideNav logo loaded successfully')}
-            />
+            <div className="w-8 h-8 bg-primary-600 text-white rounded-lg flex items-center justify-center text-sm font-bold group-hover:scale-110 transition-all duration-300">
+              P
+            </div>
             <span className="text-lg font-bold text-primary-600 dark:text-primary-400">
               {environment.APP_NAME}
             </span>
@@ -184,34 +159,9 @@ export const SideNavigation: React.FC<SideNavigationProps> = ({
         
         {isCollapsed && (
           <Link to="/" className="flex justify-center w-full">
-            <img 
-              src="/miyzapis_logo.png" 
-              alt="МійЗапис Logo" 
-              className="w-8 h-8 hover:scale-110 transition-all duration-300"
-              onError={(e) => {
-                const img = e.currentTarget as HTMLImageElement;
-                const currentSrc = img.src;
-                
-                if (currentSrc.includes('miyzapis_logo.png')) {
-                  console.log('🖼️ SideNav collapsed logo failed, trying SVG fallback');
-                  img.src = '/logo.svg';
-                } else if (currentSrc.includes('logo.svg')) {
-                  console.log('🖼️ SideNav collapsed SVG logo failed, trying favicon fallback');
-                  img.src = '/favicon.svg';
-                } else {
-                  console.log('🖼️ SideNav collapsed all logos failed, replacing with text fallback');
-                  img.style.display = 'none';
-                  const parent = img.parentElement;
-                  if (parent && !parent.querySelector('.logo-fallback')) {
-                    const fallback = document.createElement('div');
-                    fallback.className = 'logo-fallback w-8 h-8 bg-blue-600 text-white rounded flex items-center justify-center text-xs font-bold';
-                    fallback.textContent = 'МЗ';
-                    parent.insertBefore(fallback, img);
-                  }
-                }
-              }}
-              onLoad={() => console.log('✅ SideNav collapsed logo loaded successfully')}
-            />
+            <div className="w-8 h-8 bg-primary-600 text-white rounded-lg flex items-center justify-center text-sm font-bold hover:scale-110 transition-all duration-300">
+              P
+            </div>
           </Link>
         )}
         

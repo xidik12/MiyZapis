@@ -81,7 +81,7 @@ const CustomerReferrals: React.FC = () => {
 
   const generateShareText = () => {
     if (!referralProgram) return '';
-    return `Join MiyZapis with my referral code "${referralProgram.code}" and we both get ${referralProgram.refereePoints} loyalty points! 🎉 Book amazing services at ${generateShareUrl()}`;
+    return `Join Panhaha with my referral code "${referralProgram.code}" and we both get ${referralProgram.refereePoints} loyalty points! 🎉 Book amazing services at ${generateShareUrl()}`;
   };
 
   const getStatusIcon = (status: string) => {
@@ -205,7 +205,7 @@ const CustomerReferrals: React.FC = () => {
               Create Your Referral Code
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Start earning points by inviting friends to join MiyZapis
+              Start earning points by inviting friends to join Panhaha
             </p>
             <button
               onClick={handleCreateReferralCode}
@@ -289,7 +289,7 @@ const CustomerReferrals: React.FC = () => {
               </button>
 
               <a
-                href={`mailto:?subject=Join MiyZapis&body=${encodeURIComponent(generateShareText())}`}
+                href={`mailto:?subject=Join Panhaha&body=${encodeURIComponent(generateShareText())}`}
                 className="flex flex-col items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 <EnvelopeIcon className="h-6 w-6 text-red-500 mb-2" />
