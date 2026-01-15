@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { serviceService } from '../services';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
-import { selectUser } from '@/store/slices/authSlice';
+import { selectUser, selectIsAuthenticated } from '@/store/slices/authSlice';
 import { fetchFavoriteSpecialists, selectFavoriteSpecialists } from '../store/slices/favoritesSlice';
 import {
   MagnifyingGlassIcon,
@@ -21,6 +21,8 @@ import {
 import { Avatar } from '../components/ui/Avatar';
 import { translateProfession } from '@/utils/profession';
 import Skeleton, { SkeletonText } from '../components/ui/Skeleton';
+import { environment } from '../config/environment';
+// Note: Use active prop for filled icons: <Icon active />
 
 interface ServiceWithSpecialist {
   id: string;
@@ -60,6 +62,7 @@ const SearchPage: React.FC = () => {
   const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
   const dispatch = useAppDispatch();
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const favoriteSpecialists = useAppSelector(selectFavoriteSpecialists);
   const currentUser = useAppSelector(selectUser);
 
@@ -67,6 +70,7 @@ const SearchPage: React.FC = () => {
   const [services, setServices] = useState<ServiceWithSpecialist[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
   const [selectedLocation, setSelectedLocation] = useState(searchParams.get('location') || '');
   const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
@@ -119,6 +123,15 @@ const SearchPage: React.FC = () => {
     fetchCategories();
   }, [t]);
 
+  // Debounce search query (memoization optimization)
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300); // Debounce search input
+
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
+
   // Close filter tray on Esc
   useEffect(() => {
     if (!isFilterTrayOpen) return;
@@ -127,17 +140,19 @@ const SearchPage: React.FC = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, [isFilterTrayOpen]);
 
-  // Fetch favorites when component mounts
+  // Fetch favorites when component mounts (only for authenticated users)
   useEffect(() => {
-    dispatch(fetchFavoriteSpecialists());
-  }, [dispatch]);
+    if (isAuthenticated) {
+      dispatch(fetchFavoriteSpecialists());
+    }
+  }, [dispatch, isAuthenticated]);
 
   // Fetch services from API (extracted so we can call on Apply)
   const fetchServices = React.useCallback(async () => {
       try {
         setLoading(true);
         const filters = {
-          query: searchQuery,
+          query: debouncedSearchQuery,
           category: selectedCategory || undefined,
           location: selectedLocation || undefined,
           minPrice: priceRange.min > 0 ? priceRange.min : undefined,
@@ -175,6 +190,7 @@ const SearchPage: React.FC = () => {
           name: service.name,
           description: service.description,
           price: service.basePrice || service.price || 0,
+          currency: service.currency || 'USD',
           duration: service.duration || 0,
           category: service.category || '',
           location: '', // Backend doesn't seem to have location info yet
@@ -227,7 +243,7 @@ const SearchPage: React.FC = () => {
       } finally {
         setLoading(false);
       }
-  }, [searchQuery, selectedCategory, selectedLocation, priceRange, selectedRating, sortBy, selectedDistance, availableNow]);
+  }, [debouncedSearchQuery, selectedCategory, selectedLocation, priceRange, selectedRating, sortBy, selectedDistance, availableNow]);
 
   // Fetch on first mount and when deps change
   useEffect(() => {
@@ -329,6 +345,7 @@ const SearchPage: React.FC = () => {
         className={`w-4 h-4 ${
           i < Math.floor(rating) ? 'text-yellow-400' : 'text-gray-300'
         }`}
+        active={i < Math.floor(rating)}
       />
     ));
   };
@@ -354,14 +371,6 @@ const SearchPage: React.FC = () => {
             fallbackIcon={false}
             lazy={true}
           />
-          {/* Debug search card avatar data */}
-          {console.log('🔍 SearchPage - Avatar debug for service:', service.id, {
-            specialistUserAvatar: service.specialist.user.avatar,
-            specialistUserKeys: service.specialist.user ? Object.keys(service.specialist.user) : 'No user',
-            specialistKeys: Object.keys(service.specialist),
-            serviceId: service.id,
-            specialistId: service.specialist.id
-          })}
           {service.specialist.user.isVerified && (
             <CheckBadgeIcon className="absolute -bottom-1 -right-1 w-6 h-6 text-primary-600 bg-white rounded-full" />
           )}
@@ -426,7 +435,7 @@ const SearchPage: React.FC = () => {
                 {service.isAvailable ? t('service.available') : t('service.unavailable')}
               </div>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatPrice(service.price, service.currency as 'USD' | 'EUR' | 'UAH' || 'UAH')}
+                {formatPrice(service.price, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
               </p>
             </div>
           </div>
@@ -434,14 +443,14 @@ const SearchPage: React.FC = () => {
           <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Link
               to={`/specialist/${service.specialist.id}`}
-              className="bg-primary-50 hover:bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:hover:bg-primary-900/30 dark:text-primary-300 text-center h-10 inline-flex items-center justify-center px-4 rounded-lg font-medium transition-colors duration-200"
+              className="bg-primary-50 hover:bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:hover:bg-primary-900/30 dark:text-primary-300 text-center h-10 inline-flex items-center justify-center px-4 rounded-xl font-medium transition-colors duration-200"
             >
               {t('actions.viewProfile')}
             </Link>
             {isOwnService ? (
               <button
                 disabled
-                className="text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-lg font-medium bg-gray-400 cursor-not-allowed"
+                className="text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-xl font-medium bg-gray-400 cursor-not-allowed"
                 title={t('booking.cannotBookOwn') || "You can't book your own service"}
               >
                 {t('actions.book')}
@@ -449,9 +458,9 @@ const SearchPage: React.FC = () => {
             ) : (
               <Link
                 to={`/booking/${service.id}`}
-                className={`text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-lg transition-colors font-medium ${
+                className={`text-white text-center h-10 inline-flex items-center justify-center px-4 rounded-xl transition-all duration-200 font-medium ${
                   service.isAvailable
-                    ? 'bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 shadow-lg hover:shadow-xl'
+                    ? 'bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 hover:scale-105'
                     : 'bg-gray-400 cursor-not-allowed'
                 }`}
                 onClick={(e) => !service.isAvailable && e.preventDefault()}
@@ -468,7 +477,7 @@ const SearchPage: React.FC = () => {
                   {phone && (
                     <a
                       href={`tel:${phone}`}
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
                       aria-label="Call"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -482,7 +491,7 @@ const SearchPage: React.FC = () => {
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationStr)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium"
                       aria-label="Directions"
                     >
                       <MapPinIcon className="w-4 h-4" />
@@ -521,13 +530,13 @@ const SearchPage: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('search.placeholder')}
-              className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
+              className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white text-sm sm:text-base"
             />
           </div>
         </form>
 
         {/* Enhanced Filters and Controls */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-3 sm:p-4 mb-4 sm:mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-3 sm:p-4 mb-4 sm:mb-6">
           {/* Header with results count and main controls */}
           <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
             <div className="flex items-center justify-between">
@@ -542,7 +551,7 @@ const SearchPage: React.FC = () => {
               {/* Advanced Filters Button - Mobile Priority */}
               <button
                 onClick={() => setIsFilterTrayOpen(true)}
-                className="inline-flex items-center gap-1 sm:gap-2 h-8 sm:h-9 px-3 sm:px-4 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
+                className="inline-flex items-center gap-1 sm:gap-2 h-8 sm:h-9 px-3 sm:px-4 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-xl text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors"
               >
                 <AdjustmentsHorizontalIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">{t('search.filters') || 'Filters'}</span>
@@ -555,7 +564,7 @@ const SearchPage: React.FC = () => {
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full sm:w-auto h-8 sm:h-9 px-2 sm:px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-xs sm:text-sm"
+                  className="w-full sm:w-auto h-8 sm:h-9 px-2 sm:px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-xs sm:text-sm"
                 >
                   {categories.map((category) => (
                     <option key={category.id} value={category.id === 'all' ? '' : category.id}>
@@ -570,7 +579,7 @@ const SearchPage: React.FC = () => {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full sm:w-auto h-8 sm:h-9 px-2 sm:px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-xs sm:text-sm"
+                  className="w-full sm:w-auto h-8 sm:h-9 px-2 sm:px-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-xs sm:text-sm"
                 >
                   <option value="rating">{t('search.sortBy.rating') || 'Rating'}</option>
                   <option value="price">{t('search.sortBy.price') || 'Price'}</option>
@@ -589,18 +598,18 @@ const SearchPage: React.FC = () => {
             <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-1 sm:pb-2">
               <button
                 onClick={() => setSortBy('rating')}
-                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
                   sortBy === 'rating' 
                     ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-sm dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-300' 
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               >
-                <StarIcon className="w-4 h-4" />
+                <StarIcon className="w-4 h-4" active />
                 {t('search.topRated') || 'Top Rated'}
               </button>
               <button
                 onClick={() => setSortBy('reviews')}
-                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
                   sortBy === 'reviews'
                     ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-sm dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-300'
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -611,7 +620,7 @@ const SearchPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setSortBy('distance')}
-                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
                   sortBy === 'distance'
                     ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-sm dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-300'
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -631,35 +640,35 @@ const SearchPage: React.FC = () => {
             <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-1 sm:pb-2">
               <button
                 onClick={() => setSelectedRating(selectedRating === 5 ? 0 : 5)}
-                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
                   selectedRating === 5
                     ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300'
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               >
-                <StarIcon className="w-4 h-4 text-yellow-400" />
+                <StarIcon className="w-4 h-4 text-yellow-400" active />
                 5★
               </button>
               <button
                 onClick={() => setSelectedRating(selectedRating === 4 ? 0 : 4)}
-                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
                   selectedRating === 4
                     ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300'
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               >
-                <StarIcon className="w-4 h-4 text-yellow-400" />
+                <StarIcon className="w-4 h-4 text-yellow-400" active />
                 4★+
               </button>
               <button
                 onClick={() => setSelectedRating(selectedRating === 3 ? 0 : 3)}
-                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
+                className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-medium border transition-all whitespace-nowrap ${
                   selectedRating === 3
                     ? 'bg-yellow-50 border-yellow-200 text-yellow-700 shadow-sm dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300'
                     : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               >
-                <StarIcon className="w-4 h-4 text-yellow-400" />
+                <StarIcon className="w-4 h-4 text-yellow-400" active />
                 3★+
               </button>
             </div>
@@ -670,7 +679,7 @@ const SearchPage: React.FC = () => {
             {/* Favorites Toggle */}
             <button
               onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
                 showFavoritesOnly
                   ? 'bg-red-50 border-red-200 text-red-700 shadow-sm dark:bg-red-900/20 dark:border-red-800 dark:text-red-400'
                   : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -704,7 +713,7 @@ const SearchPage: React.FC = () => {
             {(selectedCategory || selectedLocation || selectedRating > 0 || showFavoritesOnly || selectedDistance > 0 || priceRange.min > 0 || priceRange.max < 1000) && (
               <button
                 onClick={clearFilters}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/30 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/30 transition-colors"
               >
                 <span>×</span>
                 {t('search.resetFilters') || 'Clear All Filters'}
@@ -808,29 +817,38 @@ const SearchPage: React.FC = () => {
         {/* Mobile Filter Tray */}
         {isFilterTrayOpen && (
           <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Filters">
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsFilterTrayOpen(false)} />
-            <div className="absolute right-0 top-0 h-full w-full max-w-sm bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-2xl animate-slide-in-right p-4 flex flex-col">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('search.filters') || 'Filters'}</h3>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={() => setIsFilterTrayOpen(false)} />
+            <div className="absolute right-0 top-0 h-full w-full max-w-md bg-white/95 dark:bg-gray-900/95 backdrop-blur-[20px] border-l border-gray-200/50 dark:border-gray-700/50 shadow-2xl animate-slide-in-right flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200/30 dark:border-gray-700/30">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t('search.filters') || 'Filters'}</h3>
                 <div className="flex items-center gap-3">
                   {(selectedCategory || selectedLocation || selectedRating > 0 || selectedDistance > 0 || showFavoritesOnly || priceRange.min > 0 || priceRange.max < 1000) && (
                     <button
                       onClick={clearFilters}
-                      className="text-sm text-red-600 hover:text-red-700"
+                      className="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
                     >
                       {t('search.resetFilters') || 'Reset filters'}
                     </button>
                   )}
-                  <button onClick={() => setIsFilterTrayOpen(false)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 focus-visible-ring" aria-label="Close filters">✕</button>
+                  <button
+                    onClick={() => setIsFilterTrayOpen(false)}
+                    className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800/50 rounded-xl transition-colors focus-visible-ring"
+                    aria-label="Close filters"
+                  >
+                    ✕
+                  </button>
                 </div>
               </div>
-              <div className="space-y-4 overflow-y-auto">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.category') || 'Category'}</label>
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+                {/* Category Filter */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.category') || 'Category'}</label>
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+                    className="w-full px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm font-medium backdrop-blur-sm transition-all hover:bg-white dark:hover:bg-gray-800"
                   >
                     {categories.map((category) => (
                       <option key={category.id} value={category.id === 'all' ? '' : category.id}>
@@ -839,102 +857,124 @@ const SearchPage: React.FC = () => {
                     ))}
                   </select>
                 </div>
-                {/* Saved filters */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('search.savedFilters') || 'Saved filters'}</label>
+                {/* Saved Filters */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.savedFilters') || 'Saved filters'}</label>
                     {!showSaveInput ? (
-                      <button onClick={() => setShowSaveInput(true)} className="text-sm text-primary-600 hover:text-primary-700">{t('actions.save') || 'Save'}</button>
+                      <button
+                        onClick={() => setShowSaveInput(true)}
+                        className="px-3 py-1.5 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-colors"
+                      >
+                        {t('actions.save') || 'Save'}
+                      </button>
                     ) : (
                       <div className="flex items-center gap-2">
                         <input
                           value={presetName}
                           onChange={(e) => setPresetName(e.target.value)}
                           placeholder={t('search.savedFilters') || 'Saved filters'}
-                          className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+                          className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 text-sm backdrop-blur-sm"
                         />
-                        <button onClick={savePreset} className="text-sm text-primary-600 hover:text-primary-700">{t('actions.save') || 'Save'}</button>
-                        <button onClick={() => { setShowSaveInput(false); setPresetName(''); }} className="text-sm text-gray-500 hover:text-gray-700">{t('actions.close') || 'Close'}</button>
+                        <button
+                          onClick={savePreset}
+                          className="px-3 py-1.5 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-colors"
+                        >
+                          {t('actions.save') || 'Save'}
+                        </button>
+                        <button
+                          onClick={() => { setShowSaveInput(false); setPresetName(''); }}
+                          className="px-3 py-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50 rounded-xl transition-colors"
+                        >
+                          {t('actions.close') || 'Close'}
+                        </button>
                       </div>
                     )}
                   </div>
                   {presets.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {presets.map((p) => (
-                        <span key={p.name} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-sm">
-                          <button className="text-primary-600 hover:text-primary-700" onClick={() => applyPreset(p)}>{p.name}</button>
-                          <button className="text-gray-400 hover:text-red-600" aria-label={t('actions.delete') || 'Delete'} onClick={() => deletePreset(p.name)}>×</button>
+                        <span
+                          key={p.name}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 backdrop-blur-sm text-sm font-medium hover:bg-white dark:hover:bg-gray-800 transition-all"
+                        >
+                          <button className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300" onClick={() => applyPreset(p)}>{p.name}</button>
+                          <button className="text-gray-400 hover:text-red-600 dark:hover:text-red-400 font-bold" aria-label={t('actions.delete') || 'Delete'} onClick={() => deletePreset(p.name)}>×</button>
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('search.noSavedFilters') || 'No saved filters yet.'}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('search.noSavedFilters') || 'No saved filters yet.'}</p>
                   )}
                 </div>
                 {/* Price Range */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.priceRange') || 'Price Range'}</label>
-                  <div className="flex flex-wrap gap-2 mb-2">
+                <div className="space-y-3">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.priceRange') || 'Price Range'}</label>
+                  <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => setPriceRange({ min: 0, max: 25 })}
-                      className="px-3 py-1.5 rounded-full text-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      className="px-4 py-2 rounded-xl text-sm font-medium border bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 backdrop-blur-sm transition-all"
                     >
                       {t('search.price.under25') || 'Under ₴25'}
                     </button>
-                    <button onClick={() => setPriceRange({ min: 25, max: 50 })} className="px-3 py-1.5 rounded-full text-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">₴25-₴50</button>
-                    <button onClick={() => setPriceRange({ min: 50, max: 100 })} className="px-3 py-1.5 rounded-full text-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">₴50-₴100</button>
-                    <button onClick={() => setPriceRange({ min: 100, max: 200 })} className="px-3 py-1.5 rounded-full text-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">₴100-₴200</button>
-                    <button onClick={() => setPriceRange({ min: 200, max: 1000 })} className="px-3 py-1.5 rounded-full text-sm border bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">{t('search.price.over200') || 'Over ₴200'}</button>
+                    <button onClick={() => setPriceRange({ min: 25, max: 50 })} className="px-4 py-2 rounded-xl text-sm font-medium border bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 backdrop-blur-sm transition-all">₴25-₴50</button>
+                    <button onClick={() => setPriceRange({ min: 50, max: 100 })} className="px-4 py-2 rounded-xl text-sm font-medium border bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 backdrop-blur-sm transition-all">₴50-₴100</button>
+                    <button onClick={() => setPriceRange({ min: 100, max: 200 })} className="px-4 py-2 rounded-xl text-sm font-medium border bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 backdrop-blur-sm transition-all">₴100-₴200</button>
+                    <button onClick={() => setPriceRange({ min: 200, max: 1000 })} className="px-4 py-2 rounded-xl text-sm font-medium border bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 backdrop-blur-sm transition-all">{t('search.price.over200') || 'Over ₴200'}</button>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t('search.minPrice') || 'Min'}</label>
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">{t('search.minPrice') || 'Min'}</label>
                       <input
                         type="number"
                         min={0}
                         value={priceRange.min}
                         onChange={(e) => setPriceRange({ ...priceRange, min: Math.max(0, Number(e.target.value) || 0) })}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+                        className="w-full px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm font-medium backdrop-blur-sm transition-all hover:bg-white dark:hover:bg-gray-800"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t('search.maxPrice') || 'Max'}</label>
+                      <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">{t('search.maxPrice') || 'Max'}</label>
                       <input
                         type="number"
                         min={0}
                         value={priceRange.max}
                         onChange={(e) => setPriceRange({ ...priceRange, max: Math.max(0, Number(e.target.value) || 0) })}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+                        className="w-full px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm font-medium backdrop-blur-sm transition-all hover:bg-white dark:hover:bg-gray-800"
                       />
                     </div>
                   </div>
                 </div>
-                {/* Availability toggle */}
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('search.availableNow') || 'Only available now'}</span>
+                {/* Availability Toggle */}
+                <div className="flex items-center justify-between p-4 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 backdrop-blur-sm">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white">{t('search.availableNow') || 'Only available now'}</span>
                   <button
                     onClick={() => setAvailableNow(!availableNow)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${availableNow ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'}`}
+                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-200 ${availableNow ? 'bg-primary-600 shadow-lg shadow-primary-500/30' : 'bg-gray-300 dark:bg-gray-700'}`}
                   >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${availableNow ? 'translate-x-6' : 'translate-x-1'}`} />
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${availableNow ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.location') || 'Location'}</label>
+
+                {/* Location Input */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.location') || 'Location'}</label>
                   <input
                     type="text"
                     value={selectedLocation}
                     onChange={(e) => setSelectedLocation(e.target.value)}
                     placeholder={t('search.locationPlaceholder') || 'City or area'}
-                    className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+                    className="w-full px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm font-medium backdrop-blur-sm transition-all hover:bg-white dark:hover:bg-gray-800"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.sortBy.title') || 'Sort by'}</label>
+
+                {/* Sort By Dropdown */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.sortBy.title') || 'Sort by'}</label>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm"
+                    className="w-full px-4 py-2.5 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white text-sm font-medium backdrop-blur-sm transition-all hover:bg-white dark:hover:bg-gray-800"
                   >
                     <option value="rating">{t('search.sortBy.rating')}</option>
                     <option value="price">{t('search.sortBy.price')}</option>
@@ -942,9 +982,11 @@ const SearchPage: React.FC = () => {
                     <option value="reviews">{t('search.sortBy.reviews')}</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.minimumRating') || 'Minimum rating'}</label>
-                  <div className="flex items-center gap-3">
+
+                {/* Minimum Rating Slider */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.minimumRating') || 'Minimum rating'}</label>
+                  <div className="flex items-center gap-4">
                     <input
                       type="range"
                       min={0}
@@ -952,14 +994,16 @@ const SearchPage: React.FC = () => {
                       step={1}
                       value={selectedRating}
                       onChange={(e) => setSelectedRating(Number(e.target.value))}
-                      className="flex-1"
+                      className="flex-1 h-2 rounded-xl appearance-none bg-gray-200 dark:bg-gray-700 outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:hover:scale-110"
                     />
-                    <span className="text-sm text-gray-700 dark:text-gray-300 w-8 text-right">{selectedRating}★</span>
+                    <span className="text-sm font-bold text-primary-600 dark:text-primary-400 min-w-[3rem] text-right">{selectedRating > 0 ? `${selectedRating}★` : 'Any'}</span>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('search.distance') || 'Distance (km)'}</label>
-                  <div className="flex items-center gap-3">
+
+                {/* Distance Slider */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-white">{t('search.distance') || 'Distance (km)'}</label>
+                  <div className="flex items-center gap-4">
                     <input
                       type="range"
                       min={0}
@@ -967,26 +1011,35 @@ const SearchPage: React.FC = () => {
                       step={5}
                       value={selectedDistance}
                       onChange={(e) => setSelectedDistance(Number(e.target.value))}
-                      className="flex-1"
+                      className="flex-1 h-2 rounded-xl appearance-none bg-gray-200 dark:bg-gray-700 outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:hover:scale-110"
                     />
-                    <span className="text-sm text-gray-700 dark:text-gray-300 w-16 text-right">{selectedDistance > 0 ? `≤ ${selectedDistance} km` : t('common.any') || 'Any'}</span>
+                    <span className="text-sm font-bold text-primary-600 dark:text-primary-400 min-w-[4.5rem] text-right">{selectedDistance > 0 ? `≤ ${selectedDistance} km` : t('common.any') || 'Any'}</span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('search.favoritesOnly') || 'Favorites only'}</span>
+
+                {/* Favorites Only Toggle */}
+                <div className="flex items-center justify-between p-4 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 backdrop-blur-sm">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white">{t('search.favoritesOnly') || 'Favorites only'}</span>
                   <button
                     onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showFavoritesOnly ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'}`}
+                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-200 ${showFavoritesOnly ? 'bg-primary-600 shadow-lg shadow-primary-500/30' : 'bg-gray-300 dark:bg-gray-700'}`}
                   >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showFavoritesOnly ? 'translate-x-6' : 'translate-x-1'}`} />
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${showFavoritesOnly ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
                 </div>
               </div>
-              <div className="sticky bottom-0 -mx-4 px-4 pt-3 pb-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex gap-2">
-                <button className="btn btn-secondary flex-1 h-10" onClick={() => setIsFilterTrayOpen(false)}>
+              {/* Bottom Action Buttons */}
+              <div className="p-6 pt-4 border-t border-gray-200/30 dark:border-gray-700/30 flex gap-3">
+                <button
+                  onClick={() => setIsFilterTrayOpen(false)}
+                  className="flex-1 px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 backdrop-blur-sm transition-all"
+                >
                   {t('actions.close') || 'Close'}
                 </button>
-                <button className="btn btn-primary flex-1 h-10" onClick={handleApplyFilters}>
+                <button
+                  onClick={handleApplyFilters}
+                  className="flex-1 px-6 py-3 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-xl shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all"
+                >
                   {t('actions.apply') || 'Apply'}
                 </button>
               </div>
@@ -1009,7 +1062,7 @@ const SearchPage: React.FC = () => {
                 </div>
                 <div className="mt-4 flex justify-between items-center">
                   <Skeleton className="h-6 w-24" />
-                  <Skeleton className="h-9 w-24 rounded-md" />
+                  <Skeleton className="h-9 w-24 rounded-xl" />
                 </div>
               </div>
             ))}
