@@ -7,22 +7,15 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { RootState, AppDispatch } from '../../store';
 import { fetchBookings, updateBookingStatus, cancelBooking } from '../../store/slices/bookingSlice';
 import { Booking, BookingStatus } from '../../types';
-import {
-  EyeIcon,
-  CheckCircleIcon,
-  CheckIcon,
-  StarIcon,
-  XMarkIcon,
-  MapPinIcon,
-  PhoneIcon,
-  ChatBubbleLeftRightIcon
-} from '@/components/icons';
+import { EyeIcon, CheckCircleIcon, CheckIcon, StarIcon, XMarkIcon, MapPinIcon, PhoneIcon, ChatBubbleLeftRightIcon, Squares2X2Icon, ListBulletIcon } from '@/components/icons';
 import ReviewModal from '../../components/modals/ReviewModal';
 import { reviewsService } from '../../services/reviews.service';
 import { validateReviewTags } from '../../constants/reviewTags';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { messagesService } from '../../services/messages.service';
 import TierBadge from '@/components/common/TierBadge';
+import { BookingKanban } from '@/components/bookings/BookingKanban';
+import type { BookingData } from '@/components/bookings/BookingCard';
 
 // Status colors for bookings (matching backend status values)
 const statusColors = {
@@ -172,7 +165,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       }}
     >
       <div 
-        className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
+        className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -180,7 +173,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">{t('bookingDetails.title')}</h3>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
             aria-label="Close modal"
             type="button"
           >
@@ -191,7 +184,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         {/* Content */}
         <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           {/* Customer Info (for provider view) or Specialist Info (for customer view) */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
             <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
               {activeTab === 'provider' ? t('bookingDetails.customerInfo') : t('bookingDetails.specialistInfo')}
             </h4>
@@ -236,7 +229,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           </div>
           
           {/* Service Info */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
             <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.serviceInfo')}</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -269,7 +262,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           </div>
           
           {/* Appointment Details */}
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
             <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.appointmentDetails')}</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -303,7 +296,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
           {/* Contact Information - Only show for confirmed bookings where specialist info is available */}
           {booking.status === 'CONFIRMED' && booking.specialist?.location && activeTab === 'customer' && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
               <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3 flex items-center">
                 <MapPinIcon className="w-5 h-5 mr-2" />
                 {t('bookings.contactInformation')}
@@ -425,7 +418,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           {activeTab === 'provider' && (
             <>
               {/* Status Management */}
-              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.statusManagement')}</h4>
                 <div className="flex flex-wrap gap-1 sm:gap-2 mb-4">
                   {['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'IN_PROGRESS', 'NO_SHOW'].map((status) => (
@@ -438,7 +431,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                         onChange={(e) => setSelectedStatus(e.target.value as BookingStatus)}
                         className="sr-only"
                       />
-                      <span className={`px-2 sm:px-3 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                      <span className={`px-2 sm:px-3 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
                         selectedStatus === status
                           ? 'bg-blue-600 text-white'
                           : 'bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -450,31 +443,31 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 </div>
                 <button
                   onClick={handleStatusChange}
-                  className="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors"
+                  className="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white py-2 px-4 rounded-xl transition-colors"
                 >
                   {t('bookingDetails.updateStatus')}
                 </button>
               </div>
               
               {/* Quick Message */}
-              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+              <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.sendMessage')}</h4>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={t('bookingDetails.messagePlaceholder')}
-                  className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700 text-sm sm:text-base"
+                  className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700 text-sm sm:text-base"
                   rows={3}
                 />
                 <div className="flex space-x-2 mt-3">
                   <button
                     onClick={handleSendMessage}
                     disabled={!message.trim()}
-                    className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-2 px-3 sm:px-4 rounded-lg transition-colors text-sm sm:text-base"
+                    className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-2 px-3 sm:px-4 rounded-xl transition-colors text-sm sm:text-base"
                   >
                     {t('bookingDetails.sendMessageButton')}
                   </button>
-                  <button className="px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm sm:text-base">
+                  <button className="px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm sm:text-base">
                     {t('bookingDetails.template')}
                   </button>
                 </div>
@@ -484,7 +477,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
           {/* Customer Actions - Only show for customer view */}
           {activeTab === 'customer' && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
               <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.customerActions')}</h4>
               <div className="flex flex-col sm:flex-row gap-3">
                 {/* Cancel booking if allowed */}
@@ -504,7 +497,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                         onClose();
                       }
                     }}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-colors"
                   >
                     {t('bookings.cancelBooking')}
                   </button>
@@ -517,7 +510,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                       // Handle review
                       onClose();
                     }}
-                    className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors"
+                    className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-xl transition-colors"
                   >
                     {t('customer.bookings.leaveReview')}
                   </button>
@@ -529,7 +522,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                     // Handle book again
                     onClose();
                   }}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl transition-colors"
                 >
                   {t('customer.bookings.bookAgain')}
                 </button>
@@ -606,7 +599,7 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
           </div>
 
           {/* Booking Details */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 mb-6">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.service') || 'Service'}:</span>
               <span className="font-medium dark:text-white">{booking.service?.name || booking.serviceName}</span>
@@ -635,7 +628,7 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
               value={completionNotes}
               onChange={(e) => setCompletionNotes(e.target.value)}
               placeholder="Add any notes about the completed service..."
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
               rows={3}
             />
           </div>
@@ -645,7 +638,7 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
             <button
               onClick={handleConfirmPayment}
               disabled={isSubmitting}
-              className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+              className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center"
             >
               {isSubmitting ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
@@ -659,7 +652,7 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
             <button
               onClick={handleDeclinePayment}
               disabled={isSubmitting}
-              className="flex-1 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+              className="flex-1 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-3 px-4 rounded-xl font-medium transition-colors"
             >
               {t('bookings.noNotPaidYet') || 'No, Not Paid Yet'}
             </button>
@@ -678,6 +671,44 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
 const getBookingCurrency = (booking: Booking): 'USD' | 'EUR' | 'UAH' => {
   // Use the service's stored currency, defaulting to UAH if not specified
   return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+};
+
+// Helper function to map Booking to BookingData for Kanban
+const mapBookingToBookingData = (booking: Booking): BookingData => {
+  const scheduledDate = new Date(booking.scheduledAt);
+
+  return {
+    id: booking.id,
+    status: booking.status,
+    scheduledDate: scheduledDate.toISOString().split('T')[0], // YYYY-MM-DD
+    scheduledTime: scheduledDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+    customer: booking.customer ? {
+      id: booking.customer.id,
+      firstName: booking.customer.firstName,
+      lastName: booking.customer.lastName,
+      avatar: booking.customer.avatar,
+      phoneNumber: booking.customer.phoneNumber
+    } : undefined,
+    specialist: booking.specialist ? {
+      id: booking.specialist.id,
+      firstName: booking.specialist.user?.firstName || '',
+      lastName: booking.specialist.user?.lastName || '',
+      businessName: booking.specialist.businessName,
+      avatar: booking.specialist.user?.avatar
+    } : undefined,
+    service: {
+      id: booking.service?.id || booking.serviceId,
+      name: booking.service?.name || 'Unknown Service',
+      duration: booking.duration,
+      price: booking.service?.price
+    },
+    location: booking.specialist?.location ? {
+      address: booking.specialist.location.address,
+      city: booking.specialist.location.city
+    } : undefined,
+    totalPrice: booking.totalAmount,
+    paymentStatus: booking.depositPaid ? 'paid' : 'pending'
+  };
 };
 
 const SpecialistBookings: React.FC = () => {
@@ -739,6 +770,7 @@ const SpecialistBookings: React.FC = () => {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [bookingToComplete, setBookingToComplete] = useState<Booking | null>(null);
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const itemsPerPage = 10;
   
   // Filter and sort bookings
@@ -982,9 +1014,9 @@ const SpecialistBookings: React.FC = () => {
   // Show error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 py-8">
+      <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -1002,7 +1034,7 @@ const SpecialistBookings: React.FC = () => {
                   const userType = activeTab === 'provider' ? 'specialist' : 'customer';
                   dispatch(fetchBookings({ filters: {}, userType }));
                 }}
-                className="bg-red-100 hover:bg-red-200 text-red-800 font-medium py-2 px-4 rounded-lg transition-colors"
+                className="bg-red-100 hover:bg-red-200 text-red-800 font-medium py-2 px-4 rounded-xl transition-colors"
               >
                 {t('common.retry')}
               </button>
@@ -1014,7 +1046,7 @@ const SpecialistBookings: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-4 sm:py-8">
+    <div className="min-h-screen bg-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-4 sm:py-8">
       <ConfirmModal
         open={!!cancelTarget}
         title={t('bookings.cancelBooking')}
@@ -1034,6 +1066,34 @@ const SpecialistBookings: React.FC = () => {
             <p className="text-gray-600 dark:text-gray-300">
               {t('bookings.subtitle')}
             </p>
+          </div>
+
+          {/* View Toggle */}
+          <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1 mt-4 lg:mt-0">
+            <button
+              onClick={() => setViewMode('kanban')}
+              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all ${
+                viewMode === 'kanban'
+                  ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+              title="Kanban View"
+            >
+              <Squares2X2Icon className="w-4 h-4" />
+              <span className="text-sm font-medium hidden sm:inline">Kanban</span>
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg transition-all ${
+                viewMode === 'list'
+                  ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+              title="List View"
+            >
+              <ListBulletIcon className="w-4 h-4" />
+              <span className="text-sm font-medium hidden sm:inline">List</span>
+            </button>
           </div>
         </div>
 
@@ -1066,23 +1126,23 @@ const SpecialistBookings: React.FC = () => {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           {/* Quick Stats */}
           <div className="mt-4 lg:mt-0 grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border dark:border-gray-700">
               <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.total')}</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">{filteredAndSortedBookings.length}</p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border dark:border-gray-700">
               <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.confirmed')}</p>
               <p className="text-xl font-bold text-green-600">
                 {filteredAndSortedBookings.filter(b => b.status === 'CONFIRMED' || b.status === 'confirmed').length}
               </p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border dark:border-gray-700">
               <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.pending')}</p>
               <p className="text-xl font-bold text-yellow-600">
                 {filteredAndSortedBookings.filter(b => b.status === 'PENDING' || b.status === 'pending').length}
               </p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border dark:border-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border dark:border-gray-700">
               <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.completed')}</p>
               <p className="text-xl font-bold text-blue-600">
                 {filteredAndSortedBookings.filter(b => b.status === 'COMPLETED' || b.status === 'completed').length}
@@ -1103,7 +1163,7 @@ const SpecialistBookings: React.FC = () => {
                   placeholder={t('bookings.searchPlaceholder')}
                   value={filters.searchTerm}
                   onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                 />
                 <svg className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -1117,7 +1177,7 @@ const SpecialistBookings: React.FC = () => {
               <select
                 value={filters.status}
                 onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="all">{t('bookings.allStatus')}</option>
                 <option value="PENDING">{t('bookings.pending')}</option>
@@ -1135,7 +1195,7 @@ const SpecialistBookings: React.FC = () => {
               <select
                 value={filters.dateRange}
                 onChange={(e) => setFilters(prev => ({ ...prev, dateRange: e.target.value }))}
-                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="all">{t('bookings.allDates')}</option>
                 <option value="today">{t('bookings.today')}</option>
@@ -1170,7 +1230,7 @@ const SpecialistBookings: React.FC = () => {
         
         {/* Bulk Actions */}
         {selectedBookings.length > 0 && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 mb-6">
             <div className="flex items-center justify-between">
               <p className="text-sm text-blue-800 dark:text-blue-300">
                 {selectedBookings.length} {t('bookings.selected')}
@@ -1198,9 +1258,32 @@ const SpecialistBookings: React.FC = () => {
             </div>
           </div>
         )}
-        
-        {/* Mobile Bookings Cards */}
-        <div className="lg:hidden space-y-4">
+
+        {/* Kanban or List View */}
+        {viewMode === 'kanban' ? (
+          <BookingKanban
+            bookings={filteredAndSortedBookings.map(mapBookingToBookingData)}
+            onBookingClick={(bookingData) => {
+              // Find the original booking by ID
+              const originalBooking = bookings.find(b => b.id === bookingData.id);
+              if (originalBooking) {
+                setSelectedBooking(originalBooking);
+                setShowDetailModal(true);
+              }
+            }}
+            onStatusChange={(bookingId, newStatus) => {
+              dispatch(updateBookingStatus({
+                bookingId,
+                status: newStatus as BookingStatus,
+                userType: activeTab === 'provider' ? 'specialist' : 'customer'
+              }));
+            }}
+            userRole={activeTab === 'provider' ? 'specialist' : 'customer'}
+          />
+        ) : (
+          <>
+            {/* Mobile Bookings Cards */}
+            <div className="lg:hidden space-y-4">
           {paginatedBookings.map((booking) => (
             <div key={booking.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4">
               {/* Header with checkbox and customer */}
@@ -1213,7 +1296,7 @@ const SpecialistBookings: React.FC = () => {
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   <div className="flex items-center">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold mr-3">
+                    <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white text-sm font-semibold mr-3">
                       {booking.customer 
                         ? `${booking.customer.firstName?.[0] || ''}${booking.customer.lastName?.[0] || ''}`
                         : (booking.customerName?.split(' ').map(n => n[0]).join('') || 'U')
@@ -1284,7 +1367,7 @@ const SpecialistBookings: React.FC = () => {
               <div className="flex space-x-2">
                 <button
                   onClick={() => openBookingDetails(booking)}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded-xl transition-colors"
                 >
                   {t('bookings.view')}
                 </button>
@@ -1294,7 +1377,7 @@ const SpecialistBookings: React.FC = () => {
                       setBookingToComplete(booking);
                       setShowPaymentModal(true);
                     }}
-                    className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
+                    className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-3 rounded-xl transition-colors"
                   >
                     {t('bookings.complete')}
                   </button>
@@ -1355,7 +1438,7 @@ const SpecialistBookings: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                          <div className="h-10 w-10 rounded-full bg-primary-600 flex items-center justify-center">
                             <span className="text-white font-medium text-sm">
                               {activeTab === 'provider' 
                                 ? (booking.customer 
@@ -1431,7 +1514,7 @@ const SpecialistBookings: React.FC = () => {
                       <div className="flex justify-end space-x-2">
                         <button
                           onClick={() => openBookingDetails(booking)}
-                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-xl text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
                           title={t('bookings.view')}
                         >
                           <EyeIcon className="w-4 h-4 mr-1" />
@@ -1442,7 +1525,7 @@ const SpecialistBookings: React.FC = () => {
                           (booking.status === 'PENDING' || booking.status === 'pending') ? (
                             <button
                               onClick={() => handleStatusChange(booking.id, 'CONFIRMED')}
-                              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
                               title={t('bookings.confirm')}
                             >
                               <CheckIcon className="w-4 h-4 mr-1" />
@@ -1451,7 +1534,7 @@ const SpecialistBookings: React.FC = () => {
                           ) : (booking.status === 'CONFIRMED' || booking.status === 'confirmed') ? (
                             <button
                               onClick={() => handleStatusChange(booking.id, 'COMPLETED')}
-                              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
                               title={t('bookings.complete')}
                             >
                               <CheckCircleIcon className="w-4 h-4 mr-1" />
@@ -1464,7 +1547,7 @@ const SpecialistBookings: React.FC = () => {
                             {(booking.status === 'PENDING' || booking.status === 'pending' || booking.status === 'CONFIRMED' || booking.status === 'confirmed') && (
                               <button
                                 onClick={() => handleCancelBooking(booking)}
-                                className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                                className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
                                 title={t('bookings.cancel')}
                               >
                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1476,7 +1559,7 @@ const SpecialistBookings: React.FC = () => {
                             {(booking.status === 'COMPLETED' || booking.status === 'completed') && (
                               <button
                                 onClick={() => handleLeaveReview(booking)}
-                                className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors sm:px-3 sm:py-1.5"
+                                className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors sm:px-3 sm:py-1.5"
                                 title={t('bookings.leaveReview')}
                               >
                                 <StarIcon className="w-4 h-4 mr-1" />
@@ -1504,14 +1587,14 @@ const SpecialistBookings: React.FC = () => {
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                    className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
                   >
                     {t('bookings.previous')}
                   </button>
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                     disabled={currentPage === totalPages}
-                    className="relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                    className="relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
                   >
                     {t('bookings.next')}
                   </button>
@@ -1527,7 +1610,7 @@ const SpecialistBookings: React.FC = () => {
                     </p>
                   </div>
                   <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                    <nav className="relative z-0 inline-flex rounded-xl shadow-sm -space-x-px">
                       <button
                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                         disabled={currentPage === 1}
@@ -1562,9 +1645,9 @@ const SpecialistBookings: React.FC = () => {
             </div>
           </div>
         )}
-        
-        {/* No Results */}
-        {filteredAndSortedBookings.length === 0 && (
+
+            {/* No Results */}
+            {filteredAndSortedBookings.length === 0 && (
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-12 text-center">
             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -1574,9 +1657,11 @@ const SpecialistBookings: React.FC = () => {
               {t('bookings.noBookingsDescription')}
             </p>
           </div>
+            )}
+          </>
         )}
       </div>
-      
+
       {/* Booking Detail Modal */}
       <BookingDetailModal
         booking={selectedBooking}
