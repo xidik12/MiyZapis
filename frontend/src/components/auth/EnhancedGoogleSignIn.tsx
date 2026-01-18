@@ -70,14 +70,20 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
           text: 'signin_with',
           shape: 'rectangular',
           logo_alignment: 'left',
+          width: 400,
         });
-        
-        // Apply custom styling to make it full width
-        const googleButton = buttonContainer.querySelector('div[role="button"]') as HTMLElement;
-        if (googleButton) {
-          googleButton.style.width = '100%';
-          googleButton.style.justifyContent = 'center';
-        }
+
+        // Force full width with !important via style injection
+        const style = document.createElement('style');
+        style.textContent = `
+          #enhanced-google-signin-button > div {
+            width: 100% !important;
+          }
+          #enhanced-google-signin-button iframe {
+            width: 100% !important;
+          }
+        `;
+        document.head.appendChild(style);
       }
     }
   };
@@ -184,10 +190,10 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
 
   return (
     <>
-      <div className="w-full">
-        <div 
-          id="enhanced-google-signin-button" 
-          className={`w-full ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
+      <div className="w-full flex justify-center">
+        <div
+          id="enhanced-google-signin-button"
+          className={`w-full max-w-md ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
         />
       </div>
 

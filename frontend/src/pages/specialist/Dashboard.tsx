@@ -11,12 +11,12 @@ import { retryRequest } from '../../services/api';
 // Removed SpecialistSidebar import - layout is handled by SpecialistLayout
 // Status colors for bookings
 const statusColors = {
-  confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
-  pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  cancelled: 'bg-red-100 text-red-800 border-red-200',
-  completed: 'bg-green-100 text-green-800 border-green-200',
-  inProgress: 'bg-purple-100 text-purple-800 border-purple-200',
-  noShow: 'bg-gray-100 text-gray-800 border-gray-200'
+  confirmed: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300',
+  pending: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300',
+  cancelled: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300',
+  completed: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300',
+  inProgress: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300',
+  noShow: 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300'
 };
 import {
   CalendarIcon,
@@ -510,7 +510,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
         <div className="mt-4 lg:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
           <Link
             to="/specialist/services"
-            className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl hover:from-primary-700 hover:to-secondary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
+            className="inline-flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
           >
             <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             {t('dashboard.specialist.addService')}
@@ -533,7 +533,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           change={dashboardData.stats.totalBookings > 0 ? `+12% ${t('dashboard.specialist.thisMonthImprovement')}` : ''}
           changeType="positive"
           icon={CalendarIcon}
-          iconBg="bg-gradient-to-br from-primary-500 to-primary-600"
+          iconBg="bg-primary-600"
           description={t('dashboard.specialist.allTime')}
         />
         <StatCard
@@ -542,7 +542,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           change={dashboardData.stats.monthlyRevenue > 0 ? `+8% ${t('dashboard.specialist.improvement')}` : ''}
           changeType="positive"
           icon={CurrencyDollarIcon}
-          iconBg="bg-gradient-to-br from-success-500 to-success-600"
+          iconBg="bg-primary-600"
           description={language === 'uk' ? 'Серпень 2025' : language === 'ru' ? 'Август 2025' : 'August 2025'}
         />
         <StatCard
@@ -551,7 +551,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           change={dashboardData.stats.reviewCount > 0 ? `+0.2 ${t('dashboard.specialist.thisMonthImprovement')}` : ''}
           changeType="positive"
           icon={StarIcon}
-          iconBg="bg-gradient-to-br from-warning-500 to-warning-600"
+          iconBg="bg-primary-600"
           description={`${dashboardData.stats.reviewCount} ${t('dashboard.nav.reviews').toLowerCase()}`}
         />
         <StatCard
@@ -560,7 +560,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           change={dashboardData.stats.responseTime > 0 ? `-3 ${t('time.minutes')} ${t('dashboard.specialist.improvement')}` : ''}
           changeType="positive"
           icon={ClockIcon}
-          iconBg="bg-gradient-to-br from-info-500 to-info-600"
+          iconBg="bg-primary-600"
           description={t('dashboard.specialist.averageTime')}
         />
       </div>
@@ -583,7 +583,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.conversionRate')}</span>
-              <span className="font-semibold text-success-600">{dashboardData.stats.conversionRate}%</span>
+              <span className="font-semibold text-primary-600 dark:text-primary-400">{dashboardData.stats.conversionRate}%</span>
             </div>
           </div>
         </div>
@@ -596,7 +596,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.completionRate')}</span>
-              <span className="font-semibold text-success-600">{dashboardData.stats.completionRate}%</span>
+              <span className="font-semibold text-primary-600 dark:text-primary-400">{dashboardData.stats.completionRate}%</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">{t('dashboard.specialist.repeatClients')}</span>
@@ -605,7 +605,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl p-6 text-white shadow-lg">
+        <div className="bg-primary-600 rounded-2xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">{t('dashboard.quickActions')}</h3>
             <UserGroupIcon className="w-5 h-5 opacity-80" />
@@ -653,7 +653,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
             {dashboardData.recentBookings.slice(0, 4).map((booking) => (
               <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
                       {booking.customerName?.split(' ').map(n => n[0]).join('')}
                     </span>
@@ -699,7 +699,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
             {dashboardData.upcomingAppointments.map((appointment) => (
               <div key={appointment.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
                       {appointment.customerName.split(' ').map(n => n[0]).join('')}
                     </span>

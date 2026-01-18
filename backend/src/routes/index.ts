@@ -33,6 +33,7 @@ import debugEmailRoutes from './debug-email';
 import advertisementRoutes from './advertisements';
 import premiumListingRoutes from './premium-listings';
 import employeeRoutes from './employee.routes';
+import expenseRoutes from './expenses';
 import { generateCSRFToken, getCSRFToken } from '@/middleware/security';
 
 const router = Router();
@@ -79,6 +80,9 @@ router.use('/premium-listings', premiumListingRoutes);
 
 // Employee management routes
 router.use('/employees', employeeRoutes);
+
+// Expense tracking routes
+router.use('/expenses', expenseRoutes);
 
 // Admin setup routes (for initial setup only)
 router.use('/setup', setupAdminRoutes);

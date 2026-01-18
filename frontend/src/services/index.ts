@@ -14,6 +14,7 @@ export { fileUploadService } from './fileUpload.service';
 export { messagingService } from './messaging.service';
 export { analyticsService } from './analytics.service';
 export { referralService } from './referral.service';
+export { expenseService } from './expense.service';
 
 // Socket Service
 // export { 
@@ -41,6 +42,7 @@ export const services = {
   get messaging() { return messagingService; },
   get analytics() { return analyticsService; },
   get referral() { return referralService; },
+  get expense() { return expenseService; },
   // get socket() { return socketService; },
 } as const;
 

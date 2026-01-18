@@ -167,6 +167,53 @@ const createTranslations = (): Translations => {
     ensure(key, value);
   }
 
+  // Schedule translations
+  ensure('schedule.monthlyView', 'Monthly View', 'ទិដ្ឋភាពប្រចាំខែ');
+  ensure('schedule.weeklyView', 'Weekly View', 'ទិដ្ឋភាពប្រចាំសប្តាហ៍');
+  ensure('schedule.timeSlotsAvailable', 'Time Slots Available', 'ម៉ោងដែលអាចប្រើបាន');
+  ensure('schedule.noSlotsAvailable', 'No slots available', 'គ្មានម៉ោងទំនេរ');
+  ensure('schedule.viewDetails', 'View Details', 'មើលព័ត៌មានលម្អិត');
+
+  // Messages translations
+  ensure('messages.noMessages', 'No messages yet', 'មិនទាន់មានសារ');
+  ensure('messages.startConversation', 'Start a conversation', 'ចាប់ផ្តើមការសន្ទនា');
+  ensure('messages.typeMessage', 'Type a message...', 'វាយសារ...');
+  ensure('messages.sendMessage', 'Send Message', 'ផ្ញើសារ');
+
+  // Reviews translations
+  ensure('reviews.noReviews', 'No reviews yet', 'មិនទាន់មានការវាយតម្លៃ');
+  ensure('reviews.writeReview', 'Write a Review', 'សរសេរការវាយតម្លៃ');
+  ensure('reviews.rating', 'Rating', 'ការវាយតម្លៃ');
+  ensure('reviews.helpful', 'Helpful', 'មានប្រយោជន៍');
+  ensure('reviews.notHelpful', 'Not Helpful', 'គ្មានប្រយោជន៍');
+
+  // Bookings translations
+  ensure('bookings.pending', 'Pending', 'កំពុងរង់ចាំ');
+  ensure('bookings.confirmed', 'Confirmed', 'បានបញ្ជាក់');
+  ensure('bookings.inProgress', 'In Progress', 'កំពុងដំណើរការ');
+  ensure('bookings.completed', 'Completed', 'បានបញ្ចប់');
+  ensure('bookings.cancelled', 'Cancelled', 'បានលុបចោល');
+  ensure('bookings.noShow', 'No Show', 'មិនបានមកដល់');
+
+  // Dashboard translations
+  ensure('dashboard.overview', 'Overview', 'ទិដ្ឋភាពទូទៅ');
+  ensure('dashboard.statistics', 'Statistics', 'ស្ថិតិ');
+  ensure('dashboard.recentActivity', 'Recent Activity', 'សកម្មភាពថ្មីៗ');
+
+  // Finances translations
+  ensure('finances.title', 'Finances', 'ហិរញ្ញវត្ថុ');
+  ensure('finances.addExpense', 'Add Expense', 'បន្ថែមការចំណាយ');
+  ensure('finances.totalExpenses', 'Total Expenses', 'ការចំណាយសរុប');
+  ensure('finances.totalIncome', 'Total Income', 'ប្រាក់ចំណូលសរុប');
+  ensure('finances.netProfit', 'Net Profit', 'ប្រាក់ចំណេញសុទ្ធ');
+  ensure('finances.byCategory', 'Expenses by Category', 'ការចំណាយតាមប្រភេទ');
+  ensure('finances.recentExpenses', 'Recent Expenses', 'ការចំណាយថ្មីៗ');
+  ensure('finances.category', 'Category', 'ប្រភេទ');
+  ensure('finances.amount', 'Amount', 'ចំនួនទឹកប្រាក់');
+  ensure('finances.description', 'Description', 'ការពិពណ៌នា');
+  ensure('finances.date', 'Date', 'កាលបរិច្ឆេទ');
+  ensure('nav.finances', 'Finances', 'ហិរញ្ញវត្ថុ');
+
   return map;
 };
 

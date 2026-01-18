@@ -6,6 +6,8 @@ import { reviewsService, ReviewStats, Review } from '@/services/reviews.service'
 import { ReviewFeed } from '@/components/reviews/ReviewFeed';
 import { ReviewCardData } from '@/components/reviews/ReviewCard';
 import { ReviewFiltersData } from '@/components/reviews/ReviewFilters';
+import { ExclamationTriangleIcon } from '@/components/icons';
+import { motion } from 'framer-motion';
 
 const CustomerReviews: React.FC = () => {
   const { t } = useLanguage();
@@ -60,7 +62,14 @@ const CustomerReviews: React.FC = () => {
         }
       } catch (err: any) {
         console.error('[Reviews] Error loading reviews:', err);
-        setError(err.message || 'Failed to load reviews');
+        const errorMessage = err.message || 'Failed to load reviews. Please check your connection.';
+        setError(errorMessage);
+
+        // Show toast notification
+        toast.error(errorMessage, {
+          duration: 5000,
+          icon: '⚠️'
+        });
       } finally {
         setLoading(false);
       }
@@ -137,6 +146,33 @@ const CustomerReviews: React.FC = () => {
             {t('reviews.subtitle') || 'View and manage your reviews'}
           </p>
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 mb-6"
+          >
+            <div className="flex items-start gap-3">
+              <ExclamationTriangleIcon className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-red-800 dark:text-red-200 mb-1">
+                  Error Loading Reviews
+                </h3>
+                <p className="text-red-700 dark:text-red-300 text-sm mb-3">
+                  {error}
+                </p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Review Feed */}
         <ReviewFeed

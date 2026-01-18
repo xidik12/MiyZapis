@@ -995,6 +995,14 @@ const SpecialistSchedule: React.FC = () => {
         <MonthView
           currentDate={currentWeekStart}
           bookings={filteredBookings}
+          timeBlocks={availabilityBlocks.map(block => ({
+            id: block.id,
+            startDateTime: block.startDateTime,
+            endDateTime: block.endDateTime,
+            isAvailable: block.isAvailable,
+            reason: block.reason,
+            isRecurring: block.isRecurring,
+          }))}
           onDateClick={(date) => {
             setPreSelectedDate(date);
             setPreSelectedTime('09:00');
@@ -1002,6 +1010,12 @@ const SpecialistSchedule: React.FC = () => {
             setShowAddModal(true);
           }}
           onBookingClick={handleBookingClick}
+          onTimeBlockClick={(block) => {
+            const originalBlock = availabilityBlocks.find(b => b.id === block.id);
+            if (originalBlock) {
+              openEditModal(originalBlock);
+            }
+          }}
         />
       ) : (
         // Card Based Design

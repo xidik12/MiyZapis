@@ -897,7 +897,7 @@ const SpecialistProfile: React.FC = () => {
   const completionPercentage = getProfileCompletion();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Auto-migrate Google avatars */}
       <AutoMigrateAvatar 
         showStatus={true} 
@@ -961,7 +961,7 @@ const SpecialistProfile: React.FC = () => {
                     className="w-28 h-28 rounded-2xl object-cover shadow-lg ring-4 ring-white dark:ring-gray-800"
                   />
                 ) : (
-                  <div className="w-28 h-28 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg ring-4 ring-white dark:ring-gray-800">
+                  <div className="w-28 h-28 rounded-2xl bg-primary-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg ring-4 ring-white dark:ring-gray-800">
                     {profile.firstName?.[0]}{profile.lastName?.[0]}
                   </div>
                 )}
@@ -1000,8 +1000,8 @@ const SpecialistProfile: React.FC = () => {
                   {/* Profile Completion */}
                   <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-xl">
                     <div className="w-24 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                      <div 
-                        className="bg-gradient-to-r from-primary-500 to-primary-600 h-2 rounded-full transition-all duration-500" 
+                      <div
+                        className="bg-primary-600 h-2 rounded-full transition-all duration-500"
                         style={{ width: `${completionPercentage}%` }}
                       ></div>
                     </div>
@@ -1076,7 +1076,7 @@ const SpecialistProfile: React.FC = () => {
                 className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 ${
                   isEditing
                     ? 'bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300'
-                    : 'bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-lg hover:shadow-xl'
+                    : 'bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl'
                 }`}
               >
                 {isEditing ? (
@@ -2008,7 +2008,7 @@ const SpecialistProfile: React.FC = () => {
                     <button
                       onClick={handleSave}
                       disabled={saving}
-                      className="px-8 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-semibold transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-8 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white rounded-xl font-semibold transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       {saving && (
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>

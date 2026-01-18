@@ -587,7 +587,7 @@ const SpecialistEarnings: React.FC = () => {
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-600">
+            <div className="p-3 rounded-xl bg-primary-600">
               <CurrencyDollarIcon className="w-6 h-6 text-white" />
             </div>
           </div>
@@ -605,7 +605,7 @@ const SpecialistEarnings: React.FC = () => {
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600">
+            <div className="p-3 rounded-xl bg-primary-600">
               <ArrowTrendingUpIcon className="w-6 h-6 text-white" />
             </div>
           </div>
@@ -618,12 +618,12 @@ const SpecialistEarnings: React.FC = () => {
               {loading.earnings ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
-                <p className="text-2xl font-bold text-orange-600">
+                <p className="text-2xl font-bold text-primary-600">
                   {formatPrice(earningsData.pending || 0, currency)}
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600">
+            <div className="p-3 rounded-xl bg-primary-600">
               <ClockIcon className="w-6 h-6 text-white" />
             </div>
           </div>
@@ -641,7 +641,7 @@ const SpecialistEarnings: React.FC = () => {
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600">
+            <div className="p-3 rounded-xl bg-primary-600">
               <CurrencyDollarIcon className="w-6 h-6 text-white" />
             </div>
           </div>
@@ -662,7 +662,7 @@ const SpecialistEarnings: React.FC = () => {
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600">
+            <div className="p-3 rounded-xl bg-primary-600">
               <CheckCircleIcon className="w-6 h-6 text-white" />
             </div>
           </div>
@@ -680,7 +680,7 @@ const SpecialistEarnings: React.FC = () => {
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600">
+            <div className="p-3 rounded-xl bg-primary-600">
               <UserGroupIcon className="w-6 h-6 text-white" />
             </div>
           </div>
@@ -698,7 +698,7 @@ const SpecialistEarnings: React.FC = () => {
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600">
+            <div className="p-3 rounded-xl bg-primary-600">
               <ChartBarIcon className="w-6 h-6 text-white" />
             </div>
           </div>
@@ -711,12 +711,12 @@ const SpecialistEarnings: React.FC = () => {
               {loading.earnings ? (
                 <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
-                <p className={`text-2xl font-bold ${(earningsData.monthlyGrowth || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <p className={`text-2xl font-bold ${(earningsData.monthlyGrowth || 0) >= 0 ? 'text-primary-600' : 'text-red-600'}`}>
                   {(earningsData.monthlyGrowth || 0) >= 0 ? '+' : ''}{earningsData.monthlyGrowth || 0}%
                 </p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-green-600">
+            <div className="p-3 rounded-xl bg-primary-600">
               <ArrowTrendingUpIcon className="w-6 h-6 text-white" />
             </div>
           </div>
@@ -775,7 +775,7 @@ const SpecialistEarnings: React.FC = () => {
                     <div className="flex-1">
                       <div className="bg-gray-100 dark:bg-gray-700 rounded-lg h-10 relative overflow-hidden">
                         <div 
-                          className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-full rounded-lg flex items-center justify-end pr-3 transition-all duration-500 ease-out"
+                          className="bg-primary-600 h-full rounded-lg flex items-center justify-end pr-3 transition-all duration-500 ease-out"
                           style={{ width: `${Math.max(5, widthPercentage)}%` }}
                         >
                           <span className="text-white text-sm font-semibold shadow-sm">{formatPrice(item.earnings || 0)}</span>
@@ -921,7 +921,7 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className={`font-medium ${(earningsData.monthlyGrowth || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className={`font-medium ${(earningsData.monthlyGrowth || 0) >= 0 ? 'text-primary-600' : 'text-red-600'}`}>
                     {(earningsData.monthlyGrowth || 0) >= 0 ? '+' : ''}{earningsData.monthlyGrowth || 0}%
                   </span>
                 )}
@@ -939,7 +939,7 @@ const SpecialistEarnings: React.FC = () => {
                 {loading.earnings ? (
                   <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 ) : (
-                  <span className={`font-medium ${(earningsData.monthlyGrowth || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className={`font-medium ${(earningsData.monthlyGrowth || 0) >= 0 ? 'text-primary-600' : 'text-red-600'}`}>
                     {(earningsData.monthlyGrowth || 0) >= 0 ? t('earnings.increasing') : t('earnings.decreasing')}
                   </span>
                 )}

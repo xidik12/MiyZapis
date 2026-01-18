@@ -202,33 +202,36 @@ export class ReviewsService {
       }>(`/reviews/my-reviews?page=${page}&limit=${limit}`);
 
       if (!response.success || !response.data) {
-        return {
-          reviews: [],
-          pagination: {
-            currentPage: page,
-            totalPages: 0,
-            totalItems: 0,
-            hasNext: false,
-            hasPrev: false,
-            limit,
-          }
-        };
+        throw new Error('Failed to fetch reviews - invalid response');
       }
       return response.data;
-    } catch (error) {
-      // Gracefully degrade if endpoint not available
-      return {
-        reviews: [],
-        pagination: {
-          currentPage: page,
-          totalPages: 0,
-          totalItems: 0,
-          hasNext: false,
-          hasPrev: false,
-          limit,
-        }
-      };
+    } catch (error: any) {
+      console.error('[ReviewsService] Error fetching my reviews:', error);
+      // PROPAGATE ERROR instead of silent return
+      throw new Error(error.response?.data?.message || error.message || 'Network error fetching reviews');
     }
+  }
+
+  // Get user's own reviews with retry logic
+  async getMyReviewsWithRetry(
+    page: number = 1,
+    limit: number = 20,
+    retries: number = 3
+  ): Promise<{
+    reviews: Review[];
+    pagination: Pagination;
+  }> {
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await this.getMyReviews(page, limit);
+      } catch (error) {
+        if (i === retries - 1) throw error;
+        // Exponential backoff: wait 1s, 2s, 3s
+        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+      }
+    }
+    // This line will never be reached but TypeScript needs it
+    throw new Error('Failed after retries');
   }
 
   // Get reviews received by current specialist

@@ -2106,3 +2106,41 @@ model EmployeeBooking {
   @@index([status, scheduledAt])
   @@map("employee_bookings")
 }
+
+// Expense Tracking for Specialists
+model Expense {
+  id              String @id @default(cuid())
+  specialistId    String
+
+  // Expense details
+  category        String // RENT, UTILITIES, CONSUMABLES, EQUIPMENT, INSURANCE, MARKETING, SALARIES, OTHER
+  amount          Float
+  currency        String @default("USD")
+  description     String?
+
+  // Date
+  date            DateTime
+
+  // Recurring settings
+  isRecurring     Boolean @default(false)
+  recurringFrequency String? // WEEKLY, MONTHLY, QUARTERLY, YEARLY
+  recurringUntil  DateTime?
+
+  // Receipt/documentation
+  receiptUrl      String?
+  notes           String?
+
+  // Status
+  isPaid          Boolean @default(true)
+  paidAt          DateTime?
+
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Indexes
+  @@index([specialistId, date])
+  @@index([specialistId, category])
+  @@index([date])
+  @@map("expenses")
+}

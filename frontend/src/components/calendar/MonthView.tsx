@@ -14,18 +14,31 @@ import {
 } from 'date-fns';
 import { Booking } from '../../types';
 
+interface TimeBlock {
+  id: string;
+  startDateTime: string;
+  endDateTime: string;
+  isAvailable: boolean;
+  reason?: string;
+  isRecurring?: boolean;
+}
+
 interface MonthViewProps {
   currentDate: Date;
   bookings: Booking[];
+  timeBlocks?: TimeBlock[];
   onDateClick?: (date: Date) => void;
   onBookingClick?: (booking: Booking) => void;
+  onTimeBlockClick?: (timeBlock: TimeBlock) => void;
 }
 
 export const MonthView: React.FC<MonthViewProps> = ({
   currentDate,
   bookings,
+  timeBlocks = [],
   onDateClick,
-  onBookingClick
+  onBookingClick,
+  onTimeBlockClick
 }) => {
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -48,15 +61,24 @@ export const MonthView: React.FC<MonthViewProps> = ({
     }).slice(0, 3); // Limit to 3 bookings per day for display
   };
 
+  const getTimeBlocksForDay = (date: Date): TimeBlock[] => {
+    return timeBlocks.filter(block => {
+      const blockDate = parseISO(block.startDateTime);
+      return isSameDay(blockDate, date) && block.isAvailable;
+    });
+  };
+
   const getBookingColor = (status: string): string => {
     const colors: Record<string, string> = {
-      confirmed: 'bg-blue-500',
-      pending: 'bg-yellow-500',
-      completed: 'bg-green-500',
-      cancelled: 'bg-gray-400',
-      in_progress: 'bg-purple-500'
+      confirmed: 'bg-primary-600',
+      pending: 'bg-primary-600',
+      completed: 'bg-primary-600',
+      cancelled: 'bg-red-600',
+      in_progress: 'bg-primary-600',
+      failed: 'bg-red-600',
+      no_show: 'bg-gray-400'
     };
-    return colors[status.toLowerCase()] || 'bg-blue-500';
+    return colors[status.toLowerCase()] || 'bg-primary-600';
   };
 
   const rows: Date[][] = [];
@@ -84,6 +106,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
           <React.Fragment key={weekIndex}>
             {week.map((day, dayIndex) => {
               const dayBookings = getBookingsForDay(day);
+              const dayTimeBlocks = getTimeBlocksForDay(day);
               const isCurrentMonth = isSameMonth(day, currentDate);
               const isDayToday = isToday(day);
               const totalBookings = bookings.filter(b =>
@@ -123,8 +146,16 @@ export const MonthView: React.FC<MonthViewProps> = ({
                     )}
                   </div>
 
-                  {/* Bookings */}
+                  {/* Time Blocks and Bookings */}
                   <div className="space-y-1">
+                    {/* Show available time blocks count */}
+                    {dayTimeBlocks.length > 0 && (
+                      <div className="text-[10px] sm:text-xs text-primary-600 dark:text-primary-400 font-medium">
+                        {dayTimeBlocks.length} slot{dayTimeBlocks.length > 1 ? 's' : ''} available
+                      </div>
+                    )}
+
+                    {/* Show bookings */}
                     {dayBookings.map((booking) => (
                       <motion.div
                         key={booking.id}
@@ -168,20 +199,16 @@ export const MonthView: React.FC<MonthViewProps> = ({
           Status:
         </span>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-yellow-500"></div>
-          <span className="text-xs text-gray-600 dark:text-gray-400">Pending</span>
+          <div className="w-3 h-3 rounded bg-primary-600"></div>
+          <span className="text-xs text-gray-600 dark:text-gray-400">Active</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-blue-500"></div>
-          <span className="text-xs text-gray-600 dark:text-gray-400">Confirmed</span>
+          <div className="w-3 h-3 rounded bg-red-600"></div>
+          <span className="text-xs text-gray-600 dark:text-gray-400">Cancelled/Failed</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-purple-500"></div>
-          <span className="text-xs text-gray-600 dark:text-gray-400">In Progress</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-green-500"></div>
-          <span className="text-xs text-gray-600 dark:text-gray-400">Completed</span>
+          <div className="w-3 h-3 rounded bg-primary-100 dark:bg-primary-900/30"></div>
+          <span className="text-xs text-gray-600 dark:text-gray-400">Available Slots</span>
         </div>
       </div>
     </div>
