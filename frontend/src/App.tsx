@@ -81,9 +81,9 @@ const NotFoundPage = React.lazy(() => import('./pages/NotFoundPage'));
 const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage'));
 const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 
-// Loading component for Suspense
+// Loading component for Suspense - simple and clean
 const SuspenseLoader = () => (
-  <FullScreenHandshakeLoader title="Hang tight..." subtitle="Panhaha is curating your experience" />
+  <FullScreenHandshakeLoader title="Loading..." />
 );
 
 // Component to redirect from /book/:serviceId to /booking/:serviceId

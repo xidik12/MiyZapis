@@ -17,21 +17,21 @@ import TierBadge from '@/components/common/TierBadge';
 import { BookingKanban } from '@/components/bookings/BookingKanban';
 import type { BookingData } from '@/components/bookings/BookingCard';
 
-// Status colors for bookings (matching backend status values)
+// Status colors for bookings (blue/red scheme only)
 const statusColors = {
-  PENDING: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  CONFIRMED: 'bg-blue-100 text-blue-800 border-blue-200',
-  COMPLETED: 'bg-green-100 text-green-800 border-green-200',
-  CANCELLED: 'bg-red-100 text-red-800 border-red-200',
-  IN_PROGRESS: 'bg-purple-100 text-purple-800 border-purple-200',
-  NO_SHOW: 'bg-gray-100 text-gray-800 border-gray-200',
+  PENDING: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700',
+  CONFIRMED: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700',
+  COMPLETED: 'bg-primary-100 text-primary-800 border-primary-200 dark:bg-primary-900/30 dark:text-primary-300 dark:border-primary-700',
+  CANCELLED: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700',
+  IN_PROGRESS: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700',
+  NO_SHOW: 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600',
   // Legacy lowercase support for compatibility
-  pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
-  completed: 'bg-green-100 text-green-800 border-green-200',
-  cancelled: 'bg-red-100 text-red-800 border-red-200',
-  inProgress: 'bg-purple-100 text-purple-800 border-purple-200',
-  noShow: 'bg-gray-100 text-gray-800 border-gray-200'
+  pending: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700',
+  confirmed: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700',
+  completed: 'bg-primary-100 text-primary-800 border-primary-200 dark:bg-primary-900/30 dark:text-primary-300 dark:border-primary-700',
+  cancelled: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700',
+  inProgress: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700',
+  noShow: 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'
 };
 
 interface FilterState {
@@ -250,9 +250,9 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.type')}</label>
                 <div className="flex items-center">
                   <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    booking.meetingLink 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-blue-100 text-blue-800'
+                    booking.meetingLink
+                      ? 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300'
+                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
                   }`}>
                     {booking.meetingLink ? t('bookings.online') : t('bookings.inPerson')}
                   </span>
@@ -262,7 +262,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           </div>
           
           {/* Appointment Details */}
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
+          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
             <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.appointmentDetails')}</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -338,7 +338,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 {/* WhatsApp Number */}
                 {booking.specialist.location.whatsappNumber && (
                   <div className="flex items-start space-x-3">
-                    <ChatBubbleLeftRightIcon className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                    <ChatBubbleLeftRightIcon className="w-4 h-4 text-primary-600 dark:text-primary-400 mt-0.5 flex-shrink-0" />
                     <div>
                       <span className="font-medium text-blue-900 dark:text-blue-100">
                         {t('bookings.whatsapp')}:
@@ -347,7 +347,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                         href={`https://wa.me/${booking.specialist.location.whatsappNumber.replace(/[^0-9]/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-green-700 dark:text-green-300 hover:underline ml-1"
+                        className="text-primary-700 dark:text-primary-300 hover:underline ml-1"
                       >
                         {booking.specialist.location.whatsappNumber}
                       </a>
@@ -418,7 +418,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           {activeTab === 'provider' && (
             <>
               {/* Status Management */}
-              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4">
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.statusManagement')}</h4>
                 <div className="flex flex-wrap gap-1 sm:gap-2 mb-4">
                   {['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'IN_PROGRESS', 'NO_SHOW'].map((status) => (
@@ -433,8 +433,8 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                       />
                       <span className={`px-2 sm:px-3 py-1 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
                         selectedStatus === status
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                          ? 'bg-primary-600 text-white'
+                          : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                       }`}>
                         {t(`dashboard.booking.status.${status}`)}
                       </span>
@@ -443,27 +443,27 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 </div>
                 <button
                   onClick={handleStatusChange}
-                  className="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white py-2 px-4 rounded-xl transition-colors"
+                  className="w-full bg-primary-600 hover:bg-primary-700 text-white py-2 px-4 rounded-xl transition-colors"
                 >
                   {t('bookingDetails.updateStatus')}
                 </button>
               </div>
               
               {/* Quick Message */}
-              <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4">
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-3">{t('bookingDetails.sendMessage')}</h4>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={t('bookingDetails.messagePlaceholder')}
-                  className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700 text-sm sm:text-base"
+                  className="w-full p-2 sm:p-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-800 text-sm sm:text-base"
                   rows={3}
                 />
                 <div className="flex space-x-2 mt-3">
                   <button
                     onClick={handleSendMessage}
                     disabled={!message.trim()}
-                    className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-2 px-3 sm:px-4 rounded-xl transition-colors text-sm sm:text-base"
+                    className="flex-1 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-2 px-3 sm:px-4 rounded-xl transition-colors text-sm sm:text-base"
                   >
                     {t('bookingDetails.sendMessageButton')}
                   </button>
@@ -510,19 +510,19 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                       // Handle review
                       onClose();
                     }}
-                    className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-xl transition-colors"
+                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl transition-colors"
                   >
                     {t('customer.bookings.leaveReview')}
                   </button>
                 )}
-                
+
                 {/* Book again */}
                 <button
                   onClick={() => {
                     // Handle book again
                     onClose();
                   }}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl transition-colors"
+                  className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl transition-colors"
                 >
                   {t('customer.bookings.bookAgain')}
                 </button>
@@ -585,8 +585,8 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
         {/* Content */}
         <div className="p-6">
           <div className="mb-6">
-            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-yellow-100 dark:bg-yellow-900/20 rounded-full mb-4">
-              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-primary-100 dark:bg-primary-900/30 rounded-full mb-4">
+              <svg className="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
@@ -615,7 +615,7 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600 dark:text-gray-300">{t('labels.amount') || 'Amount'}:</span>
-              <span className="font-bold text-green-600">{formatPrice(booking.totalAmount, getBookingCurrency(booking))}</span>
+              <span className="font-bold text-primary-600 dark:text-primary-400">{formatPrice(booking.totalAmount, getBookingCurrency(booking))}</span>
             </div>
           </div>
 
@@ -638,7 +638,7 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
             <button
               onClick={handleConfirmPayment}
               disabled={isSubmitting}
-              className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center"
+              className="flex-1 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center"
             >
               {isSubmitting ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
@@ -1132,13 +1132,13 @@ const SpecialistBookings: React.FC = () => {
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border dark:border-gray-700">
               <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.confirmed')}</p>
-              <p className="text-xl font-bold text-green-600">
+              <p className="text-xl font-bold text-primary-600 dark:text-primary-400">
                 {filteredAndSortedBookings.filter(b => b.status === 'CONFIRMED' || b.status === 'confirmed').length}
               </p>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border dark:border-gray-700">
               <p className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.pending')}</p>
-              <p className="text-xl font-bold text-yellow-600">
+              <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
                 {filteredAndSortedBookings.filter(b => b.status === 'PENDING' || b.status === 'pending').length}
               </p>
             </div>
@@ -1238,7 +1238,7 @@ const SpecialistBookings: React.FC = () => {
               <div className="flex space-x-2">
                 <button
                   onClick={() => handleBulkStatusChange('confirmed')}
-                  className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors"
+                  className="px-3 py-1 bg-primary-600 text-white rounded text-sm hover:bg-primary-700 transition-colors"
                 >
                   {t('bookings.confirm')}
                 </button>
@@ -1354,9 +1354,9 @@ const SpecialistBookings: React.FC = () => {
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t('bookings.type')}</p>
                   <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                    booking.meetingLink 
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
-                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+                    booking.meetingLink
+                      ? 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300'
+                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
                   }`}>
                     {booking.meetingLink ? t('bookings.online') : t('bookings.inPerson')}
                   </span>
@@ -1377,7 +1377,7 @@ const SpecialistBookings: React.FC = () => {
                       setBookingToComplete(booking);
                       setShowPaymentModal(true);
                     }}
-                    className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-3 rounded-xl transition-colors"
+                    className="bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium py-2 px-3 rounded-xl transition-colors"
                   >
                     {t('bookings.complete')}
                   </button>
@@ -1503,9 +1503,9 @@ const SpecialistBookings: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                        booking.meetingLink 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-blue-100 text-blue-800'
+                        booking.meetingLink
+                          ? 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-300'
+                          : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
                       }`}>
                         {booking.meetingLink ? t('bookings.online') : t('bookings.inPerson')}
                       </span>
@@ -1525,7 +1525,7 @@ const SpecialistBookings: React.FC = () => {
                           (booking.status === 'PENDING' || booking.status === 'pending') ? (
                             <button
                               onClick={() => handleStatusChange(booking.id, 'CONFIRMED')}
-                              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                              className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
                               title={t('bookings.confirm')}
                             >
                               <CheckIcon className="w-4 h-4 mr-1" />
@@ -1559,7 +1559,7 @@ const SpecialistBookings: React.FC = () => {
                             {(booking.status === 'COMPLETED' || booking.status === 'completed') && (
                               <button
                                 onClick={() => handleLeaveReview(booking)}
-                                className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors sm:px-3 sm:py-1.5"
+                                className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-xl text-xs font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors sm:px-3 sm:py-1.5"
                                 title={t('bookings.leaveReview')}
                               >
                                 <StarIcon className="w-4 h-4 mr-1" />
