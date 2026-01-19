@@ -329,6 +329,13 @@ const SpecialistSchedule: React.FC = () => {
     return new Date(d.setDate(diff));
   }
 
+  const formatLocalDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   function getWeekDays(weekStart: Date): Date[] {
     const days: Date[] = [];
     for (let i = 0; i < 7; i++) {
@@ -428,8 +435,8 @@ const SpecialistSchedule: React.FC = () => {
         setError(null);
 
         // Get all availability blocks for the week
-        const startDate = weekDays[0].toISOString().split('T')[0];
-        const endDate = weekDays[6].toISOString().split('T')[0];
+        const startDate = formatLocalDate(weekDays[0]);
+        const endDate = formatLocalDate(weekDays[6]);
 
         const blocks = await retryRequest(
           () => specialistService.getAvailabilityBlocks(startDate, endDate),
@@ -500,8 +507,8 @@ const SpecialistSchedule: React.FC = () => {
       );
 
       // Reload availability blocks
-      const startDate = weekDays[0].toISOString().split('T')[0];
-      const endDate = weekDays[6].toISOString().split('T')[0];
+      const startDate = formatLocalDate(weekDays[0]);
+      const endDate = formatLocalDate(weekDays[6]);
 
       const blocks = await retryRequest(
         () => specialistService.getAvailabilityBlocks(startDate, endDate),
@@ -665,24 +672,19 @@ const SpecialistSchedule: React.FC = () => {
       const blockStart = new Date(block.startDateTime);
       const blockEnd = new Date(block.endDateTime);
 
-      // Compare using UTC date components (timezone-agnostic)
-      const blockYear = blockStart.getUTCFullYear();
-      const blockMonth = blockStart.getUTCMonth();
-      const blockDay = blockStart.getUTCDate();
-
-      const cellYear = date.getFullYear();
-      const cellMonth = date.getMonth();
-      const cellDay = date.getDate();
-
-      // First check if the block is on the same day (UTC time)
-      if (blockYear !== cellYear || blockMonth !== cellMonth || blockDay !== cellDay) {
+      // Compare using local date components to match calendar display
+      if (
+        blockStart.getFullYear() !== date.getFullYear() ||
+        blockStart.getMonth() !== date.getMonth() ||
+        blockStart.getDate() !== date.getDate()
+      ) {
         return false;
       }
 
-      // Then check if the block overlaps with this hour (UTC time)
-      const blockHour = blockStart.getUTCHours();
-      const blockEndHour = blockEnd.getUTCHours();
-      const blockEndMinute = blockEnd.getUTCMinutes();
+      // Then check if the block overlaps with this hour (local time)
+      const blockHour = blockStart.getHours();
+      const blockEndHour = blockEnd.getHours();
+      const blockEndMinute = blockEnd.getMinutes();
 
       // Block overlaps with hour if:
       // - Block starts in this hour, OR
@@ -691,6 +693,20 @@ const SpecialistSchedule: React.FC = () => {
       return (blockHour === hour) ||
              (blockEndHour === hour && blockEndMinute > 0) ||
              (blockHour < hour && (blockEndHour > hour || (blockEndHour === hour && blockEndMinute > 0)));
+    });
+  };
+
+  const getBookingsForCell = (date: Date, hour: number): Booking[] => {
+    return filteredBookings.filter(booking => {
+      if (!booking.scheduledAt) return false;
+      const bookingStart = new Date(booking.scheduledAt);
+      if (Number.isNaN(bookingStart.getTime())) return false;
+      return (
+        bookingStart.getFullYear() === date.getFullYear() &&
+        bookingStart.getMonth() === date.getMonth() &&
+        bookingStart.getDate() === date.getDate() &&
+        bookingStart.getHours() === hour
+      );
     });
   };
 
@@ -1035,6 +1051,7 @@ const SpecialistSchedule: React.FC = () => {
                 {timeSlots.map(hour => {
                   const { availableCount, blockedCount, totalCount } = getHourSummary(day, hour);
                   const blocks = getBlocksForCell(day, hour);
+                  const hourBookings = getBookingsForCell(day, hour);
                   const expanded = isHourExpanded(dayIndex, hour);
                   const isPast = new Date(new Date(day).setHours(hour, 0, 0, 0)) < new Date();
                   const isCurrentHour = isToday && new Date().getHours() === hour;
@@ -1081,6 +1098,12 @@ const SpecialistSchedule: React.FC = () => {
                                   {blockedCount}
                                 </span>
                               )}
+                              {hourBookings.length > 0 && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 leading-none">
+                                  <CalendarIcon className="w-3 h-3" />
+                                  {hourBookings.length}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1094,16 +1117,23 @@ const SpecialistSchedule: React.FC = () => {
                       </button>
 
                       {/* Event Preview when collapsed */}
-                      {!expanded && blocks.length > 0 && (
+                      {!expanded && (blocks.length > 0 || hourBookings.length > 0) && (
                         <div className="px-4 pb-3">
-                          <div className={`text-xs truncate ${
-                            blocks[0].isAvailable
-                              ? 'text-green-700 dark:text-green-300'
-                              : 'text-red-700 dark:text-red-300'
-                          }`}>
-                            {blocks[0].isAvailable ? '✓ Available' : '✗ ' + (blocks[0].reason || 'Blocked')}
-                            {blocks.length > 1 && ` +${blocks.length - 1} more`}
-                          </div>
+                          {blocks.length > 0 && (
+                            <div className={`text-xs truncate ${
+                              blocks[0].isAvailable
+                                ? 'text-green-700 dark:text-green-300'
+                                : 'text-red-700 dark:text-red-300'
+                            }`}>
+                              {blocks[0].isAvailable ? '✓ Available' : '✗ ' + (blocks[0].reason || 'Blocked')}
+                              {blocks.length > 1 && ` +${blocks.length - 1} more`}
+                            </div>
+                          )}
+                          {hourBookings.length > 0 && (
+                            <div className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                              {hourBookings.length} booking{hourBookings.length > 1 ? 's' : ''} scheduled
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -1118,6 +1148,23 @@ const SpecialistSchedule: React.FC = () => {
                             className="overflow-hidden"
                           >
                             <div className="px-4 pb-4 space-y-2 bg-gray-50 dark:bg-gray-900/30">
+                              {hourBookings.map((booking, idx) => (
+                                <motion.div
+                                  key={booking.id}
+                                  initial={{ opacity: 0, x: -20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: idx * 0.05 }}
+                                  onClick={() => handleBookingClick(booking)}
+                                  className="p-3 rounded-xl border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 cursor-pointer"
+                                >
+                                  <div className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                                    {booking.service?.name || 'Booking'}
+                                  </div>
+                                  <div className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                                    {new Date(booking.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {booking.customer?.firstName || ''} {booking.customer?.lastName || ''}
+                                  </div>
+                                </motion.div>
+                              ))}
                               {blocks.map((block, idx) => {
                                 const blockStart = new Date(block.startDateTime);
                                 const blockEnd = new Date(block.endDateTime);
@@ -1141,9 +1188,9 @@ const SpecialistSchedule: React.FC = () => {
                                         ? 'text-green-900 dark:text-green-100'
                                         : 'text-red-900 dark:text-red-100'
                                     }`}>
-                                      {blockStart.getUTCHours().toString().padStart(2, '0')}:{blockStart.getUTCMinutes().toString().padStart(2, '0')}
+                                      {blockStart.getHours().toString().padStart(2, '0')}:{blockStart.getMinutes().toString().padStart(2, '0')}
                                       {' - '}
-                                      {blockEnd.getUTCHours().toString().padStart(2, '0')}:{blockEnd.getUTCMinutes().toString().padStart(2, '0')}
+                                      {blockEnd.getHours().toString().padStart(2, '0')}:{blockEnd.getMinutes().toString().padStart(2, '0')}
                                     </div>
                                     {block.reason && (
                                       <div className={`text-xs mt-1 ${
