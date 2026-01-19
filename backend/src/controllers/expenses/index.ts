@@ -24,6 +24,12 @@ const RECURRING_FREQUENCIES = ['WEEKLY', 'MONTHLY', 'QUARTERLY', 'YEARLY'] as co
 type ExpenseCategory = typeof EXPENSE_CATEGORIES[number];
 type RecurringFrequency = typeof RECURRING_FREQUENCIES[number];
 
+const isMissingExpensesTableError = (error: any): boolean => {
+  const code = error?.code;
+  const message = typeof error?.message === 'string' ? error.message : '';
+  return code === 'P2021' || (message.includes('expenses') && message.includes('does not exist'));
+};
+
 export class ExpenseController {
   // Get all expenses for specialist
   static getExpenses = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
@@ -86,6 +92,16 @@ export class ExpenseController {
         offset: parseInt(offset as string)
       }));
     } catch (error: any) {
+      if (isMissingExpensesTableError(error)) {
+        res.json(createSuccessResponse({
+          expenses: [],
+          total: 0,
+          limit: parseInt((req.query.limit as string) || '50'),
+          offset: parseInt((req.query.offset as string) || '0')
+        }));
+        return;
+      }
+
       logger.error('Error getting expenses:', error);
       res.status(500).json(createErrorResponse('EXPENSE_ERROR', error.message, req.headers['x-request-id'] as string));
     }
@@ -172,6 +188,18 @@ export class ExpenseController {
         currency: 'UAH'
       }));
     } catch (error: any) {
+      if (isMissingExpensesTableError(error)) {
+        res.json(createSuccessResponse({
+          totalExpenses: 0,
+          totalCount: 0,
+          thisMonthExpenses: 0,
+          byCategory: [],
+          monthlyBreakdown: [],
+          currency: 'UAH'
+        }));
+        return;
+      }
+
       logger.error('Error getting expense summary:', error);
       res.status(500).json(createErrorResponse('EXPENSE_ERROR', error.message, req.headers['x-request-id'] as string));
     }
