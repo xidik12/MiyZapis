@@ -1,7 +1,20 @@
 import { Environment } from '../types';
 
+const normalizeApiUrl = (url: string): string => {
+  const trimmed = url.replace(/\/+$/, '');
+  if (/\/api\/v\d+$/.test(trimmed)) {
+    return trimmed;
+  }
+  if (trimmed.endsWith('/api')) {
+    return `${trimmed}/v1`;
+  }
+  return `${trimmed}/api/v1`;
+};
+
+const rawApiUrl = import.meta.env.VITE_API_URL || 'https://miyzapis-backend-production.up.railway.app/api/v1';
+
 export const environment: Environment = {
-  API_URL: import.meta.env.VITE_API_URL || 'https://miyzapis-backend-production.up.railway.app/api/v1',
+  API_URL: normalizeApiUrl(rawApiUrl),
   WS_URL: import.meta.env.VITE_WS_URL || 'wss://miyzapis-backend-production.up.railway.app',
   STRIPE_PUBLISHABLE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || null,
   GOOGLE_MAPS_API_KEY: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,

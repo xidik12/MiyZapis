@@ -78,6 +78,13 @@ const navigation: SidebarNavItem[] = [
     iconActive: CreditCardIcon,
   },
   {
+    name: 'Finances',
+    nameUk: 'Фінанси',
+    href: '/specialist/finances',
+    icon: ChartBarIcon,
+    iconActive: ChartBarIcon,
+  },
+  {
     name: 'Reviews',
     nameUk: 'Відгуки',
     href: '/specialist/reviews',
