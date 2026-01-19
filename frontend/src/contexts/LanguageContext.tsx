@@ -202,16 +202,43 @@ const createTranslations = (): Translations => {
 
   // Finances translations
   ensure('finances.title', 'Finances', 'ហិរញ្ញវត្ថុ');
+  ensure('finances.subtitle', 'Track your business expenses and profitability', 'តាមដានការចំណាយ និងប្រាក់ចំណេញអាជីវកម្មរបស់អ្នក');
   ensure('finances.addExpense', 'Add Expense', 'បន្ថែមការចំណាយ');
+  ensure('finances.editExpense', 'Edit Expense', 'កែសម្រួលការចំណាយ');
   ensure('finances.totalExpenses', 'Total Expenses', 'ការចំណាយសរុប');
+  ensure('finances.totalCount', 'Total Transactions', 'ចំនួនប្រតិបត្តិការសរុប');
+  ensure('finances.avgMonthly', 'Avg Monthly', 'មធ្យមប្រចាំខែ');
   ensure('finances.totalIncome', 'Total Income', 'ប្រាក់ចំណូលសរុប');
   ensure('finances.netProfit', 'Net Profit', 'ប្រាក់ចំណេញសុទ្ធ');
   ensure('finances.byCategory', 'Expenses by Category', 'ការចំណាយតាមប្រភេទ');
   ensure('finances.recentExpenses', 'Recent Expenses', 'ការចំណាយថ្មីៗ');
+  ensure('finances.noExpenses', 'No expenses found', 'រកមិនឃើញការចំណាយ');
   ensure('finances.category', 'Category', 'ប្រភេទ');
   ensure('finances.amount', 'Amount', 'ចំនួនទឹកប្រាក់');
   ensure('finances.description', 'Description', 'ការពិពណ៌នា');
   ensure('finances.date', 'Date', 'កាលបរិច្ឆេទ');
+  ensure('finances.startDate', 'Start Date', 'កាលបរិច្ឆេទចាប់ផ្តើម');
+  ensure('finances.endDate', 'End Date', 'កាលបរិច្ឆេទបញ្ចប់');
+  ensure('finances.allCategories', 'All Categories', 'គ្រប់ប្រភេទ');
+  ensure('finances.recurring', 'Recurring expense', 'ការចំណាយប្រចាំ');
+  ensure('finances.frequency', 'Frequency', 'ប្រេកង់');
+  ensure('finances.weekly', 'Weekly', 'ប្រចាំសប្តាហ៍');
+  ensure('finances.monthly', 'Monthly', 'ប្រចាំខែ');
+  ensure('finances.quarterly', 'Quarterly', 'ប្រចាំត្រីមាស');
+  ensure('finances.yearly', 'Yearly', 'ប្រចាំឆ្នាំ');
+  ensure('finances.update', 'Update', 'ធ្វើបច្ចុប្បន្នភាព');
+  ensure('finances.add', 'Add', 'បន្ថែម');
+  ensure('finances.cancel', 'Cancel', 'បោះបង់');
+  ensure('finances.deleteConfirm', 'Are you sure you want to delete this expense?', 'តើអ្នកប្រាកដថាចង់លុបការចំណាយនេះ?');
+  // Expense categories
+  ensure('finances.category.rent', 'Rent', 'ការជួល');
+  ensure('finances.category.utilities', 'Utilities', 'ប្រើប្រាស់សាធារណៈ');
+  ensure('finances.category.consumables', 'Consumables', 'សម្ភារៈប្រើប្រាស់');
+  ensure('finances.category.equipment', 'Equipment', 'ឧបករណ៍');
+  ensure('finances.category.insurance', 'Insurance', 'ធានារ៉ាប់រង');
+  ensure('finances.category.marketing', 'Marketing', 'ទីផ្សារ');
+  ensure('finances.category.salaries', 'Salaries', 'ប្រាក់បៀវត្សរ៍');
+  ensure('finances.category.other', 'Other', 'ផ្សេងទៀត');
   ensure('nav.finances', 'Finances', 'ហិរញ្ញវត្ថុ');
 
   return map;

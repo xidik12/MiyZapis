@@ -134,7 +134,7 @@ const Finances: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this expense?')) return;
+    if (!window.confirm(t('finances.deleteConfirm') || 'Are you sure you want to delete this expense?')) return;
     try {
       await expenseService.deleteExpense(id);
       loadData();
@@ -345,7 +345,7 @@ const Finances: React.FC = () => {
                 onChange={(e) => setSelectedCategory(e.target.value as ExpenseCategory | 'ALL')}
                 className="px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white"
               >
-                <option value="ALL">All Categories</option>
+                <option value="ALL">{t('finances.allCategories') || 'All Categories'}</option>
                 {EXPENSE_CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
                     {expenseService.getCategoryLabel(cat)}
@@ -355,7 +355,7 @@ const Finances: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">
-                Start Date
+                {t('finances.startDate') || 'Start Date'}
               </label>
               <input
                 type="date"
@@ -366,7 +366,7 @@ const Finances: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">
-                End Date
+                {t('finances.endDate') || 'End Date'}
               </label>
               <input
                 type="date"
@@ -473,7 +473,7 @@ const Finances: React.FC = () => {
             >
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                  {editingExpense ? 'Edit Expense' : (t('finances.addExpense') || 'Add Expense')}
+                  {editingExpense ? (t('finances.editExpense') || 'Edit Expense') : (t('finances.addExpense') || 'Add Expense')}
                 </h2>
                 <button
                   onClick={() => setShowAddModal(false)}
@@ -552,24 +552,24 @@ const Finances: React.FC = () => {
                     className="w-4 h-4 text-primary-600 rounded"
                   />
                   <label htmlFor="isRecurring" className="text-sm text-gray-700 dark:text-gray-300">
-                    Recurring expense
+                    {t('finances.recurring') || 'Recurring expense'}
                   </label>
                 </div>
 
                 {formData.isRecurring && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Frequency
+                      {t('finances.frequency') || 'Frequency'}
                     </label>
                     <select
                       value={formData.recurringFrequency || 'MONTHLY'}
                       onChange={(e) => setFormData((prev) => ({ ...prev, recurringFrequency: e.target.value as any }))}
                       className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white"
                     >
-                      <option value="WEEKLY">Weekly</option>
-                      <option value="MONTHLY">Monthly</option>
-                      <option value="QUARTERLY">Quarterly</option>
-                      <option value="YEARLY">Yearly</option>
+                      <option value="WEEKLY">{t('finances.weekly') || 'Weekly'}</option>
+                      <option value="MONTHLY">{t('finances.monthly') || 'Monthly'}</option>
+                      <option value="QUARTERLY">{t('finances.quarterly') || 'Quarterly'}</option>
+                      <option value="YEARLY">{t('finances.yearly') || 'Yearly'}</option>
                     </select>
                   </div>
                 )}
@@ -580,13 +580,13 @@ const Finances: React.FC = () => {
                     onClick={() => setShowAddModal(false)}
                     className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                   >
-                    Cancel
+                    {t('finances.cancel') || 'Cancel'}
                   </button>
                   <button
                     type="submit"
                     className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
                   >
-                    {editingExpense ? 'Update' : 'Add'}
+                    {editingExpense ? (t('finances.update') || 'Update') : (t('finances.add') || 'Add')}
                   </button>
                 </div>
               </form>
