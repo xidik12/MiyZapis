@@ -240,6 +240,7 @@ const createTranslations = (): Translations => {
   ensure('finances.category.salaries', 'Salaries', 'ប្រាក់បៀវត្សរ៍');
   ensure('finances.category.other', 'Other', 'ផ្សេងទៀត');
   ensure('nav.finances', 'Finances', 'ហិរញ្ញវត្ថុ');
+  ensure('dashboard.nav.finances', 'Finances', 'ហិរញ្ញវត្ថុ');
 
   // Earnings translations
   ensure('earnings.subtitle', 'Track your income, expenses, and profitability', 'តាមដានប្រាក់ចំណូល ការចំណាយ និងប្រាក់ចំណេញ');
