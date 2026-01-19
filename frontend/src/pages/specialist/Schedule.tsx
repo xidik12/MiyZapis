@@ -715,6 +715,14 @@ const SpecialistSchedule: React.FC = () => {
     return { availableCount, blockedCount, totalCount };
   };
 
+  const statusOptions = [
+    { key: 'pending', label: t('bookings.pending') || 'Pending', color: 'yellow', icon: '⏳' },
+    { key: 'confirmed', label: t('bookings.confirmed') || 'Confirmed', color: 'blue', icon: '✓' },
+    { key: 'in_progress', label: t('bookings.inProgress') || 'In Progress', color: 'purple', icon: '▶' },
+    { key: 'completed', label: t('bookings.completed') || 'Completed', color: 'green', icon: '✓✓' },
+    { key: 'cancelled', label: t('bookings.cancelled') || 'Cancelled', color: 'gray', icon: '✕' }
+  ];
+
   if (loading) {
     return (
       <FullScreenHandshakeLoader
@@ -742,10 +750,10 @@ const SpecialistSchedule: React.FC = () => {
                   ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
-              title="Week View"
+              title={t('schedule.weeklyView')}
             >
               <CalendarIcon className="w-4 h-4" />
-              <span className="text-sm font-medium hidden sm:inline">Week</span>
+              <span className="text-sm font-medium hidden sm:inline">{t('schedule.week')}</span>
             </button>
             <button
               onClick={() => setViewMode('month')}
@@ -754,10 +762,10 @@ const SpecialistSchedule: React.FC = () => {
                   ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
-              title="Month View"
+              title={t('schedule.monthlyView')}
             >
               <CalendarDaysIcon className="w-4 h-4" />
-              <span className="text-sm font-medium hidden sm:inline">Month</span>
+              <span className="text-sm font-medium hidden sm:inline">{t('schedule.month')}</span>
             </button>
             <button
               onClick={() => setViewMode('card')}
@@ -766,10 +774,10 @@ const SpecialistSchedule: React.FC = () => {
                   ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
-              title="Card View"
+              title={t('schedule.cardView')}
             >
               <ListBulletIcon className="w-4 h-4" />
-              <span className="text-sm font-medium hidden sm:inline">Cards</span>
+              <span className="text-sm font-medium hidden sm:inline">{t('schedule.cards')}</span>
             </button>
           </div>
 
@@ -778,7 +786,7 @@ const SpecialistSchedule: React.FC = () => {
             onClick={() => exportMultipleBookings(filteredBookings)}
             disabled={filteredBookings.length === 0}
             className="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors font-medium text-sm border border-gray-200 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Export bookings to calendar"
+            title={t('schedule.exportToCalendar')}
           >
             <ArrowDownTrayIcon className="w-4 h-4" />
             <span className="hidden sm:inline">{t('schedule.export') || 'Export'}</span>
@@ -804,7 +812,7 @@ const SpecialistSchedule: React.FC = () => {
             )}
             <PlusIcon className="w-5 h-5" />
             <span className="hidden sm:inline">{t('schedule.addTime')}</span>
-            <span className="sm:hidden">Add</span>
+            <span className="sm:hidden">{t('schedule.add')}</span>
           </button>
         </div>
       </div>
@@ -923,13 +931,7 @@ const SpecialistSchedule: React.FC = () => {
                   </button>
                 </div>
                 <div className="space-y-2">
-                  {[
-                    { key: 'pending', label: 'Pending', color: 'yellow', icon: '⏳' },
-                    { key: 'confirmed', label: 'Confirmed', color: 'blue', icon: '✓' },
-                    { key: 'in_progress', label: 'In Progress', color: 'purple', icon: '▶' },
-                    { key: 'completed', label: 'Completed', color: 'green', icon: '✓✓' },
-                    { key: 'cancelled', label: 'Cancelled', color: 'gray', icon: '✕' }
-                  ].map(status => (
+                  {statusOptions.map(status => (
                     <label
                       key={status.key}
                       className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"

@@ -13,6 +13,7 @@ import {
   parseISO
 } from 'date-fns';
 import { Booking } from '../../types';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TimeBlock {
   id: string;
@@ -40,12 +41,21 @@ export const MonthView: React.FC<MonthViewProps> = ({
   onBookingClick,
   onTimeBlockClick
 }) => {
+  const { t } = useLanguage();
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const startDate = startOfWeek(monthStart, { weekStartsOn: 1 }); // Monday
   const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
 
-  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const weekDays = [
+    t('weekday.monday'),
+    t('weekday.tuesday'),
+    t('weekday.wednesday'),
+    t('weekday.thursday'),
+    t('weekday.friday'),
+    t('weekday.saturday'),
+    t('weekday.sunday')
+  ];
   const days: Date[] = [];
   let day = startDate;
 
@@ -54,17 +64,38 @@ export const MonthView: React.FC<MonthViewProps> = ({
     day = addDays(day, 1);
   }
 
+  const toDate = (value?: string | number | Date | null): Date | null => {
+    if (!value) return null;
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? null : value;
+    }
+    if (typeof value === 'number') {
+      const parsed = new Date(value);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+    if (typeof value === 'string') {
+      const parsed = parseISO(value);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+    return null;
+  };
+
+  const formatTime = (value?: string | number | Date | null): string => {
+    const date = toDate(value);
+    return date ? format(date, 'HH:mm') : '--:--';
+  };
+
   const getBookingsForDay = (date: Date): Booking[] => {
     return bookings.filter(booking => {
-      const bookingDate = parseISO(booking.scheduledAt);
-      return isSameDay(bookingDate, date);
+      const bookingDate = toDate(booking.scheduledAt);
+      return bookingDate ? isSameDay(bookingDate, date) : false;
     }).slice(0, 3); // Limit to 3 bookings per day for display
   };
 
   const getTimeBlocksForDay = (date: Date): TimeBlock[] => {
     return timeBlocks.filter(block => {
-      const blockDate = parseISO(block.startDateTime);
-      return isSameDay(blockDate, date) && block.isAvailable;
+      const blockDate = toDate(block.startDateTime);
+      return blockDate ? isSameDay(blockDate, date) && block.isAvailable : false;
     });
   };
 
@@ -78,7 +109,8 @@ export const MonthView: React.FC<MonthViewProps> = ({
       failed: 'bg-red-600',
       no_show: 'bg-gray-400'
     };
-    return colors[status.toLowerCase()] || 'bg-primary-600';
+    const normalized = status ? status.toLowerCase() : '';
+    return colors[normalized] || 'bg-primary-600';
   };
 
   const rows: Date[][] = [];
@@ -109,9 +141,13 @@ export const MonthView: React.FC<MonthViewProps> = ({
               const dayTimeBlocks = getTimeBlocksForDay(day);
               const isCurrentMonth = isSameMonth(day, currentDate);
               const isDayToday = isToday(day);
-              const totalBookings = bookings.filter(b =>
-                isSameDay(parseISO(b.scheduledAt), day)
-              ).length;
+              const totalBookings = bookings.filter(b => {
+                const bookingDate = toDate(b.scheduledAt);
+                return bookingDate ? isSameDay(bookingDate, day) : false;
+              }).length;
+              const slotsLabel = dayTimeBlocks.length === 1
+                ? t('schedule.slotAvailable')
+                : t('schedule.slotsAvailable');
 
               return (
                 <motion.div
@@ -151,7 +187,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
                     {/* Show available time blocks count */}
                     {dayTimeBlocks.length > 0 && (
                       <div className="text-[10px] sm:text-xs text-primary-600 dark:text-primary-400 font-medium">
-                        {dayTimeBlocks.length} slot{dayTimeBlocks.length > 1 ? 's' : ''} available
+                        {dayTimeBlocks.length} {slotsLabel}
                       </div>
                     )}
 
@@ -166,13 +202,13 @@ export const MonthView: React.FC<MonthViewProps> = ({
                           onBookingClick?.(booking);
                         }}
                         className={`${getBookingColor(booking.status)} text-white text-[10px] sm:text-xs px-1.5 py-1 rounded truncate hover:opacity-80 transition-opacity cursor-pointer`}
-                        title={`${format(parseISO(booking.scheduledAt), 'HH:mm')} - ${booking.service?.name || 'Booking'}`}
+                        title={`${formatTime(booking.scheduledAt)} - ${booking.service?.name || t('schedule.booking')}`}
                       >
                         <span className="font-medium">
-                          {format(parseISO(booking.scheduledAt), 'HH:mm')}
+                          {formatTime(booking.scheduledAt)}
                         </span>{' '}
                         <span className="hidden sm:inline">
-                          {booking.service?.name || 'Booking'}
+                          {booking.service?.name || t('schedule.booking')}
                         </span>
                       </motion.div>
                     ))}
@@ -182,7 +218,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
                   {isCurrentMonth && (
                     <div className="absolute inset-0 bg-primary-50/0 dark:bg-primary-900/0 group-hover:bg-primary-50/30 dark:group-hover:bg-primary-900/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
                       <span className="text-xs font-medium text-primary-700 dark:text-primary-300">
-                        Click to add
+                        {t('schedule.clickToAdd')}
                       </span>
                     </div>
                   )}
@@ -196,19 +232,19 @@ export const MonthView: React.FC<MonthViewProps> = ({
       {/* Legend */}
       <div className="flex items-center gap-4 p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
         <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-          Status:
+          {t('schedule.legend.status')}
         </span>
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded bg-primary-600"></div>
-          <span className="text-xs text-gray-600 dark:text-gray-400">Active</span>
+          <span className="text-xs text-gray-600 dark:text-gray-400">{t('schedule.legend.active')}</span>
         </div>
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded bg-red-600"></div>
-          <span className="text-xs text-gray-600 dark:text-gray-400">Cancelled/Failed</span>
+          <span className="text-xs text-gray-600 dark:text-gray-400">{t('schedule.legend.cancelledFailed')}</span>
         </div>
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded bg-primary-100 dark:bg-primary-900/30"></div>
-          <span className="text-xs text-gray-600 dark:text-gray-400">Available Slots</span>
+          <span className="text-xs text-gray-600 dark:text-gray-400">{t('schedule.legend.availableSlots')}</span>
         </div>
       </div>
     </div>
