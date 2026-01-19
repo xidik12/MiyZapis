@@ -9,6 +9,7 @@ import { isFeatureEnabled } from '../../config/features';
 import { FloatingElements, UkrainianOrnament } from '../../components/ui/UkrainianElements';
 import { CategoryDropdown } from '../../components/ui/CategoryDropdown';
 import { getCategoryName } from '@/data/serviceCategories';
+import { normalizeCurrency } from '@/utils/currency';
 import { ServiceCategory } from '../../types';
 import { specialistService } from '../../services/specialist.service';
 import { reviewsService } from '../../services/reviews.service';
@@ -52,14 +53,13 @@ const sampleServices: Service[] = [
 ];
 
 // Helper function to get the service currency
-const getServiceCurrency = (service: Service): 'USD' | 'EUR' | 'UAH' => {
-  // Use the service's stored currency, defaulting to UAH if not specified
-  return (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+const getServiceCurrency = (service: Service): 'USD' | 'KHR' => {
+  return normalizeCurrency(service.currency);
 };
 
 const SpecialistServices: React.FC = () => {
   const { t, language } = useLanguage();
-  const { formatPrice, currency } = useCurrency();
+  const { formatPrice, currency, getCurrencySymbol } = useCurrency();
   const [services, setServices] = useState<Service[]>([]);
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -179,7 +179,7 @@ const SpecialistServices: React.FC = () => {
     descriptionRu: '',
     category: '',
     price: '',
-    currency: 'UAH', // Default to UAH
+    currency: 'USD', // Default to USD
     duration: '',
     isActive: true,
     // Loyalty Points pricing
@@ -221,7 +221,7 @@ const SpecialistServices: React.FC = () => {
       descriptionRu: '',
       category: '',
       price: '',
-      currency: 'UAH', // Default to UAH
+      currency: 'USD', // Default to USD
       duration: '',
       isActive: true,
       availability: {
@@ -273,7 +273,7 @@ const SpecialistServices: React.FC = () => {
       descriptionRu: '',
       category: existingCategory ? existingCategory.id : '',
       price: service.basePrice?.toString() || service.price?.toString() || '',
-      currency: service.currency || 'UAH',
+      currency: normalizeCurrency(service.currency),
       duration: service.duration.toString(),
       isActive: service.isActive,
       availability: {
@@ -863,7 +863,10 @@ const SpecialistServices: React.FC = () => {
                           });
                           return validPrices.length === 0 
                             ? t('services.noDataYet') || 'No data yet'
-                            : formatPrice(validPrices.reduce((sum, s) => sum + (s.basePrice || s.price), 0) / validPrices.length, validPrices[0]?.currency as 'USD' | 'EUR' | 'UAH' || 'UAH');
+                            : formatPrice(
+                                validPrices.reduce((sum, s) => sum + (s.basePrice || s.price), 0) / validPrices.length,
+                                normalizeCurrency(validPrices[0]?.currency)
+                              );
                         })()
                     }
                   </p>
@@ -1121,9 +1124,8 @@ const SpecialistServices: React.FC = () => {
                         onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
                         className="px-3 py-3 rounded-xl border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white"
                       >
-                        <option value="UAH">₴ UAH</option>
-                        <option value="USD">$ USD</option>
-                        <option value="EUR">€ EUR</option>
+                        <option value="USD">$ {t('currency.usd')}</option>
+                        <option value="KHR">៛ {t('currency.khr')}</option>
                       </select>
                     </div>
                     {formErrors.price && <p className="mt-1 text-sm text-red-500">{formErrors.price}</p>}
@@ -1280,7 +1282,7 @@ const SpecialistServices: React.FC = () => {
                             <span className="mr-2 text-gray-500 dark:text-gray-400">%</span>
                           )}
                           {formData.discountType === 'FIXED_AMOUNT' && (
-                            <span className="mr-2 text-gray-500 dark:text-gray-400">{formData.currency === 'UAH' ? '₴' : formData.currency === 'USD' ? '$' : '€'}</span>
+                            <span className="mr-2 text-gray-500 dark:text-gray-400">{getCurrencySymbol(normalizeCurrency(formData.currency))}</span>
                           )}
                           <input
                             type="number"
@@ -1346,7 +1348,7 @@ const SpecialistServices: React.FC = () => {
                           🎉 <strong>Discount Preview:</strong> {' '}
                           {formData.discountType === 'PERCENTAGE'
                             ? `${formData.discountValue}% off`
-                            : `${formData.currency === 'UAH' ? '₴' : formData.currency === 'USD' ? '$' : '€'}${formData.discountValue} off`
+                            : `${getCurrencySymbol(normalizeCurrency(formData.currency))}${formData.discountValue} off`
                           }
                           {' '}
                           {formData.price && (
@@ -1355,11 +1357,11 @@ const SpecialistServices: React.FC = () => {
                               {formData.discountType === 'PERCENTAGE'
                                 ? formatPrice(
                                     parseFloat(formData.price) * (1 - parseFloat(formData.discountValue) / 100),
-                                    formData.currency as 'USD' | 'EUR' | 'UAH'
+                                    normalizeCurrency(formData.currency)
                                   )
                                 : formatPrice(
                                     parseFloat(formData.price) - parseFloat(formData.discountValue),
-                                    formData.currency as 'USD' | 'EUR' | 'UAH'
+                                    normalizeCurrency(formData.currency)
                                   )
                               })
                             </span>

@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { normalizeCurrency } from '@/utils/currency';
 
 type Currency = 'USD' | 'KHR';
 
 interface CurrencyContextType {
   currency: Currency;
   setCurrency: (currency: Currency) => void;
-  convertPrice: (price: number, fromCurrency?: Currency | 'UAH' | 'EUR') => number;
-  formatPrice: (price: number | undefined | null, fromCurrency?: Currency | 'UAH' | 'EUR') => string;
+  convertPrice: (price: number, fromCurrency?: Currency | string) => number;
+  formatPrice: (price: number | undefined | null, fromCurrency?: Currency | string) => string;
   getCurrencySymbol: (currency?: Currency) => string;
   getCurrencyCode: (currency?: Currency) => string;
   normalizeMixedCurrencyAmount: (amount: number, assumedMixedCurrencies?: { USD: number; KHR: number }) => number;
@@ -41,23 +42,12 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
     setCurrency(newCurrency);
     localStorage.setItem('booking-currency', newCurrency);
   };
-  const convertPrice = (price: number, fromCurrency: Currency | 'UAH' | 'EUR' = 'USD'): number => {
-    if (fromCurrency === currency) return price;
+  const convertPrice = (price: number, fromCurrency: Currency | string = 'USD'): number => {
+    const normalizedFrom = normalizeCurrency(fromCurrency);
+    if (normalizedFrom === currency) return price;
 
     // Convert any currency to USD first
-    let priceInUSD = price;
-
-    if (fromCurrency === 'USD') {
-      priceInUSD = price;
-    } else if (fromCurrency === 'KHR') {
-      priceInUSD = price / EXCHANGE_RATES.KHR;
-    } else if (fromCurrency === 'UAH') {
-      // Legacy support for historical data (approximate 1 USD ≈ 41 UAH)
-      priceInUSD = price / 41;
-    } else if (fromCurrency === 'EUR') {
-      // Legacy support for historical data (approximate 1 EUR ≈ 1.08 USD)
-      priceInUSD = price * 1.08;
-    }
+    const priceInUSD = normalizedFrom === 'KHR' ? price / EXCHANGE_RATES.KHR : price;
 
     if (currency === 'USD') return Math.round(priceInUSD * 100) / 100;
     // Convert from USD to target currency (currently only KHR)
@@ -66,7 +56,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   // Format price with currency symbol
-  const formatPrice = (price: number | undefined | null, fromCurrency: Currency | 'UAH' | 'EUR' = 'USD'): string => {
+  const formatPrice = (price: number | undefined | null, fromCurrency: Currency | string = 'USD'): string => {
     // Handle undefined/null prices
     if (price == null || isNaN(price)) {
       return `${getCurrencySymbol(currency)}0`;

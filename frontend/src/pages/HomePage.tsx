@@ -82,7 +82,7 @@ const getFeaturedSpecialists = (t: (key: string) => string) => [
     reviews: 127,
     image: '/images/specialists/sarah.jpg',
     location: t('location.newYork'),
-    startingPrice: 3150, // Price in UAH (base currency)
+    startingPrice: 3150, // Price in USD (base currency)
   },
   {
     id: '2',
@@ -92,7 +92,7 @@ const getFeaturedSpecialists = (t: (key: string) => string) => [
     reviews: 94,
     image: '/images/specialists/michael.jpg',
     location: t('location.sanFrancisco'),
-    startingPrice: 2220, // Price in UAH (base currency)
+    startingPrice: 2220, // Price in USD (base currency)
   },
   {
     id: '3',
@@ -102,7 +102,7 @@ const getFeaturedSpecialists = (t: (key: string) => string) => [
     reviews: 76,
     image: '/images/specialists/emily.jpg',
     location: t('location.austin'),
-    startingPrice: 5550, // Price in UAH (base currency)
+    startingPrice: 5550, // Price in USD (base currency)
   },
 ];
 

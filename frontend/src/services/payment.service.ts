@@ -1,4 +1,5 @@
 import { apiClient } from './api';
+import { normalizeCurrency } from '@/utils/currency';
 import {
   Payment,
   PaymentIntent,
@@ -579,7 +580,7 @@ export class PaymentService {
     }>;
     depositConfiguration: {
       amountUSD: number;
-      amountUAH: number;
+      amountKHR: number;
       currency: string;
       description: string;
     };
@@ -594,7 +595,7 @@ export class PaymentService {
       }>;
       depositConfiguration: {
         amountUSD: number;
-        amountUAH: number;
+        amountKHR: number;
         currency: string;
         description: string;
       };
@@ -603,7 +604,17 @@ export class PaymentService {
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get payment options');
     }
-    return response.data;
+    const { depositConfiguration } = response.data;
+    const normalizedDeposit = {
+      amountUSD: depositConfiguration.amountUSD,
+      amountKHR: (depositConfiguration as any).amountKHR ?? Math.round(depositConfiguration.amountUSD * 4100),
+      currency: normalizeCurrency(depositConfiguration.currency),
+      description: depositConfiguration.description,
+    };
+    return {
+      ...response.data,
+      depositConfiguration: normalizedDeposit,
+    };
   }
 
   // Create onramp session for fiat-to-crypto

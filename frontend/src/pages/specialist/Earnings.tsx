@@ -17,6 +17,7 @@ import { analyticsService } from '../../services/analytics.service';
 import { bookingService } from '../../services/booking.service';
 import { expenseService, ExpenseSummary } from '../../services/expense.service';
 import { retryRequest } from '../../services/api';
+import { normalizeCurrency } from '@/utils/currency';
 
 interface EarningsData {
   totalEarnings: number;
@@ -67,9 +68,8 @@ interface ErrorState {
 }
 
 // Helper function to get the booking currency
-const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
-  // Use the service's stored currency, defaulting to UAH if not specified
-  return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+const getBookingCurrency = (booking: any): 'USD' | 'KHR' => {
+  return normalizeCurrency(booking.service?.currency);
 };
 
 const SpecialistEarnings: React.FC = () => {
@@ -955,7 +955,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div key={payout.id || Math.random()} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div>
                     <div className="font-medium text-gray-900 dark:text-white">
-                      {formatPrice(payout.amount || 0, payout.currency || 'UAH')}
+                      {formatPrice(payout.amount || 0, normalizeCurrency(payout.currency))}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       {payout.date ? new Date(payout.date).toLocaleDateString() : 'N/A'} • {payout.method || 'Service'}

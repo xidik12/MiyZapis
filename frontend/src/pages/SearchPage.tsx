@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { serviceService } from '../services';
+import { normalizeCurrency } from '@/utils/currency';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { selectUser, selectIsAuthenticated } from '@/store/slices/authSlice';
 import { fetchFavoriteSpecialists, selectFavoriteSpecialists } from '../store/slices/favoritesSlice';
@@ -435,7 +436,7 @@ const SearchPage: React.FC = () => {
                 {service.isAvailable ? t('service.available') : t('service.unavailable')}
               </div>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatPrice(service.price, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
+                {formatPrice(service.price, normalizeCurrency(service.currency))}
               </p>
             </div>
           </div>

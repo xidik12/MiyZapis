@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
+import { normalizeCurrency } from '@/utils/currency';
 
 // Helper function to get the booking currency (same as Dashboard)
-const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
-  // Use the service's stored currency, defaulting to UAH if not specified
-  const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
-  return currency;
+const getBookingCurrency = (booking: any): 'USD' | 'KHR' => {
+  return normalizeCurrency(booking.service?.currency);
 };
 import { RootState, AppDispatch } from '../../store';
 import { analyticsService, AnalyticsOverview, PerformanceAnalytics, BookingAnalytics, RevenueAnalytics, ServiceAnalytics } from '../../services/analytics.service';

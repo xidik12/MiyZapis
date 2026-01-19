@@ -16,6 +16,7 @@ import { messagesService } from '../../services/messages.service';
 import TierBadge from '@/components/common/TierBadge';
 import { BookingKanban } from '@/components/bookings/BookingKanban';
 import type { BookingData } from '@/components/bookings/BookingCard';
+import { normalizeCurrency } from '@/utils/currency';
 
 // Status colors for bookings (blue/red scheme only)
 const statusColors = {
@@ -668,9 +669,8 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
 };
 
 // Helper function to get the booking currency
-const getBookingCurrency = (booking: Booking): 'USD' | 'EUR' | 'UAH' => {
-  // Use the service's stored currency, defaulting to UAH if not specified
-  return (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+const getBookingCurrency = (booking: Booking): 'USD' | 'KHR' => {
+  return normalizeCurrency(booking.service?.currency);
 };
 
 // Helper function to map Booking to BookingData for Kanban

@@ -236,11 +236,7 @@ export class PayPalService {
    * Get supported currencies for PayPal
    */
   getSupportedCurrencies(): string[] {
-    return [
-      'USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD',
-      'CHF', 'SEK', 'NOK', 'DKK', 'PLN', 'CZK',
-      'HUF', 'BGN', 'RON', 'HRK', 'RUB', 'UAH'
-    ];
+    return ['USD'];
   }
 
   /**

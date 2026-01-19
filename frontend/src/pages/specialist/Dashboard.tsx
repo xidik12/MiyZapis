@@ -8,6 +8,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { analyticsService, bookingService, paymentService, specialistService } from '../../services';
 import { reviewsService } from '../../services/reviews.service';
 import { retryRequest } from '../../services/api';
+import { normalizeCurrency } from '@/utils/currency';
 // Removed SpecialistSidebar import - layout is handled by SpecialistLayout
 // Status colors for bookings
 const statusColors = {
@@ -36,7 +37,7 @@ import {
 } from '@/components/icons';
 
 // Helper function to get the booking currency
-const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
+const getBookingCurrency = (booking: any): 'USD' | 'KHR' => {
   // Debug logging to see what currency is stored
   console.log(`🔍 getBookingCurrency for booking ${booking.id}:`, {
     serviceName: booking.service?.name || booking.serviceName,
@@ -44,8 +45,7 @@ const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
     totalAmount: booking.totalAmount
   });
   
-  // Use the service's stored currency, defaulting to UAH if not specified
-  const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+  const currency = normalizeCurrency(booking.service?.currency);
   console.log(`💱 Final currency for ${booking.service?.name || booking.serviceName}: ${currency}`);
   return currency;
 };

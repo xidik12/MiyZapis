@@ -1,4 +1,5 @@
 import { Booking } from '../types';
+import { normalizeCurrency, SupportedCurrency } from './currency';
 
 export const statusColors = {
   PENDING: 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -52,12 +53,9 @@ export const getSpecialistRating = (booking: Booking): number => {
   return booking.specialist?.rating || 5;
 };
 
-export const getBookingCurrency = (booking: Booking): 'USD' | 'KHR' | 'UAH' | 'EUR' => {
+export const getBookingCurrency = (booking: Booking): SupportedCurrency => {
   const detected = (booking.service?.currency || (booking as any)?.currency || '').toUpperCase();
-  if (detected === 'KHR') return 'KHR';
-  if (detected === 'EUR') return 'EUR';
-  if (detected === 'UAH') return 'UAH';
-  return 'USD';
+  return normalizeCurrency(detected);
 };
 
 export const canCancelBooking = (booking: Booking): boolean => {

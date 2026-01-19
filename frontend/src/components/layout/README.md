@@ -74,7 +74,7 @@ styles/
 
 ### App Settings
 - **Language Toggle**: Ukrainian/English support
-- **Currency Toggle**: UAH/USD/EUR options
+- **Currency Toggle**: USD/KHR options
 - **Theme Toggle**: Light/dark mode
 
 ### Authentication

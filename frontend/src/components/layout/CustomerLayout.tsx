@@ -165,9 +165,8 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
   };
 
   const currencyOptions = [
-    { value: 'UAH', label: 'Гривня (₴)', flag: '🇺🇦' },
-    { value: 'USD', label: 'Dollar ($)', flag: '🇺🇸' },
-    { value: 'EUR', label: 'Euro (€)', flag: '🇪🇺' },
+    { value: 'USD', label: t('currency.usd'), flag: '🇺🇸' },
+    { value: 'KHR', label: t('currency.khr'), flag: '🇰🇭' },
   ];
 
   return (

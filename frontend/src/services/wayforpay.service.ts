@@ -39,7 +39,7 @@ export class WayForPayService {
       }>(`${this.baseUrl}/wayforpay/create-invoice`, {
         bookingId: data.bookingId,
         amount: data.amount,
-        currency: data.currency || 'UAH',
+        currency: data.currency || 'USD',
         description: data.description,
         customerEmail: data.customerEmail,
         customerPhone: data.customerPhone,
@@ -128,14 +128,14 @@ export class WayForPayService {
    * Get supported currencies for WayForPay
    */
   getSupportedCurrencies(): string[] {
-    return ['UAH', 'USD', 'EUR', 'GBP', 'PLN', 'CZK'];
+    return ['USD'];
   }
 
   /**
    * Format amount for display (WayForPay expects amounts in kopecks/cents)
    */
-  formatAmount(amount: number, currency: string = 'UAH'): string {
-    const formatter = new Intl.NumberFormat('uk-UA', {
+  formatAmount(amount: number, currency: string = 'USD'): string {
+    const formatter = new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency,
       minimumFractionDigits: 2,
