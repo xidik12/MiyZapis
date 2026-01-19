@@ -33,6 +33,7 @@ import debugAdminRoutes from './debug-admin';
 import debugEmailRoutes from './debug-email';
 import cronRoutes from './cron';
 import groupSessionsRoutes from './group-sessions';
+import expenseRoutes from './expenses';
 
 const router = Router();
 
@@ -70,6 +71,7 @@ router.use('/analytics-enhanced', analyticsEnhancedRoutes);
 router.use('/telegram', telegramEnhancedRoutes);
 router.use('/diagnostics', diagnosticsRoutes);
 router.use('/group-sessions', groupSessionsRoutes);
+router.use('/expenses', expenseRoutes);
 
 // Admin setup routes (for initial setup only)
 router.use('/setup', setupAdminRoutes);

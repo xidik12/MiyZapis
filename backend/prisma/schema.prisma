@@ -102,6 +102,7 @@ model User {
   cryptoPayments       CryptoPayment[]
   subscriptions        SpecialistSubscription[]
   onrampSessions       OnrampSession[]
+  expenses             Expense[]              @relation("SpecialistExpenses")
 
   // Indexes for performance
   @@index([email])
@@ -1533,4 +1534,37 @@ model OnrampSession {
   @@index([sessionToken])
   @@index([purpose, status])
   @@map("onramp_sessions")
+}
+
+// Specialist Expense Tracking
+model Expense {
+  id                  String    @id @default(cuid())
+  specialistId        String
+
+  // Expense details
+  category            String    // RENT, UTILITIES, CONSUMABLES, EQUIPMENT, INSURANCE, MARKETING, SALARIES, OTHER
+  amount              Float
+  currency            String    @default("UAH")
+  description         String
+  date                DateTime  @default(now())
+
+  // Recurring expense settings
+  isRecurring         Boolean   @default(false)
+  recurringFrequency  String?   // WEEKLY, MONTHLY, QUARTERLY, YEARLY
+
+  // Optional details
+  notes               String?
+  receiptUrl          String?
+
+  // Metadata
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  // Relations
+  specialist          User      @relation("SpecialistExpenses", fields: [specialistId], references: [id], onDelete: Cascade)
+
+  @@index([specialistId, date])
+  @@index([category])
+  @@index([specialistId, category])
+  @@map("expenses")
 }

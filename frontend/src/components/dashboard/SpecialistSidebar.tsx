@@ -71,6 +71,12 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       icon: CurrencyDollarIcon,
     },
     {
+      name: 'Finances',
+      translationKey: 'dashboard.nav.finances',
+      href: '/specialist/finances',
+      icon: ChartBarIcon,
+    },
+    {
       name: 'Reviews',
       translationKey: 'dashboard.nav.reviews',
       href: '/specialist/reviews',

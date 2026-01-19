@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { CurrencyDollarIcon, ArrowTrendingUpIcon, DocumentArrowDownIcon, ClockIcon, ChartBarIcon, UserGroupIcon, CheckCircleIcon, WarningIcon as ExclamationTriangleIcon } from '@/components/icons';
+import { Link } from 'react-router-dom';
+import { CurrencyDollarIcon, ArrowTrendingUpIcon, DocumentArrowDownIcon, ClockIcon, ChartBarIcon, UserGroupIcon, CheckCircleIcon, WarningIcon as ExclamationTriangleIcon, WalletIcon, ArrowRightIcon, ArrowTrendingDownIcon } from '@/components/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { analyticsService } from '../../services/analytics.service';
 import { bookingService } from '../../services/booking.service';
+import { expenseService, ExpenseSummary } from '../../services/expense.service';
 import { retryRequest } from '../../services/api';
 
 interface EarningsData {
@@ -36,6 +38,7 @@ interface PayoutHistory {
   amount: number;
   status: 'completed' | 'pending' | 'processing';
   method: string;
+  currency?: string;
 }
 
 interface LoadingState {
@@ -105,6 +108,8 @@ const SpecialistEarnings: React.FC = () => {
   const [monthlyEarnings, setMonthlyEarnings] = useState<MonthlyEarning[]>([]);
 
   const [payoutHistory, setPayoutHistory] = useState<PayoutHistory[]>([]);
+  const [expenseSummary, setExpenseSummary] = useState<ExpenseSummary | null>(null);
+  const [loadingExpenses, setLoadingExpenses] = useState(true);
 
   // Load earnings data from API
   useEffect(() => {
@@ -411,8 +416,25 @@ const SpecialistEarnings: React.FC = () => {
       }
     };
 
+    const loadExpenseSummary = async () => {
+      try {
+        setLoadingExpenses(true);
+        console.log('📊 Loading expense summary...');
+
+        const summary = await expenseService.getExpenseSummary();
+        console.log('📊 Expense summary loaded:', summary);
+        setExpenseSummary(summary);
+      } catch (err: any) {
+        console.error('Error loading expense summary:', err);
+        setExpenseSummary(null);
+      } finally {
+        setLoadingExpenses(false);
+      }
+    };
+
     loadEarningsData();
     loadRecentCompletedBookings();
+    loadExpenseSummary();
   }, [selectedPeriod]);
 
   // Helper functions
@@ -714,6 +736,94 @@ const SpecialistEarnings: React.FC = () => {
         </div>
       </div>
 
+      {/* Expense and Profit Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.totalExpenses')}</p>
+              {loadingExpenses ? (
+                <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              ) : (
+                <p className="text-2xl font-bold text-red-600">
+                  {formatPrice(expenseSummary?.totalExpenses || 0, currency)}
+                </p>
+              )}
+            </div>
+            <div className="p-3 rounded-xl bg-gradient-to-br from-red-500 to-red-600">
+              <ArrowTrendingDownIcon className="w-6 h-6 text-white" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.thisMonthExpenses')}</p>
+              {loadingExpenses ? (
+                <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              ) : (
+                <p className="text-2xl font-bold text-red-600">
+                  {formatPrice(expenseSummary?.thisMonthExpenses || 0, currency)}
+                </p>
+              )}
+            </div>
+            <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600">
+              <WalletIcon className="w-6 h-6 text-white" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.netProfit')}</p>
+              {loading.earnings || loadingExpenses ? (
+                <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              ) : (
+                <p className={`text-2xl font-bold ${((earningsData.totalEarnings || 0) - (expenseSummary?.totalExpenses || 0)) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatPrice((earningsData.totalEarnings || 0) - (expenseSummary?.totalExpenses || 0), currency)}
+                </p>
+              )}
+            </div>
+            <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600">
+              <CurrencyDollarIcon className="w-6 h-6 text-white" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.profitMargin')}</p>
+              {loading.earnings || loadingExpenses ? (
+                <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              ) : (
+                <p className={`text-2xl font-bold ${earningsData.totalEarnings > 0 && (((earningsData.totalEarnings - (expenseSummary?.totalExpenses || 0)) / earningsData.totalEarnings) * 100) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {earningsData.totalEarnings > 0
+                    ? `${(((earningsData.totalEarnings - (expenseSummary?.totalExpenses || 0)) / earningsData.totalEarnings) * 100).toFixed(1)}%`
+                    : '0%'}
+                </p>
+              )}
+            </div>
+            <div className="p-3 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600">
+              <ChartBarIcon className="w-6 h-6 text-white" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* View All Expenses Link */}
+      <div className="mb-8">
+        <Link
+          to="/specialist/finances"
+          className="inline-flex items-center text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium transition-colors"
+        >
+          {t('earnings.viewAllExpenses')}
+          <ArrowRightIcon className="w-4 h-4 ml-1" />
+        </Link>
+      </div>
+
       {/* Detailed Analytics Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Monthly Earnings Chart */}
@@ -809,7 +919,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div key={payout.id || Math.random()} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
                   <div>
                     <div className="font-medium text-gray-900 dark:text-white">
-                      {formatPrice(payout.amount || 0, payout.currency || 'UAH')}
+                      {formatPrice(payout.amount || 0, (payout.currency || 'UAH') as 'USD' | 'EUR' | 'UAH')}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       {payout.date ? new Date(payout.date).toLocaleDateString() : 'N/A'} • {payout.method || 'Service'}
