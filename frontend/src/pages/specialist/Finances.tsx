@@ -261,6 +261,10 @@ const SpecialistFinances: React.FC = () => {
     return <PageLoader text={t('finances.loading') || 'Loading finances...'} />;
   }
 
+  const summaryCurrency = summary && (summary.currency === 'USD' || summary.currency === 'EUR' || summary.currency === 'UAH')
+    ? summary.currency
+    : 'UAH';
+
   const monthlyAverage = summary && summary.monthlyBreakdown.length > 0
     ? summary.totalExpenses / summary.monthlyBreakdown.length
     : 0;
@@ -351,7 +355,7 @@ const SpecialistFinances: React.FC = () => {
                     {t('finances.totalExpenses') || 'Total Expenses'}
                   </p>
                   <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-                    {formatPrice(summary.totalExpenses, 'UAH')}
+                    {formatPrice(summary.totalExpenses, summaryCurrency)}
                   </p>
                 </div>
               </div>
@@ -385,7 +389,7 @@ const SpecialistFinances: React.FC = () => {
                     {t('finances.monthlyAverage') || 'Monthly Average'}
                   </p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {formatPrice(monthlyAverage, 'UAH')}
+                    {formatPrice(monthlyAverage, summaryCurrency)}
                   </p>
                 </div>
               </div>
@@ -414,7 +418,7 @@ const SpecialistFinances: React.FC = () => {
                           {getCategoryLabel(cat.category as ExpenseCategory)}
                         </span>
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {formatPrice(cat.amount, 'UAH')} ({cat.percentage}%)
+                          {formatPrice(cat.amount, summaryCurrency)} ({cat.percentage}%)
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">

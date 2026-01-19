@@ -137,6 +137,10 @@ export class ExpenseController {
       // Calculate totals
       const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
       const totalCount = expenses.length;
+      const expenseCurrencies = new Set(expenses.map(exp => exp.currency || 'UAH'));
+      const summaryCurrency = expenseCurrencies.size === 1
+        ? Array.from(expenseCurrencies)[0]
+        : 'UAH';
 
       // Group by category
       const categoryMap = new Map<string, { amount: number; count: number }>();
@@ -185,7 +189,7 @@ export class ExpenseController {
         thisMonthExpenses,
         byCategory,
         monthlyBreakdown,
-        currency: 'UAH'
+        currency: summaryCurrency
       }));
     } catch (error: any) {
       if (isMissingExpensesTableError(error)) {

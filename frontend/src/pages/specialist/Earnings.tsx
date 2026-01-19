@@ -210,8 +210,11 @@ const SpecialistEarnings: React.FC = () => {
                 const date = new Date(booking.updatedAt || booking.createdAt);
                 const monthKey = date.toLocaleDateString('en', { month: 'short', year: 'numeric' });
                 const existing = monthlyData.get(monthKey) || { earnings: 0, bookings: 0 };
+                const amount = booking.totalAmount || 0;
+                const bookingCurrency = getBookingCurrency(booking);
+                const convertedAmount = convertPrice(amount, bookingCurrency);
                 monthlyData.set(monthKey, {
-                  earnings: existing.earnings + (booking.totalAmount || 0),
+                  earnings: existing.earnings + convertedAmount,
                   bookings: existing.bookings + 1
                 });
               } catch (e) {
@@ -456,6 +459,20 @@ const SpecialistEarnings: React.FC = () => {
       return 0;
     }
   };
+
+  const expenseCurrency = expenseSummary && (expenseSummary.currency === 'USD' || expenseSummary.currency === 'EUR' || expenseSummary.currency === 'UAH')
+    ? expenseSummary.currency
+    : 'UAH';
+  const totalExpensesConverted = expenseSummary
+    ? convertPrice(expenseSummary.totalExpenses || 0, expenseCurrency)
+    : 0;
+  const thisMonthExpensesConverted = expenseSummary
+    ? convertPrice(expenseSummary.thisMonthExpenses || 0, expenseCurrency)
+    : 0;
+  const netProfit = (earningsData.totalEarnings || 0) - totalExpensesConverted;
+  const profitMargin = earningsData.totalEarnings > 0
+    ? (netProfit / earningsData.totalEarnings) * 100
+    : 0;
 
   const determinePeakHours = (breakdown: Array<{ date: string; revenue: number }>) => {
     try {
@@ -746,7 +763,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-red-600">
-                  {formatPrice(expenseSummary?.totalExpenses || 0, currency)}
+                  {formatPrice(totalExpensesConverted, currency)}
                 </p>
               )}
             </div>
@@ -764,7 +781,7 @@ const SpecialistEarnings: React.FC = () => {
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-red-600">
-                  {formatPrice(expenseSummary?.thisMonthExpenses || 0, currency)}
+                  {formatPrice(thisMonthExpensesConverted, currency)}
                 </p>
               )}
             </div>
@@ -781,8 +798,8 @@ const SpecialistEarnings: React.FC = () => {
               {loading.earnings || loadingExpenses ? (
                 <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
-                <p className={`text-2xl font-bold ${((earningsData.totalEarnings || 0) - (expenseSummary?.totalExpenses || 0)) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {formatPrice((earningsData.totalEarnings || 0) - (expenseSummary?.totalExpenses || 0), currency)}
+                <p className={`text-2xl font-bold ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatPrice(netProfit, currency)}
                 </p>
               )}
             </div>
@@ -799,10 +816,8 @@ const SpecialistEarnings: React.FC = () => {
               {loading.earnings || loadingExpenses ? (
                 <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
               ) : (
-                <p className={`text-2xl font-bold ${earningsData.totalEarnings > 0 && (((earningsData.totalEarnings - (expenseSummary?.totalExpenses || 0)) / earningsData.totalEarnings) * 100) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {earningsData.totalEarnings > 0
-                    ? `${(((earningsData.totalEarnings - (expenseSummary?.totalExpenses || 0)) / earningsData.totalEarnings) * 100).toFixed(1)}%`
-                    : '0%'}
+                <p className={`text-2xl font-bold ${profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {earningsData.totalEarnings > 0 ? `${profitMargin.toFixed(1)}%` : '0%'}
                 </p>
               )}
             </div>
@@ -879,7 +894,7 @@ const SpecialistEarnings: React.FC = () => {
                           className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-full rounded-xl flex items-center justify-end pr-3 transition-all duration-500 ease-out"
                           style={{ width: `${Math.max(5, widthPercentage)}%` }}
                         >
-                          <span className="text-white text-sm font-semibold shadow-sm">{formatPrice(item.earnings || 0)}</span>
+                          <span className="text-white text-sm font-semibold shadow-sm">{formatPrice(item.earnings || 0, currency)}</span>
                         </div>
                       </div>
                     </div>
