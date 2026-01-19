@@ -15,6 +15,7 @@ import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { analyticsService } from '../../services/analytics.service';
 import { bookingService } from '../../services/booking.service';
+import { expenseService, ExpenseSummary } from '../../services/expense.service';
 import { retryRequest } from '../../services/api';
 
 interface EarningsData {
@@ -31,6 +32,12 @@ interface EarningsData {
   peakHours: string;
   bestDay: string;
   avgSessionValue: number;
+  // Expense and profit fields
+  totalExpenses: number;
+  thisMonthExpenses: number;
+  netProfit: number;
+  thisMonthNetProfit: number;
+  profitMargin: number;
 }
 
 interface MonthlyEarning {
@@ -108,7 +115,13 @@ const SpecialistEarnings: React.FC = () => {
     repeatCustomers: 0,
     peakHours: '',
     bestDay: '',
-    avgSessionValue: 0
+    avgSessionValue: 0,
+    // Expense and profit fields
+    totalExpenses: 0,
+    thisMonthExpenses: 0,
+    netProfit: 0,
+    thisMonthNetProfit: 0,
+    profitMargin: 0
   });
 
   const [monthlyEarnings, setMonthlyEarnings] = useState<MonthlyEarning[]>([]);
@@ -307,6 +320,44 @@ const SpecialistEarnings: React.FC = () => {
           totalBookings: Math.max(analyticsData.totalBookings, analyticsData.completedBookings)
         };
         
+        // Fetch expense summary data to calculate net profit
+        let expenseSummaryData: ExpenseSummary | null = null;
+        let totalExpensesAmount = 0;
+        let thisMonthExpensesAmount = 0;
+
+        try {
+          expenseSummaryData = await retryRequest(
+            () => expenseService.getExpenseSummary(),
+            2, 1000
+          );
+
+          if (expenseSummaryData) {
+            totalExpensesAmount = expenseSummaryData.totalExpenses || 0;
+
+            // Calculate this month's expenses from monthly breakdown
+            const currentMonth = new Date().toLocaleString('default', { month: 'short', year: 'numeric' });
+            const thisMonthData = expenseSummaryData.monthlyBreakdown?.find(
+              m => m.month === currentMonth
+            );
+            thisMonthExpensesAmount = thisMonthData?.total || 0;
+          }
+
+          console.log('📊 Expense summary loaded:', {
+            totalExpenses: totalExpensesAmount,
+            thisMonthExpenses: thisMonthExpensesAmount
+          });
+        } catch (expenseErr) {
+          console.warn('Failed to load expense data:', expenseErr);
+          // Continue without expense data
+        }
+
+        // Calculate net profit
+        const netProfitAmount = totalEarnings - totalExpensesAmount;
+        const thisMonthNetProfitAmount = thisMonthEarnings - thisMonthExpensesAmount;
+        const profitMarginPercent = totalEarnings > 0
+          ? Math.round((netProfitAmount / totalEarnings) * 100 * 100) / 100
+          : 0;
+
         const transformedEarnings: EarningsData = {
           totalEarnings: Math.round(totalEarnings * 100) / 100, // Round to 2 decimal places
           thisMonth: Math.round(thisMonthEarnings * 100) / 100,
@@ -314,17 +365,23 @@ const SpecialistEarnings: React.FC = () => {
           lastPayout: Math.round((totalEarnings - pendingEarnings) * 100) / 100,
           completedBookings: safeAnalyticsData.completedBookings,
           activeClients: uniqueCustomers, // Use actual unique customer count from bookings
-          averageBookingValue: safeAnalyticsData.completedBookings > 0 
-            ? Math.round((totalEarnings / safeAnalyticsData.completedBookings) * 100) / 100 
+          averageBookingValue: safeAnalyticsData.completedBookings > 0
+            ? Math.round((totalEarnings / safeAnalyticsData.completedBookings) * 100) / 100
             : 0,
           monthlyGrowth: calculateGrowthRate(monthlyBreakdown.map(item => ({ date: item.month, revenue: item.earnings }))),
           conversionRate: safeAnalyticsData.completionRate,
           repeatCustomers: safeAnalyticsData.repeatCustomers,
           peakHours: determinePeakHours(monthlyBreakdown.map(item => ({ date: item.month, revenue: item.earnings }))),
           bestDay: determineBestDay(monthlyBreakdown.map(item => ({ date: item.month, revenue: item.earnings }))),
-          avgSessionValue: safeAnalyticsData.totalBookings > 0 
-            ? Math.round((totalEarnings / safeAnalyticsData.totalBookings) * 100) / 100 
-            : 0
+          avgSessionValue: safeAnalyticsData.totalBookings > 0
+            ? Math.round((totalEarnings / safeAnalyticsData.totalBookings) * 100) / 100
+            : 0,
+          // Expense and profit data
+          totalExpenses: Math.round(totalExpensesAmount * 100) / 100,
+          thisMonthExpenses: Math.round(thisMonthExpensesAmount * 100) / 100,
+          netProfit: Math.round(netProfitAmount * 100) / 100,
+          thisMonthNetProfit: Math.round(thisMonthNetProfitAmount * 100) / 100,
+          profitMargin: profitMarginPercent
         };
         
         console.log('📊 Final transformed earnings data:', transformedEarnings);
@@ -349,7 +406,12 @@ const SpecialistEarnings: React.FC = () => {
           repeatCustomers: 0,
           peakHours: t('earnings.noData'),
           bestDay: t('earnings.noData'),
-          avgSessionValue: 0
+          avgSessionValue: 0,
+          totalExpenses: 0,
+          thisMonthExpenses: 0,
+          netProfit: 0,
+          thisMonthNetProfit: 0,
+          profitMargin: 0
         };
         
         setEarningsData(fallbackEarnings);
@@ -643,6 +705,81 @@ const SpecialistEarnings: React.FC = () => {
             </div>
             <div className="p-3 rounded-xl bg-primary-600">
               <CurrencyDollarIcon className="w-6 h-6 text-white" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Expenses & Profit Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.totalExpenses')}</p>
+              {loading.earnings ? (
+                <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              ) : (
+                <p className="text-2xl font-bold text-red-600">
+                  {formatPrice(earningsData.totalExpenses || 0, currency)}
+                </p>
+              )}
+            </div>
+            <div className="p-3 rounded-xl bg-red-600">
+              <CurrencyDollarIcon className="w-6 h-6 text-white" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.thisMonthExpenses')}</p>
+              {loading.earnings ? (
+                <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              ) : (
+                <p className="text-2xl font-bold text-red-600">
+                  {formatPrice(earningsData.thisMonthExpenses || 0, currency)}
+                </p>
+              )}
+            </div>
+            <div className="p-3 rounded-xl bg-red-600">
+              <ArrowTrendingUpIcon className="w-6 h-6 text-white" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.netProfit')}</p>
+              {loading.earnings ? (
+                <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              ) : (
+                <p className={`text-2xl font-bold ${(earningsData.netProfit || 0) >= 0 ? 'text-primary-600' : 'text-red-600'}`}>
+                  {formatPrice(earningsData.netProfit || 0, currency)}
+                </p>
+              )}
+            </div>
+            <div className={`p-3 rounded-xl ${(earningsData.netProfit || 0) >= 0 ? 'bg-primary-600' : 'bg-red-600'}`}>
+              <ChartBarIcon className="w-6 h-6 text-white" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">{t('earnings.profitMargin')}</p>
+              {loading.earnings ? (
+                <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              ) : (
+                <p className={`text-2xl font-bold ${(earningsData.profitMargin || 0) >= 0 ? 'text-primary-600' : 'text-red-600'}`}>
+                  {(earningsData.profitMargin || 0) >= 0 ? '' : ''}{earningsData.profitMargin || 0}%
+                </p>
+              )}
+            </div>
+            <div className={`p-3 rounded-xl ${(earningsData.profitMargin || 0) >= 0 ? 'bg-primary-600' : 'bg-red-600'}`}>
+              <ArrowTrendingUpIcon className="w-6 h-6 text-white" />
             </div>
           </div>
         </div>

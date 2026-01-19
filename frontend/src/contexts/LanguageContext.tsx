@@ -241,6 +241,62 @@ const createTranslations = (): Translations => {
   ensure('finances.category.other', 'Other', 'ផ្សេងទៀត');
   ensure('nav.finances', 'Finances', 'ហិរញ្ញវត្ថុ');
 
+  // Earnings translations
+  ensure('earnings.subtitle', 'Track your income, expenses, and profitability', 'តាមដានប្រាក់ចំណូល ការចំណាយ និងប្រាក់ចំណេញ');
+  ensure('earnings.totalEarnings', 'Total Earnings', 'ប្រាក់ចំណូលសរុប');
+  ensure('earnings.thisMonth', 'This Month', 'ខែនេះ');
+  ensure('earnings.thisMonthExpenses', 'This Month Expenses', 'ការចំណាយខែនេះ');
+  ensure('earnings.pending', 'Pending', 'កំពុងរង់ចាំ');
+  ensure('earnings.lastPayout', 'Last Payout', 'ការទូទាត់ចុងក្រោយ');
+  ensure('earnings.completedBookings', 'Completed Bookings', 'ការកក់បានបញ្ចប់');
+  ensure('earnings.activeClients', 'Active Clients', 'អតិថិជនសកម្ម');
+  ensure('earnings.averageBookingValue', 'Avg Booking Value', 'តម្លៃមធ្យមក្នុងមួយកក់');
+  ensure('earnings.monthlyGrowth', 'Monthly Growth', 'កំណើនប្រចាំខែ');
+  ensure('earnings.conversionRate', 'Conversion Rate', 'អត្រាបម្លែង');
+  ensure('earnings.repeatCustomers', 'Repeat Customers', 'អតិថិជនដដែលៗ');
+  ensure('earnings.peakHours', 'Peak Hours', 'ម៉ោងកំពូល');
+  ensure('earnings.bestDay', 'Best Day', 'ថ្ងៃល្អបំផុត');
+  ensure('earnings.avgSessionValue', 'Avg Session Value', 'តម្លៃមធ្យមក្នុងមួយវគ្គ');
+  ensure('earnings.totalExpenses', 'Total Expenses', 'ការចំណាយសរុប');
+  ensure('earnings.netProfit', 'Net Profit', 'ប្រាក់ចំណេញសុទ្ធ');
+  ensure('earnings.thisMonthNetProfit', 'This Month Net Profit', 'ប្រាក់ចំណេញសុទ្ធខែនេះ');
+  ensure('earnings.profitMargin', 'Profit Margin', 'អត្រាចំណេញ');
+  ensure('earnings.monthlyEarnings', 'Monthly Earnings', 'ប្រាក់ចំណូលប្រចាំខែ');
+  ensure('earnings.bookings', 'bookings', 'ការកក់');
+  ensure('earnings.noData', 'No data', 'គ្មានទិន្នន័យ');
+  ensure('earnings.noDataAvailable', 'No data available yet', 'មិនទាន់មានទិន្នន័យ');
+  ensure('earnings.detailedAnalytics', 'Detailed Analytics', 'ការវិភាគលម្អិត');
+  ensure('earnings.performanceMetrics', 'Performance Metrics', 'រង្វាស់សមត្ថភាព');
+  ensure('earnings.timeAnalysis', 'Time Analysis', 'ការវិភាគពេលវេលា');
+  ensure('earnings.growthInsights', 'Growth Insights', 'ការយល់ដឹងអំពីកំណើន');
+  ensure('earnings.avgBookingDuration', 'Avg Booking Duration', 'រយៈពេលមធ្យមក្នុងមួយកក់');
+  ensure('earnings.newCustomers', 'New Customers', 'អតិថិជនថ្មី');
+  ensure('earnings.revenueTrend', 'Revenue Trend', 'និន្នាការប្រាក់ចំណូល');
+  ensure('earnings.increasing', 'Increasing', 'កើនឡើង');
+  ensure('earnings.decreasing', 'Decreasing', 'ថយចុះ');
+  ensure('earnings.exportReport', 'Export Report', 'នាំចេញរបាយការណ៍');
+  ensure('earnings.exporting', 'Exporting...', 'កំពុងនាំចេញ...');
+  ensure('earnings.errorTitle', 'Error Loading Data', 'កំហុសក្នុងការផ្ទុកទិន្នន័យ');
+  ensure('earnings.thisMonthShort', 'this month', 'ខែនេះ');
+  ensure('earnings.duration.minutes', 'min', 'នាទី');
+  ensure('earnings.timeFormat.afternoon', '2-5 PM', '២-៥ រសៀល');
+  ensure('earnings.completed', 'Completed', 'បានបញ្ចប់');
+  ensure('earnings.processing', 'Processing', 'កំពុងដំណើរការ');
+
+  // Month translations
+  ensure('month.january', 'Jan', 'មករា');
+  ensure('month.february', 'Feb', 'កុម្ភៈ');
+  ensure('month.march', 'Mar', 'មីនា');
+  ensure('month.april', 'Apr', 'មេសា');
+  ensure('month.may', 'May', 'ឧសភា');
+  ensure('month.june', 'Jun', 'មិថុនា');
+  ensure('month.july', 'Jul', 'កក្កដា');
+  ensure('month.august', 'Aug', 'សីហា');
+  ensure('month.september', 'Sep', 'កញ្ញា');
+  ensure('month.october', 'Oct', 'តុលា');
+  ensure('month.november', 'Nov', 'វិច្ឆិកា');
+  ensure('month.december', 'Dec', 'ធ្នូ');
+
   return map;
 };
 
