@@ -87,7 +87,10 @@
       "Bash(git ls-tree:*)",
       "Bash(npx tsc:*)",
       "Bash(xargs:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(npx prisma validate:*)",
+      "Bash(npx prisma migrate:*)",
+      "Bash(npx prisma db push:*)"
     ],
     "deny": [],
     "ask": [],
