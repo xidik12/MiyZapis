@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
@@ -22,6 +22,7 @@ const SpecialistSettings: React.FC = () => {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Modal states
   const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
@@ -329,20 +330,26 @@ const SpecialistSettings: React.FC = () => {
                         
                         <div className="flex flex-col space-y-3">
                           <div className="flex space-x-3">
-                            <label className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageUpload}
-                                className="hidden"
-                                disabled={isUploadingImage}
-                              />
+                            <input
+                              ref={imageInputRef}
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageUpload}
+                              className="hidden"
+                              disabled={isUploadingImage}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => imageInputRef.current?.click()}
+                              disabled={isUploadingImage}
+                              className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
                               <CameraIcon className="w-4 h-4 inline mr-2" />
                               {isUploadingImage ? 
                                 (t('settings.upload.uploading') || 'Uploading...') :
                                 (t('settings.upload.changePhoto') || 'Change Photo')
                               }
-                            </label>
+                            </button>
                             
                             {profileImage && (
                               <button

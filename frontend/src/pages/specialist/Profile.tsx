@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -302,6 +302,9 @@ const SpecialistProfile: React.FC = () => {
   
   // Avatar upload states
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const portfolioInputRef = useRef<HTMLInputElement>(null);
+  const paymentQrInputRef = useRef<HTMLInputElement>(null);
 
   // Active tab state
   const [activeTab, setActiveTab] = useState<'personal' | 'professional' | 'business' | 'payment' | 'portfolio'>('personal');
@@ -1049,16 +1052,24 @@ const SpecialistProfile: React.FC = () => {
                   </div>
                 )}
                 {isEditing && (
-                  <label className="absolute -bottom-2 -right-2 bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-xl cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <>
                     <input
+                      ref={avatarInputRef}
                       type="file"
                       accept="image/*"
                       className="hidden"
                       disabled={isUploadingAvatar}
                       onChange={handleAvatarUpload}
                     />
-                    <CameraIcon className="h-4 w-4" />
-                  </label>
+                    <button
+                      type="button"
+                      onClick={() => avatarInputRef.current?.click()}
+                      disabled={isUploadingAvatar}
+                      className="absolute -bottom-2 -right-2 bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-xl cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <CameraIcon className="h-4 w-4" />
+                    </button>
+                  </>
                 )}
               </div>
               
@@ -2170,7 +2181,7 @@ const SpecialistProfile: React.FC = () => {
                           {isEditing && (
                             <div className="space-y-2">
                               <input
-                                id="payment-qr-upload"
+                                ref={paymentQrInputRef}
                                 type="file"
                                 accept="image/*"
                                 onChange={handlePaymentQrUpload}
@@ -2180,7 +2191,7 @@ const SpecialistProfile: React.FC = () => {
                               <div className="flex gap-2">
                                 <button
                                   type="button"
-                                  onClick={() => document.getElementById('payment-qr-upload')?.click()}
+                                  onClick={() => paymentQrInputRef.current?.click()}
                                   disabled={isUploadingPaymentQr}
                                   className="px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
@@ -2228,15 +2239,15 @@ const SpecialistProfile: React.FC = () => {
                     {isEditing && (
                       <div className="relative">
                         <input
+                          ref={portfolioInputRef}
                           type="file"
-                          id="portfolio-upload"
                           accept="image/*"
                           onChange={handlePortfolioUpload}
                           className="hidden"
                           disabled={isUploadingPortfolio}
                         />
                         <button
-                          onClick={() => document.getElementById('portfolio-upload')?.click()}
+                          onClick={() => portfolioInputRef.current?.click()}
                           disabled={isUploadingPortfolio}
                           className="px-4 py-2 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
