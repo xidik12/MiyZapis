@@ -1456,6 +1456,10 @@ const translations: Translations = {
   'community.form.contactEmail': { en: 'Contact Email', uk: 'Email', ru: 'Email' },
   'community.form.images': { en: 'Images', uk: 'Зображення', ru: 'Изображения' },
   'community.form.imagePlaceholder': { en: 'Paste image URL', uk: 'Вставте посилання на зображення', ru: 'Вставьте ссылку на изображение' },
+  'community.form.imageUrlRequired': { en: 'Image URL is required', uk: 'Потрібне посилання на зображення', ru: 'Нужна ссылка на изображение' },
+  'community.form.imageHelp': { en: 'Max 10MB. JPG, PNG, WebP.', uk: 'Макс 10МБ. JPG, PNG, WebP.', ru: 'Макс 10МБ. JPG, PNG, WebP.' },
+  'community.form.uploading': { en: 'Uploading...', uk: 'Завантаження...', ru: 'Загрузка...' },
+  'community.form.imageUploadFailed': { en: 'Failed to upload image', uk: 'Не вдалося завантажити зображення', ru: 'Не удалось загрузить изображение' },
   'community.form.publish': { en: 'Publish', uk: 'Опублікувати', ru: 'Опубликовать' },
 
   // Services Page

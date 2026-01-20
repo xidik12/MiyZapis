@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSelector } from '@/hooks/redux';
 import { selectUser } from '@/store/slices/authSlice';
-import { communityService, CreatePostData, POST_TYPES, Post } from '@/services';
+import { communityService, CreatePostData, fileUploadService, POST_TYPES, Post } from '@/services';
 import { PageLoader } from '@/components/ui';
-import { ArrowLeftIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, LinkIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 const CreatePostPage: React.FC = () => {
   const { t } = useLanguage();
@@ -28,6 +28,9 @@ const CreatePostPage: React.FC = () => {
     images: [],
   });
   const [imageUrl, setImageUrl] = useState('');
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const loadPost = async () => {
@@ -58,14 +61,58 @@ const CreatePostPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
 
-  const handleAddImage = () => {
+  const handleAddImageUrl = () => {
     const trimmed = imageUrl.trim();
-    if (!trimmed) return;
+    if (!trimmed) {
+      toast.error(t('community.form.imageUrlRequired') || 'Image URL is required');
+      return;
+    }
     setFormData((prev) => ({
       ...prev,
       images: [...(prev.images || []), trimmed],
     }));
     setImageUrl('');
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files ? Array.from(event.target.files) : [];
+    if (files.length === 0) return;
+
+    setIsUploadingImages(true);
+    setUploadError('');
+    try {
+      const uploads = await fileUploadService.uploadFiles(files, {
+        type: 'portfolio',
+        maxSize: 10 * 1024 * 1024,
+        allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
+      });
+
+      const uploadedUrls = uploads
+        .map((file) => file.url)
+        .filter((url): url is string => Boolean(url));
+
+      if (uploadedUrls.length === 0) {
+        throw new Error(t('community.form.imageUploadFailed') || 'Failed to upload image');
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        images: [...(prev.images || []), ...uploadedUrls],
+      }));
+    } catch (err: any) {
+      const message = err.message || t('community.form.imageUploadFailed') || 'Failed to upload image';
+      setUploadError(message);
+      toast.error(message);
+    } finally {
+      setIsUploadingImages(false);
+      event.target.value = '';
+    }
+  };
+
+  const handleOpenFilePicker = () => {
+    if (!isUploadingImages) {
+      fileInputRef.current?.click();
+    }
   };
 
   const handleRemoveImage = (index: number) => {
@@ -261,7 +308,7 @@ const CreatePostPage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 {t('community.form.images') || 'Images'}
               </label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="url"
                   value={imageUrl}
@@ -271,12 +318,40 @@ const CreatePostPage: React.FC = () => {
                 />
                 <button
                   type="button"
-                  onClick={handleAddImage}
+                  onClick={handleAddImageUrl}
                   className="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
                 >
-                  <PhotoIcon className="w-5 h-5" />
+                  <LinkIcon className="w-5 h-5" />
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={handleOpenFilePicker}
+                  disabled={isUploadingImages}
+                  className="px-3 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isUploadingImages ? (
+                    <span className="text-sm">{t('community.form.uploading') || 'Uploading...'}</span>
+                  ) : (
+                    <PhotoIcon className="w-5 h-5" />
+                  )}
                 </button>
               </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                {t('community.form.imageHelp') || 'Max 10MB. JPG, PNG, WebP.'}
+              </p>
+              {uploadError && (
+                <p className="text-xs text-red-500 mt-2">
+                  {uploadError}
+                </p>
+              )}
               {formData.images && formData.images.length > 0 && (
                 <div className="mt-3 space-y-2">
                   {formData.images.map((image, index) => (
