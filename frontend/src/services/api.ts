@@ -329,11 +329,7 @@ class ApiClient {
       });
     }
 
-    const response = await api.post<ApiResponse<T>>(url, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await api.post<ApiResponse<T>>(url, formData);
     
     return response.data;
   }

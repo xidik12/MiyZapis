@@ -36,11 +36,7 @@ export class FileUploadService {
       }
 
       const endpoint = `/files/upload${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-      const response = await apiClient.post<FileUploadResponse[]>(endpoint, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await apiClient.post<FileUploadResponse[]>(endpoint, formData);
 
       if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
         throw new Error(response.error?.message || 'Failed to upload file');
