@@ -99,11 +99,17 @@ const SpecialistSettings: React.FC = () => {
 
   // Handle profile image upload
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('[Settings Avatar Upload] handleImageUpload triggered', { event });
     const file = event.target.files?.[0];
-    if (!file) return;
+    console.log('[Settings Avatar Upload] File selected:', file);
+    if (!file) {
+      console.log('[Settings Avatar Upload] No file selected, returning');
+      return;
+    }
 
     // Validate file type and size
     if (!file.type.startsWith('image/')) {
+      console.log('[Settings Avatar Upload] Invalid file type:', file.type);
       setUploadError(
         language === 'uk' ? 'Будь ласка, оберіть файл зображення' :
         language === 'ru' ? 'Пожалуйста, выберите файл изображения' :
@@ -113,6 +119,7 @@ const SpecialistSettings: React.FC = () => {
     }
 
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      console.log('[Settings Avatar Upload] File too large:', file.size);
       setUploadError(
         language === 'uk' ? 'Розмір файлу повинен бути менше 5МБ' :
         language === 'ru' ? 'Размер файла должен быть меньше 5МБ' :
@@ -122,28 +129,34 @@ const SpecialistSettings: React.FC = () => {
     }
 
     try {
+      console.log('[Settings Avatar Upload] Starting upload...');
       setIsUploadingImage(true);
       setUploadError('');
       setUploadSuccess(false);
-      
+
       // Upload the image
+      console.log('[Settings Avatar Upload] Calling fileUploadService.uploadAvatar');
       const result = await fileUploadService.uploadAvatar(file);
-      
+      console.log('[Settings Avatar Upload] Upload result:', result);
+
       // Update user profile with new avatar URL
+      console.log('[Settings Avatar Upload] Updating user profile');
       const updatedUser = await userService.updateProfile({ avatar: result.url });
-      
+      console.log('[Settings Avatar Upload] Profile updated:', updatedUser);
+
       // Update Redux store with only the avatar field
       dispatch(updateUserProfile({ avatar: result.url }));
-      
+
       // Update local state
       setProfileImage(result.url);
       setUploadSuccess(true);
-      
+      console.log('[Settings Avatar Upload] Upload complete');
+
       // Clear success message after 3 seconds
       setTimeout(() => setUploadSuccess(false), 3000);
-      
+
     } catch (error: any) {
-      console.error('Error uploading avatar:', error);
+      console.error('[Settings Avatar Upload] Upload failed:', error);
       setUploadError(
         error.message ||
         (language === 'uk' ? 'Помилка завантаження зображення' :
@@ -151,6 +164,7 @@ const SpecialistSettings: React.FC = () => {
          'Failed to upload image')
       );
     } finally {
+      console.log('[Settings Avatar Upload] Cleanup');
       setIsUploadingImage(false);
       // Clear the file input
       event.target.value = '';
@@ -340,7 +354,10 @@ const SpecialistSettings: React.FC = () => {
                             />
                             <button
                               type="button"
-                              onClick={() => imageInputRef.current?.click()}
+                              onClick={() => {
+                                console.log('[Settings Avatar Upload] Button clicked', { ref: imageInputRef.current });
+                                imageInputRef.current?.click();
+                              }}
                               disabled={isUploadingImage}
                               className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >

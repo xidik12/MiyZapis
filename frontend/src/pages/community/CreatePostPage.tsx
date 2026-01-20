@@ -62,22 +62,31 @@ const CreatePostPage: React.FC = () => {
   }, [postId]);
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('[Community Upload] handleImageUpload triggered', { event });
     const files = event.target.files ? Array.from(event.target.files) : [];
-    if (files.length === 0) return;
+    console.log('[Community Upload] Files selected:', files.length, files);
+    if (files.length === 0) {
+      console.log('[Community Upload] No files selected, returning');
+      return;
+    }
 
+    console.log('[Community Upload] Starting upload...');
     setIsUploadingImages(true);
     setUploadError('');
     try {
+      console.log('[Community Upload] Calling fileUploadService.uploadFiles');
       const uploads = await fileUploadService.uploadFiles(files, {
         type: 'portfolio',
         maxSize: 10 * 1024 * 1024,
         allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
       });
+      console.log('[Community Upload] Upload service returned:', uploads);
 
       const uploadedUrls = uploads
         .map((file) => file.url)
         .filter((url): url is string => Boolean(url));
 
+      console.log('[Community Upload] Uploaded URLs:', uploadedUrls);
       if (uploadedUrls.length === 0) {
         throw new Error(t('community.form.imageUploadFailed') || 'Failed to upload image');
       }
@@ -86,11 +95,14 @@ const CreatePostPage: React.FC = () => {
         ...prev,
         images: [...(prev.images || []), ...uploadedUrls],
       }));
+      console.log('[Community Upload] Upload complete, form data updated');
     } catch (err: any) {
+      console.error('[Community Upload] Upload failed:', err);
       const message = err.message || t('community.form.imageUploadFailed') || 'Failed to upload image';
       setUploadError(message);
       toast.error(message);
     } finally {
+      console.log('[Community Upload] Cleanup');
       setIsUploadingImages(false);
       event.target.value = '';
     }
@@ -302,7 +314,10 @@ const CreatePostPage: React.FC = () => {
                 />
                 <button
                   type="button"
-                  onClick={() => imageInputRef.current?.click()}
+                  onClick={() => {
+                    console.log('[Community Upload] Button clicked', { ref: imageInputRef.current });
+                    imageInputRef.current?.click();
+                  }}
                   disabled={isUploadingImages}
                   className="px-4 py-2 bg-primary-500 text-white rounded-lg inline-flex items-center gap-2 transition-colors hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not-allowed"
                 >

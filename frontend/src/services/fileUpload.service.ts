@@ -20,13 +20,17 @@ export interface FileUploadOptions {
 export class FileUploadService {
   // Upload a single file
   async uploadFile(file: File, options: FileUploadOptions = {}): Promise<FileUploadResponse> {
+    console.log('[FileUploadService] uploadFile called', { fileName: file.name, size: file.size, type: file.type, options });
     try {
       // Validate file before upload
+      console.log('[FileUploadService] Validating file...');
       this.validateFile(file, options);
+      console.log('[FileUploadService] File validation passed');
 
       const formData = new FormData();
       formData.append('files', file); // Use 'files' field name for multer array upload
-      
+      console.log('[FileUploadService] FormData created, file appended to "files" field');
+
       const queryParams = new URLSearchParams();
       if (options.type) {
         queryParams.append('purpose', options.type);
@@ -36,14 +40,26 @@ export class FileUploadService {
       }
 
       const endpoint = `/files/upload${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+      console.log('[FileUploadService] Calling API endpoint:', endpoint);
+      console.log('[FileUploadService] FormData contents:', Array.from(formData.entries()));
+
       const response = await apiClient.post<FileUploadResponse[]>(endpoint, formData);
+      console.log('[FileUploadService] API response received:', response);
 
       if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
+        console.error('[FileUploadService] Invalid response format:', response);
         throw new Error(response.error?.message || 'Failed to upload file');
       }
 
+      console.log('[FileUploadService] Upload successful, returning:', response.data[0]);
       return response.data[0]; // Return the first uploaded file
     } catch (error: any) {
+      console.error('[FileUploadService] Upload error:', error);
+      console.error('[FileUploadService] Error details:', {
+        apiError: error.apiError,
+        response: error.response?.data,
+        message: error.message
+      });
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to upload file';
       throw new Error(errorMessage);
     }
