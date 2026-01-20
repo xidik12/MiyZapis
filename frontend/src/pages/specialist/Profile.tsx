@@ -412,6 +412,8 @@ const SpecialistProfile: React.FC = () => {
               profession: specialist.businessName || '',
               bio: specialist.bio || '',
               experience: specialist.experience || 0,
+              preciseAddress: specialist.preciseAddress || '',
+              businessPhone: specialist.businessPhone || '',
               location: {
                 address: specialist.address || '',
                 city: specialist.city || '',
@@ -420,10 +422,10 @@ const SpecialistProfile: React.FC = () => {
               },
               verification: {
                 isVerified: specialist.isVerified || false,
-                verifiedDate: specialist.isVerified && specialist.verifiedDate 
-                  ? specialist.verifiedDate 
-                  : specialist.isVerified 
-                  ? new Date().toISOString().split('T')[0] 
+                verifiedDate: specialist.isVerified && specialist.verifiedDate
+                  ? specialist.verifiedDate
+                  : specialist.isVerified
+                  ? new Date().toISOString().split('T')[0]
                   : '',
                 documentsSubmitted: [],
               },
@@ -613,6 +615,8 @@ const SpecialistProfile: React.FC = () => {
             longitude: profile.location?.longitude || null,
             timezone: 'UTC', // Default timezone
             workingHours: profile.businessHours || {},
+            preciseAddress: profile.preciseAddress || '',
+            businessPhone: profile.businessPhone || '',
             paymentMethods: Array.isArray(profile.paymentMethods) ? profile.paymentMethods : [],
             bankDetails: profile.bankDetails || {},
             paymentQrCodeUrl: profile.paymentQrCodeUrl || null,
