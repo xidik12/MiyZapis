@@ -40,6 +40,7 @@ const BookingFlow: React.FC = () => {
   const [specialist, setSpecialist] = useState<any>(null);
   const [service, setService] = useState<any>(null);
   const serviceCurrency = normalizeCurrency(service?.currency);
+  const bankAccounts = Array.isArray(specialist?.bankAccounts) ? specialist.bankAccounts : [];
   const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -63,7 +64,7 @@ const BookingFlow: React.FC = () => {
 
   // Payment states
   const [useWalletFirst, setUseWalletFirst] = useState<boolean>(true);
-  const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'paypal'>('crypto');
+  const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'paypal' | 'bank'>('crypto');
   const [paymentLoading, setPaymentLoading] = useState<boolean>(false);
   const [paymentResult, setPaymentResult] = useState<any>(null);
   const [showQRCode, setShowQRCode] = useState<boolean>(false);
@@ -129,6 +130,9 @@ const BookingFlow: React.FC = () => {
 
   const discount = calculateDiscount();
   const finalPrice = Math.max(0, ((service?.price ?? service?.basePrice ?? 0) - discount));
+  const rawDepositDue = Math.max(0, specialist?.pricing?.depositAmount ?? 0);
+  const depositAmountDue = Math.min(rawDepositDue, finalPrice);
+  const remainingAmount = Math.max(0, finalPrice - depositAmountDue);
 
   // Conditionally include payment step based on configuration
   const allSteps: BookingStep[] = [
@@ -517,6 +521,30 @@ const BookingFlow: React.FC = () => {
       const [hours, minutes] = selectedTime.split(':').map(Number);
       const scheduledAt = new Date(selectedDate);
       scheduledAt.setHours(hours, minutes, 0, 0);
+
+      if (paymentMethod === 'bank') {
+        const bookingData = {
+          serviceId: service.id,
+          scheduledAt: scheduledAt.toISOString(),
+          duration: service.duration || 60,
+          customerNotes: bookingNotes || undefined,
+          participantCount: participantCount,
+          loyaltyPointsUsed: 0,
+          rewardRedemptionId: selectedRedemptionId || undefined
+        };
+
+        const result = await bookingService.createBooking(bookingData);
+        setBookingResult(result);
+        setPaymentResult({
+          status: 'PENDING',
+          requiresPayment: false,
+          paymentMethod: 'BANK_TRANSFER',
+          message: 'Bank transfer selected. Please pay using ABA/KHQR details below.'
+        });
+        setPaymentLoading(false);
+        setCurrentStep(3);
+        return;
+      }
 
       // Step 2: Start payment process (will check wallet first if useWalletFirst=true)
       console.log('💳 BookingFlow: Creating payment intent...');
@@ -1395,7 +1423,7 @@ const BookingFlow: React.FC = () => {
                       name="paymentMethod"
                       value="crypto"
                       checked={paymentMethod === 'crypto'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal')}
+                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal' | 'bank')}
                       className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                     />
                     <div className="flex-1">
@@ -1419,7 +1447,7 @@ const BookingFlow: React.FC = () => {
                       name="paymentMethod"
                       value="paypal"
                       checked={paymentMethod === 'paypal'}
-                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal')}
+                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal' | 'bank')}
                       className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                     />
                     <div className="flex-1">
@@ -1433,6 +1461,30 @@ const BookingFlow: React.FC = () => {
                           <div className="font-medium text-gray-900 dark:text-white">PayPal</div>
                           <div className="text-sm text-gray-600 dark:text-gray-400">Pay with PayPal, credit cards, or bank account</div>
                           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Fast and secure traditional payment</div>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+
+                  {/* Bank Transfer Option */}
+                  <label className="flex items-start space-x-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="bank"
+                      checked={paymentMethod === 'bank'}
+                      onChange={(e) => setPaymentMethod(e.target.value as 'crypto' | 'paypal' | 'bank')}
+                      className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-slate-700 rounded-xl flex items-center justify-center">
+                          <CreditCardIcon className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">ABA / KHQR Bank Transfer</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">Pay using the specialist's bank details</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Pay deposit now or after service completion</div>
                         </div>
                       </div>
                     </div>
@@ -1474,15 +1526,103 @@ const BookingFlow: React.FC = () => {
                   {/* Payment Section for all external payments */}
                   <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4">
                     <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
-                      💳 Complete Your {
-                        paymentMethod === 'paypal' ? 'PayPal' :
-                        'Cryptocurrency'
-                      } Payment
+                      {paymentMethod === 'bank' ? (
+                        <>🏦 {t('booking.bankTransferTitle')}</>
+                      ) : (
+                        <>💳 Complete Your {paymentMethod === 'paypal' ? 'PayPal' : 'Cryptocurrency'} Payment</>
+                      )}
                     </h4>
-                    {paymentResult.message && (
+                    {paymentResult.message && paymentMethod !== 'bank' && (
                       <p className="text-sm text-blue-800 dark:text-blue-200 mb-4">
                         {paymentResult.message}
                       </p>
+                    )}
+
+                    {paymentMethod === 'bank' && (
+                      <div className="space-y-4">
+                        <p className="text-sm text-blue-800 dark:text-blue-200">
+                          {t('booking.bankTransferMessage')}
+                        </p>
+                        <div className="space-y-2 text-sm text-blue-900 dark:text-blue-100">
+                          {depositAmountDue > 0 ? (
+                            <>
+                              <div className="flex items-center justify-between">
+                                <span>{t('booking.bankTransferDepositDue')}</span>
+                                <span className="font-semibold">{formatPrice(depositAmountDue, serviceCurrency)}</span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span>{t('booking.bankTransferRemaining')}</span>
+                                <span className="font-semibold">{formatPrice(remainingAmount, serviceCurrency)}</span>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="flex items-center justify-between">
+                              <span>{t('booking.bankTransferTotalDue')}</span>
+                              <span className="font-semibold">{formatPrice(finalPrice, serviceCurrency)}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {bankAccounts.length === 0 ? (
+                          <p className="text-sm text-red-700 dark:text-red-300">
+                            {t('booking.bankTransferNoAccounts')}
+                          </p>
+                        ) : (
+                          <div className="space-y-3">
+                            {bankAccounts.map((account: any, index: number) => {
+                              const accountType = account.type === 'KHQR' ? 'KHQR' : 'ABA';
+                              return (
+                                <div
+                                  key={`${account.type || 'bank'}-${index}`}
+                                  className="rounded-xl border border-blue-200 dark:border-blue-800 bg-white dark:bg-gray-800 p-4"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="font-semibold text-gray-900 dark:text-white">
+                                      {accountType}
+                                    </div>
+                                    {account.qrImageUrl && (
+                                      <img
+                                        src={account.qrImageUrl}
+                                        alt={`${accountType} QR`}
+                                        className="h-10 w-10 rounded-md object-cover border border-gray-200 dark:border-gray-600"
+                                      />
+                                    )}
+                                  </div>
+                                  <div className="mt-3 space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                                    <div>
+                                      <span className="text-gray-500 dark:text-gray-400">{t('booking.bankTransferAccountName')}:</span>{' '}
+                                      {account.accountName || 'Not provided'}
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500 dark:text-gray-400">{t('booking.bankTransferAccountNumber')}:</span>{' '}
+                                      {account.accountNumber || 'Not provided'}
+                                    </div>
+                                  </div>
+                                  {account.qrImageUrl && (
+                                    <div className="mt-3">
+                                      <img
+                                        src={account.qrImageUrl}
+                                        alt={`${accountType} QR`}
+                                        className="w-40 h-40 object-contain border border-gray-200 dark:border-gray-700 rounded-lg"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        <p className="text-xs text-blue-700 dark:text-blue-200">
+                          {t('booking.bankTransferReference')}
+                        </p>
+                        <button
+                          onClick={() => setCurrentStep(steps.length - 1)}
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                        >
+                          {t('booking.bankTransferContinue')}
+                        </button>
+                      </div>
                     )}
 
                     {/* PayPal Payment Interface */}
@@ -1765,13 +1905,95 @@ const BookingFlow: React.FC = () => {
               )}
 
               {/* Payment Complete Section */}
-              {!needsPayment && paymentResult && (
+              {!needsPayment && paymentResult && paymentResult.paymentMethod !== 'BANK_TRANSFER' && (
                 <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl p-4 mb-6">
                   <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">
                     ✅ Payment Complete
                   </h4>
                   <p className="text-sm text-green-800 dark:text-green-200">
                     {paymentResult.message || 'Payment processed successfully'}
+                  </p>
+                </div>
+              )}
+
+              {paymentResult?.paymentMethod === 'BANK_TRANSFER' && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4 mb-6">
+                  <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
+                    🏦 {t('booking.bankTransferTitle')}
+                  </h4>
+                  <p className="text-sm text-blue-800 dark:text-blue-200 mb-4">
+                    {t('booking.bankTransferMessage')}
+                  </p>
+                  <div className="text-sm text-blue-900 dark:text-blue-100 space-y-2 mb-4">
+                    {depositAmountDue > 0 ? (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span>{t('booking.bankTransferDepositDue')}</span>
+                          <span className="font-semibold">{formatPrice(depositAmountDue, serviceCurrency)}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span>{t('booking.bankTransferRemaining')}</span>
+                          <span className="font-semibold">{formatPrice(remainingAmount, serviceCurrency)}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <span>{t('booking.bankTransferTotalDue')}</span>
+                        <span className="font-semibold">{formatPrice(finalPrice, serviceCurrency)}</span>
+                      </div>
+                    )}
+                  </div>
+                  {bankAccounts.length > 0 ? (
+                    <div className="space-y-3">
+                      {bankAccounts.map((account: any, index: number) => {
+                        const accountType = account.type === 'KHQR' ? 'KHQR' : 'ABA';
+                        return (
+                          <div
+                            key={`${account.type || 'bank'}-${index}`}
+                            className="rounded-xl border border-blue-200 dark:border-blue-800 bg-white dark:bg-gray-800 p-4"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="font-semibold text-gray-900 dark:text-white">
+                                {accountType}
+                              </div>
+                              {account.qrImageUrl && (
+                                <img
+                                  src={account.qrImageUrl}
+                                  alt={`${accountType} QR`}
+                                  className="h-10 w-10 rounded-md object-cover border border-gray-200 dark:border-gray-600"
+                                />
+                              )}
+                            </div>
+                            <div className="mt-3 space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                              <div>
+                                <span className="text-gray-500 dark:text-gray-400">{t('booking.bankTransferAccountName')}:</span>{' '}
+                                {account.accountName || 'Not provided'}
+                              </div>
+                              <div>
+                                <span className="text-gray-500 dark:text-gray-400">{t('booking.bankTransferAccountNumber')}:</span>{' '}
+                                {account.accountNumber || 'Not provided'}
+                              </div>
+                            </div>
+                            {account.qrImageUrl && (
+                              <div className="mt-3">
+                                <img
+                                  src={account.qrImageUrl}
+                                  alt={`${accountType} QR`}
+                                  className="w-32 h-32 object-contain border border-gray-200 dark:border-gray-700 rounded-lg"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-red-700 dark:text-red-300">
+                      {t('booking.bankTransferNoAccounts')}
+                    </p>
+                  )}
+                  <p className="text-xs text-blue-700 dark:text-blue-200 mt-4">
+                    {t('booking.bankTransferReference')}
                   </p>
                 </div>
               )}

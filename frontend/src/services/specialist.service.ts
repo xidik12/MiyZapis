@@ -38,6 +38,17 @@ export class SpecialistService {
     }
     
     // Transform the response to match frontend expectations
+    const parseJsonField = (field: any, fallback: any) => {
+      if (typeof field === 'string') {
+        try {
+          return JSON.parse(field);
+        } catch (e) {
+          console.warn('⚠️ Failed to parse JSON field:', field, e);
+          return fallback;
+        }
+      }
+      return field ?? fallback;
+    };
     // Normalize response time to minutes if backend stores milliseconds
     const normalizeResponseTime = (value: any): number | undefined => {
       if (value === null || value === undefined) return undefined;
@@ -74,9 +85,13 @@ export class SpecialistService {
       // Ensure specialties is properly handled
       specialties: Array.isArray(specialistData.specialties) 
         ? specialistData.specialties 
-        : (typeof specialistData.specialties === 'string' 
-           ? JSON.parse(specialistData.specialties) 
-           : []),
+        : parseJsonField(specialistData.specialties, []),
+      bankAccounts: Array.isArray(specialistData.bankAccounts)
+        ? specialistData.bankAccounts
+        : parseJsonField(
+            specialistData.bankAccounts ?? specialistData.bank_accounts ?? specialistData.payoutAccounts ?? specialistData.payout_accounts,
+            []
+          ),
       // Ensure portfolio images are properly structured
       portfolioImages: (() => {
         try {

@@ -194,6 +194,16 @@ const createTranslations = (): Translations => {
   ensure('bookings.completed', 'Completed', 'បានបញ្ចប់');
   ensure('bookings.cancelled', 'Cancelled', 'បានលុបចោល');
   ensure('bookings.noShow', 'No Show', 'មិនបានមកដល់');
+  ensure('booking.bankTransferTitle', 'ABA / KHQR Bank Transfer', 'ផ្ទេរប្រាក់ ABA / KHQR');
+  ensure('booking.bankTransferMessage', 'Use the details below to pay the deposit or remaining balance.', 'សូមប្រើព័ត៌មានខាងក្រោម ដើម្បីបង់ប្រាក់កក់ ឬប្រាក់នៅសល់។');
+  ensure('booking.bankTransferDepositDue', 'Deposit due now', 'ប្រាក់កក់ត្រូវបង់ឥឡូវនេះ');
+  ensure('booking.bankTransferRemaining', 'Remaining after service', 'ប្រាក់នៅសល់បន្ទាប់ពីសេវាកម្ម');
+  ensure('booking.bankTransferTotalDue', 'Amount due after service', 'ប្រាក់ត្រូវបង់បន្ទាប់ពីសេវាកម្ម');
+  ensure('booking.bankTransferAccountName', 'Account name', 'ឈ្មោះគណនី');
+  ensure('booking.bankTransferAccountNumber', 'Account number', 'លេខគណនី');
+  ensure('booking.bankTransferNoAccounts', 'This specialist has not added ABA/KHQR details yet. Please choose another payment method or contact the specialist.', 'អ្នកជំនាញមិនទាន់បន្ថែមព័ត៌មាន ABA/KHQR ទេ។ សូមជ្រើសរើសវិធីទូទាត់ផ្សេង ឬទាក់ទងអ្នកជំនាញ។');
+  ensure('booking.bankTransferReference', 'Include your name in the transfer note.', 'សូមបញ្ចូលឈ្មោះរបស់អ្នកក្នុងកំណត់សម្គាល់ការផ្ទេរប្រាក់។');
+  ensure('booking.bankTransferContinue', 'Continue to confirmation', 'បន្តទៅការបញ្ជាក់');
 
   // Dashboard translations
   ensure('dashboard.overview', 'Overview', 'ទិដ្ឋភាពទូទៅ');

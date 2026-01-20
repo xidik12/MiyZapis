@@ -95,6 +95,14 @@ export interface Specialist extends BaseEntity {
   pricing: SpecialistPricing;
   revenue?: SpecialistRevenue;
   location?: SpecialistLocation;
+  bankAccounts?: BankAccount[];
+}
+
+export interface BankAccount {
+  type: 'ABA' | 'KHQR';
+  accountName: string;
+  accountNumber: string;
+  qrImageUrl?: string;
 }
 
 export interface SpecialistAvailability {
