@@ -104,6 +104,12 @@ model User {
   onrampSessions       OnrampSession[]
   expenses             Expense[]              @relation("SpecialistExpenses")
 
+  // Community relations
+  posts                Post[]                 @relation("UserPosts")
+  comments             Comment[]              @relation("UserComments")
+  postLikes            PostLike[]             @relation("UserPostLikes")
+  commentLikes         CommentLike[]          @relation("UserCommentLikes")
+
   // Indexes for performance
   @@index([email])
   @@index([telegramId])
@@ -1567,4 +1573,97 @@ model Expense {
   @@index([category])
   @@index([specialistId, category])
   @@map("expenses")
+}
+
+// Community Feature Models
+
+model Post {
+  id              String    @id @default(cuid())
+  authorId        String
+
+  type            String    @default("DISCUSSION") // DISCUSSION, SALE
+  title           String
+  content         String    @db.Text
+
+  // Sale-specific fields
+  price           Float?
+  currency        String?   @default("UAH")
+  contactPhone    String?
+  contactEmail    String?
+  images          String?   // JSON array of image URLs
+
+  // Metrics
+  viewCount       Int       @default(0)
+  likeCount       Int       @default(0)
+  commentCount    Int       @default(0)
+
+  // Status
+  isPublished     Boolean   @default(true)
+  isPinned        Boolean   @default(false)
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  author          User      @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
+  comments        Comment[]
+  likes           PostLike[]
+
+  @@index([authorId, isDeleted])
+  @@index([type, isPublished, isDeleted])
+  @@index([createdAt])
+  @@map("posts")
+}
+
+model Comment {
+  id              String    @id @default(cuid())
+  postId          String
+  authorId        String
+  parentId        String?   // For nested replies
+
+  content         String    @db.Text
+  likeCount       Int       @default(0)
+
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  post            Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author          User      @relation("UserComments", fields: [authorId], references: [id], onDelete: Cascade)
+  parent          Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies         Comment[] @relation("CommentReplies")
+  likes           CommentLike[]
+
+  @@index([postId, isDeleted])
+  @@index([parentId])
+  @@map("comments")
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation("UserPostLikes", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("post_likes")
+}
+
+model CommentLike {
+  id        String   @id @default(cuid())
+  commentId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User     @relation("UserCommentLikes", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@map("comment_likes")
 }

@@ -6,6 +6,7 @@ import { SearchBar } from '@/components/common/SearchBar';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { communityService, PostPreview } from '@/services';
 import { MagnifyingGlassIcon, StarIcon, ClockIcon, ShieldCheckIcon, UserGroupIcon, CalendarIcon, CreditCardIcon, ChatBubbleLeftRightIcon, SealCheckIcon as CheckBadgeIcon, ArrowRightIcon, SparklesIcon, HeartIcon, HouseIcon as HomeIcon, BriefcaseIcon, BookOpenIcon, RobotIcon } from '@/components/icons';
 
 // Service categories and featured specialists - data from API
@@ -131,6 +132,8 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const user = useAppSelector(selectUser);
   const [isLoading, setIsLoading] = useState(false);
+  const [communityPosts, setCommunityPosts] = useState<PostPreview[]>([]);
+  const [communityLoading, setCommunityLoading] = useState(true);
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
 
@@ -138,6 +141,32 @@ const HomePage: React.FC = () => {
   const howItWorksSteps = getHowItWorksSteps(t);
   const stats = getStats(t);
   const featuredSpecialists = getFeaturedSpecialists(t);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadCommunityPreview = async () => {
+      try {
+        setCommunityLoading(true);
+        const posts = await communityService.getPostsPreview(3);
+        if (isMounted) {
+          setCommunityPosts(posts);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setCommunityPosts([]);
+        }
+      } finally {
+        if (isMounted) {
+          setCommunityLoading(false);
+        }
+      }
+    };
+
+    loadCommunityPreview();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSearch = (query: string) => {
     navigate(`/search?q=${encodeURIComponent(query)}`);
@@ -384,6 +413,95 @@ const HomePage: React.FC = () => {
               <ArrowRightIcon className="w-5 h-5 ml-2" />
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* Community Preview Section */}
+      <section className="py-8 xs:py-12 sm:py-16 lg:py-20 bg-gray-50 dark:bg-gray-800/50 w-full prevent-overflow">
+        <div className="max-w-7xl mx-auto mobile-container prevent-overflow">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 xs:mb-10">
+            <div className="px-2 xs:px-0">
+              <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+                {t('community.title')}
+              </h2>
+              <p className="text-base xs:text-lg text-gray-600 dark:text-gray-300 max-w-3xl">
+                {t('community.subtitle')}
+              </p>
+            </div>
+            <Link
+              to="/community"
+              className="mt-4 sm:mt-0 inline-flex items-center bg-primary-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-primary-700 transition-colors"
+            >
+              {t('community.viewAll')}
+              <ArrowRightIcon className="w-5 h-5 ml-2" />
+            </Link>
+          </div>
+
+          {communityLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 xs:gap-6">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div
+                  key={`community-skeleton-${index}`}
+                  className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700"
+                >
+                  <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-4 animate-pulse"></div>
+                  <div className="h-6 w-full bg-gray-200 dark:bg-gray-700 rounded mb-2 animate-pulse"></div>
+                  <div className="h-4 w-4/5 bg-gray-200 dark:bg-gray-700 rounded mb-4 animate-pulse"></div>
+                  <div className="h-4 w-2/3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                </div>
+              ))}
+            </div>
+          ) : communityPosts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 xs:gap-6">
+              {communityPosts.map((post) => (
+                <Link
+                  key={post.id}
+                  to={`/community/post/${post.id}`}
+                  className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:border-primary-200 dark:hover:border-primary-600 transition-all duration-300"
+                >
+                  <span
+                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      post.type === 'DISCUSSION'
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                        : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    }`}
+                  >
+                    {post.type === 'DISCUSSION' ? t('community.type.discussion') : t('community.type.sale')}
+                  </span>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mt-3 line-clamp-2">
+                    {post.title}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 line-clamp-2">
+                    {post.excerpt}
+                  </p>
+                  {post.type === 'SALE' && post.price != null && (
+                    <p className="text-sm font-semibold text-green-600 dark:text-green-400 mt-3">
+                      {post.price.toLocaleString()} {post.currency || 'UAH'}
+                    </p>
+                  )}
+                  <div className="flex justify-between mt-4 text-xs text-gray-400 dark:text-gray-500">
+                    <span>{post.author.firstName}</span>
+                    <span>
+                      {post.likeCount} {t('community.likes')} • {post.commentCount} {t('community.comments')}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-8 border border-gray-200 dark:border-gray-700 text-center">
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                {t('community.noPostsYet')}
+              </p>
+              <Link
+                to="/community"
+                className="inline-flex items-center text-primary-600 hover:text-primary-700 font-semibold"
+              >
+                {t('community.viewAll')}
+                <ArrowRightIcon className="w-4 h-4 ml-2" />
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 

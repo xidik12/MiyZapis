@@ -21,6 +21,9 @@ const SearchPage = React.lazy(() => import('./pages/SearchPage'));
 const ServiceDetailPage = React.lazy(() => import('./pages/ServiceDetailPage'));
 const SpecialistProfilePage = React.lazy(() => import('./pages/SpecialistProfilePage'));
 const BookingFlow = React.lazy(() => import('./pages/booking/BookingFlow'));
+const CommunityPage = React.lazy(() => import('./pages/community/CommunityPage'));
+const PostDetailPage = React.lazy(() => import('./pages/community/PostDetailPage'));
+const CreatePostPage = React.lazy(() => import('./pages/community/CreatePostPage'));
 
 // Authentication pages
 const LoginPage = React.lazy(() => import('./pages/auth/LoginPage'));
@@ -117,6 +120,7 @@ const usePageTitle = () => {
       '/specialist/messages': 'Messages - МійЗапис',
       '/specialist/settings': 'Settings - МійЗапис',
       '/specialist/notifications': 'Notifications - МійЗапис',
+      '/community': 'Community - МійЗапис',
       '/admin/dashboard': 'Admin Dashboard - МійЗапис',
     };
 
@@ -687,6 +691,38 @@ function App() {
                 <SearchPageRouter />
               </Suspense>
             </ConditionalLayout>
+          } />
+          <Route path="/community" element={
+            <ConditionalLayout>
+              <Suspense fallback={<SuspenseLoader />}>
+                <CommunityPage />
+              </Suspense>
+            </ConditionalLayout>
+          } />
+          <Route path="/community/post/:postId" element={
+            <ConditionalLayout>
+              <Suspense fallback={<SuspenseLoader />}>
+                <PostDetailPage />
+              </Suspense>
+            </ConditionalLayout>
+          } />
+          <Route path="/community/create" element={
+            <ProtectedRoute>
+              <ConditionalLayout>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <CreatePostPage />
+                </Suspense>
+              </ConditionalLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/community/edit/:postId" element={
+            <ProtectedRoute>
+              <ConditionalLayout>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <CreatePostPage />
+                </Suspense>
+              </ConditionalLayout>
+            </ProtectedRoute>
           } />
           <Route path="/service/:serviceId" element={
             <ConditionalLayout>

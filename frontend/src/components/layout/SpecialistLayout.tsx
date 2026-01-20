@@ -71,6 +71,13 @@ const navigation: SidebarNavItem[] = [
     iconActive: PresentationChartLineIcon,
   },
   {
+    name: 'Community',
+    nameUk: 'Спільнота',
+    href: '/community',
+    icon: UsersIcon,
+    iconActive: UsersIcon,
+  },
+  {
     name: 'Earnings',
     nameUk: 'Заробіток',
     href: '/specialist/earnings',

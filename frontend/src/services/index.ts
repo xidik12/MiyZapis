@@ -16,6 +16,7 @@ import { analyticsService as _analyticsService } from './analytics.service';
 import { referralService as _referralService } from './referral.service';
 import { locationService as _locationService } from './location.service';
 import { expenseService as _expenseService } from './expense.service';
+import { communityService as _communityService } from './community.service';
 
 // Re-export Service Classes
 export { authService } from './auth.service';
@@ -34,6 +35,10 @@ export { locationService } from './location.service';
 export { expenseService } from './expense.service';
 export type { Expense, ExpenseSummary, ExpenseCategory, RecurringFrequency, CreateExpenseData, UpdateExpenseData } from './expense.service';
 export { EXPENSE_CATEGORIES, RECURRING_FREQUENCIES, CATEGORY_CONFIG, RECURRING_CONFIG } from './expense.service';
+
+export { communityService } from './community.service';
+export type { Post, PostPreview, Comment, PostType, PostAuthor, CreatePostData, UpdatePostData, PostFilters, LikeResponse, GetPostsResponse, GetCommentsResponse } from './community.service';
+export { POST_TYPES } from './community.service';
 
 // Socket Service
 // export {
@@ -63,6 +68,7 @@ export const services = {
   get referral() { return _referralService; },
   get location() { return _locationService; },
   get expense() { return _expenseService; },
+  get community() { return _communityService; },
   // get socket() { return socketService; },
 } as const;
 

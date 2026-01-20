@@ -5,7 +5,7 @@ import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, logout } from '@/store/slices/authSlice';
 import { selectFavoritesCount, fetchFavoritesCount } from '@/store/slices/favoritesSlice';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
-import { HouseIcon as HomeIcon, CalendarIcon, HeartIcon, CreditCardIcon, StarIcon, UserIcon, ClockIcon, BellIcon, ArrowRightOnRectangleIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, MagnifyingGlassIcon, LifebuoyIcon, GiftIcon, ChatBubbleLeftRightIcon } from '@/components/icons';
+import { HouseIcon as HomeIcon, CalendarIcon, HeartIcon, CreditCardIcon, StarIcon, UserIcon, ClockIcon, BellIcon, ArrowRightOnRectangleIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, MagnifyingGlassIcon, LifebuoyIcon, GiftIcon, ChatBubbleLeftRightIcon, UserGroupIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -54,6 +54,12 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       translationKey: 'dashboard.nav.messages',
       href: '/customer/messages',
       icon: ChatBubbleLeftRightIcon,
+    },
+    {
+      name: 'Community',
+      translationKey: 'dashboard.nav.community',
+      href: '/community',
+      icon: UserGroupIcon,
     },
     {
       name: 'Search Services',

@@ -63,6 +63,12 @@ const navigation: SidebarNavItem[] = [
     icon: ChatBubbleLeftEllipsisIcon,
   },
   {
+    name: 'Community',
+    nameKey: 'customer.nav.community',
+    href: '/community',
+    icon: UsersIcon,
+  },
+  {
     name: 'Wallet',
     nameKey: 'customer.nav.wallet',
     href: '/customer/wallet',
