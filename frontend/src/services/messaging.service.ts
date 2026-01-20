@@ -154,11 +154,7 @@ export class MessagingService {
           formData.append(`attachments`, file);
         });
 
-        const response = await apiClient.post<Message>('/messages/send-with-attachments', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+        const response = await apiClient.post<Message>('/messages/send-with-attachments', formData);
 
         if (!response.success || !response.data) {
           throw new Error(response.error?.message || 'Failed to send message with attachments');

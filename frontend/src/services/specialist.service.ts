@@ -604,11 +604,7 @@ export class SpecialistService {
       formData.append('additionalInfo', documents.additionalInfo);
     }
 
-    const response = await apiClient.post('/specialists/verification/request', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await apiClient.post('/specialists/verification/request', formData);
     
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to request verification');
