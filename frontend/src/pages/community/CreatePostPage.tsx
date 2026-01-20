@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -30,7 +30,6 @@ const CreatePostPage: React.FC = () => {
   });
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [uploadError, setUploadError] = useState('');
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const loadPost = async () => {
@@ -93,12 +92,6 @@ const CreatePostPage: React.FC = () => {
     } finally {
       setIsUploadingImages(false);
       event.target.value = '';
-    }
-  };
-
-  const handleOpenFilePicker = () => {
-    if (!isUploadingImages) {
-      fileInputRef.current?.click();
     }
   };
 
@@ -297,18 +290,22 @@ const CreatePostPage: React.FC = () => {
               </label>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
-                  ref={fileInputRef}
                   type="file"
+                  id="community-image-upload"
                   accept="image/*"
                   multiple
                   onChange={handleImageUpload}
-                  className="hidden"
-                />
-                <button
-                  type="button"
-                  onClick={handleOpenFilePicker}
+                  className="sr-only"
                   disabled={isUploadingImages}
-                  className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2"
+                />
+                <label
+                  htmlFor="community-image-upload"
+                  aria-disabled={isUploadingImages}
+                  className={`px-4 py-2 bg-primary-500 text-white rounded-lg inline-flex items-center gap-2 ${
+                    isUploadingImages
+                      ? 'opacity-60 cursor-not-allowed pointer-events-none'
+                      : 'hover:bg-primary-600 cursor-pointer'
+                  }`}
                 >
                   {isUploadingImages ? (
                     <span className="text-sm">{t('community.form.uploading') || 'Uploading...'}</span>
@@ -320,7 +317,7 @@ const CreatePostPage: React.FC = () => {
                       </span>
                     </>
                   )}
-                </button>
+                </label>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                 {t('community.form.imageHelp') || 'Max 10MB. JPG, PNG, WebP.'}
@@ -341,7 +338,7 @@ const CreatePostPage: React.FC = () => {
                           className="w-10 h-10 rounded-md object-cover"
                         />
                         <span className="text-sm text-gray-600 dark:text-gray-300 truncate">
-                          {image}
+                          {image.split('/').pop() || image}
                         </span>
                       </div>
                       <button
