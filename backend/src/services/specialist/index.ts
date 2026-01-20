@@ -30,6 +30,7 @@ interface CreateSpecialistData {
   parkingInfo?: string;
   accessInstructions?: string;
   paymentMethods?: string[];
+  bankAccounts?: Record<string, any>[];
   serviceArea?: Record<string, any>;
   notifications?: Record<string, any>;
   privacy?: Record<string, any>;
@@ -66,6 +67,7 @@ interface UpdateSpecialistData {
   parkingInfo?: string;
   accessInstructions?: string;
   paymentMethods?: string[];
+  bankAccounts?: Record<string, any>[];
   serviceArea?: Record<string, any>;
   notifications?: Record<string, any>;
   privacy?: Record<string, any>;
@@ -164,6 +166,7 @@ export class SpecialistService {
           parkingInfo: data.parkingInfo,
           accessInstructions: data.accessInstructions,
           paymentMethods: JSON.stringify(data.paymentMethods || []),
+          bankAccounts: JSON.stringify(data.bankAccounts || []),
           serviceArea: JSON.stringify(data.serviceArea || {}),
           notifications: JSON.stringify(data.notifications || {}),
           privacy: JSON.stringify(data.privacy || {}),
@@ -294,6 +297,7 @@ export class SpecialistService {
           ...(data.parkingInfo !== undefined && { parkingInfo: data.parkingInfo }),
           ...(data.accessInstructions !== undefined && { accessInstructions: data.accessInstructions }),
           ...(data.paymentMethods && { paymentMethods: JSON.stringify(data.paymentMethods) }),
+          ...(data.bankAccounts && { bankAccounts: JSON.stringify(data.bankAccounts) }),
           ...(data.serviceArea && { serviceArea: JSON.stringify(data.serviceArea) }),
           ...(data.notifications && { notifications: JSON.stringify(data.notifications) }),
           ...(data.privacy && { privacy: JSON.stringify(data.privacy) }),
@@ -427,6 +431,7 @@ export class SpecialistService {
         languages: SpecialistService.parseJsonField(specialist.languages, []),
         workingHours: SpecialistService.parseJsonField(specialist.workingHours, {}),
         paymentMethods: SpecialistService.parseJsonField(specialist.paymentMethods, []),
+        bankAccounts: SpecialistService.parseJsonField(specialist.bankAccounts, []),
         serviceArea: SpecialistService.parseJsonField(specialist.serviceArea, {}),
         notifications: SpecialistService.parseJsonField(specialist.notifications, {}),
         privacy: SpecialistService.parseJsonField(specialist.privacy, {}),
@@ -491,6 +496,7 @@ export class SpecialistService {
         languages: SpecialistService.parseJsonField(specialist.languages, []),
         workingHours: SpecialistService.parseJsonField(specialist.workingHours, {}),
         paymentMethods: SpecialistService.parseJsonField(specialist.paymentMethods, []),
+        bankAccounts: SpecialistService.parseJsonField(specialist.bankAccounts, []),
         serviceArea: SpecialistService.parseJsonField(specialist.serviceArea, {}),
         notifications: SpecialistService.parseJsonField(specialist.notifications, {}),
         privacy: SpecialistService.parseJsonField(specialist.privacy, {}),
@@ -619,6 +625,7 @@ export class SpecialistService {
         languages: SpecialistService.parseJsonField(specialist.languages, []),
         workingHours: SpecialistService.parseJsonField(specialist.workingHours, {}),
         paymentMethods: SpecialistService.parseJsonField(specialist.paymentMethods, []),
+        bankAccounts: SpecialistService.parseJsonField(specialist.bankAccounts, []),
         serviceArea: SpecialistService.parseJsonField(specialist.serviceArea, {}),
         notifications: SpecialistService.parseJsonField(specialist.notifications, {}),
         privacy: SpecialistService.parseJsonField(specialist.privacy, {}),

@@ -1239,6 +1239,10 @@ export class PaymentService {
     cardBrand?: string;
     cardExpMonth?: number;
     cardExpYear?: number;
+    bankName?: string;
+    accountName?: string;
+    accountNumber?: string;
+    qrImageUrl?: string;
     nickname?: string;
     stripeCustomerId?: string;
     stripePaymentMethodId?: string;
@@ -1251,6 +1255,10 @@ export class PaymentService {
         cardBrand,
         cardExpMonth,
         cardExpYear,
+        bankName,
+        accountName,
+        accountNumber,
+        qrImageUrl,
         nickname,
         stripeCustomerId,
         stripePaymentMethodId,
@@ -1271,6 +1279,10 @@ export class PaymentService {
           cardBrand,
           cardExpMonth,
           cardExpYear,
+          bankName,
+          accountName,
+          accountNumber,
+          qrImageUrl,
           nickname,
           stripeCustomerId,
           stripePaymentMethodId,
@@ -1299,6 +1311,10 @@ export class PaymentService {
       nickname?: string;
       cardExpMonth?: number;
       cardExpYear?: number;
+      bankName?: string;
+      accountName?: string;
+      accountNumber?: string;
+      qrImageUrl?: string;
     }
   ): Promise<PaymentMethod | null> {
     try {

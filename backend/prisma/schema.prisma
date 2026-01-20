@@ -154,6 +154,7 @@ model Specialist {
   
   // Business operations
   paymentMethods String? // JSON string of accepted payment methods
+  bankAccounts   String? // JSON string of ABA/KHQR payout accounts
   serviceArea    String? // JSON string for service area settings (radius, cities)
   notifications  String? // JSON string for notification preferences
   privacy        String? // JSON string for privacy settings
@@ -985,6 +986,10 @@ model PaymentMethod {
   cardBrand   String? // visa, mastercard, amex, etc.
   cardExpMonth Int?
   cardExpYear Int?
+  bankName    String? // ABA, KHQR, etc.
+  accountName String?
+  accountNumber String?
+  qrImageUrl  String?
   
   // Stripe customer and payment method IDs
   stripeCustomerId String?

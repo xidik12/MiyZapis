@@ -96,6 +96,22 @@ const createTranslations = (): Translations => {
   ensure('auth.google.redirectLabel', 'Continue with Google (full page)', 'បន្តជាមួយ Google (ទំព័រពេញ)');
   ensure('auth.google.redirectHint', 'If popups are blocked, use the full page sign-in.', 'បើ popups ត្រូវបានរារាំង សូមប្រើការចូលជាមួយទំព័រពេញ។');
   ensure('auth.google.redirectLoading', 'Redirecting...', 'កំពុងបញ្ជូនបន្ត...');
+  ensure('auth.logout', 'Log out', 'ចាកចេញ');
+
+  // Customer navigation
+  ensure('customer.nav.dashboard', 'Dashboard', 'ផ្ទាំងគ្រប់គ្រង');
+  ensure('customer.nav.searchServices', 'Search Services', 'ស្វែងរកសេវាកម្ម');
+  ensure('customer.nav.bookings', 'Bookings', 'ការកក់');
+  ensure('customer.nav.favorites', 'Favorites', 'ចំណូលចិត្ត');
+  ensure('customer.nav.reviews', 'Reviews', 'ការវាយតម្លៃ');
+  ensure('customer.nav.messages', 'Messages', 'សារ');
+  ensure('customer.nav.payments', 'Payments', 'ការទូទាត់');
+  ensure('customer.nav.loyalty', 'Loyalty Points', 'ពិន្ទុភាពស្មោះត្រង់');
+  ensure('customer.nav.referrals', 'Referrals', 'ការណែនាំ');
+  ensure('customer.nav.profile', 'Profile', 'គណនី');
+  ensure('customer.nav.settings', 'Settings', 'ការកំណត់');
+  ensure('customer.customerLabel', 'Customer', 'អតិថិជន');
+  ensure('customer.online', 'Online', 'អនឡាញ');
 
   const fallbackEntries: Record<string, string> = {
     'actions.bookNow': 'Book now',
@@ -197,6 +213,38 @@ const createTranslations = (): Translations => {
   ensure('bookings.completed', 'Completed', 'បានបញ្ចប់');
   ensure('bookings.cancelled', 'Cancelled', 'បានលុបចោល');
   ensure('bookings.noShow', 'No Show', 'មិនបានមកដល់');
+  // Payments translations
+  ensure('payments.title', 'Payment Methods', 'វិធីសាស្រ្តបង់ប្រាក់');
+  ensure('payments.subtitle', 'Manage your payment methods and transaction history', 'គ្រប់គ្រងវិធីសាស្រ្តបង់ប្រាក់ និងប្រវត្តិប្រតិបត្តិការ');
+  ensure('payments.yourMethods', 'Your Payment Methods', 'វិធីសាស្រ្តបង់ប្រាក់របស់អ្នក');
+  ensure('payments.emptyTitle', 'No payment methods added yet', 'មិនទាន់មានវិធីសាស្រ្តបង់ប្រាក់ទេ');
+  ensure('payments.emptyDescription', 'Add a payment method for quick and convenient service bookings. Your data will be securely protected.', 'បន្ថែមវិធីសាស្រ្តបង់ប្រាក់ ដើម្បីកក់សេវាកម្មបានរហ័ស និងងាយស្រួល។ ទិន្នន័យរបស់អ្នកត្រូវបានការពារយ៉ាងសុវត្ថិភាព។');
+  ensure('payments.emptyCta', 'Add Your First Payment Method', 'បន្ថែមវិធីសាស្រ្តបង់ប្រាក់ដំបូង');
+  ensure('payments.accountSuffix', 'Account ••••', 'គណនី ••••');
+  ensure('payments.default', 'Default', 'លំនាំដើម');
+  ensure('payments.active', 'Active', 'សកម្ម');
+  ensure('payments.makeDefault', 'Make Default', 'កំណត់ជាលំនាំដើម');
+  ensure('payments.securityTitle', 'Your Data Security', 'សុវត្ថិភាពទិន្នន័យរបស់អ្នក');
+  ensure('payments.securityDescription', 'We use state-of-the-art encryption methods to protect your payment data. Card numbers are stored encrypted and comply with PCI DSS standards.', 'យើងប្រើវិធីសាស្រ្តអ៊ិនគ្រីបកម្រិតខ្ពស់ ដើម្បីការពារទិន្នន័យបង់ប្រាក់របស់អ្នក។ លេខកាតត្រូវបានរក្សាទុកជាអ៊ិនគ្រីប និងអនុលោមតាមស្តង់ដារ PCI DSS។');
+  ensure('payments.paymentType', 'Payment Type', 'ប្រភេទការទូទាត់');
+  ensure('payments.bankCard', 'Bank Card', 'កាតធនាគារ');
+  ensure('payments.abaBank', 'ABA Bank', 'ធនាគារ ABA');
+  ensure('payments.khqr', 'KHQR', 'KHQR');
+  ensure('payments.cardName', 'Card Name', 'ឈ្មោះកាត');
+  ensure('payments.cardNamePlaceholder', 'Visa •••• 4242', 'Visa •••• 4242');
+  ensure('payments.cardNumber', 'Card Number', 'លេខកាត');
+  ensure('payments.cardNumberPlaceholder', '1234 5678 9012 3456', '1234 5678 9012 3456');
+  ensure('payments.expiryMonth', 'Month', 'ខែ');
+  ensure('payments.expiryYear', 'Year', 'ឆ្នាំ');
+  ensure('payments.accountName', 'Account Name', 'ឈ្មោះគណនី');
+  ensure('payments.accountNamePlaceholder', 'Account holder name', 'ឈ្មោះម្ចាស់គណនី');
+  ensure('payments.accountNumber', 'Account Number', 'លេខគណនី');
+  ensure('payments.accountNumberPlaceholder', 'e.g. 00123456789', 'ឧ. 00123456789');
+  ensure('payments.qrImage', 'QR Image', 'រូបភាព QR');
+  ensure('payments.uploadQr', 'Upload QR', 'បញ្ចូល QR');
+  ensure('payments.qrPreviewAlt', 'QR preview', 'ពិនិត្យ QR');
+  ensure('payments.cancel', 'Cancel', 'បោះបង់');
+  ensure('payment.addPaymentMethod', 'Add Payment Method', 'បន្ថែមវិធីសាស្រ្តបង់ប្រាក់');
   ensure('booking.bankTransferTitle', 'ABA / KHQR Bank Transfer', 'ផ្ទេរប្រាក់ ABA / KHQR');
   ensure('booking.bankTransferMessage', 'Use the details below to pay the deposit or remaining balance.', 'សូមប្រើព័ត៌មានខាងក្រោម ដើម្បីបង់ប្រាក់កក់ ឬប្រាក់នៅសល់។');
   ensure('booking.bankTransferDepositDue', 'Deposit due now', 'ប្រាក់កក់ត្រូវបង់ឥឡូវនេះ');

@@ -15,7 +15,7 @@ import {
 } from '@/components/icons';
 
 const PaymentMethods: React.FC = () => {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const currentUser = useAppSelector(selectUser);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -158,15 +158,10 @@ const PaymentMethods: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            {language === 'uk' ? 'Способи оплати' : language === 'ru' ? 'Способы оплаты' : 'Payment Methods'}
+            {t('payments.title')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            {language === 'uk' 
-              ? 'Керуйте вашими способами оплати та історією транзакцій'
-              : language === 'ru'
-              ? 'Управляйте вашими способами оплаты и историей транзакций'
-              : 'Manage your payment methods and transaction history'
-            }
+            {t('payments.subtitle')}
           </p>
         </div>
 
@@ -175,14 +170,14 @@ const PaymentMethods: React.FC = () => {
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                {language === 'uk' ? 'Ваші способи оплати' : language === 'ru' ? 'Ваши способы оплаты' : 'Your Payment Methods'}
+                {t('payments.yourMethods')}
               </h2>
               <button 
                 onClick={handleAddPaymentMethod}
                 className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
               >
                 <PlusIcon className="h-4 w-4 mr-2" />
-                {language === 'uk' ? 'Додати спосіб оплати' : language === 'ru' ? 'Добавить способ оплаты' : 'Add Payment Method'}
+                {t('payment.addPaymentMethod')}
               </button>
             </div>
 
@@ -191,22 +186,17 @@ const PaymentMethods: React.FC = () => {
                 <div className="text-center py-12">
                   <CreditCardIcon className="h-16 w-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                    {language === 'uk' ? 'Способи оплати не додано' : language === 'ru' ? 'Способы оплаты не добавлены' : 'No payment methods added yet'}
+                    {t('payments.emptyTitle')}
                   </h3>
                   <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                    {language === 'uk' 
-                      ? 'Додайте спосіб оплати для швидкого та зручного бронювання послуг. Ваші дані будуть надійно захищені.'
-                      : language === 'ru'
-                      ? 'Добавьте способ оплаты для быстрого и удобного бронирования услуг. Ваши данные будут надежно защищены.'
-                      : 'Add a payment method for quick and convenient service bookings. Your data will be securely protected.'
-                    }
+                    {t('payments.emptyDescription')}
                   </p>
                   <button 
                     onClick={handleAddPaymentMethod}
                     className="bg-primary-600 text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
                   >
                     <PlusIcon className="h-4 w-4 mr-2" />
-                    {language === 'uk' ? 'Додати перший спосіб оплати' : language === 'ru' ? 'Добавить первый способ оплаты' : 'Add Your First Payment Method'}
+                    {t('payments.emptyCta')}
                   </button>
                 </div>
               ) : (
@@ -215,9 +205,10 @@ const PaymentMethods: React.FC = () => {
                   const isCard = methodType.includes('card');
                   const bankLabel = method.bankName || (methodType.includes('khqr') ? 'KHQR' : methodType.includes('aba') ? 'ABA' : 'Bank');
                   const displayName = method.nickname || (isCard ? `${method.cardBrand || 'Card'} •••• ${method.cardLast4 || ''}` : `${bankLabel} Account`);
+                  const accountSuffix = t('payments.accountSuffix');
                   const detailLine = isCard
                     ? `**** **** **** ${method.cardLast4 || ''}${method.cardExpMonth && method.cardExpYear ? ` • ${method.cardExpMonth.toString().padStart(2, '0')}/${method.cardExpYear}` : ''}`
-                    : `Account •••• ${method.accountNumber?.slice(-4) || ''}`;
+                    : `${accountSuffix} ${method.accountNumber?.slice(-4) || ''}`;
 
                   return (
                     <div key={method.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex items-center justify-between">
@@ -233,12 +224,12 @@ const PaymentMethods: React.FC = () => {
                             <p className="font-medium text-gray-900 dark:text-gray-100">{displayName}</p>
                             {method.isDefault && (
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                                {language === 'uk' ? 'Основний' : language === 'ru' ? 'Основной' : 'Default'}
+                                {t('payments.default')}
                               </span>
                             )}
                             {method.isActive && (
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                                {language === 'uk' ? 'Активний' : language === 'ru' ? 'Активный' : 'Active'}
+                                {t('payments.active')}
                               </span>
                             )}
                           </div>
@@ -258,7 +249,7 @@ const PaymentMethods: React.FC = () => {
                             onClick={() => handleSetDefault(method.id)}
                             className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium"
                           >
-                            {language === 'uk' ? 'Зробити основним' : language === 'ru' ? 'Сделать основным' : 'Make Default'}
+                            {t('payments.makeDefault')}
                           </button>
                         )}
                         <button className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
@@ -289,15 +280,10 @@ const PaymentMethods: React.FC = () => {
             </div>
             <div className="ml-3">
               <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                {language === 'uk' ? 'Безпека ваших даних' : language === 'ru' ? 'Безопасность ваших данных' : 'Your Data Security'}
+                {t('payments.securityTitle')}
               </h3>
               <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
-                {language === 'uk' 
-                  ? 'Ми використовуємо найсучасні методи шифрування для захисту ваших платіжних даних. Номери карток зберігаються в зашифрованому вигляді та відповідають стандартам PCI DSS.'
-                  : language === 'ru'
-                  ? 'Мы используем современные методы шифрования для защиты ваших платежных данных. Номера карт хранятся в зашифрованном виде и соответствуют стандартам PCI DSS.'
-                  : 'We use state-of-the-art encryption methods to protect your payment data. Card numbers are stored encrypted and comply with PCI DSS standards.'
-                }
+                {t('payments.securityDescription')}
               </p>
             </div>
           </div>
@@ -309,7 +295,7 @@ const PaymentMethods: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
-              {language === 'uk' ? 'Додати спосіб оплати' : language === 'ru' ? 'Добавить способ оплаты' : 'Add Payment Method'}
+              {t('payment.addPaymentMethod')}
             </h3>
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -334,7 +320,7 @@ const PaymentMethods: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {language === 'uk' ? 'Тип оплати' : language === 'ru' ? 'Тип оплаты' : 'Payment Type'}
+                    {t('payments.paymentType')}
                   </label>
                   <select 
                     name="paymentType"
@@ -342,9 +328,9 @@ const PaymentMethods: React.FC = () => {
                     onChange={(e) => setPaymentType(e.target.value as 'card' | 'aba' | 'khqr')}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
                   >
-                    <option value="card">{language === 'uk' ? 'Банківська картка' : language === 'ru' ? 'Банковская карта' : 'Bank Card'}</option>
-                    <option value="aba">ABA Bank</option>
-                    <option value="khqr">KHQR</option>
+                    <option value="card">{t('payments.bankCard')}</option>
+                    <option value="aba">{t('payments.abaBank')}</option>
+                    <option value="khqr">{t('payments.khqr')}</option>
                   </select>
                 </div>
 
@@ -352,24 +338,24 @@ const PaymentMethods: React.FC = () => {
                   <>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {language === 'uk' ? 'Назва картки' : language === 'ru' ? 'Название карты' : 'Card Name'}
+                        {t('payments.cardName')}
                       </label>
                       <input
                         type="text"
                         name="cardName"
-                        placeholder="Visa •••• 4242"
+                        placeholder={t('payments.cardNamePlaceholder')}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
                         required
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {language === 'uk' ? 'Номер картки' : language === 'ru' ? 'Номер карты' : 'Card Number'}
+                        {t('payments.cardNumber')}
                       </label>
                       <input
                         type="text"
                         name="cardNumber"
-                        placeholder="1234 5678 9012 3456"
+                        placeholder={t('payments.cardNumberPlaceholder')}
                         maxLength={19}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
                         onChange={(e) => {
@@ -382,7 +368,7 @@ const PaymentMethods: React.FC = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {language === 'uk' ? 'Місяць' : language === 'ru' ? 'Месяц' : 'Month'}
+                          {t('payments.expiryMonth')}
                         </label>
                         <select
                           name="expiryMonth"
@@ -399,7 +385,7 @@ const PaymentMethods: React.FC = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {language === 'uk' ? 'Рік' : language === 'ru' ? 'Год' : 'Year'}
+                          {t('payments.expiryYear')}
                         </label>
                         <select
                           name="expiryYear"
@@ -423,36 +409,36 @@ const PaymentMethods: React.FC = () => {
                   <>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Account Name
+                        {t('payments.accountName')}
                       </label>
                       <input
                         type="text"
                         name="accountName"
-                        placeholder="Account holder name"
+                        placeholder={t('payments.accountNamePlaceholder')}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
                         required
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Account Number
+                        {t('payments.accountNumber')}
                       </label>
                       <input
                         type="text"
                         name="accountNumber"
-                        placeholder="e.g. 00123456789"
+                        placeholder={t('payments.accountNumberPlaceholder')}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md focus:ring-primary-500 focus:border-primary-500"
                         required
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        QR Image
+                        {t('payments.qrImage')}
                       </label>
                       <div className="flex items-center gap-3">
                         <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:border-primary-400">
                           <PhotoIcon className="h-4 w-4" />
-                          Upload QR
+                          {t('payments.uploadQr')}
                           <input
                             type="file"
                             name="qrImage"
@@ -469,13 +455,13 @@ const PaymentMethods: React.FC = () => {
                             required
                           />
                         </label>
-                        {qrPreview && (
-                          <img
-                            src={qrPreview}
-                            alt="QR preview"
-                            className="h-12 w-12 rounded-md object-cover border border-gray-200 dark:border-gray-600"
-                          />
-                        )}
+                          {qrPreview && (
+                            <img
+                              src={qrPreview}
+                              alt={t('payments.qrPreviewAlt')}
+                              className="h-12 w-12 rounded-md object-cover border border-gray-200 dark:border-gray-600"
+                            />
+                          )}
                       </div>
                     </div>
                   </>
@@ -487,13 +473,13 @@ const PaymentMethods: React.FC = () => {
                   onClick={() => setShowAddModal(false)}
                   className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
                 >
-                  {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Cancel'}
+                  {t('payments.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
                 >
-                  {language === 'uk' ? 'Додати спосіб оплати' : language === 'ru' ? 'Добавить способ оплаты' : 'Add Payment Method'}
+                  {t('payment.addPaymentMethod')}
                 </button>
               </div>
             </form>
