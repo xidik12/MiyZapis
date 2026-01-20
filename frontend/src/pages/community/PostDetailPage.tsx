@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSelector } from '@/hooks/redux';
 import { selectIsAuthenticated, selectUser } from '@/store/slices/authSlice';
 import { communityService, Comment, Post } from '@/services';
-import { PageLoader } from '@/components/common/loading';
+import { PageLoader } from '@/components/ui';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import {
   HeartIcon,

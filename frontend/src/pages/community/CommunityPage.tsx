@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSelector } from '@/hooks/redux';
 import { selectIsAuthenticated } from '@/store/slices/authSlice';
 import { communityService, Post, PostType } from '@/services';
-import { PageLoader } from '@/components/common/loading';
+import { PageLoader } from '@/components/ui';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import {
   PlusIcon,

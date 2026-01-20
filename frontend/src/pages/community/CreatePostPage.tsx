@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSelector } from '@/hooks/redux';
 import { selectUser } from '@/store/slices/authSlice';
 import { communityService, CreatePostData, POST_TYPES, Post } from '@/services';
-import { PageLoader } from '@/components/common/loading';
+import { PageLoader } from '@/components/ui';
 import { ArrowLeftIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 const CreatePostPage: React.FC = () => {
