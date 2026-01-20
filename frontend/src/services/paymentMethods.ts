@@ -7,6 +7,10 @@ export interface PaymentMethodRequest {
   cardBrand?: string;
   cardExpMonth?: number;
   cardExpYear?: number;
+  bankName?: string;
+  accountName?: string;
+  accountNumber?: string;
+  qrImageUrl?: string;
   nickname?: string;
   stripeCustomerId?: string;
   stripePaymentMethodId?: string;
@@ -16,6 +20,10 @@ export interface PaymentMethodUpdateRequest {
   nickname?: string;
   cardExpMonth?: number;
   cardExpYear?: number;
+  bankName?: string;
+  accountName?: string;
+  accountNumber?: string;
+  qrImageUrl?: string;
 }
 
 export class PaymentMethodsService {

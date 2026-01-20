@@ -325,6 +325,10 @@ export interface PaymentMethod extends BaseEntity {
   cardBrand?: string; // 'visa', 'mastercard', 'amex', etc.
   cardExpMonth?: number;
   cardExpYear?: number;
+  bankName?: string;
+  accountName?: string;
+  accountNumber?: string;
+  qrImageUrl?: string;
   stripeCustomerId?: string;
   stripePaymentMethodId?: string;
   nickname?: string;

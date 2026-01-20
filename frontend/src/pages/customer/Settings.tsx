@@ -127,6 +127,9 @@ const CustomerSettings: React.FC = () => {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
   const [showAddAddressModal, setShowAddAddressModal] = useState(false);
+  const [paymentType, setPaymentType] = useState<'card' | 'aba' | 'khqr'>('card');
+  const [qrFile, setQrFile] = useState<File | null>(null);
+  const [qrPreview, setQrPreview] = useState<string | null>(null);
   const [newAddressLocation, setNewAddressLocation] = useState<{ address: string; city: string; region: string; country: string; postalCode?: string; latitude?: number; longitude?: number; }>({ address: '', city: '', region: '', country: '' });
 
   // Load payment methods when component mounts
@@ -148,6 +151,22 @@ const CustomerSettings: React.FC = () => {
       loadPaymentMethods();
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    if (!showAddPaymentModal) {
+      setPaymentType('card');
+      setQrFile(null);
+      setQrPreview(null);
+    }
+  }, [showAddPaymentModal]);
+
+  useEffect(() => {
+    return () => {
+      if (qrPreview) {
+        URL.revokeObjectURL(qrPreview);
+      }
+    };
+  }, [qrPreview]);
 
   const handleNotificationChange = (key: keyof typeof notifications) => {
     setNotifications(prev => ({
@@ -189,18 +208,53 @@ const CustomerSettings: React.FC = () => {
     setShowAddAddressModal(true);
   };
 
-  const handleSavePaymentMethod = async (paymentData: any) => {
+  const handleSavePaymentMethod = async (paymentData: {
+    type: 'card' | 'aba' | 'khqr';
+    name?: string;
+    last4?: string;
+    expiryMonth?: number;
+    expiryYear?: number;
+    accountName?: string;
+    accountNumber?: string;
+    qrFile?: File | null;
+  }) => {
     try {
       setLoading(true);
-      const newMethod = await PaymentMethodsService.addPaymentMethod({
-        type: 'CARD', // Default to card type
-        cardLast4: paymentData.last4 || '',
-        cardBrand: paymentData.name?.toLowerCase().includes('visa') ? 'visa' : 'mastercard',
-        cardExpMonth: paymentData.expiryMonth,
-        cardExpYear: paymentData.expiryYear,
-        nickname: paymentData.name,
-      });
-      
+
+      let payload: Parameters<typeof PaymentMethodsService.addPaymentMethod>[0];
+      if (paymentData.type === 'card') {
+        const brand = paymentData.name?.toLowerCase() || '';
+        payload = {
+          type: 'CARD',
+          cardLast4: paymentData.last4 || '',
+          cardBrand: brand.includes('visa') ? 'visa' : brand.includes('master') ? 'mastercard' : 'card',
+          cardExpMonth: paymentData.expiryMonth,
+          cardExpYear: paymentData.expiryYear,
+          nickname: paymentData.name,
+        };
+      } else {
+        let qrImageUrl: string | undefined;
+        if (paymentData.qrFile) {
+          const uploaded = await fileUploadService.uploadFile(paymentData.qrFile, {
+            type: 'document',
+            maxSize: 5 * 1024 * 1024,
+            allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
+          });
+          qrImageUrl = uploaded.url;
+        }
+
+        const bankName = paymentData.type === 'aba' ? 'ABA' : 'KHQR';
+        payload = {
+          type: 'BANK_TRANSFER',
+          bankName,
+          accountName: paymentData.accountName,
+          accountNumber: paymentData.accountNumber,
+          qrImageUrl,
+          nickname: paymentData.accountName || `${bankName} Account`,
+        };
+      }
+
+      const newMethod = await PaymentMethodsService.addPaymentMethod(payload);
       setPaymentMethods(prev => [...prev, newMethod]);
       setShowAddPaymentModal(false);
       toast.success(t('settings.payment.added') || 'Payment method added');
@@ -499,26 +553,25 @@ const CustomerSettings: React.FC = () => {
                   {/* Language Preference in Personal Information */}
                   <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-600">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
-                      {language === 'uk' ? 'Налаштування мови' : language === 'ru' ? 'Настройки языка' : 'Language Settings'}
+                      {t('settings.languagePreferences')}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {language === 'uk' ? 'Мова інтерфейсу' : language === 'ru' ? 'Язык интерфейса' : 'Interface Language'}
+                          {t('settings.interfaceLanguage')}
                         </label>
                         <select
                           value={language}
-                          onChange={(e) => setLanguage(e.target.value as any)}
+                          onChange={(e) => setLanguage(e.target.value as 'en' | 'kh')}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         >
-                          <option value="uk">🇺🇦 Українська</option>
-                          <option value="ru">🇷🇺 Русский</option>
                           <option value="en">🇺🇸 English</option>
+                          <option value="kh">🇰🇭 ខ្មែរ</option>
                         </select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {language === 'uk' ? 'Валюта' : language === 'ru' ? 'Валюта' : 'Currency'}
+                          {t('settings.currency')}
                         </label>
                         <select
                           value={currency}
@@ -779,12 +832,11 @@ const CustomerSettings: React.FC = () => {
                       </label>
                       <select
                         value={language}
-                        onChange={(e) => setLanguage(e.target.value as any)}
+                        onChange={(e) => setLanguage(e.target.value as 'en' | 'kh')}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       >
-                        <option value="uk">🇺🇦 Українська</option>
-                        <option value="ru">🇷🇺 Русский</option>
                         <option value="en">🇺🇸 English</option>
+                        <option value="kh">🇰🇭 ខ្មែរ</option>
                       </select>
                     </div>
 
@@ -850,40 +902,50 @@ const CustomerSettings: React.FC = () => {
                         </button>
                       </div>
                     ) : (
-                      paymentMethods.map((method) => (
-                      <div key={method.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex items-center justify-between">
-                        <div className="flex items-center">
-                          <CreditCardIcon className="h-8 w-8 text-gray-400 dark:text-gray-500 mr-3" />
-                          <div>
-                            <p className="font-medium text-gray-900 dark:text-gray-100">{method.nickname || `${method.cardBrand} •••• ${method.cardLast4}`}</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              **** **** **** {method.cardLast4}
-                              {method.cardExpMonth && method.cardExpYear && (
-                                <span className="ml-2">
-                                  Expires {method.cardExpMonth.toString().padStart(2, '0')}/{method.cardExpYear}
-                                </span>
+                      paymentMethods.map((method) => {
+                        const methodType = (method.type || '').toLowerCase();
+                        const isCard = methodType.includes('card');
+                        const bankLabel = method.bankName || (methodType.includes('khqr') ? 'KHQR' : methodType.includes('aba') ? 'ABA' : 'Bank');
+                        const displayName = method.nickname || (isCard ? `${method.cardBrand || 'Card'} •••• ${method.cardLast4 || ''}` : `${bankLabel} Account`);
+                        const detailLine = isCard
+                          ? `**** **** **** ${method.cardLast4 || ''}${method.cardExpMonth && method.cardExpYear ? ` • ${method.cardExpMonth.toString().padStart(2, '0')}/${method.cardExpYear}` : ''}`
+                          : `Account •••• ${method.accountNumber?.slice(-4) || ''}`;
+
+                        return (
+                          <div key={method.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex items-center justify-between">
+                            <div className="flex items-center">
+                              <CreditCardIcon className="h-8 w-8 text-gray-400 dark:text-gray-500 mr-3" />
+                              <div>
+                                <p className="font-medium text-gray-900 dark:text-gray-100">{displayName}</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">{detailLine}</p>
+                                {method.isDefault && (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                    Default
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              {method.qrImageUrl && (
+                                <img
+                                  src={method.qrImageUrl}
+                                  alt={`${bankLabel} QR`}
+                                  className="h-10 w-10 rounded-md object-cover border border-gray-200 dark:border-gray-600"
+                                />
                               )}
-                            </p>
-                            {method.isDefault && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                                Default
-                              </span>
-                            )}
+                              <button className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleRemovePaymentMethod(method.id)}
+                                className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
+                              >
+                                Remove
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <button className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleRemovePaymentMethod(method.id)}
-                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                 </div>
@@ -972,11 +1034,20 @@ const CustomerSettings: React.FC = () => {
             <form onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.target as HTMLFormElement);
-              handleSavePaymentMethod({
-                type: 'card',
-                name: formData.get('cardName'),
-                last4: formData.get('cardNumber')?.toString().slice(-4) || ''
-              });
+              if (paymentType === 'card') {
+                handleSavePaymentMethod({
+                  type: 'card',
+                  name: String(formData.get('cardName') || ''),
+                  last4: formData.get('cardNumber')?.toString().slice(-4) || '',
+                });
+              } else {
+                handleSavePaymentMethod({
+                  type: paymentType,
+                  accountName: String(formData.get('accountName') || ''),
+                  accountNumber: String(formData.get('accountNumber') || ''),
+                  qrFile,
+                });
+              }
             }}>
               <div className="space-y-5">
                 <div>
@@ -985,46 +1056,109 @@ const CustomerSettings: React.FC = () => {
                   </label>
                   <select 
                     name="paymentType"
+                    value={paymentType}
+                    onChange={(e) => setPaymentType(e.target.value as 'card' | 'aba' | 'khqr')}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   >
                     <option value="card">{language === 'uk' ? 'Банківська картка' : language === 'ru' ? 'Банковская карта' : 'Bank Card'}</option>
-                    <option value="privat">PrivatBank</option>
-                    <option value="mono">Monobank</option>
-                    <option value="ukrsib">UkrSibbank</option>
-                    <option value="oschadbank">Oschadbank</option>
-                    <option value="paypal">PayPal</option>
+                    <option value="aba">ABA Bank</option>
+                    <option value="khqr">KHQR</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                    {language === 'uk' ? 'Назва картки' : language === 'ru' ? 'Название карты' : 'Card Name'}
-                  </label>
-                  <input
-                    type="text"
-                    name="cardName"
-                    placeholder={language === 'uk' ? 'Моя картка Visa' : language === 'ru' ? 'Моя карта Visa' : 'My Visa Card'}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                    {language === 'uk' ? 'Номер картки' : language === 'ru' ? 'Номер карты' : 'Card Number'}
-                  </label>
-                  <input
-                    type="text"
-                    name="cardNumber"
-                    placeholder="1234 5678 9012 3456"
-                    maxLength={19}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                    onChange={(e) => {
-                      // Format card number with spaces
-                      let value = e.target.value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
-                      e.target.value = value;
-                    }}
-                    required
-                  />
-                </div>
+
+                {paymentType === 'card' ? (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                        {language === 'uk' ? 'Назва картки' : language === 'ru' ? 'Название карты' : 'Card Name'}
+                      </label>
+                      <input
+                        type="text"
+                        name="cardName"
+                        placeholder={language === 'uk' ? 'Моя картка Visa' : language === 'ru' ? 'Моя карта Visa' : 'My Visa Card'}
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                        {language === 'uk' ? 'Номер картки' : language === 'ru' ? 'Номер карты' : 'Card Number'}
+                      </label>
+                      <input
+                        type="text"
+                        name="cardNumber"
+                        placeholder="1234 5678 9012 3456"
+                        maxLength={19}
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                        onChange={(e) => {
+                          let value = e.target.value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+                          e.target.value = value;
+                        }}
+                        required
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                        Account Name
+                      </label>
+                      <input
+                        type="text"
+                        name="accountName"
+                        placeholder="Account holder name"
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                        Account Number
+                      </label>
+                      <input
+                        type="text"
+                        name="accountNumber"
+                        placeholder="e.g. 00123456789"
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
+                        QR Image
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:border-primary-400">
+                          <CameraIcon className="h-4 w-4" />
+                          Upload QR
+                          <input
+                            type="file"
+                            name="qrImage"
+                            accept="image/png,image/jpeg,image/webp"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] || null;
+                              setQrFile(file);
+                              if (qrPreview) {
+                                URL.revokeObjectURL(qrPreview);
+                              }
+                              setQrPreview(file ? URL.createObjectURL(file) : null);
+                            }}
+                            required
+                          />
+                        </label>
+                        {qrPreview && (
+                          <img
+                            src={qrPreview}
+                            alt="QR preview"
+                            className="h-12 w-12 rounded-md object-cover border border-gray-200 dark:border-gray-600"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
               <div className="flex justify-end space-x-3 mt-8 pt-4 border-t border-gray-200 dark:border-gray-600">
                 <button
