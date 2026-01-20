@@ -354,12 +354,10 @@ const SpecialistSettings: React.FC = () => {
                             />
                             <button
                               type="button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                alert('Settings Avatar Upload Button Clicked!');
+                              onClick={() => {
                                 console.log('[Settings Avatar Upload] Button clicked', { ref: imageInputRef.current });
                                 imageInputRef.current?.click();
+                                console.log('[Settings Avatar Upload] File input clicked');
                               }}
                               disabled={isUploadingImage}
                               className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
