@@ -302,9 +302,6 @@ const SpecialistProfile: React.FC = () => {
   
   // Avatar upload states
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const avatarInputRef = useRef<HTMLInputElement>(null);
-  const portfolioInputRef = useRef<HTMLInputElement>(null);
-  const paymentQrInputRef = useRef<HTMLInputElement>(null);
 
   // Active tab state
   const [activeTab, setActiveTab] = useState<'personal' | 'professional' | 'business' | 'payment' | 'portfolio'>('personal');
@@ -1067,21 +1064,19 @@ const SpecialistProfile: React.FC = () => {
                 {isEditing && (
                   <>
                     <input
-                      ref={avatarInputRef}
+                      id="specialist-profile-avatar-upload"
                       type="file"
                       accept="image/*"
                       className="hidden"
                       disabled={isUploadingAvatar}
                       onChange={handleAvatarUpload}
                     />
-                    <button
-                      type="button"
-                      onClick={() => avatarInputRef.current?.click()}
-                      disabled={isUploadingAvatar}
-                      className="absolute -bottom-2 -right-2 bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-xl cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    <label
+                      htmlFor="specialist-profile-avatar-upload"
+                      className={`absolute -bottom-2 -right-2 bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-xl cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl opacity-0 group-hover:opacity-100 ${isUploadingAvatar ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                     >
                       <CameraIcon className="h-4 w-4" />
-                    </button>
+                    </label>
                   </>
                 )}
               </div>

@@ -127,15 +127,8 @@ export const withRetry = async <T>(
 // Request interceptor to add auth token and handle caching
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Let the browser set the multipart boundary for file uploads.
-    if (config.data instanceof FormData && config.headers) {
-      const headers = config.headers as unknown as { delete?: (key: string) => void } & Record<string, unknown>;
-      if (typeof headers.delete === 'function') {
-        headers.delete('Content-Type');
-      } else {
-        delete headers['Content-Type'];
-      }
-    }
+    // Axios automatically handles FormData and sets proper multipart/form-data boundary
+    // No need to manually delete Content-Type - let axios do its job
 
     const token = getAuthToken();
     if (token && config.headers) {
