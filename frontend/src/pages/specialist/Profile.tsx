@@ -45,6 +45,8 @@ interface SpecialistProfile {
   };
   businessHours: BusinessHours;
   paymentMethods: string[];
+  bankDetails: BankDetails;
+  paymentQrCodeUrl: string;
   notifications: NotificationSettings;
   privacy: PrivacySettings;
   verification: {
@@ -84,6 +86,15 @@ interface PortfolioItem {
   categoryUk?: string;
   categoryRu?: string;
   dateAdded: string;
+}
+
+interface BankDetails {
+  bankName?: string;
+  accountName?: string;
+  accountNumber?: string;
+  iban?: string;
+  swift?: string;
+  notes?: string;
 }
 
 interface BusinessHours {
@@ -150,6 +161,15 @@ const getEmptyProfile = (): SpecialistProfile => ({
     sunday: { isOpen: false, startTime: '09:00', endTime: '17:00' },
   },
   paymentMethods: [],
+  bankDetails: {
+    bankName: '',
+    accountName: '',
+    accountNumber: '',
+    iban: '',
+    swift: '',
+    notes: '',
+  },
+  paymentQrCodeUrl: '',
   notifications: {
     emailBookings: false,
     emailReviews: false,
@@ -229,6 +249,8 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
     languages: Array.isArray(specialist?.languages) ? specialist.languages : parseJsonField(specialist?.languages, []),
     specialties: Array.isArray(specialist?.specialties) ? specialist.specialties : parseJsonField(specialist?.specialties, []),
     paymentMethods: Array.isArray(specialist?.paymentMethods) ? specialist.paymentMethods : parseJsonField(specialist?.paymentMethods, []),
+    bankDetails: specialist?.bankDetails ? parseJsonField(specialist.bankDetails, defaultProfile.bankDetails) : defaultProfile.bankDetails,
+    paymentQrCodeUrl: specialist?.paymentQrCodeUrl || '',
     certifications: Array.isArray(specialist?.certifications) ? specialist.certifications : parseJsonField(specialist?.certifications, []),
     portfolio: Array.isArray(specialist?.portfolio) ? specialist.portfolio : parseJsonField(specialist?.portfolioImages, []),
     // Parse business hours from JSON string if needed - prioritize workingHours from backend
@@ -275,6 +297,8 @@ const SpecialistProfile: React.FC = () => {
   const [showErrorMessage, setShowErrorMessage] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [isUploadingPortfolio, setIsUploadingPortfolio] = useState(false);
+  const [isUploadingPaymentQr, setIsUploadingPaymentQr] = useState(false);
+  const [paymentQrError, setPaymentQrError] = useState('');
   
   // Avatar upload states
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -590,6 +614,8 @@ const SpecialistProfile: React.FC = () => {
             timezone: 'UTC', // Default timezone
             workingHours: profile.businessHours || {},
             paymentMethods: Array.isArray(profile.paymentMethods) ? profile.paymentMethods : [],
+            bankDetails: profile.bankDetails || {},
+            paymentQrCodeUrl: profile.paymentQrCodeUrl || null,
             serviceArea: profile.serviceArea || { radius: 0, cities: [] },
             notifications: profile.notifications || {},
             privacy: profile.privacy || {},
@@ -860,6 +886,64 @@ const SpecialistProfile: React.FC = () => {
     } finally {
       setIsUploadingPortfolio(false);
     }
+  };
+
+  const handleBankDetailsChange = (field: keyof BankDetails, value: string) => {
+    if (!isEditing) return;
+    handleProfileChange('bankDetails', {
+      ...(profile.bankDetails || {}),
+      [field]: value,
+    });
+  };
+
+  const handlePaymentQrUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setPaymentQrError(
+        language === 'uk' ? 'Будь ласка, оберіть файл зображення' :
+        language === 'ru' ? 'Пожалуйста, выберите файл изображения' :
+        'Please select an image file'
+      );
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setPaymentQrError(
+        language === 'uk' ? 'Розмір файлу повинен бути менше 5МБ' :
+        language === 'ru' ? 'Размер файла должен быть меньше 5МБ' :
+        'File size must be less than 5MB'
+      );
+      return;
+    }
+
+    try {
+      setIsUploadingPaymentQr(true);
+      setPaymentQrError('');
+      const result = await fileUploadService.uploadPaymentQr(file);
+      handleProfileChange('paymentQrCodeUrl', result.url);
+      showSuccessNotification(
+        language === 'uk' ? 'QR-код успішно завантажено' :
+        language === 'ru' ? 'QR-код успешно загружен' :
+        'QR code uploaded successfully'
+      );
+      event.target.value = '';
+    } catch (error: any) {
+      setPaymentQrError(
+        error.message ||
+        (language === 'uk' ? 'Помилка завантаження QR-коду' :
+         language === 'ru' ? 'Ошибка загрузки QR-кода' :
+         'Failed to upload QR code')
+      );
+    } finally {
+      setIsUploadingPaymentQr(false);
+    }
+  };
+
+  const handlePaymentQrRemove = () => {
+    if (!isEditing) return;
+    handleProfileChange('paymentQrCodeUrl', '');
   };
 
   // Handle cancel editing
@@ -1892,6 +1976,173 @@ const SpecialistProfile: React.FC = () => {
                             </div>
                           </div>
                         ))}
+                      </div>
+                    </div>
+
+                    {/* Bank Details & QR */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                        <CreditCardIcon className="h-5 w-5" />
+                        {t('specialist.paymentDetails') || 'Payment Details'}
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('specialist.bankName') || 'Bank name'}
+                          </label>
+                          <input
+                            type="text"
+                            value={profile.bankDetails?.bankName || ''}
+                            disabled={!isEditing}
+                            onChange={(e) => handleBankDetailsChange('bankName', e.target.value)}
+                            className={`w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 ${
+                              !isEditing
+                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            }`}
+                            placeholder={t('specialist.bankNamePlaceholder') || 'e.g., PrivatBank'}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('specialist.accountName') || 'Account name'}
+                          </label>
+                          <input
+                            type="text"
+                            value={profile.bankDetails?.accountName || ''}
+                            disabled={!isEditing}
+                            onChange={(e) => handleBankDetailsChange('accountName', e.target.value)}
+                            className={`w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 ${
+                              !isEditing
+                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            }`}
+                            placeholder={t('specialist.accountNamePlaceholder') || 'e.g., Khidayotullo S.'}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('specialist.accountNumber') || 'Account number'}
+                          </label>
+                          <input
+                            type="text"
+                            value={profile.bankDetails?.accountNumber || ''}
+                            disabled={!isEditing}
+                            onChange={(e) => handleBankDetailsChange('accountNumber', e.target.value)}
+                            className={`w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 ${
+                              !isEditing
+                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            }`}
+                            placeholder={t('specialist.accountNumberPlaceholder') || '0000 0000 0000 0000'}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('specialist.iban') || 'IBAN'}
+                          </label>
+                          <input
+                            type="text"
+                            value={profile.bankDetails?.iban || ''}
+                            disabled={!isEditing}
+                            onChange={(e) => handleBankDetailsChange('iban', e.target.value)}
+                            className={`w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 ${
+                              !isEditing
+                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            }`}
+                            placeholder={t('specialist.ibanPlaceholder') || 'UA00 0000 0000 0000 0000 0000 000'}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('specialist.swift') || 'SWIFT/BIC'}
+                          </label>
+                          <input
+                            type="text"
+                            value={profile.bankDetails?.swift || ''}
+                            disabled={!isEditing}
+                            onChange={(e) => handleBankDetailsChange('swift', e.target.value)}
+                            className={`w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 ${
+                              !isEditing
+                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            }`}
+                            placeholder={t('specialist.swiftPlaceholder') || 'PBANUA2X'}
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('specialist.bankNotes') || 'Payment notes'}
+                          </label>
+                          <textarea
+                            value={profile.bankDetails?.notes || ''}
+                            disabled={!isEditing}
+                            onChange={(e) => handleBankDetailsChange('notes', e.target.value)}
+                            className={`w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 ${
+                              !isEditing
+                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            }`}
+                            rows={3}
+                            placeholder={t('specialist.bankNotesPlaceholder') || 'Add any payment instructions...'}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mt-5">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {t('specialist.paymentQr') || 'Payment QR code'}
+                        </label>
+                        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                          <div className="relative inline-flex group">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handlePaymentQrUpload}
+                              disabled={isUploadingPaymentQr || !isEditing}
+                              aria-label={t('specialist.uploadQr') || 'Upload QR code'}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            />
+                            <div
+                              className={`px-4 py-2 bg-primary-500 text-white rounded-lg inline-flex items-center gap-2 pointer-events-none transition-colors ${
+                                isUploadingPaymentQr || !isEditing ? 'opacity-60' : 'group-hover:bg-primary-600'
+                              }`}
+                            >
+                              <PhotoIcon className="h-4 w-4" />
+                              <span className="text-sm">
+                                {isUploadingPaymentQr
+                                  ? t('community.form.uploading') || 'Uploading...'
+                                  : t('specialist.uploadQr') || 'Upload QR'}
+                              </span>
+                            </div>
+                          </div>
+                          {profile.paymentQrCodeUrl && (
+                            <button
+                              type="button"
+                              onClick={handlePaymentQrRemove}
+                              disabled={!isEditing}
+                              className="px-3 py-2 text-sm border border-red-200 text-red-600 rounded-lg hover:bg-red-50 disabled:opacity-60"
+                            >
+                              {t('specialist.removeQr') || 'Remove'}
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                          {t('specialist.qrHelp') || 'PNG/JPG/WebP up to 5MB.'}
+                        </p>
+                        {paymentQrError && (
+                          <p className="text-xs text-red-500 mt-2">{paymentQrError}</p>
+                        )}
+                        {profile.paymentQrCodeUrl && (
+                          <div className="mt-3">
+                            <img
+                              src={getAbsoluteImageUrl(profile.paymentQrCodeUrl)}
+                              alt="Payment QR"
+                              className="w-32 h-32 rounded-xl border border-gray-200 dark:border-gray-700 object-cover"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
 

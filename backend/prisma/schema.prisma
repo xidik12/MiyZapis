@@ -158,6 +158,8 @@ model Specialist {
   
   // Business operations
   paymentMethods String? // JSON string of accepted payment methods
+  bankDetails    String? // JSON string of bank account details
+  paymentQrCodeUrl String? // QR code image URL for payments
   serviceArea    String? // JSON string for service area settings (radius, cities)
   notifications  String? // JSON string for notification preferences
   privacy        String? // JSON string for privacy settings

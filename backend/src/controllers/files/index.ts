@@ -37,6 +37,7 @@ function getAllowedFileTypes(purpose: string): string[] {
       return ['image/jpeg', 'image/png', 'image/webp'];
     case 'service_image':
     case 'portfolio':
+    case 'payment':
       return ['image/jpeg', 'image/png', 'image/webp'];
     case 'message_attachment':
       return [

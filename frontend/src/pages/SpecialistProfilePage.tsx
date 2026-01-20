@@ -64,6 +64,18 @@ const SpecialistProfilePage: React.FC = () => {
     return parts.length > 0 ? parts.join(', ') : null;
   };
 
+  const getBankDetails = (specialist: any) => {
+    if (!specialist?.bankDetails) return null;
+    if (typeof specialist.bankDetails === 'string') {
+      try {
+        return JSON.parse(specialist.bankDetails);
+      } catch {
+        return null;
+      }
+    }
+    return specialist.bankDetails;
+  };
+
   // Helper function to format experience
   const formatExperience = (experience: number) => {
     if (!experience || experience === 0) return t('specialist.notSpecified');
@@ -239,6 +251,11 @@ const SpecialistProfilePage: React.FC = () => {
       </div>
     );
   }
+
+  const bankDetails = getBankDetails(specialist);
+  const hasBankDetails = bankDetails
+    ? Object.values(bankDetails).some((value) => typeof value === 'string' && value.trim())
+    : false;
 
   const isOwnProfile = Boolean(
     user?.userType === 'specialist' &&
@@ -684,6 +701,73 @@ const SpecialistProfilePage: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* Payment Details */}
+            {(hasBankDetails || specialist.paymentQrCodeUrl) && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
+                  {t('specialist.paymentDetails') || 'Payment Details'}
+                </h3>
+                {hasBankDetails && (
+                  <div className="space-y-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                    {bankDetails?.bankName && (
+                      <div className="flex justify-between gap-3">
+                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                          {t('specialist.bankName') || 'Bank'}
+                        </span>
+                        <span className="text-right break-all">{bankDetails.bankName}</span>
+                      </div>
+                    )}
+                    {bankDetails?.accountName && (
+                      <div className="flex justify-between gap-3">
+                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                          {t('specialist.accountName') || 'Account'}
+                        </span>
+                        <span className="text-right break-all">{bankDetails.accountName}</span>
+                      </div>
+                    )}
+                    {bankDetails?.accountNumber && (
+                      <div className="flex justify-between gap-3">
+                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                          {t('specialist.accountNumber') || 'Number'}
+                        </span>
+                        <span className="text-right break-all">{bankDetails.accountNumber}</span>
+                      </div>
+                    )}
+                    {bankDetails?.iban && (
+                      <div className="flex justify-between gap-3">
+                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                          {t('specialist.iban') || 'IBAN'}
+                        </span>
+                        <span className="text-right break-all">{bankDetails.iban}</span>
+                      </div>
+                    )}
+                    {bankDetails?.swift && (
+                      <div className="flex justify-between gap-3">
+                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                          {t('specialist.swift') || 'SWIFT'}
+                        </span>
+                        <span className="text-right break-all">{bankDetails.swift}</span>
+                      </div>
+                    )}
+                    {bankDetails?.notes && (
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        {bankDetails.notes}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {specialist.paymentQrCodeUrl && (
+                  <div className="mt-4">
+                    <img
+                      src={getAbsoluteImageUrl(specialist.paymentQrCodeUrl)}
+                      alt={t('specialist.paymentQr') || 'Payment QR code'}
+                      className="w-32 h-32 rounded-lg border border-gray-200 dark:border-gray-700 object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Quick Stats */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6">

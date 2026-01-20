@@ -99,6 +99,17 @@ export interface Specialist extends BaseEntity {
   pricing: SpecialistPricing;
   revenue?: SpecialistRevenue;
   location?: SpecialistLocation;
+  bankDetails?: BankDetails;
+  paymentQrCodeUrl?: string;
+}
+
+export interface BankDetails {
+  bankName?: string;
+  accountName?: string;
+  accountNumber?: string;
+  iban?: string;
+  swift?: string;
+  notes?: string;
 }
 
 export interface SpecialistAvailability {

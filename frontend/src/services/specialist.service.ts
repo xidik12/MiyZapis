@@ -48,8 +48,21 @@ export class SpecialistService {
       return n > 300 ? Math.round(n / 60000) : n;
     };
 
+    const parsedBankDetails = (() => {
+      if (!specialistData?.bankDetails) return undefined;
+      if (typeof specialistData.bankDetails === 'string') {
+        try {
+          return JSON.parse(specialistData.bankDetails);
+        } catch {
+          return undefined;
+        }
+      }
+      return specialistData.bankDetails;
+    })();
+
     const transformedSpecialist = {
       ...specialistData,
+      bankDetails: parsedBankDetails,
       // Handle user data nesting
       user: specialistData.user ? {
         ...specialistData.user,

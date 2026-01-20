@@ -11,7 +11,7 @@ export interface FileUploadResponse {
 }
 
 export interface FileUploadOptions {
-  type?: 'avatar' | 'portfolio' | 'service' | 'document' | 'certificate';
+  type?: 'avatar' | 'portfolio' | 'service' | 'document' | 'certificate' | 'payment';
   folder?: string;
   maxSize?: number; // in bytes
   allowedTypes?: string[]; // mime types
@@ -106,6 +106,15 @@ export class FileUploadService {
       type: 'certificate',
       maxSize: 20 * 1024 * 1024, // 20MB
       allowedTypes: ['application/pdf', 'image/jpeg', 'image/png']
+    });
+  }
+
+  // Upload payment QR code
+  async uploadPaymentQr(file: File): Promise<FileUploadResponse> {
+    return this.uploadFile(file, {
+      type: 'payment',
+      maxSize: 5 * 1024 * 1024, // 5MB
+      allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
     });
   }
 
