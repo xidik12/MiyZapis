@@ -69,6 +69,7 @@ interface SpecialistProfile {
   };
   businessHours: BusinessHours;
   paymentMethods: string[];
+  bankAccounts: BankAccount[];
   notifications: NotificationSettings;
   privacy: PrivacySettings;
   verification: {
@@ -84,6 +85,13 @@ interface SpecialistProfile {
   };
   languages: string[];
   specialties: string[];
+}
+
+interface BankAccount {
+  type: 'ABA' | 'KHQR';
+  accountName: string;
+  accountNumber: string;
+  qrImageUrl?: string;
 }
 
 interface Certification {
@@ -174,6 +182,7 @@ const getEmptyProfile = (): SpecialistProfile => ({
     sunday: { isOpen: false, startTime: '09:00', endTime: '17:00' },
   },
   paymentMethods: [],
+  bankAccounts: [],
   notifications: {
     emailBookings: false,
     emailReviews: false,
@@ -253,6 +262,9 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
     languages: Array.isArray(specialist?.languages) ? specialist.languages : parseJsonField(specialist?.languages, []),
     specialties: Array.isArray(specialist?.specialties) ? specialist.specialties : parseJsonField(specialist?.specialties, []),
     paymentMethods: Array.isArray(specialist?.paymentMethods) ? specialist.paymentMethods : parseJsonField(specialist?.paymentMethods, []),
+    bankAccounts: Array.isArray(specialist?.bankAccounts)
+      ? specialist.bankAccounts
+      : parseJsonField(specialist?.bankAccounts ?? specialist?.bank_accounts ?? specialist?.payoutAccounts ?? specialist?.payout_accounts, []),
     certifications: Array.isArray(specialist?.certifications) ? specialist.certifications : parseJsonField(specialist?.certifications, []),
     portfolio: Array.isArray(specialist?.portfolio) ? specialist.portfolio : parseJsonField(specialist?.portfolioImages, []),
     // Parse business hours from JSON string if needed - prioritize workingHours from backend
@@ -302,6 +314,10 @@ const SpecialistProfile: React.FC = () => {
   
   // Avatar upload states
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [bankUploadState, setBankUploadState] = useState<Record<'ABA' | 'KHQR', boolean>>({
+    ABA: false,
+    KHQR: false,
+  });
 
   // Active tab state
   const [activeTab, setActiveTab] = useState<'personal' | 'professional' | 'business' | 'portfolio'>('personal');
@@ -497,6 +513,45 @@ const SpecialistProfile: React.FC = () => {
     }
   };
 
+  const updateBankAccount = (type: 'ABA' | 'KHQR', updates: Partial<BankAccount>) => {
+    const currentAccounts = Array.isArray(profile.bankAccounts) ? profile.bankAccounts : [];
+    const existing = currentAccounts.find((account) => account.type === type);
+    const nextAccounts = existing
+      ? currentAccounts.map((account) =>
+          account.type === type ? { ...account, ...updates, type } : account
+        )
+      : [
+          ...currentAccounts,
+          {
+            type,
+            accountName: '',
+            accountNumber: '',
+            ...updates,
+          }
+        ];
+
+    handleProfileChange('bankAccounts', nextAccounts);
+  };
+
+  const handleBankQrUpload = async (type: 'ABA' | 'KHQR', file: File) => {
+    if (!isEditing) return;
+    try {
+      setBankUploadState((prev) => ({ ...prev, [type]: true }));
+      const uploaded = await fileUploadService.uploadFile(file, {
+        type: 'document',
+        maxSize: 5 * 1024 * 1024,
+        allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
+      });
+      updateBankAccount(type, { qrImageUrl: uploaded.url });
+      showSuccessNotification('QR image uploaded');
+    } catch (error: any) {
+      console.error('Failed to upload QR image:', error);
+      showErrorNotification(error?.message || 'Failed to upload QR image');
+    } finally {
+      setBankUploadState((prev) => ({ ...prev, [type]: false }));
+    }
+  };
+
   // Validate profile data
   const validateProfile = (): boolean => {
     const errors: Record<string, string> = {};
@@ -596,6 +651,7 @@ const SpecialistProfile: React.FC = () => {
             timezone: 'UTC', // Default timezone
             workingHours: profile.businessHours || {},
             paymentMethods: Array.isArray(profile.paymentMethods) ? profile.paymentMethods : [],
+            bankAccounts: Array.isArray(profile.bankAccounts) ? profile.bankAccounts : [],
             serviceArea: profile.serviceArea || { radius: 0, cities: [] },
             notifications: profile.notifications || {},
             privacy: profile.privacy || {},
@@ -1810,7 +1866,7 @@ const SpecialistProfile: React.FC = () => {
                         {language === 'uk' ? 'Способи оплати' : language === 'ru' ? 'Способы оплаты' : 'Payment Methods'}
                       </h3>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {['cash', 'card', 'transfer', 'paypal', 'crypto', 'apple_pay'].map((method) => (
+                        {['cash', 'card', 'transfer', 'aba', 'khqr', 'paypal', 'crypto', 'apple_pay'].map((method) => (
                           <div 
                             key={method}
                             onClick={() => {
@@ -1833,6 +1889,8 @@ const SpecialistProfile: React.FC = () => {
                                 {method === 'cash' ? (language === 'uk' ? 'Готівка' : language === 'ru' ? 'Наличные' : 'Cash')
                                 : method === 'card' ? (language === 'uk' ? 'Картка' : language === 'ru' ? 'Карта' : 'Card')
                                 : method === 'transfer' ? (language === 'uk' ? 'Переказ' : language === 'ru' ? 'Перевод' : 'Transfer')
+                                : method === 'aba' ? 'ABA'
+                                : method === 'khqr' ? 'KHQR'
                                 : method === 'paypal' ? 'PayPal'
                                 : method === 'crypto' ? (language === 'uk' ? 'Крипто' : language === 'ru' ? 'Крипто' : 'Crypto')
                                 : method === 'apple_pay' ? 'Apple Pay'
@@ -1841,6 +1899,94 @@ const SpecialistProfile: React.FC = () => {
                             </div>
                           </div>
                         ))}
+                      </div>
+                    </div>
+
+                    {/* ABA / KHQR bank details */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                        <CreditCardIcon className="h-5 w-5" />
+                        Bank Details
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        Add account details and a QR image for ABA or KHQR payments.
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {(['ABA', 'KHQR'] as const).map((type) => {
+                          const account =
+                            (profile.bankAccounts || []).find((item) => item.type === type) ||
+                            { type, accountName: '', accountNumber: '', qrImageUrl: '' };
+                          return (
+                            <div key={type} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+                              <div className="flex items-center justify-between mb-4">
+                                <span className="font-semibold text-gray-900 dark:text-white">{type}</span>
+                                {account.qrImageUrl && (
+                                  <img
+                                    src={account.qrImageUrl}
+                                    alt={`${type} QR`}
+                                    className="h-10 w-10 rounded-md object-cover border border-gray-200 dark:border-gray-600"
+                                  />
+                                )}
+                              </div>
+                              <div className="space-y-3">
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Account Name
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={account.accountName}
+                                    disabled={!isEditing}
+                                    onChange={(e) => updateBankAccount(type, { accountName: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                                    placeholder="Account holder name"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Account Number
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={account.accountNumber}
+                                    disabled={!isEditing}
+                                    onChange={(e) => updateBankAccount(type, { accountNumber: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                                    placeholder="e.g. 00123456789"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  {isEditing && (
+                                    <label className="inline-flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:border-primary-400">
+                                      <CameraIcon className="h-4 w-4" />
+                                      {bankUploadState[type] ? 'Uploading...' : 'Upload QR'}
+                                      <input
+                                        type="file"
+                                        accept="image/png,image/jpeg,image/webp"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (file) {
+                                            handleBankQrUpload(type, file);
+                                          }
+                                        }}
+                                      />
+                                    </label>
+                                  )}
+                                  {isEditing && account.qrImageUrl && (
+                                    <button
+                                      type="button"
+                                      onClick={() => updateBankAccount(type, { qrImageUrl: '' })}
+                                      className="text-sm text-red-500 hover:text-red-600"
+                                    >
+                                      Remove QR
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
 
