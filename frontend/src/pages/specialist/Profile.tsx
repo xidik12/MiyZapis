@@ -2194,7 +2194,7 @@ const SpecialistProfile: React.FC = () => {
                           {isEditing && (
                             <div className="space-y-2">
                               <input
-                                ref={paymentQrInputRef}
+                                id="payment-qr-upload"
                                 type="file"
                                 accept="image/*"
                                 onChange={handlePaymentQrUpload}
@@ -2202,16 +2202,14 @@ const SpecialistProfile: React.FC = () => {
                                 disabled={isUploadingPaymentQr}
                               />
                               <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => paymentQrInputRef.current?.click()}
-                                  disabled={isUploadingPaymentQr}
-                                  className="px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                <label
+                                  htmlFor="payment-qr-upload"
+                                  className={`px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors cursor-pointer ${isUploadingPaymentQr ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                                 >
                                   {isUploadingPaymentQr
                                     ? (language === 'uk' ? 'Завантаження...' : language === 'ru' ? 'Загрузка...' : 'Uploading...')
                                     : (t('specialist.uploadQr') || 'Upload QR')}
-                                </button>
+                                </label>
                                 {profile.paymentQrCodeUrl && (
                                   <button
                                     type="button"
@@ -2252,17 +2250,16 @@ const SpecialistProfile: React.FC = () => {
                     {isEditing && (
                       <div className="relative">
                         <input
-                          ref={portfolioInputRef}
+                          id="portfolio-image-upload"
                           type="file"
                           accept="image/*"
                           onChange={handlePortfolioUpload}
                           className="hidden"
                           disabled={isUploadingPortfolio}
                         />
-                        <button
-                          onClick={() => portfolioInputRef.current?.click()}
-                          disabled={isUploadingPortfolio}
-                          className="px-4 py-2 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        <label
+                          htmlFor="portfolio-image-upload"
+                          className={`px-4 py-2 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2 cursor-pointer ${isUploadingPortfolio ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                         >
                           {isUploadingPortfolio ? (
                             <>
@@ -2275,7 +2272,7 @@ const SpecialistProfile: React.FC = () => {
                               {language === 'uk' ? 'Додати фото' : language === 'ru' ? 'Добавить фото' : 'Add Photo'}
                             </>
                           )}
-                        </button>
+                        </label>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                           {language === 'uk' ? 'Максимальний розмір файлу: 5МБ. Підтримуються формати: JPG, PNG, WebP' :
                            language === 'ru' ? 'Максимальный размер файла: 5МБ. Поддерживаемые форматы: JPG, PNG, WebP' :

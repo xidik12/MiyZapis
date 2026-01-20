@@ -303,7 +303,7 @@ const CreatePostPage: React.FC = () => {
               </label>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
-                  ref={imageInputRef}
+                  id="community-image-upload"
                   type="file"
                   accept="image/*"
                   multiple
@@ -312,15 +312,9 @@ const CreatePostPage: React.FC = () => {
                   aria-label={t('community.form.uploadImages') || 'Upload images'}
                   className="hidden"
                 />
-                <button
-                  type="button"
-                  onClick={() => {
-                    console.log('[Community Upload] Button clicked', { ref: imageInputRef.current });
-                    imageInputRef.current?.click();
-                    console.log('[Community Upload] File input clicked');
-                  }}
-                  disabled={isUploadingImages}
-                  className="px-4 py-2 bg-primary-500 text-white rounded-lg inline-flex items-center gap-2 transition-colors hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not-allowed"
+                <label
+                  htmlFor="community-image-upload"
+                  className={`px-4 py-2 bg-primary-500 text-white rounded-lg inline-flex items-center gap-2 transition-colors hover:bg-primary-600 cursor-pointer ${isUploadingImages ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}
                 >
                   {isUploadingImages ? (
                     <span className="text-sm">{t('community.form.uploading') || 'Uploading...'}</span>
@@ -332,7 +326,7 @@ const CreatePostPage: React.FC = () => {
                       </span>
                     </>
                   )}
-                </button>
+                </label>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                 {t('community.form.imageHelp') || 'Max 10MB. JPG, PNG, WebP.'}

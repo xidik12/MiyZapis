@@ -345,29 +345,23 @@ const SpecialistSettings: React.FC = () => {
                         <div className="flex flex-col space-y-3">
                           <div className="flex space-x-3">
                             <input
-                              ref={imageInputRef}
+                              id="settings-avatar-upload"
                               type="file"
                               accept="image/*"
                               onChange={handleImageUpload}
                               className="hidden"
                               disabled={isUploadingImage}
                             />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                console.log('[Settings Avatar Upload] Button clicked', { ref: imageInputRef.current });
-                                imageInputRef.current?.click();
-                                console.log('[Settings Avatar Upload] File input clicked');
-                              }}
-                              disabled={isUploadingImage}
-                              className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            <label
+                              htmlFor="settings-avatar-upload"
+                              className={`cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-primary-700 transition-colors ${isUploadingImage ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                             >
                               <CameraIcon className="w-4 h-4 inline mr-2" />
-                              {isUploadingImage ? 
+                              {isUploadingImage ?
                                 (t('settings.upload.uploading') || 'Uploading...') :
                                 (t('settings.upload.changePhoto') || 'Change Photo')
                               }
-                            </button>
+                            </label>
                             
                             {profileImage && (
                               <button
