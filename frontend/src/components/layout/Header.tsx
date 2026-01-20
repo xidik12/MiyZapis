@@ -228,7 +228,7 @@ export const Header: React.FC = () => {
                 </Link>
                 <Link
                   to="/auth/register"
-                  className="bg-primary-gradient text-white px-3 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl shadow-lg shadow-primary-500/30 hover:shadow-primary-500/40 whitespace-nowrap"
+                  className="bg-primary-600 text-white px-3 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary-700 hover:shadow-xl shadow-lg shadow-primary-500/30 hover:shadow-primary-500/40 whitespace-nowrap"
                 >
                   {t('nav.getStarted')}
                 </Link>

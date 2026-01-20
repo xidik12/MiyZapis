@@ -392,7 +392,7 @@ const CustomerDashboard: React.FC = () => {
             <div className="mt-4 lg:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               <Link
                 to="/search"
-                className="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl hover:from-primary-700 hover:to-secondary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
+                className="inline-flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors duration-200 font-medium shadow-md text-sm sm:text-base"
               >
                 <MagnifyingGlassIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 {t('dashboard.customer.findSpecialists')}
@@ -415,7 +415,7 @@ const CustomerDashboard: React.FC = () => {
               change={`+15% ${t('dashboard.specialist.thisMonthImprovement')}`}
               changeType="positive"
               icon={CreditCardIcon}
-              iconBg="bg-gradient-to-br from-primary-500 to-primary-600"
+              iconBg="bg-primary-600"
               description={t('dashboard.specialist.allTime')}
             />
             <StatCard
@@ -424,7 +424,7 @@ const CustomerDashboard: React.FC = () => {
               change={`+${stats?.monthlyPoints || 0} this month`}
               changeType="positive"
               icon={GiftIcon}
-              iconBg="bg-gradient-to-br from-purple-500 to-purple-600"
+              iconBg="bg-purple-600"
               description={`${stats?.currentTier || 'Bronze'} Tier • ${stats?.nextTierPoints || 0} to next`}
               onClick={() => navigate('/loyalty')}
             />
@@ -434,7 +434,7 @@ const CustomerDashboard: React.FC = () => {
               change={`${stats ? stats.completedBookings : 0}/${stats ? stats.totalBookings : 0} ${t('dashboard.booking.status.completed').toLowerCase()}`}
               changeType="positive"
               icon={StarIcon}
-              iconBg="bg-gradient-to-br from-warning-500 to-warning-600"
+              iconBg="bg-warning-500"
               description={`${stats ? stats.averageRating : 0}/5.0 ${t('dashboard.customer.averageRating').toLowerCase()}`}
             />
           <StatCard
@@ -443,7 +443,7 @@ const CustomerDashboard: React.FC = () => {
             change={`${stats ? stats.reviewsWritten : 0} ${t('dashboard.nav.reviews').toLowerCase()}`}
             changeType="positive"
             icon={HeartIcon}
-            iconBg="bg-gradient-to-br from-info-500 to-info-600"
+            iconBg="bg-info-600"
             description={`${t('dashboard.customer.memberSince')} 2024`}
           />
             <StatCard
@@ -452,14 +452,14 @@ const CustomerDashboard: React.FC = () => {
               change={undefined}
               changeType="positive"
               icon={ChatBubbleLeftRightIcon}
-              iconBg="bg-gradient-to-br from-secondary-500 to-secondary-600"
+              iconBg="bg-secondary-600"
               description={t('dashboard.specialist.allTime')}
             />
         </div>
 
           {/* Next Appointment Banner */}
           {nextAppointment && (
-            <div className="bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white shadow-lg">
+            <div className="bg-primary-600 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white shadow-md">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex-1">
                   <h3 className="text-base sm:text-lg font-semibold mb-2">{t('dashboard.customer.nextAppointment')}</h3>
@@ -518,7 +518,7 @@ const CustomerDashboard: React.FC = () => {
                 {recentBookings.slice(0, 4).map((booking) => (
                   <div key={booking.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
                     <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary-600 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-white font-semibold text-xs sm:text-sm">
                           {booking.specialistName?.split(' ').map(n => n[0]).join('')}
                         </span>
@@ -586,7 +586,7 @@ const CustomerDashboard: React.FC = () => {
                 favoriteSpecialists.map((specialist) => (
                   <div key={specialist.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-xl">
                     <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-success-500 to-success-600 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-success-500 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-white font-semibold text-xs sm:text-sm">
                           {specialist.name.split(' ').map(n => n[0]).join('')}
                         </span>
@@ -631,10 +631,10 @@ const CustomerDashboard: React.FC = () => {
 
           {/* Loyalty Progress */}
           {loyaltyData && loyaltyStats && (
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-purple-200 dark:border-purple-700">
+            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-md border border-purple-200 dark:border-purple-700">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
                 <div className="flex items-center space-x-2 sm:space-x-3">
-                  <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 bg-purple-600 rounded-lg flex items-center justify-center">
                     <GiftIcon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
                   <div>
@@ -690,7 +690,7 @@ const CustomerDashboard: React.FC = () => {
                       style={{ 
                         width: `${Math.min(100, (((loyaltyData?.profile?.totalPoints || 0) - (loyaltyStats?.currentTier?.minPoints || 0)) / ((loyaltyStats?.nextTier?.minPoints || 0) - (loyaltyStats?.currentTier?.minPoints || 0))) * 100)}%` 
                       }}
-                      className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-purple-500 to-purple-600 rounded-full transition-all duration-500"
+                      className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-purple-600 rounded-full transition-all duration-500"
                     ></div>
                   </div>
                   <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
@@ -711,7 +711,7 @@ const CustomerDashboard: React.FC = () => {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {specialOffers.map((offer) => (
-                  <div key={offer.id} className="bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-xl p-4 border border-primary-200 dark:border-primary-700">
+                  <div key={offer.id} className="bg-primary-50 dark:bg-primary-900/20 rounded-xl p-4 border border-primary-200 dark:border-primary-700">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-900 px-2 py-1 rounded-full">
                         -{offer.discount}%

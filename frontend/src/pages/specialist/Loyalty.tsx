@@ -338,7 +338,7 @@ const SpecialistLoyalty: React.FC = () => {
     switch (n) {
       case 'SILVER':
         return {
-          summaryGradient: 'from-slate-100 to-gray-50 dark:from-slate-900/20 dark:to-gray-900/20',
+          summaryGradient: 'bg-slate-50 dark:bg-slate-900/20',
           donutStroke: 'stroke-slate-500',
           accentText: 'text-slate-700 dark:text-slate-300',
           chipBg: 'bg-slate-600 text-white',
@@ -348,7 +348,7 @@ const SpecialistLoyalty: React.FC = () => {
         };
       case 'GOLD':
         return {
-          summaryGradient: 'from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20',
+          summaryGradient: 'bg-yellow-50 dark:bg-yellow-900/20',
           donutStroke: 'stroke-yellow-500',
           accentText: 'text-yellow-700 dark:text-yellow-300',
           chipBg: 'bg-yellow-600 text-white',
@@ -358,7 +358,7 @@ const SpecialistLoyalty: React.FC = () => {
         };
       case 'PLATINUM':
         return {
-          summaryGradient: 'from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20',
+          summaryGradient: 'bg-indigo-50 dark:bg-indigo-900/20',
           donutStroke: 'stroke-indigo-500',
           accentText: 'text-indigo-700 dark:text-indigo-300',
           chipBg: 'bg-indigo-600 text-white',
@@ -369,7 +369,7 @@ const SpecialistLoyalty: React.FC = () => {
       case 'BRONZE':
       default:
         return {
-          summaryGradient: 'from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20',
+          summaryGradient: 'bg-amber-50 dark:bg-amber-900/20',
           donutStroke: 'stroke-amber-500',
           accentText: 'text-amber-700 dark:text-amber-300',
           chipBg: 'bg-amber-600 text-white',
@@ -483,7 +483,7 @@ const SpecialistLoyalty: React.FC = () => {
               <div className="overflow-hidden h-4 mb-4 text-xs flex rounded-full bg-gray-200 dark:bg-gray-700">
                 <div 
                   style={{ width: `${getTierProgress()}%` }}
-                  className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-500"
+                  className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary-600 rounded-full transition-all duration-500"
                 ></div>
               </div>
               
@@ -496,7 +496,7 @@ const SpecialistLoyalty: React.FC = () => {
         )}
 
         {/* Specialist Benefits Banner */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl shadow-sm p-4 sm:p-6 border border-blue-200 dark:border-blue-800 mb-6 sm:mb-8">
+        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl shadow-sm p-4 sm:p-6 border border-blue-200 dark:border-blue-800 mb-6 sm:mb-8">
           <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">
             {t('loyalty.howToEarnSpecialist') || 'How to Earn Points as a Specialist'}
           </h3>
@@ -686,7 +686,7 @@ const SpecialistLoyalty: React.FC = () => {
                 {(() => {
                   const skin = getTierSkin(loyaltyStats?.currentTier?.name || 'BRONZE');
                   return (
-                    <div className={`p-4 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-700 bg-gradient-to-r ${skin.summaryGradient}`}>
+                    <div className={`p-4 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-700 ${skin.summaryGradient}`}>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
                         <div>
                           <p className="text-xs uppercase tracking-wide text-gray-600 dark:text-gray-400">{t('loyalty.currentTier') || 'Your current tier'}</p>

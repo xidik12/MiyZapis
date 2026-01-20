@@ -104,6 +104,34 @@ export interface UserReferral {
   createdAt: string;
 }
 
+const mapReferralProgram = (data: any): ReferralProgram => {
+  return {
+    id: data.id || data.referralCode || data.code,
+    code: data.code || data.referralCode,
+    referrerPoints: data.referrerPoints ?? data.referrer_points ?? 0,
+    refereePoints: data.refereePoints ?? data.referredPoints ?? data.referred_points ?? 0,
+    isActive: data.isActive ?? data.status !== 'EXPIRED',
+    maxUses: data.maxUses ?? data.max_uses,
+    currentUses: data.currentUses ?? data.current_uses ?? 0,
+    expiresAt: data.expiresAt ?? data.expires_at,
+    createdAt: data.createdAt ?? data.created_at ?? new Date().toISOString(),
+  };
+};
+
+const mapUserReferral = (data: any): UserReferral => {
+  return {
+    id: data.id,
+    referrerId: data.referrerId,
+    refereeId: data.referredId ?? data.refereeId,
+    code: data.code || data.referralCode,
+    status: data.status,
+    referrerPoints: data.referrerPoints ?? 0,
+    refereePoints: data.refereePoints ?? data.referredPoints ?? 0,
+    completedAt: data.completedAt,
+    createdAt: data.createdAt,
+  };
+};
+
 export interface LoyaltyStats {
   totalPoints: number;
   totalTransactions: number;
@@ -375,13 +403,18 @@ export class LoyaltyService {
 
   // Get user's referral program info
   async getReferralProgram(): Promise<ReferralProgram> {
-    const response = await apiClient.get<ReferralProgram>('/loyalty/referral');
+    const response = await apiClient.get<{ referrals: any[] }>('/loyalty/referrals?limit=1');
     
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get referral program');
     }
+
+    const referral = response.data.referrals?.[0];
+    if (!referral) {
+      throw new Error('No referral program found');
+    }
     
-    return response.data;
+    return mapReferralProgram(referral);
   }
 
   // Get user's referrals
@@ -391,19 +424,19 @@ export class LoyaltyService {
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get user referrals');
     }
-    
-    return response.data.referrals;
+
+    return (response.data.referrals || []).map(mapUserReferral);
   }
 
   // Create referral code
   async createReferralCode(): Promise<ReferralProgram> {
-    const response = await apiClient.post<ReferralProgram>('/loyalty/referral/create');
+    const response = await apiClient.post<ReferralProgram>('/loyalty/referrals/create');
     
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to create referral code');
     }
-    
-    return response.data;
+
+    return mapReferralProgram(response.data);
   }
 
   // Redeem points for rewards

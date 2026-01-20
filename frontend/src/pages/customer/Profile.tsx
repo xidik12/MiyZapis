@@ -208,7 +208,7 @@ const CustomerProfile: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 relative">
+    <div className="min-h-screen bg-slate-50 dark:bg-gray-900 relative">
       {/* Success/Error Notifications */}
       {showSuccessMessage && (
         <div className="fixed top-4 right-4 z-50 animate-slide-in">
@@ -261,7 +261,7 @@ const CustomerProfile: React.FC = () => {
                     className="w-28 h-28 rounded-2xl object-cover border-4 border-white dark:border-gray-800 shadow-lg ring-4 ring-white dark:ring-gray-800"
                   />
                 ) : (
-                  <div className="w-28 h-28 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg ring-4 ring-white dark:ring-gray-800">
+                  <div className="w-28 h-28 rounded-2xl bg-primary-600 flex items-center justify-center text-white text-3xl font-bold shadow-md ring-4 ring-white dark:ring-gray-800">
                     {currentUser?.firstName?.[0]}{currentUser?.lastName?.[0]}
                   </div>
                 )}
@@ -323,7 +323,7 @@ const CustomerProfile: React.FC = () => {
               )}
               <Link
                 to="/settings"
-                className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2"
+                className="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-semibold transition-colors duration-300 shadow-md flex items-center gap-2"
               >
                 <Cog6ToothIcon className="h-4 w-4" />
                 {language === 'uk' ? 'Налаштування' : language === 'ru' ? 'Настройки' : 'Settings'}
@@ -482,7 +482,7 @@ const CustomerProfile: React.FC = () => {
           {/* Enhanced Sidebar */}
           <div className="space-y-6">
             {/* Loyalty Program Card */}
-            <div className="bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-gray-800 dark:to-gray-800 rounded-2xl shadow-sm border border-primary-200 dark:border-gray-700 p-8">
+            <div className="bg-primary-50 dark:bg-gray-800 rounded-2xl shadow-sm border border-primary-200 dark:border-gray-700 p-8">
               {loadingLoyalty ? (
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent mx-auto mb-4"></div>
@@ -491,7 +491,7 @@ const CustomerProfile: React.FC = () => {
               ) : (
                 <>
                   <div className="text-center mb-6">
-                    <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <div className="w-24 h-24 bg-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md">
                       <StarIcon className="h-12 w-12 text-white" />
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{getTierName(loyalty.tier)}</h3>
@@ -536,7 +536,7 @@ const CustomerProfile: React.FC = () => {
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                   <div 
-                    className="bg-gradient-to-r from-primary-500 to-secondary-500 h-2 rounded-full transition-all duration-500" 
+                    className="bg-primary-600 h-2 rounded-full transition-all duration-500" 
                     style={{ width: `${(loyalty.points / (loyalty.points + loyalty.nextTierPoints)) * 100}%` }}
                   ></div>
                 </div>

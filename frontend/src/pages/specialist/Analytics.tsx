@@ -126,17 +126,9 @@ const SimpleLineChart: React.FC<ChartProps & { color?: string }> = ({ data, labe
     return `${x},${y}`;
   }).join(' ');
   
-  const gradientId = `lineGradient-${Math.random().toString(36).substr(2, 9)}`;
-  
   return (
     <div className="relative" style={{ height }}>
       <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={color} stopOpacity="0.4" />
-            <stop offset="100%" stopColor={color} stopOpacity="0.05" />
-          </linearGradient>
-        </defs>
         <polyline
           fill="none"
           stroke={color}
@@ -144,7 +136,8 @@ const SimpleLineChart: React.FC<ChartProps & { color?: string }> = ({ data, labe
           points={points}
         />
         <polygon
-          fill={`url(#${gradientId})`}
+          fill={color}
+          fillOpacity={0.12}
           points={`0,100 ${points} 100,100`}
         />
         {/* Add data point circles for better visibility */}

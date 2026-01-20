@@ -314,7 +314,7 @@ const CustomerProfile: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">
+    <div className="min-h-screen bg-primary-50 dark:bg-gray-900 relative overflow-hidden">
       <FloatingElements />
       
       <div className="relative z-10">
@@ -344,7 +344,7 @@ const CustomerProfile: React.FC = () => {
                   className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
                     isEditing
                       ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                      : 'bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-lg hover:shadow-xl'
+                      : 'bg-primary-600 hover:bg-primary-700 text-white shadow-md'
                   }`}
                 >
                   {isEditing 
@@ -878,7 +878,7 @@ const CustomerProfile: React.FC = () => {
                     
                     <div className="space-y-6">
                       {/* Current Status */}
-                      <div className="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-xl p-6">
+                      <div className="bg-primary-50 rounded-xl p-6">
                         <div className="flex items-center justify-between mb-4">
                           <div>
                             <h3 className="text-xl font-bold text-gray-900">
@@ -929,7 +929,7 @@ const CustomerProfile: React.FC = () => {
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-3">
                             <div 
-                              className="bg-gradient-to-r from-primary-500 to-secondary-500 h-3 rounded-full transition-all duration-500"
+                              className="bg-primary-600 h-3 rounded-full transition-all duration-500"
                               style={{ width: `${Math.max(10, (profile.loyalty.points / (profile.loyalty.points + profile.loyalty.nextTierPoints)) * 100)}%` }}
                             ></div>
                           </div>

@@ -77,7 +77,7 @@ export const Logo: React.FC<LogoProps> = ({
               const parent = target.parentElement;
               if (parent && !parent.querySelector('.logo-fallback')) {
                 const fallback = document.createElement('div');
-                fallback.className = 'logo-fallback w-full h-full rounded-2xl flex items-center justify-center text-white font-bold bg-gradient-to-br from-blue-600 to-blue-800 shadow-lg';
+                fallback.className = 'logo-fallback w-full h-full rounded-2xl flex items-center justify-center text-white font-bold bg-primary-600 shadow-lg';
                 fallback.style.fontSize = `${logoSize * 0.6}px`;
                 fallback.textContent = 'P';
                 parent.appendChild(fallback);
@@ -90,7 +90,7 @@ export const Logo: React.FC<LogoProps> = ({
       {/* Text and Tagline */}
       {showText && (
         <div className="flex flex-col leading-tight">
-          <span className={`font-display font-bold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent ${sizes.text} group-hover:scale-[1.02] transition-transform duration-300`}>
+          <span className={`font-display font-bold text-primary-600 dark:text-primary-400 ${sizes.text} group-hover:scale-[1.02] transition-transform duration-300`}>
             Panhaha
           </span>
           {showTagline && (
@@ -145,7 +145,7 @@ export const LogoIcon: React.FC<{ size?: number; className?: string }> = ({
             const parent = target.parentElement;
             if (parent && !parent.querySelector('.logo-fallback')) {
               const fallback = document.createElement('div');
-              fallback.className = 'logo-fallback w-full h-full rounded-2xl flex items-center justify-center text-white font-bold bg-gradient-to-br from-blue-600 to-blue-800 shadow-lg';
+              fallback.className = 'logo-fallback w-full h-full rounded-2xl flex items-center justify-center text-white font-bold bg-primary-600 shadow-lg';
               fallback.style.fontSize = `${size * 0.6}px`;
               fallback.textContent = 'P';
               parent.appendChild(fallback);
@@ -156,4 +156,3 @@ export const LogoIcon: React.FC<{ size?: number; className?: string }> = ({
     </div>
   );
 };
-

@@ -226,7 +226,7 @@ const CustomerReferrals: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="bg-gradient-to-r from-primary-50 to-purple-50 dark:from-primary-900/20 dark:to-purple-900/20 rounded-xl shadow-sm p-8 border border-primary-200 dark:border-primary-800 mb-8">
+          <div className="bg-primary-50 dark:bg-primary-900/20 rounded-xl shadow-sm p-8 border border-primary-200 dark:border-primary-800 mb-8">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 Your Referral Code

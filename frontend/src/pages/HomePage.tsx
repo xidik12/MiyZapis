@@ -159,17 +159,21 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen w-full prevent-overflow">
       {/* Hero Section */}
-      <section className="relative bg-primary-600 text-white overflow-hidden min-h-[85vh] flex items-center w-full">
-        <div className="absolute inset-0 bg-primary-700/30"></div>
+      <section className="relative bg-[rgb(var(--bg-primary))] text-gray-900 dark:text-white overflow-hidden min-h-[85vh] flex items-center w-full">
+        <div className="absolute inset-0">
+          <div className="absolute -top-24 -right-16 h-72 w-72 rounded-full bg-primary-100/80 blur-3xl dark:bg-primary-900/40"></div>
+          <div className="absolute -bottom-28 -left-24 h-96 w-96 rounded-full bg-secondary-100/70 blur-3xl dark:bg-secondary-900/30"></div>
+          <div className="absolute inset-x-0 top-0 h-px bg-gray-200/80 dark:bg-gray-800/80"></div>
+        </div>
 
         <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <div className="text-center w-full">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-gray-900 dark:text-white">
               {t('hero.title1')}
               <br />
-              <span className="text-white">{t('hero.title2')}</span>
+              <span className="text-primary-600 dark:text-primary-400">{t('hero.title2')}</span>
             </h1>
-            <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-10 max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-10 max-w-3xl mx-auto">
               {t('hero.subtitle')}
             </p>
 
@@ -186,19 +190,19 @@ const HomePage: React.FC = () => {
             <div className="flex flex-wrap justify-center gap-3 mb-12">
               <Link
                 to="/search?category=beauty-wellness"
-                className="bg-white/20 hover:bg-white/30 text-white px-5 py-2.5 rounded-full font-medium transition-colors text-sm sm:text-base"
+                className="bg-white dark:bg-gray-800 border border-primary-100 dark:border-gray-700 text-primary-700 dark:text-primary-300 px-5 py-2.5 rounded-full font-medium transition-colors text-sm sm:text-base hover:bg-primary-50 dark:hover:bg-gray-700"
               >
                 {t('category.beautyWellness')}
               </Link>
               <Link
                 to="/search?category=health-fitness"
-                className="bg-white/20 hover:bg-white/30 text-white px-5 py-2.5 rounded-full font-medium transition-colors text-sm sm:text-base"
+                className="bg-white dark:bg-gray-800 border border-primary-100 dark:border-gray-700 text-primary-700 dark:text-primary-300 px-5 py-2.5 rounded-full font-medium transition-colors text-sm sm:text-base hover:bg-primary-50 dark:hover:bg-gray-700"
               >
                 {t('category.healthFitness')}
               </Link>
               <Link
                 to="/search?category=home-services"
-                className="bg-white/20 hover:bg-white/30 text-white px-5 py-2.5 rounded-full font-medium transition-colors text-sm sm:text-base"
+                className="bg-white dark:bg-gray-800 border border-primary-100 dark:border-gray-700 text-primary-700 dark:text-primary-300 px-5 py-2.5 rounded-full font-medium transition-colors text-sm sm:text-base hover:bg-primary-50 dark:hover:bg-gray-700"
               >
                 {t('category.homeServices')}
               </Link>
@@ -209,11 +213,11 @@ const HomePage: React.FC = () => {
               {stats.map((stat, index) => (
                 <div
                   key={index}
-                  className="bg-white/10 text-center p-4 sm:p-6 rounded-xl border border-white/20"
+                  className="bg-white dark:bg-gray-800 text-center p-4 sm:p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm"
                 >
-                  <stat.icon className="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-3 text-white" />
-                  <div className="text-2xl sm:text-3xl font-bold mb-1 text-white">{stat.value}</div>
-                  <div className="text-white/90 text-sm font-medium">{stat.label}</div>
+                  <stat.icon className="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-3 text-primary-600 dark:text-primary-400" />
+                  <div className="text-2xl sm:text-3xl font-bold mb-1 text-gray-900 dark:text-white">{stat.value}</div>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm font-medium">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -374,39 +378,39 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* For Specialists Section */}
-      <section id="for-specialists" className="py-8 xs:py-12 sm:py-16 lg:py-20 bg-primary-600 text-white w-full prevent-overflow">
+      <section id="for-specialists" className="py-8 xs:py-12 sm:py-16 lg:py-20 bg-primary-50 text-gray-900 dark:bg-gray-900 dark:text-white w-full prevent-overflow">
         <div className="max-w-7xl mx-auto mobile-container prevent-overflow">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 xs:gap-12 items-center">
             <div className="px-2 xs:px-0">
               <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold mb-4 xs:mb-6">
                 {t('forSpecialists.title')}
               </h2>
-              <p className="text-base xs:text-lg sm:text-xl text-primary-100 mb-6 xs:mb-8 leading-relaxed">
+              <p className="text-base xs:text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-6 xs:mb-8 leading-relaxed">
                 {t('forSpecialists.subtitle')}
               </p>
 
               <div className="space-y-4 mb-8">
                 <div className="flex items-center space-x-3">
-                  <CheckBadgeIcon className="w-6 h-6 text-secondary-300" />
+                  <CheckBadgeIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                   <span className="text-lg">{t('forSpecialists.verifiedClients')}</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <ClockIcon className="w-6 h-6 text-secondary-300" />
+                  <ClockIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                   <span className="text-lg">{t('forSpecialists.flexibleScheduling')}</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <CreditCardIcon className="w-6 h-6 text-secondary-300" />
+                  <CreditCardIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                   <span className="text-lg">{t('forSpecialists.securePayments')}</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <ShieldCheckIcon className="w-6 h-6 text-secondary-300" />
+                  <ShieldCheckIcon className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                   <span className="text-lg">{t('forSpecialists.professionalSupport')}</span>
                 </div>
               </div>
 
               <Link
                 to="/auth/register?type=specialist"
-                className="inline-flex items-center bg-white text-primary-700 px-8 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors"
+                className="inline-flex items-center bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
               >
                 {t('forSpecialists.joinButton')}
                 <ArrowRightIcon className="w-5 h-5 ml-2" />
@@ -414,26 +418,26 @@ const HomePage: React.FC = () => {
             </div>
 
             <div className="relative">
-              <div className="bg-white/10 rounded-xl p-8 border border-white/20">
-                <h3 className="text-2xl font-semibold mb-6 text-center">
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-8 border border-primary-100 dark:border-gray-700 shadow-sm">
+                <h3 className="text-2xl font-semibold mb-6 text-center text-gray-900 dark:text-white">
                   {t('forSpecialists.benefitsTitle')}
                 </h3>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-white/10 rounded-lg">
-                    <span>{t('forSpecialists.monthlyBookings')}</span>
-                    <span className="font-bold">45+</span>
+                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/60 rounded-lg">
+                    <span className="text-gray-700 dark:text-gray-200">{t('forSpecialists.monthlyBookings')}</span>
+                    <span className="font-bold text-gray-900 dark:text-white">45+</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-white/10 rounded-lg">
-                    <span>{t('forSpecialists.responseTime')}</span>
-                    <span className="font-bold">&lt; 2 hours</span>
+                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/60 rounded-lg">
+                    <span className="text-gray-700 dark:text-gray-200">{t('forSpecialists.responseTime')}</span>
+                    <span className="font-bold text-gray-900 dark:text-white">&lt; 2 hours</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-white/10 rounded-lg">
-                    <span>{t('forSpecialists.satisfaction')}</span>
-                    <span className="font-bold">4.8/5 ⭐</span>
+                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/60 rounded-lg">
+                    <span className="text-gray-700 dark:text-gray-200">{t('forSpecialists.satisfaction')}</span>
+                    <span className="font-bold text-gray-900 dark:text-white">4.8/5 ⭐</span>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-white/10 rounded-lg">
-                    <span>{t('forSpecialists.commission')}</span>
-                    <span className="font-bold">{t('forSpecialists.commissionValue')}</span>
+                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/60 rounded-lg">
+                    <span className="text-gray-700 dark:text-gray-200">{t('forSpecialists.commission')}</span>
+                    <span className="font-bold text-gray-900 dark:text-white">{t('forSpecialists.commissionValue')}</span>
                   </div>
                 </div>
               </div>

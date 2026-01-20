@@ -660,7 +660,7 @@ const SpecialistProfile: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">
@@ -673,7 +673,7 @@ const SpecialistProfile: React.FC = () => {
 
   if (error && !isEditing) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-500 text-xl mb-4">
             {language === 'uk' ? 'Помилка завантаження профілю' : language === 'ru' ? 'Ошибка загрузки профиля' : 'Error loading profile'}
@@ -695,7 +695,7 @@ const SpecialistProfile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 relative">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 relative">
       {/* Success/Error Notifications */}
       {showSuccessMessage && (
         <div className="fixed top-4 right-4 z-50 animate-slide-in">
@@ -808,7 +808,7 @@ const SpecialistProfile: React.FC = () => {
                   className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
                     isEditing
                       ? 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-                      : 'bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-lg hover:shadow-xl'
+                      : 'bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl'
                   }`}
                 >
                   {isEditing 
@@ -1627,7 +1627,7 @@ const SpecialistProfile: React.FC = () => {
                       {/* Uploaded Images with Form */}
                       {portfolioImages.map((imageUrl, index) => (
                         <div key={`uploaded-${index}`} className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200">
-                          <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center relative">
+                          <div className="aspect-video bg-gray-200 flex items-center justify-center relative">
                             <img 
                               src={imageUrl} 
                               alt={`Uploaded portfolio ${index + 1}`}
@@ -1701,7 +1701,7 @@ const SpecialistProfile: React.FC = () => {
                       {/* Existing Portfolio Items */}
                       {profile.portfolio.map((item) => (
                         <div key={item.id} className="bg-gray-100 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-200">
-                          <div className="aspect-video bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                          <div className="aspect-video bg-gray-200 flex items-center justify-center">
                             {item.imageUrl ? (
                               <img 
                                 src={item.imageUrl} 

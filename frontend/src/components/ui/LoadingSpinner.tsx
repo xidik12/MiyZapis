@@ -13,10 +13,10 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   className,
 }) => {
   const sizeClass = {
-    sm: 'loader-sm',
-    md: 'loader-md',
-    lg: 'loader-lg',
-    xl: 'loader-xl',
+    sm: 'w-4 h-4 border-2',
+    md: 'w-6 h-6 border-2',
+    lg: 'w-8 h-8 border-2',
+    xl: 'w-12 h-12 border-2',
   }[size];
 
   const colorClass = {
@@ -28,7 +28,13 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 
   return (
     <div className={clsx('inline-flex items-center', className)} role="status" aria-label="Loading">
-      <div className={clsx('loader', sizeClass, colorClass)} />
+      <div
+        className={clsx(
+          'rounded-full border-gray-200 dark:border-gray-700 border-t-current animate-spin',
+          sizeClass,
+          colorClass
+        )}
+      />
       <span className="sr-only">Loading...</span>
     </div>
   );
