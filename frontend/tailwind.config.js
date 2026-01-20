@@ -8,37 +8,37 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Panhaha - 2 Color System + Gold Outlines
-        // Dark Blue & Bright Red with Gold accents only for borders/outlines
+        // Panhaha - Red-led modern palette + cool blue secondary
+        // Bright Red for action, Deep Blue for structure, Gold for outlines
 
-        // PRIMARY - Deep Sea Blue (Ocean depths, Professional, Trust)
+        // PRIMARY - Bright Crimson Red (Energy, Bold, Action)
         primary: {
-          50: '#E6F1F5',
-          100: '#CCE3EB',
-          200: '#99C7D7',
-          300: '#66ABC3',
-          400: '#338FAF',
-          500: '#00739B', // Deep Sea Blue - Main primary
-          600: '#005C7C',
-          700: '#00455D',
-          800: '#002E3E',
-          900: '#00171F',
-          950: '#000B0F', // Very dark for dark mode
-        },
-
-        // SECONDARY - Bright Crimson Red (Energy, Bold, Action)
-        secondary: {
           50: '#FEF2F2',
           100: '#FEE2E2',
           200: '#FECACA',
           300: '#FCA5A5',
           400: '#F87171',
-          500: '#DC2626', // Bright Crimson - Main secondary
+          500: '#DC2626', // Bright Crimson - Main primary
           600: '#B91C1C',
           700: '#991B1B',
           800: '#7F1D1D',
           900: '#450A0A',
           950: '#2D0A0A', // Very dark for dark mode
+        },
+
+        // SECONDARY - Deep Sea Blue (Ocean depths, Professional, Trust)
+        secondary: {
+          50: '#E6F1F5',
+          100: '#CCE3EB',
+          200: '#99C7D7',
+          300: '#66ABC3',
+          400: '#338FAF',
+          500: '#00739B', // Deep Sea Blue - Main secondary
+          600: '#005C7C',
+          700: '#00455D',
+          800: '#002E3E',
+          900: '#00171F',
+          950: '#000B0F', // Very dark for dark mode
         },
 
         // ACCENT - Rich Gold (OUTLINES/BORDERS ONLY)
@@ -73,28 +73,28 @@ module.exports = {
 
         // Semantic mappings
         success: {
-          50: '#E6F1F5',
-          100: '#CCE3EB',
-          200: '#99C7D7',
-          300: '#66ABC3',
-          400: '#338FAF',
-          500: '#00739B', // Deep Sea Blue for success (matches primary)
-          600: '#005C7C',
-          700: '#00455D',
-          800: '#002E3E',
-          900: '#00171F',
+          50: '#ECFDF5',
+          100: '#D1FAE5',
+          200: '#A7F3D0',
+          300: '#6EE7B7',
+          400: '#34D399',
+          500: '#10B981',
+          600: '#059669',
+          700: '#047857',
+          800: '#065F46',
+          900: '#064E3B',
         },
         warning: {
-          50: '#FEF2F2',
-          100: '#FEE2E2',
-          200: '#FECACA',
-          300: '#FCA5A5',
-          400: '#F87171',
-          500: '#DC2626', // Red for warning
-          600: '#B91C1C',
-          700: '#991B1B',
-          800: '#7F1D1D',
-          900: '#450A0A',
+          50: '#FFFBEB',
+          100: '#FEF3C7',
+          200: '#FDE68A',
+          300: '#FCD34D',
+          400: '#FBBF24',
+          500: '#F59E0B',
+          600: '#D97706',
+          700: '#B45309',
+          800: '#92400E',
+          900: '#78350F',
         },
         error: {
           50: '#FEF2F2',
@@ -102,7 +102,7 @@ module.exports = {
           200: '#FECACA',
           300: '#FCA5A5',
           400: '#F87171',
-          500: '#DC2626', // Bright Red for error
+          500: '#DC2626',
           600: '#B91C1C',
           700: '#991B1B',
           800: '#7F1D1D',

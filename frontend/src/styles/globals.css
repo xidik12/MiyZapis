@@ -13,8 +13,8 @@
     --color-fg: 17 24 39;
     --color-fg-muted: 75 85 99;
     --color-border: 229 231 235;
-    --color-primary: 59 130 246;
-    --color-secondary: 14 165 233;
+    --color-primary: 220 38 38;
+    --color-secondary: 0 115 155;
     --color-success: 22 163 74;
     --color-danger: 220 38 38;
     --color-warning: 234 179 8;
@@ -36,14 +36,14 @@
     --color-fg: 243 244 246;
     --color-fg-muted: 156 163 175;
     --color-border: 55 65 81;
-    --color-primary: 96 165 250;
+    --color-primary: 248 113 113;
     --color-secondary: 56 189 248;
   }
   :root {
     /* Custom CSS Variables for Design System */
     --radius: 0.5rem;
-    --shadow-primary: 0 4px 14px 0 rgb(59 151 242 / 0.15);
-    --shadow-secondary: 0 4px 14px 0 rgb(255 196 31 / 0.15);
+    --shadow-primary: 0 4px 14px 0 rgb(220 38 38 / 0.16);
+    --shadow-secondary: 0 4px 14px 0 rgb(0 115 155 / 0.16);
     --shadow-success: 0 4px 14px 0 rgb(34 197 94 / 0.15);
     --shadow-error: 0 4px 14px 0 rgb(239 68 68 / 0.15);
     
@@ -63,7 +63,7 @@
     --role-border: var(--border-primary);
     --role-subtle: 241 245 249;
     --role-emphasis: 15 23 42;
-    --role-info: 6 182 212;
+    --role-info: 0 115 155;
 
     /* 8pt spacing scale */
     --space-0: 0px;
@@ -105,8 +105,8 @@
     --border-secondary: 51 65 85;
     
     /* Dark theme shadows */
-    --shadow-primary: 0 4px 14px 0 rgb(59 151 242 / 0.25);
-    --shadow-secondary: 0 4px 14px 0 rgb(255 196 31 / 0.25);
+    --shadow-primary: 0 4px 14px 0 rgb(220 38 38 / 0.25);
+    --shadow-secondary: 0 4px 14px 0 rgb(0 115 155 / 0.25);
     --shadow-success: 0 4px 14px 0 rgb(34 197 94 / 0.25);
     --shadow-error: 0 4px 14px 0 rgb(239 68 68 / 0.25);
 
@@ -116,7 +116,7 @@
     --role-border: var(--border-primary);
     --role-subtle: 30 41 59;
     --role-emphasis: 248 250 252;
-    --role-info: 14 116 144;
+    --role-info: 0 115 155;
   }
 
   * {
