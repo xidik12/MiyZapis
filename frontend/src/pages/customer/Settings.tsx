@@ -456,18 +456,27 @@ const CustomerSettings: React.FC = () => {
                       
                       <div className="flex flex-col space-y-3">
                         <div className="flex space-x-3">
-                          <label className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                          <div className="relative inline-flex rounded-lg focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2 focus-within:ring-offset-white dark:focus-within:ring-offset-gray-900">
+                            <button
+                              type="button"
+                              disabled={isUploadingImage}
+                              className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              tabIndex={-1}
+                              aria-hidden="true"
+                            >
+                              <CameraIcon className="w-4 h-4 inline mr-2" />
+                              {isUploadingImage ? (t('settings.upload.uploading') || 'Uploading...') : (t('settings.upload.changePhoto') || 'Change Photo')}
+                            </button>
                             <input
                               type="file"
                               accept="image/*"
                               onChange={handleImageUpload}
-                              className="hidden"
                               disabled={isUploadingImage}
+                              aria-label={t('settings.upload.changePhoto') || 'Change Photo'}
+                              className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
                             />
-                            <CameraIcon className="w-4 h-4 inline mr-2" />
-                            {isUploadingImage ? (t('settings.upload.uploading') || 'Uploading...') : (t('settings.upload.changePhoto') || 'Change Photo')}
-                          </label>
-                          
+                          </div>
+
                           {user.avatar && (
                             <button
                               onClick={handleImageRemove}
@@ -1129,14 +1138,20 @@ const CustomerSettings: React.FC = () => {
                         QR Image
                       </label>
                       <div className="flex items-center gap-3">
-                        <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:border-primary-400">
-                          <CameraIcon className="h-4 w-4" />
-                          Upload QR
+                        <div className="relative inline-flex rounded-md border border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:border-primary-400 focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2 focus-within:ring-offset-white dark:focus-within:ring-offset-gray-900">
+                          <button
+                            type="button"
+                            className="flex items-center gap-2 px-3 py-2"
+                            tabIndex={-1}
+                            aria-hidden="true"
+                          >
+                            <CameraIcon className="h-4 w-4" />
+                            Upload QR
+                          </button>
                           <input
                             type="file"
                             name="qrImage"
                             accept="image/png,image/jpeg,image/webp"
-                            className="hidden"
                             onChange={(e) => {
                               const file = e.target.files?.[0] || null;
                               setQrFile(file);
@@ -1145,9 +1160,11 @@ const CustomerSettings: React.FC = () => {
                               }
                               setQrPreview(file ? URL.createObjectURL(file) : null);
                             }}
+                            aria-label="Upload QR"
+                            className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
                             required
                           />
-                        </label>
+                        </div>
                         {qrPreview && (
                           <img
                             src={qrPreview}

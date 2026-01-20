@@ -341,21 +341,30 @@ const SpecialistSettings: React.FC = () => {
                         
                         <div className="flex flex-col space-y-3">
                           <div className="flex space-x-3">
-                            <label className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            <div className="relative inline-flex rounded-lg focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2 focus-within:ring-offset-white dark:focus-within:ring-offset-gray-900">
+                              <button
+                                type="button"
+                                disabled={isUploadingImage}
+                                className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                tabIndex={-1}
+                                aria-hidden="true"
+                              >
+                                <CameraIcon className="w-4 h-4 inline mr-2" />
+                                {isUploadingImage ? 
+                                  (t('settings.upload.uploading') || 'Uploading...') :
+                                  (t('settings.upload.changePhoto') || 'Change Photo')
+                                }
+                              </button>
                               <input
                                 type="file"
                                 accept="image/*"
                                 onChange={handleImageUpload}
-                                className="hidden"
                                 disabled={isUploadingImage}
+                                aria-label={t('settings.upload.changePhoto') || 'Change Photo'}
+                                className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
                               />
-                              <CameraIcon className="w-4 h-4 inline mr-2" />
-                              {isUploadingImage ? 
-                                (t('settings.upload.uploading') || 'Uploading...') :
-                                (t('settings.upload.changePhoto') || 'Change Photo')
-                              }
-                            </label>
-                            
+                            </div>
+
                             {profileImage && (
                               <button
                                 onClick={handleImageRemove}

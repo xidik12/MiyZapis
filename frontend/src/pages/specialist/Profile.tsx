@@ -1027,16 +1027,25 @@ const SpecialistProfile: React.FC = () => {
                   </div>
                 )}
                 {isEditing && (
-                  <label className="absolute -bottom-2 -right-2 bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-xl cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <div className="absolute -bottom-2 -right-2">
+                    <button
+                      type="button"
+                      disabled={isUploadingAvatar}
+                      className="bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-xl cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      tabIndex={-1}
+                      aria-hidden="true"
+                    >
+                      <CameraIcon className="h-4 w-4" />
+                    </button>
                     <input
                       type="file"
                       accept="image/*"
-                      className="hidden"
                       disabled={isUploadingAvatar}
                       onChange={handleAvatarUpload}
+                      aria-label={t('settings.upload.changePhoto') || 'Change Photo'}
+                      className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
                     />
-                    <CameraIcon className="h-4 w-4" />
-                  </label>
+                  </div>
                 )}
               </div>
               
@@ -1957,21 +1966,29 @@ const SpecialistProfile: React.FC = () => {
                                 </div>
                                 <div className="flex items-center gap-3">
                                   {isEditing && (
-                                    <label className="inline-flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:border-primary-400">
-                                      <CameraIcon className="h-4 w-4" />
-                                      {bankUploadState[type] ? 'Uploading...' : 'Upload QR'}
+                                    <div className="relative inline-flex rounded-lg border border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:border-primary-400 focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2 focus-within:ring-offset-white dark:focus-within:ring-offset-gray-900">
+                                      <button
+                                        type="button"
+                                        className="inline-flex items-center gap-2 px-3 py-2"
+                                        tabIndex={-1}
+                                        aria-hidden="true"
+                                      >
+                                        <CameraIcon className="h-4 w-4" />
+                                        {bankUploadState[type] ? 'Uploading...' : 'Upload QR'}
+                                      </button>
                                       <input
                                         type="file"
                                         accept="image/png,image/jpeg,image/webp"
-                                        className="hidden"
                                         onChange={(e) => {
                                           const file = e.target.files?.[0];
                                           if (file) {
                                             handleBankQrUpload(type, file);
                                           }
                                         }}
+                                        aria-label="Upload QR"
+                                        className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
                                       />
-                                    </label>
+                                    </div>
                                   )}
                                   {isEditing && account.qrImageUrl && (
                                     <button
@@ -2045,31 +2062,35 @@ const SpecialistProfile: React.FC = () => {
                     </div>
                     {isEditing && (
                       <div className="relative">
-                        <input
-                          type="file"
-                          id="portfolio-upload"
-                          accept="image/*"
-                          onChange={handlePortfolioUpload}
-                          className="hidden"
-                          disabled={isUploadingPortfolio}
-                        />
-                        <button
-                          onClick={() => document.getElementById('portfolio-upload')?.click()}
-                          disabled={isUploadingPortfolio}
-                          className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {isUploadingPortfolio ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                              {language === 'uk' ? 'Завантаження...' : language === 'ru' ? 'Загрузка...' : 'Uploading...'}
-                            </>
-                          ) : (
-                            <>
-                              <PlusIcon className="h-4 w-4" />
-                              {language === 'uk' ? 'Додати фото' : language === 'ru' ? 'Добавить фото' : 'Add Photo'}
-                            </>
-                          )}
-                        </button>
+                        <div className="relative inline-flex rounded-lg focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2 focus-within:ring-offset-white dark:focus-within:ring-offset-gray-900">
+                          <button
+                            type="button"
+                            disabled={isUploadingPortfolio}
+                            className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            tabIndex={-1}
+                            aria-hidden="true"
+                          >
+                            {isUploadingPortfolio ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                {language === 'uk' ? 'Завантаження...' : language === 'ru' ? 'Загрузка...' : 'Uploading...'}
+                              </>
+                            ) : (
+                              <>
+                                <PlusIcon className="h-4 w-4" />
+                                {language === 'uk' ? 'Додати фото' : language === 'ru' ? 'Добавить фото' : 'Add Photo'}
+                              </>
+                            )}
+                          </button>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handlePortfolioUpload}
+                            disabled={isUploadingPortfolio}
+                            aria-label={language === 'uk' ? 'Додати фото' : language === 'ru' ? 'Добавить фото' : 'Add Photo'}
+                            className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
+                          />
+                        </div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                           {language === 'uk' ? 'Максимальний розмір файлу: 5МБ. Підтримуються формати: JPG, PNG, WebP' :
                            language === 'ru' ? 'Максимальный размер файла: 5МБ. Поддерживаемые форматы: JPG, PNG, WebP' :
