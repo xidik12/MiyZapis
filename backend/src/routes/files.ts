@@ -671,8 +671,10 @@ router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, a
   }
 });
 
+const useS3Storage = process.env.ENABLE_S3_STORAGE === 'true';
+
 // S3 Cloud Storage endpoints (when enabled)
-if (process.env.ENABLE_S3_STORAGE === 'true') {
+if (useS3Storage) {
   console.log('🌅 S3 storage enabled - adding S3 upload routes');
   
   // S3 file upload endpoint

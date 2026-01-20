@@ -304,7 +304,7 @@ const SpecialistProfile: React.FC = () => {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   // Active tab state
-  const [activeTab, setActiveTab] = useState<'personal' | 'professional' | 'business' | 'portfolio'>('personal');
+  const [activeTab, setActiveTab] = useState<'personal' | 'professional' | 'business' | 'payment' | 'portfolio'>('personal');
 
   // Success/Error message handlers
   const showSuccessNotification = (message: string) => {
@@ -1186,6 +1186,7 @@ const SpecialistProfile: React.FC = () => {
                   { id: 'personal', name: language === 'uk' ? 'Особиста інформація' : language === 'ru' ? 'Личная информация' : 'Personal Info', icon: UserCircleIcon },
                   { id: 'professional', name: language === 'uk' ? 'Професійне' : language === 'ru' ? 'Профессиональное' : 'Professional', icon: BriefcaseIcon },
                   { id: 'business', name: language === 'uk' ? 'Бізнес' : language === 'ru' ? 'Бизнес' : 'Business', icon: BuildingOfficeIcon },
+                  { id: 'payment', name: language === 'uk' ? 'Оплата' : language === 'ru' ? 'Оплата' : 'Payment', icon: CreditCardIcon },
                   { id: 'portfolio', name: language === 'uk' ? 'Портфоліо' : language === 'ru' ? 'Портфолио' : 'Portfolio', icon: PhotoIcon }
                 ].map((tab) => (
                   <button
@@ -1938,214 +1939,6 @@ const SpecialistProfile: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Payment Methods */}
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                        <CreditCardIcon className="h-5 w-5" />
-                        {language === 'uk' ? 'Способи оплати' : language === 'ru' ? 'Способы оплаты' : 'Payment Methods'}
-                      </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {['cash', 'card', 'transfer', 'paypal', 'crypto', 'apple_pay'].map((method) => (
-                          <div 
-                            key={method}
-                            onClick={() => {
-                              if (!isEditing) return;
-                              const currentMethods = profile.paymentMethods || [];
-                              const isSelected = currentMethods.includes(method);
-                              const newMethods = isSelected 
-                                ? currentMethods.filter(m => m !== method)
-                                : [...currentMethods, method];
-                              handleProfileChange('paymentMethods', newMethods);
-                            }}
-                            className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                              (profile.paymentMethods || []).includes(method)
-                                ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300'
-                                : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600'
-                            } ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}
-                          >
-                            <div className="text-center">
-                              <div className="text-sm font-medium">
-                                {method === 'cash' ? (language === 'uk' ? 'Готівка' : language === 'ru' ? 'Наличные' : 'Cash')
-                                : method === 'card' ? (language === 'uk' ? 'Картка' : language === 'ru' ? 'Карта' : 'Card')
-                                : method === 'transfer' ? (language === 'uk' ? 'Переказ' : language === 'ru' ? 'Перевод' : 'Transfer')
-                                : method === 'paypal' ? 'PayPal'
-                                : method === 'crypto' ? (language === 'uk' ? 'Крипто' : language === 'ru' ? 'Крипто' : 'Crypto')
-                                : method === 'apple_pay' ? 'Apple Pay'
-                                : method}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Bank Details & QR */}
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                        <CreditCardIcon className="h-5 w-5" />
-                        {t('specialist.paymentDetails') || 'Payment Details'}
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {t('specialist.bankName') || 'Bank name'}
-                          </label>
-                          <input
-                            type="text"
-                            value={profile.bankDetails?.bankName || ''}
-                            disabled={!isEditing}
-                            onChange={(e) => handleBankDetailsChange('bankName', e.target.value)}
-                            className={`w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 ${
-                              !isEditing
-                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
-                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                            }`}
-                            placeholder={t('specialist.bankNamePlaceholder') || 'e.g., PrivatBank'}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {t('specialist.accountName') || 'Account name'}
-                          </label>
-                          <input
-                            type="text"
-                            value={profile.bankDetails?.accountName || ''}
-                            disabled={!isEditing}
-                            onChange={(e) => handleBankDetailsChange('accountName', e.target.value)}
-                            className={`w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 ${
-                              !isEditing
-                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
-                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                            }`}
-                            placeholder={t('specialist.accountNamePlaceholder') || 'e.g., Khidayotullo S.'}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {t('specialist.accountNumber') || 'Account number'}
-                          </label>
-                          <input
-                            type="text"
-                            value={profile.bankDetails?.accountNumber || ''}
-                            disabled={!isEditing}
-                            onChange={(e) => handleBankDetailsChange('accountNumber', e.target.value)}
-                            className={`w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 ${
-                              !isEditing
-                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
-                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                            }`}
-                            placeholder={t('specialist.accountNumberPlaceholder') || '0000 0000 0000 0000'}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {t('specialist.iban') || 'IBAN'}
-                          </label>
-                          <input
-                            type="text"
-                            value={profile.bankDetails?.iban || ''}
-                            disabled={!isEditing}
-                            onChange={(e) => handleBankDetailsChange('iban', e.target.value)}
-                            className={`w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 ${
-                              !isEditing
-                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
-                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                            }`}
-                            placeholder={t('specialist.ibanPlaceholder') || 'UA00 0000 0000 0000 0000 0000 000'}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {t('specialist.swift') || 'SWIFT/BIC'}
-                          </label>
-                          <input
-                            type="text"
-                            value={profile.bankDetails?.swift || ''}
-                            disabled={!isEditing}
-                            onChange={(e) => handleBankDetailsChange('swift', e.target.value)}
-                            className={`w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 ${
-                              !isEditing
-                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
-                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                            }`}
-                            placeholder={t('specialist.swiftPlaceholder') || 'PBANUA2X'}
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {t('specialist.bankNotes') || 'Payment notes'}
-                          </label>
-                          <textarea
-                            value={profile.bankDetails?.notes || ''}
-                            disabled={!isEditing}
-                            onChange={(e) => handleBankDetailsChange('notes', e.target.value)}
-                            className={`w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-600 ${
-                              !isEditing
-                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
-                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                            }`}
-                            rows={3}
-                            placeholder={t('specialist.bankNotesPlaceholder') || 'Add any payment instructions...'}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="mt-5">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {t('specialist.paymentQr') || 'Payment QR code'}
-                        </label>
-                        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                          <div className="relative inline-flex group">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handlePaymentQrUpload}
-                              disabled={isUploadingPaymentQr || !isEditing}
-                              aria-label={t('specialist.uploadQr') || 'Upload QR code'}
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                            />
-                            <div
-                              className={`px-4 py-2 bg-primary-500 text-white rounded-lg inline-flex items-center gap-2 pointer-events-none transition-colors ${
-                                isUploadingPaymentQr || !isEditing ? 'opacity-60' : 'group-hover:bg-primary-600'
-                              }`}
-                            >
-                              <PhotoIcon className="h-4 w-4" />
-                              <span className="text-sm">
-                                {isUploadingPaymentQr
-                                  ? t('community.form.uploading') || 'Uploading...'
-                                  : t('specialist.uploadQr') || 'Upload QR'}
-                              </span>
-                            </div>
-                          </div>
-                          {profile.paymentQrCodeUrl && (
-                            <button
-                              type="button"
-                              onClick={handlePaymentQrRemove}
-                              disabled={!isEditing}
-                              className="px-3 py-2 text-sm border border-red-200 text-red-600 rounded-lg hover:bg-red-50 disabled:opacity-60"
-                            >
-                              {t('specialist.removeQr') || 'Remove'}
-                            </button>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                          {t('specialist.qrHelp') || 'PNG/JPG/WebP up to 5MB.'}
-                        </p>
-                        {paymentQrError && (
-                          <p className="text-xs text-red-500 mt-2">{paymentQrError}</p>
-                        )}
-                        {profile.paymentQrCodeUrl && (
-                          <div className="mt-3">
-                            <img
-                              src={getAbsoluteImageUrl(profile.paymentQrCodeUrl)}
-                              alt="Payment QR"
-                              className="w-32 h-32 rounded-xl border border-gray-200 dark:border-gray-700 object-cover"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
                     {/* Service Area */}
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
@@ -2180,6 +1973,239 @@ const SpecialistProfile: React.FC = () => {
                             } disabled:cursor-not-allowed dark:border-gray-600`}
                             placeholder="10"
                           />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Payment Tab */}
+              {activeTab === 'payment' && (
+                <div className="p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {language === 'uk' ? 'Оплата' : language === 'ru' ? 'Оплата' : 'Payments'}
+                      </h2>
+                      <p className="text-gray-600 dark:text-gray-400 mt-1">
+                        {language === 'uk'
+                          ? 'Налаштуйте способи оплати та реквізити'
+                          : language === 'ru'
+                          ? 'Настройте способы оплаты и реквизиты'
+                          : 'Set payment methods and details'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-8">
+                    {/* Payment Methods */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                        <CreditCardIcon className="h-5 w-5" />
+                        {t('profile.paymentMethods') || 'Payment Methods'}
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {[
+                          { id: 'cash', label: language === 'uk' ? 'Готівка' : language === 'ru' ? 'Наличные' : 'Cash' },
+                          { id: 'card', label: language === 'uk' ? 'Картка' : language === 'ru' ? 'Карта' : 'Card' },
+                          { id: 'bank_transfer', label: language === 'uk' ? 'Банківський переказ' : language === 'ru' ? 'Банковский перевод' : 'Bank transfer' },
+                          { id: 'online', label: language === 'uk' ? 'Онлайн' : language === 'ru' ? 'Онлайн' : 'Online' },
+                          { id: 'crypto', label: language === 'uk' ? 'Криптовалюта' : language === 'ru' ? 'Криптовалюта' : 'Crypto' },
+                        ].map((method) => (
+                          <label
+                            key={method.id}
+                            className={`flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-700 transition-colors ${
+                              isEditing ? 'cursor-pointer hover:border-primary-400' : 'opacity-70 cursor-not-allowed'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={(profile.paymentMethods || []).includes(method.id)}
+                              disabled={!isEditing}
+                              onChange={(e) => {
+                                if (!isEditing) return;
+                                const current = profile.paymentMethods || [];
+                                const next = e.target.checked
+                                  ? [...current, method.id]
+                                  : current.filter((value) => value !== method.id);
+                                handleProfileChange('paymentMethods', next);
+                              }}
+                              className="rounded text-primary-600 focus:ring-primary-500"
+                            />
+                            <span className="text-sm text-gray-700 dark:text-gray-300">{method.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Bank Details */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                        <DocumentCheckIcon className="h-5 w-5" />
+                        {t('specialist.paymentDetails') || 'Payment Details'}
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('specialist.bankName') || 'Bank name'}
+                          </label>
+                          <input
+                            type="text"
+                            value={profile.bankDetails?.bankName || ''}
+                            disabled={!isEditing}
+                            onChange={(e) => handleBankDetailsChange('bankName', e.target.value)}
+                            className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                              !isEditing
+                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            } dark:border-gray-600`}
+                            placeholder={t('specialist.bankNamePlaceholder') || 'e.g., PrivatBank'}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('specialist.accountName') || 'Account name'}
+                          </label>
+                          <input
+                            type="text"
+                            value={profile.bankDetails?.accountName || ''}
+                            disabled={!isEditing}
+                            onChange={(e) => handleBankDetailsChange('accountName', e.target.value)}
+                            className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                              !isEditing
+                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            } dark:border-gray-600`}
+                            placeholder={t('specialist.accountNamePlaceholder') || 'e.g., Your name'}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('specialist.accountNumber') || 'Account number'}
+                          </label>
+                          <input
+                            type="text"
+                            value={profile.bankDetails?.accountNumber || ''}
+                            disabled={!isEditing}
+                            onChange={(e) => handleBankDetailsChange('accountNumber', e.target.value)}
+                            className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                              !isEditing
+                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            } dark:border-gray-600`}
+                            placeholder={t('specialist.accountNumberPlaceholder') || '0000 0000 0000 0000'}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('specialist.iban') || 'IBAN'}
+                          </label>
+                          <input
+                            type="text"
+                            value={profile.bankDetails?.iban || ''}
+                            disabled={!isEditing}
+                            onChange={(e) => handleBankDetailsChange('iban', e.target.value)}
+                            className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                              !isEditing
+                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            } dark:border-gray-600`}
+                            placeholder={t('specialist.ibanPlaceholder') || 'UA00 0000 0000 0000 0000 0000 000'}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('specialist.swift') || 'SWIFT/BIC'}
+                          </label>
+                          <input
+                            type="text"
+                            value={profile.bankDetails?.swift || ''}
+                            disabled={!isEditing}
+                            onChange={(e) => handleBankDetailsChange('swift', e.target.value)}
+                            className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                              !isEditing
+                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            } dark:border-gray-600`}
+                            placeholder={t('specialist.swiftPlaceholder') || 'PBANUA2X'}
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {t('specialist.bankNotes') || 'Payment notes'}
+                        </label>
+                        <textarea
+                          value={profile.bankDetails?.notes || ''}
+                          disabled={!isEditing}
+                          onChange={(e) => handleBankDetailsChange('notes', e.target.value)}
+                          className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                            !isEditing
+                              ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                              : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                          } dark:border-gray-600`}
+                          rows={3}
+                          placeholder={t('specialist.bankNotesPlaceholder') || 'Add any payment instructions...'}
+                        />
+                      </div>
+
+                      <div className="mt-6">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {t('specialist.paymentQr') || 'Payment QR code'}
+                        </label>
+                        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                          {profile.paymentQrCodeUrl ? (
+                            <img
+                              src={getAbsoluteImageUrl(profile.paymentQrCodeUrl)}
+                              alt={t('specialist.paymentQr') || 'Payment QR code'}
+                              className="w-28 h-28 rounded-lg border border-gray-200 dark:border-gray-700 object-cover"
+                            />
+                          ) : (
+                            <div className="w-28 h-28 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-400 text-xs">
+                              {language === 'uk' ? 'Немає QR' : language === 'ru' ? 'Нет QR' : 'No QR'}
+                            </div>
+                          )}
+
+                          {isEditing && (
+                            <div className="space-y-2">
+                              <input
+                                id="payment-qr-upload"
+                                type="file"
+                                accept="image/*"
+                                onChange={handlePaymentQrUpload}
+                                className="hidden"
+                                disabled={isUploadingPaymentQr}
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => document.getElementById('payment-qr-upload')?.click()}
+                                  disabled={isUploadingPaymentQr}
+                                  className="px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {isUploadingPaymentQr
+                                    ? (language === 'uk' ? 'Завантаження...' : language === 'ru' ? 'Загрузка...' : 'Uploading...')
+                                    : (t('specialist.uploadQr') || 'Upload QR')}
+                                </button>
+                                {profile.paymentQrCodeUrl && (
+                                  <button
+                                    type="button"
+                                    onClick={handlePaymentQrRemove}
+                                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                  >
+                                    {t('specialist.removeQr') || 'Remove'}
+                                  </button>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {t('specialist.qrHelp') || 'PNG/JPG/WebP up to 5MB.'}
+                              </p>
+                              {paymentQrError && (
+                                <p className="text-xs text-red-500">{paymentQrError}</p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

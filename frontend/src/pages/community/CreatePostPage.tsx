@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -30,6 +30,7 @@ const CreatePostPage: React.FC = () => {
   });
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const loadPost = async () => {
@@ -289,33 +290,33 @@ const CreatePostPage: React.FC = () => {
                 {t('community.form.images') || 'Images'}
               </label>
               <div className="flex flex-col sm:flex-row gap-2">
-                <div className="relative inline-flex group">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageUpload}
-                    disabled={isUploadingImages}
-                    aria-label={t('community.form.uploadImages') || 'Upload images'}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                  />
-                  <div
-                    className={`px-4 py-2 bg-primary-500 text-white rounded-lg inline-flex items-center gap-2 pointer-events-none transition-colors ${
-                      isUploadingImages ? 'opacity-60' : 'group-hover:bg-primary-600'
-                    }`}
-                  >
-                    {isUploadingImages ? (
-                      <span className="text-sm">{t('community.form.uploading') || 'Uploading...'}</span>
-                    ) : (
-                      <>
-                        <PhotoIcon className="w-5 h-5" />
-                        <span className="text-sm">
-                          {t('community.form.uploadImages') || 'Upload images'}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  disabled={isUploadingImages}
+                  aria-label={t('community.form.uploadImages') || 'Upload images'}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={isUploadingImages}
+                  className="px-4 py-2 bg-primary-500 text-white rounded-lg inline-flex items-center gap-2 transition-colors hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isUploadingImages ? (
+                    <span className="text-sm">{t('community.form.uploading') || 'Uploading...'}</span>
+                  ) : (
+                    <>
+                      <PhotoIcon className="w-5 h-5" />
+                      <span className="text-sm">
+                        {t('community.form.uploadImages') || 'Upload images'}
+                      </span>
+                    </>
+                  )}
+                </button>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                 {t('community.form.imageHelp') || 'Max 10MB. JPG, PNG, WebP.'}

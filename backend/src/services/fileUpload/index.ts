@@ -19,7 +19,13 @@ export class FileUploadService {
 
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
-    this.useS3 = !!(AWS && config.aws.accessKeyId && config.aws.secretAccessKey && config.aws.s3.bucket);
+    this.useS3 = Boolean(
+      process.env.ENABLE_S3_STORAGE === 'true' &&
+      AWS &&
+      config.aws.accessKeyId &&
+      config.aws.secretAccessKey &&
+      config.aws.s3.bucket
+    );
     
     if (this.useS3) {
       this.setupS3();
