@@ -150,7 +150,10 @@ class CommunityService {
   /**
    * Get posts with filters and pagination
    */
-  async getPosts(filters?: PostFilters): Promise<GetPostsResponse> {
+  async getPosts(
+    filters?: PostFilters,
+    options?: { skipCache?: boolean }
+  ): Promise<GetPostsResponse> {
     const params = new URLSearchParams();
 
     if (filters?.type) params.append('type', filters.type);
@@ -166,7 +169,7 @@ class CommunityService {
       ? `${this.baseUrl}/posts?${queryString}`
       : `${this.baseUrl}/posts`;
 
-    const response = await apiClient.get<GetPostsResponse>(url);
+    const response = await apiClient.get<GetPostsResponse>(url, options?.skipCache ? { skipCache: true } : undefined);
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to load community posts');
     }
@@ -176,8 +179,11 @@ class CommunityService {
   /**
    * Get a single post by ID
    */
-  async getPostById(id: string): Promise<Post> {
-    const response = await apiClient.get<{ post: Post }>(`${this.baseUrl}/posts/${id}`);
+  async getPostById(id: string, options?: { skipCache?: boolean }): Promise<Post> {
+    const response = await apiClient.get<{ post: Post }>(
+      `${this.baseUrl}/posts/${id}`,
+      options?.skipCache ? { skipCache: true } : undefined
+    );
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to load post');
     }
@@ -234,7 +240,12 @@ class CommunityService {
   /**
    * Get comments for a post
    */
-  async getComments(postId: string, page?: number, limit?: number): Promise<GetCommentsResponse> {
+  async getComments(
+    postId: string,
+    page?: number,
+    limit?: number,
+    options?: { skipCache?: boolean }
+  ): Promise<GetCommentsResponse> {
     const params = new URLSearchParams();
     if (page) params.append('page', page.toString());
     if (limit) params.append('limit', limit.toString());
@@ -244,7 +255,10 @@ class CommunityService {
       ? `${this.baseUrl}/posts/${postId}/comments?${queryString}`
       : `${this.baseUrl}/posts/${postId}/comments`;
 
-    const response = await apiClient.get<GetCommentsResponse>(url);
+    const response = await apiClient.get<GetCommentsResponse>(
+      url,
+      options?.skipCache ? { skipCache: true } : undefined
+    );
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to load comments');
     }

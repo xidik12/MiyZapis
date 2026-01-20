@@ -30,6 +30,8 @@ const PostDetailPage: React.FC = () => {
   const [commentText, setCommentText] = useState('');
   const [replyText, setReplyText] = useState<Record<string, string>>({});
   const [activeReply, setActiveReply] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const isOwner = post && user ? post.authorId === user.id : false;
 
@@ -38,7 +40,7 @@ const PostDetailPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await communityService.getPostById(postId);
+      const data = await communityService.getPostById(postId, { skipCache: true });
       setPost(data);
     } catch (err: any) {
       setError(err.message || 'Failed to load post');
@@ -51,7 +53,7 @@ const PostDetailPage: React.FC = () => {
     if (!postId) return;
     try {
       setCommentsLoading(true);
-      const response = await communityService.getComments(postId, 1, 50);
+      const response = await communityService.getComments(postId, 1, 50, { skipCache: true });
       setComments(response.comments);
     } catch (err) {
       console.error('Failed to load comments:', err);
@@ -142,15 +144,16 @@ const PostDetailPage: React.FC = () => {
 
   const handleDeletePost = async () => {
     if (!post) return;
-    if (!window.confirm(t('community.deleteConfirm') || 'Delete this post?')) {
-      return;
-    }
     try {
+      setIsDeleting(true);
       await communityService.deletePost(post.id);
       toast.success(t('community.postDeleted') || 'Post deleted');
-      navigate('/community');
+      navigate('/community', { replace: true, state: { refresh: true } });
     } catch (err: any) {
       toast.error(err.message || t('community.deleteFailed') || 'Failed to delete post');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -291,7 +294,7 @@ const PostDetailPage: React.FC = () => {
                   {t('common.edit') || 'Edit'}
                 </Link>
                 <button
-                  onClick={handleDeletePost}
+                  onClick={() => setShowDeleteModal(true)}
                   className="px-3 py-1.5 text-sm rounded-lg border border-red-200 text-red-600 hover:bg-red-50"
                 >
                   {t('common.delete') || 'Delete'}
@@ -413,6 +416,36 @@ const PostDetailPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {t('community.deleteConfirm') || 'Delete this post?'}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+              {t('community.deleteWarning') || 'This action cannot be undone.'}
+            </p>
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+              >
+                {t('common.cancel') || 'Cancel'}
+              </button>
+              <button
+                onClick={handleDeletePost}
+                disabled={isDeleting}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isDeleting
+                  ? t('community.deleting') || 'Deleting...'
+                  : t('common.delete') || 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

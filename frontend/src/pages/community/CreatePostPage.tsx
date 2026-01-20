@@ -6,7 +6,8 @@ import { useAppSelector } from '@/hooks/redux';
 import { selectUser } from '@/store/slices/authSlice';
 import { communityService, CreatePostData, fileUploadService, POST_TYPES, Post } from '@/services';
 import { PageLoader } from '@/components/ui';
-import { ArrowLeftIcon, LinkIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { getAbsoluteImageUrl } from '@/utils/imageUrl';
+import { ArrowLeftIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 const CreatePostPage: React.FC = () => {
   const { t } = useLanguage();
@@ -27,7 +28,6 @@ const CreatePostPage: React.FC = () => {
     contactEmail: '',
     images: [],
   });
-  const [imageUrl, setImageUrl] = useState('');
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -60,19 +60,6 @@ const CreatePostPage: React.FC = () => {
     loadPost();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
-
-  const handleAddImageUrl = () => {
-    const trimmed = imageUrl.trim();
-    if (!trimmed) {
-      toast.error(t('community.form.imageUrlRequired') || 'Image URL is required');
-      return;
-    }
-    setFormData((prev) => ({
-      ...prev,
-      images: [...(prev.images || []), trimmed],
-    }));
-    setImageUrl('');
-  };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files ? Array.from(event.target.files) : [];
@@ -310,20 +297,6 @@ const CreatePostPage: React.FC = () => {
               </label>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
-                  type="url"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  className="flex-1 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                  placeholder={t('community.form.imagePlaceholder') || 'Paste image URL'}
-                />
-                <button
-                  type="button"
-                  onClick={handleAddImageUrl}
-                  className="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
-                >
-                  <LinkIcon className="w-5 h-5" />
-                </button>
-                <input
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
@@ -335,12 +308,17 @@ const CreatePostPage: React.FC = () => {
                   type="button"
                   onClick={handleOpenFilePicker}
                   disabled={isUploadingImages}
-                  className="px-3 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2"
                 >
                   {isUploadingImages ? (
                     <span className="text-sm">{t('community.form.uploading') || 'Uploading...'}</span>
                   ) : (
-                    <PhotoIcon className="w-5 h-5" />
+                    <>
+                      <PhotoIcon className="w-5 h-5" />
+                      <span className="text-sm">
+                        {t('community.form.uploadImages') || 'Upload images'}
+                      </span>
+                    </>
                   )}
                 </button>
               </div>
@@ -355,8 +333,17 @@ const CreatePostPage: React.FC = () => {
               {formData.images && formData.images.length > 0 && (
                 <div className="mt-3 space-y-2">
                   {formData.images.map((image, index) => (
-                    <div key={`${image}-${index}`} className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-900/40 rounded-lg">
-                      <span className="text-sm text-gray-600 dark:text-gray-300 truncate">{image}</span>
+                    <div key={`${image}-${index}`} className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-900/40 rounded-lg gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <img
+                          src={getAbsoluteImageUrl(image)}
+                          alt={`Upload ${index + 1}`}
+                          className="w-10 h-10 rounded-md object-cover"
+                        />
+                        <span className="text-sm text-gray-600 dark:text-gray-300 truncate">
+                          {image}
+                        </span>
+                      </div>
                       <button
                         type="button"
                         onClick={() => handleRemoveImage(index)}

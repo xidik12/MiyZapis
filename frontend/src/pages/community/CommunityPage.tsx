@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSelector } from '@/hooks/redux';
 import { selectIsAuthenticated } from '@/store/slices/authSlice';
@@ -19,6 +19,8 @@ const CommunityPage: React.FC = () => {
   const { t } = useLanguage();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +62,7 @@ const CommunityPage: React.FC = () => {
         filters.search = searchQuery.trim();
       }
 
-      const response = await communityService.getPosts(filters);
+      const response = await communityService.getPosts(filters, { skipCache: true });
 
       if (append) {
         setPosts((prev) => [...prev, ...response.posts]);
@@ -82,6 +84,14 @@ const CommunityPage: React.FC = () => {
     fetchPosts(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFilter]);
+
+  useEffect(() => {
+    if ((location.state as { refresh?: boolean } | null)?.refresh) {
+      fetchPosts(1);
+      navigate(`${location.pathname}${location.search}`, { replace: true, state: {} });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
 
   // Handle search
   const handleSearch = (e: React.FormEvent) => {
@@ -154,7 +164,7 @@ const CommunityPage: React.FC = () => {
     return date.toLocaleDateString();
   };
 
-  if (loading) {
+  if (loading && posts.length === 0) {
     return <PageLoader />;
   }
 

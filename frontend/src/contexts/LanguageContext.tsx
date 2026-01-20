@@ -1402,6 +1402,8 @@ const translations: Translations = {
   'community.postDeleted': { en: 'Post deleted', uk: 'Видалено', ru: 'Удалено' },
   'community.deleteConfirm': { en: 'Delete this post?', uk: 'Видалити цей допис?', ru: 'Удалить этот пост?' },
   'community.deleteFailed': { en: 'Failed to delete post', uk: 'Не вдалося видалити допис', ru: 'Не удалось удалить пост' },
+  'community.deleteWarning': { en: 'This action cannot be undone.', uk: 'Цю дію неможливо скасувати.', ru: 'Это действие нельзя отменить.' },
+  'community.deleting': { en: 'Deleting...', uk: 'Видалення...', ru: 'Удаление...' },
   'community.publishFailed': { en: 'Failed to publish post', uk: 'Не вдалося опублікувати допис', ru: 'Не удалось опубликовать пост' },
   'community.loadFailed': { en: 'Failed to load post', uk: 'Не вдалося завантажити допис', ru: 'Не удалось загрузить пост' },
   'community.postAs': { en: 'Posting as', uk: 'Публікуєте як', ru: 'Публикуете как' },
@@ -1460,6 +1462,7 @@ const translations: Translations = {
   'community.form.imageHelp': { en: 'Max 10MB. JPG, PNG, WebP.', uk: 'Макс 10МБ. JPG, PNG, WebP.', ru: 'Макс 10МБ. JPG, PNG, WebP.' },
   'community.form.uploading': { en: 'Uploading...', uk: 'Завантаження...', ru: 'Загрузка...' },
   'community.form.imageUploadFailed': { en: 'Failed to upload image', uk: 'Не вдалося завантажити зображення', ru: 'Не удалось загрузить изображение' },
+  'community.form.uploadImages': { en: 'Upload images', uk: 'Завантажити зображення', ru: 'Загрузить изображения' },
   'community.form.publish': { en: 'Publish', uk: 'Опублікувати', ru: 'Опубликовать' },
 
   // Services Page
@@ -1583,6 +1586,7 @@ const translations: Translations = {
   'common.call': { en: 'Call', uk: 'Подзвонити', ru: 'Позвонить' },
   'common.message': { en: 'Message', uk: 'Повідомлення', ru: 'Сообщение' },
   'common.edit': { en: 'Edit', uk: 'Редагувати', ru: 'Редактировать' },
+  'common.delete': { en: 'Delete', uk: 'Видалити', ru: 'Удалить' },
   'common.remove': { en: 'Remove', uk: 'Видалити', ru: 'Удалить' },
   'common.close': { en: 'Close', uk: 'Закрити', ru: 'Закрыть' },
   'common.cancel': { en: 'Cancel', uk: 'Скасувати', ru: 'Отменить' },
