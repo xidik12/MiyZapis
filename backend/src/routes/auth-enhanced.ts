@@ -328,11 +328,14 @@ router.post('/telegram', validateTelegramAuth, async (req, res) => {
 router.get('/google/url', (req, res) => {
   try {
     const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/auth/google/callback';
+    const userTypeParam = typeof req.query.userType === 'string' ? req.query.userType : undefined;
+    const normalizedUserType = userTypeParam === 'customer' || userTypeParam === 'specialist' ? userTypeParam : undefined;
     
     const url = googleClient.generateAuthUrl({
       access_type: 'offline',
       scope: ['profile', 'email'],
       redirect_uri: redirectUri,
+      ...(normalizedUserType ? { state: normalizedUserType } : {}),
     });
 
     res.json(createSuccessResponse({ url }));

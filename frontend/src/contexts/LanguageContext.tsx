@@ -93,6 +93,9 @@ const createTranslations = (): Translations => {
   ensure('auth.register.individualSpecialistDesc', 'I offer services independently', 'ខ្ញុំផ្តល់សេវាកម្មដោយឯករាជ្យ');
   ensure('auth.register.businessAccount', 'Business Account', 'គណនីអាជីវកម្ម');
   ensure('auth.register.businessAccountDesc', 'Clinic, salon, spa with multiple staff', 'គ្លីនិក សាឡុនសម្រស់ ស្ប៉ាជាមួយបុគ្គលិកច្រើន');
+  ensure('auth.google.redirectLabel', 'Continue with Google (full page)', 'បន្តជាមួយ Google (ទំព័រពេញ)');
+  ensure('auth.google.redirectHint', 'If popups are blocked, use the full page sign-in.', 'បើ popups ត្រូវបានរារាំង សូមប្រើការចូលជាមួយទំព័រពេញ។');
+  ensure('auth.google.redirectLoading', 'Redirecting...', 'កំពុងបញ្ជូនបន្ត...');
 
   const fallbackEntries: Record<string, string> = {
     'actions.bookNow': 'Book now',

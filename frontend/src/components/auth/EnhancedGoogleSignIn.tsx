@@ -4,6 +4,8 @@ import { googleLogin } from '@/store/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
 import UserTypeSelectionModal from './UserTypeSelectionModal';
 import { environment } from '@/config/environment';
+import { authService } from '@/services/auth.service';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface EnhancedGoogleSignInProps {
   onSuccess?: () => void;
@@ -24,10 +26,13 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const clientId = environment.GOOGLE_CLIENT_ID;
   
   const [showUserTypeModal, setShowUserTypeModal] = useState(false);
   const [pendingGoogleData, setPendingGoogleData] = useState<any>(null);
+  const [showRedirectModal, setShowRedirectModal] = useState(false);
+  const [redirectLoading, setRedirectLoading] = useState(false);
 
   // Don't render if Google OAuth is not configured
   if (!clientId) {
@@ -183,9 +188,35 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
     }
   };
 
+  const handleRedirectUserTypeSelection = async (userType: 'customer' | 'specialist' | 'business') => {
+    try {
+      setRedirectLoading(true);
+      const mappedUserType = userType === 'business' ? 'specialist' : userType;
+      sessionStorage.setItem('redirectAfterAuth', `${window.location.pathname}${window.location.search}`);
+      const url = await authService.getGoogleAuthUrl(mappedUserType);
+      window.location.assign(url);
+    } catch (error: any) {
+      console.error('Google redirect login error:', error);
+      setRedirectLoading(false);
+      setShowRedirectModal(false);
+      if (onError) {
+        onError(error.message || 'Google redirect failed');
+      }
+    }
+  };
+
   const handleCloseModal = () => {
     setShowUserTypeModal(false);
     setPendingGoogleData(null);
+    setShowRedirectModal(false);
+  };
+
+  const handleSelectUserType = async (userType: 'customer' | 'specialist' | 'business') => {
+    if (showRedirectModal) {
+      await handleRedirectUserTypeSelection(userType);
+      return;
+    }
+    await handleUserTypeSelection(userType);
   };
 
   return (
@@ -197,12 +228,26 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
         />
       </div>
 
+      <div className="mt-3 text-center">
+        <button
+          type="button"
+          onClick={() => setShowRedirectModal(true)}
+          disabled={disabled || redirectLoading}
+          className="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 disabled:opacity-50"
+        >
+          {redirectLoading ? (t('auth.google.redirectLoading') || 'Redirecting...') : (t('auth.google.redirectLabel') || 'Continue with Google (full page)')}
+        </button>
+        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          {t('auth.google.redirectHint') || 'If popups are blocked, use the full page sign-in.'}
+        </p>
+      </div>
+
       <UserTypeSelectionModal
-        isOpen={showUserTypeModal}
+        isOpen={showUserTypeModal || showRedirectModal}
         onClose={handleCloseModal}
-        onSelectUserType={handleUserTypeSelection}
-        userEmail={pendingGoogleData?.userData?.email}
-        userName={pendingGoogleData?.userData?.name}
+        onSelectUserType={handleSelectUserType}
+        userEmail={showUserTypeModal ? pendingGoogleData?.userData?.email : undefined}
+        userName={showUserTypeModal ? pendingGoogleData?.userData?.name : undefined}
       />
     </>
   );

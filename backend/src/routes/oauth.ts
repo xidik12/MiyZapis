@@ -57,7 +57,11 @@ router.get('/google', async (req, res) => {
       picture: payload.picture || '',
     };
 
-    const result = await EnhancedAuthService.authenticateWithGoogle(googleData);
+    const requestedUserType =
+      typeof state === 'string' && (state === 'customer' || state === 'specialist')
+        ? state
+        : undefined;
+    const result = await EnhancedAuthService.authenticateWithGoogle(googleData, requestedUserType);
 
     logger.info(`Google OAuth callback: Authentication successful for ${payload.email}`);
 

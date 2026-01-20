@@ -111,6 +111,25 @@ export class AuthService {
     }
   }
 
+  // Google OAuth redirect URL (fallback when popups are blocked)
+  async getGoogleAuthUrl(userType?: 'customer' | 'specialist'): Promise<string> {
+    try {
+      const params = new URLSearchParams();
+      if (userType) {
+        params.set('userType', userType);
+      }
+      const suffix = params.toString();
+      const response = await apiClient.get<{ url: string }>(`/auth-enhanced/google/url${suffix ? `?${suffix}` : ''}`);
+      if (!response.success || !response.data?.url) {
+        throw new Error(response.error?.message || 'Failed to get Google auth URL');
+      }
+      return response.data.url;
+    } catch (error: any) {
+      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to get Google auth URL';
+      throw new Error(errorMessage);
+    }
+  }
+
   // Telegram authentication
   async telegramAuth(data: TelegramAuthRequest): Promise<{ user: User; tokens: AuthTokens; isNewUser: boolean }> {
     try {
