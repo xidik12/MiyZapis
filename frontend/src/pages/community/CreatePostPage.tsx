@@ -314,7 +314,10 @@ const CreatePostPage: React.FC = () => {
                 />
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    alert('Community Upload Button Clicked!');
                     console.log('[Community Upload] Button clicked', { ref: imageInputRef.current });
                     imageInputRef.current?.click();
                   }}
