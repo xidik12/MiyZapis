@@ -52,9 +52,37 @@ const getPublicBaseUrl = (req: Request): string => {
   return host ? `${protocol}://${host}` : '';
 };
 
+const detectRailwayVolumes = (): string[] => {
+  const volumes: string[] = [];
+  try {
+    const fs = require('fs');
+    const basePath = '/var/lib/containers/railwayapp/bind-mounts';
+    if (fs.existsSync(basePath)) {
+      const entries = fs.readdirSync(basePath, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          volumes.push(path.join(basePath, entry.name));
+        }
+      }
+    }
+  } catch (error) {
+    logger.warn('Volume detection failed', { error: error instanceof Error ? error.message : String(error) });
+  }
+  return volumes;
+};
+
 const buildUploadOptions = (isRailway: boolean): string[] => {
+  const volumePaths = detectRailwayVolumes();
   const options = isRailway
-    ? [process.env.UPLOAD_DIR, '/app/uploads', '/tmp/uploads', './uploads', '/tmp']
+    ? [
+        process.env.UPLOAD_DIR,
+        ...volumePaths.map(p => path.join(p, 'uploads')),
+        ...volumePaths,
+        '/app/uploads',
+        '/tmp/uploads',
+        './uploads',
+        '/tmp'
+      ]
     : [process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'), './uploads', '/tmp/uploads'];
 
   return Array.from(new Set(options.filter(Boolean) as string[]));

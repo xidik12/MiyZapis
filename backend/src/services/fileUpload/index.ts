@@ -58,6 +58,24 @@ const isRailwayEnv = !!(
   process.env.RAILWAY_SERVICE ||
   process.env.RAILWAY_PROJECT
 );
+const detectRailwayVolumes = (): string[] => {
+  const volumes: string[] = [];
+  try {
+    const fsSync = require('fs');
+    const basePath = '/var/lib/containers/railwayapp/bind-mounts';
+    if (fsSync.existsSync(basePath)) {
+      const entries = fsSync.readdirSync(basePath, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          volumes.push(path.join(basePath, entry.name));
+        }
+      }
+    }
+  } catch (error) {
+    logger.warn('Volume detection failed', { error: error instanceof Error ? error.message : String(error) });
+  }
+  return volumes;
+};
 const enableS3Storage = process.env.ENABLE_S3_STORAGE === 'true';
 const explicitLocalStorage = process.env.FORCE_LOCAL_STORAGE === 'true' ||
   process.env.FILE_STORAGE === 'local' ||
@@ -170,8 +188,17 @@ export class FileUploadService {
       const ioTimeoutMs = Number.isFinite(parsedTimeout) ? parsedTimeout : 8000;
 
       // Railway permission fix: Try multiple upload directories in order of preference
+      const volumePaths = detectRailwayVolumes();
       const rawUploadOptions = isRailway
-        ? [process.env.UPLOAD_DIR, '/app/uploads', '/tmp/uploads', './uploads', '/tmp']
+        ? [
+            process.env.UPLOAD_DIR,
+            ...volumePaths.map(p => path.join(p, 'uploads')),
+            ...volumePaths,
+            '/app/uploads',
+            '/tmp/uploads',
+            './uploads',
+            '/tmp'
+          ]
         : [process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'), './uploads', '/tmp/uploads'];
       const uploadOptions = Array.from(new Set(rawUploadOptions.filter(Boolean) as string[]));
       
