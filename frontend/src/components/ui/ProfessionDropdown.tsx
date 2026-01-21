@@ -44,7 +44,7 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
 
   const filteredProfessions = useMemo(() => {
     if (!searchTerm) return availableProfessions;
-    return searchProfessions(searchTerm, language as 'en' | 'uk' | 'ru');
+    return searchProfessions(searchTerm, language as 'en' | 'kh' | 'uk' | 'ru');
   }, [availableProfessions, searchTerm, language]);
 
   // Group professions by category for better organization
@@ -88,28 +88,29 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
     }
   };
 
-  const selectedProfessionName = value ? getProfessionName(value, language as 'en' | 'uk' | 'ru') : '';
+  const selectedProfessionName = value ? getProfessionName(value, language as 'en' | 'kh' | 'uk' | 'ru') : '';
   const placeholderLabel = t('professionForm.selectProfession') || placeholder || 'Select a profession';
 
   const getCategoryDisplayName = (categoryId: string) => {
     const categoryNames = {
-      'beauty-wellness': { en: 'Beauty & Wellness', uk: 'Краса та Здоров\'я', ru: 'Красота и Здоровье' },
-      'health-medical': { en: 'Health & Medical', uk: 'Здоров\'я та Медицина', ru: 'Здоровье и Медицина' },
-      'fitness-sports': { en: 'Fitness & Sports', uk: 'Фітнес та Спорт', ru: 'Фитнес и Спорт' },
-      'education-tutoring': { en: 'Education & Tutoring', uk: 'Освіта та Репетиторство', ru: 'Образование и Репетиторство' },
-      'home-services': { en: 'Home Services', uk: 'Домашні послуги', ru: 'Домашние услуги' },
-      'automotive': { en: 'Automotive', uk: 'Автомобільні послуги', ru: 'Автомобильные услуги' },
-      'technology-it': { en: 'Technology & IT', uk: 'Технології та IT', ru: 'Технологии и IT' },
-      'creative-arts': { en: 'Creative Arts', uk: 'Творчі мистецтва', ru: 'Творческие искусства' },
-      'business-professional': { en: 'Business & Professional', uk: 'Бізнес та Професійні послуги', ru: 'Бизнес и Профессиональные услуги' },
-      'events-entertainment': { en: 'Events & Entertainment', uk: 'Події та Розваги', ru: 'События и Развлечения' },
-      'pet-services': { en: 'Pet Services', uk: 'Послуги для тварин', ru: 'Услуги для животных' }
+      'beauty-wellness': { en: 'Beauty & Wellness', kh: 'សម្រស់ និងសុខភាព', uk: 'Краса та Здоров\'я', ru: 'Красота и Здоровье' },
+      'health-medical': { en: 'Health & Medical', kh: 'សុខភាព និងវេជ្ជសាស្ត្រ', uk: 'Здоров\'я та Медицина', ru: 'Здоровье и Медицина' },
+      'fitness-sports': { en: 'Fitness & Sports', kh: 'ហាត់ប្រាណ និងកីឡា', uk: 'Фітнес та Спорт', ru: 'Фитнес и Спорт' },
+      'education-tutoring': { en: 'Education & Tutoring', kh: 'អប់រំ និងបង្រៀន', uk: 'Освіта та Репетиторство', ru: 'Образование и Репетиторство' },
+      'home-services': { en: 'Home Services', kh: 'សេវាកម្មតាមផ្ទះ', uk: 'Домашні послуги', ru: 'Домашние услуги' },
+      'automotive': { en: 'Automotive', kh: 'សេវាកម្មយានយន្ត', uk: 'Автомобільні послуги', ru: 'Автомобильные услуги' },
+      'technology-it': { en: 'Technology & IT', kh: 'បច្ចេកវិទ្យា និងអាយធី', uk: 'Технології та IT', ru: 'Технологии и IT' },
+      'creative-arts': { en: 'Creative Arts', kh: 'សិល្បៈច្នៃប្រឌិត', uk: 'Творчі мистецтва', ru: 'Творческие искусства' },
+      'business-professional': { en: 'Business & Professional', kh: 'អាជីវកម្ម និងវិជ្ជាជីវៈ', uk: 'Бізнес та Професійні послуги', ru: 'Бизнес и Профессиональные услуги' },
+      'events-entertainment': { en: 'Events & Entertainment', kh: 'ព្រឹត្តិការណ៍ និងកម្សាន្ត', uk: 'Події та Розваги', ru: 'События и Развлечения' },
+      'pet-services': { en: 'Pet Services', kh: 'សេវាកម្មសត្វចិញ្ចឹម', uk: 'Послуги для тварин', ru: 'Услуги для животных' }
     };
     
     const categoryName = categoryNames[categoryId as keyof typeof categoryNames];
     if (!categoryName) return categoryId;
     
     switch (language) {
+      case 'kh': return categoryName.kh;
       case 'uk': return categoryName.uk;
       case 'ru': return categoryName.ru;
       default: return categoryName.en;
@@ -143,7 +144,7 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
                 className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 last:border-b-0"
               >
                 <div className="font-medium">
-                  {getProfessionName(profession.id, language as 'en' | 'uk' | 'ru')}
+                  {getProfessionName(profession.id, language as 'en' | 'kh' | 'uk' | 'ru')}
                 </div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">
                   {getCategoryDisplayName(profession.category)}
@@ -249,7 +250,7 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
           <optgroup key={categoryId} label={getCategoryDisplayName(categoryId)}>
             {professions.map((profession) => (
               <option key={profession.id} value={profession.id}>
-                {getProfessionName(profession.id, language as 'en' | 'uk' | 'ru')}
+                {getProfessionName(profession.id, language as 'en' | 'kh' | 'uk' | 'ru')}
               </option>
             ))}
           </optgroup>

@@ -497,7 +497,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           </h1>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             {t('dashboard.today')} {currentTime.toLocaleDateString(
-              language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
+              language === 'kh' ? 'km-KH' : 'en-US',
               { 
                 weekday: 'long', 
                 year: 'numeric', 
@@ -543,7 +543,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
           changeType="positive"
           icon={CurrencyDollarIcon}
           iconBg="bg-primary-600"
-          description={language === 'uk' ? 'Серпень 2025' : language === 'ru' ? 'Август 2025' : 'August 2025'}
+          description={language === 'kh' ? 'សីហា 2025' : 'August 2025'}
         />
         <StatCard
           title={t('dashboard.specialist.averageRating')}
@@ -662,7 +662,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                     <p className="font-medium text-gray-900 dark:text-white">{booking.customerName}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{booking.serviceName}</p>
                     <p className="text-xs text-gray-400">
-                      {booking.date} {language === 'uk' ? 'о' : language === 'ru' ? 'в' : 'at'} {booking.time}
+                      {booking.date} {language === 'kh' ? 'នៅ' : 'at'} {booking.time}
                     </p>
                   </div>
                 </div>
@@ -690,7 +690,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('dashboard.specialist.todaysSchedule')}</h3>
             <span className="text-sm text-gray-500 dark:text-gray-400">
               {currentTime.toLocaleDateString(
-                language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
+                language === 'kh' ? 'km-KH' : 'en-US',
                 { day: 'numeric', month: 'short' }
               )}
             </span>

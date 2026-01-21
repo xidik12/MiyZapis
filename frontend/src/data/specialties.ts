@@ -178,11 +178,12 @@ export const SPECIALTIES: Specialty[] = [
   { id: 'behavioral-training', nameEn: 'Behavioral Training', nameUk: 'Корекція поведінки', nameRu: 'Коррекция поведения', category: 'pet-services', professions: ['pet-trainer'] }
 ];
 
-export const getSpecialtyName = (specialtyId: string, language: 'en' | 'uk' | 'ru' = 'en'): string => {
+export const getSpecialtyName = (specialtyId: string, language: 'en' | 'kh' | 'uk' | 'ru' = 'en'): string => {
   const specialty = SPECIALTIES.find(s => s.id === specialtyId);
   if (!specialty) return specialtyId;
 
   switch (language) {
+    case 'kh': return specialty.nameEn;
     case 'uk': return specialty.nameUk;
     case 'ru': return specialty.nameRu;
     default: return specialty.nameEn;
@@ -197,7 +198,7 @@ export const getSpecialtiesByProfession = (profession: string): Specialty[] => {
   return SPECIALTIES.filter(s => s.professions.includes(profession));
 };
 
-export const searchSpecialties = (query: string, language: 'en' | 'uk' | 'ru' = 'en'): Specialty[] => {
+export const searchSpecialties = (query: string, language: 'en' | 'kh' | 'uk' | 'ru' = 'en'): Specialty[] => {
   const lowerQuery = query.toLowerCase();
   return SPECIALTIES.filter(specialty => {
     const name = getSpecialtyName(specialty.id, language).toLowerCase();

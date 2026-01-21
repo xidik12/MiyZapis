@@ -81,13 +81,19 @@ export class EnhancedFileUploadService {
     ['document', {
       maxFileSize: 50 * 1024 * 1024, // 50MB
       allowedMimeTypes: [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/svg+xml',
+        'image/heic',
+        'image/heif',
         'application/pdf',
         'application/msword',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'application/vnd.ms-excel',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       ],
-      allowedExtensions: ['.pdf', '.doc', '.docx', '.xls', '.xlsx'],
+      allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.heic', '.heif', '.pdf', '.doc', '.docx', '.xls', '.xlsx'],
       generateThumbnails: false,
       thumbnailSizes: []
     }]

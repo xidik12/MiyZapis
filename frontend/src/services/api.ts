@@ -6,7 +6,7 @@ import { environment, STORAGE_KEYS } from '../config/environment';
 // Create axios instance
 const api: AxiosInstance = axios.create({
   baseURL: environment.API_URL,
-  timeout: 15000, // Reduced timeout to 15 seconds for faster failure detection
+  timeout: 60000, // Increased to 60 seconds to support file uploads
   withCredentials: true, // Enable cookies and credentials for CORS requests
   headers: {
     'Content-Type': 'application/json',
@@ -87,7 +87,12 @@ api.interceptors.request.use(
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
+    // Increase timeout specifically for file uploads (2 minutes)
+    if (config.url?.includes('/files/upload')) {
+      config.timeout = 120000; // 2 minutes for file uploads
+    }
+
     // Add detailed debugging information
     const requestStartTime = Date.now();
     const requestId = `req_${requestStartTime}_${Math.random().toString(36).substr(2, 9)}`;

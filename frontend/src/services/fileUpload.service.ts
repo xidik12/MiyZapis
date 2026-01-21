@@ -24,9 +24,18 @@ export class FileUploadService {
       // Validate file before upload
       this.validateFile(file, options);
 
+      // Log upload attempt
+      console.log('📤 Uploading file:', {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        purpose: options.type,
+        maxSize: options.maxSize
+      });
+
       const formData = new FormData();
       formData.append('files', file); // Use 'files' field name for multer array upload
-      
+
       const queryParams = new URLSearchParams();
       if (options.type) {
         queryParams.append('purpose', options.type);
@@ -39,12 +48,38 @@ export class FileUploadService {
       const response = await apiClient.post<FileUploadResponse[]>(endpoint, formData);
 
       if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
-        throw new Error(response.error?.message || 'Failed to upload file');
+        throw new Error(response.error?.message || 'Upload succeeded but no response data received');
       }
 
+      console.log('✅ Upload successful:', response.data[0]);
       return response.data[0]; // Return the first uploaded file
     } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to upload file';
+      console.error('❌ Upload failed:', {
+        error: error.message,
+        fileName: file.name,
+        fileSize: file.size,
+        status: error.response?.status
+      });
+
+      // Provide specific error messages based on error type
+      if (error.code === 'ECONNABORTED') {
+        throw new Error('Upload timeout - file may be too large or connection is slow. Please try again.');
+      }
+
+      if (error.response?.status === 413) {
+        throw new Error('File too large for server. Please reduce file size and try again.');
+      }
+
+      if (error.response?.status === 401) {
+        throw new Error('Authentication failed - please login again.');
+      }
+
+      if (error.response?.status === 400) {
+        const message = error.response?.data?.error?.message || error.response?.data?.message;
+        throw new Error(message || 'Invalid file or request. Please check file type and size.');
+      }
+
+      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Network error. Please check your connection and try again.';
       throw new Error(errorMessage);
     }
   }

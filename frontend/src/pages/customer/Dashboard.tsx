@@ -379,7 +379,7 @@ const CustomerDashboard: React.FC = () => {
               </h1>
               <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                 {t('dashboard.today')} {currentTime.toLocaleDateString(
-                  language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
+                  language === 'kh' ? 'km-KH' : 'en-US',
                   { 
                     weekday: 'long', 
                     year: 'numeric', 
@@ -466,7 +466,7 @@ const CustomerDashboard: React.FC = () => {
                   <div className="space-y-1">
                     <p className="text-primary-100 text-sm sm:text-base">{nextAppointment.serviceName}</p>
                     <p className="text-xs sm:text-sm text-primary-200">
-                      {language === 'uk' ? 'з' : language === 'ru' ? 'с' : 'with'} {nextAppointment.specialistName}
+                      {language === 'kh' ? 'ជាមួយ' : 'with'} {nextAppointment.specialistName}
                     </p>
                     <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-primary-200">
                       <span className="flex items-center whitespace-nowrap">
@@ -527,7 +527,7 @@ const CustomerDashboard: React.FC = () => {
                         <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{booking.specialistName}</p>
                         <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">{booking.serviceName}</p>
                         <p className="text-xs text-gray-400 truncate">
-                          {booking.date} {language === 'uk' ? 'о' : language === 'ru' ? 'в' : 'at'} {booking.time}
+                          {booking.date} {language === 'kh' ? 'នៅ' : 'at'} {booking.time}
                         </p>
                       </div>
                     </div>
@@ -717,7 +717,7 @@ const CustomerDashboard: React.FC = () => {
                         -{offer.discount}%
                       </span>
                       <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {language === 'uk' ? 'до' : language === 'ru' ? 'до' : 'until'} {offer.validUntil}
+                        {language === 'kh' ? 'រហូតដល់' : 'until'} {offer.validUntil}
                       </span>
                     </div>
                     <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{offer.title}</h4>

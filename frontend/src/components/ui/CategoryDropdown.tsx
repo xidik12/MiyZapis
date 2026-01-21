@@ -32,7 +32,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
     if (!searchTerm) return allCategories;
     
     return allCategories.filter(category => {
-      const name = getCategoryName(category.id, language as 'en' | 'uk' | 'ru').toLowerCase();
+      const name = getCategoryName(category.id, language as 'en' | 'kh' | 'uk' | 'ru').toLowerCase();
       return name.includes(searchTerm.toLowerCase());
     });
   }, [allCategories, searchTerm, language]);
@@ -69,7 +69,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   // Check if the value is a known category ID or a custom category string
   const isKnownCategory = allCategories.some(cat => cat.id === value);
   const selectedCategoryName = isKnownCategory
-    ? getCategoryName(value, language as 'en' | 'uk' | 'ru')
+    ? getCategoryName(value, language as 'en' | 'kh' | 'uk' | 'ru')
     : value; // For custom categories, show the value directly
   const placeholderLabel = t('serviceForm.selectCategory') || placeholder || 'Select a category';
 
@@ -90,13 +90,13 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
             
             {/* Main Categories */}
             {SERVICE_CATEGORIES.map((category) => (
-              <optgroup key={category.id} label={getCategoryName(category.id, language as 'en' | 'uk' | 'ru')}>
+              <optgroup key={category.id} label={getCategoryName(category.id, language as 'en' | 'kh' | 'uk' | 'ru')}>
                 <option value={category.id}>
-                  {getCategoryName(category.id, language as 'en' | 'uk' | 'ru')}
+                  {getCategoryName(category.id, language as 'en' | 'kh' | 'uk' | 'ru')}
                 </option>
                 {category.subcategories?.map((subcategory) => (
                   <option key={subcategory.id} value={subcategory.id}>
-                    ↳ {getCategoryName(subcategory.id, language as 'en' | 'uk' | 'ru')}
+                    ↳ {getCategoryName(subcategory.id, language as 'en' | 'kh' | 'uk' | 'ru')}
                   </option>
                 ))}
               </optgroup>
@@ -181,7 +181,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
               onClick={() => onChange(category.id)}
               className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
             >
-              {getCategoryName(category.id, language as 'en' | 'uk' | 'ru')}
+              {getCategoryName(category.id, language as 'en' | 'kh' | 'uk' | 'ru')}
             </button>
           ))}
         </div>

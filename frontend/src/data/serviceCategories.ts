@@ -179,7 +179,7 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
   }
 ];
 
-export const getCategoryName = (categoryId: string, language: 'en' | 'uk' | 'ru' = 'en'): string => {
+export const getCategoryName = (categoryId: string, language: 'en' | 'kh' | 'uk' | 'ru' = 'en'): string => {
   const findCategoryRecursive = (categories: ServiceCategory[], id: string): ServiceCategory | undefined => {
     for (const category of categories) {
       if (category.id === id) return category;
@@ -195,6 +195,7 @@ export const getCategoryName = (categoryId: string, language: 'en' | 'uk' | 'ru'
   if (!category) return categoryId;
 
   switch (language) {
+    case 'kh': return category.nameEn;
     case 'uk': return category.nameUk;
     case 'ru': return category.nameRu;
     default: return category.nameEn;

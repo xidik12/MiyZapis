@@ -230,7 +230,7 @@ const SpecialistLoyalty: React.FC = () => {
   const formatPoints = utilFormatPoints;
 
   const formatDate = (dateString: string) => {
-    const locale = language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US';
+    const locale = language === 'kh' ? 'km-KH' : 'en-US';
     return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'short',

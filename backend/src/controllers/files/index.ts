@@ -47,8 +47,10 @@ function getAllowedFileTypes(purpose: string): string[] {
         'video/mp4', 'video/quicktime',
         'audio/mpeg', 'audio/wav'
       ];
+    case 'document':
+      return ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif', 'application/pdf'];
     default:
-      return ['image/jpeg', 'image/png', 'image/webp'];
+      return ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'];
   }
 }
 
@@ -61,10 +63,11 @@ export class FileController {
 
   uploadFiles = async (req: Request, res: Response) => {
     try {
-      logger.info('File upload request started', {
+      logger.info('📤 File upload request received', {
         userId: req.user?.id,
         purpose: req.query.purpose,
         filesCount: Array.isArray(req.files) ? req.files.length : 0,
+        contentType: req.headers['content-type'],
         hasUser: !!req.user
       });
 
@@ -229,11 +232,15 @@ export class FileController {
 
           uploadedFiles.push(fileRecord);
         } catch (fileError) {
-          logger.error(`Error processing file ${file.originalname}:`, {
+          logger.error(`❌ Error processing file ${file.originalname}:`, {
             error: fileError instanceof Error ? fileError.message : String(fileError),
-            stack: fileError instanceof Error ? fileError.stack : undefined
+            stack: fileError instanceof Error ? fileError.stack : undefined,
+            fileName: file.originalname,
+            fileSize: file.size,
+            mimeType: file.mimetype,
+            purpose
           });
-          
+
           // Return error immediately if it's a critical error
           if (fileError instanceof Error && (
             fileError.message.includes('Authentication') ||
@@ -242,7 +249,7 @@ export class FileController {
           )) {
             throw fileError;
           }
-          
+
           // Continue with other files for non-critical errors
         }
       }
@@ -251,19 +258,28 @@ export class FileController {
         return errorResponse(res, 'Failed to upload any files', 500);
       }
 
-      logger.info('Files uploaded successfully', { 
+      logger.info('✅ Files uploaded successfully', {
         uploadedCount: uploadedFiles.length,
         files: uploadedFiles.map(f => ({ id: f.id, filename: f.filename, url: f.url }))
       });
       return successResponse(res, uploadedFiles, 'Files uploaded successfully', 201);
     } catch (error) {
-      logger.error('Error uploading files:', {
+      logger.error('❌ Upload error:', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
         userId: req.user?.id,
-        purpose: req.query.purpose
+        purpose: req.query.purpose,
+        filesCount: Array.isArray(req.files) ? req.files.length : 0
       });
-      return errorResponse(res, 'Failed to upload files', 500);
+
+      // Return more specific error message
+      const errorMessage = error instanceof Error ? error.message : 'File upload failed';
+      return errorResponse(
+        res,
+        errorMessage,
+        500,
+        'UPLOAD_ERROR'
+      );
     }
   };
 

@@ -238,7 +238,7 @@ const CustomerSettings: React.FC = () => {
           const uploaded = await fileUploadService.uploadFile(paymentData.qrFile, {
             type: 'document',
             maxSize: 5 * 1024 * 1024,
-            allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
+            allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'],
           });
           qrImageUrl = uploaded.url;
         }
@@ -293,20 +293,12 @@ const CustomerSettings: React.FC = () => {
 
     // Validate file type and size
     if (!file.type.startsWith('image/')) {
-      setUploadError(
-        language === 'uk' ? 'Будь ласка, оберіть файл зображення' :
-        language === 'ru' ? 'Пожалуйста, выберите файл изображения' :
-        'Please select an image file'
-      );
+      setUploadError(t('settings.profile.imageSelectError'));
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      setUploadError(
-        language === 'uk' ? 'Розмір файлу повинен бути менше 5МБ' :
-        language === 'ru' ? 'Размер файла должен быть меньше 5МБ' :
-        'File size must be less than 5MB'
-      );
+      setUploadError(t('settings.profile.imageSizeError'));
       return;
     }
 
@@ -333,12 +325,7 @@ const CustomerSettings: React.FC = () => {
       
     } catch (error: any) {
       console.error('Error uploading avatar:', error);
-      setUploadError(
-        error.message ||
-        (language === 'uk' ? 'Помилка завантаження зображення' :
-         language === 'ru' ? 'Ошибка загрузки изображения' :
-         'Failed to upload image')
-      );
+      setUploadError(error.message || t('settings.profile.imageUploadError'));
     } finally {
       setIsUploadingImage(false);
       // Clear the file input
@@ -367,12 +354,7 @@ const CustomerSettings: React.FC = () => {
       
     } catch (error: any) {
       console.error('Error removing avatar:', error);
-      setUploadError(
-        error.message ||
-        (language === 'uk' ? 'Помилка видалення зображення' :
-         language === 'ru' ? 'Ошибка удаления изображения' :
-         'Failed to remove image')
-      );
+      setUploadError(error.message || t('settings.profile.imageRemoveError'));
     } finally {
       setIsUploadingImage(false);
     }
@@ -437,7 +419,7 @@ const CustomerSettings: React.FC = () => {
                   {/* Profile Picture */}
                   <div className="mb-8">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-                      {language === 'uk' ? 'Фото профілю' : language === 'ru' ? 'Фото профиля' : 'Profile Photo'}
+                      {t('settings.profile.photoLabel')}
                     </label>
                     <div className="flex items-center space-x-6">
                       <div className="relative">
@@ -456,27 +438,18 @@ const CustomerSettings: React.FC = () => {
                       
                       <div className="flex flex-col space-y-3">
                         <div className="flex space-x-3">
-                          <div className="relative inline-flex rounded-lg focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2 focus-within:ring-offset-white dark:focus-within:ring-offset-gray-900">
-                            <button
-                              type="button"
-                              disabled={isUploadingImage}
-                              className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                              tabIndex={-1}
-                              aria-hidden="true"
-                            >
-                              <CameraIcon className="w-4 h-4 inline mr-2" />
-                              {isUploadingImage ? (t('settings.upload.uploading') || 'Uploading...') : (t('settings.upload.changePhoto') || 'Change Photo')}
-                            </button>
+                          <label className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                             <input
                               type="file"
                               accept="image/*"
                               onChange={handleImageUpload}
+                              className="hidden"
                               disabled={isUploadingImage}
-                              aria-label={t('settings.upload.changePhoto') || 'Change Photo'}
-                              className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
                             />
-                          </div>
-
+                            <CameraIcon className="w-4 h-4 inline mr-2" />
+                            {isUploadingImage ? (t('settings.upload.uploading') || 'Uploading...') : (t('settings.upload.changePhoto') || 'Change Photo')}
+                          </label>
+                          
                           {user.avatar && (
                             <button
                               onClick={handleImageRemove}
@@ -490,9 +463,7 @@ const CustomerSettings: React.FC = () => {
                         </div>
                         
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {language === 'uk' ? 'Максимальний розмір: 5МБ. Підтримуються формати: JPG, PNG, WebP' :
-                           language === 'ru' ? 'Максимальный размер: 5МБ. Поддерживаемые форматы: JPG, PNG, WebP' :
-                           'Maximum size: 5MB. Supported formats: JPG, PNG, WebP'}
+                          {t('settings.profile.photoHint')}
                         </p>
                         
                         {/* Upload Status Messages */}
@@ -504,7 +475,7 @@ const CustomerSettings: React.FC = () => {
                         
                         {uploadSuccess && (
                           <div className="text-green-600 dark:text-green-400 text-sm bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-lg border border-green-200 dark:border-green-800">
-                            {language === 'uk' ? 'Фото успішно оновлено!' : language === 'ru' ? 'Фото успешно обновлено!' : 'Photo updated successfully!'}
+                            {t('settings.profile.photoUpdated')}
                           </div>
                         )}
                       </div>
@@ -594,11 +565,11 @@ const CustomerSettings: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Password & Security */}
+                    {/* Password & Security */}
                   <div className="border-t pt-6">
                     <h4 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
                       <ShieldCheckIcon className="w-4 h-4 mr-2" />
-                      Password & Security
+                      {t('profile.passwordSecurity')}
                     </h4>
 
                     {/* Google OAuth Users - Set Password */}
@@ -614,16 +585,16 @@ const CustomerSettings: React.FC = () => {
                           <ShieldCheckIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                           <div className="flex-1">
                             <h5 className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                              Set up password for your account
+                              {t('auth.setPassword.title')}
                             </h5>
                             <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                              You signed up with Google. Set a password to enable password reset and additional security options.
+                              {t('auth.setPassword.description')}
                             </p>
                             <button
                               onClick={() => setShowSetPasswordModal(true)}
                               className="inline-flex items-center mt-3 px-3 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700 transition-colors"
                             >
-                              Set Password
+                              {t('auth.setPassword.action')}
                             </button>
                           </div>
                         </div>
@@ -634,10 +605,10 @@ const CustomerSettings: React.FC = () => {
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          Password
+                          {t('profile.password')}
                         </p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Last changed: {currentUser?.passwordLastChanged ? new Date(currentUser.passwordLastChanged).toLocaleDateString() : 'Never'}
+                          {t('profile.lastChanged')}: {currentUser?.passwordLastChanged ? new Date(currentUser.passwordLastChanged).toLocaleDateString() : t('common.never')}
                         </p>
                       </div>
                       {/* Debug logging - remove in production */}
@@ -652,7 +623,7 @@ const CustomerSettings: React.FC = () => {
                           onClick={() => setShowSetPasswordModal(true)}
                           className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
                         >
-                          Set Password
+                          {t('auth.setPassword.action')}
                         </button>
                       ) : (
                         <button
@@ -666,14 +637,14 @@ const CustomerSettings: React.FC = () => {
 
                     {/* Password Requirements */}
                     <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                      <p className="font-medium mb-2">Password requirements:</p>
+                      <p className="font-medium mb-2">{t('profile.passwordRequirements')}:</p>
                       <ul className="space-y-1 text-xs">
-                        <li>• At least 8 characters long</li>
-                        <li>• One uppercase letter (A-Z)</li>
-                        <li>• One lowercase letter (a-z)</li>
-                        <li>• One number (0-9)</li>
-                        <li>• One symbol (!@#$%^&*)</li>
-                        <li>• English characters only</li>
+                        <li>• {t('profile.passwordReq.length')}</li>
+                        <li>• {t('profile.passwordReq.uppercase')}</li>
+                        <li>• {t('profile.passwordReq.lowercase')}</li>
+                        <li>• {t('profile.passwordReq.number')}</li>
+                        <li>• {t('profile.passwordReq.symbol')}</li>
+                        <li>• {t('profile.passwordReq.english')}</li>
                       </ul>
                     </div>
 
@@ -725,12 +696,12 @@ const CustomerSettings: React.FC = () => {
 
                     {/* Push Notifications */}
                     <div>
-                      <h3 className="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">Push Notifications</h3>
+                      <h3 className="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">{t('customer.settings.pushNotifications')}</h3>
                       <div className="space-y-3">
                         {[
-                          { key: 'pushBookingConfirmation', label: 'Booking confirmations' },
-                          { key: 'pushReminders', label: 'Appointment reminders' },
-                          { key: 'pushPromotions', label: 'Promotions and offers' },
+                          { key: 'pushBookingConfirmation', label: t('customer.settings.bookingConfirmations') },
+                          { key: 'pushReminders', label: t('customer.settings.appointmentReminders') },
+                          { key: 'pushPromotions', label: t('customer.settings.promotionsOffers') },
                         ].map(({ key, label }) => (
                           <div key={key} className="flex items-center justify-between">
                             <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
@@ -753,10 +724,10 @@ const CustomerSettings: React.FC = () => {
 
                     {/* SMS Notifications */}
                     <div>
-                      <h3 className="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">SMS Notifications</h3>
+                      <h3 className="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">{t('customer.settings.smsNotifications')}</h3>
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-700 dark:text-gray-300">Appointment reminders</span>
+                          <span className="text-sm text-gray-700 dark:text-gray-300">{t('customer.settings.appointmentReminders')}</span>
                           <button
                             onClick={() => handleNotificationChange('smsReminders')}
                             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
@@ -786,24 +757,24 @@ const CustomerSettings: React.FC = () => {
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Profile Visibility
+                        {t('customer.settings.profileVisibility')}
                       </label>
                       <select
                         value={privacy.profileVisibility}
                         onChange={(e) => handlePrivacyChange('profileVisibility', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       >
-                        <option value="public">Public</option>
-                        <option value="private">Private</option>
+                        <option value="public">{t('customer.settings.publicProfile')}</option>
+                        <option value="private">{t('customer.settings.privateProfile')}</option>
                       </select>
                     </div>
 
                     <div className="space-y-3">
                       {[
-                        { key: 'showEmail', label: 'Show email in profile' },
-                        { key: 'showPhone', label: 'Show phone number in profile' },
-                        { key: 'allowReviews', label: 'Allow others to leave reviews' },
-                        { key: 'dataProcessing', label: 'Allow data processing for recommendations' },
+                        { key: 'showEmail', label: t('customer.settings.showEmailProfile') },
+                        { key: 'showPhone', label: t('customer.settings.showPhoneProfile') },
+                        { key: 'allowReviews', label: t('customer.settings.allowReviews') },
+                        { key: 'dataProcessing', label: t('customer.settings.dataProcessing') },
                       ].map(({ key, label }) => (
                         <div key={key} className="flex items-center justify-between">
                           <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
@@ -837,7 +808,7 @@ const CustomerSettings: React.FC = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Language
+                        {t('customer.settings.languageLabel')}
                       </label>
                       <select
                         value={language}
@@ -851,7 +822,7 @@ const CustomerSettings: React.FC = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Currency
+                        {t('customer.settings.currencyLabel')}
                       </label>
                       <select
                         value={currency}
@@ -865,16 +836,16 @@ const CustomerSettings: React.FC = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Theme
+                        {t('customer.settings.themeLabel')}
                       </label>
                       <select
                         value={theme}
                         onChange={(e) => setTheme(e.target.value as any)}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       >
-                        <option value="light">Light</option>
-                        <option value="dark">Dark</option>
-                        <option value="system">System</option>
+                        <option value="light">{t('customer.settings.lightTheme')}</option>
+                        <option value="dark">{t('customer.settings.darkTheme')}</option>
+                        <option value="system">{t('customer.settings.systemTheme')}</option>
                       </select>
                     </div>
                   </div>
@@ -893,7 +864,7 @@ const CustomerSettings: React.FC = () => {
                       className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
                     >
                       <PlusIcon className="h-4 w-4 mr-2" />
-                      Add Payment Method
+                      {t('payment.addPaymentMethod')}
                     </button>
                   </div>
 
@@ -901,13 +872,13 @@ const CustomerSettings: React.FC = () => {
                     {paymentMethods.length === 0 ? (
                       <div className="text-center py-8">
                         <CreditCardIcon className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                        <p className="text-gray-500 dark:text-gray-400 mb-4">No payment methods added yet</p>
+                        <p className="text-gray-500 dark:text-gray-400 mb-4">{t('payments.emptyTitle')}</p>
                         <button 
                           onClick={handleAddPaymentMethod}
                           className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
                         >
                           <PlusIcon className="h-4 w-4 mr-2" />
-                          Add Your First Payment Method
+                          {t('payments.emptyCta')}
                         </button>
                       </div>
                     ) : (
@@ -918,7 +889,7 @@ const CustomerSettings: React.FC = () => {
                         const displayName = method.nickname || (isCard ? `${method.cardBrand || 'Card'} •••• ${method.cardLast4 || ''}` : `${bankLabel} Account`);
                         const detailLine = isCard
                           ? `**** **** **** ${method.cardLast4 || ''}${method.cardExpMonth && method.cardExpYear ? ` • ${method.cardExpMonth.toString().padStart(2, '0')}/${method.cardExpYear}` : ''}`
-                          : `Account •••• ${method.accountNumber?.slice(-4) || ''}`;
+                          : `${t('payments.accountSuffix')} ${method.accountNumber?.slice(-4) || ''}`;
 
                         return (
                           <div key={method.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex items-center justify-between">
@@ -929,7 +900,7 @@ const CustomerSettings: React.FC = () => {
                                 <p className="text-sm text-gray-500 dark:text-gray-400">{detailLine}</p>
                                 {method.isDefault && (
                                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                                    Default
+                                    {t('payments.default')}
                                   </span>
                                 )}
                               </div>
@@ -943,13 +914,13 @@ const CustomerSettings: React.FC = () => {
                                 />
                               )}
                               <button className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
-                                Edit
+                                {t('profile.edit')}
                               </button>
                               <button
                                 onClick={() => handleRemovePaymentMethod(method.id)}
                                 className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
                               >
-                                Remove
+                                {t('profile.remove')}
                               </button>
                             </div>
                           </div>
@@ -972,7 +943,7 @@ const CustomerSettings: React.FC = () => {
                       className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
                     >
                       <PlusIcon className="h-4 w-4 mr-2" />
-                      Add Address
+                      {t('profile.addAddress')}
                     </button>
                   </div>
 
@@ -980,13 +951,13 @@ const CustomerSettings: React.FC = () => {
                     {addresses.length === 0 ? (
                       <div className="text-center py-8">
                         <MapPinIcon className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                        <p className="text-gray-500 dark:text-gray-400 mb-4">No addresses added yet</p>
+                        <p className="text-gray-500 dark:text-gray-400 mb-4">{t('profile.noAddressesYet')}</p>
                         <button 
                           onClick={handleAddAddress}
                           className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
                         >
                           <PlusIcon className="h-4 w-4 mr-2" />
-                          Add Your First Address
+                          {t('profile.addYourFirstAddress')}
                         </button>
                       </div>
                     ) : (
@@ -999,7 +970,7 @@ const CustomerSettings: React.FC = () => {
                               <p className="font-medium text-gray-900 dark:text-gray-100 mr-2">{address.label}</p>
                               {address.isDefault && (
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                                  Default
+                                  {t('profile.default')}
                                 </span>
                               )}
                             </div>
@@ -1012,13 +983,13 @@ const CustomerSettings: React.FC = () => {
                         </div>
                         <div className="flex items-center space-x-2">
                           <button className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
-                            Edit
+                            {t('profile.edit')}
                           </button>
                           <button
                             onClick={() => handleRemoveAddress(address.id)}
                             className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
                           >
-                            Remove
+                            {t('profile.remove')}
                           </button>
                         </div>
                       </div>
@@ -1038,7 +1009,7 @@ const CustomerSettings: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
               <CreditCardIcon className="h-6 w-6 mr-2 text-primary-600 dark:text-primary-400" />
-              {language === 'uk' ? 'Додати спосіб оплати' : language === 'ru' ? 'Добавить способ оплаты' : 'Add Payment Method'}
+              {t('payment.addPaymentMethod')}
             </h3>
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -1061,7 +1032,7 @@ const CustomerSettings: React.FC = () => {
               <div className="space-y-5">
                 <div>
                   <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                    {language === 'uk' ? 'Тип оплати' : language === 'ru' ? 'Тип оплаты' : 'Payment Type'}
+                    {t('payments.paymentType')}
                   </label>
                   <select 
                     name="paymentType"
@@ -1069,9 +1040,9 @@ const CustomerSettings: React.FC = () => {
                     onChange={(e) => setPaymentType(e.target.value as 'card' | 'aba' | 'khqr')}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   >
-                    <option value="card">{language === 'uk' ? 'Банківська картка' : language === 'ru' ? 'Банковская карта' : 'Bank Card'}</option>
-                    <option value="aba">ABA Bank</option>
-                    <option value="khqr">KHQR</option>
+                    <option value="card">{t('payments.bankCard')}</option>
+                    <option value="aba">{t('payments.abaBank')}</option>
+                    <option value="khqr">{t('payments.khqr')}</option>
                   </select>
                 </div>
 
@@ -1079,24 +1050,24 @@ const CustomerSettings: React.FC = () => {
                   <>
                     <div>
                       <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                        {language === 'uk' ? 'Назва картки' : language === 'ru' ? 'Название карты' : 'Card Name'}
+                        {t('payments.cardName')}
                       </label>
                       <input
                         type="text"
                         name="cardName"
-                        placeholder={language === 'uk' ? 'Моя картка Visa' : language === 'ru' ? 'Моя карта Visa' : 'My Visa Card'}
+                        placeholder={t('payments.cardNamePlaceholder')}
                         className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                         required
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                        {language === 'uk' ? 'Номер картки' : language === 'ru' ? 'Номер карты' : 'Card Number'}
+                        {t('payments.cardNumber')}
                       </label>
                       <input
                         type="text"
                         name="cardNumber"
-                        placeholder="1234 5678 9012 3456"
+                        placeholder={t('payments.cardNumberPlaceholder')}
                         maxLength={19}
                         className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                         onChange={(e) => {
@@ -1111,47 +1082,41 @@ const CustomerSettings: React.FC = () => {
                   <>
                     <div>
                       <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                        Account Name
+                        {t('payments.accountName')}
                       </label>
                       <input
                         type="text"
                         name="accountName"
-                        placeholder="Account holder name"
+                        placeholder={t('payments.accountNamePlaceholder')}
                         className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                         required
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                        Account Number
+                        {t('payments.accountNumber')}
                       </label>
                       <input
                         type="text"
                         name="accountNumber"
-                        placeholder="e.g. 00123456789"
+                        placeholder={t('payments.accountNumberPlaceholder')}
                         className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                         required
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                        QR Image
+                        {t('payments.qrImage')}
                       </label>
                       <div className="flex items-center gap-3">
-                        <div className="relative inline-flex rounded-md border border-dashed border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:border-primary-400 focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2 focus-within:ring-offset-white dark:focus-within:ring-offset-gray-900">
-                          <button
-                            type="button"
-                            className="flex items-center gap-2 px-3 py-2"
-                            tabIndex={-1}
-                            aria-hidden="true"
-                          >
-                            <CameraIcon className="h-4 w-4" />
-                            Upload QR
-                          </button>
+                        <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:border-primary-400">
+                          <CameraIcon className="h-4 w-4" />
+                          {t('payments.uploadQr')}
                           <input
                             type="file"
                             name="qrImage"
-                            accept="image/png,image/jpeg,image/webp"
+                            accept="image/png,image/jpeg,image/webp,image/svg+xml,image/heic,image/heif"
+                            className="hidden"
                             onChange={(e) => {
                               const file = e.target.files?.[0] || null;
                               setQrFile(file);
@@ -1160,15 +1125,13 @@ const CustomerSettings: React.FC = () => {
                               }
                               setQrPreview(file ? URL.createObjectURL(file) : null);
                             }}
-                            aria-label="Upload QR"
-                            className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
                             required
                           />
-                        </div>
+                        </label>
                         {qrPreview && (
                           <img
                             src={qrPreview}
-                            alt="QR preview"
+                            alt={t('payments.qrPreviewAlt')}
                             className="h-12 w-12 rounded-md object-cover border border-gray-200 dark:border-gray-600"
                           />
                         )}
@@ -1183,13 +1146,13 @@ const CustomerSettings: React.FC = () => {
                   onClick={() => setShowAddPaymentModal(false)}
                   className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium rounded-lg transition-colors"
                 >
-                  {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отмена' : 'Cancel'}
+                  {t('payments.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-sm"
                 >
-                  {language === 'uk' ? 'Додати спосіб оплати' : language === 'ru' ? 'Добавить способ оплаты' : 'Add Payment Method'}
+                  {t('payment.addPaymentMethod')}
                 </button>
               </div>
             </form>
@@ -1203,7 +1166,7 @@ const CustomerSettings: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
               <MapPinIcon className="h-6 w-6 mr-2 text-primary-600 dark:text-primary-400" />
-              {language === 'uk' ? 'Додати адресу' : language === 'ru' ? 'Добавить адрес' : 'Add Address'}
+              {t('addresses.addTitle')}
             </h3>
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -1222,7 +1185,7 @@ const CustomerSettings: React.FC = () => {
                 {/* Pick on Map */}
                 <div>
                   <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                    {language === 'uk' ? 'Вибрати на карті' : language === 'ru' ? 'Выбрать на карте' : 'Pick on Map'}
+                    {t('addresses.pickOnMap')}
                   </label>
                   <LocationPicker
                     location={{
@@ -1244,38 +1207,38 @@ const CustomerSettings: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                    {language === 'uk' ? 'Тип адреси' : language === 'ru' ? 'Тип адреса' : 'Address Type'}
+                    {t('addresses.typeLabel')}
                   </label>
                   <select 
                     name="addressType"
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   >
-                    <option value="home">{language === 'uk' ? 'Дім' : language === 'ru' ? 'Дом' : 'Home'}</option>
-                    <option value="work">{language === 'uk' ? 'Робота' : language === 'ru' ? 'Работа' : 'Work'}</option>
-                    <option value="other">{language === 'uk' ? 'Інше' : language === 'ru' ? 'Другое' : 'Other'}</option>
+                    <option value="home">{t('common.home')}</option>
+                    <option value="work">{t('common.work')}</option>
+                    <option value="other">{t('common.other')}</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                    {language === 'uk' ? 'Назва' : language === 'ru' ? 'Название' : 'Label'}
+                    {t('addresses.label')}
                   </label>
                   <input
                     type="text"
                     name="label"
-                    placeholder={language === 'uk' ? 'Моя адреса' : language === 'ru' ? 'Мой адрес' : 'My Address'}
+                    placeholder={t('addresses.labelPlaceholder')}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                     required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                    {language === 'uk' ? 'Вулиця' : language === 'ru' ? 'Улица' : 'Street Address'}
+                    {t('addresses.street')}
                   </label>
                   <input
                     type="text"
                     name="street"
                     defaultValue={newAddressLocation.address}
-                    placeholder={language === 'uk' ? 'вул. Хрещатик, 1' : language === 'ru' ? 'ул. Крещатик, 1' : '123 Main Street'}
+                    placeholder={t('addresses.streetPlaceholder')}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                     required
                   />
@@ -1283,20 +1246,20 @@ const CustomerSettings: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                      {language === 'uk' ? 'Місто' : language === 'ru' ? 'Город' : 'City'}
+                      {t('addresses.city')}
                     </label>
                     <input
                       type="text"
                       name="city"
                       defaultValue={newAddressLocation.city}
-                      placeholder={language === 'uk' ? 'Київ' : language === 'ru' ? 'Киев' : 'Kyiv'}
+                      placeholder={t('addresses.cityPlaceholder')}
                       className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                       required
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                      {language === 'uk' ? 'Поштовий код' : language === 'ru' ? 'Почтовый код' : 'Postal Code'}
+                      {t('addresses.postalCode')}
                     </label>
                     <input
                       type="text"
@@ -1310,29 +1273,29 @@ const CustomerSettings: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                    {language === 'uk' ? 'Регіон / Область' : language === 'ru' ? 'Регион / Область' : 'Region / State'}
+                    {t('addresses.region')}
                   </label>
                   <input
                     type="text"
                     name="region"
                     defaultValue={newAddressLocation.region}
-                    placeholder={language === 'uk' ? 'Київська область' : language === 'ru' ? 'Киевская область' : 'Kyiv Oblast'}
+                    placeholder={t('addresses.regionPlaceholder')}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                    {language === 'uk' ? 'Країна' : language === 'ru' ? 'Страна' : 'Country'}
+                    {t('addresses.country')}
                   </label>
                   <select 
                     name="country"
                     defaultValue={newAddressLocation.country || 'Ukraine'}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   >
-                    <option value="Ukraine">{language === 'uk' ? 'Україна' : language === 'ru' ? 'Украина' : 'Ukraine'}</option>
-                    <option value="Poland">{language === 'uk' ? 'Польща' : language === 'ru' ? 'Польша' : 'Poland'}</option>
-                    <option value="Germany">{language === 'uk' ? 'Німеччина' : language === 'ru' ? 'Германия' : 'Germany'}</option>
-                    <option value="Other">{language === 'uk' ? 'Інше' : language === 'ru' ? 'Другое' : 'Other'}</option>
+                    <option value="Ukraine">{t('addresses.country.ukraine')}</option>
+                    <option value="Poland">{t('addresses.country.poland')}</option>
+                    <option value="Germany">{t('addresses.country.germany')}</option>
+                    <option value="Other">{t('common.other')}</option>
                   </select>
                 </div>
               </div>
@@ -1342,13 +1305,13 @@ const CustomerSettings: React.FC = () => {
                   onClick={() => setShowAddAddressModal(false)}
                   className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium rounded-lg transition-colors"
                 >
-                  {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отмена' : 'Cancel'}
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-sm"
                 >
-                  {language === 'uk' ? 'Додати адресу' : language === 'ru' ? 'Добавить адрес' : 'Add Address'}
+                  {t('addresses.addAction')}
                 </button>
               </div>
             </form>

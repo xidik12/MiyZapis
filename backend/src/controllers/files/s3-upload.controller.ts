@@ -346,7 +346,7 @@ function validateFileForPurpose(file: Express.Multer.File, purpose: string): { v
     avatar: ['image/jpeg', 'image/png', 'image/webp'],
     portfolio: ['image/jpeg', 'image/png', 'image/webp'],
     service: ['image/jpeg', 'image/png', 'image/webp'],
-    document: ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+    document: ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
     certificate: ['application/pdf', 'image/jpeg', 'image/png']
   };
 

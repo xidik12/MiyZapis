@@ -136,11 +136,12 @@ export const PROFESSIONS: Profession[] = [
   { id: 'pet-photographer', nameEn: 'Pet Photographer', nameUk: 'Фотограф тварин', nameRu: 'Фотограф животных', category: 'pet-services' }
 ];
 
-export const getProfessionName = (professionId: string, language: 'en' | 'uk' | 'ru' = 'en'): string => {
+export const getProfessionName = (professionId: string, language: 'en' | 'kh' | 'uk' | 'ru' = 'en'): string => {
   const profession = PROFESSIONS.find(p => p.id === professionId);
   if (!profession) return professionId;
 
   switch (language) {
+    case 'kh': return profession.nameEn;
     case 'uk': return profession.nameUk;
     case 'ru': return profession.nameRu;
     default: return profession.nameEn;
@@ -151,7 +152,7 @@ export const getProfessionsByCategory = (category: string): Profession[] => {
   return PROFESSIONS.filter(p => p.category === category);
 };
 
-export const searchProfessions = (query: string, language: 'en' | 'uk' | 'ru' = 'en'): Profession[] => {
+export const searchProfessions = (query: string, language: 'en' | 'kh' | 'uk' | 'ru' = 'en'): Profession[] => {
   const lowerQuery = query.toLowerCase();
   return PROFESSIONS.filter(profession => {
     const name = getProfessionName(profession.id, language).toLowerCase();

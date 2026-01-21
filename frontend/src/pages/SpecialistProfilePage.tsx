@@ -54,8 +54,6 @@ const SpecialistProfilePage: React.FC = () => {
     if (!specialist) return null;
     
     // Try to get description based on current language
-    if (language === 'uk' && specialist.bioUk) return specialist.bioUk;
-    if (language === 'ru' && specialist.bioRu) return specialist.bioRu;
     if (specialist.bio) return specialist.bio;
     
     // Fallback order: bio -> bioUk -> bioRu
@@ -80,17 +78,10 @@ const SpecialistProfilePage: React.FC = () => {
   const formatExperience = (experience: number) => {
     if (!experience || experience === 0) return t('specialist.notSpecified');
     
-    if (language === 'uk') {
-      if (experience === 1) return '1 рік';
-      if (experience < 5) return `${experience} роки`;
-      return `${experience} років`;
-    } else if (language === 'ru') {
-      if (experience === 1) return '1 год';
-      if (experience < 5) return `${experience} года`;
-      return `${experience} лет`;
-    } else {
-      return experience === 1 ? '1 year' : `${experience} years`;
+    if (language === 'kh') {
+      return `${experience} ឆ្នាំ`;
     }
+    return experience === 1 ? '1 year' : `${experience} years`;
   };
 
   // Handle favorite toggle

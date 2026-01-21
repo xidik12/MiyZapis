@@ -91,7 +91,8 @@
       "Bash(npx prisma validate:*)",
       "Bash(npx prisma migrate:*)",
       "Bash(npx prisma db push:*)",
-      "Bash(npm ls:*)"
+      "Bash(git pull:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": [],

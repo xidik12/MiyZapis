@@ -29,6 +29,7 @@ import {
 
 const SpecialistSettings: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
+  const isKh = language === 'kh';
   const { currency, setCurrency } = useCurrency();
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
@@ -120,18 +121,14 @@ const SpecialistSettings: React.FC = () => {
     // Validate file type and size
     if (!file.type.startsWith('image/')) {
       setUploadError(
-        language === 'uk' ? 'Будь ласка, оберіть файл зображення' :
-        language === 'ru' ? 'Пожалуйста, выберите файл изображения' :
-        'Please select an image file'
+        isKh ? 'សូមជ្រើសរើសឯកសាររូបភាព' : 'Please select an image file'
       );
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
       setUploadError(
-        language === 'uk' ? 'Розмір файлу повинен бути менше 5МБ' :
-        language === 'ru' ? 'Размер файла должен быть меньше 5МБ' :
-        'File size must be less than 5MB'
+        isKh ? 'ទំហំឯកសារត្រូវតិចជាង 5MB' : 'File size must be less than 5MB'
       );
       return;
     }
@@ -161,9 +158,7 @@ const SpecialistSettings: React.FC = () => {
       console.error('Error uploading avatar:', error);
       setUploadError(
         error.message ||
-        (language === 'uk' ? 'Помилка завантаження зображення' :
-         language === 'ru' ? 'Ошибка загрузки изображения' :
-         'Failed to upload image')
+        (isKh ? 'មិនអាចផ្ទុករូបភាពបានទេ' : 'Failed to upload image')
       );
     } finally {
       setIsUploadingImage(false);
@@ -195,9 +190,7 @@ const SpecialistSettings: React.FC = () => {
       console.error('Error removing avatar:', error);
       setUploadError(
         error.message ||
-        (language === 'uk' ? 'Помилка видалення зображення' :
-         language === 'ru' ? 'Ошибка удаления изображения' :
-         'Failed to remove image')
+        (isKh ? 'មិនអាចលុបរូបភាពបានទេ' : 'Failed to remove image')
       );
     } finally {
       setIsUploadingImage(false);
@@ -322,7 +315,7 @@ const SpecialistSettings: React.FC = () => {
                     {/* Profile Image Upload */}
                     <div className="mb-8">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-                        {language === 'uk' ? 'Фото профілю' : language === 'ru' ? 'Фото профиля' : 'Profile Photo'}
+                        {isKh ? 'រូបថតប្រវត្តិរូប' : 'Profile Photo'}
                       </label>
                       <div className="flex items-center space-x-6">
                         <div className="relative">
@@ -372,15 +365,15 @@ const SpecialistSettings: React.FC = () => {
                                 className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600"
                               >
                                 <TrashIcon className="w-4 h-4 inline mr-2" />
-                                {language === 'uk' ? 'Видалити' : language === 'ru' ? 'Удалить' : 'Remove'}
+                                {isKh ? 'លុប' : 'Remove'}
                               </button>
                             )}
                           </div>
                           
                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {language === 'uk' ? 'Максимальний розмір: 5МБ. Підтримуються формати: JPG, PNG, WebP' :
-                             language === 'ru' ? 'Максимальный размер: 5МБ. Поддерживаемые форматы: JPG, PNG, WebP' :
-                             'Maximum size: 5MB. Supported formats: JPG, PNG, WebP'}
+                            {isKh
+                              ? 'ទំហំអតិបរមា: 5MB។ ទ្រង់ទ្រាយដែលគាំទ្រ: JPG, PNG, WebP'
+                              : 'Maximum size: 5MB. Supported formats: JPG, PNG, WebP'}
                           </p>
                           
                           {/* Upload Status Messages */}
@@ -392,7 +385,7 @@ const SpecialistSettings: React.FC = () => {
                           
                           {uploadSuccess && (
                             <div className="text-green-600 dark:text-green-400 text-sm bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-lg border border-green-200 dark:border-green-800">
-                              {language === 'uk' ? 'Фото успішно оновлено!' : language === 'ru' ? 'Фото успешно обновлено!' : 'Photo updated successfully!'}
+                              {isKh ? 'បានធ្វើបច្ចុប្បន្នភាពរូបថតដោយជោគជ័យ!' : 'Photo updated successfully!'}
                             </div>
                           )}
                         </div>
