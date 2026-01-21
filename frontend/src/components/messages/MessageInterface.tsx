@@ -63,6 +63,7 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
   const [creatingConversation, setCreatingConversation] = useState(false);
 
   const isMountedRef = useRef(true);
+  const processedSpecialistRef = useRef<string | null>(null); // Track processed specialist IDs
   const messagesService = new MessagesService();
 
   useEffect(() => {
@@ -102,9 +103,22 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
   useEffect(() => {
     const handleSpecialistParameter = async () => {
       const specialistId = searchParams.get('specialist');
-      if (!specialistId || creatingConversation || loading) return;
+
+      // Exit early if no specialist parameter or still loading
+      if (!specialistId || loading) return;
+
+      // CRITICAL: Prevent infinite loop by checking if we already processed this specialist
+      if (processedSpecialistRef.current === specialistId) {
+        console.log('🔄 Already processed specialist:', specialistId);
+        return;
+      }
+
+      // Exit if already creating to prevent race conditions
+      if (creatingConversation) return;
 
       try {
+        // Mark as being processed IMMEDIATELY to prevent duplicate processing
+        processedSpecialistRef.current = specialistId;
         setCreatingConversation(true);
 
         // Check if conversation already exists with this specialist
@@ -118,10 +132,11 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
 
         if (existingConversation) {
           // Open existing conversation
+          console.log('✅ Found existing conversation:', existingConversation.id);
           handleSelectConversation(existingConversation);
         } else {
           // Create new conversation
-          console.log('Creating new conversation with specialist:', specialistId);
+          console.log('📝 Creating new conversation with specialist:', specialistId);
           const newConversation = await messagesService.createConversation({
             participantId: specialistId
           });
@@ -130,6 +145,7 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
           if (isMountedRef.current) {
             setConversations(prev => [newConversation, ...prev]);
             handleSelectConversation(newConversation);
+            console.log('✅ Conversation created successfully:', newConversation.id);
           }
         }
 
@@ -137,8 +153,10 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
         searchParams.delete('specialist');
         setSearchParams(searchParams);
       } catch (error) {
-        console.error('Error creating conversation:', error);
+        console.error('❌ Error creating conversation:', error);
         toast.error('Failed to start conversation');
+        // Reset processed ref on error so user can retry
+        processedSpecialistRef.current = null;
       } finally {
         if (isMountedRef.current) {
           setCreatingConversation(false);
@@ -149,7 +167,7 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
     if (!loading && conversations.length >= 0) {
       handleSpecialistParameter();
     }
-  }, [searchParams, conversations, loading, creatingConversation]);
+  }, [searchParams, loading]); // Removed conversations and creatingConversation from dependencies
 
   const fetchConversationMessages = async (conversationId: string) => {
     try {
