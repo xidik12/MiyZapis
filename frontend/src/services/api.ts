@@ -83,33 +83,13 @@ export const withRetry = async <T>(
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    console.log('🟢 [REQUEST INTERCEPTOR] Processing request:', {
-      method: config.method,
-      url: config.url,
-      isFormData: config.data instanceof FormData
-    });
-
     const token = getAuthToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Let the browser set the multipart boundary for FormData uploads.
-    if (config.data instanceof FormData && config.headers) {
-      console.log('🟢 [REQUEST INTERCEPTOR] Detected FormData, removing Content-Type header');
-      const headers = config.headers as any;
-      if (typeof headers.delete === 'function') {
-        headers.delete('Content-Type');
-        headers.delete('content-type');
-      } else {
-        delete headers['Content-Type'];
-        delete headers['content-type'];
-      }
-    }
-
     // Increase timeout specifically for file uploads (2 minutes)
     if (config.url?.includes('/files/upload')) {
-      console.log('🟢 [REQUEST INTERCEPTOR] Setting 120s timeout for file upload');
       config.timeout = 120000; // 2 minutes for file uploads
     }
 
@@ -324,28 +304,8 @@ class ApiClient {
   }
 
   async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    console.log('🔵 [ApiClient.post] Called with:', {
-      url,
-      dataType: data?.constructor?.name,
-      isFormData: data instanceof FormData,
-      config
-    });
-
-    try {
-      const response = await api.post<ApiResponse<T>>(url, data, config);
-      console.log('🔵 [ApiClient.post] Response received:', {
-        url,
-        status: response.status,
-        hasData: !!response.data
-      });
-      return response.data;
-    } catch (error) {
-      console.error('🔵 [ApiClient.post] Error:', {
-        url,
-        error: error instanceof Error ? error.message : String(error)
-      });
-      throw error;
-    }
+    const response = await api.post<ApiResponse<T>>(url, data, config);
+    return response.data;
   }
 
   async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
@@ -367,15 +327,19 @@ class ApiClient {
   async upload<T>(url: string, file: File, additionalData?: Record<string, any>): Promise<ApiResponse<T>> {
     const formData = new FormData();
     formData.append('files', file);
-    
+
     if (additionalData) {
       Object.keys(additionalData).forEach(key => {
         formData.append(key, additionalData[key]);
       });
     }
 
-    const response = await api.post<ApiResponse<T>>(url, formData);
-    
+    const response = await api.post<ApiResponse<T>>(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
     return response.data;
   }
 
