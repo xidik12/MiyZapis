@@ -17,10 +17,7 @@ export class AuthService {
     // Convert userType to backend format
     const requestData = {
       ...data,
-      userType: data.userType === 'customer' ? 'CUSTOMER' :
-                data.userType === 'business' ? 'BUSINESS' :
-                data.userType === 'specialist' ? 'SPECIALIST' :
-                data.userType === 'admin' ? 'ADMIN' : 'CUSTOMER',
+      userType: data.userType === 'customer' ? 'CUSTOMER' : 'SPECIALIST',
     };
 
     try {
@@ -37,9 +34,16 @@ export class AuthService {
       
       return userData;
     } catch (error: any) {
-      // Extract error message from API response
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Registration failed';
-      throw new Error(errorMessage);
+      // Extract the most detailed error message available
+      const errorDetails = error.response?.data?.errors?.details ||
+                          error.response?.data?.error?.details ||
+                          error.apiError?.details ||
+                          error.response?.data?.errors?.message ||
+                          error.response?.data?.error?.message ||
+                          error.apiError?.message ||
+                          error.message ||
+                          'Registration failed';
+      throw new Error(errorDetails);
     }
   }
 
@@ -59,9 +63,16 @@ export class AuthService {
       
       return userData;
     } catch (error: any) {
-      // Extract error message from API response
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Login failed';
-      throw new Error(errorMessage);
+      // Extract the most detailed error message available
+      const errorDetails = error.response?.data?.errors?.details ||
+                          error.response?.data?.error?.details ||
+                          error.apiError?.details ||
+                          error.response?.data?.errors?.message ||
+                          error.response?.data?.error?.message ||
+                          error.apiError?.message ||
+                          error.message ||
+                          'Login failed';
+      throw new Error(errorDetails);
     }
   }
 
@@ -107,25 +118,6 @@ export class AuthService {
       return userData;
     } catch (error: any) {
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Google authentication failed';
-      throw new Error(errorMessage);
-    }
-  }
-
-  // Google OAuth redirect URL (fallback when popups are blocked)
-  async getGoogleAuthUrl(userType?: 'customer' | 'specialist'): Promise<string> {
-    try {
-      const params = new URLSearchParams();
-      if (userType) {
-        params.set('userType', userType);
-      }
-      const suffix = params.toString();
-      const response = await apiClient.get<{ url: string }>(`/auth-enhanced/google/url${suffix ? `?${suffix}` : ''}`);
-      if (!response.success || !response.data?.url) {
-        throw new Error(response.error?.message || 'Failed to get Google auth URL');
-      }
-      return response.data.url;
-    } catch (error: any) {
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to get Google auth URL';
       throw new Error(errorMessage);
     }
   }
@@ -345,11 +337,7 @@ export class AuthService {
       const formData = new FormData();
       formData.append('files', file);
       
-      const response = await apiClient.post<any>('/files/upload?purpose=avatar', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await apiClient.post<any>('/files/upload?purpose=avatar', formData);
 
       if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
         throw new Error(response.error?.message || 'Failed to upload avatar');
@@ -414,7 +402,7 @@ export class AuthService {
     
     if (avatarUrl && avatarUrl.startsWith('/uploads/')) {
       // Convert relative URL to absolute URL for production
-      const baseUrl = environment.API_BASE_URL || 'https://huddle-backend-production.up.railway.app';
+      const baseUrl = environment.API_BASE_URL || 'https://miyzapis-backend-production.up.railway.app';
       avatarUrl = `${baseUrl}${avatarUrl}`;
       console.log('✅ Backend avatar URL transformed to absolute:', avatarUrl);
     } else if (avatarUrl && avatarUrl.startsWith('http')) {

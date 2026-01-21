@@ -343,9 +343,9 @@ export const deleteFile = async (req: Request, res: Response): Promise<void> => 
  */
 function validateFileForPurpose(file: Express.Multer.File, purpose: string): { valid: boolean; error?: string } {
   const allowedTypes: Record<string, string[]> = {
-    avatar: ['image/jpeg', 'image/png', 'image/webp'],
-    portfolio: ['image/jpeg', 'image/png', 'image/webp'],
-    service: ['image/jpeg', 'image/png', 'image/webp'],
+    avatar: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
+    portfolio: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
+    service: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
     document: ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
     certificate: ['application/pdf', 'image/jpeg', 'image/png']
   };

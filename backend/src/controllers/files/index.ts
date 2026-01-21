@@ -34,10 +34,10 @@ const upload = multer({
 function getAllowedFileTypes(purpose: string): string[] {
   switch (purpose) {
     case 'avatar':
-      return ['image/jpeg', 'image/png', 'image/webp'];
+      return ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
     case 'service_image':
     case 'portfolio':
-      return ['image/jpeg', 'image/png', 'image/webp'];
+      return ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
     case 'message_attachment':
       return [
         'image/jpeg', 'image/png', 'image/webp', 'image/gif',

@@ -104,7 +104,7 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'avatar',
       maxSize: 5 * 1024 * 1024, // 5MB
-      allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
+      allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
     });
   }
 
@@ -113,7 +113,7 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'portfolio',
       maxSize: 10 * 1024 * 1024, // 10MB
-      allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
+      allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
     });
   }
 
@@ -122,7 +122,7 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'service',
       maxSize: 10 * 1024 * 1024, // 10MB
-      allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
+      allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
     });
   }
 

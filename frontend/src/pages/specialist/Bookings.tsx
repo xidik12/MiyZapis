@@ -67,10 +67,11 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   getTranslatedServiceName,
   activeTab
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
   const [selectedStatus, setSelectedStatus] = useState(booking?.status || 'PENDING');
   const [message, setMessage] = useState('');
+  const dateLocale = language === 'kh' ? 'km-KH' : 'en-US';
   
   // Handle Escape key to close modal
   React.useEffect(() => {
@@ -107,7 +108,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       // Determine the other participant based on current tab
       const participantId = activeTab === 'provider' ? booking.customerId : booking.specialistId;
       if (!participantId) {
-        toast.error('Participant not found for this booking');
+        toast.error(t('messages.participantNotFound'));
         return;
       }
 
@@ -123,7 +124,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         conversationId = conversation.id;
         // Initial message already sent by backend when initialMessage is provided
         setMessage('');
-        toast.success('Message sent');
+        toast.success(t('messages.messageSent'));
         return;
       } catch (createErr: any) {
         console.warn('Create conversation failed, attempting to find existing one:', createErr?.response?.data || createErr?.message);
@@ -141,17 +142,17 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
       }
 
       if (!conversationId) {
-        throw new Error('Unable to start or locate conversation for this booking');
+        throw new Error(t('messages.conversationNotFound'));
       }
 
       // Send the message to the conversation
       await messagesService.sendMessage(conversationId, { content: text });
 
       setMessage('');
-      toast.success('Message sent');
+      toast.success(t('messages.messageSent'));
     } catch (err: any) {
       console.error('Failed to send booking message:', err);
-      toast.error(err?.message || 'Failed to send message');
+      toast.error(err?.message || t('messages.sendFailed'));
     }
   };
   
@@ -197,11 +198,11 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                     {activeTab === 'provider' 
                       ? (booking.customer 
                           ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
-                          : (booking.customerName || 'Unknown Customer')
+                          : (booking.customerName || t('labels.unknownCustomer'))
                         )
                       : (booking.specialist
-                          ? `${booking.specialist.user?.firstName || ''} ${booking.specialist.user?.lastName || ''}`.trim() || 'Unknown Specialist'
-                          : 'Unknown Specialist'
+                          ? `${booking.specialist.user?.firstName || ''} ${booking.specialist.user?.lastName || ''}`.trim() || t('labels.unknownSpecialist')
+                          : t('labels.unknownSpecialist')
                         )
                     }
                   </p>
@@ -236,7 +237,7 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.service')}</label>
                 <p className="font-medium text-gray-900 dark:text-white">
-                  {booking.service?.name || getTranslatedServiceName(booking.serviceName || 'Unknown Service')}
+                  {getTranslatedServiceName(booking.service?.name || booking.serviceName || t('labels.unknownService'))}
                 </p>
               </div>
               <div>
@@ -269,12 +270,16 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.date')}</label>
                 <p className="font-medium text-gray-900 dark:text-white">
-                  {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleDateString('uk-UA') : booking.date}
+                  {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleDateString(dateLocale) : booking.date}
                 </p>
               </div>
               <div>
                 <label className="text-sm text-gray-600 dark:text-gray-300">{t('bookingDetails.time')}</label>
-                <p className="font-medium text-gray-900 dark:text-white">{new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}</p>
+                <p className="font-medium text-gray-900 dark:text-white">
+                  {booking.scheduledAt
+                    ? new Date(booking.scheduledAt).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' })
+                    : booking.time}
+                </p>
               </div>
             </div>
             {booking.meetingLink && (
@@ -603,14 +608,16 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
           <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 mb-6">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-gray-600 dark:text-gray-300">{t('bookings.service') || 'Service'}:</span>
-              <span className="font-medium dark:text-white">{booking.service?.name || booking.serviceName}</span>
+              <span className="font-medium dark:text-white">
+                {booking.service?.name || booking.serviceName || t('labels.unknownService')}
+              </span>
             </div>
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-gray-600 dark:text-gray-300">{t('labels.customer') || 'Customer'}:</span>
               <span className="font-medium dark:text-white">
                 {booking.customer 
                   ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
-                  : (booking.customerName || 'Unknown Customer')
+                  : (booking.customerName || t('labels.unknownCustomer'))
                 }
               </span>
             </div>
@@ -623,12 +630,12 @@ const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
           {/* Completion Notes */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Completion Notes (Optional)
+              {t('bookings.completionNotes')}
             </label>
             <textarea
               value={completionNotes}
               onChange={(e) => setCompletionNotes(e.target.value)}
-              placeholder="Add any notes about the completed service..."
+              placeholder={t('bookings.completionNotesPlaceholder')}
               className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 bg-white dark:bg-gray-700"
               rows={3}
             />
@@ -674,14 +681,18 @@ const getBookingCurrency = (booking: Booking): 'USD' | 'KHR' => {
 };
 
 // Helper function to map Booking to BookingData for Kanban
-const mapBookingToBookingData = (booking: Booking): BookingData => {
+const mapBookingToBookingData = (
+  booking: Booking,
+  options: { locale: string; unknownServiceLabel: string }
+): BookingData => {
   const scheduledDate = new Date(booking.scheduledAt);
+  const { locale, unknownServiceLabel } = options;
 
   return {
     id: booking.id,
     status: booking.status,
     scheduledDate: scheduledDate.toISOString().split('T')[0], // YYYY-MM-DD
-    scheduledTime: scheduledDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+    scheduledTime: scheduledDate.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: false }),
     customer: booking.customer ? {
       id: booking.customer.id,
       firstName: booking.customer.firstName,
@@ -698,7 +709,7 @@ const mapBookingToBookingData = (booking: Booking): BookingData => {
     } : undefined,
     service: {
       id: booking.service?.id || booking.serviceId,
-      name: booking.service?.name || 'Unknown Service',
+      name: booking.service?.name || booking.serviceName || unknownServiceLabel,
       duration: booking.duration,
       price: booking.service?.price
     },
@@ -712,9 +723,11 @@ const mapBookingToBookingData = (booking: Booking): BookingData => {
 };
 
 const SpecialistBookings: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
   const dispatch = useDispatch<AppDispatch>();
+  const dateLocale = language === 'kh' ? 'km-KH' : 'en-US';
+  const unknownServiceLabel = t('labels.unknownService');
   
   // Tab state for switching between provider/customer views
   const [activeTab, setActiveTab] = useState<'provider' | 'customer'>('provider');
@@ -890,7 +903,7 @@ const SpecialistBookings: React.FC = () => {
       
     } catch (error: any) {
       console.error('❌ Failed to complete booking with payment confirmation:', error);
-      toast.error(`Failed to complete booking: ${error.message}`);
+      toast.error(`${t('bookings.completeFailed')}: ${error.message}`);
     }
   };
   
@@ -960,8 +973,8 @@ const SpecialistBookings: React.FC = () => {
       console.error('Failed to submit review:', error);
       
       // Show user-friendly error message
-      const errorMessage = error?.message || 'Failed to submit review. Please try again.';
-      toast.error(`Review submission failed: ${errorMessage}`);
+      const errorMessage = error?.message || t('reviews.submissionFailedTryAgain');
+      toast.error(`${t('reviews.submissionFailed')}: ${errorMessage}`);
       
       // Keep the modal open so user can try again
     } finally {
@@ -987,7 +1000,7 @@ const SpecialistBookings: React.FC = () => {
       }
     } catch (error: any) {
       console.error('❌ Failed to cancel booking:', error);
-      toast.error('Failed to cancel booking. Please try again.');
+      toast.error(t('bookings.cancelFailed'));
     }
     setCancelTarget(null);
   };
@@ -1077,10 +1090,10 @@ const SpecialistBookings: React.FC = () => {
                   ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
-              title="Kanban View"
+              title={t('bookings.viewMode.kanbanTitle')}
             >
               <Squares2X2Icon className="w-4 h-4" />
-              <span className="text-sm font-medium hidden sm:inline">Kanban</span>
+              <span className="text-sm font-medium hidden sm:inline">{t('bookings.viewMode.kanban')}</span>
             </button>
             <button
               onClick={() => setViewMode('list')}
@@ -1089,10 +1102,10 @@ const SpecialistBookings: React.FC = () => {
                   ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
-              title="List View"
+              title={t('bookings.viewMode.listTitle')}
             >
               <ListBulletIcon className="w-4 h-4" />
-              <span className="text-sm font-medium hidden sm:inline">List</span>
+              <span className="text-sm font-medium hidden sm:inline">{t('bookings.viewMode.list')}</span>
             </button>
           </div>
         </div>
@@ -1183,9 +1196,9 @@ const SpecialistBookings: React.FC = () => {
                 <option value="PENDING">{t('bookings.pending')}</option>
                 <option value="CONFIRMED">{t('bookings.confirmed')}</option>
                 <option value="COMPLETED">{t('bookings.completed')}</option>
-                <option value="CANCELLED">{t('dashboard.booking.status.CANCELLED')}</option>
-                <option value="IN_PROGRESS">{t('dashboard.booking.status.IN_PROGRESS')}</option>
-                <option value="noShow">{t('dashboard.booking.status.noShow')}</option>
+                <option value="CANCELLED">{t('bookings.cancelled')}</option>
+                <option value="IN_PROGRESS">{t('bookings.inProgress')}</option>
+                <option value="noShow">{t('bookings.noShow')}</option>
               </select>
             </div>
             
@@ -1262,7 +1275,12 @@ const SpecialistBookings: React.FC = () => {
         {/* Kanban or List View */}
         {viewMode === 'kanban' ? (
           <BookingKanban
-            bookings={filteredAndSortedBookings.map(mapBookingToBookingData)}
+            bookings={filteredAndSortedBookings.map((booking) =>
+              mapBookingToBookingData(booking, {
+                locale: dateLocale,
+                unknownServiceLabel
+              })
+            )}
             onBookingClick={(bookingData) => {
               // Find the original booking by ID
               const originalBooking = bookings.find(b => b.id === bookingData.id);
@@ -1306,14 +1324,14 @@ const SpecialistBookings: React.FC = () => {
                       <p className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
                         {booking.customer 
                           ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
-                          : (booking.customerName || 'Unknown Customer')
+                          : (booking.customerName || t('labels.unknownCustomer'))
                         }
                         {booking.customer?.loyaltyPoints != null && (
                           <TierBadge points={booking.customer.loyaltyPoints} size="sm" />
                         )}
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        ID: #{booking.id}
+                        {t('labels.id')}: #{booking.id}
                       </p>
                     </div>
                   </div>
@@ -1326,7 +1344,7 @@ const SpecialistBookings: React.FC = () => {
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t('bookings.service')}</p>
                   <p className="font-medium text-gray-900 dark:text-white">
-                    {booking.service?.name || getTranslatedServiceName(booking.serviceName || 'Unknown Service')}
+                    {getTranslatedServiceName(booking.service?.name || booking.serviceName || t('labels.unknownService'))}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {booking.duration} {t('time.minutes')}
@@ -1345,10 +1363,12 @@ const SpecialistBookings: React.FC = () => {
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t('bookings.dateTime')}</p>
                   <div className="text-sm font-medium text-gray-900 dark:text-white">
-                    {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleDateString('uk-UA') : booking.date}
+                    {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleDateString(dateLocale) : booking.date}
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }) : booking.time}
+                    {booking.scheduledAt
+                      ? new Date(booking.scheduledAt).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' })
+                      : booking.time}
                   </div>
                 </div>
                 <div>
@@ -1459,11 +1479,11 @@ const SpecialistBookings: React.FC = () => {
                               {activeTab === 'provider'
                                 ? (booking.customer 
                                   ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() 
-                                  : (booking.customerName || 'Unknown Customer')
+                                  : (booking.customerName || t('labels.unknownCustomer'))
                                 )
                                 : (booking.specialist
                                   ? `${booking.specialist.user?.firstName || ''} ${booking.specialist.user?.lastName || ''}`.trim()
-                                  : 'Unknown Specialist'
+                                  : t('labels.unknownSpecialist')
                                 )
                               }
                             </div>
@@ -1477,22 +1497,24 @@ const SpecialistBookings: React.FC = () => {
                               )
                             )}
                           </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">ID: #{booking.id}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">{t('labels.id')}: #{booking.id}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 dark:text-white">
-                        {booking.service?.name || getTranslatedServiceName(booking.serviceName || 'Unknown Service')}
+                        {getTranslatedServiceName(booking.service?.name || booking.serviceName || t('labels.unknownService'))}
                       </div>
                       <div className="text-sm text-gray-500 dark:text-gray-400">{getTranslatedDuration(booking.duration)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 dark:text-white">
-                        {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleDateString('uk-UA') : booking.date}
+                        {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleDateString(dateLocale) : booking.date}
                       </div>
                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {booking.scheduledAt ? new Date(booking.scheduledAt).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }) : booking.time}
+                        {booking.scheduledAt
+                          ? new Date(booking.scheduledAt).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' })
+                          : booking.time}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -1564,7 +1586,7 @@ const SpecialistBookings: React.FC = () => {
                               >
                                 <StarIcon className="w-4 h-4 mr-1" />
                                 <span className="hidden sm:inline">{t('bookings.leaveReview')}</span>
-                                <span className="sm:hidden">Review</span>
+                                <span className="sm:hidden">{t('bookings.reviewShort')}</span>
                               </button>
                             )}
                           </>

@@ -5,23 +5,9 @@ import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, logout } from '@/store/slices/authSlice';
 import { selectFavoritesCount, fetchFavoritesCount } from '@/store/slices/favoritesSlice';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
-import {
-  HomeIcon,
-  CalendarIcon,
-  HeartIcon,
-  CreditCardIcon,
-  StarIcon,
-  UserIcon,
-  ClockIcon,
-  BellIcon,
-  ArrowRightOnRectangleIcon,
-  Bars3Icon,
-  XMarkIcon,
-  MagnifyingGlassIcon,
-  LifebuoyIcon,
-  GiftIcon,
-  ChatBubbleLeftRightIcon,
-} from '@/components/icons';
+import { HouseIcon as HomeIcon, CalendarIcon, HeartIcon, CreditCardIcon, StarIcon, UserIcon, ClockIcon, BellIcon, ArrowRightOnRectangleIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, MagnifyingGlassIcon, LifebuoyIcon, GiftIcon, ChatBubbleLeftRightIcon, UserGroupIcon } from '@/components/icons';
+// Note: Use active prop for filled icons: <Icon active />
+;
 
 interface CustomerSidebarProps {
   isOpen?: boolean;
@@ -33,7 +19,7 @@ interface NavigationItem {
   name: string;
   translationKey: string;
   href: string;
-  icon: React.ComponentType<{ className?: string; active?: boolean }>;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement> & { active?: boolean }>;
   badge?: number;
   comingSoon?: boolean;
 }
@@ -68,6 +54,12 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       translationKey: 'dashboard.nav.messages',
       href: '/customer/messages',
       icon: ChatBubbleLeftRightIcon,
+    },
+    {
+      name: 'Community',
+      translationKey: 'dashboard.nav.community',
+      href: '/community',
+      icon: UserGroupIcon,
     },
     {
       name: 'Search Services',
@@ -185,7 +177,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                   className="w-10 h-10 rounded-xl object-cover"
                 />
               ) : (
-                <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center">
                   <span className="text-white font-bold text-lg">
                     {user?.firstName?.charAt(0) || 'C'}
                   </span>
@@ -207,7 +199,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
             </div>
             <button
               onClick={onToggle}
-              className="lg:hidden p-2 rounded-lg text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="lg:hidden p-2 rounded-xl text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <XMarkIcon className="w-6 h-6" />
             </button>
@@ -217,7 +209,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
           <div className="p-4 bg-primary-50 dark:bg-primary-900/20 border-b border-gray-200 dark:border-gray-700">
             <Link
               to="/search"
-              className="w-full flex items-center justify-center px-4 py-3 bg-primary-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-colors duration-200"
+              className="w-full flex items-center justify-center px-4 py-3 bg-primary-500 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
               onClick={() => {
                 if (onToggle && window.innerWidth < 1024) {
                   onToggle();
@@ -242,7 +234,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                   className={`
                     group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
                     ${isActive
-                      ? 'bg-primary-600 text-white shadow-lg'
+                      ? 'bg-primary-500 text-white shadow-lg transform scale-105'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                     }
                     ${item.comingSoon ? 'opacity-50 cursor-not-allowed' : ''}
@@ -270,8 +262,8 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                   {item.badge && item.badge > 0 && (
                     <span className={`
                       inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full
-                      ${isActive 
-                        ? 'bg-white bg-opacity-20 text-white' 
+                      ${isActive
+                        ? 'bg-white bg-opacity-20 text-white'
                         : 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200'
                       }
                     `}>
@@ -301,7 +293,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                   className={`
                     group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
                     ${isActive
-                      ? 'bg-primary-600 text-white shadow-lg'
+                      ? 'bg-primary-500 text-white shadow-lg'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                     }
                   `}
@@ -324,8 +316,8 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                   {item.badge && item.badge > 0 && (
                     <span className={`
                       inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full
-                      ${isActive 
-                        ? 'bg-white bg-opacity-20 text-white' 
+                      ${isActive
+                        ? 'bg-white bg-opacity-20 text-white'
                         : 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200'
                       }
                     `}>
@@ -364,7 +356,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       {!isOpen && (
         <button
           onClick={onToggle}
-          className="fixed top-4 left-4 z-30 lg:hidden p-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+          className="fixed top-4 left-4 z-30 lg:hidden p-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
         >
           <Bars3Icon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
         </button>

@@ -17,8 +17,8 @@ export interface UpdateProfileRequest {
 }
 
 export interface UserPreferences {
-  language: 'en' | 'kh' | 'uk' | 'ru';
-  currency: 'USD' | 'KHR';
+  language: 'uk' | 'en' | 'ru';
+  currency: 'UAH' | 'USD' | 'EUR';
   timezone: string;
   notifications: {
     email: boolean;
@@ -63,11 +63,7 @@ export class UserService {
       const formData = new FormData();
       formData.append('files', file); // Note: files field name for multer array upload
       
-      const response = await apiClient.post<any>('/files/upload?purpose=avatar', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await apiClient.post<any>('/files/upload?purpose=avatar', formData);
 
       if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
         throw new Error(response.error?.message || 'Failed to upload avatar');

@@ -1,5 +1,4 @@
 import { apiClient } from './api';
-import { normalizeCurrency } from '@/utils/currency';
 import {
   Payment,
   PaymentIntent,
@@ -530,11 +529,7 @@ export class PaymentService {
       formData.append(`document_${index}`, file);
     });
 
-    const response = await apiClient.post(`/payments/disputes/${disputeId}/evidence`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await apiClient.post(`/payments/disputes/${disputeId}/evidence`, formData);
 
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to submit dispute evidence');
@@ -580,7 +575,7 @@ export class PaymentService {
     }>;
     depositConfiguration: {
       amountUSD: number;
-      amountKHR: number;
+      amountUAH: number;
       currency: string;
       description: string;
     };
@@ -595,7 +590,7 @@ export class PaymentService {
       }>;
       depositConfiguration: {
         amountUSD: number;
-        amountKHR: number;
+        amountUAH: number;
         currency: string;
         description: string;
       };
@@ -604,17 +599,7 @@ export class PaymentService {
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get payment options');
     }
-    const { depositConfiguration } = response.data;
-    const normalizedDeposit = {
-      amountUSD: depositConfiguration.amountUSD,
-      amountKHR: (depositConfiguration as any).amountKHR ?? Math.round(depositConfiguration.amountUSD * 4100),
-      currency: normalizeCurrency(depositConfiguration.currency),
-      description: depositConfiguration.description,
-    };
-    return {
-      ...response.data,
-      depositConfiguration: normalizedDeposit,
-    };
+    return response.data;
   }
 
   // Create onramp session for fiat-to-crypto

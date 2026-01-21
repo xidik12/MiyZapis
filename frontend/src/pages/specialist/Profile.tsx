@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FullScreenHandshakeLoader } from '@/components/ui/FullScreenHandshakeLoader';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -11,35 +11,11 @@ import { isFeatureEnabled } from '../../config/features';
 import { ProfessionDropdown } from '../../components/ui/ProfessionDropdown';
 import { LocationPicker } from '../../components/LocationPicker';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
+import { logger } from '@/utils/logger';
 import OptimizedImage from '../../components/ui/OptimizedImage';
 import { Avatar } from '../../components/ui/Avatar';
 import AutoMigrateAvatar from '../../components/AutoMigrateAvatar';
-import { 
-  CheckCircleIcon,
-  XCircleIcon,
-  ExclamationTriangleIcon,
-  EyeIcon,
-  PencilSquareIcon,
-  UserCircleIcon,
-  MapPinIcon,
-  ClockIcon,
-  CreditCardIcon,
-  GlobeAltIcon,
-  AcademicCapIcon,
-  StarIcon,
-  PhotoIcon,
-  DocumentCheckIcon,
-  PhoneIcon,
-  EnvelopeIcon,
-  BriefcaseIcon,
-  BuildingOfficeIcon,
-  CameraIcon,
-  TrashIcon,
-  PlusIcon,
-  ArrowDownTrayIcon,
-  Cog6ToothIcon,
-  ShieldCheckIcon
-} from '@/components/icons';
+import { CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, EyeIcon, PencilSquareIcon, UserCircleIcon, MapPinIcon, ClockIcon, CreditCardIcon, GlobeAltIcon, AcademicCapIcon, StarIcon, PhotoIcon, DocumentCheckIcon, PhoneIcon, EnvelopeIcon, BriefcaseIcon, BuildingOfficeIcon, CameraIcon, TrashIcon, PlusIcon, ArrowDownTrayIcon, Cog6ToothIcon, ShieldCheckIcon } from '@/components/icons';
 
 interface SpecialistProfile {
   id: string;
@@ -63,19 +39,14 @@ interface SpecialistProfile {
     region: string;
     country: string;
   };
-  preciseAddress: string;
-  businessPhone: string;
-  whatsappNumber: string;
-  locationNotes: string;
-  parkingInfo: string;
-  accessInstructions: string;
   serviceArea: {
     radius: number;
     cities: string[];
   };
   businessHours: BusinessHours;
   paymentMethods: string[];
-  bankAccounts: BankAccount[];
+  bankDetails: BankDetails;
+  paymentQrCodeUrl: string;
   notifications: NotificationSettings;
   privacy: PrivacySettings;
   verification: {
@@ -91,13 +62,6 @@ interface SpecialistProfile {
   };
   languages: string[];
   specialties: string[];
-}
-
-interface BankAccount {
-  type: 'ABA' | 'KHQR';
-  accountName: string;
-  accountNumber: string;
-  qrImageUrl?: string;
 }
 
 interface Certification {
@@ -122,6 +86,15 @@ interface PortfolioItem {
   categoryUk?: string;
   categoryRu?: string;
   dateAdded: string;
+}
+
+interface BankDetails {
+  bankName?: string;
+  accountName?: string;
+  accountNumber?: string;
+  iban?: string;
+  swift?: string;
+  notes?: string;
 }
 
 interface BusinessHours {
@@ -174,12 +147,6 @@ const getEmptyProfile = (): SpecialistProfile => ({
     region: '',
     country: '',
   },
-  preciseAddress: '',
-  businessPhone: '',
-  whatsappNumber: '',
-  locationNotes: '',
-  parkingInfo: '',
-  accessInstructions: '',
   serviceArea: {
     radius: 0,
     cities: [],
@@ -194,7 +161,15 @@ const getEmptyProfile = (): SpecialistProfile => ({
     sunday: { isOpen: false, startTime: '09:00', endTime: '17:00' },
   },
   paymentMethods: [],
-  bankAccounts: [],
+  bankDetails: {
+    bankName: '',
+    accountName: '',
+    accountNumber: '',
+    iban: '',
+    swift: '',
+    notes: '',
+  },
+  paymentQrCodeUrl: '',
   notifications: {
     emailBookings: false,
     emailReviews: false,
@@ -230,8 +205,8 @@ const getEmptyProfile = (): SpecialistProfile => ({
 const mergeProfileData = (apiData: any): SpecialistProfile => {
   const defaultProfile = getEmptyProfile();
   
-  console.log('🔄 mergeProfileData input:', apiData);
-  console.log('🔄 defaultProfile:', defaultProfile);
+  logger.debug('🔄 mergeProfileData input:', apiData);
+  logger.debug('🔄 defaultProfile:', defaultProfile);
   
   // Extract specialist data from nested structure
   const specialist = apiData?.specialist || apiData;
@@ -242,7 +217,7 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
       try {
         return JSON.parse(field);
       } catch (e) {
-        console.warn('⚠️ Failed to parse JSON field:', field, e);
+        logger.warn('⚠️ Failed to parse JSON field:', field, e);
         return fallback;
       }
     }
@@ -263,26 +238,21 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
     bio: specialist?.bio || '',
     experience: specialist?.experience || 0,
     education: specialist?.education || '',
-    // Location data from specialist
-    location: {
-      address: specialist?.address || specialist?.location?.address || '',
-      city: specialist?.city || specialist?.location?.city || '',
-      region: specialist?.state || specialist?.location?.region || specialist?.location?.state || '',
-      country: specialist?.country || specialist?.location?.country || '',
-    },
     preciseAddress: specialist?.preciseAddress || specialist?.location?.preciseAddress || '',
     businessPhone: specialist?.businessPhone || specialist?.location?.businessPhone || '',
-    whatsappNumber: specialist?.whatsappNumber || specialist?.location?.whatsappNumber || '',
-    locationNotes: specialist?.locationNotes || specialist?.location?.locationNotes || '',
-    parkingInfo: specialist?.parkingInfo || specialist?.location?.parkingInfo || '',
-    accessInstructions: specialist?.accessInstructions || specialist?.location?.accessInstructions || '',
+    // Location data from specialist
+    location: {
+      address: specialist?.address || '',
+      city: specialist?.city || '',
+      region: specialist?.state || '',
+      country: specialist?.country || '',
+    },
     // Parse backend JSON strings and ensure arrays are always arrays
     languages: Array.isArray(specialist?.languages) ? specialist.languages : parseJsonField(specialist?.languages, []),
     specialties: Array.isArray(specialist?.specialties) ? specialist.specialties : parseJsonField(specialist?.specialties, []),
     paymentMethods: Array.isArray(specialist?.paymentMethods) ? specialist.paymentMethods : parseJsonField(specialist?.paymentMethods, []),
-    bankAccounts: Array.isArray(specialist?.bankAccounts)
-      ? specialist.bankAccounts
-      : parseJsonField(specialist?.bankAccounts ?? specialist?.bank_accounts ?? specialist?.payoutAccounts ?? specialist?.payout_accounts, []),
+    bankDetails: specialist?.bankDetails ? parseJsonField(specialist.bankDetails, defaultProfile.bankDetails) : defaultProfile.bankDetails,
+    paymentQrCodeUrl: specialist?.paymentQrCodeUrl || '',
     certifications: Array.isArray(specialist?.certifications) ? specialist.certifications : parseJsonField(specialist?.certifications, []),
     portfolio: Array.isArray(specialist?.portfolio) ? specialist.portfolio : parseJsonField(specialist?.portfolioImages, []),
     // Parse business hours from JSON string if needed - prioritize workingHours from backend
@@ -304,13 +274,12 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
     },
   };
   
-  console.log('🔄 mergeProfileData result:', result);
+  logger.debug('🔄 mergeProfileData result:', result);
   return result;
 };
 
 const SpecialistProfile: React.FC = () => {
   const { language, t } = useLanguage();
-  const isKh = language === 'kh';
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
   
@@ -330,16 +299,14 @@ const SpecialistProfile: React.FC = () => {
   const [showErrorMessage, setShowErrorMessage] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [isUploadingPortfolio, setIsUploadingPortfolio] = useState(false);
+  const [isUploadingPaymentQr, setIsUploadingPaymentQr] = useState(false);
+  const [paymentQrError, setPaymentQrError] = useState('');
   
   // Avatar upload states
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const [bankUploadState, setBankUploadState] = useState<Record<'ABA' | 'KHQR', boolean>>({
-    ABA: false,
-    KHQR: false,
-  });
 
   // Active tab state
-  const [activeTab, setActiveTab] = useState<'personal' | 'professional' | 'business' | 'portfolio'>('personal');
+  const [activeTab, setActiveTab] = useState<'personal' | 'professional' | 'business' | 'payment' | 'portfolio'>('personal');
 
   // Success/Error message handlers
   const showSuccessNotification = (message: string) => {
@@ -366,7 +333,7 @@ const SpecialistProfile: React.FC = () => {
     try {
       const dateObj = new Date(date);
       if (isNaN(dateObj.getTime())) return null;
-      return dateObj.toLocaleDateString(language === 'kh' ? 'km-KH' : 'en-US', {
+      return dateObj.toLocaleDateString(language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
@@ -424,18 +391,18 @@ const SpecialistProfile: React.FC = () => {
 
     const loadProfile = async () => {
       try {
-        console.log('📥 Starting profile load, user:', user);
+        logger.debug('📥 Starting profile load, user:', user);
         setLoading(true);
         
         if (user && isFeatureEnabled('ENABLE_SPECIALIST_PROFILE_API')) {
-          console.log('📡 API feature enabled, fetching specialist profile...');
+          logger.debug('📡 API feature enabled, fetching specialist profile...');
           try {
             const specialistData = await specialistService.getProfile();
-            console.log('📡 Raw data from backend getProfile:', specialistData);
+            logger.debug('📡 Raw data from backend getProfile:', specialistData);
             
             // Extract specialist data from nested response
             const specialist = specialistData.specialist || specialistData;
-            console.log('📦 Extracted specialist data:', specialist);
+            logger.debug('📦 Extracted specialist data:', specialist);
             
             const profileInput = {
               // Use nested specialist data
@@ -447,6 +414,8 @@ const SpecialistProfile: React.FC = () => {
               profession: specialist.businessName || '',
               bio: specialist.bio || '',
               experience: specialist.experience || 0,
+              preciseAddress: specialist.preciseAddress || '',
+              businessPhone: specialist.businessPhone || '',
               location: {
                 address: specialist.address || '',
                 city: specialist.city || '',
@@ -455,24 +424,24 @@ const SpecialistProfile: React.FC = () => {
               },
               verification: {
                 isVerified: specialist.isVerified || false,
-                verifiedDate: specialist.isVerified && specialist.verifiedDate 
-                  ? specialist.verifiedDate 
-                  : specialist.isVerified 
-                  ? new Date().toISOString().split('T')[0] 
+                verifiedDate: specialist.isVerified && specialist.verifiedDate
+                  ? specialist.verifiedDate
+                  : specialist.isVerified
+                  ? new Date().toISOString().split('T')[0]
                   : '',
                 documentsSubmitted: [],
               },
             };
             
-            console.log('📥 Profile input before merge:', profileInput);
+            logger.debug('📥 Profile input before merge:', profileInput);
             const updatedProfile = mergeProfileData(profileInput);
-            console.log('📥 Final merged profile:', updatedProfile);
+            logger.debug('📥 Final merged profile:', updatedProfile);
             
             setProfile(updatedProfile);
             setOriginalProfile(updatedProfile);
-            console.log('✅ Profile loaded successfully');
+            logger.debug('✅ Profile loaded successfully');
           } catch (specialistError) {
-            console.warn('Specialist API not available, using user data only:', specialistError);
+            logger.warn('Specialist API not available, using user data only:', specialistError);
             const basicProfile = mergeProfileData({
               firstName: user.firstName || '',
               lastName: user.lastName || '',
@@ -493,9 +462,13 @@ const SpecialistProfile: React.FC = () => {
           setOriginalProfile(basicProfile);
         }
       } catch (error) {
-        console.error('Error loading profile:', error);
+        logger.error('Error loading profile:', error);
         showErrorNotification(
-          isKh ? 'មិនអាចផ្ទុកប្រវត្តិរូបបាន' : 'Failed to load profile'
+          language === 'uk' 
+            ? 'Не вдалося завантажити профіль' 
+            : language === 'ru' 
+            ? 'Не удалось загрузить профиль' 
+            : 'Failed to load profile'
         );
       } finally {
         setLoading(false);
@@ -507,13 +480,13 @@ const SpecialistProfile: React.FC = () => {
 
   // Handle profile changes
   const handleProfileChange = (field: string, value: any) => {
-    console.log(`📝 Profile field changed: ${field} =`, value);
+    logger.debug(`📝 Profile field changed: ${field} =`, value);
     setProfile(prev => {
       const newProfile = {
         ...prev,
         [field]: value
       };
-      console.log('📝 New profile state:', newProfile);
+      logger.debug('📝 New profile state:', newProfile);
       return newProfile;
     });
     setHasUnsavedChanges(true);
@@ -528,67 +501,40 @@ const SpecialistProfile: React.FC = () => {
     }
   };
 
-  const updateBankAccount = (type: 'ABA' | 'KHQR', updates: Partial<BankAccount>) => {
-    const currentAccounts = Array.isArray(profile.bankAccounts) ? profile.bankAccounts : [];
-    const existing = currentAccounts.find((account) => account.type === type);
-    const nextAccounts = existing
-      ? currentAccounts.map((account) =>
-          account.type === type ? { ...account, ...updates, type } : account
-        )
-      : [
-          ...currentAccounts,
-          {
-            type,
-            accountName: '',
-            accountNumber: '',
-            ...updates,
-          }
-        ];
-
-    handleProfileChange('bankAccounts', nextAccounts);
-  };
-
-  const handleBankQrUpload = async (type: 'ABA' | 'KHQR', file: File) => {
-    if (!isEditing) return;
-    try {
-      setBankUploadState((prev) => ({ ...prev, [type]: true }));
-      const uploaded = await fileUploadService.uploadFile(file, {
-        type: 'document',
-        maxSize: 5 * 1024 * 1024,
-        allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'],
-      });
-      updateBankAccount(type, { qrImageUrl: uploaded.url });
-      showSuccessNotification(isKh ? 'បានផ្ទុក QR ដោយជោគជ័យ' : 'QR image uploaded');
-    } catch (error: any) {
-      console.error('Failed to upload QR image:', error);
-      showErrorNotification(error?.message || (isKh ? 'មិនអាចផ្ទុក QR បានទេ' : 'Failed to upload QR image'));
-    } finally {
-      setBankUploadState((prev) => ({ ...prev, [type]: false }));
-    }
-  };
-
   // Validate profile data
   const validateProfile = (): boolean => {
     const errors: Record<string, string> = {};
 
     if (!profile.firstName?.trim()) {
-      errors.firstName = isKh ? 'ត្រូវបំពេញនាម' : 'First name is required';
+      errors.firstName = language === 'uk' ? 'Ім\'я обов\'язкове' : language === 'ru' ? 'Имя обязательно' : 'First name is required';
     }
     if (!profile.lastName?.trim()) {
-      errors.lastName = isKh ? 'ត្រូវបំពេញនាមត្រកូល' : 'Last name is required';
+      errors.lastName = language === 'uk' ? 'Прізвище обов\'язкове' : language === 'ru' ? 'Фамилия обязательна' : 'Last name is required';
     }
     if (!profile.email?.trim()) {
-      errors.email = isKh ? 'ត្រូវបំពេញអ៊ីមែល' : 'Email is required';
+      errors.email = language === 'uk' ? 'Email обов\'язковий' : language === 'ru' ? 'Email обязателен' : 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email)) {
-      errors.email = isKh ? 'ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវ' : 'Invalid email format';
+      errors.email = language === 'uk' ? 'Невірний формат email' : language === 'ru' ? 'Неверный формат email' : 'Invalid email format';
     }
     if (!profile.profession?.trim()) {
-      errors.profession = isKh ? 'ត្រូវបំពេញមុខរបរ' : 'Profession is required';
+      errors.profession = language === 'uk' ? 'Професія обов\'язкова' : language === 'ru' ? 'Профессия обязательна' : 'Profession is required';
     }
-    
+
     // Validate phone if provided
     if (profile.phone && profile.phone.trim() && !/^[\d\s\-\+\(\)]+$/.test(profile.phone)) {
-      errors.phone = isKh ? 'ទម្រង់លេខទូរស័ព្ទមិនត្រឹមត្រូវ' : 'Invalid phone format';
+      errors.phone = language === 'uk' ? 'Невірний формат телефону' : language === 'ru' ? 'Неверный формат телефона' : 'Invalid phone format';
+    }
+
+    // Validate precise address (required)
+    if (!profile.preciseAddress?.trim()) {
+      errors.preciseAddress = language === 'uk' ? 'Точна адреса обов\'язкова' : language === 'ru' ? 'Точный адрес обязателен' : 'Precise address is required';
+    }
+
+    // Validate business phone (required)
+    if (!profile.businessPhone?.trim()) {
+      errors.businessPhone = language === 'uk' ? 'Робочий телефон обов\'язковий' : language === 'ru' ? 'Рабочий телефон обязателен' : 'Business phone is required';
+    } else if (!/^[\d\s\-\+\(\)]+$/.test(profile.businessPhone)) {
+      errors.businessPhone = language === 'uk' ? 'Невірний формат телефону' : language === 'ru' ? 'Неверный формат телефона' : 'Invalid phone format';
     }
 
     setValidationErrors(errors);
@@ -600,16 +546,47 @@ const SpecialistProfile: React.FC = () => {
     if (!validateProfile()) {
       // Show specific validation errors
       const errorFields = Object.keys(validationErrors);
-      const fieldLabels: Record<string, string> = {
-        firstName: isKh ? 'នាម' : 'First Name',
-        lastName: isKh ? 'នាមត្រកូល' : 'Last Name',
-        email: isKh ? 'អ៊ីមែល' : 'Email',
-        profession: isKh ? 'មុខរបរ' : 'Profession',
-      };
-      const missingFields = errorFields.map((field) => fieldLabels[field] || field);
-      const errorMessage = errorFields.length > 0
-        ? `${isKh ? 'សូមបំពេញព័ត៌មានចាំបាច់៖' : 'Please fill in the required fields:'} ${missingFields.join(', ')}`
-        : (isKh ? 'សូមពិនិត្យកំហុសនៅក្នុងទម្រង់' : 'Please fix the errors in the form');
+      const errorMessage = errorFields.length > 0 
+        ? (language === 'uk'
+          ? `Будь ласка, заповніть обов'язкові поля: ${errorFields.map(field => {
+              switch(field) {
+                case 'firstName': return "Ім'я";
+                case 'lastName': return 'Прізвище';
+                case 'email': return 'Email';
+                case 'profession': return 'Професія';
+                case 'preciseAddress': return 'Точна адреса';
+                case 'businessPhone': return 'Робочий телефон';
+                default: return field;
+              }
+            }).join(', ')}`
+          : language === 'ru'
+          ? `Пожалуйста, заполните обязательные поля: ${errorFields.map(field => {
+              switch(field) {
+                case 'firstName': return 'Имя';
+                case 'lastName': return 'Фамилия';
+                case 'email': return 'Email';
+                case 'profession': return 'Профессия';
+                case 'preciseAddress': return 'Точный адрес';
+                case 'businessPhone': return 'Рабочий телефон';
+                default: return field;
+              }
+            }).join(', ')}`
+          : `Please fill in the required fields: ${errorFields.map(field => {
+              switch(field) {
+                case 'firstName': return 'First Name';
+                case 'lastName': return 'Last Name';
+                case 'email': return 'Email';
+                case 'profession': return 'Profession';
+                case 'preciseAddress': return 'Precise Address';
+                case 'businessPhone': return 'Business Phone';
+                default: return field;
+              }
+            }).join(', ')}`)
+        : (language === 'uk'
+          ? 'Будь ласка, виправте помилки у формі'
+          : language === 'ru'
+          ? 'Пожалуйста, исправьте ошибки в форме'
+          : 'Please fix the errors in the form');
           
       showErrorNotification(errorMessage);
       return;
@@ -638,16 +615,13 @@ const SpecialistProfile: React.FC = () => {
             country: profile.location?.country || '',
             latitude: profile.location?.latitude || null,
             longitude: profile.location?.longitude || null,
-            preciseAddress: profile.preciseAddress || '',
-            businessPhone: profile.businessPhone || '',
-            whatsappNumber: profile.whatsappNumber || '',
-            locationNotes: profile.locationNotes || '',
-            parkingInfo: profile.parkingInfo || '',
-            accessInstructions: profile.accessInstructions || '',
             timezone: 'UTC', // Default timezone
             workingHours: profile.businessHours || {},
+            preciseAddress: profile.preciseAddress || '',
+            businessPhone: profile.businessPhone || '',
             paymentMethods: Array.isArray(profile.paymentMethods) ? profile.paymentMethods : [],
-            bankAccounts: Array.isArray(profile.bankAccounts) ? profile.bankAccounts : [],
+            bankDetails: profile.bankDetails || {},
+            paymentQrCodeUrl: profile.paymentQrCodeUrl || null,
             serviceArea: profile.serviceArea || { radius: 0, cities: [] },
             notifications: profile.notifications || {},
             privacy: profile.privacy || {},
@@ -656,23 +630,23 @@ const SpecialistProfile: React.FC = () => {
             certifications: Array.isArray(profile.certifications) ? profile.certifications : []
           };
 
-          console.log('💾 Sending specialist data to backend:', specialistData);
-          console.log('💾 Current profile state before save:', profile);
+          logger.debug('💾 Sending specialist data to backend:', specialistData);
+          logger.debug('💾 Current profile state before save:', profile);
 
           // Call the API to update the specialist profile
           try {
             const updateResult = await specialistService.updateProfile(specialistData);
-            console.log('✅ Backend response for specialist update:', updateResult);
+            logger.debug('✅ Backend response for specialist update:', updateResult);
           } catch (updateError: any) {
-            console.error('❌ Update failed, error:', updateError);
+            logger.error('❌ Update failed, error:', updateError);
             // If specialist profile doesn't exist, try to create it first
             if (updateError.message?.includes('SPECIALIST_NOT_FOUND') || updateError.message?.includes('not found')) {
-              console.log('Specialist profile not found, attempting to create...');
+              logger.debug('Specialist profile not found, attempting to create...');
               try {
                 await specialistService.createProfile(specialistData);
-                console.log('Specialist profile created successfully');
+                logger.debug('Specialist profile created successfully');
               } catch (createError: any) {
-                console.error('Failed to create specialist profile:', createError);
+                logger.error('Failed to create specialist profile:', createError);
                 throw createError;
               }
             } else {
@@ -693,25 +667,25 @@ const SpecialistProfile: React.FC = () => {
               phoneNumber: profile.phone?.trim() || null
             };
             
-            console.log('Updating user profile with data:', userUpdateData);
+            logger.debug('Updating user profile with data:', userUpdateData);
             
             try {
               // Import userService dynamically to avoid circular dependencies
               const { userService } = await import('../../services/user.service');
               await userService.updateProfile(userUpdateData);
-              console.log('User profile updated successfully');
+              logger.debug('User profile updated successfully');
               
               // Update Redux store so changes persist
               dispatch(updateUserProfile(userUpdateData));
             } catch (userError: any) {
-              console.error('Failed to update user info:', userError);
-              console.error('Error details:', userError.message);
+              logger.error('Failed to update user info:', userError);
+              logger.error('Error details:', userError.message);
               // Don't throw error here - let specialist profile save continue
             }
           }
           
         } catch (apiError: any) {
-          console.error('API call failed:', apiError);
+          logger.error('API call failed:', apiError);
           throw new Error(apiError.message || 'Failed to save profile');
         }
       }
@@ -721,11 +695,11 @@ const SpecialistProfile: React.FC = () => {
         try {
           // Reload the profile from the API to ensure we have the latest data
           const apiData = await specialistService.getProfile();
-          console.log('Profile data after save reload:', apiData);
+          logger.debug('Profile data after save reload:', apiData);
           
           // Extract specialist data from nested response
           const specialist = apiData.specialist || apiData;
-          console.log('📦 Extracted specialist after save:', specialist);
+          logger.debug('📦 Extracted specialist after save:', specialist);
           
           const updatedProfile = mergeProfileData({
             ...specialist,
@@ -737,11 +711,11 @@ const SpecialistProfile: React.FC = () => {
             bio: specialist.bio || '',
             experience: specialist.experience || 0,
           });
-          console.log('Merged profile after save:', updatedProfile);
+          logger.debug('Merged profile after save:', updatedProfile);
           setProfile(updatedProfile);
           setOriginalProfile(updatedProfile);
         } catch (reloadError) {
-          console.warn('Failed to reload profile after save:', reloadError);
+          logger.warn('Failed to reload profile after save:', reloadError);
           // Still continue with success, just use local data
           setOriginalProfile(profile);
         }
@@ -755,13 +729,21 @@ const SpecialistProfile: React.FC = () => {
       setJustSaved(true); // Prevent unnecessary reload after save
 
       showSuccessNotification(
-        isKh ? 'បានរក្សាទុកប្រវត្តិរូបដោយជោគជ័យ!' : 'Profile saved successfully!'
+        language === 'uk' 
+          ? 'Профіль успішно збережено!'
+          : language === 'ru'
+          ? 'Профиль успешно сохранен!'
+          : 'Profile saved successfully!'
       );
       
     } catch (error) {
-      console.error('Error saving profile:', error);
+      logger.error('Error saving profile:', error);
       showErrorNotification(
-        isKh ? 'មិនអាចរក្សាទុកការផ្លាស់ប្តូរ​បានទេ' : 'Failed to save changes'
+        language === 'uk' 
+          ? 'Не вдалося зберегти зміни'
+          : language === 'ru'
+          ? 'Не удалось сохранить изменения'
+          : 'Failed to save changes'
       );
     } finally {
       setSaving(false);
@@ -777,10 +759,10 @@ const SpecialistProfile: React.FC = () => {
     if (user?.avatar && (user.avatar.includes('googleusercontent.com') || user.avatar.includes('google.com'))) {
       const { confirm } = await import('../../components/ui/Confirm');
       const confirmed = await confirm({
-        title: isKh ? 'ប្តូររូបអវតារ?' : 'Replace avatar?',
-        message: isKh ? 'តើអ្នកប្រាកដថាចង់ប្តូររូបអវតារពី Google ទេ?' : 'Are you sure you want to replace your Google avatar?',
-        confirmText: isKh ? 'ប្តូរ' : 'Replace',
-        cancelText: isKh ? 'បោះបង់' : 'Cancel',
+        title: language === 'uk' ? 'Замінити аватар?' : language === 'ru' ? 'Заменить аватар?' : 'Replace avatar?',
+        message: language === 'uk' ? 'Ви впевнені, що хочете замінити аватар з Google?' : language === 'ru' ? 'Вы уверены, что хотите заменить аватар из Google?' : 'Are you sure you want to replace your Google avatar?',
+        confirmText: language === 'uk' ? 'Замінити' : language === 'ru' ? 'Заменить' : 'Replace',
+        cancelText: language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отмена' : 'Cancel',
       });
       if (!confirmed) {
         event.target.value = ''; // Reset file input
@@ -791,14 +773,18 @@ const SpecialistProfile: React.FC = () => {
     // Validate file type and size
     if (!file.type.startsWith('image/')) {
       showErrorNotification(
-        isKh ? 'សូមជ្រើសរើសឯកសាររូបភាព' : 'Please select an image file'
+        language === 'uk' ? 'Будь ласка, оберіть файл зображення' :
+        language === 'ru' ? 'Пожалуйста, выберите файл изображения' :
+        'Please select an image file'
       );
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
       showErrorNotification(
-        isKh ? 'ទំហំឯកសារត្រូវតិចជាង 5MB' : 'File size must be less than 5MB'
+        language === 'uk' ? 'Розмір файлу повинен бути менше 5МБ' :
+        language === 'ru' ? 'Размер файла должен быть меньше 5МБ' :
+        'File size must be less than 5MB'
       );
       return;
     }
@@ -816,17 +802,21 @@ const SpecialistProfile: React.FC = () => {
       dispatch(updateUserProfile({ avatar: result.url }));
       
       showSuccessNotification(
-        isKh ? 'បានធ្វើបច្ចុប្បន្នភាពរូបអវតារដោយជោគជ័យ' : 'Avatar updated successfully'
+        language === 'uk' ? 'Аватар успішно оновлено' :
+        language === 'ru' ? 'Аватар успешно обновлён' :
+        'Avatar updated successfully'
       );
 
       // Clear the file input
       event.target.value = '';
       
     } catch (error: any) {
-      console.error('❤️ Avatar upload error:', error);
+      logger.error('❤️ Avatar upload error:', error);
       showErrorNotification(
         error.message || 
-        (isKh ? 'មិនអាចផ្ទុករូបអវតារបានទេ' : 'Failed to upload avatar')
+        (language === 'uk' ? 'Помилка завантаження аватара' :
+         language === 'ru' ? 'Ошибка загрузки аватара' :
+         'Failed to upload avatar')
       );
     } finally {
       setIsUploadingAvatar(false);
@@ -843,25 +833,29 @@ const SpecialistProfile: React.FC = () => {
     // Validate file type and size
     if (!file.type.startsWith('image/')) {
       showErrorNotification(
-        isKh ? 'សូមជ្រើសរើសឯកសាររូបភាព' : 'Please select an image file'
+        language === 'uk' ? 'Будь ласка, оберіть файл зображення' :
+        language === 'ru' ? 'Пожалуйста, выберите файл изображения' :
+        'Please select an image file'
       );
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
       showErrorNotification(
-        isKh ? 'ទំហំឯកសារត្រូវតិចជាង 5MB' : 'File size must be less than 5MB'
+        language === 'uk' ? 'Розмір файлу повинен бути менше 5МБ' :
+        language === 'ru' ? 'Размер файла должен быть меньше 5МБ' :
+        'File size must be less than 5MB'
       );
       return;
     }
 
     try {
       setIsUploadingPortfolio(true);
-      console.log('📸 Uploading portfolio image:', file.name, 'Size:', file.size);
+      logger.debug('📸 Uploading portfolio image:', file.name, 'Size:', file.size);
       
       const result = await specialistService.uploadPortfolioImage(file);
-      console.log('✅ Portfolio image uploaded, imageUrl length:', result.imageUrl?.length);
-      console.log('🔍 Image URL preview:', result.imageUrl?.substring(0, 100) + '...');
+      logger.debug('✅ Portfolio image uploaded, imageUrl length:', result.imageUrl?.length);
+      logger.debug('🔍 Image URL preview:', result.imageUrl?.substring(0, 100) + '...');
       
       // Add the new image to the portfolio
       const newPortfolioItem = {
@@ -872,28 +866,103 @@ const SpecialistProfile: React.FC = () => {
         tags: []
       };
       
-      console.log('💼 New portfolio item:', newPortfolioItem);
+      logger.debug('💼 New portfolio item:', newPortfolioItem);
       
       const updatedPortfolio = [...profile.portfolio, newPortfolioItem];
-      console.log('📋 Updated portfolio array:', updatedPortfolio.length, 'items');
+      logger.debug('📋 Updated portfolio array:', updatedPortfolio.length, 'items');
       handleProfileChange('portfolio', updatedPortfolio);
       
       showSuccessNotification(
-        isKh ? 'បានបន្ថែមរូបភាពទៅផតហ្វូលីអូដោយជោគជ័យ' : 'Image successfully added to portfolio'
+        language === 'uk' ? 'Зображення успішно додано до портфоліо' :
+        language === 'ru' ? 'Изображение успешно добавлено в портфолио' :
+        'Image successfully added to portfolio'
       );
 
       // Clear the file input
       event.target.value = '';
       
     } catch (error: any) {
-      console.error('❌ Portfolio upload error:', error);
+      logger.error('❌ Portfolio upload error:', error);
       showErrorNotification(
         error.message || 
-        (isKh ? 'មិនអាចផ្ទុករូបភាពបានទេ' : 'Failed to upload image')
+        (language === 'uk' ? 'Помилка завантаження зображення' :
+         language === 'ru' ? 'Ошибка загрузки изображения' :
+         'Failed to upload image')
       );
     } finally {
       setIsUploadingPortfolio(false);
     }
+  };
+
+  const handleBankDetailsChange = (field: keyof BankDetails, value: string) => {
+    if (!isEditing) return;
+    handleProfileChange('bankDetails', {
+      ...(profile.bankDetails || {}),
+      [field]: value,
+    });
+  };
+
+  const handlePaymentQrUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('[Profile Payment QR Upload] handlePaymentQrUpload triggered', { event });
+    const file = event.target.files?.[0];
+    console.log('[Profile Payment QR Upload] File selected:', file);
+    if (!file) {
+      console.log('[Profile Payment QR Upload] No file selected, returning');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      console.log('[Profile Payment QR Upload] Invalid file type:', file.type);
+      setPaymentQrError(
+        language === 'uk' ? 'Будь ласка, оберіть файл зображення' :
+        language === 'ru' ? 'Пожалуйста, выберите файл изображения' :
+        'Please select an image file'
+      );
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      console.log('[Profile Payment QR Upload] File too large:', file.size);
+      setPaymentQrError(
+        language === 'uk' ? 'Розмір файлу повинен бути менше 5МБ' :
+        language === 'ru' ? 'Размер файла должен быть меньше 5МБ' :
+        'File size must be less than 5MB'
+      );
+      return;
+    }
+
+    try {
+      console.log('[Profile Payment QR Upload] Starting upload...');
+      setIsUploadingPaymentQr(true);
+      setPaymentQrError('');
+      console.log('[Profile Payment QR Upload] Calling fileUploadService.uploadPaymentQr');
+      const result = await fileUploadService.uploadPaymentQr(file);
+      console.log('[Profile Payment QR Upload] Upload result:', result);
+      handleProfileChange('paymentQrCodeUrl', result.url);
+      showSuccessNotification(
+        language === 'uk' ? 'QR-код успішно завантажено' :
+        language === 'ru' ? 'QR-код успешно загружен' :
+        'QR code uploaded successfully'
+      );
+      event.target.value = '';
+      console.log('[Profile Payment QR Upload] Upload complete');
+    } catch (error: any) {
+      console.error('[Profile Payment QR Upload] Upload failed:', error);
+      setPaymentQrError(
+        error.message ||
+        (language === 'uk' ? 'Помилка завантаження QR-коду' :
+         language === 'ru' ? 'Ошибка загрузки QR-кода' :
+         'Failed to upload QR code')
+      );
+    } finally {
+      console.log('[Profile Payment QR Upload] Cleanup');
+      setIsUploadingPaymentQr(false);
+    }
+  };
+
+  const handlePaymentQrRemove = () => {
+    if (!isEditing) return;
+    handleProfileChange('paymentQrCodeUrl', '');
   };
 
   // Handle cancel editing
@@ -901,10 +970,10 @@ const SpecialistProfile: React.FC = () => {
     if (hasUnsavedChanges) {
       const { confirm } = await import('../../components/ui/Confirm');
       const ok = await confirm({
-        title: isKh ? 'បោះបង់ការកែសម្រួល?' : 'Cancel editing?',
-        message: isKh ? 'អ្នកមានការផ្លាស់ប្តូរដែលមិនបានរក្សាទុក។' : 'You have unsaved changes.',
-        confirmText: isKh ? 'បោះបង់' : 'Discard',
-        cancelText: isKh ? 'ត្រឡប់ក្រោយ' : 'Go back',
+        title: language === 'uk' ? 'Скасувати редагування?' : language === 'ru' ? 'Отменить редактирование?' : 'Cancel editing?',
+        message: language === 'uk' ? 'У вас є незбережені зміни.' : language === 'ru' ? 'У вас есть несохраненные изменения.' : 'You have unsaved changes.',
+        confirmText: language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Discard',
+        cancelText: language === 'uk' ? 'Повернутися' : language === 'ru' ? 'Назад' : 'Go back',
       });
       if (ok) {
         setProfile(originalProfile);
@@ -918,14 +987,14 @@ const SpecialistProfile: React.FC = () => {
   };
 
   if (loading) {
-    const subtitle = isKh ? 'កំពុងផ្ទុកប្រវត្តិរូបរបស់អ្នក' : 'Fetching your profile';
+    const subtitle = language === 'uk' ? 'Завантаження профілю' : language === 'ru' ? 'Загрузка профиля' : 'Fetching your profile';
     return (<FullScreenHandshakeLoader title={t('common.loading')} subtitle={subtitle} />);
   }
 
   const completionPercentage = getProfileCompletion();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900">
       {/* Auto-migrate Google avatars */}
       <AutoMigrateAvatar 
         showStatus={true} 
@@ -945,7 +1014,7 @@ const SpecialistProfile: React.FC = () => {
             </div>
             <div>
               <p className="text-success-800 dark:text-success-200 font-semibold text-sm mb-1">
-                {isKh ? 'ជោគជ័យ!' : 'Success!'}
+                {language === 'uk' ? 'Успішно!' : language === 'ru' ? 'Успешно!' : 'Success!'}
               </p>
               <p className="text-success-700 dark:text-success-300 text-xs">
                 {successMessage}
@@ -963,7 +1032,7 @@ const SpecialistProfile: React.FC = () => {
             </div>
             <div>
               <p className="text-error-800 dark:text-error-200 font-semibold text-sm mb-1">
-                {isKh ? 'កំហុស!' : 'Error!'}
+                {language === 'uk' ? 'Помилка!' : language === 'ru' ? 'Ошибка!' : 'Error!'}
               </p>
               <p className="text-error-700 dark:text-error-300 text-xs">
                 {errorMessage}
@@ -989,7 +1058,7 @@ const SpecialistProfile: React.FC = () => {
                     className="w-28 h-28 rounded-2xl object-cover shadow-lg ring-4 ring-white dark:ring-gray-800"
                   />
                 ) : (
-                  <div className="w-28 h-28 rounded-2xl bg-primary-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg ring-4 ring-white dark:ring-gray-800">
+                  <div className="w-28 h-28 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg ring-4 ring-white dark:ring-gray-800">
                     {profile.firstName?.[0]}{profile.lastName?.[0]}
                   </div>
                 )}
@@ -999,16 +1068,22 @@ const SpecialistProfile: React.FC = () => {
                   </div>
                 )}
                 {isEditing && (
-                  <label className="absolute -bottom-2 -right-2 bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-xl cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <>
                     <input
+                      id="specialist-profile-avatar-upload"
                       type="file"
                       accept="image/*"
                       className="hidden"
                       disabled={isUploadingAvatar}
                       onChange={handleAvatarUpload}
                     />
-                    <CameraIcon className="h-4 w-4" />
-                  </label>
+                    <label
+                      htmlFor="specialist-profile-avatar-upload"
+                      className={`absolute -bottom-2 -right-2 bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-xl cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl opacity-0 group-hover:opacity-100 ${isUploadingAvatar ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                    >
+                      <CameraIcon className="h-4 w-4" />
+                    </label>
+                  </>
                 )}
               </div>
               
@@ -1028,8 +1103,8 @@ const SpecialistProfile: React.FC = () => {
                   {/* Profile Completion */}
                   <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-xl">
                     <div className="w-24 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                      <div
-                        className="bg-primary-600 h-2 rounded-full transition-all duration-500"
+                      <div 
+                        className="bg-gradient-to-r from-primary-500 to-primary-600 h-2 rounded-full transition-all duration-500" 
                         style={{ width: `${completionPercentage}%` }}
                       ></div>
                     </div>
@@ -1075,19 +1150,21 @@ const SpecialistProfile: React.FC = () => {
                       // Open specialist's public profile in a new tab - use specialist profile ID
                       const specialistId = (profile as any).id || user.id;
                       const publicProfileUrl = `/specialist/${specialistId}`;
-                      console.log('🔍 Opening preview for specialist ID:', specialistId);
+                      logger.debug('🔍 Opening preview for specialist ID:', specialistId);
                       window.open(publicProfileUrl, '_blank');
                     } else {
-                      console.warn('User is not a specialist');
+                      logger.warn('User is not a specialist');
                       showErrorNotification(
-                        isKh ? 'មិនអាចមើលប្រវត្តិរូបបានទេ' : 'Profile not available for preview'
+                        language === 'uk' ? 'Профіль недоступний для перегляду' : 
+                        language === 'ru' ? 'Профиль недоступен для просмотра' : 
+                        'Profile not available for preview'
                       );
                     }
                   }}
                   className="px-6 py-3 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2"
                 >
                   <EyeIcon className="h-4 w-4" />
-                  {isKh ? 'មើលជាមុន' : 'Preview'}
+                  {language === 'uk' ? 'Перегляд' : language === 'ru' ? 'Просмотр' : 'Preview'}
                 </button>
               )}
               <button
@@ -1102,18 +1179,18 @@ const SpecialistProfile: React.FC = () => {
                 className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 ${
                   isEditing
                     ? 'bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300'
-                    : 'bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl'
+                    : 'bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-lg hover:shadow-xl'
                 }`}
               >
                 {isEditing ? (
                   <>
                     <XCircleIcon className="h-5 w-5" />
-                    {isKh ? 'បោះបង់' : 'Cancel'}
+                    {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Cancel'}
                   </>
                 ) : (
                   <>
                     <PencilSquareIcon className="h-5 w-5" />
-                    {isKh ? 'កែសម្រួលប្រវត្តិរូប' : 'Edit Profile'}
+                    {language === 'uk' ? 'Редагувати' : language === 'ru' ? 'Редактировать' : 'Edit Profile'}
                   </>
                 )}
               </button>
@@ -1127,14 +1204,15 @@ const SpecialistProfile: React.FC = () => {
           <div className="lg:col-span-1">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sticky top-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                {isKh ? 'ផ្នែកប្រវត្តិរូប' : 'Profile Sections'}
+                {language === 'uk' ? 'Розділи профілю' : language === 'ru' ? 'Разделы профиля' : 'Profile Sections'}
               </h3>
               <nav className="space-y-2">
                 {[
-                  { id: 'personal', name: isKh ? 'ព័ត៌មានផ្ទាល់ខ្លួន' : 'Personal Info', icon: UserCircleIcon },
-                  { id: 'professional', name: isKh ? 'វិជ្ជាជីវៈ' : 'Professional', icon: BriefcaseIcon },
-                  { id: 'business', name: isKh ? 'អាជីវកម្ម' : 'Business', icon: BuildingOfficeIcon },
-                  { id: 'portfolio', name: isKh ? 'ផតហ្វូលីអូ' : 'Portfolio', icon: PhotoIcon }
+                  { id: 'personal', name: language === 'uk' ? 'Особиста інформація' : language === 'ru' ? 'Личная информация' : 'Personal Info', icon: UserCircleIcon },
+                  { id: 'professional', name: language === 'uk' ? 'Професійне' : language === 'ru' ? 'Профессиональное' : 'Professional', icon: BriefcaseIcon },
+                  { id: 'business', name: language === 'uk' ? 'Бізнес' : language === 'ru' ? 'Бизнес' : 'Business', icon: BuildingOfficeIcon },
+                  { id: 'payment', name: language === 'uk' ? 'Оплата' : language === 'ru' ? 'Оплата' : 'Payment', icon: CreditCardIcon },
+                  { id: 'portfolio', name: language === 'uk' ? 'Портфоліо' : language === 'ru' ? 'Портфолио' : 'Portfolio', icon: PhotoIcon }
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -1163,10 +1241,10 @@ const SpecialistProfile: React.FC = () => {
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {isKh ? 'ព័ត៌មានផ្ទាល់ខ្លួន' : 'Personal Information'}
+                        {language === 'uk' ? 'Особиста інформація' : language === 'ru' ? 'Личная информация' : 'Personal Information'}
                       </h2>
                       <p className="text-gray-600 dark:text-gray-400 mt-1">
-                        {isKh ? 'ព័ត៌មានមូលដ្ឋានអំពីអ្នក' : 'Basic information about you'}
+                        {language === 'uk' ? 'Основні дані вашого профілю' : language === 'ru' ? 'Основные данные вашего профиля' : 'Basic information about you'}
                       </p>
                     </div>
                   </div>
@@ -1176,7 +1254,7 @@ const SpecialistProfile: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {isKh ? 'នាម *' : 'First Name *'}
+                          {language === 'uk' ? 'Ім\'я *' : language === 'ru' ? 'Имя *' : 'First Name *'}
                         </label>
                         <input
                           id="firstName"
@@ -1194,7 +1272,7 @@ const SpecialistProfile: React.FC = () => {
                               ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
                               : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                           } disabled:cursor-not-allowed dark:border-gray-600`}
-                          placeholder={isKh ? 'បញ្ចូលនាម' : 'Enter first name'}
+                          placeholder={language === 'uk' ? 'Введіть ім\'я' : language === 'ru' ? 'Введите имя' : 'Enter first name'}
                           autoComplete="given-name"
                         />
                         {validationErrors.firstName && (
@@ -1207,7 +1285,7 @@ const SpecialistProfile: React.FC = () => {
 
                       <div>
                         <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {isKh ? 'នាមត្រកូល *' : 'Last Name *'}
+                          {language === 'uk' ? 'Прізвище *' : language === 'ru' ? 'Фамилия *' : 'Last Name *'}
                         </label>
                         <input
                           id="lastName"
@@ -1226,7 +1304,7 @@ const SpecialistProfile: React.FC = () => {
                               ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
                               : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                           } disabled:cursor-not-allowed dark:border-gray-600`}
-                          placeholder={isKh ? 'បញ្ចូលនាមត្រកូល' : 'Enter last name'}
+                          placeholder={language === 'uk' ? 'Введіть прізвище' : language === 'ru' ? 'Введите фамилию' : 'Enter last name'}
                         />
                         {validationErrors.lastName && (
                           <p className="text-error-600 text-sm mt-1 flex items-center gap-1">
@@ -1241,7 +1319,7 @@ const SpecialistProfile: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {isKh ? 'អ៊ីមែល *' : 'Email *'}
+                          {language === 'uk' ? 'Електронна пошта *' : language === 'ru' ? 'Электронная почта *' : 'Email *'}
                         </label>
                         <div className="relative">
                           <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -1262,7 +1340,7 @@ const SpecialistProfile: React.FC = () => {
                                 ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
                                 : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                             } disabled:cursor-not-allowed dark:border-gray-600`}
-                            placeholder="example@email.com"
+                            placeholder={language === 'uk' ? 'example@email.com' : language === 'ru' ? 'example@email.com' : 'example@email.com'}
                           />
                         </div>
                         {validationErrors.email && (
@@ -1275,7 +1353,7 @@ const SpecialistProfile: React.FC = () => {
 
                       <div>
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {isKh ? 'ទូរស័ព្ទ' : 'Phone'}
+                          {language === 'uk' ? 'Телефон' : language === 'ru' ? 'Телефон' : 'Phone'}
                         </label>
                         <div className="relative">
                           <PhoneIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -1311,7 +1389,7 @@ const SpecialistProfile: React.FC = () => {
                     {/* Bio */}
                     <div>
                       <label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {isKh ? 'អំពីខ្លួនអ្នក' : 'Bio'}
+                        {language === 'uk' ? 'Про себе' : language === 'ru' ? 'О себе' : 'Bio'}
                       </label>
                       <textarea
                         id="bio"
@@ -1325,14 +1403,14 @@ const SpecialistProfile: React.FC = () => {
                             ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
                             : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                         } disabled:cursor-not-allowed dark:border-gray-600 resize-none`}
-                        placeholder={isKh ? 'ប្រាប់អំពីខ្លួនអ្នក...' : 'Tell us about yourself...'}
+                        placeholder={language === 'uk' ? 'Розкажіть про себе...' : language === 'ru' ? 'Расскажите о себе...' : 'Tell us about yourself...'}
                       />
                     </div>
 
                     {/* Location Picker */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {isKh ? 'ទីតាំង' : 'Location'}
+                        {language === 'uk' ? 'Розташування' : language === 'ru' ? 'Местоположение' : 'Location'}
                       </label>
                       {isEditing ? (
                         <LocationPicker
@@ -1348,7 +1426,7 @@ const SpecialistProfile: React.FC = () => {
                               {profile.location?.address || profile.location?.city ? 
                                 [profile.location.address, profile.location.city, profile.location.region, profile.location.country]
                                   .filter(Boolean).join(', ') 
-                                : (isKh ? 'មិនបានបញ្ជាក់ទីតាំង' : 'No location specified')
+                                : (language === 'uk' ? 'Локація не вказана' : language === 'ru' ? 'Местоположение не указано' : 'No location specified')
                               }
                             </span>
                           </div>
@@ -1360,21 +1438,33 @@ const SpecialistProfile: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {isKh ? 'អាសយដ្ឋានលម្អិត (បង្ហាញតែអតិថិជនដែលបានបញ្ជាក់)' : 'Precise Address (Shown only to confirmed customers)'}
+                          Precise Address (Shown only to confirmed customers) <span className="text-red-500">*</span>
                         </label>
                         {isEditing ? (
-                          <input
-                            type="text"
-                            value={profile.preciseAddress || ''}
-                            onChange={(e) => handleProfileChange('preciseAddress', e.target.value)}
-                            placeholder={isKh ? 'ឧ. អគារ A, បន្ទប់ 5B, ផ្លូវ 123' : 'Apt 5B, Building A, 123 Main Street'}
-                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          />
+                          <>
+                            <input
+                              type="text"
+                              value={profile.preciseAddress || ''}
+                              onChange={(e) => handleProfileChange('preciseAddress', e.target.value)}
+                              placeholder="Apt 5B, Building A, 123 Main Street"
+                              className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
+                                validationErrors.preciseAddress
+                                  ? 'border-error-300 focus:border-error-500 focus:ring-error-500'
+                                  : 'dark:border-gray-600'
+                              }`}
+                            />
+                            {validationErrors.preciseAddress && (
+                              <p className="text-error-600 text-sm mt-1 flex items-center gap-1">
+                                <ExclamationTriangleIcon className="h-4 w-4" />
+                                {validationErrors.preciseAddress}
+                              </p>
+                            )}
+                          </>
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
                             <div className="flex items-center space-x-2">
                               <BuildingOfficeIcon className="h-5 w-5 text-gray-400" />
-                              <span>{profile.preciseAddress || (isKh ? 'មិនបានបញ្ជាក់' : 'Not specified')}</span>
+                              <span>{profile.preciseAddress || 'Not specified'}</span>
                             </div>
                           </div>
                         )}
@@ -1382,21 +1472,33 @@ const SpecialistProfile: React.FC = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {isKh ? 'ទូរស័ព្ទអាជីវកម្ម' : 'Business Phone'}
+                          Business Phone <span className="text-red-500">*</span>
                         </label>
                         {isEditing ? (
-                          <input
-                            type="tel"
-                            value={profile.businessPhone || ''}
-                            onChange={(e) => handleProfileChange('businessPhone', e.target.value)}
-                            placeholder="+1 (555) 123-4567"
-                            className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                          />
+                          <>
+                            <input
+                              type="tel"
+                              value={profile.businessPhone || ''}
+                              onChange={(e) => handleProfileChange('businessPhone', e.target.value)}
+                              placeholder="+1 (555) 123-4567"
+                              className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
+                                validationErrors.businessPhone
+                                  ? 'border-error-300 focus:border-error-500 focus:ring-error-500'
+                                  : 'dark:border-gray-600'
+                              }`}
+                            />
+                            {validationErrors.businessPhone && (
+                              <p className="text-error-600 text-sm mt-1 flex items-center gap-1">
+                                <ExclamationTriangleIcon className="h-4 w-4" />
+                                {validationErrors.businessPhone}
+                              </p>
+                            )}
+                          </>
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
                             <div className="flex items-center space-x-2">
                               <PhoneIcon className="h-5 w-5 text-gray-400" />
-                              <span>{profile.businessPhone || (isKh ? 'មិនបានបញ្ជាក់' : 'Not specified')}</span>
+                              <span>{profile.businessPhone || 'Not specified'}</span>
                             </div>
                           </div>
                         )}
@@ -1404,7 +1506,7 @@ const SpecialistProfile: React.FC = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {isKh ? 'លេខ WhatsApp (ជម្រើស)' : 'WhatsApp Number (Optional)'}
+                          WhatsApp Number (Optional)
                         </label>
                         {isEditing ? (
                           <input
@@ -1418,7 +1520,7 @@ const SpecialistProfile: React.FC = () => {
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
                             <div className="flex items-center space-x-2">
                               <PhoneIcon className="h-5 w-5 text-green-500" />
-                              <span>{profile.whatsappNumber || (isKh ? 'មិនបានបញ្ជាក់' : 'Not specified')}</span>
+                              <span>{profile.whatsappNumber || 'Not specified'}</span>
                             </div>
                           </div>
                         )}
@@ -1426,73 +1528,72 @@ const SpecialistProfile: React.FC = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {isKh ? 'កំណត់សម្គាល់ទីតាំង' : 'Location Notes'}
+                          Location Notes
                         </label>
                         {isEditing ? (
                           <textarea
                             value={profile.locationNotes || ''}
                             onChange={(e) => handleProfileChange('locationNotes', e.target.value)}
-                            placeholder={isKh ? 'ការណែនាំពិសេសសម្រាប់រកទីតាំង...' : 'Special instructions for finding the location...'}
+                            placeholder="Special instructions for finding the location..."
                             rows={3}
                             className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           />
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
-                            <span>{profile.locationNotes || (isKh ? 'គ្មានការណែនាំពិសេស' : 'No special instructions')}</span>
+                            <span>{profile.locationNotes || 'No special instructions'}</span>
                           </div>
                         )}
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {isKh ? 'ព័ត៌មានចំណតរថយន្ត' : 'Parking Information'}
+                          Parking Information
                         </label>
                         {isEditing ? (
                           <textarea
                             value={profile.parkingInfo || ''}
                             onChange={(e) => handleProfileChange('parkingInfo', e.target.value)}
-                            placeholder={isKh ? 'ការណែនាំចំណត តម្លៃ និងការកំណត់...' : 'Parking instructions, costs, restrictions...'}
+                            placeholder="Parking instructions, costs, restrictions..."
                             rows={3}
                             className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           />
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
-                            <span>{profile.parkingInfo || (isKh ? 'មិនបានផ្តល់ព័ត៌មានចំណត' : 'No parking information provided')}</span>
+                            <span>{profile.parkingInfo || 'No parking information provided'}</span>
                           </div>
                         )}
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {isKh ? 'ការណែនាំចូលដំណើរការ' : 'Access Instructions'}
+                          Access Instructions
                         </label>
                         {isEditing ? (
                           <textarea
                             value={profile.accessInstructions || ''}
                             onChange={(e) => handleProfileChange('accessInstructions', e.target.value)}
-                            placeholder={isKh ? 'លេខកូដចូលអាគារ ការណែនាំកណ្ដឹង ជាដើម...' : 'Building access codes, buzzer instructions, etc...'}
+                            placeholder="Building access codes, buzzer instructions, etc..."
                             rows={3}
                             className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           />
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
-                            <span>{profile.accessInstructions || (isKh ? 'មិនបានផ្តល់ការណែនាំចូល' : 'No access instructions provided')}</span>
+                            <span>{profile.accessInstructions || 'No access instructions provided'}</span>
                           </div>
                         )}
                       </div>
                     </div>
 
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 mb-6">
                       <div className="flex items-start">
                         <ShieldCheckIcon className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
                         <div>
                           <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                            {isKh ? 'ការជូនដំណឹងអំពីភាពឯកជន' : 'Privacy Notice'}
+                            Privacy Notice
                           </h4>
                           <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                            {isKh
-                              ? 'ព័ត៌មានទំនាក់ទំនងលម្អិតនេះ នឹងចែករំលែកតែបន្ទាប់ពីការកក់ត្រូវបានបញ្ជាក់។ ប្រវត្តិរូបសាធារណៈនឹងបង្ហាញតែទីក្រុង/តំបន់ទូទៅប៉ុណ្ណោះ ដើម្បីការពារភាពឯកជន។'
-                              : 'This detailed contact information will only be shared with customers after their booking is confirmed. Public profiles will only show your general city/area for privacy protection.'}
+                            This detailed contact information will only be shared with customers after their booking is confirmed.
+                            Public profiles will only show your general city/area for privacy protection.
                           </p>
                         </div>
                       </div>
@@ -1507,10 +1608,10 @@ const SpecialistProfile: React.FC = () => {
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {isKh ? 'ព័ត៌មានវិជ្ជាជីវៈ' : 'Professional Information'}
+                        {language === 'uk' ? 'Професійна інформація' : language === 'ru' ? 'Профессиональная информация' : 'Professional Information'}
                       </h2>
                       <p className="text-gray-600 dark:text-gray-400 mt-1">
-                        {isKh ? 'ជំនាញ និងបទពិសោធន៍វិជ្ជាជីវៈរបស់អ្នក' : 'Your professional skills and experience'}
+                        {language === 'uk' ? 'Ваші професійні навички та досвід' : language === 'ru' ? 'Ваши профессиональные навыки и опыт' : 'Your professional skills and experience'}
                       </p>
                     </div>
                   </div>
@@ -1555,7 +1656,7 @@ const SpecialistProfile: React.FC = () => {
                     {/* Experience */}
                     <div>
                       <label htmlFor="experience" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {isKh ? 'បទពិសោធន៍ (ឆ្នាំ)' : 'Years of Experience'}
+                        {language === 'uk' ? 'Досвід роботи (років)' : language === 'ru' ? 'Опыт работы (лет)' : 'Years of Experience'}
                       </label>
                       <input
                         id="experience"
@@ -1581,7 +1682,7 @@ const SpecialistProfile: React.FC = () => {
                     {/* Education */}
                     <div>
                       <label htmlFor="education" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {isKh ? 'ការអប់រំ' : 'Education'}
+                        {language === 'uk' ? 'Освіта' : language === 'ru' ? 'Образование' : 'Education'}
                       </label>
                       <div className="relative">
                         <AcademicCapIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
@@ -1597,7 +1698,7 @@ const SpecialistProfile: React.FC = () => {
                               ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
                               : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                           } disabled:cursor-not-allowed dark:border-gray-600 resize-none`}
-                          placeholder={isKh ? 'ពិពណ៌នាអំពីការអប់រំ និងលទ្ធភាពរបស់អ្នក...' : 'Describe your education and qualifications...'}
+                          placeholder={language === 'uk' ? 'Опишіть вашу освіту та кваліфікації...' : language === 'ru' ? 'Опишите ваше образование и квалификации...' : 'Describe your education and qualifications...'}
                         />
                       </div>
                     </div>
@@ -1605,16 +1706,16 @@ const SpecialistProfile: React.FC = () => {
                     {/* Languages */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {isKh ? 'ភាសា' : 'Languages'}
+                        {language === 'uk' ? 'Мови' : language === 'ru' ? 'Языки' : 'Languages'}
                       </label>
                       <div className="flex flex-wrap gap-2 mb-3">
                         {profile.languages?.map((lang, index) => (
                           <span
                             key={index}
-                            className="inline-flex items-center gap-2 px-3 py-2 bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300 rounded-lg text-sm font-medium"
+                            className="inline-flex items-center gap-2 px-3 py-2 bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300 rounded-xl text-sm font-medium"
                           >
                             <GlobeAltIcon className="h-4 w-4" />
-                            {lang === 'kh' ? 'ខ្មែរ' : lang === 'uk' ? 'Українська' : lang === 'en' ? 'English' : lang === 'ru' ? 'Русский' : lang}
+                            {lang === 'uk' ? 'Українська' : lang === 'en' ? 'English' : lang === 'ru' ? 'Русский' : lang}
                             {isEditing && (
                               <button
                                 onClick={() => {
@@ -1638,11 +1739,12 @@ const SpecialistProfile: React.FC = () => {
                               }
                               e.target.value = '';
                             }}
-                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                            className="px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                           >
-                            <option value="">{isKh ? 'បន្ថែមភាសា' : 'Add Language'}</option>
-                            <option value="kh">ខ្មែរ</option>
+                            <option value="">{language === 'uk' ? 'Додати мову' : language === 'ru' ? 'Добавить язык' : 'Add Language'}</option>
+                            <option value="uk">Українська</option>
                             <option value="en">English</option>
+                            <option value="ru">Русский</option>
                             <option value="de">Deutsch</option>
                             <option value="fr">Français</option>
                             <option value="es">Español</option>
@@ -1654,13 +1756,13 @@ const SpecialistProfile: React.FC = () => {
                     {/* Specialties */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {isKh ? 'ជំនាញពិសេស' : 'Specialties'}
+                        {language === 'uk' ? 'Спеціалізації' : language === 'ru' ? 'Специализации' : 'Specialties'}
                       </label>
                       <div className="flex flex-wrap gap-2 mb-3">
                         {profile.specialties?.map((specialty, index) => (
                           <span
                             key={index}
-                            className="inline-flex items-center gap-2 px-3 py-2 bg-secondary-100 text-secondary-700 dark:bg-secondary-900/20 dark:text-secondary-300 rounded-lg text-sm font-medium"
+                            className="inline-flex items-center gap-2 px-3 py-2 bg-secondary-100 text-secondary-700 dark:bg-secondary-900/20 dark:text-secondary-300 rounded-xl text-sm font-medium"
                           >
                             <StarIcon className="h-4 w-4" />
                             {specialty}
@@ -1682,8 +1784,8 @@ const SpecialistProfile: React.FC = () => {
                         <div className="flex gap-2">
                           <input
                             type="text"
-                            placeholder={isKh ? 'បន្ថែមជំនាញពិសេស' : 'Add Specialty'}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                            placeholder={language === 'uk' ? 'Додати спеціалізацію' : language === 'ru' ? 'Добавить специализацию' : 'Add Specialty'}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                             onKeyPress={(e) => {
                               if (e.key === 'Enter') {
                                 const value = (e.target as HTMLInputElement).value.trim();
@@ -1703,7 +1805,7 @@ const SpecialistProfile: React.FC = () => {
                                 input.value = '';
                               }
                             }}
-                            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
+                            className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors text-sm font-medium"
                           >
                             <PlusIcon className="h-4 w-4" />
                           </button>
@@ -1720,10 +1822,10 @@ const SpecialistProfile: React.FC = () => {
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {isKh ? 'ព័ត៌មានអាជីវកម្ម' : 'Business Information'}
+                        {language === 'uk' ? 'Бізнес інформація' : language === 'ru' ? 'Бизнес информация' : 'Business Information'}
                       </h2>
                       <p className="text-gray-600 dark:text-gray-400 mt-1">
-                        {isKh ? 'ការកំណត់ម៉ោងធ្វើការ និងសេវាកម្ម' : 'Work schedule and service settings'}
+                        {language === 'uk' ? 'Налаштування роботи та обслуговування' : language === 'ru' ? 'Настройки работы и обслуживания' : 'Work schedule and service settings'}
                       </p>
                     </div>
                   </div>
@@ -1733,21 +1835,29 @@ const SpecialistProfile: React.FC = () => {
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                         <ClockIcon className="h-5 w-5" />
-                        {isKh ? 'ម៉ោងធ្វើការ' : 'Business Hours'}
+                        {language === 'uk' ? 'Графік роботи' : language === 'ru' ? 'График работы' : 'Business Hours'}
                       </h3>
                       <div className="space-y-3">
                         {profile.businessHours && Object.entries(profile.businessHours).map(([day, hours]) => (
                           <div key={day} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
                             <div className="w-full sm:w-24">
                               <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
-                                {isKh
-                                  ? day === 'monday' ? 'ច័ន្ទ'
-                                  : day === 'tuesday' ? 'អង្គារ'
-                                  : day === 'wednesday' ? 'ពុធ'
-                                  : day === 'thursday' ? 'ព្រហស្បតិ៍'
-                                  : day === 'friday' ? 'សុក្រ'
-                                  : day === 'saturday' ? 'សៅរ៍'
-                                  : 'អាទិត្យ'
+                                {language === 'uk' 
+                                  ? day === 'monday' ? 'Понеділок' 
+                                  : day === 'tuesday' ? 'Вівторок'
+                                  : day === 'wednesday' ? 'Середа'
+                                  : day === 'thursday' ? 'Четвер'
+                                  : day === 'friday' ? 'П\'ятниця'
+                                  : day === 'saturday' ? 'Субота'
+                                  : 'Неділя'
+                                  : language === 'ru'
+                                  ? day === 'monday' ? 'Понедельник' 
+                                  : day === 'tuesday' ? 'Вторник'
+                                  : day === 'wednesday' ? 'Среда'
+                                  : day === 'thursday' ? 'Четверг'
+                                  : day === 'friday' ? 'Пятница'
+                                  : day === 'saturday' ? 'Суббота'
+                                  : 'Воскресенье'
                                   : day.charAt(0).toUpperCase() + day.slice(1)
                                 }
                               </span>
@@ -1762,8 +1872,9 @@ const SpecialistProfile: React.FC = () => {
                                     const newBusinessHours = {
                                       ...profile.businessHours,
                                       [day]: {
-                                        ...hours,
-                                        isOpen: e.target.checked
+                                        isOpen: e.target.checked,
+                                        startTime: hours.startTime || '09:00',
+                                        endTime: hours.endTime || '17:00'
                                       }
                                     };
                                     handleProfileChange('businessHours', newBusinessHours);
@@ -1772,48 +1883,80 @@ const SpecialistProfile: React.FC = () => {
                                 className="rounded text-primary-600 focus:ring-primary-500"
                               />
                               <span className="text-sm text-gray-600 dark:text-gray-400">
-                                {isKh ? 'បើក' : 'Open'}
+                                {language === 'uk' ? 'Відкрито' : language === 'ru' ? 'Открыто' : 'Open'}
                               </span>
                             </label>
                             {hours.isOpen && (
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="time"
-                                  value={hours.startTime}
-                                  disabled={!isEditing}
-                                  onChange={(e) => {
-                                    if (isEditing) {
-                                      const newBusinessHours = {
-                                        ...profile.businessHours,
-                                        [day]: {
-                                          ...hours,
-                                          startTime: e.target.value
-                                        }
-                                      };
-                                      handleProfileChange('businessHours', newBusinessHours);
-                                    }
-                                  }}
-                                  className="px-2 py-1 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
-                                />
-                                <span className="text-gray-500">-</span>
-                                <input
-                                  type="time"
-                                  value={hours.endTime}
-                                  disabled={!isEditing}
-                                  onChange={(e) => {
-                                    if (isEditing) {
-                                      const newBusinessHours = {
-                                        ...profile.businessHours,
-                                        [day]: {
-                                          ...hours,
-                                          endTime: e.target.value
-                                        }
-                                      };
-                                      handleProfileChange('businessHours', newBusinessHours);
-                                    }
-                                  }}
-                                  className="px-2 py-1 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
-                                />
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="time"
+                                    value={hours.startTime || '09:00'}
+                                    disabled={!isEditing}
+                                    onChange={(e) => {
+                                      if (isEditing) {
+                                        const newBusinessHours = {
+                                          ...profile.businessHours,
+                                          [day]: {
+                                            isOpen: hours.isOpen,
+                                            startTime: e.target.value,
+                                            endTime: hours.endTime || '17:00'
+                                          }
+                                        };
+                                        handleProfileChange('businessHours', newBusinessHours);
+                                      }
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                                  />
+                                  <span className="text-gray-500">-</span>
+                                  <input
+                                    type="time"
+                                    value={hours.endTime || '17:00'}
+                                    disabled={!isEditing}
+                                    onChange={(e) => {
+                                      if (isEditing) {
+                                        const newBusinessHours = {
+                                          ...profile.businessHours,
+                                          [day]: {
+                                            isOpen: hours.isOpen,
+                                            startTime: hours.startTime || '09:00',
+                                            endTime: e.target.value
+                                          }
+                                        };
+                                        handleProfileChange('businessHours', newBusinessHours);
+                                      }
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                                  />
+                                </div>
+                                {(() => {
+                                  // Check if both times are defined before processing
+                                  if (!hours.startTime || !hours.endTime) return null;
+
+                                  const [startHour, startMinute] = hours.startTime.split(':').map(Number);
+                                  const [endHour, endMinute] = hours.endTime.split(':').map(Number);
+                                  const startMinutes = startHour * 60 + startMinute;
+                                  const endMinutes = endHour * 60 + endMinute;
+                                  const crossesMidnight = endMinutes <= startMinutes;
+
+                                  if (crossesMidnight) {
+                                    return (
+                                      <div className="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-1 mt-1">
+                                        <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                        </svg>
+                                        <span>
+                                          {language === 'uk'
+                                            ? 'Увага: Час роботи перетинає північ. Слоти будуть генеруватися від часу початку до 23:45, а потім від 00:00 до часу закінчення.'
+                                            : language === 'ru'
+                                            ? 'Внимание: Время работы пересекает полночь. Слоты будут генерироваться от времени начала до 23:45, а затем от 00:00 до времени окончания.'
+                                            : 'Warning: Business hours cross midnight. Slots will be generated from start time to 11:45 PM, then from 12:00 AM to end time.'}
+                                        </span>
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                })()}
                               </div>
                             )}
                           </div>
@@ -1821,147 +1964,16 @@ const SpecialistProfile: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Payment Methods */}
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                        <CreditCardIcon className="h-5 w-5" />
-                        {isKh ? 'វិធីសាស្រ្តបង់ប្រាក់' : 'Payment Methods'}
-                      </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {['cash', 'card', 'transfer', 'aba', 'khqr', 'paypal', 'crypto', 'apple_pay'].map((method) => (
-                          <div 
-                            key={method}
-                            onClick={() => {
-                              if (!isEditing) return;
-                              const currentMethods = profile.paymentMethods || [];
-                              const isSelected = currentMethods.includes(method);
-                              const newMethods = isSelected 
-                                ? currentMethods.filter(m => m !== method)
-                                : [...currentMethods, method];
-                              handleProfileChange('paymentMethods', newMethods);
-                            }}
-                            className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                              (profile.paymentMethods || []).includes(method)
-                                ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300'
-                                : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-600'
-                            } ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}
-                          >
-                            <div className="text-center">
-                              <div className="text-sm font-medium">
-                                {method === 'cash' ? (isKh ? 'សាច់ប្រាក់' : 'Cash')
-                                : method === 'card' ? (isKh ? 'កាត' : 'Card')
-                                : method === 'transfer' ? (isKh ? 'ផ្ទេរ' : 'Transfer')
-                                : method === 'aba' ? 'ABA'
-                                : method === 'khqr' ? 'KHQR'
-                                : method === 'paypal' ? 'PayPal'
-                                : method === 'crypto' ? (isKh ? 'គ្រីបតូ' : 'Crypto')
-                                : method === 'apple_pay' ? 'Apple Pay'
-                                : method}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* ABA / KHQR bank details */}
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                        <CreditCardIcon className="h-5 w-5" />
-                        {isKh ? 'ព័ត៌មានធនាគារ' : 'Bank Details'}
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        {isKh ? 'បន្ថែមព័ត៌មានគណនី និងរូបភាព QR សម្រាប់ការទូទាត់ ABA ឬ KHQR។' : 'Add account details and a QR image for ABA or KHQR payments.'}
-                      </p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {(['ABA', 'KHQR'] as const).map((type) => {
-                          const account =
-                            (profile.bankAccounts || []).find((item) => item.type === type) ||
-                            { type, accountName: '', accountNumber: '', qrImageUrl: '' };
-                          return (
-                            <div key={type} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-                              <div className="flex items-center justify-between mb-4">
-                                <span className="font-semibold text-gray-900 dark:text-white">{type}</span>
-                                {account.qrImageUrl && (
-                                  <img
-                                    src={account.qrImageUrl}
-                                    alt={`${type} QR`}
-                                    className="h-10 w-10 rounded-md object-cover border border-gray-200 dark:border-gray-600"
-                                  />
-                                )}
-                              </div>
-                              <div className="space-y-3">
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    {isKh ? 'ឈ្មោះគណនី' : 'Account Name'}
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={account.accountName}
-                                    disabled={!isEditing}
-                                    onChange={(e) => updateBankAccount(type, { accountName: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
-                                    placeholder={isKh ? 'ឈ្មោះម្ចាស់គណនី' : 'Account holder name'}
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    {isKh ? 'លេខគណនី' : 'Account Number'}
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={account.accountNumber}
-                                    disabled={!isEditing}
-                                    onChange={(e) => updateBankAccount(type, { accountNumber: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
-                                    placeholder={isKh ? 'ឧ. 00123456789' : 'e.g. 00123456789'}
-                                  />
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  {isEditing && (
-                                    <label className="inline-flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:border-primary-400">
-                                      <CameraIcon className="h-4 w-4" />
-                                      {bankUploadState[type] ? (isKh ? 'កំពុងផ្ទុក...' : 'Uploading...') : (isKh ? 'បញ្ចូល QR' : 'Upload QR')}
-                                        <input
-                                        type="file"
-                                        accept="image/png,image/jpeg,image/webp,image/svg+xml,image/heic,image/heif"
-                                        className="hidden"
-                                        onChange={(e) => {
-                                          const file = e.target.files?.[0];
-                                          if (file) {
-                                            handleBankQrUpload(type, file);
-                                          }
-                                        }}
-                                      />
-                                    </label>
-                                  )}
-                                  {isEditing && account.qrImageUrl && (
-                                    <button
-                                      type="button"
-                                      onClick={() => updateBankAccount(type, { qrImageUrl: '' })}
-                                      className="text-sm text-red-500 hover:text-red-600"
-                                    >
-                                      {isKh ? 'លុប QR' : 'Remove QR'}
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
                     {/* Service Area */}
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                         <MapPinIcon className="h-5 w-5" />
-                        {isKh ? 'តំបន់សេវាកម្ម' : 'Service Area'}
+                        {language === 'uk' ? 'Зона обслуговування' : language === 'ru' ? 'Зона обслуживания' : 'Service Area'}
                       </h3>
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {isKh ? 'កាំ (គម)' : 'Radius (km)'}
+                            {language === 'uk' ? 'Радіус (км)' : language === 'ru' ? 'Радиус (км)' : 'Radius (km)'}
                           </label>
                           <input
                             type="number"
@@ -1993,49 +2005,279 @@ const SpecialistProfile: React.FC = () => {
                 </div>
               )}
 
+              {/* Payment Tab */}
+              {activeTab === 'payment' && (
+                <div className="p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {language === 'uk' ? 'Оплата' : language === 'ru' ? 'Оплата' : 'Payments'}
+                      </h2>
+                      <p className="text-gray-600 dark:text-gray-400 mt-1">
+                        {language === 'uk'
+                          ? 'Налаштуйте способи оплати та реквізити'
+                          : language === 'ru'
+                          ? 'Настройте способы оплаты и реквизиты'
+                          : 'Set payment methods and details'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-8">
+                    {/* Payment Methods */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                        <CreditCardIcon className="h-5 w-5" />
+                        {t('profile.paymentMethods') || 'Payment Methods'}
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {[
+                          { id: 'cash', label: language === 'uk' ? 'Готівка' : language === 'ru' ? 'Наличные' : 'Cash' },
+                          { id: 'card', label: language === 'uk' ? 'Картка' : language === 'ru' ? 'Карта' : 'Card' },
+                          { id: 'bank_transfer', label: language === 'uk' ? 'Банківський переказ' : language === 'ru' ? 'Банковский перевод' : 'Bank transfer' },
+                          { id: 'online', label: language === 'uk' ? 'Онлайн' : language === 'ru' ? 'Онлайн' : 'Online' },
+                          { id: 'crypto', label: language === 'uk' ? 'Криптовалюта' : language === 'ru' ? 'Криптовалюта' : 'Crypto' },
+                        ].map((method) => (
+                          <label
+                            key={method.id}
+                            className={`flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-700 transition-colors ${
+                              isEditing ? 'cursor-pointer hover:border-primary-400' : 'opacity-70 cursor-not-allowed'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={(profile.paymentMethods || []).includes(method.id)}
+                              disabled={!isEditing}
+                              onChange={(e) => {
+                                if (!isEditing) return;
+                                const current = profile.paymentMethods || [];
+                                const next = e.target.checked
+                                  ? [...current, method.id]
+                                  : current.filter((value) => value !== method.id);
+                                handleProfileChange('paymentMethods', next);
+                              }}
+                              className="rounded text-primary-600 focus:ring-primary-500"
+                            />
+                            <span className="text-sm text-gray-700 dark:text-gray-300">{method.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Bank Details */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                        <DocumentCheckIcon className="h-5 w-5" />
+                        {t('specialist.paymentDetails') || 'Payment Details'}
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('specialist.bankName') || 'Bank name'}
+                          </label>
+                          <input
+                            type="text"
+                            value={profile.bankDetails?.bankName || ''}
+                            disabled={!isEditing}
+                            onChange={(e) => handleBankDetailsChange('bankName', e.target.value)}
+                            className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                              !isEditing
+                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            } dark:border-gray-600`}
+                            placeholder={t('specialist.bankNamePlaceholder') || 'e.g., PrivatBank'}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('specialist.accountName') || 'Account name'}
+                          </label>
+                          <input
+                            type="text"
+                            value={profile.bankDetails?.accountName || ''}
+                            disabled={!isEditing}
+                            onChange={(e) => handleBankDetailsChange('accountName', e.target.value)}
+                            className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                              !isEditing
+                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            } dark:border-gray-600`}
+                            placeholder={t('specialist.accountNamePlaceholder') || 'e.g., Your name'}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('specialist.accountNumber') || 'Account number'}
+                          </label>
+                          <input
+                            type="text"
+                            value={profile.bankDetails?.accountNumber || ''}
+                            disabled={!isEditing}
+                            onChange={(e) => handleBankDetailsChange('accountNumber', e.target.value)}
+                            className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                              !isEditing
+                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            } dark:border-gray-600`}
+                            placeholder={t('specialist.accountNumberPlaceholder') || '0000 0000 0000 0000'}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('specialist.iban') || 'IBAN'}
+                          </label>
+                          <input
+                            type="text"
+                            value={profile.bankDetails?.iban || ''}
+                            disabled={!isEditing}
+                            onChange={(e) => handleBankDetailsChange('iban', e.target.value)}
+                            className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                              !isEditing
+                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            } dark:border-gray-600`}
+                            placeholder={t('specialist.ibanPlaceholder') || 'UA00 0000 0000 0000 0000 0000 000'}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('specialist.swift') || 'SWIFT/BIC'}
+                          </label>
+                          <input
+                            type="text"
+                            value={profile.bankDetails?.swift || ''}
+                            disabled={!isEditing}
+                            onChange={(e) => handleBankDetailsChange('swift', e.target.value)}
+                            className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                              !isEditing
+                                ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                                : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                            } dark:border-gray-600`}
+                            placeholder={t('specialist.swiftPlaceholder') || 'PBANUA2X'}
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {t('specialist.bankNotes') || 'Payment notes'}
+                        </label>
+                        <textarea
+                          value={profile.bankDetails?.notes || ''}
+                          disabled={!isEditing}
+                          onChange={(e) => handleBankDetailsChange('notes', e.target.value)}
+                          className={`w-full px-4 py-2 rounded-xl border transition-colors border-gray-300 focus:border-primary-500 focus:ring-primary-500 ${
+                            !isEditing
+                              ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                              : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                          } dark:border-gray-600`}
+                          rows={3}
+                          placeholder={t('specialist.bankNotesPlaceholder') || 'Add any payment instructions...'}
+                        />
+                      </div>
+
+                      <div className="mt-6">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {t('specialist.paymentQr') || 'Payment QR code'}
+                        </label>
+                        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                          {profile.paymentQrCodeUrl ? (
+                            <img
+                              src={getAbsoluteImageUrl(profile.paymentQrCodeUrl)}
+                              alt={t('specialist.paymentQr') || 'Payment QR code'}
+                              className="w-28 h-28 rounded-lg border border-gray-200 dark:border-gray-700 object-cover"
+                            />
+                          ) : (
+                            <div className="w-28 h-28 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-400 text-xs">
+                              {language === 'uk' ? 'Немає QR' : language === 'ru' ? 'Нет QR' : 'No QR'}
+                            </div>
+                          )}
+
+                          {isEditing && (
+                            <div className="space-y-2">
+                              <input
+                                id="payment-qr-upload"
+                                type="file"
+                                accept="image/*"
+                                onChange={handlePaymentQrUpload}
+                                className="hidden"
+                                disabled={isUploadingPaymentQr}
+                              />
+                              <div className="flex gap-2">
+                                <label
+                                  htmlFor="payment-qr-upload"
+                                  className={`px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors cursor-pointer ${isUploadingPaymentQr ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                                >
+                                  {isUploadingPaymentQr
+                                    ? (language === 'uk' ? 'Завантаження...' : language === 'ru' ? 'Загрузка...' : 'Uploading...')
+                                    : (t('specialist.uploadQr') || 'Upload QR')}
+                                </label>
+                                {profile.paymentQrCodeUrl && (
+                                  <button
+                                    type="button"
+                                    onClick={handlePaymentQrRemove}
+                                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                  >
+                                    {t('specialist.removeQr') || 'Remove'}
+                                  </button>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {t('specialist.qrHelp') || 'PNG/JPG/WebP up to 5MB.'}
+                              </p>
+                              {paymentQrError && (
+                                <p className="text-xs text-red-500">{paymentQrError}</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Portfolio Tab */}
               {activeTab === 'portfolio' && (
                 <div className="p-8">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {isKh ? 'ផតហ្វូលីអូ' : 'Portfolio'}
+                        {language === 'uk' ? 'Портфоліо' : language === 'ru' ? 'Портфолио' : 'Portfolio'}
                       </h2>
                       <p className="text-gray-600 dark:text-gray-400 mt-1">
-                        {isKh ? 'បង្ហាញការងារ និងសមិទ្ធផលរបស់អ្នក' : 'Showcase your work and achievements'}
+                        {language === 'uk' ? 'Покажіть свої роботи та досягнення' : language === 'ru' ? 'Покажите свои работы и достижения' : 'Showcase your work and achievements'}
                       </p>
                     </div>
                     {isEditing && (
                       <div className="relative">
                         <input
+                          id="portfolio-image-upload"
                           type="file"
-                          id="portfolio-upload"
                           accept="image/*"
                           onChange={handlePortfolioUpload}
                           className="hidden"
                           disabled={isUploadingPortfolio}
                         />
-                        <button
-                          onClick={() => document.getElementById('portfolio-upload')?.click()}
-                          disabled={isUploadingPortfolio}
-                          className="px-4 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        <label
+                          htmlFor="portfolio-image-upload"
+                          className={`px-4 py-2 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2 cursor-pointer ${isUploadingPortfolio ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                         >
                           {isUploadingPortfolio ? (
                             <>
                               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                              {isKh ? 'កំពុងផ្ទុក...' : 'Uploading...'}
+                              {language === 'uk' ? 'Завантаження...' : language === 'ru' ? 'Загрузка...' : 'Uploading...'}
                             </>
                           ) : (
                             <>
                               <PlusIcon className="h-4 w-4" />
-                              {isKh ? 'បន្ថែមរូបភាព' : 'Add Photo'}
+                              {language === 'uk' ? 'Додати фото' : language === 'ru' ? 'Добавить фото' : 'Add Photo'}
                             </>
                           )}
-                        </button>
+                        </label>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                          {isKh
-                            ? 'ទំហំឯកសារអតិបរមា: 5MB។ ទ្រង់ទ្រាយដែលគាំទ្រ: JPG, PNG, WebP'
-                            : 'Maximum file size: 5MB. Supported formats: JPG, PNG, WebP'}
+                          {language === 'uk' ? 'Максимальний розмір файлу: 5МБ. Підтримуються формати: JPG, PNG, WebP' :
+                           language === 'ru' ? 'Максимальный размер файла: 5МБ. Поддерживаемые форматы: JPG, PNG, WebP' :
+                           'Maximum file size: 5MB. Supported formats: JPG, PNG, WebP'}
                         </p>
                       </div>
                     )}
@@ -2054,12 +2296,12 @@ const SpecialistProfile: React.FC = () => {
                               alt={item.title || `Portfolio item ${index + 1}`}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               onError={(e) => {
-                                console.error('Portfolio image failed to load:', item.imageUrl);
+                                logger.error('Portfolio image failed to load:', item.imageUrl);
                                 // Hide broken images
                                 e.currentTarget.style.display = 'none';
                               }}
                               onLoad={(e) => {
-                                console.log('✅ Portfolio image loaded successfully:', item.imageUrl);
+                                logger.debug('✅ Portfolio image loaded successfully:', item.imageUrl);
                               }}
                             />
                           </div>
@@ -2093,10 +2335,10 @@ const SpecialistProfile: React.FC = () => {
                     <div className="text-center py-16">
                       <PhotoIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                        {isKh ? 'ផតហ្វូលីអូទទេ' : 'Portfolio is empty'}
+                        {language === 'uk' ? 'Портфоліо поки порожнє' : language === 'ru' ? 'Портфолио пока пустое' : 'Portfolio is empty'}
                       </h3>
                       <p className="text-gray-600 dark:text-gray-400 mb-6">
-                        {isKh ? 'បន្ថែមរូបភាពការងាររបស់អ្នក ដើម្បីឲ្យអតិថិជនឃើញជំនាញ' : 'Add photos of your work to show clients your skills'}
+                        {language === 'uk' ? 'Додайте фотографії своїх робіт, щоб клієнти побачили ваші навички' : language === 'ru' ? 'Добавьте фотографии своих работ, чтобы клиенты увидели ваши навыки' : 'Add photos of your work to show clients your skills'}
                       </p>
                     </div>
                   )}
@@ -2111,19 +2353,19 @@ const SpecialistProfile: React.FC = () => {
                       onClick={handleCancelEdit}
                       className="px-6 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                     >
-                      {isKh ? 'បោះបង់' : 'Cancel'}
+                      {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Cancel'}
                     </button>
                     <button
                       onClick={handleSave}
                       disabled={saving}
-                      className="px-8 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white rounded-xl font-semibold transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-8 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-semibold transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       {saving && (
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                       )}
                       {saving 
-                        ? (isKh ? 'កំពុងរក្សាទុក...' : 'Saving...')
-                        : (isKh ? 'រក្សាទុកការផ្លាស់ប្តូរ' : 'Save Changes')
+                        ? (language === 'uk' ? 'Збереження...' : language === 'ru' ? 'Сохранение...' : 'Saving...')
+                        : (language === 'uk' ? 'Зберегти зміни' : language === 'ru' ? 'Сохранить изменения' : 'Save Changes')
                       }
                     </button>
                   </div>

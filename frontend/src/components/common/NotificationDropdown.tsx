@@ -1,19 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
-import { selectNotifications, markAsRead, markAllNotificationsAsRead, removeNotification } from '@/store/slices/notificationSlice';
+import { selectNotifications, markAsRead, markAllAsRead, removeNotification } from '@/store/slices/notificationSlice';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatDistanceToNow } from 'date-fns';
-import { 
-  BellIcon, 
-  CheckIcon,
-  CalendarIcon,
-  CreditCardIcon,
-  StarIcon,
-  ExclamationTriangleIcon,
-  TrashIcon,
-  XMarkIcon,
-} from '@/components/icons';
+import { BellIcon, CheckIcon, CalendarIcon, CreditCardIcon, StarIcon, UserIcon, ExclamationTriangleIcon, TrashIcon, XMarkIcon as XIcon } from '@/components/icons';
 
 interface NotificationDropdownProps {
   isOpen: boolean;
@@ -58,7 +49,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   };
 
   const handleMarkAllAsRead = () => {
-    dispatch(markAllNotificationsAsRead());
+    dispatch(markAllAsRead());
   };
 
   const handleDelete = (notificationId: string, e: React.MouseEvent) => {
@@ -141,7 +132,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
             aria-label="Close notifications"
             className="p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-all duration-200 hover:scale-110 active:scale-90 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
           >
-            <XMarkIcon className="w-5 h-5" />
+            <XIcon className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -171,7 +162,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                 }`}
                 style={{
                   animationDelay: `${index * 50}ms`,
-                  animation: isAnimating ? 'slide-in-right 0.3s ease-out forwards' : 'none'
+                  animation: isAnimating ? 'slideInRight 0.3s ease-out forwards' : 'none'
                 }}
                 onClick={() => handleNotificationClick(notification)}
               >

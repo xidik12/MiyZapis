@@ -3,69 +3,31 @@
  * Handles migration of external avatars (especially Google avatars) to backend storage
  */
 
+import { authService } from '../services/auth.service';
 import { userService } from '../services/user.service';
-import { environment } from '../config/environment';
 
 export class AvatarMigrationUtil {
-  private static getInternalHosts(): string[] {
-    const hosts = new Set<string>();
-    const apiUrl = environment.API_URL || '';
-    const apiBase = apiUrl.replace(/\/api\/v1\/?$/, '');
-
-    if (apiUrl) hosts.add(apiUrl);
-    if (apiBase) hosts.add(apiBase);
-
-    try {
-      if (apiUrl.startsWith('http')) hosts.add(new URL(apiUrl).origin);
-      if (apiBase.startsWith('http')) hosts.add(new URL(apiBase).origin);
-    } catch {
-      // Ignore URL parsing errors and fall back to raw strings.
-    }
-
-    return Array.from(hosts);
-  }
-
-  private static normalizeUrl(value: string): string {
-    return value
-      .trim()
-      .replace(/&#x2F;/gi, '/')
-      .replace(/&amp;/gi, '&')
-      .replace(/&quot;/gi, '"')
-      .replace(/&#x27;/gi, "'")
-      .replace(/&lt;/gi, '<')
-      .replace(/&gt;/gi, '>');
-  }
-
   /**
    * Check if user has an external avatar that needs to be saved to backend
    */
   static needsMigration(avatarUrl: string | null | undefined): boolean {
     if (!avatarUrl) return false;
-    const normalizedUrl = this.normalizeUrl(avatarUrl);
-    if (normalizedUrl === '' || normalizedUrl.startsWith('data:') || normalizedUrl.startsWith('blob:')) {
-      return false;
-    }
     
     // Check for Google avatars
-    if (normalizedUrl.includes('googleusercontent.com') || normalizedUrl.includes('google.com')) {
+    if (avatarUrl.includes('googleusercontent.com') || avatarUrl.includes('google.com')) {
       return true;
     }
-    
-    // Check for other external services, but exclude S3 URLs which are already migrated
-    if (normalizedUrl.startsWith('http')) {
-      const internalHosts = this.getInternalHosts();
-      const isInternalHost = internalHosts.some((host) => normalizedUrl.startsWith(host));
-      const isInternalStorage = normalizedUrl.includes('/uploads/') ||
-        normalizedUrl.includes('/files/') ||
-        normalizedUrl.includes('/s3-proxy/');
-      const isKnownS3 = normalizedUrl.includes('miyzapis-storage.s3.ap-southeast-2.amazonaws.com');
 
-      if (isInternalHost || isInternalStorage || isKnownS3) {
-        return false;
-      }
+    // Check for other external services, but exclude backend and S3 URLs that are already migrated
+    if (avatarUrl.startsWith('http') &&
+        !avatarUrl.includes('miyzapis-backend') &&    // Matches all backend environments
+        !avatarUrl.includes('miyzapis-storage') &&    // Matches all S3 configurations
+        !avatarUrl.includes('.railway.app') &&         // Matches all Railway deployments
+        !avatarUrl.includes('s3.amazonaws.com') &&     // Matches all S3 buckets
+        !avatarUrl.startsWith('/uploads/')) {          // Matches relative upload URLs
       return true;
     }
-    
+
     return false;
   }
 
@@ -74,11 +36,10 @@ export class AvatarMigrationUtil {
    */
   static async migrateAvatar(currentAvatarUrl: string): Promise<string | null> {
     try {
-      const normalizedUrl = this.normalizeUrl(currentAvatarUrl);
-      console.log('🔄 Starting avatar migration for:', normalizedUrl);
+      console.log('🔄 Starting avatar migration for:', currentAvatarUrl);
       
       // Save the external image to backend
-      const savedAvatar = await userService.saveExternalImage(normalizedUrl, 'avatar');
+      const savedAvatar = await userService.saveExternalImage(currentAvatarUrl, 'avatar');
       
       // Update user profile with the new backend URL
       await userService.updateProfile({ avatar: savedAvatar.avatarUrl });
