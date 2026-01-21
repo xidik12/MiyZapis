@@ -8,13 +8,30 @@ import * as s3UploadController from '@/controllers/files/s3-upload.controller';
 import { FileUploadService } from '@/services/fileUpload/index';
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
-import { fileTypeFromBuffer } from 'file-type';
 import sharp from 'sharp';
 import crypto from 'crypto';
 import { initializeS3Service, getS3Service } from '@/services/s3.service';
 import path from 'path';
 
 const router = Router();
+
+const getFileTypeFromBuffer = async (buffer: Buffer) => {
+  try {
+    const fileTypeModule = await import('file-type');
+    const fileTypeFromBuffer =
+      (fileTypeModule as any).fileTypeFromBuffer ||
+      (fileTypeModule as any).default?.fileTypeFromBuffer;
+    if (typeof fileTypeFromBuffer !== 'function') {
+      return null;
+    }
+    return await fileTypeFromBuffer(buffer);
+  } catch (error) {
+    logger.warn('file-type not available, skipping magic bytes detection', {
+      error: error instanceof Error ? error.message : String(error)
+    });
+    return null;
+  }
+};
 
 // Simple test endpoint to check if the route works
 router.post('/test', authMiddleware, (req, res) => {
@@ -916,7 +933,7 @@ router.post('/save-external', authMiddleware, async (req, res) => {
       return res.status(413).json({ success: false, error: 'Image too large' });
     }
 
-    const detectedType = await fileTypeFromBuffer(buffer);
+    const detectedType = await getFileTypeFromBuffer(buffer);
     const headerType = response.headers.get('content-type') || '';
     const rawMimeType = detectedType?.mime || headerType || 'image/jpeg';
     const mimeType = rawMimeType.split(';')[0].trim();

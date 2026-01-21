@@ -3,7 +3,6 @@ import { config } from '@/config';
 import { logger } from '@/utils/logger';
 import fs from 'fs/promises';
 import path from 'path';
-import { fileTypeFromBuffer } from 'file-type';
 
 // Optional AWS SDK import
 let AWS: any = null;
@@ -12,6 +11,24 @@ try {
 } catch (error) {
   logger.info('AWS SDK not available, using local file storage only');
 }
+
+const getFileTypeFromBuffer = async (buffer: Buffer) => {
+  try {
+    const fileTypeModule = await import('file-type');
+    const fileTypeFromBuffer =
+      (fileTypeModule as any).fileTypeFromBuffer ||
+      (fileTypeModule as any).default?.fileTypeFromBuffer;
+    if (typeof fileTypeFromBuffer !== 'function') {
+      return null;
+    }
+    return await fileTypeFromBuffer(buffer);
+  } catch (error) {
+    logger.warn('file-type not available, skipping magic bytes detection', {
+      error: error instanceof Error ? error.message : String(error)
+    });
+    return null;
+  }
+};
 
 export class FileUploadService {
   private prisma: PrismaClient;
@@ -302,7 +319,7 @@ export class FileUploadService {
     }
 
     // ✅ SECURITY FIX: Validate magic bytes (actual file content)
-    const detectedType = await fileTypeFromBuffer(buffer);
+    const detectedType = await getFileTypeFromBuffer(buffer);
 
     if (!detectedType) {
       logger.warn('Unable to determine file type from buffer', {
