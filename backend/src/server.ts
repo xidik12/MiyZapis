@@ -125,18 +125,17 @@ logger.info('🏗️ Railway environment detection results', {
   cwd: process.cwd()
 });
 
+const buildUploadOptions = (isRailway: boolean): string[] => {
+  const options = isRailway
+    ? [process.env.UPLOAD_DIR, '/app/uploads', '/tmp/uploads', './uploads', '/tmp']
+    : [process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'), './uploads', '/tmp/uploads'];
+
+  return Array.from(new Set(options.filter(Boolean) as string[]));
+};
+
 // Static file serving for uploads with fallback directories
 // Railway permission fix: Try multiple upload directories in order of preference
-const uploadOptions = isRailway ? [
-  '/app/uploads',  // Preferred: persistent volume
-  '/tmp/uploads',  // Fallback 1: tmp directory
-  './uploads',     // Fallback 2: local directory
-  '/tmp'           // Last resort: directly in tmp
-] : [
-  process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'),
-  './uploads',
-  '/tmp/uploads'
-];
+const uploadOptions = buildUploadOptions(isRailway);
 
 let uploadsDir = uploadOptions[0]; // Default to first option
 

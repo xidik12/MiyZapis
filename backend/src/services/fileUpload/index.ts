@@ -30,6 +30,27 @@ const getFileTypeFromBuffer = async (buffer: Buffer) => {
   }
 };
 
+const runWithTimeout = async <T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> => {
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+    return promise;
+  }
+
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`${label} timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
+};
+
 const isRailwayEnv = !!(
   process.env.RAILWAY_ENVIRONMENT ||
   process.env.RAILWAY_SERVICE_NAME ||
@@ -37,10 +58,11 @@ const isRailwayEnv = !!(
   process.env.RAILWAY_SERVICE ||
   process.env.RAILWAY_PROJECT
 );
-const forceLocalStorage = process.env.FORCE_LOCAL_STORAGE === 'true' ||
+const enableS3Storage = process.env.ENABLE_S3_STORAGE === 'true';
+const explicitLocalStorage = process.env.FORCE_LOCAL_STORAGE === 'true' ||
   process.env.FILE_STORAGE === 'local' ||
-  process.env.USE_LOCAL_STORAGE === 'true' ||
-  isRailwayEnv;
+  process.env.USE_LOCAL_STORAGE === 'true';
+const forceLocalStorage = explicitLocalStorage || (!enableS3Storage && isRailwayEnv);
 
 export class FileUploadService {
   private prisma: PrismaClient;
@@ -57,11 +79,25 @@ export class FileUploadService {
     } else if (forceLocalStorage) {
       logger.info('Local storage forced for uploads', {
         isRailwayEnv,
+        enableS3Storage,
+        explicitLocalStorage,
         fileStorageEnv: process.env.FILE_STORAGE,
         forceLocalStorageEnv: process.env.FORCE_LOCAL_STORAGE,
         useLocalStorageEnv: process.env.USE_LOCAL_STORAGE
       });
     }
+
+    logger.info('File upload storage mode', {
+      useS3: this.useS3,
+      enableS3Storage,
+      forceLocalStorage,
+      explicitLocalStorage,
+      isRailwayEnv,
+      awsSdkAvailable: !!AWS,
+      hasAccessKey: !!config.aws.accessKeyId,
+      hasSecretKey: !!config.aws.secretAccessKey,
+      hasBucket: !!config.aws.s3.bucket
+    });
   }
 
   isUsingS3(): boolean {
@@ -130,17 +166,14 @@ export class FileUploadService {
         (process.env.PORT && process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.NETLIFY)
       );
       
+      const parsedTimeout = Number.parseInt(process.env.UPLOAD_IO_TIMEOUT_MS || '8000', 10);
+      const ioTimeoutMs = Number.isFinite(parsedTimeout) ? parsedTimeout : 8000;
+
       // Railway permission fix: Try multiple upload directories in order of preference
-      const uploadOptions = isRailway ? [
-        '/app/uploads',  // Preferred: persistent volume
-        '/tmp/uploads',  // Fallback 1: tmp directory
-        './uploads',     // Fallback 2: local directory
-        '/tmp'           // Last resort: directly in tmp
-      ] : [
-        process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'),
-        './uploads',
-        '/tmp/uploads'
-      ];
+      const rawUploadOptions = isRailway
+        ? [process.env.UPLOAD_DIR, '/app/uploads', '/tmp/uploads', './uploads', '/tmp']
+        : [process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'), './uploads', '/tmp/uploads'];
+      const uploadOptions = Array.from(new Set(rawUploadOptions.filter(Boolean) as string[]));
       
       logger.info('Upload directory options', {
         RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
@@ -165,15 +198,19 @@ export class FileUploadService {
           
           // Try to create directory if it doesn't exist
           try {
-            await fs.access(testDir);
+            await runWithTimeout(fs.access(testDir), ioTimeoutMs, `fs.access ${testDir}`);
           } catch {
-            await fs.mkdir(testDir, { recursive: true, mode: 0o755 });
+            await runWithTimeout(fs.mkdir(testDir, { recursive: true, mode: 0o755 }), ioTimeoutMs, `fs.mkdir ${testDir}`);
           }
           
           // Test write permissions by writing a small test file
           testFilePath = path.join(testDir, 'write-test-' + Date.now() + '.txt');
-          await fs.writeFile(testFilePath, 'test', { mode: 0o644 });
-          await fs.unlink(testFilePath); // Clean up test file
+          await runWithTimeout(
+            fs.writeFile(testFilePath, 'test', { mode: 0o644 }),
+            ioTimeoutMs,
+            `fs.writeFile ${testFilePath}`
+          );
+          await runWithTimeout(fs.unlink(testFilePath), ioTimeoutMs, `fs.unlink ${testFilePath}`);
           
           // If we get here, the directory works
           uploadsDir = testDir;
@@ -206,14 +243,18 @@ export class FileUploadService {
       if (!isRailway && filename.includes('/')) {
         const fileDir = path.dirname(filePath);
         try {
-          await fs.access(fileDir);
+          await runWithTimeout(fs.access(fileDir), ioTimeoutMs, `fs.access ${fileDir}`);
         } catch {
-          await fs.mkdir(fileDir, { recursive: true, mode: 0o755 });
+          await runWithTimeout(fs.mkdir(fileDir, { recursive: true, mode: 0o755 }), ioTimeoutMs, `fs.mkdir ${fileDir}`);
         }
       }
 
       // Write the actual file
-      await fs.writeFile(filePath, buffer, { mode: 0o644 });
+      await runWithTimeout(
+        fs.writeFile(filePath, buffer, { mode: 0o644 }),
+        ioTimeoutMs,
+        `fs.writeFile ${filePath}`
+      );
 
       // Return URL for accessing the file
       const fileUrl = `/uploads/${finalFilename}`;
@@ -271,18 +312,46 @@ export class FileUploadService {
     try {
       // Convert URL to local file path
       const filename = fileUrl.replace('/uploads/', '');
-      // Use persistent volume /app/uploads on Railway
-      const isRailway = !!(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_SERVICE_NAME || process.env.RAILWAY_PROJECT_NAME);
-      const uploadsDir = isRailway ? '/app/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'));
-      const filePath = path.join(uploadsDir, filename);
+      const isRailway = !!(
+        process.env.RAILWAY_ENVIRONMENT ||
+        process.env.RAILWAY_SERVICE_NAME ||
+        process.env.RAILWAY_PROJECT_NAME ||
+        process.env.RAILWAY_SERVICE ||
+        process.env.RAILWAY_PROJECT ||
+        (process.env.PORT && process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.NETLIFY)
+      );
+      const parsedTimeout = Number.parseInt(process.env.UPLOAD_IO_TIMEOUT_MS || '8000', 10);
+      const ioTimeoutMs = Number.isFinite(parsedTimeout) ? parsedTimeout : 8000;
+      const rawUploadOptions = isRailway
+        ? [process.env.UPLOAD_DIR, '/app/uploads', '/tmp/uploads', './uploads', '/tmp']
+        : [process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'), './uploads', '/tmp/uploads'];
+      const uploadOptions = Array.from(new Set(rawUploadOptions.filter(Boolean) as string[]));
+
+      let filePath: string | null = null;
+
+      for (const dir of uploadOptions) {
+        const candidatePath = path.join(dir, filename);
+        try {
+          await runWithTimeout(fs.access(candidatePath), ioTimeoutMs, `fs.access ${candidatePath}`);
+          filePath = candidatePath;
+          break;
+        } catch {
+          continue;
+        }
+      }
 
       try {
-        await fs.access(filePath);
-        await fs.unlink(filePath);
-        logger.info('File deleted locally successfully', { filePath });
+        if (!filePath) {
+          throw new Error('File not found in any upload directory');
+        }
+        await runWithTimeout(fs.unlink(filePath), ioTimeoutMs, `fs.unlink ${filePath}`);
+        logger.info('File deleted locally successfully', { filePath, searched: uploadOptions });
       } catch (error) {
         // File doesn't exist or can't be deleted
-        logger.warn('File not found for deletion:', filePath);
+        logger.warn('File not found for deletion:', {
+          filename,
+          searched: uploadOptions
+        });
       }
     } catch (error) {
       logger.error('Error deleting file locally:', error);

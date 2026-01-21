@@ -21,17 +21,26 @@ const isRailwayEnv = !!(
   process.env.RAILWAY_SERVICE ||
   process.env.RAILWAY_PROJECT
 );
-const forceLocalStorage = process.env.FORCE_LOCAL_STORAGE === 'true' ||
+const enableS3Storage = process.env.ENABLE_S3_STORAGE === 'true';
+const explicitLocalStorage = process.env.FORCE_LOCAL_STORAGE === 'true' ||
   process.env.FILE_STORAGE === 'local' ||
-  process.env.USE_LOCAL_STORAGE === 'true' ||
-  isRailwayEnv;
-const useS3Storage = process.env.ENABLE_S3_STORAGE === 'true' && !forceLocalStorage;
+  process.env.USE_LOCAL_STORAGE === 'true';
+const forceLocalStorage = explicitLocalStorage || (!enableS3Storage && isRailwayEnv);
+const useS3Storage = enableS3Storage && !explicitLocalStorage;
 
 if (useS3Storage) {
   console.log('🌅 S3 storage enabled - adding S3 upload routes');
 } else {
   console.log('📁 Using local file storage');
 }
+console.log('File storage selection', {
+  useS3Storage,
+  enableS3Storage,
+  forceLocalStorage,
+  explicitLocalStorage,
+  isRailwayEnv,
+  uploadDir: process.env.UPLOAD_DIR || null
+});
 
 const getPublicBaseUrl = (req: Request): string => {
   if (process.env.RAILWAY_PUBLIC_DOMAIN) {
@@ -41,6 +50,14 @@ const getPublicBaseUrl = (req: Request): string => {
   const protocol = forwardedProto || req.protocol;
   const host = req.get('x-forwarded-host') || req.get('host');
   return host ? `${protocol}://${host}` : '';
+};
+
+const buildUploadOptions = (isRailway: boolean): string[] => {
+  const options = isRailway
+    ? [process.env.UPLOAD_DIR, '/app/uploads', '/tmp/uploads', './uploads', '/tmp']
+    : [process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'), './uploads', '/tmp/uploads'];
+
+  return Array.from(new Set(options.filter(Boolean) as string[]));
 };
 
 const getFileTypeFromBuffer = async (buffer: Buffer) => {
@@ -143,7 +160,7 @@ router.get('/railway-env', (req, res) => {
       success: true,
       data: {
         isRailway: isRailway,
-        uploadsDir: isRailway ? '/app/uploads' : (process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads')),
+        uploadsDir: buildUploadOptions(isRailway)[0],
         env: {
           RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT || null,
           RAILWAY_SERVICE_NAME: process.env.RAILWAY_SERVICE_NAME || null,
@@ -177,16 +194,7 @@ router.get('/fs-test', async (req, res) => {
     );
     
     // Railway permission fix: Try multiple upload directories in order of preference
-    const uploadOptions = isRailway ? [
-      '/app/uploads',  // Preferred: persistent volume
-      '/tmp/uploads',  // Fallback 1: tmp directory
-      './uploads',     // Fallback 2: local directory
-      '/tmp'           // Last resort: directly in tmp
-    ] : [
-      process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'),
-      './uploads',
-      '/tmp/uploads'
-    ];
+    const uploadOptions = buildUploadOptions(isRailway);
     
     const testResults = {
       isRailway,
@@ -473,16 +481,7 @@ router.post('/upload-robust', authMiddleware, uploadRateLimit, fileController.up
     );
     
     // Railway permission fix: Try multiple upload directories in order of preference
-    const uploadOptions = isRailway ? [
-      '/app/uploads',  // Preferred: persistent volume
-      '/tmp/uploads',  // Fallback 1: tmp directory
-      './uploads',     // Fallback 2: local directory
-      '/tmp'           // Last resort: directly in tmp
-    ] : [
-      process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'),
-      './uploads',
-      '/tmp/uploads'
-    ];
+    const uploadOptions = buildUploadOptions(isRailway);
     
     console.log('🏗️ Railway detection result:', {
       isRailway,
@@ -635,16 +634,7 @@ router.post('/upload-simple', authMiddleware, uploadRateLimit, fileController.up
     const isRailwayEnv = !!(railwayIndicators.RAILWAY_ENVIRONMENT || railwayIndicators.RAILWAY_SERVICE_NAME || railwayIndicators.RAILWAY_PROJECT_NAME || railwayIndicators.RAILWAY_SERVICE || railwayIndicators.RAILWAY_PROJECT || (process.env.PORT && process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.NETLIFY));
     
     // Railway permission fix: Try multiple upload directories in order of preference
-    const uploadOptions = isRailwayEnv ? [
-      '/app/uploads',  // Preferred: persistent volume
-      '/tmp/uploads',  // Fallback 1: tmp directory
-      './uploads',     // Fallback 2: local directory
-      '/tmp'           // Last resort: directly in tmp
-    ] : [
-      process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'),
-      './uploads',
-      '/tmp/uploads'
-    ];
+    const uploadOptions = buildUploadOptions(isRailwayEnv);
     
     let uploadsDir = null;
     
@@ -804,16 +794,7 @@ router.get('/uploads/:filename', (req, res) => {
     );
     
     // Try multiple directories to find the file
-    const uploadOptions = isRailwayServe ? [
-      '/app/uploads',
-      '/tmp/uploads',
-      './uploads',
-      '/tmp'
-    ] : [
-      process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'),
-      './uploads',
-      '/tmp/uploads'
-    ];
+    const uploadOptions = buildUploadOptions(isRailwayServe);
     
     let filepath = null;
     
