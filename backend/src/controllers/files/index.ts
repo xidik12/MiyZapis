@@ -10,6 +10,16 @@ import { logger } from '@/utils/logger';
 import { config } from '@/config';
 import { prisma } from '@/config/database';
 
+const getPublicBaseUrl = (req: Request): string => {
+  if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+    return `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
+  }
+  const forwardedProto = req.get('x-forwarded-proto')?.split(',')[0]?.trim();
+  const protocol = forwardedProto || req.protocol;
+  const host = req.get('x-forwarded-host') || req.get('host');
+  return host ? `${protocol}://${host}` : '';
+};
+
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -151,10 +161,8 @@ export class FileController {
           // Convert relative URL to absolute URL for production
           let absoluteUrl = fileUrl;
           if (fileUrl.startsWith('/uploads/')) {
-            const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN 
-              ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
-              : 'https://miyzapis-backend-production.up.railway.app';
-            absoluteUrl = `${baseUrl}${fileUrl}`;
+            const baseUrl = getPublicBaseUrl(req);
+            absoluteUrl = baseUrl ? `${baseUrl}${fileUrl}` : fileUrl;
           }
 
           // Save file record to database

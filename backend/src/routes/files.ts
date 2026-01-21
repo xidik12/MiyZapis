@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request } from 'express';
 import { param, query } from 'express-validator';
 import { authenticateToken as authMiddleware, optionalAuth as optionalAuthMiddleware } from '@/middleware/auth/jwt';
 import { uploadRateLimit } from '@/middleware/security'; // ✅ SECURITY FIX: Add upload rate limiting
@@ -32,6 +32,16 @@ if (useS3Storage) {
 } else {
   console.log('📁 Using local file storage');
 }
+
+const getPublicBaseUrl = (req: Request): string => {
+  if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+    return `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
+  }
+  const forwardedProto = req.get('x-forwarded-proto')?.split(',')[0]?.trim();
+  const protocol = forwardedProto || req.protocol;
+  const host = req.get('x-forwarded-host') || req.get('host');
+  return host ? `${protocol}://${host}` : '';
+};
 
 const getFileTypeFromBuffer = async (buffer: Buffer) => {
   try {
@@ -538,10 +548,8 @@ router.post('/upload-robust', authMiddleware, uploadRateLimit, fileController.up
     }
     
     // Generate file URL
-    const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN 
-      ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
-      : 'https://miyzapis-backend-production.up.railway.app';
-    const fileUrl = `${baseUrl}/uploads/${filename}`;
+    const baseUrl = getPublicBaseUrl(req);
+    const fileUrl = `${baseUrl || ''}/uploads/${filename}`;
     
     // Create database record
     let fileRecord;
@@ -681,8 +689,8 @@ router.post('/upload-simple', authMiddleware, uploadRateLimit, fileController.up
     fs.writeFileSync(filepath, file.buffer);
     
     // Create response that matches what frontend expects - using absolute URL
-    const baseUrl = 'https://miyzapis-backend-production.up.railway.app';
-    const fileUrl = `${baseUrl}/uploads/${filename}`;
+    const baseUrl = getPublicBaseUrl(req);
+    const fileUrl = `${baseUrl || ''}/uploads/${filename}`;
     const mockResponse = [{
       id: 'simple-' + timestamp,
       filename: filename,
@@ -1067,10 +1075,8 @@ router.post('/save-external', authMiddleware, async (req, res) => {
 
       absoluteUrl = storagePath;
       if (storagePath.startsWith('/uploads/')) {
-        const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN
-          ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
-          : 'https://miyzapis-backend-production.up.railway.app';
-        absoluteUrl = `${baseUrl}${storagePath}`;
+        const baseUrl = getPublicBaseUrl(req);
+        absoluteUrl = baseUrl ? `${baseUrl}${storagePath}` : storagePath;
       }
 
       fileRecordName = filename;
