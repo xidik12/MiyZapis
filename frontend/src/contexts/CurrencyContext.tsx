@@ -44,31 +44,33 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
     setCurrency(newCurrency);
     localStorage.setItem('booking-currency', newCurrency);
   };
+  // Backend stores prices in USD, so default fromCurrency is 'USD'
   const convertPrice = (price: number, fromCurrency: Currency = 'USD'): number => {
     if (fromCurrency === currency) return price;
-    
+
     // Convert to UAH first (base currency)
     const priceInUAH = fromCurrency === 'UAH' ? price : price * EXCHANGE_RATES[fromCurrency];
-    
+
     // Convert from UAH to target currency
     if (currency === 'UAH') return priceInUAH;
     return Math.round((priceInUAH / EXCHANGE_RATES[currency]) * 100) / 100;
   };
 
   // Format price with currency symbol
-  const formatPrice = (price: number | undefined | null, fromCurrency: Currency = 'UAH'): string => {
+  // Changed default fromCurrency to 'USD' because backend stores prices in USD
+  const formatPrice = (price: number | undefined | null, fromCurrency: Currency = 'USD'): string => {
     // Handle undefined/null prices
     if (price == null || isNaN(price)) {
       return `${getCurrencySymbol(currency)}0`;
     }
-    
+
     const convertedPrice = convertPrice(price, fromCurrency);
     const symbol = getCurrencySymbol(currency);
-    
+
     // Format numbers appropriately for each currency
     if (currency === 'UAH') {
       // Ukrainian Hryvnia: show as whole numbers for larger amounts, with comma separators
-      return convertedPrice >= 1000 
+      return convertedPrice >= 1000
         ? `${symbol}${Math.round(convertedPrice).toLocaleString('uk-UA')}`
         : `${symbol}${convertedPrice}`;
     } else {

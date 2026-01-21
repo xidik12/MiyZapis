@@ -33,7 +33,7 @@ const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
   });
   
   // Use the service's stored currency, defaulting to UAH if not specified
-  const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+  const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'USD';
   console.log(`💱 Final currency for ${booking.service?.name || booking.serviceName}: ${currency}`);
   return currency;
 };

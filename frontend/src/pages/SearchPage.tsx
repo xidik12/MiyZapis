@@ -426,7 +426,7 @@ const SearchPage: React.FC = () => {
                 {service.isAvailable ? t('service.available') : t('service.unavailable')}
               </div>
               <p className="text-xl font-bold text-gray-900 dark:text-white">
-                {formatPrice(service.price, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
+                {formatPrice(service.price, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
               </p>
             </div>
           </div>

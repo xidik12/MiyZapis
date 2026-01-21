@@ -554,7 +554,7 @@ const CustomerFavorites: React.FC = () => {
                               <span>{service.duration} min</span>
                             </div>
                             <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                              {formatPrice(service.price, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
+                              {formatPrice(service.price, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
                             </div>
                           </div>
 

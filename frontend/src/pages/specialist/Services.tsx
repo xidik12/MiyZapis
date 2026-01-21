@@ -58,7 +58,7 @@ const sampleServices: Service[] = [
 // Helper function to get the service currency
 const getServiceCurrency = (service: Service): 'USD' | 'EUR' | 'UAH' => {
   // Use the service's stored currency, defaulting to UAH if not specified
-  return (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+  return (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD';
 };
 
 const SpecialistServices: React.FC = () => {
@@ -309,7 +309,7 @@ const SpecialistServices: React.FC = () => {
       descriptionRu: '',
       category: existingCategory ? existingCategory.id : '',
       price: service.basePrice?.toString() || service.price?.toString() || '',
-      currency: service.currency || 'UAH',
+      currency: service.currency || 'USD',
       duration: service.duration.toString(),
       serviceLocation: service.serviceLocation || '',
       locationNotes: service.locationNotes || '',
@@ -929,7 +929,7 @@ const SpecialistServices: React.FC = () => {
                           });
                           return validPrices.length === 0 
                             ? t('services.noDataYet') || 'No data yet'
-                            : formatPrice(validPrices.reduce((sum, s) => sum + (s.basePrice || s.price), 0) / validPrices.length, validPrices[0]?.currency as 'USD' | 'EUR' | 'UAH' || 'UAH');
+                            : formatPrice(validPrices.reduce((sum, s) => sum + (s.basePrice || s.price), 0) / validPrices.length, validPrices[0]?.currency as 'USD' | 'EUR' | 'UAH' || 'USD');
                         })()
                     }
                   </p>

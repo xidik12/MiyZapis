@@ -6,7 +6,7 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 // Helper function to get the booking currency (same as Dashboard)
 const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
   // Use the service's stored currency, defaulting to UAH if not specified
-  const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'UAH';
+  const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'USD';
   return currency;
 };
 import { RootState, AppDispatch } from '../../store';

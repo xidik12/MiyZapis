@@ -612,7 +612,7 @@ const SpecialistProfilePage: React.FC = () => {
                         </div>
                         <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start mt-2 sm:mt-0 sm:ml-4 sm:text-right">
                           <p className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
-                            {formatPrice(service.price || service.basePrice || 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'UAH')}
+                            {formatPrice(service.price || service.basePrice || 0, (service.currency as 'USD' | 'EUR' | 'UAH') || 'USD')}
                           </p>
                           {isOwnProfile ? (
                             <button
