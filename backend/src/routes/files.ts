@@ -5,6 +5,12 @@ import { uploadRateLimit } from '@/middleware/security'; // ✅ SECURITY FIX: Ad
 import { validateRequest } from '@/middleware/validation';
 import { fileController } from '@/controllers/files';
 import * as s3UploadController from '@/controllers/files/s3-upload.controller';
+import { FileUploadService } from '@/services/fileUpload/index';
+import { prisma } from '@/config/database';
+import { logger } from '@/utils/logger';
+import { fileTypeFromBuffer } from 'file-type';
+import sharp from 'sharp';
+import crypto from 'crypto';
 import path from 'path';
 
 const router = Router();
@@ -835,30 +841,166 @@ router.post('/save-external', authMiddleware, async (req, res) => {
       return res.status(400).json({ success: false, error: 'Image URL is required' });
     }
 
-    // For S3 URLs that are already uploaded, just return the URL
-    if (imageUrl.includes('miyzapis-storage.s3.ap-southeast-2.amazonaws.com')) {
-      return res.json({
-        success: true,
-        data: {
-          url: imageUrl,
-          filename: imageUrl.split('/').pop(),
-          size: 0,
-          mimeType: 'image/jpeg',
-          uploadedAt: new Date().toISOString()
-        },
-        message: 'External image URL validated'
+    const decodeHtmlEntities = (value: string): string =>
+      value
+        .replace(/&#x2F;/gi, '/')
+        .replace(/&amp;/gi, '&')
+        .replace(/&quot;/gi, '"')
+        .replace(/&#x27;/gi, "'")
+        .replace(/&lt;/gi, '<')
+        .replace(/&gt;/gi, '>');
+
+    const normalizedUrl = decodeHtmlEntities(String(imageUrl).trim());
+
+    if (!/^https?:\/\//i.test(normalizedUrl)) {
+      return res.status(400).json({ success: false, error: 'Only http(s) image URLs are supported' });
+    }
+
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(normalizedUrl);
+    } catch {
+      return res.status(400).json({ success: false, error: 'Invalid image URL' });
+    }
+
+    const hostname = parsedUrl.hostname.toLowerCase();
+    if (
+      hostname === 'localhost' ||
+      hostname.endsWith('.localhost') ||
+      hostname === '127.0.0.1' ||
+      hostname === '::1'
+    ) {
+      return res.status(400).json({ success: false, error: 'Invalid image URL host' });
+    }
+
+    const ipv4Match = hostname.match(/^(\d{1,3}\.){3}\d{1,3}$/);
+    if (ipv4Match) {
+      const parts = hostname.split('.').map(Number);
+      const isPrivate =
+        parts[0] === 10 ||
+        parts[0] === 127 ||
+        (parts[0] === 169 && parts[1] === 254) ||
+        (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) ||
+        (parts[0] === 192 && parts[1] === 168);
+      if (isPrivate) {
+        return res.status(400).json({ success: false, error: 'Invalid image URL host' });
+      }
+    }
+
+    const response = await fetch(normalizedUrl, { redirect: 'follow' });
+
+    if (!response.ok) {
+      return res.status(400).json({
+        success: false,
+        error: `Failed to fetch image (${response.status})`
       });
     }
 
-    // For other external URLs, we would download and upload to S3
-    // For now, just return the original URL since the migration is working
+    const maxSizeByPurpose: Record<string, number> = {
+      avatar: 5 * 1024 * 1024,
+      portfolio: 10 * 1024 * 1024,
+      service_image: 10 * 1024 * 1024
+    };
+    const maxSize = maxSizeByPurpose[purpose] || 10 * 1024 * 1024;
+
+    const contentLength = response.headers.get('content-length');
+    if (contentLength && Number(contentLength) > maxSize) {
+      return res.status(413).json({ success: false, error: 'Image too large' });
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    if (buffer.length > maxSize) {
+      return res.status(413).json({ success: false, error: 'Image too large' });
+    }
+
+    const detectedType = await fileTypeFromBuffer(buffer);
+    const headerType = response.headers.get('content-type') || '';
+    const mimeType = detectedType?.mime || headerType || 'image/jpeg';
+
+    if (!mimeType.startsWith('image/')) {
+      return res.status(400).json({ success: false, error: 'URL must point to an image' });
+    }
+
+    let processedBuffer = buffer;
+    let width: number | undefined;
+    let height: number | undefined;
+
+    try {
+      const image = sharp(buffer, { animated: true });
+      const metadata = await image.metadata();
+      width = metadata.width;
+      height = metadata.height;
+
+      if (purpose === 'avatar') {
+        processedBuffer = await image.resize(300, 300, { fit: 'cover' }).toBuffer();
+      } else if (purpose === 'portfolio' || purpose === 'service_image') {
+        processedBuffer = await image
+          .resize(1200, 800, { fit: 'inside', withoutEnlargement: true })
+          .toBuffer();
+      }
+    } catch (error) {
+      logger.warn('External image processing failed, using original buffer', {
+        error: error instanceof Error ? error.message : String(error)
+      });
+      processedBuffer = buffer;
+    }
+
+    const extFromMime = (type: string): string => {
+      if (type.includes('png')) return '.png';
+      if (type.includes('webp')) return '.webp';
+      if (type.includes('gif')) return '.gif';
+      if (type.includes('bmp')) return '.bmp';
+      return '.jpg';
+    };
+
+    const extension = detectedType?.ext ? `.${detectedType.ext}` : extFromMime(mimeType);
+    const fileId = crypto.randomUUID();
+    const filename = `${purpose}/${fileId}${extension}`;
+
+    const fileUploadService = new FileUploadService(prisma);
+    const storagePath = await fileUploadService.uploadToStorage(processedBuffer, filename, mimeType);
+
+    let absoluteUrl = storagePath;
+    if (storagePath.startsWith('/uploads/')) {
+      const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN
+        ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+        : 'https://miyzapis-backend-production.up.railway.app';
+      absoluteUrl = `${baseUrl}${storagePath}`;
+    }
+
+    const originalName = path.basename(parsedUrl.pathname) || 'external-image';
+    const fileData: any = {
+      filename,
+      originalName,
+      mimeType,
+      size: processedBuffer.length,
+      path: storagePath,
+      url: absoluteUrl,
+      width,
+      height,
+      uploadedBy: userId,
+      purpose,
+      isPublic: true,
+      isProcessed: true
+    };
+
+    if (fileUploadService.isUsingS3()) {
+      fileData.cloudProvider = 'S3';
+      fileData.cloudKey = filename;
+      fileData.cloudBucket = process.env.AWS_S3_BUCKET;
+    }
+
+    await prisma.file.create({ data: fileData });
+
     return res.json({
       success: true,
       data: {
-        url: imageUrl,
-        filename: 'external-image',
-        size: 0,
-        mimeType: 'image/jpeg',
+        url: absoluteUrl,
+        filename,
+        size: processedBuffer.length,
+        mimeType,
         uploadedAt: new Date().toISOString()
       },
       message: 'External image processed'

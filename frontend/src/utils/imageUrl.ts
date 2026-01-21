@@ -5,6 +5,15 @@
  */
 import { environment } from '../config/environment';
 
+const decodeHtmlEntities = (value: string): string =>
+  value
+    .replace(/&#x2F;/gi, '/')
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#x27;/gi, "'")
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>');
+
 export function getAbsoluteImageUrl(url: string | undefined | null | any): string {
   // Debug logging for all inputs
   console.log('🔧 getAbsoluteImageUrl input:', { url, type: typeof url, length: url?.length });
@@ -25,6 +34,8 @@ export function getAbsoluteImageUrl(url: string | undefined | null | any): strin
     console.log('❌ getAbsoluteImageUrl: URL is not a string after processing:', typeof url);
     return '';
   }
+
+  url = decodeHtmlEntities(url);
   
   // Check for empty strings
   if (url.trim() === '') {

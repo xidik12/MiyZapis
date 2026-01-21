@@ -347,6 +347,35 @@ const HTML_ALLOWED_FIELDS = [
   'details'
 ];
 
+// Fields that should preserve URLs or file paths without HTML entity encoding
+const URL_ALLOWED_FIELDS = [
+  'avatar',
+  'image',
+  'photo',
+  'logo',
+  'icon',
+  'banner',
+  'cover',
+  'url',
+  'website',
+  'link',
+  'href',
+  'file',
+  'document',
+  'portfolio',
+  'gallery'
+];
+
+const looksLikeUrl = (value: string): boolean => {
+  const trimmed = value.trim();
+  return /^(https?:\/\/|\/uploads\/|\/files\/|\/s3-proxy\/|data:image\/)/i.test(trimmed);
+};
+
+const isUrlField = (fieldName: string, value: string): boolean => {
+  const normalizedField = fieldName.toLowerCase();
+  return URL_ALLOWED_FIELDS.some(field => normalizedField.includes(field)) || looksLikeUrl(value);
+};
+
 // Sanitize a single string value
 const sanitizeString = (value: string, fieldName: string = ''): string => {
   // Check if this field allows HTML
@@ -375,14 +404,16 @@ const sanitizeString = (value: string, fieldName: string = ''): string => {
       allowedAttributes: {}
     });
 
-    // Additional encoding for extra safety
-    sanitized = sanitized
-      .replace(/&(?!#?\w+;)/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#x27;')
-      .replace(/\//g, '&#x2F;');
+    // Additional encoding for extra safety (skip for URL-like fields)
+    if (!isUrlField(fieldName, sanitized)) {
+      sanitized = sanitized
+        .replace(/&(?!#?\w+;)/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;')
+        .replace(/\//g, '&#x2F;');
+    }
 
     return sanitized;
   }

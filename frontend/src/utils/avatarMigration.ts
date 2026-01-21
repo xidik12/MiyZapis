@@ -25,12 +25,23 @@ export class AvatarMigrationUtil {
     return Array.from(hosts);
   }
 
+  private static normalizeUrl(value: string): string {
+    return value
+      .trim()
+      .replace(/&#x2F;/gi, '/')
+      .replace(/&amp;/gi, '&')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#x27;/gi, "'")
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>');
+  }
+
   /**
    * Check if user has an external avatar that needs to be saved to backend
    */
   static needsMigration(avatarUrl: string | null | undefined): boolean {
     if (!avatarUrl) return false;
-    const normalizedUrl = avatarUrl.trim();
+    const normalizedUrl = this.normalizeUrl(avatarUrl);
     if (normalizedUrl === '' || normalizedUrl.startsWith('data:') || normalizedUrl.startsWith('blob:')) {
       return false;
     }
@@ -63,10 +74,11 @@ export class AvatarMigrationUtil {
    */
   static async migrateAvatar(currentAvatarUrl: string): Promise<string | null> {
     try {
-      console.log('🔄 Starting avatar migration for:', currentAvatarUrl);
+      const normalizedUrl = this.normalizeUrl(currentAvatarUrl);
+      console.log('🔄 Starting avatar migration for:', normalizedUrl);
       
       // Save the external image to backend
-      const savedAvatar = await userService.saveExternalImage(currentAvatarUrl, 'avatar');
+      const savedAvatar = await userService.saveExternalImage(normalizedUrl, 'avatar');
       
       // Update user profile with the new backend URL
       await userService.updateProfile({ avatar: savedAvatar.avatarUrl });
