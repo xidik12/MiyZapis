@@ -300,10 +300,20 @@ const createTranslations = (): Translations => {
     'notifications.error.title': 'Notification error',
     'notifications.filter.unread': 'Unread',
     'notifications.markAsRead': 'Mark as read',
+    'notifications.markAllRead': 'Mark all as read',
     'notifications.noNotifications': 'No notifications yet',
     'notifications.noNotificationsDescription': 'When you receive updates, they will appear here.',
     'notifications.subtitle': 'Stay up to date with your activity',
+    'notifications.title': 'Notifications',
     'notifications.unread': 'Unread',
+    'notifications.viewAll': 'View all notifications',
+    'notifications.today': 'Today',
+    'notifications.yesterday': 'Yesterday',
+    'notifications.thisWeek': 'This Week',
+    'notifications.earlier': 'Earlier',
+    'notifications.new': 'new',
+    'notifications.markAll': 'Mark all',
+    'notifications.view': 'View',
     'pagination.next': 'Next',
     'pagination.of': 'of',
     'pagination.previous': 'Previous',
@@ -427,6 +437,15 @@ const createTranslations = (): Translations => {
   ensure('bookings.of', 'of', 'ពី');
   ensure('bookings.results', 'results', 'លទ្ធផល');
   ensure('bookings.completionNotes', 'Completion Notes (Optional)', 'កំណត់ចំណាំបញ្ចប់ (ស្រេចចិត្ត)');
+
+  // Notification grouping translations
+  ensure('notifications.today', 'Today', 'ថ្ងៃនេះ');
+  ensure('notifications.yesterday', 'Yesterday', 'ម្សិលមិញ');
+  ensure('notifications.thisWeek', 'This Week', 'សប្តាហ៍នេះ');
+  ensure('notifications.earlier', 'Earlier', 'មុននេះ');
+  ensure('notifications.new', 'new', 'ថ្មី');
+  ensure('notifications.markAll', 'Mark all', 'សម្គាល់ទាំងអស់');
+  ensure('notifications.view', 'View', 'មើល');
   ensure('bookings.completionNotesPlaceholder', 'Add any notes about the completed service...', 'បន្ថែមកំណត់ចំណាំអំពីសេវាកម្មដែលបានបញ្ចប់...');
   ensure('bookings.completeFailed', 'Failed to complete booking', 'មិនអាចបញ្ចប់ការកក់បានទេ');
   ensure('bookings.cancelFailed', 'Failed to cancel booking. Please try again.', 'មិនអាចបោះបង់ការកក់បានទេ។ សូមព្យាយាមម្តងទៀត។');

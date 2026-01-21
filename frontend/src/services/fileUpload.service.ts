@@ -18,20 +18,11 @@ export interface FileUploadOptions {
 }
 
 export class FileUploadService {
-  // Upload a single file
+  // Upload a single file (simplified from development branch)
   async uploadFile(file: File, options: FileUploadOptions = {}): Promise<FileUploadResponse> {
     try {
       // Validate file before upload
       this.validateFile(file, options);
-
-      // Log upload attempt
-      console.log('📤 Uploading file:', {
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        purpose: options.type,
-        maxSize: options.maxSize
-      });
 
       const formData = new FormData();
       formData.append('files', file); // Use 'files' field name for multer array upload
@@ -48,38 +39,12 @@ export class FileUploadService {
       const response = await apiClient.post<FileUploadResponse[]>(endpoint, formData);
 
       if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
-        throw new Error(response.error?.message || 'Upload succeeded but no response data received');
+        throw new Error(response.error?.message || 'Failed to upload file');
       }
 
-      console.log('✅ Upload successful:', response.data[0]);
       return response.data[0]; // Return the first uploaded file
     } catch (error: any) {
-      console.error('❌ Upload failed:', {
-        error: error.message,
-        fileName: file.name,
-        fileSize: file.size,
-        status: error.response?.status
-      });
-
-      // Provide specific error messages based on error type
-      if (error.code === 'ECONNABORTED') {
-        throw new Error('Upload timeout - file may be too large or connection is slow. Please try again.');
-      }
-
-      if (error.response?.status === 413) {
-        throw new Error('File too large for server. Please reduce file size and try again.');
-      }
-
-      if (error.response?.status === 401) {
-        throw new Error('Authentication failed - please login again.');
-      }
-
-      if (error.response?.status === 400) {
-        const message = error.response?.data?.error?.message || error.response?.data?.message;
-        throw new Error(message || 'Invalid file or request. Please check file type and size.');
-      }
-
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Network error. Please check your connection and try again.';
+      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to upload file';
       throw new Error(errorMessage);
     }
   }
@@ -100,7 +65,7 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'avatar',
       maxSize: 5 * 1024 * 1024, // 5MB
-      allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
+      allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
     });
   }
 
@@ -109,7 +74,7 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'portfolio',
       maxSize: 10 * 1024 * 1024, // 10MB
-      allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
+      allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
     });
   }
 
@@ -118,7 +83,7 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'service',
       maxSize: 10 * 1024 * 1024, // 10MB
-      allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
+      allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
     });
   }
 
@@ -145,15 +110,13 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'payment_qr',
       maxSize: 5 * 1024 * 1024, // 5MB
-      allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
+      allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
     });
   }
 
   // Save external image (e.g., Google avatar) to backend storage
   async saveExternalImage(imageUrl: string, purpose: 'avatar' | 'portfolio' = 'avatar'): Promise<FileUploadResponse> {
     try {
-      console.log('💾 Saving external image to backend:', imageUrl);
-      
       const response = await apiClient.post<FileUploadResponse>('/files/save-external', {
         imageUrl,
         purpose
@@ -163,7 +126,6 @@ export class FileUploadService {
         throw new Error(response.error?.message || 'Failed to save external image');
       }
 
-      console.log('✅ External image saved to backend:', response.data.url);
       return response.data;
     } catch (error: any) {
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to save external image';

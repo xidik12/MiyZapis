@@ -15,7 +15,7 @@ import {
   ChevronDownIcon,
   HomeIcon,
 } from '@/components/icons';
-import { NotificationDropdown } from '../common/NotificationDropdown';
+import { NotificationDropdownV2 as NotificationDropdown } from '../notifications/NotificationDropdownV2';
 import { UserDropdown } from '../common/UserDropdown';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { LanguageToggle } from '../ui/LanguageToggle';
