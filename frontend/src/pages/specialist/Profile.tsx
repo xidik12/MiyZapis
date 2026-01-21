@@ -753,10 +753,13 @@ const SpecialistProfile: React.FC = () => {
   // Handle avatar upload
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    console.log('🎯 [AVATAR UPLOAD] File selected:', file ? { name: file.name, size: file.size, type: file.type } : 'NO FILE');
+
     if (!file) return;
 
     // Warn user if they're replacing a Google avatar
     if (user?.avatar && (user.avatar.includes('googleusercontent.com') || user.avatar.includes('google.com'))) {
+      console.log('⚠️ [AVATAR UPLOAD] Showing Google avatar replacement confirmation');
       const { confirm } = await import('../../components/ui/Confirm');
       const confirmed = await confirm({
         title: language === 'uk' ? 'Замінити аватар?' : language === 'ru' ? 'Заменить аватар?' : 'Replace avatar?',
@@ -764,6 +767,7 @@ const SpecialistProfile: React.FC = () => {
         confirmText: language === 'uk' ? 'Замінити' : language === 'ru' ? 'Заменить' : 'Replace',
         cancelText: language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отмена' : 'Cancel',
       });
+      console.log('✅ [AVATAR UPLOAD] User confirmed:', confirmed);
       if (!confirmed) {
         event.target.value = ''; // Reset file input
         return;
@@ -771,7 +775,9 @@ const SpecialistProfile: React.FC = () => {
     }
 
     // Validate file type and size
+    console.log('🔍 [AVATAR UPLOAD] Validating file type:', file.type);
     if (!file.type.startsWith('image/')) {
+      console.error('❌ [AVATAR UPLOAD] Invalid file type:', file.type);
       showErrorNotification(
         language === 'uk' ? 'Будь ласка, оберіть файл зображення' :
         language === 'ru' ? 'Пожалуйста, выберите файл изображения' :
@@ -780,7 +786,9 @@ const SpecialistProfile: React.FC = () => {
       return;
     }
 
+    console.log('🔍 [AVATAR UPLOAD] Validating file size:', (file.size / 1024 / 1024).toFixed(2) + 'MB');
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      console.error('❌ [AVATAR UPLOAD] File too large:', (file.size / 1024 / 1024).toFixed(2) + 'MB');
       showErrorNotification(
         language === 'uk' ? 'Розмір файлу повинен бути менше 5МБ' :
         language === 'ru' ? 'Размер файла должен быть меньше 5МБ' :
@@ -790,17 +798,23 @@ const SpecialistProfile: React.FC = () => {
     }
 
     try {
+      console.log('🚀 [AVATAR UPLOAD] Starting upload process...');
       setIsUploadingAvatar(true);
-      
+
+      console.log('📤 [AVATAR UPLOAD] Calling fileUploadService.uploadAvatar...');
       // Upload the image
       const result = await fileUploadService.uploadAvatar(file);
-      
+      console.log('✅ [AVATAR UPLOAD] Upload successful, result:', result);
+
+      console.log('💾 [AVATAR UPLOAD] Updating user profile with new avatar URL...');
       // Update user profile with new avatar URL
       await userService.updateProfile({ avatar: result.url });
-      
+      console.log('✅ [AVATAR UPLOAD] Profile updated');
+
       // Update Redux store so changes persist
       dispatch(updateUserProfile({ avatar: result.url }));
-      
+      console.log('✅ [AVATAR UPLOAD] Redux store updated');
+
       showSuccessNotification(
         language === 'uk' ? 'Аватар успішно оновлено' :
         language === 'ru' ? 'Аватар успешно обновлён' :
@@ -809,16 +823,25 @@ const SpecialistProfile: React.FC = () => {
 
       // Clear the file input
       event.target.value = '';
-      
+      console.log('🎉 [AVATAR UPLOAD] Complete!');
+
     } catch (error: any) {
-      logger.error('❤️ Avatar upload error:', error);
+      console.error('❌ [AVATAR UPLOAD] Error occurred:', error);
+      console.error('❌ [AVATAR UPLOAD] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        response: error.response,
+        apiError: error.apiError
+      });
+      logger.error('❌ Avatar upload error:', error);
       showErrorNotification(
-        error.message || 
+        error.message ||
         (language === 'uk' ? 'Помилка завантаження аватара' :
          language === 'ru' ? 'Ошибка загрузки аватара' :
          'Failed to upload avatar')
       );
     } finally {
+      console.log('🏁 [AVATAR UPLOAD] Cleanup: Setting isUploadingAvatar to false');
       setIsUploadingAvatar(false);
     }
   };

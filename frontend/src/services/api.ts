@@ -83,6 +83,12 @@ export const withRetry = async <T>(
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    console.log('🟢 [REQUEST INTERCEPTOR] Processing request:', {
+      method: config.method,
+      url: config.url,
+      isFormData: config.data instanceof FormData
+    });
+
     const token = getAuthToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -90,12 +96,14 @@ api.interceptors.request.use(
 
     // Let the browser set the multipart boundary for FormData uploads.
     if (config.data instanceof FormData && config.headers) {
+      console.log('🟢 [REQUEST INTERCEPTOR] Detected FormData, removing Content-Type header');
       delete (config.headers as any)['Content-Type'];
       delete (config.headers as any)['content-type'];
     }
 
     // Increase timeout specifically for file uploads (2 minutes)
     if (config.url?.includes('/files/upload')) {
+      console.log('🟢 [REQUEST INTERCEPTOR] Setting 120s timeout for file upload');
       config.timeout = 120000; // 2 minutes for file uploads
     }
 
@@ -310,8 +318,28 @@ class ApiClient {
   }
 
   async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await api.post<ApiResponse<T>>(url, data, config);
-    return response.data;
+    console.log('🔵 [ApiClient.post] Called with:', {
+      url,
+      dataType: data?.constructor?.name,
+      isFormData: data instanceof FormData,
+      config
+    });
+
+    try {
+      const response = await api.post<ApiResponse<T>>(url, data, config);
+      console.log('🔵 [ApiClient.post] Response received:', {
+        url,
+        status: response.status,
+        hasData: !!response.data
+      });
+      return response.data;
+    } catch (error) {
+      console.error('🔵 [ApiClient.post] Error:', {
+        url,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      throw error;
+    }
   }
 
   async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {

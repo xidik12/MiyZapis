@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #00739B;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005a7a;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .info { color: #60a5fa; }
+        .warning { color: #fbbf24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Image Upload Debug Test</h1>
+
+        <div class="test-section">
+            <h2>1. Backend Connection Test</h2>
+            <button onclick="testBackendConnection()">Test Backend</button>
+            <div id="backend-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Authentication Status</h2>
+            <div>
+                <label>Auth Token:</label>
+                <input type="text" id="auth-token" placeholder="Paste your auth token here" style="width: 100%; padding: 8px; margin: 10px 0;">
+                <button onclick="testAuth()">Test Auth</button>
+            </div>
+            <div id="auth-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. File Upload Test</h2>
+            <div>
+                <input type="file" id="file-input" accept="image/*">
+                <br>
+                <button onclick="testFileUpload()">Upload File</button>
+                <button onclick="testFileUploadWithRetry()">Upload with Retry</button>
+            </div>
+            <div id="upload-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Debug Log</h2>
+            <button onclick="clearLog()">Clear Log</button>
+            <div id="debug-log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://huddle-backend-production.up.railway.app/api/v1';
+        let authToken = '';
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('debug-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            logDiv.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('debug-log').innerHTML = '';
+        }
+
+        async function testBackendConnection() {
+            log('📡 Testing backend connection...', 'info');
+            const resultDiv = document.getElementById('backend-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+
+            try {
+                const response = await fetch(`${API_URL}/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    log(`✅ Backend is reachable: ${response.status}`, 'success');
+                    resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    log(`⚠️ Backend returned ${response.status}`, 'warning');
+                    resultDiv.innerHTML = `<pre>Status: ${response.status}\n${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                log(`❌ Backend connection failed: ${error.message}`, 'error');
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testAuth() {
+            const tokenInput = document.getElementById('auth-token');
+            authToken = tokenInput.value.trim() || localStorage.getItem('authToken');
+
+            if (!authToken) {
+                log('⚠️ No auth token provided', 'warning');
+                alert('Please paste your auth token from browser localStorage.authToken');
+                return;
+            }
+
+            log('🔐 Testing authentication...', 'info');
+            const resultDiv = document.getElementById('auth-result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+
+            try {
+                const response = await fetch(`${API_URL}/users/profile`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    log(`✅ Authentication successful`, 'success');
+                    resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    log(`❌ Authentication failed: ${response.status}`, 'error');
+                    resultDiv.innerHTML = `<pre>Status: ${response.status}\n${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                log(`❌ Auth test failed: ${error.message}`, 'error');
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testFileUpload() {
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                log('⚠️ No file selected', 'warning');
+                alert('Please select a file first');
+                return;
+            }
+
+            if (!authToken) {
+                const tokenInput = document.getElementById('auth-token');
+                authToken = tokenInput.value.trim() || localStorage.getItem('authToken');
+
+                if (!authToken) {
+                    log('⚠️ No auth token. Please test auth first.', 'warning');
+                    alert('Please set auth token first (Test Authentication section)');
+                    return;
+                }
+            }
+
+            log(`📤 Uploading file: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`, 'info');
+            const resultDiv = document.getElementById('upload-result');
+            resultDiv.innerHTML = '<p>Uploading...</p>';
+
+            const formData = new FormData();
+            formData.append('files', file);
+
+            try {
+                const startTime = Date.now();
+
+                const response = await fetch(`${API_URL}/files/upload?purpose=portfolio`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                    },
+                    body: formData
+                });
+
+                const uploadTime = Date.now() - startTime;
+                log(`📊 Upload completed in ${uploadTime}ms`, 'info');
+
+                const data = await response.json();
+
+                log(`📥 Response received:`, 'info');
+                log(`Status: ${response.status}`, 'info');
+                log(`Response: ${JSON.stringify(data, null, 2)}`, 'info');
+
+                if (response.ok && data.success) {
+                    log(`✅ Upload successful!`, 'success');
+
+                    // Check if data is array
+                    if (Array.isArray(data.data)) {
+                        log(`✅ Response data is array with ${data.data.length} items`, 'success');
+                        log(`First item: ${JSON.stringify(data.data[0], null, 2)}`, 'success');
+
+                        if (data.data[0].url) {
+                            resultDiv.innerHTML = `
+                                <p class="success">✅ Upload successful!</p>
+                                <p>URL: <a href="${data.data[0].url}" target="_blank">${data.data[0].url}</a></p>
+                                <img src="${data.data[0].url}" style="max-width: 300px; margin-top: 10px;">
+                                <pre>${JSON.stringify(data, null, 2)}</pre>
+                            `;
+                        } else {
+                            resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                        }
+                    } else {
+                        log(`⚠️ Response data is NOT an array!`, 'warning');
+                        log(`Data type: ${typeof data.data}`, 'warning');
+                        resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    }
+                } else {
+                    log(`❌ Upload failed: ${data.error?.message || 'Unknown error'}`, 'error');
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ Upload failed</p>
+                        <pre>Status: ${response.status}\n${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                log(`❌ Upload error: ${error.message}`, 'error');
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testFileUploadWithRetry() {
+            const maxRetries = 3;
+
+            for (let i = 0; i < maxRetries; i++) {
+                log(`🔄 Upload attempt ${i + 1}/${maxRetries}`, 'info');
+
+                try {
+                    await testFileUpload();
+                    break; // Success, exit loop
+                } catch (error) {
+                    if (i === maxRetries - 1) {
+                        log(`❌ All retry attempts failed`, 'error');
+                    } else {
+                        log(`⏳ Retrying in 2 seconds...`, 'warning');
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    }
+                }
+            }
+        }
+
+        // Auto-load auth token from localStorage
+        window.addEventListener('load', () => {
+            const storedToken = localStorage.getItem('authToken');
+            if (storedToken) {
+                document.getElementById('auth-token').value = storedToken;
+                authToken = storedToken;
+                log('✅ Auth token loaded from localStorage', 'success');
+            } else {
+                log('ℹ️ No auth token found. Please login to the app first, then paste token here.', 'info');
+                log('ℹ️ Get token from browser console: localStorage.getItem("authToken")', 'info');
+            }
+        });
+    </script>
+</body>
+</html>
