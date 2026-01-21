@@ -17,14 +17,17 @@ export class AvatarMigrationUtil {
     if (avatarUrl.includes('googleusercontent.com') || avatarUrl.includes('google.com')) {
       return true;
     }
-    
-    // Check for other external services, but exclude S3 URLs which are already migrated
-    if (avatarUrl.startsWith('http') && 
-        !avatarUrl.includes('miyzapis-backend-production.up.railway.app') &&
-        !avatarUrl.includes('miyzapis-storage.s3.ap-southeast-2.amazonaws.com')) {
+
+    // Check for other external services, but exclude backend and S3 URLs that are already migrated
+    if (avatarUrl.startsWith('http') &&
+        !avatarUrl.includes('miyzapis-backend') &&    // Matches all backend environments
+        !avatarUrl.includes('miyzapis-storage') &&    // Matches all S3 configurations
+        !avatarUrl.includes('.railway.app') &&         // Matches all Railway deployments
+        !avatarUrl.includes('s3.amazonaws.com') &&     // Matches all S3 buckets
+        !avatarUrl.startsWith('/uploads/')) {          // Matches relative upload URLs
       return true;
     }
-    
+
     return false;
   }
 

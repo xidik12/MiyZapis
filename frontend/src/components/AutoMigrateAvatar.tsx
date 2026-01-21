@@ -35,55 +35,60 @@ export const AutoMigrateAvatar: React.FC<AutoMigrateAvatarProps> = ({
 
   useEffect(() => {
     const checkAndMigrate = async () => {
-      if (!user?.avatar) return;
+      if (!user?.avatar || !user?.id) return;
 
       // Check if migration is needed
       const needsMigration = AvatarMigrationUtil.needsMigration(user.avatar);
       if (!needsMigration) return;
 
-      // Check if we recently completed a migration for this URL to prevent loops
-      const lastMigrationKey = `avatar_migration_${user.avatar}`;
-      const lastMigration = localStorage.getItem(lastMigrationKey);
-      if (lastMigration) {
-        const timeSinceLastMigration = Date.now() - parseInt(lastMigration);
-        if (timeSinceLastMigration < 30000) { // 30 seconds cooldown
-          console.log('🔄 Auto-migration: Cooldown period active, skipping migration');
-          return;
-        }
+      // Check if we already completed migration for this user
+      const lastMigrationKey = `avatar_migration_completed_${user.id}`;
+      const migrationCompleted = localStorage.getItem(lastMigrationKey);
+      if (migrationCompleted === 'true') {
+        console.log('🔄 Auto-migration: Already completed for this user, skipping');
+        return;
       }
 
       console.log('🔄 Auto-migration: Google avatar detected, starting migration...');
-      
+
       setMigrationStatus(prev => ({ ...prev, isChecking: true }));
 
       try {
         // Wait a moment to avoid overwhelming the server
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        setMigrationStatus(prev => ({ 
-          ...prev, 
-          isChecking: false, 
-          isMigrating: true 
+        setMigrationStatus(prev => ({
+          ...prev,
+          isChecking: false,
+          isMigrating: true
         }));
 
         const newAvatarUrl = await AvatarMigrationUtil.migrateAvatar(user.avatar);
-        
+
         if (newAvatarUrl) {
           // Record successful migration to prevent loops
-          const lastMigrationKey = `avatar_migration_${user.avatar}`;
-          localStorage.setItem(lastMigrationKey, Date.now().toString());
-          
+          const lastMigrationKey = `avatar_migration_completed_${user.id}`;
+          localStorage.setItem(lastMigrationKey, 'true');
+
           // Update user in Redux store
-          dispatch(updateUserProfile({ 
-            avatar: newAvatarUrl 
+          dispatch(updateUserProfile({
+            avatar: newAvatarUrl
           }));
-          
+
           setMigrationStatus({
             isChecking: false,
             isMigrating: false,
             completed: true,
             error: null
           });
+
+          // Hide success message after 3 seconds
+          setTimeout(() => {
+            setMigrationStatus(prev => ({
+              ...prev,
+              completed: false
+            }));
+          }, 3000);
 
           console.log('✅ Auto-migration completed successfully:', newAvatarUrl);
           onMigrationComplete?.(true, newAvatarUrl);
@@ -93,7 +98,7 @@ export const AutoMigrateAvatar: React.FC<AutoMigrateAvatarProps> = ({
 
       } catch (error: any) {
         console.error('❌ Auto-migration failed:', error);
-        
+
         setMigrationStatus({
           isChecking: false,
           isMigrating: false,
@@ -107,9 +112,9 @@ export const AutoMigrateAvatar: React.FC<AutoMigrateAvatarProps> = ({
 
     // Run migration check after component mounts
     const timeoutId = setTimeout(checkAndMigrate, 2000);
-    
+
     return () => clearTimeout(timeoutId);
-  }, [user?.avatar, dispatch, onMigrationComplete]);
+  }, [user?.id]); // Only depend on user ID to prevent circular dependency
 
   // Don't render anything if not showing status
   if (!showStatus) return null;
