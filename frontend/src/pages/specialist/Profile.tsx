@@ -238,6 +238,8 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
     bio: specialist?.bio || '',
     experience: specialist?.experience || 0,
     education: specialist?.education || '',
+    preciseAddress: specialist?.preciseAddress || specialist?.location?.preciseAddress || '',
+    businessPhone: specialist?.businessPhone || specialist?.location?.businessPhone || '',
     // Location data from specialist
     location: {
       address: specialist?.address || '',
