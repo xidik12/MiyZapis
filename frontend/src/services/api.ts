@@ -97,8 +97,14 @@ api.interceptors.request.use(
     // Let the browser set the multipart boundary for FormData uploads.
     if (config.data instanceof FormData && config.headers) {
       console.log('🟢 [REQUEST INTERCEPTOR] Detected FormData, removing Content-Type header');
-      delete (config.headers as any)['Content-Type'];
-      delete (config.headers as any)['content-type'];
+      const headers = config.headers as any;
+      if (typeof headers.delete === 'function') {
+        headers.delete('Content-Type');
+        headers.delete('content-type');
+      } else {
+        delete headers['Content-Type'];
+        delete headers['content-type'];
+      }
     }
 
     // Increase timeout specifically for file uploads (2 minutes)
@@ -368,11 +374,7 @@ class ApiClient {
       });
     }
 
-    const response = await api.post<ApiResponse<T>>(url, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await api.post<ApiResponse<T>>(url, formData);
     
     return response.data;
   }
