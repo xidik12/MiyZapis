@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { Booking } from '../../types';
@@ -411,6 +412,16 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                 <span className="truncate">{t('actions.bookAgain')}</span>
               </button>
             )}
+
+            {/* Message Specialist Button - Always show */}
+            <Link
+              to={`/customer/messages?specialist=${booking.specialist?.userId || booking.specialist?.user?.id || booking.specialistId}`}
+              onClick={onClose}
+              className="flex-1 sm:flex-none px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-colors border border-primary-200 dark:border-primary-800 min-w-0 text-center"
+            >
+              <ChatBubbleLeftRightIcon className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
+              <span className="truncate">{t('actions.message') || 'Message'}</span>
+            </Link>
           </div>
         </div>
       </div>

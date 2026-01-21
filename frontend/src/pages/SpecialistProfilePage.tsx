@@ -337,7 +337,7 @@ const SpecialistProfilePage: React.FC = () => {
                 </button>
               ) : (
                 <Link
-                  to={`/customer/messages?specialist=${specialistId}`}
+                  to={`/customer/messages?specialist=${specialist?.userId || specialist?.user?.id || specialistId}`}
                   className="btn btn-secondary btn-sm focus-visible-ring hidden sm:block"
                 >
                   {t('actions.message') || 'Message'}
