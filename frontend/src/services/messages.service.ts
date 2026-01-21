@@ -143,13 +143,14 @@ export class MessagesService {
 
   // Get unread message count
   async getUnreadCount(): Promise<{ count: number }> {
-    const response = await apiClient.get<{ count: number }>('/messages/unread-count');
+    const response = await apiClient.get<{ unreadCount?: number; count?: number }>('/messages/unread-count');
     
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to get unread count');
     }
     
-    return response.data;
+    const value = response.data.unreadCount ?? response.data.count ?? 0;
+    return { count: value };
   }
 }
 

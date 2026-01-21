@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useTheme } from '@/contexts/ThemeContext';
 import { reviewsService, ReviewStats, Review } from '@/services/reviews.service';
 import { ReviewFeed } from '@/components/reviews/ReviewFeed';
 import { ReviewCardData } from '@/components/reviews/ReviewCard';
 import { ReviewFiltersData } from '@/components/reviews/ReviewFilters';
+import { useAppSelector } from '@/hooks/redux';
+import { selectUser } from '@/store/slices/authSlice';
 const CustomerReviews: React.FC = () => {
   const { t } = useLanguage();
+  const currentUser = useAppSelector(selectUser);
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
@@ -43,18 +44,27 @@ const CustomerReviews: React.FC = () => {
         // Calculate stats from reviews
         if (response.reviews.length > 0) {
           const totalReviews = response.pagination.totalItems;
-          const avgRating = response.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / response.reviews.length;
-          const distribution: Record<number, number> = {};
+          const distribution: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
           response.reviews.forEach((r: any) => {
-            distribution[r.rating] = (distribution[r.rating] || 0) + 1;
+            if (distribution[r.rating] !== undefined) {
+              distribution[r.rating] += 1;
+            }
           });
+
+          const totalForAverage = response.reviews.reduce((sum: number, r: any) => sum + r.rating, 0);
+          const avgRating = totalReviews > 0 ? totalForAverage / totalReviews : 0;
+          const verifiedReviewsCount = response.reviews.filter((r: any) => r.isVerified).length;
+          const recommendationRate = totalReviews > 0
+            ? response.reviews.filter((r: any) => (r.rating || 0) >= 4).length / totalReviews
+            : 0;
 
           setReviewStats({
             averageRating: avgRating,
             totalReviews,
-            ratingDistribution: distribution,
-            verifiedCount: response.reviews.filter((r: any) => r.isVerified).length,
-            withCommentCount: response.reviews.filter((r: any) => r.comment).length
+            ratingDistribution: distribution as ReviewStats['ratingDistribution'],
+            verifiedReviewsCount,
+            recommendationRate
           });
         }
       } catch (err: any) {
@@ -90,38 +100,62 @@ const CustomerReviews: React.FC = () => {
   };
 
   // Transform reviews to ReviewCardData format
-  const transformedReviews: ReviewCardData[] = reviews.map((review: any) => ({
-    id: review.id,
-    author: {
-      name: review.specialist ? `${review.specialist.firstName || ''} ${review.specialist.lastName || ''}`.trim() : 'Specialist',
-      avatar: review.specialist?.avatar,
-      isVerified: review.isVerified || false,
-      tier: review.specialist?.tier
-    },
-    rating: review.rating,
-    date: new Date(review.createdAt),
-    comment: review.comment,
-    tags: review.tags || [],
-    helpfulCount: review.helpfulCount || 0,
-    hasResponse: !!review.response,
-    response: review.response ? {
-      id: review.response.id,
-      content: review.response.content,
-      date: new Date(review.response.createdAt),
-      helpfulCount: review.response.helpfulCount || 0
-    } : undefined,
-    service: review.service ? {
-      name: review.service.name,
-      icon: review.service.icon
-    } : undefined
-  }));
+  const transformedReviews: ReviewCardData[] = reviews.map((review: any) => {
+    const customer = review.customer || {
+      id: currentUser?.id || 'me',
+      firstName: currentUser?.firstName || 'You',
+      lastName: currentUser?.lastName || '',
+      avatar: currentUser?.avatar
+    };
+
+    const service =
+      review.service ||
+      (review.booking?.service
+        ? { id: review.booking.service.id, name: review.booking.service.name }
+        : undefined);
+
+    const response = review.response
+      ? {
+          id: review.response.id,
+          responseText:
+            review.response.responseText ||
+            review.response.content ||
+            review.response.message ||
+            '',
+          createdAt: review.response.createdAt || review.updatedAt,
+          respondedBy:
+            review.response.respondedBy || {
+              id: review.response.specialistId || review.specialist?.id || '',
+              firstName: review.specialist?.firstName || '',
+              lastName: review.specialist?.lastName || '',
+              avatar: review.specialist?.avatar
+            },
+          helpfulCount: review.response.helpfulCount ?? 0,
+          isHelpful: review.response.isHelpful ?? false
+        }
+      : undefined;
+
+    return {
+      id: review.id,
+      rating: review.rating,
+      comment: review.comment,
+      tags: review.tags || [],
+      isVerified: !!review.isVerified,
+      helpfulCount: review.helpfulCount || 0,
+      isHelpful: review.isHelpful || false,
+      createdAt: review.createdAt || new Date().toISOString(),
+      customer,
+      service,
+      response
+    };
+  });
 
   const defaultStats: ReviewStats = {
     averageRating: 0,
     totalReviews: 0,
-    ratingDistribution: {},
-    verifiedCount: 0,
-    withCommentCount: 0
+    ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+    verifiedReviewsCount: 0,
+    recommendationRate: 0
   };
 
   return (

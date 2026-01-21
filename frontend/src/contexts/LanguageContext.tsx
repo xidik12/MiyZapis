@@ -2017,6 +2017,7 @@ const translations: Translations = {
   'reviews.commentPlaceholder': { en: 'Share your experience...', uk: 'Поділіться своїм досвідом...', ru: 'Поделитесь вашим опытом...' },
   'reviews.tags': { en: 'Tags', uk: 'Теги', ru: 'Теги' },
   'reviews.submitReview': { en: 'Submit Review', uk: 'Відправити відгук', ru: 'Отправить отзыв' },
+  'reviews.reviewSubmitted': { en: 'Review submitted successfully', uk: 'Відгук успішно відправлено', ru: 'Отзыв успешно отправлен' },
   'reviews.pleaseSelectRating': { en: 'Please select a rating', uk: 'Будь ласка, оберіть рейтинг', ru: 'Пожалуйста, выберите рейтинг' },
   'reviews.submitError': { en: 'Error submitting review', uk: 'Помилка відправки відгуку', ru: 'Ошибка отправки отзыва' },
   

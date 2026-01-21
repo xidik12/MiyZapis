@@ -136,7 +136,7 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
     try {
       const sentMessage = await messagesService.sendMessage(
         selectedConversation.id,
-        messageText
+        { content: messageText }
       );
 
       if (isMountedRef.current) {
