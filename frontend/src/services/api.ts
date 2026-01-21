@@ -88,6 +88,12 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
+    // Let the browser set the multipart boundary for FormData uploads.
+    if (config.data instanceof FormData && config.headers) {
+      delete (config.headers as any)['Content-Type'];
+      delete (config.headers as any)['content-type'];
+    }
+
     // Increase timeout specifically for file uploads (2 minutes)
     if (config.url?.includes('/files/upload')) {
       config.timeout = 120000; // 2 minutes for file uploads
