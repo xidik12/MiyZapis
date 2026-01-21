@@ -21,21 +21,38 @@ const isRailwayEnv = !!(
   process.env.RAILWAY_SERVICE ||
   process.env.RAILWAY_PROJECT
 );
+
+// Check if AWS SDK is available
+let AWS: any = null;
+let awsSdkAvailable = false;
+try {
+  AWS = require('aws-sdk');
+  awsSdkAvailable = true;
+} catch (error) {
+  console.log('⚠️ AWS SDK not available for file uploads');
+}
+
 const enableS3Storage = process.env.ENABLE_S3_STORAGE === 'true';
 const explicitLocalStorage = process.env.FORCE_LOCAL_STORAGE === 'true' ||
   process.env.FILE_STORAGE === 'local' ||
   process.env.USE_LOCAL_STORAGE === 'true';
 const forceLocalStorage = explicitLocalStorage || (!enableS3Storage && isRailwayEnv);
-const useS3Storage = enableS3Storage && !explicitLocalStorage;
+// CRITICAL FIX: Only use S3 if AWS SDK is available
+const useS3Storage = enableS3Storage && !explicitLocalStorage && awsSdkAvailable;
 
 if (useS3Storage) {
   console.log('🌅 S3 storage enabled - adding S3 upload routes');
 } else {
-  console.log('📁 Using local file storage');
+  if (enableS3Storage && !awsSdkAvailable) {
+    console.log('⚠️ S3 enabled but AWS SDK not available - falling back to local storage');
+  } else {
+    console.log('📁 Using local file storage');
+  }
 }
 console.log('File storage selection', {
   useS3Storage,
   enableS3Storage,
+  awsSdkAvailable,
   forceLocalStorage,
   explicitLocalStorage,
   isRailwayEnv,
