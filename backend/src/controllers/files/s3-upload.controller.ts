@@ -344,6 +344,7 @@ export const deleteFile = async (req: Request, res: Response): Promise<void> => 
 function validateFileForPurpose(file: Express.Multer.File, purpose: string): { valid: boolean; error?: string } {
   const allowedTypes: Record<string, string[]> = {
     avatar: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
+    payment_qr: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
     portfolio: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
     service: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
     document: ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
@@ -352,6 +353,7 @@ function validateFileForPurpose(file: Express.Multer.File, purpose: string): { v
 
   const maxSizes: Record<string, number> = {
     avatar: 5 * 1024 * 1024, // 5MB
+    payment_qr: 5 * 1024 * 1024, // 5MB
     portfolio: 10 * 1024 * 1024, // 10MB
     service: 10 * 1024 * 1024, // 10MB
     document: 20 * 1024 * 1024, // 20MB

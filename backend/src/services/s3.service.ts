@@ -34,8 +34,11 @@ export class S3Service {
   private s3Client: S3Client;
   private bucketName: string;
   private publicUrl: string;
+  private requestTimeoutMs: number;
 
   constructor(config: S3Config) {
+    const parsedTimeout = Number.parseInt(process.env.S3_REQUEST_TIMEOUT_MS || '15000', 10);
+    this.requestTimeoutMs = Number.isFinite(parsedTimeout) ? parsedTimeout : 15000;
     this.s3Client = new S3Client({
       region: config.region,
       credentials: {
@@ -50,8 +53,29 @@ export class S3Service {
     console.log('🌅 S3Service initialized:', {
       region: config.region,
       bucket: config.bucketName,
-      publicUrl: this.publicUrl
+      publicUrl: this.publicUrl,
+      requestTimeoutMs: this.requestTimeoutMs
     });
+  }
+
+  private async sendWithTimeout<T>(command: any, timeoutMs: number = this.requestTimeoutMs): Promise<T> {
+    if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+      return this.s3Client.send(command) as Promise<T>;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      return await this.s3Client.send(command, { abortSignal: controller.signal }) as T;
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error(`S3 request timed out after ${timeoutMs}ms`);
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 
   /**
@@ -125,7 +149,7 @@ export class S3Service {
         }
       });
 
-      await this.s3Client.send(command);
+      await this.sendWithTimeout(command);
 
       const result: UploadResult = {
         key,
@@ -160,7 +184,7 @@ export class S3Service {
         Key: key
       });
 
-      await this.s3Client.send(command);
+      await this.sendWithTimeout(command);
       console.log('✅ File deleted from S3:', key);
     } catch (error) {
       console.error('❌ S3 delete failed:', error);
@@ -251,7 +275,7 @@ export class S3Service {
       });
 
       try {
-        await this.s3Client.send(command);
+        await this.sendWithTimeout(command);
       } catch (error: any) {
         // If we get NoSuchKey error, it means we can connect to the bucket
         if (error.name === 'NoSuchKey') {

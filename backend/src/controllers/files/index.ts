@@ -45,6 +45,8 @@ function getAllowedFileTypes(purpose: string): string[] {
   switch (purpose) {
     case 'avatar':
       return ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+    case 'payment_qr':
+      return ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
     case 'service_image':
     case 'portfolio':
       return ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
