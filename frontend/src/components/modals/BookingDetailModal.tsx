@@ -363,10 +363,10 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   onCancel(booking.id);
                   onClose();
                 }}
-                className="flex-1 sm:flex-none px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors border border-red-200 dark:border-red-800 min-w-0"
+                className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors border border-red-200 dark:border-red-800 whitespace-nowrap justify-center flex items-center"
               >
-                <XMarkIcon className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-                <span className="truncate">{t('actions.cancel')}</span>
+                <XMarkIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
+                <span>{t('actions.cancel')}</span>
               </button>
             )}
 
@@ -376,10 +376,10 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   onReschedule(booking.id);
                   onClose();
                 }}
-                className="flex-1 sm:flex-none px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors border border-blue-200 dark:border-blue-800 min-w-0"
+                className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors border border-blue-200 dark:border-blue-800 whitespace-nowrap justify-center flex items-center"
               >
-                <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-                <span className="truncate">{t('actions.reschedule')}</span>
+                <CalendarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
+                <span>{t('actions.reschedule')}</span>
               </button>
             )}
 
@@ -391,10 +391,10 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   onLeaveReview(booking.id);
                   onClose();
                 }}
-                className="flex-1 sm:flex-none px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-xl transition-colors border border-green-200 dark:border-green-800 min-w-0"
+                className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-xl transition-colors border border-green-200 dark:border-green-800 whitespace-nowrap justify-center flex items-center"
               >
-                <StarIcon className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-                <span className="truncate">{t('actions.review')}</span>
+                <StarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
+                <span>{t('actions.review')}</span>
               </button>
             )}
 
@@ -406,10 +406,10 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                   onBookAgain(booking);
                   onClose();
                 }}
-                className="flex-1 sm:flex-none px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl transition-colors border border-purple-200 dark:border-purple-800 min-w-0"
+                className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl transition-colors border border-purple-200 dark:border-purple-800 whitespace-nowrap justify-center flex items-center"
               >
-                <ArrowPathIcon className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-                <span className="truncate">{t('actions.bookAgain')}</span>
+                <ArrowPathIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
+                <span>{t('actions.bookAgain')}</span>
               </button>
             )}
 
@@ -417,10 +417,10 @@ const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             <Link
               to={`/customer/messages?specialist=${booking.specialist?.userId || booking.specialist?.user?.id || booking.specialistId}`}
               onClick={onClose}
-              className="flex-1 sm:flex-none px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-colors border border-primary-200 dark:border-primary-800 min-w-0 text-center"
+              className="flex-1 min-w-[calc(50%-0.25rem)] sm:flex-none sm:min-w-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-colors border border-primary-200 dark:border-primary-800 whitespace-nowrap justify-center flex items-center"
             >
-              <ChatBubbleLeftRightIcon className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-              <span className="truncate">{t('actions.message') || 'Message'}</span>
+              <ChatBubbleLeftRightIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
+              <span>{t('actions.message') || 'Message'}</span>
             </Link>
           </div>
         </div>

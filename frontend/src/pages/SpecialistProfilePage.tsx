@@ -403,7 +403,7 @@ const SpecialistProfilePage: React.FC = () => {
               </div>
             </div>
             
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mt-4 sm:mt-6 md:mt-0">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-4 sm:mt-6 md:mt-0">
               {(() => {
                 const shouldShowFavorite = user && specialist?.userId !== user.id;
                 console.log('🔍 Favorite button logic:', {
@@ -416,37 +416,37 @@ const SpecialistProfilePage: React.FC = () => {
                 <button
                   onClick={handleFavoriteToggle}
                   disabled={favoriteLoading}
-                  className={`flex items-center justify-center px-3 sm:px-4 py-2 rounded-xl border transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm ${
+                  className={`flex items-center justify-center px-3 sm:px-4 py-2 rounded-xl border transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap ${
                     isFavorite
                       ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100'
                       : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700'
                   }`}
                 >
                   {favoriteLoading ? (
-                    <div className="w-4 h-4 mr-1 sm:w-5 sm:h-5 sm:mr-2 animate-spin rounded-full border-2 border-gray-300 border-t-current"></div>
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 animate-spin rounded-full border-2 border-gray-300 border-t-current"></div>
                   ) : isFavorite ? (
-                    <HeartIcon className="w-4 h-4 mr-1 sm:w-5 sm:h-5 sm:mr-2" active />
+                    <HeartIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" active />
                   ) : (
-                    <HeartIcon className="w-4 h-4 mr-1 sm:w-5 sm:h-5 sm:mr-2" active />
+                    <HeartIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" active />
                   )}
                   <span className="hidden sm:inline">{isFavorite ? t('actions.unfavorite') : t('actions.favorite')}</span>
                   <span className="sm:hidden">{isFavorite ? '♥' : '♡'}</span>
                 </button>
               )}
-              
+
               {services.length > 0 ? (
                 <Link
                   to={isOwnProfile ? '#' : `/book/${services[0]?.id}`}
                   onClick={(e) => { if (isOwnProfile) e.preventDefault(); }}
-                  className={`${isOwnProfile ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'} text-white px-4 sm:px-6 py-2 rounded-xl transition-colors flex items-center justify-center text-sm sm:text-base`}
+                  className={`${isOwnProfile ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'} text-white px-4 sm:px-6 py-2 rounded-xl transition-colors flex items-center justify-center text-sm sm:text-base whitespace-nowrap flex-1 sm:flex-initial`}
                 >
-                  <CalendarIcon className="w-4 h-4 mr-1 sm:w-5 sm:h-5 sm:mr-2" />
-                  {t('actions.bookNow')}
+                  <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" />
+                  <span>{t('actions.bookNow')}</span>
                 </Link>
               ) : (
-                <div className="bg-gray-400 text-white px-4 sm:px-6 py-2 rounded-xl cursor-not-allowed flex items-center justify-center text-sm sm:text-base">
-                  <CalendarIcon className="w-4 h-4 mr-1 sm:w-5 sm:h-5 sm:mr-2" />
-                  {t('actions.noServicesAvailable') || 'No services available'}
+                <div className="bg-gray-400 text-white px-4 sm:px-6 py-2 rounded-xl cursor-not-allowed flex items-center justify-center text-sm sm:text-base whitespace-nowrap flex-1 sm:flex-initial">
+                  <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" />
+                  <span>{t('actions.noServicesAvailable') || 'No services available'}</span>
                 </div>
               )}
             </div>

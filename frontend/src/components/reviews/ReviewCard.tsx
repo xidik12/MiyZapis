@@ -124,7 +124,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
         {[1, 2, 3, 4, 5].map((star) => (
           <StarIcon
             key={star}
-            className={`w-5 h-5 ${
+            className={`w-4 h-4 sm:w-5 sm:h-5 ${
               star <= review.rating
                 ? 'text-yellow-500'
                 : 'text-gray-300 dark:text-gray-600'
@@ -144,19 +144,19 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
       className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100 dark:border-gray-700"
     >
       {/* Header Section */}
-      <div className="p-6 pb-4">
-        <div className="flex items-start gap-4 mb-4">
+      <div className="p-4 sm:p-6 pb-3 sm:pb-4">
+        <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
           {/* Avatar */}
           {hasAvatar ? (
             <Avatar
               src={review.customer.avatar}
               alt={customerName}
               size="lg"
-              className="w-12 h-12"
+              className="w-10 h-10 sm:w-12 sm:h-12"
             />
           ) : (
-            <div className="w-12 h-12 flex-shrink-0 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-lg">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-base sm:text-lg">
                 {customerInitial}
               </span>
             </div>
@@ -164,20 +164,20 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
 
           {/* Customer Info */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-base font-bold text-gray-900 dark:text-white truncate">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+              <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate">
                 {customerName}
               </h3>
               {review.isVerified && (
                 <CheckBadgeIcon
-                  className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0"
+                  className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400 flex-shrink-0"
                   title="Verified Purchase"
                 />
               )}
             </div>
 
             {/* Star Rating */}
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
               {renderStars()}
             </div>
 
@@ -190,8 +190,8 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
 
         {/* Service Badge */}
         {review.service && (
-          <div className="mb-3">
-            <span className="inline-block px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium rounded-full">
+          <div className="mb-2.5 sm:mb-3">
+            <span className="inline-block px-2.5 sm:px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium rounded-full">
               {review.service.name}
             </span>
           </div>
@@ -199,14 +199,14 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
 
         {/* Comment */}
         {review.comment && (
-          <div className="mb-3">
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm whitespace-pre-wrap">
+          <div className="mb-2.5 sm:mb-3">
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm whitespace-pre-wrap break-words">
               {displayComment}
             </p>
             {isLongComment && (
               <button
                 onClick={() => setShowFullComment(!showFullComment)}
-                className="text-primary-600 dark:text-primary-400 text-sm font-semibold mt-1 hover:underline"
+                className="text-primary-600 dark:text-primary-400 text-xs sm:text-sm font-semibold mt-1 hover:underline"
               >
                 {showFullComment ? 'Show less' : 'Read more'}
               </button>
@@ -216,11 +216,11 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
 
         {/* Tags */}
         {review.tags && review.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
             {review.tags.map((tag, idx) => (
               <span
                 key={idx}
-                className="px-3 py-1.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full text-xs font-semibold"
+                className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full text-xs font-semibold"
               >
                 🏷️ {tag}
               </span>
@@ -229,32 +229,32 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
         )}
 
         {/* Engagement Section */}
-        <div className="flex items-center gap-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
           <button
             onClick={handleHelpfulClick}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
               review.isHelpful
                 ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
             <HeartIcon
-              className={`w-4 h-4 ${review.isHelpful ? 'text-primary-600 dark:text-primary-400' : ''}`}
+              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 ${review.isHelpful ? 'text-primary-600 dark:text-primary-400' : ''}`}
               active={review.isHelpful}
             />
-            <span className="text-xs font-semibold">{review.helpfulCount} Helpful</span>
+            <span className="text-xs font-semibold whitespace-nowrap">{review.helpfulCount} Helpful</span>
           </button>
 
           <button
             onClick={handleCommentClick}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
               showResponse && review.response
                 ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
-            <ChatBubbleLeftIcon className="w-4 h-4" />
-            <span className="text-xs font-semibold">
+            <ChatBubbleLeftIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+            <span className="text-xs font-semibold whitespace-nowrap">
               {review.response ? '1 Comment' : 'Comment'}
             </span>
           </button>
@@ -262,10 +262,10 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
           <button
             onClick={handleShareClick}
             disabled={isSharing}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ShareIcon className="w-4 h-4" />
-            <span className="text-xs font-semibold">{isSharing ? 'Sharing...' : 'Share'}</span>
+            <ShareIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+            <span className="text-xs font-semibold whitespace-nowrap">{isSharing ? 'Sharing...' : 'Share'}</span>
           </button>
         </div>
       </div>
