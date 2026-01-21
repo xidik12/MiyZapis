@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { SideNavigation } from './SideNavigation';
@@ -14,6 +15,7 @@ interface MainLayoutProps {
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+  const location = useLocation();
   const {
     isSidebarCollapsed,
     isMobileMenuOpen,
@@ -65,7 +67,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         {/* Main Content */}
         <main id="main-content" className="flex-1 w-full overflow-x-hidden prevent-overflow mobile-safe-area">
           <div className="w-full prevent-overflow">
-            {children}
+            <div key={location.pathname} className="page-enter">
+              {children}
+            </div>
           </div>
         </main>
 

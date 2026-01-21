@@ -420,8 +420,10 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 animate-fade-in">
-          {children}
+        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
+          <div key={location.pathname} className="page-enter">
+            {children}
+          </div>
         </main>
       </div>
     </div>

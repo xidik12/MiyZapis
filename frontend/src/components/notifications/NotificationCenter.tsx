@@ -31,6 +31,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<NotificationType | 'all'>('all');
+  const [isFiltering, setIsFiltering] = useState(false);
   const [serviceStatus, setServiceStatus] = useState<{
     mode: 'backend' | 'local';
     hasLocalData: boolean;
@@ -75,6 +76,13 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     const filtered = filterByCategory(allNotifications, selectedFilter);
     setNotifications(filtered);
   }, [selectedFilter, allNotifications]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setIsFiltering(true);
+    const timer = window.setTimeout(() => setIsFiltering(false), 240);
+    return () => window.clearTimeout(timer);
+  }, [selectedFilter, isOpen]);
 
   // Close on Esc
   useEffect(() => {
@@ -416,7 +424,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                 <button
                   key={filter}
                   onClick={() => setSelectedFilter(filter as NotificationType | 'all')}
-                  className={`px-3 py-1.5 text-xs rounded-xl font-semibold capitalize transition-all duration-200 ${
+                  className={`px-3 py-1.5 text-xs rounded-xl font-semibold capitalize transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${
                     selectedFilter === filter
                       ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200/70 dark:bg-gray-900 dark:text-white dark:ring-gray-700/70'
                       : 'text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-700/70'
@@ -494,14 +502,15 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
               return (
                 <div className="divide-y divide-gray-200/70 dark:divide-gray-800/70 relative">
                   <div style={{ height: before }} />
-                  {items.map((notification) => (
+                  {items.map((notification, index) => (
                   <div
                     key={notification.id}
                     className={`group relative px-4 py-4 transition-all duration-200 ${
                       !notification.isRead
                         ? 'bg-white/80 dark:bg-gray-900/70 shadow-sm'
                         : 'bg-white/50 dark:bg-gray-900/40'
-                    } hover:bg-white/90 dark:hover:bg-gray-900/80`}
+                    } hover:bg-white/90 dark:hover:bg-gray-900/80 hover:-translate-y-0.5 hover:shadow-md`}
+                    style={isFiltering ? { animation: 'pageEnter 0.25s ease-out both', animationDelay: `${index * 20}ms` } : undefined}
                   >
                     <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-primary-500/10 via-transparent to-transparent" />
                     {!notification.isRead && (
