@@ -89,14 +89,50 @@ const CustomerReviews: React.FC = () => {
     setPage(1);
   };
 
-  const handleMarkHelpful = async (reviewId: string) => {
-    // Customer reviews don't need helpful marking
-    console.log('Mark helpful:', reviewId);
+  const handleMarkHelpful = async (reviewId: string, helpful: boolean) => {
+    try {
+      await reviewsService.markReviewHelpful(reviewId, helpful);
+
+      // Update local state
+      setReviews(prev => prev.map(review =>
+        review.id === reviewId
+          ? {
+              ...review,
+              isHelpful: helpful,
+              helpfulCount: helpful
+                ? (review.helpfulCount || 0) + 1
+                : Math.max((review.helpfulCount || 1) - 1, 0)
+            }
+          : review
+      ));
+    } catch (error: any) {
+      console.error('[Reviews] Error marking review as helpful:', error);
+    }
   };
 
-  const handleMarkResponseHelpful = async (responseId: string) => {
-    // Customer reviews don't need response helpful marking
-    console.log('Mark response helpful:', responseId);
+  const handleMarkResponseHelpful = async (responseId: string, helpful: boolean) => {
+    try {
+      await reviewsService.markReviewHelpful(responseId, helpful);
+
+      // Update local state for the response
+      setReviews(prev => prev.map(review => {
+        if (review.response && review.response.id === responseId) {
+          return {
+            ...review,
+            response: {
+              ...review.response,
+              isHelpful: helpful,
+              helpfulCount: helpful
+                ? (review.response.helpfulCount || 0) + 1
+                : Math.max((review.response.helpfulCount || 1) - 1, 0)
+            }
+          };
+        }
+        return review;
+      }));
+    } catch (error: any) {
+      console.error('[Reviews] Error marking response as helpful:', error);
+    }
   };
 
   // Transform reviews to ReviewCardData format

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
+import { toast } from 'react-toastify';
 import {
   StarIcon,
   HeartIcon,
@@ -61,6 +62,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
 }) => {
   const [showFullComment, setShowFullComment] = useState(false);
   const [showResponse, setShowResponse] = useState(true);
+  const [isSharing, setIsSharing] = useState(false);
 
   const customerName = `${review.customer.firstName} ${review.customer.lastName}`;
   const customerInitial = review.customer.firstName.charAt(0).toUpperCase();
@@ -73,6 +75,46 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
   const handleHelpfulClick = () => {
     if (onMarkHelpful) {
       onMarkHelpful(review.id, !review.isHelpful);
+    }
+  };
+
+  const handleCommentClick = () => {
+    // Toggle showing the specialist response if it exists
+    if (review.response) {
+      setShowResponse(!showResponse);
+    } else {
+      toast.info('No responses yet for this review');
+    }
+  };
+
+  const handleShareClick = async () => {
+    if (isSharing) return;
+
+    try {
+      setIsSharing(true);
+
+      // Try to use Web Share API if available (mobile)
+      if (navigator.share) {
+        await navigator.share({
+          title: `Review by ${customerName}`,
+          text: review.comment || `${review.rating} star review`,
+          url: window.location.href
+        });
+        toast.success('Shared successfully!');
+      } else {
+        // Fallback: Copy to clipboard
+        const reviewUrl = `${window.location.origin}${window.location.pathname}#review-${review.id}`;
+        await navigator.clipboard.writeText(reviewUrl);
+        toast.success('Review link copied to clipboard!');
+      }
+    } catch (error: any) {
+      // User cancelled share or clipboard failed
+      if (error.name !== 'AbortError') {
+        console.error('[ReviewCard] Share error:', error);
+        toast.error('Failed to share review');
+      }
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -203,16 +245,27 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
             <span className="text-xs font-semibold">{review.helpfulCount} Helpful</span>
           </button>
 
-          <button className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 hover:scale-105 active:scale-95">
+          <button
+            onClick={handleCommentClick}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
+              showResponse && review.response
+                ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+            }`}
+          >
             <ChatBubbleLeftIcon className="w-4 h-4" />
             <span className="text-xs font-semibold">
               {review.response ? '1 Comment' : 'Comment'}
             </span>
           </button>
 
-          <button className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 hover:scale-105 active:scale-95">
+          <button
+            onClick={handleShareClick}
+            disabled={isSharing}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <ShareIcon className="w-4 h-4" />
-            <span className="text-xs font-semibold">Share</span>
+            <span className="text-xs font-semibold">{isSharing ? 'Sharing...' : 'Share'}</span>
           </button>
         </div>
       </div>
