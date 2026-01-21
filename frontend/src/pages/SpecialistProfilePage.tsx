@@ -331,7 +331,18 @@ const SpecialistProfilePage: React.FC = () => {
               ) : (
                 <Link to={`/booking/${services[0]?.id || ''}`} className="btn btn-primary btn-sm text-white focus-visible-ring">{t('actions.book') || 'Book'}</Link>
               )}
-              <Link to={`/specialist/${specialistId}#messages`} className="btn btn-secondary btn-sm focus-visible-ring hidden sm:block">{t('actions.message') || 'Message'}</Link>
+              {isOwnProfile ? (
+                <button className="btn btn-secondary btn-sm cursor-not-allowed opacity-60 hidden sm:block" disabled>
+                  {t('actions.message') || 'Message'}
+                </button>
+              ) : (
+                <Link
+                  to={`/customer/messages?specialist=${specialistId}`}
+                  className="btn btn-secondary btn-sm focus-visible-ring hidden sm:block"
+                >
+                  {t('actions.message') || 'Message'}
+                </Link>
+              )}
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ConversationList } from './ConversationList';
 import { ChatArea } from './ChatArea';
 import { MessagesService } from '@/services/messages.service';
@@ -49,6 +50,7 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
   emptyTitle,
   emptyDescription
 }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [filteredConversations, setFilteredConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -58,6 +60,7 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [creatingConversation, setCreatingConversation] = useState(false);
 
   const isMountedRef = useRef(true);
   const messagesService = new MessagesService();
@@ -94,6 +97,59 @@ export const MessageInterface: React.FC<MessageInterfaceProps> = ({
   useEffect(() => {
     filterConversations();
   }, [conversations, searchQuery]);
+
+  // Handle specialist query parameter to auto-create/open conversation
+  useEffect(() => {
+    const handleSpecialistParameter = async () => {
+      const specialistId = searchParams.get('specialist');
+      if (!specialistId || creatingConversation || loading) return;
+
+      try {
+        setCreatingConversation(true);
+
+        // Check if conversation already exists with this specialist
+        const existingConversation = conversations.find(conv => {
+          if (userRole === 'customer') {
+            return conv.specialist && (conv.specialist as any).id === specialistId;
+          } else {
+            return conv.customer && (conv.customer as any).id === specialistId;
+          }
+        });
+
+        if (existingConversation) {
+          // Open existing conversation
+          handleSelectConversation(existingConversation);
+        } else {
+          // Create new conversation
+          console.log('Creating new conversation with specialist:', specialistId);
+          const newConversation = await messagesService.createConversation({
+            participantId: specialistId
+          });
+
+          // Add to conversations list
+          if (isMountedRef.current) {
+            setConversations(prev => [newConversation, ...prev]);
+            handleSelectConversation(newConversation);
+          }
+        }
+
+        // Remove specialist parameter from URL
+        searchParams.delete('specialist');
+        setSearchParams(searchParams);
+      } catch (error) {
+        console.error('Error creating conversation:', error);
+        toast.error('Failed to start conversation');
+      } finally {
+        if (isMountedRef.current) {
+          setCreatingConversation(false);
+        }
+      }
+    };
+
+    if (!loading && conversations.length >= 0) {
+      handleSpecialistParameter();
+    }
+  }, [searchParams, conversations, loading, creatingConversation]);
 
   const fetchConversationMessages = async (conversationId: string) => {
     try {

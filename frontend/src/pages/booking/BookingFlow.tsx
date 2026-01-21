@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { socketService, subscribeToPaymentUpdates, ensureSocketConnection } from '../../services/socket.service';
 import { translateProfession } from '@/utils/profession';
 import { toast } from 'react-toastify';
@@ -70,6 +70,9 @@ const BookingFlow: React.FC = () => {
   const [paymentTimeRemaining, setPaymentTimeRemaining] = useState<number>(0);
   const [slotsLoading, setSlotsLoading] = useState<boolean>(false);
   const [pollingIntervalId, setPollingIntervalId] = useState<NodeJS.Timeout | null>(null);
+
+  // Ref to prevent duplicate booking submissions
+  const bookingInProgressRef = useRef<boolean>(false);
 
 
   // Reset payment state when payment method changes
@@ -387,7 +390,14 @@ const BookingFlow: React.FC = () => {
 
     // If payments are disabled and we're moving from details to confirmation, create booking
     if (!environment.PAYMENTS_ENABLED && steps[currentStep]?.id === 'details' && steps[currentStep + 1]?.id === 'confirmation') {
+      // Prevent duplicate submissions
+      if (bookingInProgressRef.current) {
+        logger.warn('⚠️ BookingFlow: Booking already in progress, ignoring duplicate submission');
+        return;
+      }
+
       try {
+        bookingInProgressRef.current = true;
         setPaymentLoading(true);
         const [hours, minutes] = selectedTime!.split(':').map(Number);
         const scheduledAt = new Date(selectedDate!);
@@ -409,11 +419,23 @@ const BookingFlow: React.FC = () => {
 
         setBookingResult(result);
         toast.success('Booking created successfully!');
+        bookingInProgressRef.current = false;
         setPaymentLoading(false);
         setCurrentStep(currentStep + 1);
       } catch (error: any) {
         logger.error('❌ BookingFlow: Error creating booking:', error);
+
+        // Check if it's a 409 conflict and booking was already created
+        if (error?.response?.status === 409 && bookingResult) {
+          logger.debug('✅ BookingFlow: Ignoring 409 error - booking already succeeded');
+          bookingInProgressRef.current = false;
+          setPaymentLoading(false);
+          setCurrentStep(currentStep + 1);
+          return;
+        }
+
         toast.error(error.message || 'Failed to create booking');
+        bookingInProgressRef.current = false;
         setPaymentLoading(false);
         return;
       }
@@ -477,6 +499,12 @@ const BookingFlow: React.FC = () => {
   };
 
   const handleBookingSubmit = async () => {
+    // Prevent duplicate submissions
+    if (bookingInProgressRef.current) {
+      logger.warn('⚠️ BookingFlow: Booking already in progress, ignoring duplicate submission');
+      return;
+    }
+
     const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
 
     logger.debug('📋 BookingFlow: Starting booking process...');
@@ -494,6 +522,8 @@ const BookingFlow: React.FC = () => {
     }
 
     try {
+      // Set ref immediately to prevent race condition
+      bookingInProgressRef.current = true;
       setPaymentLoading(true);
 
       // Step 1: Check slot availability before starting payment process
@@ -815,13 +845,21 @@ const BookingFlow: React.FC = () => {
         setCurrentStep(1); // Go back to time selection
         setConflictHint({ active: true, lastTried: selectedTime });
       } else if (code === 'BOOKING_CONFLICT' || status === 409 || error?.message?.includes('time slot')) {
-        toast.warning(t('booking.slotConflict') || 'This time slot was just booked by someone else. Please choose another.');
-        setCurrentStep(1); // Go back to time selection
-        setConflictHint({ active: true, lastTried: selectedTime });
+        // Check if booking was actually created (duplicate submission case)
+        // If bookingResult is already set, the first request succeeded, so don't show error
+        if (!bookingResult) {
+          toast.warning(t('booking.slotConflict') || 'This time slot was just booked by someone else. Please choose another.');
+          setCurrentStep(1); // Go back to time selection
+          setConflictHint({ active: true, lastTried: selectedTime });
+        } else {
+          // Booking already succeeded, ignore the duplicate 409 error
+          logger.debug('✅ BookingFlow: Ignoring 409 error - booking already succeeded');
+        }
       } else {
         toast.error(error?.message || t('booking.createFailed') || 'Failed to process booking. Please try again.');
       }
     } finally {
+      bookingInProgressRef.current = false;
       setPaymentLoading(false);
     }
   };
