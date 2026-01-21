@@ -11,6 +11,7 @@ import { logger } from '@/utils/logger';
 import { fileTypeFromBuffer } from 'file-type';
 import sharp from 'sharp';
 import crypto from 'crypto';
+import { initializeS3Service, getS3Service } from '@/services/s3.service';
 import path from 'path';
 
 const router = Router();
@@ -917,11 +918,15 @@ router.post('/save-external', authMiddleware, async (req, res) => {
 
     const detectedType = await fileTypeFromBuffer(buffer);
     const headerType = response.headers.get('content-type') || '';
-    const mimeType = detectedType?.mime || headerType || 'image/jpeg';
+    const rawMimeType = detectedType?.mime || headerType || 'image/jpeg';
+    const mimeType = rawMimeType.split(';')[0].trim();
 
     if (!mimeType.startsWith('image/')) {
       return res.status(400).json({ success: false, error: 'URL must point to an image' });
     }
+
+    const originalName = path.basename(parsedUrl.pathname) || 'external-image';
+    const useS3Storage = process.env.ENABLE_S3_STORAGE === 'true';
 
     let processedBuffer = buffer;
     let width: number | undefined;
@@ -933,12 +938,14 @@ router.post('/save-external', authMiddleware, async (req, res) => {
       width = metadata.width;
       height = metadata.height;
 
-      if (purpose === 'avatar') {
-        processedBuffer = await image.resize(300, 300, { fit: 'cover' }).toBuffer();
-      } else if (purpose === 'portfolio' || purpose === 'service_image') {
-        processedBuffer = await image
-          .resize(1200, 800, { fit: 'inside', withoutEnlargement: true })
-          .toBuffer();
+      if (!useS3Storage) {
+        if (purpose === 'avatar') {
+          processedBuffer = await image.resize(300, 300, { fit: 'cover' }).toBuffer();
+        } else if (purpose === 'portfolio' || purpose === 'service_image') {
+          processedBuffer = await image
+            .resize(1200, 800, { fit: 'inside', withoutEnlargement: true })
+            .toBuffer();
+        }
       }
     } catch (error) {
       logger.warn('External image processing failed, using original buffer', {
@@ -955,27 +962,99 @@ router.post('/save-external', authMiddleware, async (req, res) => {
       return '.jpg';
     };
 
-    const extension = detectedType?.ext ? `.${detectedType.ext}` : extFromMime(mimeType);
-    const fileId = crypto.randomUUID();
-    const filename = `${purpose}/${fileId}${extension}`;
+    let storagePath: string;
+    let absoluteUrl: string;
+    let fileRecordName: string;
+    let storedSize = processedBuffer.length;
+    let cloudProvider: string | undefined;
+    let cloudKey: string | undefined;
+    let cloudBucket: string | undefined;
 
-    const fileUploadService = new FileUploadService(prisma);
-    const storagePath = await fileUploadService.uploadToStorage(processedBuffer, filename, mimeType);
+    if (useS3Storage) {
+      const initS3 = () => {
+        if (!getS3Service()) {
+          const s3Config = {
+            region: process.env.AWS_REGION || 'us-east-1',
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+            bucketName: process.env.AWS_S3_BUCKET || '',
+            publicUrl: process.env.AWS_S3_URL
+          };
 
-    let absoluteUrl = storagePath;
-    if (storagePath.startsWith('/uploads/')) {
-      const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN
-        ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
-        : 'https://miyzapis-backend-production.up.railway.app';
-      absoluteUrl = `${baseUrl}${storagePath}`;
+          if (!s3Config.accessKeyId || !s3Config.secretAccessKey || !s3Config.bucketName) {
+            throw new Error('S3 configuration is incomplete. Please check environment variables.');
+          }
+
+          return initializeS3Service(s3Config);
+        }
+        return getS3Service()!;
+      };
+
+      const getUploadOptionsForPurpose = (selectedPurpose: string, selectedUserId: string) => {
+        const options: any = {
+          purpose: selectedPurpose as any,
+          userId: selectedUserId
+        };
+
+        switch (selectedPurpose) {
+          case 'avatar':
+            options.resize = { width: 400, height: 400, quality: 90 };
+            break;
+          case 'portfolio':
+            options.resize = { width: 1200, height: 1200, quality: 85 };
+            break;
+          case 'service_image':
+          case 'service':
+            options.resize = { width: 800, height: 600, quality: 85 };
+            break;
+          default:
+            break;
+        }
+
+        return options;
+      };
+
+      const s3Service = initS3();
+      const uploadOptions = getUploadOptionsForPurpose(purpose, userId);
+      const s3Result = await s3Service.uploadFile(buffer, originalName, mimeType, uploadOptions);
+
+      storagePath = s3Result.key;
+      absoluteUrl = s3Result.url;
+      storedSize = s3Result.size;
+      fileRecordName = path.basename(s3Result.key);
+      cloudProvider = 'S3';
+      cloudKey = s3Result.key;
+      cloudBucket = process.env.AWS_S3_BUCKET;
+    } else {
+      const extension = detectedType?.ext ? `.${detectedType.ext}` : extFromMime(mimeType);
+      const fileId = crypto.randomUUID();
+      const filename = `${purpose}/${fileId}${extension}`;
+
+      const fileUploadService = new FileUploadService(prisma);
+      storagePath = await fileUploadService.uploadToStorage(processedBuffer, filename, mimeType);
+
+      absoluteUrl = storagePath;
+      if (storagePath.startsWith('/uploads/')) {
+        const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN
+          ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+          : 'https://miyzapis-backend-production.up.railway.app';
+        absoluteUrl = `${baseUrl}${storagePath}`;
+      }
+
+      fileRecordName = filename;
+
+      if (fileUploadService.isUsingS3()) {
+        cloudProvider = 'S3';
+        cloudKey = filename;
+        cloudBucket = process.env.AWS_S3_BUCKET;
+      }
     }
 
-    const originalName = path.basename(parsedUrl.pathname) || 'external-image';
     const fileData: any = {
-      filename,
+      filename: fileRecordName,
       originalName,
       mimeType,
-      size: processedBuffer.length,
+      size: storedSize,
       path: storagePath,
       url: absoluteUrl,
       width,
@@ -986,10 +1065,10 @@ router.post('/save-external', authMiddleware, async (req, res) => {
       isProcessed: true
     };
 
-    if (fileUploadService.isUsingS3()) {
-      fileData.cloudProvider = 'S3';
-      fileData.cloudKey = filename;
-      fileData.cloudBucket = process.env.AWS_S3_BUCKET;
+    if (cloudProvider) {
+      fileData.cloudProvider = cloudProvider;
+      fileData.cloudKey = cloudKey;
+      fileData.cloudBucket = cloudBucket;
     }
 
     await prisma.file.create({ data: fileData });
@@ -998,8 +1077,8 @@ router.post('/save-external', authMiddleware, async (req, res) => {
       success: true,
       data: {
         url: absoluteUrl,
-        filename,
-        size: processedBuffer.length,
+        filename: fileRecordName,
+        size: storedSize,
         mimeType,
         uploadedAt: new Date().toISOString()
       },
