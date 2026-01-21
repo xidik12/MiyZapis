@@ -14,6 +14,24 @@ import { initializeS3Service, getS3Service } from '@/services/s3.service';
 import path from 'path';
 
 const router = Router();
+const isRailwayEnv = !!(
+  process.env.RAILWAY_ENVIRONMENT ||
+  process.env.RAILWAY_SERVICE_NAME ||
+  process.env.RAILWAY_PROJECT_NAME ||
+  process.env.RAILWAY_SERVICE ||
+  process.env.RAILWAY_PROJECT
+);
+const forceLocalStorage = process.env.FORCE_LOCAL_STORAGE === 'true' ||
+  process.env.FILE_STORAGE === 'local' ||
+  process.env.USE_LOCAL_STORAGE === 'true' ||
+  isRailwayEnv;
+const useS3Storage = process.env.ENABLE_S3_STORAGE === 'true' && !forceLocalStorage;
+
+if (useS3Storage) {
+  console.log('🌅 S3 storage enabled - adding S3 upload routes');
+} else {
+  console.log('📁 Using local file storage');
+}
 
 const getFileTypeFromBuffer = async (buffer: Buffer) => {
   try {
@@ -697,8 +715,7 @@ router.post('/upload-simple', authMiddleware, uploadRateLimit, fileController.up
 });
 
 // S3 Cloud Storage endpoints (when enabled)
-if (process.env.ENABLE_S3_STORAGE === 'true') {
-  console.log('🌅 S3 storage enabled - adding S3 upload routes');
+if (useS3Storage) {
   
   // S3 file upload endpoint
   router.post('/upload-s3', authMiddleware, uploadRateLimit, s3UploadController.uploadMiddleware, s3UploadController.uploadFiles);
@@ -712,7 +729,6 @@ if (process.env.ENABLE_S3_STORAGE === 'true') {
   // Use S3 upload as the main upload endpoint when S3 is enabled
   router.post('/upload', authMiddleware, uploadRateLimit, s3UploadController.uploadMiddleware, s3UploadController.uploadFiles);
 } else {
-  console.log('📁 Using local file storage');
   // Main upload endpoint using proper FileController (local storage)
   router.post('/upload', authMiddleware, uploadRateLimit, fileController.uploadMiddleware, fileController.uploadFiles);
 }
@@ -943,7 +959,6 @@ router.post('/save-external', authMiddleware, async (req, res) => {
     }
 
     const originalName = path.basename(parsedUrl.pathname) || 'external-image';
-    const useS3Storage = process.env.ENABLE_S3_STORAGE === 'true';
 
     let processedBuffer = buffer;
     let width: number | undefined;

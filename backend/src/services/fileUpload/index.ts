@@ -30,6 +30,18 @@ const getFileTypeFromBuffer = async (buffer: Buffer) => {
   }
 };
 
+const isRailwayEnv = !!(
+  process.env.RAILWAY_ENVIRONMENT ||
+  process.env.RAILWAY_SERVICE_NAME ||
+  process.env.RAILWAY_PROJECT_NAME ||
+  process.env.RAILWAY_SERVICE ||
+  process.env.RAILWAY_PROJECT
+);
+const forceLocalStorage = process.env.FORCE_LOCAL_STORAGE === 'true' ||
+  process.env.FILE_STORAGE === 'local' ||
+  process.env.USE_LOCAL_STORAGE === 'true' ||
+  isRailwayEnv;
+
 export class FileUploadService {
   private prisma: PrismaClient;
   private s3?: any;
@@ -37,10 +49,18 @@ export class FileUploadService {
 
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
-    this.useS3 = !!(AWS && config.aws.accessKeyId && config.aws.secretAccessKey && config.aws.s3.bucket);
+    this.useS3 = !forceLocalStorage &&
+      !!(AWS && config.aws.accessKeyId && config.aws.secretAccessKey && config.aws.s3.bucket);
     
     if (this.useS3) {
       this.setupS3();
+    } else if (forceLocalStorage) {
+      logger.info('Local storage forced for uploads', {
+        isRailwayEnv,
+        fileStorageEnv: process.env.FILE_STORAGE,
+        forceLocalStorageEnv: process.env.FORCE_LOCAL_STORAGE,
+        useLocalStorageEnv: process.env.USE_LOCAL_STORAGE
+      });
     }
   }
 
