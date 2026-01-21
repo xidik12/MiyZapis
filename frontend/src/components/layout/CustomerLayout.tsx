@@ -318,9 +318,9 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
           <button
             onClick={toggleTheme}
             className={`
-              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5' : 'py-3'} text-sm font-semibold rounded-xl transition-all duration-200
+              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-3'} text-sm font-semibold rounded-xl transition-all duration-200
               text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 mobile-touch-target
-              ${isCollapsed ? 'justify-center hover:scale-105' : 'justify-start space-x-3'}
+              ${isCollapsed ? 'justify-center hover:scale-105 hover:shadow-lg hover:shadow-primary-500/20' : 'justify-start space-x-3'}
             `}
             aria-label={theme === 'dark' ? t('theme.light') : t('theme.dark')}
           >
@@ -356,9 +356,9 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
           <button
             onClick={handleLogout}
             className={`
-              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5' : 'py-3'} text-sm font-semibold rounded-xl transition-all duration-200
+              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-3'} text-sm font-semibold rounded-xl transition-all duration-200
               text-red-600 dark:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-900/30 mobile-touch-target
-              ${isCollapsed ? 'justify-center hover:scale-105' : 'justify-start space-x-3'}
+              ${isCollapsed ? 'justify-center hover:scale-105 hover:shadow-lg hover:shadow-red-500/20' : 'justify-start space-x-3'}
             `}
           >
             <ArrowRightOnRectangleIcon className={isCollapsed ? 'w-5 h-5' : 'w-7 h-7 sm:w-6 sm:h-6'} />
