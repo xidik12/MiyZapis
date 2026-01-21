@@ -42,10 +42,10 @@ const createTranslations = (): Translations => {
 
   // Then allow manual overrides with ensure()
   const ensure = (key: string, en: string, kh?: string) => {
-    // Only override if explicitly providing different content
-    if (!map[key] || map[key].en !== en) {
-      map[key] = { en, kh: kh ?? en };
-    }
+    // Always set translations when provided to ensure Khmer translations are applied
+    // Bug fix: Previous condition prevented Khmer translations from being set
+    // if the English value matched what was already in the map
+    map[key] = { en, kh: kh ?? en };
   };
 
   // Branding
@@ -87,6 +87,62 @@ const createTranslations = (): Translations => {
   ensure('settings.theme.dark', 'Dark', 'ងងឹត');
   ensure('settings.theme.system', 'System', 'ប្រព័ន្ធ');
   ensure('settings.currency', 'Currency', 'រូបិយប័ណ្ណ');
+  ensure('settings.title', 'Settings', 'ការកំណត់');
+  ensure('settings.subtitle', 'Manage your account settings and preferences', 'គ្រប់គ្រងការកំណត់ និងចំណង់ចំណូលចិត្ត');
+  ensure('settings.profile', 'Profile', 'ប្រវត្តិរូប');
+  ensure('settings.profileDescription', 'Manage your profile photo and personal information', 'គ្រប់គ្រងរូបថត និងព័ត៌មានផ្ទាល់ខ្លួន');
+  ensure('settings.upload.uploading', 'Uploading...', 'កំពុងផ្ទុក...');
+  ensure('settings.upload.changePhoto', 'Change Photo', 'ប្តូររូបថត');
+  ensure('settings.account', 'Account', 'គណនី');
+  ensure('settings.accountDescription', 'Manage your account settings', 'គ្រប់គ្រងការកំណត់គណនី');
+  ensure('settings.autoAcceptBookings', 'Auto-accept bookings', 'ទទួលការកក់ដោយស្វ័យប្រវត្តិ');
+  ensure('settings.autoAcceptBookingsDesc', 'Automatically accept new bookings', 'ទទួលការកក់ថ្មីដោយស្វ័យប្រវត្តិ');
+  ensure('settings.allowInstantBookings', 'Allow instant bookings', 'អនុញ្ញាតការកក់ភ្លាមៗ');
+  ensure('settings.allowInstantBookingsDesc', 'Let customers book instantly', 'អនុញ្ញាតឱ្យអតិថិជនកក់ភ្លាមៗ');
+  ensure('settings.requireVerification', 'Require verification', 'ទាមទារការផ្ទៀងផ្ទាត់');
+  ensure('settings.requireVerificationDesc', 'Require verified customers to book', 'ទាមទារអតិថិជនដែលបានផ្ទៀងផ្ទាត់មុនការកក់');
+  ensure('settings.showProfileInSearch', 'Show profile in search', 'បង្ហាញប្រវត្តិរូបក្នុងការស្វែងរក');
+  ensure('settings.showProfileInSearchDesc', 'Allow your profile to appear in search results', 'អនុញ្ញាតឱ្យប្រវត្តិរូបបង្ហាញក្នុងលទ្ធផលស្វែងរក');
+  ensure('settings.notifications', 'Notifications', 'ការជូនដំណឹង');
+  ensure('settings.notificationsDescription', 'Control how you receive updates', 'គ្រប់គ្រងរបៀបទទួលការជូនដំណឹង');
+  ensure('settings.emailNotifications', 'Email notifications', 'ការជូនដំណឹងតាមអ៊ីមែល');
+  ensure('settings.emailNotificationsDesc', 'Receive updates via email', 'ទទួលការជូនដំណឹងតាមអ៊ីមែល');
+  ensure('settings.smsNotifications', 'SMS notifications', 'ការជូនដំណឹងតាម SMS');
+  ensure('settings.smsNotificationsDesc', 'Receive updates via SMS', 'ទទួលការជូនដំណឹងតាម SMS');
+  ensure('settings.pushNotifications', 'Push notifications', 'ការជូនដំណឹង Push');
+  ensure('settings.pushNotificationsDesc', 'Receive push notifications', 'ទទួលការជូនដំណឹង Push');
+  ensure('settings.newBookingAlert', 'New booking alerts', 'ការជូនដំណឹងការកក់ថ្មី');
+  ensure('settings.newBookingAlertDesc', 'Get notified about new bookings', 'ទទួលបានការជូនដំណឹងអំពីការកក់ថ្មី');
+  ensure('settings.bookingReminders', 'Booking reminders', 'ការរំលឹកការកក់');
+  ensure('settings.bookingRemindersDesc', 'Send reminders before appointments', 'ផ្ញើការរំលឹកមុនពេលកក់');
+  ensure('settings.privacy', 'Privacy', 'ភាពឯកជន');
+  ensure('settings.privacyDescription', 'Manage your privacy preferences', 'គ្រប់គ្រងចំណូលចិត្តភាពឯកជន');
+  ensure('settings.showPhoneNumber', 'Show phone number', 'បង្ហាញលេខទូរស័ព្ទ');
+  ensure('settings.showPhoneNumberDesc', 'Display your phone number on your profile', 'បង្ហាញលេខទូរស័ព្ទនៅក្នុងប្រវត្តិរូប');
+  ensure('settings.showEmail', 'Show email address', 'បង្ហាញអ៊ីមែល');
+  ensure('settings.showEmailDesc', 'Display your email on your profile', 'បង្ហាញអ៊ីមែលនៅក្នុងប្រវត្តិរូប');
+  ensure('settings.allowDirectMessages', 'Allow direct messages', 'អនុញ្ញាតសារផ្ទាល់');
+  ensure('settings.allowDirectMessagesDesc', 'Let customers message you directly', 'អនុញ្ញាតឱ្យអតិថិជនផ្ញើសារផ្ទាល់');
+  ensure('settings.dataProcessingConsent', 'Data processing consent', 'យល់ព្រមចំពោះការប្រើទិន្នន័យ');
+  ensure('settings.dataProcessingConsentDesc', 'Allow data processing for recommendations', 'អនុញ្ញាតឱ្យប្រើទិន្នន័យសម្រាប់ការណែនាំ');
+  ensure('settings.business', 'Business', 'អាជីវកម្ម');
+  ensure('settings.businessDescription', 'Manage business preferences', 'គ្រប់គ្រងការកំណត់អាជីវកម្ម');
+  ensure('settings.acceptOnlinePayments', 'Accept online payments', 'ទទួលការទូទាត់តាមអ៊ីនធឺណិត');
+  ensure('settings.acceptOnlinePaymentsDesc', 'Allow customers to pay online', 'អនុញ្ញាតឱ្យអតិថិជនទូទាត់តាមអ៊ីនធឺណិត');
+  ensure('settings.requireDeposit', 'Require deposit', 'ទាមទារប្រាក់កក់');
+  ensure('settings.requireDepositDesc', 'Require a deposit for bookings', 'ទាមទារប្រាក់កក់សម្រាប់ការកក់');
+  ensure('settings.cancellationWindow', 'Cancellation window', 'រយៈពេលបោះបង់');
+  ensure('settings.hours2', '2 hours', '2 ម៉ោង');
+  ensure('settings.hours6', '6 hours', '6 ម៉ោង');
+  ensure('settings.hours12', '12 hours', '12 ម៉ោង');
+  ensure('settings.hours24', '24 hours', '24 ម៉ោង');
+  ensure('settings.hours48', '48 hours', '48 ម៉ោង');
+  ensure('settings.cancellationWindowDesc', 'How long before an appointment customers can cancel', 'ចំនួនម៉ោងមុនពេលអតិថិជនអាចបោះបង់');
+  ensure('settings.payment.removed', 'Payment method removed', 'បានលុបវិធីសាស្រ្តបង់ប្រាក់');
+  ensure('settings.payment.removeError', 'Failed to remove payment method', 'មិនអាចលុបវិធីសាស្រ្តបង់ប្រាក់បានទេ');
+  ensure('settings.payment.added', 'Payment method added', 'បានបន្ថែមវិធីសាស្រ្តបង់ប្រាក់');
+  ensure('settings.payment.addError', 'Failed to add payment method', 'មិនអាចបន្ថែមវិធីសាស្រ្តបង់ប្រាក់បានទេ');
+  ensure('settings.uploading', 'Uploading...', 'កំពុងផ្ទុក...');
 
   // Auth - Registration Account Types
   ensure('auth.register.individualSpecialist', 'Individual Specialist', 'អ្នកជំនាញបុគ្គល');
@@ -112,6 +168,94 @@ const createTranslations = (): Translations => {
   ensure('customer.nav.settings', 'Settings', 'ការកំណត់');
   ensure('customer.customerLabel', 'Customer', 'អតិថិជន');
   ensure('customer.online', 'Online', 'អនឡាញ');
+
+  // Profile + settings (Khmer overrides)
+  ensure('profile.passwordSecurity', 'Password & Security', 'សុវត្ថិភាពពាក្យសម្ងាត់');
+  ensure('profile.password', 'Password', 'ពាក្យសម្ងាត់');
+  ensure('profile.lastChanged', 'Last changed', 'បានផ្លាស់ប្តូរចុងក្រោយ');
+  ensure('profile.passwordRequirements', 'Password requirements', 'លក្ខខណ្ឌពាក្យសម្ងាត់');
+  ensure('profile.passwordReq.length', 'At least 8 characters long', 'យ៉ាងហោចណាស់ 8 តួអក្សរ');
+  ensure('profile.passwordReq.uppercase', 'One uppercase letter (A-Z)', 'អក្សរធំ 1 (A-Z)');
+  ensure('profile.passwordReq.lowercase', 'One lowercase letter (a-z)', 'អក្សរតូច 1 (a-z)');
+  ensure('profile.passwordReq.number', 'One number (0-9)', 'លេខ 1 (0-9)');
+  ensure('profile.passwordReq.symbol', 'One symbol (!@#$%^&*)', 'និមិត្តសញ្ញា 1 (!@#$%^&*)');
+  ensure('profile.passwordReq.english', 'English characters only', 'តែអក្សរអង់គ្លេស');
+  ensure('profile.memberSince', 'Member since', 'សមាជិកតាំងពី');
+  ensure('profile.addAddress', 'Add Address', 'បន្ថែមអាសយដ្ឋាន');
+  ensure('profile.noAddressesYet', 'No addresses yet', 'មិនទាន់មានអាសយដ្ឋាន');
+  ensure('profile.addYourFirstAddress', 'Add your first address', 'បន្ថែមអាសយដ្ឋានដំបូង');
+  ensure('profile.default', 'Default', 'លំនាំដើម');
+  ensure('profile.edit', 'Edit', 'កែសម្រួល');
+  ensure('profile.remove', 'Remove', 'លុប');
+  ensure('common.never', 'Never', 'មិនដែល');
+  ensure('common.online', 'Online', 'អនឡាញ');
+  ensure('actions.preview', 'Preview', 'មើលជាមុន');
+  ensure('profile.unsavedChanges', 'Unsaved changes', 'មានការផ្លាស់ប្តូរមិនបានរក្សាទុក');
+  ensure('common.loading', 'Loading...', 'កំពុងផ្ទុក...');
+
+  // Auth - set password for Google users
+  ensure('auth.setPassword.title', 'Set up password for your account', 'កំណត់ពាក្យសម្ងាត់សម្រាប់គណនី');
+  ensure('auth.setPassword.description', 'You signed up with Google. Set a password to enable password reset and additional security options.', 'អ្នកបានចុះឈ្មោះដោយ Google។ សូមកំណត់ពាក្យសម្ងាត់ ដើម្បីអាចស្ដារពាក្យសម្ងាត់ និងជម្រើសសុវត្ថិភាពផ្សេងៗ។');
+  ensure('auth.setPassword.action', 'Set Password', 'កំណត់ពាក្យសម្ងាត់');
+
+  // Specialist profile helpers
+  ensure('specialist.profession', 'Profession *', 'មុខរបរ *');
+  ensure('specialist.professionNotSpecified', 'Profession not specified', 'មិនបានបញ្ជាក់មុខរបរ');
+  ensure('specialist.verified', 'Verified', 'បានផ្ទៀងផ្ទាត់');
+  ensure('professionForm.selectProfession', 'Select a profession', 'ជ្រើសរើសមុខរបរ');
+  ensure('professionForm.searchProfessions', 'Search professions', 'ស្វែងរកមុខរបរ');
+  ensure('professionForm.addCustomProfession', '+ Add custom profession', '+ បន្ថែមមុខរបរ​ផ្ទាល់ខ្លួន');
+  ensure('professionForm.enterCustomProfession', 'Enter custom profession', 'បញ្ចូលមុខរបរផ្ទាល់ខ្លួន');
+  ensure('specialtyForm.searchSpecialties', 'Search specialties', 'ស្វែងរកជំនាញពិសេស');
+
+  // Customer settings
+  ensure('customer.settings.pushNotifications', 'Push Notifications', 'ការជូនដំណឹង Push');
+  ensure('customer.settings.smsNotifications', 'SMS Notifications', 'ការជូនដំណឹង SMS');
+  ensure('customer.settings.profileVisibility', 'Profile Visibility', 'ភាពមើលឃើញប្រវត្តិរូប');
+  ensure('customer.settings.publicProfile', 'Public', 'សាធារណៈ');
+  ensure('customer.settings.privateProfile', 'Private', 'ឯកជន');
+  ensure('customer.settings.showEmailProfile', 'Show email in profile', 'បង្ហាញអ៊ីមែលនៅក្នុងប្រវត្តិរូប');
+  ensure('customer.settings.showPhoneProfile', 'Show phone number in profile', 'បង្ហាញលេខទូរស័ព្ទនៅក្នុងប្រវត្តិរូប');
+  ensure('customer.settings.allowReviews', 'Allow others to leave reviews', 'អនុញ្ញាតឱ្យអ្នកដទៃទុកការវាយតម្លៃ');
+  ensure('customer.settings.dataProcessing', 'Allow data processing for recommendations', 'អនុញ្ញាតការប្រើទិន្នន័យសម្រាប់ការណែនាំ');
+  ensure('customer.settings.languageLabel', 'Language', 'ភាសា');
+  ensure('customer.settings.currencyLabel', 'Currency', 'រូបិយប័ណ្ណ');
+  ensure('customer.settings.themeLabel', 'Theme', 'ប្រធានបទ');
+  ensure('customer.settings.lightTheme', 'Light', 'ពន្លឺ');
+  ensure('customer.settings.darkTheme', 'Dark', 'ងងឹត');
+  ensure('customer.settings.systemTheme', 'System', 'ប្រព័ន្ធ');
+
+  // Settings - profile image
+  ensure('settings.profile.imageSelectError', 'Please select an image file', 'សូមជ្រើសរើសឯកសាររូបភាព');
+  ensure('settings.profile.imageSizeError', 'File size must be less than 5MB', 'ទំហំឯកសារត្រូវតិចជាង 5MB');
+  ensure('settings.profile.imageUploadError', 'Failed to upload image', 'មិនអាចផ្ទុករូបភាពបានទេ');
+  ensure('settings.profile.imageRemoveError', 'Failed to remove image', 'មិនអាចលុបរូបភាពបានទេ');
+  ensure('settings.profile.photoLabel', 'Profile Photo', 'រូបថតប្រវត្តិរូប');
+  ensure('settings.profile.photoHint', 'Maximum size: 5MB. Supported formats: JPG, PNG, WebP', 'ទំហំអតិបរមា: 5MB។ ទ្រង់ទ្រាយដែលគាំទ្រ: JPG, PNG, WebP');
+  ensure('settings.profile.photoUpdated', 'Photo updated successfully!', 'បានធ្វើបច្ចុប្បន្នភាពរូបថតដោយជោគជ័យ!');
+
+  // Addresses
+  ensure('addresses.addTitle', 'Add Address', 'បន្ថែមអាសយដ្ឋាន');
+  ensure('addresses.pickOnMap', 'Pick on map', 'ជ្រើសរើសលើផែនទី');
+  ensure('addresses.typeLabel', 'Type', 'ប្រភេទ');
+  ensure('addresses.label', 'Label', 'ស្លាក');
+  ensure('addresses.labelPlaceholder', 'e.g. Home, Work', 'ឧ. ផ្ទះ, ការងារ');
+  ensure('addresses.street', 'Street Address', 'ផ្លូវ/អាសយដ្ឋាន');
+  ensure('addresses.streetPlaceholder', 'Enter street address', 'បញ្ចូលផ្លូវ ឬអាសយដ្ឋាន');
+  ensure('addresses.city', 'City', 'ទីក្រុង');
+  ensure('addresses.cityPlaceholder', 'Enter city', 'បញ្ចូលទីក្រុង');
+  ensure('addresses.postalCode', 'Postal Code', 'លេខប្រៃសណីយ៍');
+  ensure('addresses.region', 'Region/State', 'ខេត្ត/តំបន់');
+  ensure('addresses.regionPlaceholder', 'Enter region', 'បញ្ចូលខេត្ត/តំបន់');
+  ensure('addresses.country', 'Country', 'ប្រទេស');
+  ensure('addresses.country.ukraine', 'Ukraine', 'អ៊ុយក្រែន');
+  ensure('addresses.country.poland', 'Poland', 'ប៉ូឡូញ');
+  ensure('addresses.country.germany', 'Germany', 'អាល្លឺម៉ង់');
+  ensure('addresses.addAction', 'Add Address', 'បន្ថែមអាសយដ្ឋាន');
+  ensure('common.home', 'Home', 'ផ្ទះ');
+  ensure('common.work', 'Work', 'ការងារ');
+  ensure('common.other', 'Other', 'ផ្សេងទៀត');
+  ensure('common.cancel', 'Cancel', 'បោះបង់');
 
   const fallbackEntries: Record<string, string> = {
     'actions.bookNow': 'Book now',
