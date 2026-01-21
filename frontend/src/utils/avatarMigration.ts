@@ -3,25 +3,55 @@
  * Handles migration of external avatars (especially Google avatars) to backend storage
  */
 
-import { authService } from '../services/auth.service';
 import { userService } from '../services/user.service';
+import { environment } from '../config/environment';
 
 export class AvatarMigrationUtil {
+  private static getInternalHosts(): string[] {
+    const hosts = new Set<string>();
+    const apiUrl = environment.API_URL || '';
+    const apiBase = apiUrl.replace(/\/api\/v1\/?$/, '');
+
+    if (apiUrl) hosts.add(apiUrl);
+    if (apiBase) hosts.add(apiBase);
+
+    try {
+      if (apiUrl.startsWith('http')) hosts.add(new URL(apiUrl).origin);
+      if (apiBase.startsWith('http')) hosts.add(new URL(apiBase).origin);
+    } catch {
+      // Ignore URL parsing errors and fall back to raw strings.
+    }
+
+    return Array.from(hosts);
+  }
+
   /**
    * Check if user has an external avatar that needs to be saved to backend
    */
   static needsMigration(avatarUrl: string | null | undefined): boolean {
     if (!avatarUrl) return false;
+    const normalizedUrl = avatarUrl.trim();
+    if (normalizedUrl === '' || normalizedUrl.startsWith('data:') || normalizedUrl.startsWith('blob:')) {
+      return false;
+    }
     
     // Check for Google avatars
-    if (avatarUrl.includes('googleusercontent.com') || avatarUrl.includes('google.com')) {
+    if (normalizedUrl.includes('googleusercontent.com') || normalizedUrl.includes('google.com')) {
       return true;
     }
     
     // Check for other external services, but exclude S3 URLs which are already migrated
-    if (avatarUrl.startsWith('http') && 
-        !avatarUrl.includes('miyzapis-backend-production.up.railway.app') &&
-        !avatarUrl.includes('miyzapis-storage.s3.ap-southeast-2.amazonaws.com')) {
+    if (normalizedUrl.startsWith('http')) {
+      const internalHosts = this.getInternalHosts();
+      const isInternalHost = internalHosts.some((host) => normalizedUrl.startsWith(host));
+      const isInternalStorage = normalizedUrl.includes('/uploads/') ||
+        normalizedUrl.includes('/files/') ||
+        normalizedUrl.includes('/s3-proxy/');
+      const isKnownS3 = normalizedUrl.includes('miyzapis-storage.s3.ap-southeast-2.amazonaws.com');
+
+      if (isInternalHost || isInternalStorage || isKnownS3) {
+        return false;
+      }
       return true;
     }
     

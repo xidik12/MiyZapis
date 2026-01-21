@@ -7,7 +7,6 @@ import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import {
   HomeIcon,
   CalendarIcon,
-  CogIcon,
   ChartBarIcon,
   PresentationChartLineIcon,
   CurrencyDollarIcon,
@@ -33,8 +32,7 @@ interface NavigationItem {
   name: string;
   translationKey: string;
   href: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  iconSolid: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  icon: React.ComponentType<{ className?: string; active?: boolean }>;
   badge?: number;
   comingSoon?: boolean;
 }
@@ -54,14 +52,12 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.dashboard',
       href: '/specialist/dashboard',
       icon: HomeIcon,
-      iconSolid: HomeIcon,
     },
     {
       name: 'Bookings',
       translationKey: 'dashboard.nav.bookings',
       href: '/specialist/bookings',
       icon: CalendarIcon,
-      iconSolid: CalendarIcon,
       badge: 0, // Dynamic count from API
     },
     {
@@ -69,42 +65,36 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.services',
       href: '/specialist/services',
       icon: WrenchScrewdriverIcon,
-      iconSolid: WrenchScrewdriverIcon,
     },
     {
       name: 'Schedule',
       translationKey: 'dashboard.nav.schedule',
       href: '/specialist/schedule',
       icon: ClockIcon,
-      iconSolid: ClockIcon,
     },
     {
       name: 'Analytics',
       translationKey: 'dashboard.nav.analytics',
       href: '/specialist/analytics',
       icon: PresentationChartLineIcon,
-      iconSolid: PresentationChartLineIcon,
     },
     {
       name: 'Earnings',
       translationKey: 'dashboard.nav.earnings',
       href: '/specialist/earnings',
       icon: CurrencyDollarIcon,
-      iconSolid: CurrencyDollarIcon,
     },
     {
       name: 'Finances',
       translationKey: 'nav.finances',
       href: '/specialist/finances',
       icon: ChartBarIcon,
-      iconSolid: ChartBarIcon,
     },
     {
       name: 'Reviews',
       translationKey: 'dashboard.nav.reviews',
       href: '/specialist/reviews',
       icon: StarIcon,
-      iconSolid: StarIcon,
       badge: 0, // Dynamic count from API
     },
     {
@@ -112,7 +102,6 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.messages',
       href: '/specialist/messages',
       icon: ChatBubbleLeftRightIcon,
-      iconSolid: ChatBubbleLeftRightIcon,
       badge: 0, // Dynamic count from API
     },
     {
@@ -120,14 +109,12 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.profile',
       href: '/specialist/profile',
       icon: UserIcon,
-      iconSolid: UserIcon,
     },
     {
       name: 'Settings',
       translationKey: 'dashboard.nav.settings',
       href: '/specialist/settings',
       icon: Cog6ToothIcon,
-      iconSolid: Cog6ToothIcon,
     },
   ];
 
@@ -137,7 +124,6 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       translationKey: 'dashboard.nav.notifications',
       href: '/specialist/notifications',
       icon: BellIcon,
-      iconSolid: BellIcon,
       badge: 0, // Dynamic count from API
     },
   ];
@@ -217,7 +203,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
           <div className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
             {navigationItems.map((item) => {
               const isActive = isActiveRoute(item.href);
-              const Icon = isActive ? item.iconSolid : item.icon;
+              const Icon = item.icon;
 
               return (
                 <Link
@@ -241,10 +227,13 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
                     }
                   }}
                 >
-                  <Icon className={`
-                    mr-3 flex-shrink-0 h-6 w-6 transition-colors
-                    ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
-                  `} />
+                  <Icon
+                    className={`
+                      mr-3 flex-shrink-0 h-6 w-6 transition-colors
+                      ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
+                    `}
+                    active={isActive}
+                  />
                   <span className="flex-1">
                     {t(item.translationKey)}
                   </span>
@@ -273,7 +262,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
           <div className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-2">
             {bottomNavigationItems.map((item) => {
               const isActive = isActiveRoute(item.href);
-              const Icon = isActive ? item.iconSolid : item.icon;
+              const Icon = item.icon;
 
               return (
                 <Link
@@ -292,10 +281,13 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
                     }
                   }}
                 >
-                  <Icon className={`
-                    mr-3 flex-shrink-0 h-6 w-6 transition-colors
-                    ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
-                  `} />
+                  <Icon
+                    className={`
+                      mr-3 flex-shrink-0 h-6 w-6 transition-colors
+                      ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
+                    `}
+                    active={isActive}
+                  />
                   <span className="flex-1">
                     {t(item.translationKey)}
                   </span>

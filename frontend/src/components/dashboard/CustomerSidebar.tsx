@@ -33,8 +33,7 @@ interface NavigationItem {
   name: string;
   translationKey: string;
   href: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  iconSolid: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  icon: React.ComponentType<{ className?: string; active?: boolean }>;
   badge?: number;
   comingSoon?: boolean;
 }
@@ -63,28 +62,24 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       translationKey: 'dashboard.nav.dashboard',
       href: '/customer/dashboard',
       icon: HomeIcon,
-      iconSolid: HomeIcon,
     },
     {
       name: 'Messages',
       translationKey: 'dashboard.nav.messages',
       href: '/customer/messages',
       icon: ChatBubbleLeftRightIcon,
-      iconSolid: ChatBubbleLeftRightIcon,
     },
     {
       name: 'Search Services',
       translationKey: 'search.title',
       href: '/search',
       icon: MagnifyingGlassIcon,
-      iconSolid: MagnifyingGlassIcon,
     },
     {
       name: 'My Bookings',
       translationKey: 'dashboard.nav.bookings',
       href: '/customer/bookings',
       icon: CalendarIcon,
-      iconSolid: CalendarIcon,
       badge: 0, // Dynamic count from API
     },
     {
@@ -92,14 +87,12 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       translationKey: 'dashboard.nav.history',
       href: '/customer/bookings',
       icon: ClockIcon,
-      iconSolid: ClockIcon,
     },
     {
       name: 'Favorites',
       translationKey: 'dashboard.nav.favorites',
       href: '/customer/favorites',
       icon: HeartIcon,
-      iconSolid: HeartIcon,
       badge: favoritesCount.specialists + favoritesCount.services,
     },
     {
@@ -107,21 +100,18 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       translationKey: 'dashboard.nav.reviews',
       href: '/customer/reviews',
       icon: StarIcon,
-      iconSolid: StarIcon,
     },
     {
       name: 'Payments',
       translationKey: 'dashboard.nav.payments',
       href: '/customer/payments',
       icon: CreditCardIcon,
-      iconSolid: CreditCardIcon,
     },
     {
       name: 'Loyalty Program',
       translationKey: 'dashboard.customer.loyaltyPoints',
       href: '/customer/loyalty',
       icon: GiftIcon,
-      iconSolid: GiftIcon,
       badge: 0, // Dynamic count from API
     },
     {
@@ -129,7 +119,6 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       translationKey: 'dashboard.nav.profile',
       href: '/customer/profile',
       icon: UserIcon,
-      iconSolid: UserIcon,
     },
   ];
 
@@ -139,7 +128,6 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       translationKey: 'dashboard.nav.notifications',
       href: '/customer/notifications',
       icon: BellIcon,
-      iconSolid: BellIcon,
       badge: 0, // Dynamic count from API
     },
     {
@@ -147,7 +135,6 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
       translationKey: 'dashboard.nav.support',
       href: '/customer/support',
       icon: LifebuoyIcon,
-      iconSolid: LifebuoyIcon,
     },
   ];
 
@@ -246,7 +233,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
           <div className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
             {navigationItems.map((item) => {
               const isActive = isActiveRoute(item.href);
-              const Icon = isActive ? item.iconSolid : item.icon;
+              const Icon = item.icon;
 
               return (
                 <Link
@@ -270,10 +257,13 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                     }
                   }}
                 >
-                  <Icon className={`
-                    mr-3 flex-shrink-0 h-6 w-6 transition-colors
-                    ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
-                  `} />
+                  <Icon
+                    className={`
+                      mr-3 flex-shrink-0 h-6 w-6 transition-colors
+                      ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
+                    `}
+                    active={isActive}
+                  />
                   <span className="flex-1">
                     {t(item.translationKey)}
                   </span>
@@ -302,7 +292,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
           <div className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-2">
             {bottomNavigationItems.map((item) => {
               const isActive = isActiveRoute(item.href);
-              const Icon = isActive ? item.iconSolid : item.icon;
+              const Icon = item.icon;
 
               return (
                 <Link
@@ -321,10 +311,13 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                     }
                   }}
                 >
-                  <Icon className={`
-                    mr-3 flex-shrink-0 h-6 w-6 transition-colors
-                    ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
-                  `} />
+                  <Icon
+                    className={`
+                      mr-3 flex-shrink-0 h-6 w-6 transition-colors
+                      ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300'}
+                    `}
+                    active={isActive}
+                  />
                   <span className="flex-1">
                     {t(item.translationKey)}
                   </span>

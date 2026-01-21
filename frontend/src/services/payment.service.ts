@@ -530,7 +530,11 @@ export class PaymentService {
       formData.append(`document_${index}`, file);
     });
 
-    const response = await apiClient.post(`/payments/disputes/${disputeId}/evidence`, formData);
+    const response = await apiClient.post(`/payments/disputes/${disputeId}/evidence`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
 
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to submit dispute evidence');

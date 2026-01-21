@@ -63,6 +63,12 @@ interface SpecialistProfile {
     region: string;
     country: string;
   };
+  preciseAddress: string;
+  businessPhone: string;
+  whatsappNumber: string;
+  locationNotes: string;
+  parkingInfo: string;
+  accessInstructions: string;
   serviceArea: {
     radius: number;
     cities: string[];
@@ -168,6 +174,12 @@ const getEmptyProfile = (): SpecialistProfile => ({
     region: '',
     country: '',
   },
+  preciseAddress: '',
+  businessPhone: '',
+  whatsappNumber: '',
+  locationNotes: '',
+  parkingInfo: '',
+  accessInstructions: '',
   serviceArea: {
     radius: 0,
     cities: [],
@@ -253,11 +265,17 @@ const mergeProfileData = (apiData: any): SpecialistProfile => {
     education: specialist?.education || '',
     // Location data from specialist
     location: {
-      address: specialist?.address || '',
-      city: specialist?.city || '',
-      region: specialist?.state || '',
-      country: specialist?.country || '',
+      address: specialist?.address || specialist?.location?.address || '',
+      city: specialist?.city || specialist?.location?.city || '',
+      region: specialist?.state || specialist?.location?.region || specialist?.location?.state || '',
+      country: specialist?.country || specialist?.location?.country || '',
     },
+    preciseAddress: specialist?.preciseAddress || specialist?.location?.preciseAddress || '',
+    businessPhone: specialist?.businessPhone || specialist?.location?.businessPhone || '',
+    whatsappNumber: specialist?.whatsappNumber || specialist?.location?.whatsappNumber || '',
+    locationNotes: specialist?.locationNotes || specialist?.location?.locationNotes || '',
+    parkingInfo: specialist?.parkingInfo || specialist?.location?.parkingInfo || '',
+    accessInstructions: specialist?.accessInstructions || specialist?.location?.accessInstructions || '',
     // Parse backend JSON strings and ensure arrays are always arrays
     languages: Array.isArray(specialist?.languages) ? specialist.languages : parseJsonField(specialist?.languages, []),
     specialties: Array.isArray(specialist?.specialties) ? specialist.specialties : parseJsonField(specialist?.specialties, []),
@@ -620,6 +638,12 @@ const SpecialistProfile: React.FC = () => {
             country: profile.location?.country || '',
             latitude: profile.location?.latitude || null,
             longitude: profile.location?.longitude || null,
+            preciseAddress: profile.preciseAddress || '',
+            businessPhone: profile.businessPhone || '',
+            whatsappNumber: profile.whatsappNumber || '',
+            locationNotes: profile.locationNotes || '',
+            parkingInfo: profile.parkingInfo || '',
+            accessInstructions: profile.accessInstructions || '',
             timezone: 'UTC', // Default timezone
             workingHours: profile.businessHours || {},
             paymentMethods: Array.isArray(profile.paymentMethods) ? profile.paymentMethods : [],
