@@ -1015,6 +1015,8 @@ const translations: Translations = {
   'actions.reschedule': { en: 'Reschedule', uk: 'Перенести', ru: 'Перенести' },
   'actions.viewDetails': { en: 'View Details', uk: 'Переглянути деталі', ru: 'Просмотр деталей' },
   'actions.back': { en: 'Back', uk: 'Назад', ru: 'Назад' },
+  'actions.review': { en: 'Leave review', uk: 'Залишити відгук', ru: 'Оставить отзыв' },
+  'actions.bookAgain': { en: 'Book again', uk: 'Забронювати знову', ru: 'Забронировать снова' },
   
   // Booking Details Modal
   'bookingDetails.title': { en: 'Booking Details', uk: 'Деталі бронювання', ru: 'Детали бронирования' },
