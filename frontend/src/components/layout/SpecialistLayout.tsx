@@ -345,16 +345,16 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
           <button
             onClick={toggleTheme}
             className={`
-              flex items-center w-full px-3 py-3 text-sm font-semibold rounded-xl transition-all duration-200
+              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5' : 'py-3'} text-sm font-semibold rounded-xl transition-all duration-200
               text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 mobile-touch-target
-              ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
+              ${isCollapsed ? 'justify-center hover:scale-105' : 'justify-start space-x-3'}
             `}
             aria-label={theme === 'dark' ? t('theme.light') : t('theme.dark')}
           >
             {theme === 'dark' ? (
-              <SunIcon className="w-7 h-7 sm:w-6 sm:h-6" />
+              <SunIcon className={isCollapsed ? 'w-5 h-5' : 'w-7 h-7 sm:w-6 sm:h-6'} />
             ) : (
-              <MoonIcon className="w-7 h-7 sm:w-6 sm:h-6" />
+              <MoonIcon className={isCollapsed ? 'w-5 h-5' : 'w-7 h-7 sm:w-6 sm:h-6'} />
             )}
             {!isCollapsed && (
               <span>{theme === 'dark' ? t('theme.light') : t('theme.dark')}</span>
@@ -383,12 +383,12 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
           <button
             onClick={handleLogout}
             className={`
-              flex items-center w-full px-3 py-3 text-sm font-semibold rounded-xl transition-all duration-200
+              flex items-center w-full px-3 ${isCollapsed ? 'py-2.5' : 'py-3'} text-sm font-semibold rounded-xl transition-all duration-200
               text-red-600 hover:bg-red-50/80 dark:text-red-400 dark:hover:bg-red-900/30 mobile-touch-target
-              ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
+              ${isCollapsed ? 'justify-center hover:scale-105' : 'justify-start space-x-3'}
             `}
           >
-            <ArrowRightOnRectangleIcon className="w-7 h-7 sm:w-6 sm:h-6" />
+            <ArrowRightOnRectangleIcon className={isCollapsed ? 'w-5 h-5' : 'w-7 h-7 sm:w-6 sm:h-6'} />
             {!isCollapsed && <span>{t('auth.logout')}</span>}
           </button>
         </div>

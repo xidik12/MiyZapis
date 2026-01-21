@@ -2269,6 +2269,7 @@ const translations: Translations = {
   'wallet.balance.netFlow': { en: 'net flow', uk: 'чистий потік', ru: 'чистый поток' },
   'wallet.balance.totalReceived': { en: 'Total Received', uk: 'Всього отримано', ru: 'Всего получено' },
   'wallet.balance.totalSpent': { en: 'Total Spent', uk: 'Всього витрачено', ru: 'Всего потрачено' },
+  'wallet.balance.viewHistory': { en: 'View history', uk: 'Переглянути історію', ru: 'Посмотреть историю' },
   'wallet.tabs.overview': { en: 'Overview', uk: 'Огляд', ru: 'Обзор' },
   'wallet.tabs.overviewShort': { en: 'Main', uk: 'Основне', ru: 'Основное' },
   'wallet.tabs.transactions': { en: 'Transactions', uk: 'Транзакції', ru: 'Транзакции' },
