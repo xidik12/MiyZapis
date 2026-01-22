@@ -437,13 +437,82 @@ export class ReviewsService {
   // Check if user can review a booking
   async canReviewBooking(bookingId: string): Promise<{ canReview: boolean; reason?: string }> {
     const response = await apiClient.get<{ canReview: boolean; reason?: string }>(`/reviews/can-review/${bookingId}`);
-    
+
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to check review eligibility');
     }
-    
+
     return response.data;
   }
+
+  // Get comments for a review
+  async getReviewComments(reviewId: string): Promise<ReviewComment[]> {
+    const response = await apiClient.get<{ comments: ReviewComment[] }>(`/reviews/${reviewId}/comments`);
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to get comments');
+    }
+
+    return response.data.comments;
+  }
+
+  // Create a comment on a review
+  async createReviewComment(reviewId: string, content: string, parentId?: string): Promise<ReviewComment> {
+    const response = await apiClient.post<{ comment: ReviewComment }>(`/reviews/${reviewId}/comments`, {
+      content,
+      parentId
+    });
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to create comment');
+    }
+
+    return response.data.comment;
+  }
+
+  // React to a comment (like/dislike)
+  async reactToComment(reviewId: string, commentId: string, reaction: 'like' | 'dislike' | null): Promise<{ message: string }> {
+    const response = await apiClient.post<{ message: string }>(
+      `/reviews/${reviewId}/comments/${commentId}/react`,
+      { reaction }
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to react to comment');
+    }
+
+    return response.data;
+  }
+
+  // Delete a comment
+  async deleteComment(reviewId: string, commentId: string): Promise<{ message: string }> {
+    const response = await apiClient.delete<{ message: string }>(
+      `/reviews/${reviewId}/comments/${commentId}`
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to delete comment');
+    }
+
+    return response.data;
+  }
+}
+
+export interface ReviewComment {
+  id: string;
+  content: string;
+  createdAt: string;
+  parentId: string | null;
+  likeCount: number;
+  dislikeCount: number;
+  userReaction: 'like' | 'dislike' | null;
+  replyCount: number;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+  };
 }
 
 export const reviewsService = new ReviewsService();
