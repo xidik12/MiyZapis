@@ -190,19 +190,18 @@ function App() {
     initializeAuth();
   }, [dispatch, isAuthenticated]);
 
-  // Show loading screen while initializing
-  if (isInitializing) {
-    return <SuspenseLoader />;
-  }
-
   return (
     <ThemeProvider>
       <LanguageProvider>
         <CurrencyProvider>
-          {/* <SocketProvider> */}
-            <div className="App min-h-screen transition-colors duration-300 relative prevent-overflow">
-              {/* <FloatingElements /> */}
-              <Routes>
+          {isInitializing ? (
+            <SuspenseLoader />
+          ) : (
+            <>
+              {/* <SocketProvider> */}
+              <div className="App min-h-screen transition-colors duration-300 relative prevent-overflow">
+                {/* <FloatingElements /> */}
+                <Routes>
           {/* Auth routes first */}
           <Route
             path="/auth/*"
@@ -803,8 +802,10 @@ function App() {
             </MainLayout>
           } />
             </Routes>
-          </div>
-          {/* </SocketProvider> */}
+              </div>
+              {/* </SocketProvider> */}
+            </>
+          )}
         </CurrencyProvider>
       </LanguageProvider>
     </ThemeProvider>

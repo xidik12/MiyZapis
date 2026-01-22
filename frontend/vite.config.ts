@@ -11,7 +11,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'logo.svg', 'logo.png', 'favicon.ico'],
+      includeAssets: ['favicon.svg', 'favicon-192.png', 'favicon-512.png', 'logo.svg', 'logo.png', 'favicon.ico'],
       manifest: {
         name: 'Panhaha – Connect & Book',
         short_name: 'Panhaha',
@@ -21,12 +21,12 @@ export default defineConfig({
         display: 'standalone',
         icons: [
           {
-            src: 'logo.png',
+            src: 'favicon-192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'logo.png',
+            src: 'favicon-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
