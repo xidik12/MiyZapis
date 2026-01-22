@@ -29,6 +29,7 @@ export interface ReviewCardData {
   likeCount: number;
   dislikeCount: number;
   userReaction?: 'like' | 'dislike' | null;
+  commentCount?: number;
   createdAt: string;
   customer: {
     id: string;
@@ -385,9 +386,13 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
             <span className="text-xs font-semibold whitespace-nowrap">
               {isLoadingComments
                 ? (t('reviews.comments.loading') || 'Loading...')
-                : comments.length > 0
-                ? `${comments.length} ${comments.length === 1 ? (t('reviews.comments.comment') || 'Comment') : (t('reviews.comments.comments') || 'Comments')}`
-                : (t('reviews.comments.comment') || 'Comment')}
+                : (() => {
+                    // Use loaded comments length if available, otherwise use commentCount from review data
+                    const count = comments.length > 0 ? comments.length : (review.commentCount || 0);
+                    return count > 0
+                      ? `${count} ${count === 1 ? (t('reviews.comments.comment') || 'Comment') : (t('reviews.comments.comments') || 'Comments')}`
+                      : (t('reviews.comments.comment') || 'Comment');
+                  })()}
             </span>
           </button>
 

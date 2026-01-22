@@ -110,6 +110,13 @@ router.get('/my-reviews', authenticateToken, validateGetMyReviews, async (req: R
         },
         reactions: {
           where: { userId: userId }
+        },
+        _count: {
+          select: {
+            comments: {
+              where: { isDeleted: false }
+            }
+          }
         }
       },
       orderBy,
@@ -128,6 +135,7 @@ router.get('/my-reviews', authenticateToken, validateGetMyReviews, async (req: R
       likeCount: review.likeCount || 0,
       dislikeCount: review.dislikeCount || 0,
       userReaction: review.reactions.length > 0 ? review.reactions[0].reactionType : null,
+      commentCount: review._count.comments || 0,
       createdAt: review.createdAt,
       updatedAt: review.updatedAt,
       customer: review.customer,
