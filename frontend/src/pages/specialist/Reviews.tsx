@@ -7,11 +7,9 @@ import { ReviewCardData } from '@/components/reviews/ReviewCard';
 import { ReviewFiltersData } from '@/components/reviews/ReviewFilters';
 import { ReviewResponseModal } from '@/components/reviews/ReviewResponseModal';
 import { ReviewReportModal } from '@/components/reviews/ReviewReportModal';
-import { useAuth } from '@/contexts/AuthContext';
 
 const SpecialistReviews: React.FC = () => {
   const { t } = useLanguage();
-  const { user } = useAuth();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
   const [loading, setLoading] = useState(true);

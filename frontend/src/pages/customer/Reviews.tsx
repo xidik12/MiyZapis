@@ -7,10 +7,9 @@ import { ReviewFiltersData } from '@/components/reviews/ReviewFilters';
 import { ReviewReportModal } from '@/components/reviews/ReviewReportModal';
 import { useAppSelector } from '@/hooks/redux';
 import { selectUser } from '@/store/slices/authSlice';
-import { useAuth } from '@/contexts/AuthContext';
+
 const CustomerReviews: React.FC = () => {
   const { t } = useLanguage();
-  const { user } = useAuth();
   const currentUser = useAppSelector(selectUser);
 
   const [reviews, setReviews] = useState<Review[]>([]);
