@@ -23,10 +23,13 @@ export function getAbsoluteImageUrl(url: string | undefined | null | any): strin
     return '';
   }
   
-  // Handle case where url is an object with imageUrl property (portfolio images)
-  if (typeof url === 'object' && url.imageUrl) {
-    console.log('📦 getAbsoluteImageUrl: Extracting imageUrl from object');
-    url = url.imageUrl;
+  // Handle case where url is an object with imageUrl/url/path property (portfolio or file records)
+  if (typeof url === 'object') {
+    const candidate = url.imageUrl || url.url || url.path;
+    if (candidate) {
+      console.log('📦 getAbsoluteImageUrl: Extracting URL from object');
+      url = candidate;
+    }
   }
   
   // Ensure url is now a string
@@ -66,12 +69,25 @@ export function getAbsoluteImageUrl(url: string | undefined | null | any): strin
       url = url.replace('http://', 'https://');
       console.log('🔒 Upgraded HTTP to HTTPS to prevent Mixed Content warning');
     }
-    // Convert S3 URLs to use backend proxy to handle CORS issues
-    if (url.includes('miyzapis-storage.s3.ap-southeast-2.amazonaws.com')) {
-      const s3Path = url.replace('https://miyzapis-storage.s3.ap-southeast-2.amazonaws.com/', '');
-      const proxyUrl = `${environment.API_URL}/files/s3-proxy/${s3Path}`;
-      console.log('🔄 Converting S3 URL to proxy:', proxyUrl.substring(0, 80) + '...');
-      return proxyUrl;
+    // Keep presigned URLs intact to avoid breaking signatures
+    if (url.includes('X-Amz-') || url.includes('AWSAccessKeyId=') || url.includes('Signature=')) {
+      console.log('✅ Returning presigned URL as-is');
+      return url;
+    }
+
+    // Convert S3 URLs to use backend proxy to handle private buckets
+    try {
+      const parsed = new URL(url);
+      const host = parsed.hostname;
+      const isS3Host = host.includes('.s3.') || host.startsWith('s3.') || (host.includes('amazonaws.com') && host.includes('s3'));
+      if (isS3Host) {
+        const s3Path = parsed.pathname.replace(/^\/+/, '');
+        const proxyUrl = `${environment.API_URL}/files/s3-proxy/${s3Path}`;
+        console.log('🔄 Converting S3 URL to proxy:', proxyUrl.substring(0, 80) + '...');
+        return proxyUrl;
+      }
+    } catch (parseError) {
+      console.log('⚠️ Failed to parse absolute URL:', parseError);
     }
     
     console.log('✅ Returning absolute URL as-is:', url.substring(0, 50) + '...');

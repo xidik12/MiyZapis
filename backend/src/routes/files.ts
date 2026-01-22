@@ -805,13 +805,67 @@ if (useS3Storage) {
 // Proxy S3 images to handle CORS issues
 router.get('/s3-proxy/*', async (req, res) => {
   try {
-    const s3Path = req.params[0]; // Gets everything after /s3-proxy/
-    const s3Url = `https://miyzapis-storage.s3.ap-southeast-2.amazonaws.com/${s3Path}`;
-    
+    const rawPath = req.params[0]; // Gets everything after /s3-proxy/
+    if (!rawPath) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing S3 object key'
+      });
+    }
+
+    const s3Path = rawPath.replace(/^\/+/, '');
     console.log(`🔄 Proxying S3 request: ${s3Path}`);
-    
-    const response = await fetch(s3Url);
-    
+
+    const existingService = getS3Service();
+    const s3Service = existingService || (() => {
+      const region = process.env.AWS_REGION || 'us-east-1';
+      const accessKeyId = process.env.AWS_ACCESS_KEY_ID || '';
+      const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || '';
+      const bucketName = process.env.AWS_S3_BUCKET || '';
+      if (!accessKeyId || !secretAccessKey || !bucketName) {
+        return null;
+      }
+      try {
+        return initializeS3Service({
+          region,
+          accessKeyId,
+          secretAccessKey,
+          bucketName,
+          publicUrl: process.env.AWS_S3_URL
+        });
+      } catch (initError) {
+        logger.warn('S3 proxy could not initialize service', {
+          error: initError instanceof Error ? initError.message : String(initError)
+        });
+        return null;
+      }
+    })();
+
+    if (s3Service) {
+      try {
+        const signedUrl = await s3Service.getPresignedDownloadUrl(s3Path, 300);
+        res.setHeader('Cache-Control', 'private, max-age=300');
+        return res.redirect(signedUrl);
+      } catch (signError) {
+        logger.warn('S3 proxy presigned URL failed, falling back to public fetch', {
+          error: signError instanceof Error ? signError.message : String(signError)
+        });
+      }
+    }
+
+    const baseUrl = (process.env.AWS_S3_URL || 'https://miyzapis-storage.s3.ap-southeast-2.amazonaws.com').replace(/\/+$/, '');
+    const s3Url = `${baseUrl}/${s3Path}`;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    let response;
+    try {
+      response = await fetch(s3Url, { signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
     if (!response.ok) {
       console.log(`❌ S3 proxy failed: ${response.status} for ${s3Url}`);
       return res.status(response.status).json({
@@ -820,24 +874,27 @@ router.get('/s3-proxy/*', async (req, res) => {
         s3Status: response.status
       });
     }
-    
-    // Set appropriate headers
+
     const contentType = response.headers.get('content-type') || 'application/octet-stream';
     const contentLength = response.headers.get('content-length');
-    
+
     res.setHeader('Content-Type', contentType);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year cache
-    
+
     if (contentLength) {
       res.setHeader('Content-Length', contentLength);
     }
-    
-    // Stream the response
+
     const buffer = await response.arrayBuffer();
     res.send(Buffer.from(buffer));
-    
   } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      return res.status(504).json({
+        success: false,
+        error: 'S3 proxy timeout'
+      });
+    }
     console.error('❌ S3 proxy error:', error);
     res.status(500).json({
       success: false,
