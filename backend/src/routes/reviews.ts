@@ -137,6 +137,13 @@ router.get('/my-reviews', authenticateToken, validateGetMyReviews, async (req: R
         id: review.response.id,
         responseText: review.response.responseText,
         createdAt: review.response.createdAt,
+        respondedBy: {
+          id: review.specialist.id,
+          firstName: review.specialist.firstName,
+          lastName: review.specialist.lastName,
+          businessName: review.specialist.businessName,
+          avatar: review.specialist.avatar
+        },
         likeCount: review.response.likeCount || 0,
         dislikeCount: review.response.dislikeCount || 0,
         userReaction: review.response.reactions.length > 0 ? review.response.reactions[0].reactionType : null
