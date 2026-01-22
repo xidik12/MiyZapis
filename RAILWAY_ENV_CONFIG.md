@@ -52,7 +52,19 @@ BCRYPT_ROUNDS=12
 CORS_ORIGIN=https://panhaha.com,https://www.panhaha.com,https://panhaha-website-production.up.railway.app,http://localhost:3000
 ```
 
-### 7. AWS S3 / File Uploads (RECOMMENDED)
+### 7. File Upload Storage (choose one)
+
+#### Option A: Railway volume at `/app/uploads` (lovely-volume)
+```
+ENABLE_S3_STORAGE=false
+FORCE_LOCAL_STORAGE=true
+FILE_STORAGE=local
+UPLOAD_DIR=/app/uploads
+RAILWAY_VOLUME_MOUNT_PATH=/app/uploads
+RAILWAY_PUBLIC_DOMAIN=huddle-backend-production.up.railway.app
+```
+
+#### Option B: AWS S3
 ```
 # Enable S3 (set to false to force local storage)
 ENABLE_S3_STORAGE=true

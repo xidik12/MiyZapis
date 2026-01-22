@@ -134,7 +134,21 @@ export class EnhancedFileUploadService {
 
   constructor() {
     this.bucketName = process.env.S3_BUCKET_NAME || 'booking-platform-files';
-    this.uploadPath = process.env.UPLOAD_PATH || './uploads';
+    const isRailwayEnv = !!(
+      process.env.RAILWAY_ENVIRONMENT ||
+      process.env.RAILWAY_SERVICE_NAME ||
+      process.env.RAILWAY_PROJECT_NAME ||
+      process.env.RAILWAY_SERVICE ||
+      process.env.RAILWAY_PROJECT ||
+      (process.env.PORT && process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.NETLIFY)
+    );
+    const preferredRailwayDir =
+      process.env.RAILWAY_VOLUME_MOUNT_PATH ||
+      process.env.UPLOAD_DIR ||
+      process.env.UPLOAD_PATH ||
+      '/app/uploads';
+    const fallbackUploadDir = process.env.UPLOAD_PATH || process.env.UPLOAD_DIR || './uploads';
+    this.uploadPath = isRailwayEnv ? preferredRailwayDir : fallbackUploadDir;
     this.baseUrl = process.env.BASE_URL || 'http://localhost:3000';
 
     // Initialize S3 client if credentials are provided

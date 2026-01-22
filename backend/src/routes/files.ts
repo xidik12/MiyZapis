@@ -94,19 +94,33 @@ const detectRailwayVolumes = (): string[] => {
   return volumes;
 };
 
+const getPreferredRailwayUploadDir = (): string => {
+  return (
+    process.env.RAILWAY_VOLUME_MOUNT_PATH ||
+    process.env.UPLOAD_DIR ||
+    process.env.UPLOAD_PATH ||
+    '/app/uploads'
+  );
+};
+
 const buildUploadOptions = (isRailway: boolean): string[] => {
   const volumePaths = detectRailwayVolumes();
+  const preferredRailwayDir = getPreferredRailwayUploadDir();
   const options = isRailway
     ? [
-        process.env.UPLOAD_DIR,
+        preferredRailwayDir,
+        '/app/uploads',
         ...volumePaths.map(p => path.join(p, 'uploads')),
         ...volumePaths,
-        '/app/uploads',
         '/tmp/uploads',
         './uploads',
         '/tmp'
       ]
-    : [process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'), './uploads', '/tmp/uploads'];
+    : [
+        process.env.UPLOAD_DIR || process.env.UPLOAD_PATH || path.join(process.cwd(), 'uploads'),
+        './uploads',
+        '/tmp/uploads'
+      ];
 
   return Array.from(new Set(options.filter(Boolean) as string[]));
 };

@@ -76,6 +76,14 @@ const detectRailwayVolumes = (): string[] => {
   }
   return volumes;
 };
+const getPreferredRailwayUploadDir = (): string => {
+  return (
+    process.env.RAILWAY_VOLUME_MOUNT_PATH ||
+    process.env.UPLOAD_DIR ||
+    process.env.UPLOAD_PATH ||
+    '/app/uploads'
+  );
+};
 const enableS3Storage = process.env.ENABLE_S3_STORAGE === 'true';
 const explicitLocalStorage = process.env.FORCE_LOCAL_STORAGE === 'true' ||
   process.env.FILE_STORAGE === 'local' ||
@@ -189,17 +197,22 @@ export class FileUploadService {
 
       // Railway permission fix: Try multiple upload directories in order of preference
       const volumePaths = detectRailwayVolumes();
+      const preferredRailwayDir = getPreferredRailwayUploadDir();
       const rawUploadOptions = isRailway
         ? [
-            process.env.UPLOAD_DIR,
+            preferredRailwayDir,
+            '/app/uploads',
             ...volumePaths.map(p => path.join(p, 'uploads')),
             ...volumePaths,
-            '/app/uploads',
             '/tmp/uploads',
             './uploads',
             '/tmp'
           ]
-        : [process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'), './uploads', '/tmp/uploads'];
+        : [
+            process.env.UPLOAD_DIR || process.env.UPLOAD_PATH || path.join(process.cwd(), 'uploads'),
+            './uploads',
+            '/tmp/uploads'
+          ];
       const uploadOptions = Array.from(new Set(rawUploadOptions.filter(Boolean) as string[]));
       
       logger.info('Upload directory options', {
@@ -349,9 +362,23 @@ export class FileUploadService {
       );
       const parsedTimeout = Number.parseInt(process.env.UPLOAD_IO_TIMEOUT_MS || '8000', 10);
       const ioTimeoutMs = Number.isFinite(parsedTimeout) ? parsedTimeout : 8000;
+      const preferredRailwayDir = getPreferredRailwayUploadDir();
+      const volumePaths = detectRailwayVolumes();
       const rawUploadOptions = isRailway
-        ? [process.env.UPLOAD_DIR, '/app/uploads', '/tmp/uploads', './uploads', '/tmp']
-        : [process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'), './uploads', '/tmp/uploads'];
+        ? [
+            preferredRailwayDir,
+            '/app/uploads',
+            ...volumePaths.map(p => path.join(p, 'uploads')),
+            ...volumePaths,
+            '/tmp/uploads',
+            './uploads',
+            '/tmp'
+          ]
+        : [
+            process.env.UPLOAD_DIR || process.env.UPLOAD_PATH || path.join(process.cwd(), 'uploads'),
+            './uploads',
+            '/tmp/uploads'
+          ];
       const uploadOptions = Array.from(new Set(rawUploadOptions.filter(Boolean) as string[]));
 
       let filePath: string | null = null;
