@@ -25,11 +25,12 @@ interface CommentItemProps {
   onReply: (commentId: string) => void;
   onReact: (commentId: string, reaction: 'like' | 'dislike' | null) => Promise<void>;
   onDelete: (commentId: string) => Promise<void>;
-  isReplyOpen: boolean;
+  replyingTo: string | null;
   onCancelReply: () => void;
   onSubmitReply: (content: string, parentId: string) => Promise<void>;
   replies: ReviewComment[];
   depth: number;
+  getReplies: (parentId: string) => ReviewComment[];
 }
 
 const CommentItem: React.FC<CommentItemProps> = ({
@@ -38,12 +39,14 @@ const CommentItem: React.FC<CommentItemProps> = ({
   onReply,
   onReact,
   onDelete,
-  isReplyOpen,
+  replyingTo,
   onCancelReply,
   onSubmitReply,
   replies,
-  depth
+  depth,
+  getReplies
 }) => {
+  const isReplyOpen = replyingTo === comment.id;
   const { t } = useLanguage();
   const [replyContent, setReplyContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -160,6 +163,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                   <ChatCircleIcon className="w-3 h-3" />
                   <span className="text-xs font-semibold">
                     {t('reviews.comments.reply') || 'Reply'}
+                    {replies.length > 0 && ` (${replies.length})`}
                   </span>
                 </button>
               )}
@@ -231,11 +235,12 @@ const CommentItem: React.FC<CommentItemProps> = ({
                 onReply={onReply}
                 onReact={onReact}
                 onDelete={onDelete}
-                isReplyOpen={false}
-                onCancelReply={() => {}}
+                replyingTo={replyingTo}
+                onCancelReply={onCancelReply}
                 onSubmitReply={onSubmitReply}
-                replies={[]}
+                replies={getReplies(reply.id)}
                 depth={depth + 1}
+                getReplies={getReplies}
               />
             ))}
           </div>
@@ -339,11 +344,12 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
                 onReply={handleReply}
                 onReact={onReact}
                 onDelete={onDelete}
-                isReplyOpen={replyingTo === comment.id}
+                replyingTo={replyingTo}
                 onCancelReply={handleCancelReply}
                 onSubmitReply={handleSubmitReply}
                 replies={getReplies(comment.id)}
                 depth={0}
+                getReplies={getReplies}
               />
             ))
           )}

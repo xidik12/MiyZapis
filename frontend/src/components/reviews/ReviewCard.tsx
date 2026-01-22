@@ -93,6 +93,27 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
     ? review.comment
     : review.comment?.substring(0, 200) + '...';
 
+  // Auto-expand comments if there are any
+  useEffect(() => {
+    const loadCommentsIfNeeded = async () => {
+      if (review.commentCount && review.commentCount > 0 && comments.length === 0 && !isLoadingComments && !showComments) {
+        try {
+          setIsLoadingComments(true);
+          const loadedComments = await reviewsService.getReviewComments(review.id);
+          setComments(loadedComments);
+          setShowComments(true);
+        } catch (error: any) {
+          console.error('[ReviewCard] Error auto-loading comments:', error);
+          // Don't show error toast for auto-load, just fail silently
+        } finally {
+          setIsLoadingComments(false);
+        }
+      }
+    };
+
+    loadCommentsIfNeeded();
+  }, [review.id, review.commentCount]); // Only run when review changes
+
   const handleLikeClick = () => {
     if (onReact) {
       // Toggle like: if already liked, remove it; otherwise set to like
