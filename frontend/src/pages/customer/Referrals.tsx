@@ -238,9 +238,9 @@ const CustomerReferrals: React.FC = () => {
 
             {/* Referral Code Display */}
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 mb-6 border border-gray-200 dark:border-gray-600">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="text-center">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 gap-4">
+                  <div className="text-center sm:text-left">
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Referral Code</p>
                     <p className="text-3xl font-mono font-bold text-primary-600 dark:text-primary-400 tracking-wider">
                       {referralProgram.code}
@@ -249,7 +249,7 @@ const CustomerReferrals: React.FC = () => {
                   
                   <div className="hidden md:block h-12 w-px bg-gray-200 dark:bg-gray-600"></div>
                   
-                  <div className="text-center">
+                  <div className="text-center sm:text-left">
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Used</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
                       {referralProgram.currentUses}
@@ -262,7 +262,7 @@ const CustomerReferrals: React.FC = () => {
 
                 <button
                   onClick={() => copyToClipboard(referralProgram.code, 'Referral code')}
-                  className="flex items-center px-4 py-2 text-sm font-medium text-primary-700 dark:text-primary-300 bg-primary-100 dark:bg-primary-900/30 rounded-lg hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-colors"
+                  className="flex items-center justify-center px-4 py-2 text-sm font-medium text-primary-700 dark:text-primary-300 bg-primary-100 dark:bg-primary-900/30 rounded-lg hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-colors w-full sm:w-auto"
                 >
                   <ClipboardDocumentIcon className="h-4 w-4 mr-2" />
                   Copy Code
@@ -271,7 +271,7 @@ const CustomerReferrals: React.FC = () => {
             </div>
 
             {/* Share Options */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
               <button
                 onClick={() => copyToClipboard(generateShareUrl(), 'Referral link')}
                 className="flex flex-col items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -308,7 +308,7 @@ const CustomerReferrals: React.FC = () => {
             {/* Referral URL */}
             <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Your referral link:</p>
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <code className="flex-1 text-sm text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 px-3 py-2 rounded border font-mono overflow-x-auto">
                   {generateShareUrl()}
                 </code>
@@ -338,17 +338,17 @@ const CustomerReferrals: React.FC = () => {
             <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {userReferrals.map((referral) => (
                 <div key={referral.id} className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 gap-3 sm:gap-0 min-w-0">
                       <div className="flex-shrink-0">
                         {getStatusIcon(referral.status)}
                       </div>
                       
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-900 dark:text-white break-words">
                           Referral Code: {referral.code}
                         </p>
-                        <div className="flex items-center space-x-4 mt-1">
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
                           <p className="text-sm text-gray-600 dark:text-gray-400">
                             {new Date(referral.createdAt).toLocaleDateString()}
                           </p>
@@ -359,7 +359,7 @@ const CustomerReferrals: React.FC = () => {
                       </div>
                     </div>
                     
-                    <div className="text-right">
+                    <div className="text-left sm:text-right">
                       <p className="font-semibold text-gray-900 dark:text-white">
                         {referral.referrerPoints} points
                       </p>

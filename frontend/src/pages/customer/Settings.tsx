@@ -422,7 +422,7 @@ const CustomerSettings: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
                       {t('settings.profile.photoLabel')}
                     </label>
-                    <div className="flex items-center space-x-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
                       <div className="relative">
                         <Avatar
                           src={user.avatar}
@@ -437,9 +437,9 @@ const CustomerSettings: React.FC = () => {
                         )}
                       </div>
                       
-                      <div className="flex flex-col space-y-3">
-                        <div className="flex space-x-3">
-                          <label className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                      <div className="flex flex-col space-y-3 w-full sm:w-auto">
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <label className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center w-full sm:w-auto">
                             <input
                               type="file"
                               accept={IMAGE_FILE_ACCEPT}
@@ -455,7 +455,7 @@ const CustomerSettings: React.FC = () => {
                             <button
                               onClick={handleImageRemove}
                               disabled={isUploadingImage}
-                              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600"
+                              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-red-200 hover:border-red-300 dark:border-red-700 dark:hover:border-red-600 w-full sm:w-auto"
                             >
                               <TrashIcon className="w-4 h-4 inline mr-2" />
                               {t('actions.remove') || 'Remove'}
@@ -603,7 +603,7 @@ const CustomerSettings: React.FC = () => {
                     )}
 
                     {/* Regular Users - Change Password */}
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                           {t('profile.password')}
@@ -676,7 +676,7 @@ const CustomerSettings: React.FC = () => {
                           { key: 'emailReminders', label: t('customer.settings.appointmentReminders') },
                           { key: 'emailPromotions', label: t('customer.settings.promotionsOffers') },
                         ].map(({ key, label }) => (
-                          <div key={key} className="flex items-center justify-between">
+                          <div key={key} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
                             <button
                               onClick={() => handleNotificationChange(key as keyof typeof notifications)}
@@ -704,7 +704,7 @@ const CustomerSettings: React.FC = () => {
                           { key: 'pushReminders', label: t('customer.settings.appointmentReminders') },
                           { key: 'pushPromotions', label: t('customer.settings.promotionsOffers') },
                         ].map(({ key, label }) => (
-                          <div key={key} className="flex items-center justify-between">
+                          <div key={key} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
                             <button
                               onClick={() => handleNotificationChange(key as keyof typeof notifications)}
@@ -727,7 +727,7 @@ const CustomerSettings: React.FC = () => {
                     <div>
                       <h3 className="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">{t('customer.settings.smsNotifications')}</h3>
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                           <span className="text-sm text-gray-700 dark:text-gray-300">{t('customer.settings.appointmentReminders')}</span>
                           <button
                             onClick={() => handleNotificationChange('smsReminders')}
@@ -777,7 +777,7 @@ const CustomerSettings: React.FC = () => {
                         { key: 'allowReviews', label: t('customer.settings.allowReviews') },
                         { key: 'dataProcessing', label: t('customer.settings.dataProcessing') },
                       ].map(({ key, label }) => (
-                        <div key={key} className="flex items-center justify-between">
+                        <div key={key} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                           <span className="text-sm text-gray-700 dark:text-gray-300">{label}</span>
                           <button
                             onClick={() => handlePrivacyChange(key as keyof typeof privacy, !privacy[key as keyof typeof privacy])}
@@ -856,13 +856,13 @@ const CustomerSettings: React.FC = () => {
               {/* Payment Methods */}
               {activeSection === 'payments' && (
                 <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                       {t('customer.settings.payments')}
                     </h2>
                     <button 
                       onClick={handleAddPaymentMethod}
-                      className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
+                      className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center justify-center w-full sm:w-auto"
                     >
                       <PlusIcon className="h-4 w-4 mr-2" />
                       {t('payment.addPaymentMethod')}
@@ -876,7 +876,7 @@ const CustomerSettings: React.FC = () => {
                         <p className="text-gray-500 dark:text-gray-400 mb-4">{t('payments.emptyTitle')}</p>
                         <button 
                           onClick={handleAddPaymentMethod}
-                          className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
+                          className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center justify-center w-full sm:w-auto mx-auto"
                         >
                           <PlusIcon className="h-4 w-4 mr-2" />
                           {t('payments.emptyCta')}
@@ -893,12 +893,12 @@ const CustomerSettings: React.FC = () => {
                           : `${t('payments.accountSuffix')} ${method.accountNumber?.slice(-4) || ''}`;
 
                         return (
-                          <div key={method.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex items-center justify-between">
-                            <div className="flex items-center">
+                          <div key={method.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div className="flex items-center min-w-0 flex-1">
                               <CreditCardIcon className="h-8 w-8 text-gray-400 dark:text-gray-500 mr-3" />
-                              <div>
-                                <p className="font-medium text-gray-900 dark:text-gray-100">{displayName}</p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">{detailLine}</p>
+                              <div className="min-w-0">
+                                <p className="font-medium text-gray-900 dark:text-gray-100 break-words">{displayName}</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 break-words">{detailLine}</p>
                                 {method.isDefault && (
                                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
                                     {t('payments.default')}
@@ -906,7 +906,7 @@ const CustomerSettings: React.FC = () => {
                                 )}
                               </div>
                             </div>
-                            <div className="flex items-center space-x-2">
+                            <div className="flex flex-wrap items-center gap-2">
                               {method.qrImageUrl && (
                                 <img
                                   src={method.qrImageUrl}
@@ -935,13 +935,13 @@ const CustomerSettings: React.FC = () => {
               {/* Addresses */}
               {activeSection === 'addresses' && (
                 <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
                     <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                       {t('customer.settings.addresses')}
                     </h2>
                     <button 
                       onClick={handleAddAddress}
-                      className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
+                      className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center justify-center w-full sm:w-auto"
                     >
                       <PlusIcon className="h-4 w-4 mr-2" />
                       {t('profile.addAddress')}
@@ -955,7 +955,7 @@ const CustomerSettings: React.FC = () => {
                         <p className="text-gray-500 dark:text-gray-400 mb-4">{t('profile.noAddressesYet')}</p>
                         <button 
                           onClick={handleAddAddress}
-                          className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
+                          className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary-700 transition-colors flex items-center justify-center w-full sm:w-auto mx-auto"
                         >
                           <PlusIcon className="h-4 w-4 mr-2" />
                           {t('profile.addYourFirstAddress')}
@@ -963,26 +963,26 @@ const CustomerSettings: React.FC = () => {
                       </div>
                     ) : (
                       addresses.map((address) => (
-                      <div key={address.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex items-start justify-between hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
-                        <div className="flex items-start">
+                      <div key={address.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                        <div className="flex items-start min-w-0 flex-1">
                           <MapPinIcon className="h-8 w-8 text-gray-500 dark:text-gray-400 mr-3 mt-1" />
-                          <div>
-                            <div className="flex items-center mb-1">
-                              <p className="font-medium text-gray-900 dark:text-gray-100 mr-2">{address.label}</p>
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                              <p className="font-medium text-gray-900 dark:text-gray-100 break-words">{address.label}</p>
                               {address.isDefault && (
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
                                   {t('profile.default')}
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">{address.street}</p>
-                            <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                            <p className="text-sm text-gray-700 dark:text-gray-300 font-medium break-words">{address.street}</p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 font-medium break-words">
                               {address.city}, {address.postalCode}
                             </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">{address.country}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 break-words">{address.country}</p>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <button className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
                             {t('profile.edit')}
                           </button>
@@ -1007,7 +1007,7 @@ const CustomerSettings: React.FC = () => {
       {/* Add Payment Method Modal */}
       {showAddPaymentModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
               <CreditCardIcon className="h-6 w-6 mr-2 text-primary-600 dark:text-primary-400" />
               {t('payment.addPaymentMethod')}
@@ -1109,8 +1109,8 @@ const CustomerSettings: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
                         {t('payments.qrImage')}
                       </label>
-                      <div className="flex items-center gap-3">
-                        <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:border-primary-400">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:border-primary-400 w-full sm:w-auto">
                           <CameraIcon className="h-4 w-4" />
                           {t('payments.uploadQr')}
                           <input
@@ -1141,17 +1141,17 @@ const CustomerSettings: React.FC = () => {
                   </>
                 )}
               </div>
-              <div className="flex justify-end space-x-3 mt-8 pt-4 border-t border-gray-200 dark:border-gray-600">
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 mt-8 pt-4 border-t border-gray-200 dark:border-gray-600">
                 <button
                   type="button"
                   onClick={() => setShowAddPaymentModal(false)}
-                  className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium rounded-lg transition-colors"
+                  className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium rounded-lg transition-colors w-full sm:w-auto"
                 >
                   {t('payments.cancel')}
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-sm"
+                  className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-sm w-full sm:w-auto"
                 >
                   {t('payment.addPaymentMethod')}
                 </button>
@@ -1164,7 +1164,7 @@ const CustomerSettings: React.FC = () => {
       {/* Add Address Modal */}
       {showAddAddressModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
               <MapPinIcon className="h-6 w-6 mr-2 text-primary-600 dark:text-primary-400" />
               {t('addresses.addTitle')}
@@ -1244,7 +1244,7 @@ const CustomerSettings: React.FC = () => {
                     required
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
                       {t('addresses.city')}
@@ -1300,17 +1300,17 @@ const CustomerSettings: React.FC = () => {
                   </select>
                 </div>
               </div>
-              <div className="flex justify-end space-x-3 mt-8 pt-4 border-t border-gray-200 dark:border-gray-600">
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 mt-8 pt-4 border-t border-gray-200 dark:border-gray-600">
                 <button
                   type="button"
                   onClick={() => setShowAddAddressModal(false)}
-                  className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium rounded-lg transition-colors"
+                  className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium rounded-lg transition-colors w-full sm:w-auto"
                 >
                   {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-sm"
+                  className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium transition-colors shadow-sm w-full sm:w-auto"
                 >
                   {t('addresses.addAction')}
                 </button>

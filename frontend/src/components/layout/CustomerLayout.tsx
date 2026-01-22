@@ -128,6 +128,7 @@ const navigation: SidebarNavItem[] = [
 const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { theme, toggleTheme } = useTheme();
@@ -136,14 +137,10 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
   const user = useAppSelector(selectUser);
   const location = useLocation();
 
-  // Check if mobile view
+  // Track mobile viewport to keep sidebar usable on small screens
   useEffect(() => {
     const checkScreenSize = () => {
-      if (window.innerWidth < 1024) {
-        setIsCollapsed(true);
-      } else {
-        setIsCollapsed(false);
-      }
+      setIsMobile(window.innerWidth < 1024);
     };
 
     checkScreenSize();
@@ -152,6 +149,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
   }, []);
 
   const isCurrentPath = (path: string) => location.pathname === path;
+  const isSidebarCollapsed = !isMobile && isCollapsed;
 
   const handleLogout = async () => {
     try {
@@ -170,7 +168,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex min-h-screen min-h-[100dvh] bg-gray-50 dark:bg-gray-900">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
@@ -182,7 +180,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
       {/* Sidebar */}
       <aside className={`
         fixed inset-y-0 left-0 z-50 flex flex-col
-        ${isCollapsed ? 'w-16' : 'w-72'}
+        ${isSidebarCollapsed ? 'w-16' : 'w-72'}
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         transition-all duration-300 ease-in-out
         bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
@@ -190,7 +188,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
       `}>
         {/* Logo section */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
-          {!isCollapsed && (
+          {!isSidebarCollapsed && (
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-primary-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">
                 P
@@ -232,7 +230,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                 </span>
               </div>
             )}
-            {!isCollapsed && (
+            {!isSidebarCollapsed && (
               <div className="flex-1 min-w-0">
                 <h2 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                   {user?.firstName} {user?.lastName}
@@ -266,17 +264,17 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                     ? 'bg-primary-600 text-white shadow-primary'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }
-                  ${isCollapsed ? 'justify-center' : 'justify-between'}
+                  ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}
                 `}
               >
                 <div className="flex items-center space-x-3">
                   <Icon className={`w-5 h-5 ${isActive ? 'text-white' : ''}`} />
-                  {!isCollapsed && (
+                  {!isSidebarCollapsed && (
                     <span>{t(item.nameKey)}</span>
                   )}
                 </div>
                 
-                {!isCollapsed && (item.count || item.isNew) && (
+                {!isSidebarCollapsed && (item.count || item.isNew) && (
                   <div className="flex items-center space-x-1">
                     {item.count && (
                       <span className={`
@@ -307,7 +305,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
             className={`
               flex items-center w-full px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
               text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 mobile-touch-target
-              ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
+              ${isSidebarCollapsed ? 'justify-center' : 'justify-start space-x-3'}
             `}
             aria-label={theme === 'dark' ? t('theme.light') : t('theme.dark')}
           >
@@ -316,13 +314,13 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
             ) : (
               <MoonIcon className="w-7 h-7 sm:w-6 sm:h-6" />
             )}
-            {!isCollapsed && (
+            {!isSidebarCollapsed && (
               <span>{theme === 'dark' ? t('theme.light') : t('theme.dark')}</span>
             )}
           </button>
 
           {/* Currency selector */}
-          {!isCollapsed && (
+          {!isSidebarCollapsed && (
             <div className="relative">
               <select
                 value={currency}
@@ -345,11 +343,11 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
             className={`
               flex items-center w-full px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
               text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 mobile-touch-target
-              ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
+              ${isSidebarCollapsed ? 'justify-center' : 'justify-start space-x-3'}
             `}
           >
             <ArrowRightOnRectangleIcon className="w-7 h-7 sm:w-6 sm:h-6" />
-            {!isCollapsed && (
+            {!isSidebarCollapsed && (
               <span>{t('auth.logout')}</span>
             )}
           </button>
@@ -357,7 +355,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
       </aside>
 
       {/* Main content */}
-      <div className={`flex-1 flex flex-col min-h-screen ${isCollapsed ? 'lg:ml-16' : 'lg:ml-72'} transition-all duration-300`}>
+      <div className={`flex-1 flex flex-col min-w-0 ${isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-72'} transition-all duration-300`}>
         {/* Top bar */}
         <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 lg:px-6">
           <button
@@ -382,7 +380,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
+        <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden bg-gray-50 dark:bg-gray-900">
           {children}
         </main>
       </div>

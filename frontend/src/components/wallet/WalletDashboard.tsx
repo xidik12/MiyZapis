@@ -44,7 +44,7 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t('wallet.dashboard.title')}</h1>
           <p className="text-muted-foreground">
@@ -135,7 +135,7 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4">
                     {t('wallet.quickActions.subtitle')}
                   </p>
-                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <Button variant="secondary" className="h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 text-xs sm:text-sm">
                       <Gift className="h-4 w-4 sm:h-6 sm:w-6" />
                       <span>{t('wallet.quickActions.redeemRewards')}</span>
