@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';
 import {
   StarIcon,
   HeartIcon,
@@ -14,6 +15,10 @@ import {
 } from '@/components/icons';
 import { Avatar } from '@/components/ui/Avatar';
 import { SpecialistResponse } from './SpecialistResponse';
+import { CommentThread } from './CommentThread';
+import { reviewsService, ReviewComment } from '@/services/reviews.service';
+import { RootState } from '@/store';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface ReviewCardData {
   id: string;
@@ -69,10 +74,15 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
   onReport,
   index = 0
 }) => {
+  const { t } = useLanguage();
+  const currentUser = useSelector((state: RootState) => state.auth.user);
   const [showFullComment, setShowFullComment] = useState(false);
   const [showResponse, setShowResponse] = useState(true);
   const [isSharing, setIsSharing] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState<ReviewComment[]>([]);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
 
   const customerName = `${review.customer.firstName} ${review.customer.lastName}`;
   const customerInitial = review.customer.firstName.charAt(0).toUpperCase();
@@ -102,12 +112,27 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
     }
   };
 
-  const handleCommentClick = () => {
-    // Toggle showing the specialist response if it exists
-    if (review.response) {
-      setShowResponse(!showResponse);
+  const handleCommentClick = async () => {
+    // Toggle comment thread visibility
+    if (showComments) {
+      setShowComments(false);
     } else {
-      toast.info('No responses yet for this review');
+      // Load comments if not already loaded
+      if (comments.length === 0 && !isLoadingComments) {
+        try {
+          setIsLoadingComments(true);
+          const loadedComments = await reviewsService.getReviewComments(review.id);
+          setComments(loadedComments);
+          setShowComments(true);
+        } catch (error: any) {
+          console.error('[ReviewCard] Error loading comments:', error);
+          toast.error(t('reviews.comments.loadError') || 'Failed to load comments');
+        } finally {
+          setIsLoadingComments(false);
+        }
+      } else {
+        setShowComments(true);
+      }
     }
   };
 
@@ -139,6 +164,68 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
       }
     } finally {
       setIsSharing(false);
+    }
+  };
+
+  // Comment handlers
+  const handlePostComment = async (content: string, parentId?: string) => {
+    try {
+      const newComment = await reviewsService.createReviewComment(review.id, content, parentId);
+      setComments(prevComments => [...prevComments, newComment]);
+    } catch (error: any) {
+      console.error('[ReviewCard] Error posting comment:', error);
+      toast.error(error.message || 'Failed to post comment');
+      throw error; // Re-throw so CommentThread can handle it
+    }
+  };
+
+  const handleReactToComment = async (commentId: string, reaction: 'like' | 'dislike' | null) => {
+    try {
+      await reviewsService.reactToComment(review.id, commentId, reaction);
+
+      // Update local state
+      setComments(prevComments =>
+        prevComments.map(comment => {
+          if (comment.id === commentId) {
+            const oldReaction = comment.userReaction;
+            const newLikeCount = reaction === 'like'
+              ? comment.likeCount + 1
+              : oldReaction === 'like'
+              ? comment.likeCount - 1
+              : comment.likeCount;
+            const newDislikeCount = reaction === 'dislike'
+              ? comment.dislikeCount + 1
+              : oldReaction === 'dislike'
+              ? comment.dislikeCount - 1
+              : comment.dislikeCount;
+
+            return {
+              ...comment,
+              userReaction: reaction,
+              likeCount: newLikeCount,
+              dislikeCount: newDislikeCount
+            };
+          }
+          return comment;
+        })
+      );
+    } catch (error: any) {
+      console.error('[ReviewCard] Error reacting to comment:', error);
+      toast.error(error.message || 'Failed to react to comment');
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      await reviewsService.deleteComment(review.id, commentId);
+
+      // Remove comment from local state
+      setComments(prevComments => prevComments.filter(c => c.id !== commentId));
+      toast.success('Comment deleted successfully');
+    } catch (error: any) {
+      console.error('[ReviewCard] Error deleting comment:', error);
+      toast.error(error.message || 'Failed to delete comment');
+      throw error; // Re-throw so CommentThread can handle it
     }
   };
 
@@ -287,15 +374,20 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
           {/* Comment Button */}
           <button
             onClick={handleCommentClick}
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
-              showResponse && review.response
+            disabled={isLoadingComments}
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
+              showComments
                 ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
             <ChatBubbleLeftIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
             <span className="text-xs font-semibold whitespace-nowrap">
-              {review.response ? '1 Comment' : 'Comment'}
+              {isLoadingComments
+                ? (t('reviews.comments.loading') || 'Loading...')
+                : comments.length > 0
+                ? `${comments.length} ${comments.length === 1 ? (t('reviews.comments.comment') || 'Comment') : (t('reviews.comments.comments') || 'Comments')}`
+                : (t('reviews.comments.comment') || 'Comment')}
             </span>
           </button>
 
@@ -340,6 +432,17 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
           onReact={onReactToResponse ? (responseId, reaction) => onReactToResponse(review.id, reaction) : undefined}
           isExpanded={showResponse}
           onToggle={() => setShowResponse(!showResponse)}
+        />
+      )}
+
+      {/* Comment Thread */}
+      {showComments && (
+        <CommentThread
+          comments={comments}
+          currentUserId={currentUser?.id}
+          onPostComment={handlePostComment}
+          onReact={handleReactToComment}
+          onDelete={handleDeleteComment}
         />
       )}
     </motion.div>

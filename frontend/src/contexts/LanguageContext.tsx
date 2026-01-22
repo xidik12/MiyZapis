@@ -2487,6 +2487,18 @@ const translations: Translations = {
   'reviews.report.reason.personal_info': { en: 'Contains personal information', uk: 'Містить особисту інформацію', ru: 'Содержит личную информацию' },
   'reviews.report.reason.other': { en: 'Other', uk: 'Інше', ru: 'Другое' },
 
+  // Review Comments
+  'reviews.comments.comment': { en: 'Comment', uk: 'Коментар', ru: 'Комментарий' },
+  'reviews.comments.comments': { en: 'Comments', uk: 'Коментарі', ru: 'Комментарии' },
+  'reviews.comments.placeholder': { en: 'Add a comment...', uk: 'Додати коментар...', ru: 'Добавить комментарий...' },
+  'reviews.comments.post': { en: 'Post Comment', uk: 'Опублікувати коментар', ru: 'Опубликовать комментарий' },
+  'reviews.comments.reply': { en: 'Reply', uk: 'Відповісти', ru: 'Ответить' },
+  'reviews.comments.replyPlaceholder': { en: 'Write a reply...', uk: 'Написати відповідь...', ru: 'Написать ответ...' },
+  'reviews.comments.empty': { en: 'No comments yet. Be the first to comment!', uk: 'Поки що немає коментарів. Будьте першим!', ru: 'Комментариев пока нет. Будьте первым!' },
+  'reviews.comments.deleteConfirm': { en: 'Are you sure you want to delete this comment?', uk: 'Ви впевнені, що хочете видалити цей коментар?', ru: 'Вы уверены, что хотите удалить этот комментарий?' },
+  'reviews.comments.loading': { en: 'Loading comments...', uk: 'Завантаження коментарів...', ru: 'Загрузка комментариев...' },
+  'reviews.comments.loadError': { en: 'Failed to load comments', uk: 'Не вдалося завантажити коментарі', ru: 'Не удалось загрузить комментарии' },
+
   // Pagination
   'pagination.previous': { en: 'Previous', uk: 'Попередня', ru: 'Предыдущая' },
   'pagination.next': { en: 'Next', uk: 'Наступна', ru: 'Следующая' },
