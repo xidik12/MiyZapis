@@ -110,6 +110,11 @@ model User {
   postLikes            PostLike[]             @relation("UserPostLikes")
   commentLikes         CommentLike[]          @relation("UserCommentLikes")
 
+  // Review engagement relations
+  reviewReactions      ReviewReaction[]       @relation("UserReviewReactions")
+  reviewReports        ReviewReport[]         @relation("UserReviewReports")
+  responseReactions    ReviewResponseReaction[] @relation("UserResponseReactions")
+
   // Indexes for performance
   @@index([email])
   @@index([telegramId])
@@ -397,16 +402,20 @@ model Review {
   bookingId    String @unique
   customerId   String
   specialistId String
-  
+
   // Review content
   rating  Int    // 1-5 stars
   comment String?
   tags    String // JSON string of tags like "professional", "punctual", etc.
-  
+
   // Review metadata
   isPublic Boolean @default(true)
   isVerified Boolean @default(false)
-  
+
+  // Engagement metrics
+  likeCount    Int @default(0)
+  dislikeCount Int @default(0)
+
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -415,8 +424,114 @@ model Review {
   booking    Booking    @relation(fields: [bookingId], references: [id])
   customer   User       @relation(fields: [customerId], references: [id])
   specialist Specialist @relation("SpecialistReviews", fields: [specialistId], references: [id])
+  reactions  ReviewReaction[]
+  reports    ReviewReport[]
+  response   ReviewResponse?
 
   @@map("reviews")
+}
+
+model ReviewReaction {
+  id        String @id @default(cuid())
+  reviewId  String
+  userId    String
+
+  // Reaction type: "like" or "dislike"
+  reactionType String // "like" | "dislike"
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation("UserReviewReactions", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Ensure one reaction per user per review
+  @@unique([reviewId, userId])
+  @@index([reviewId])
+  @@index([userId])
+  @@map("review_reactions")
+}
+
+model ReviewReport {
+  id         String @id @default(cuid())
+  reviewId   String
+  reportedBy String
+
+  // Report reason
+  reason String // spam, offensive, fake, harassment, personal_info, other
+  details String? // Optional additional details
+
+  // Report status
+  status String @default("PENDING") // PENDING, REVIEWING, RESOLVED, DISMISSED
+
+  // Admin review
+  reviewedByAdmin String?
+  resolutionNotes String?
+  resolvedAt      DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  review      Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  reporter    User   @relation("UserReviewReports", fields: [reportedBy], references: [id], onDelete: Cascade)
+
+  // Prevent duplicate reports from same user
+  @@unique([reviewId, reportedBy])
+  @@index([reviewId])
+  @@index([reportedBy])
+  @@index([status])
+  @@index([createdAt])
+  @@map("review_reports")
+}
+
+model ReviewResponse {
+  id           String @id @default(cuid())
+  reviewId     String @unique
+
+  // Response content
+  responseText String
+
+  // Engagement metrics for responses
+  likeCount    Int @default(0)
+  dislikeCount Int @default(0)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  review    Review                  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  reactions ReviewResponseReaction[]
+
+  @@index([reviewId])
+  @@map("review_responses")
+}
+
+model ReviewResponseReaction {
+  id         String @id @default(cuid())
+  responseId String
+  userId     String
+
+  // Reaction type: "like" or "dislike"
+  reactionType String // "like" | "dislike"
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  response ReviewResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  user     User           @relation("UserResponseReactions", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Ensure one reaction per user per response
+  @@unique([responseId, userId])
+  @@index([responseId])
+  @@index([userId])
+  @@map("review_response_reactions")
 }
 
 model LoyaltyTransaction {

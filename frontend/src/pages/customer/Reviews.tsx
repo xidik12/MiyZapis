@@ -4,10 +4,13 @@ import { reviewsService, ReviewStats, Review } from '@/services/reviews.service'
 import { ReviewFeed } from '@/components/reviews/ReviewFeed';
 import { ReviewCardData } from '@/components/reviews/ReviewCard';
 import { ReviewFiltersData } from '@/components/reviews/ReviewFilters';
+import { ReviewReportModal } from '@/components/reviews/ReviewReportModal';
 import { useAppSelector } from '@/hooks/redux';
 import { selectUser } from '@/store/slices/authSlice';
+import { useAuth } from '@/contexts/AuthContext';
 const CustomerReviews: React.FC = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const currentUser = useAppSelector(selectUser);
 
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -23,6 +26,10 @@ const CustomerReviews: React.FC = () => {
     withComment: undefined,
     verified: undefined
   });
+
+  // Report modal state
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportingReviewId, setReportingReviewId] = useState<string | null>(null);
 
   // Load reviews
   useEffect(() => {
@@ -89,49 +96,79 @@ const CustomerReviews: React.FC = () => {
     setPage(1);
   };
 
-  const handleMarkHelpful = async (reviewId: string, helpful: boolean) => {
+  const handleReact = async (reviewId: string, reaction: 'like' | 'dislike' | null) => {
     try {
-      await reviewsService.markReviewHelpful(reviewId, helpful);
+      const review = reviews.find(r => r.id === reviewId);
+      const prevReaction = review?.userReaction;
 
-      // Update local state
-      setReviews(prev => prev.map(review =>
-        review.id === reviewId
+      // Optimistically update UI
+      setReviews(prev => prev.map(r =>
+        r.id === reviewId
           ? {
-              ...review,
-              isHelpful: helpful,
-              helpfulCount: helpful
-                ? (review.helpfulCount || 0) + 1
-                : Math.max((review.helpfulCount || 1) - 1, 0)
+              ...r,
+              userReaction: reaction,
+              likeCount: reaction === 'like'
+                ? (prevReaction === 'like' ? (r.likeCount || 0) : (r.likeCount || 0) + 1)
+                : (prevReaction === 'like' ? Math.max(0, (r.likeCount || 0) - 1) : (r.likeCount || 0)),
+              dislikeCount: reaction === 'dislike'
+                ? (prevReaction === 'dislike' ? (r.dislikeCount || 0) : (r.dislikeCount || 0) + 1)
+                : (prevReaction === 'dislike' ? Math.max(0, (r.dislikeCount || 0) - 1) : (r.dislikeCount || 0))
             }
-          : review
+          : r
       ));
-    } catch (error: any) {
-      console.error('[Reviews] Error marking review as helpful:', error);
+
+      await reviewsService.reactToReview(reviewId, reaction);
+    } catch (err: any) {
+      console.error('Error reacting to review:', err);
+      // Reload reviews on error to revert optimistic update
+      setPage(1);
     }
   };
 
-  const handleMarkResponseHelpful = async (responseId: string, helpful: boolean) => {
+  const handleReactToResponse = async (reviewId: string, reaction: 'like' | 'dislike' | null) => {
     try {
-      await reviewsService.markReviewHelpful(responseId, helpful);
+      const review = reviews.find(r => r.id === reviewId);
+      const prevReaction = review?.response?.userReaction;
 
-      // Update local state for the response
-      setReviews(prev => prev.map(review => {
-        if (review.response && review.response.id === responseId) {
+      // Optimistically update UI
+      setReviews(prev => prev.map(r => {
+        if (r.id === reviewId && r.response) {
           return {
-            ...review,
+            ...r,
             response: {
-              ...review.response,
-              isHelpful: helpful,
-              helpfulCount: helpful
-                ? (review.response.helpfulCount || 0) + 1
-                : Math.max((review.response.helpfulCount || 1) - 1, 0)
+              ...r.response,
+              userReaction: reaction,
+              likeCount: reaction === 'like'
+                ? (prevReaction === 'like' ? (r.response.likeCount || 0) : (r.response.likeCount || 0) + 1)
+                : (prevReaction === 'like' ? Math.max(0, (r.response.likeCount || 0) - 1) : (r.response.likeCount || 0)),
+              dislikeCount: reaction === 'dislike'
+                ? (prevReaction === 'dislike' ? (r.response.dislikeCount || 0) : (r.response.dislikeCount || 0) + 1)
+                : (prevReaction === 'dislike' ? Math.max(0, (r.response.dislikeCount || 0) - 1) : (r.response.dislikeCount || 0))
             }
           };
         }
-        return review;
+        return r;
       }));
+
+      await reviewsService.reactToResponse(reviewId, reaction);
+    } catch (err: any) {
+      console.error('Error reacting to response:', err);
+      // Reload reviews on error to revert optimistic update
+      setPage(1);
+    }
+  };
+
+  const handleReport = async (reviewId: string) => {
+    setReportingReviewId(reviewId);
+    setReportModalOpen(true);
+  };
+
+  const handleSubmitReport = async (reason: string, details?: string) => {
+    try {
+      if (!reportingReviewId) return;
+      await reviewsService.reportReview(reportingReviewId, reason, details);
     } catch (error: any) {
-      console.error('[Reviews] Error marking response as helpful:', error);
+      throw error;
     }
   };
 
@@ -166,8 +203,9 @@ const CustomerReviews: React.FC = () => {
               lastName: review.specialist?.lastName || '',
               avatar: review.specialist?.avatar
             },
-          helpfulCount: review.response.helpfulCount ?? 0,
-          isHelpful: review.response.isHelpful ?? false
+          likeCount: review.response.likeCount ?? 0,
+          dislikeCount: review.response.dislikeCount ?? 0,
+          userReaction: review.response.userReaction ?? null
         }
       : undefined;
 
@@ -177,8 +215,9 @@ const CustomerReviews: React.FC = () => {
       comment: review.comment,
       tags: review.tags || [],
       isVerified: !!review.isVerified,
-      helpfulCount: review.helpfulCount || 0,
-      isHelpful: review.isHelpful || false,
+      likeCount: review.likeCount || 0,
+      dislikeCount: review.dislikeCount || 0,
+      userReaction: review.userReaction || null,
       createdAt: review.createdAt || new Date().toISOString(),
       customer,
       service,
@@ -215,13 +254,27 @@ const CustomerReviews: React.FC = () => {
           error={error}
           hasMore={hasMore}
           onLoadMore={handleLoadMore}
-          onMarkHelpful={handleMarkHelpful}
-          onMarkResponseHelpful={handleMarkResponseHelpful}
+          onReact={handleReact}
+          onReactToResponse={handleReactToResponse}
+          onReport={handleReport}
           filters={filters}
           onFilterChange={handleFilterChange}
           emptyTitle={t('reviews.empty.title') || 'No reviews yet'}
           emptyDescription={t('reviews.empty.description') || 'You haven\'t written any reviews yet'}
         />
+
+        {/* Report Modal */}
+        {reportingReviewId && (
+          <ReviewReportModal
+            isOpen={reportModalOpen}
+            onClose={() => {
+              setReportModalOpen(false);
+              setReportingReviewId(null);
+            }}
+            onSubmit={handleSubmitReport}
+            reviewId={reportingReviewId}
+          />
+        )}
       </div>
     </div>
   );

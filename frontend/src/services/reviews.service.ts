@@ -34,8 +34,15 @@ export interface Review {
   response?: {
     id: string;
     message: string;
+    responseText?: string;
+    likeCount?: number;
+    dislikeCount?: number;
+    userReaction?: 'like' | 'dislike' | null;
     createdAt: string;
   };
+  likeCount?: number;
+  dislikeCount?: number;
+  userReaction?: 'like' | 'dislike' | null;
 }
 
 export interface ReviewStats {
@@ -327,17 +334,45 @@ export class ReviewsService {
     return response.data;
   }
 
+  // React to a review (like/dislike)
+  async reactToReview(reviewId: string, reaction: 'like' | 'dislike' | null): Promise<{ message: string; reaction?: string | null }> {
+    const response = await apiClient.post<{ message: string; reaction?: string | null }>(
+      `/reviews/${reviewId}/react`,
+      { reaction }
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to react to review');
+    }
+
+    return response.data;
+  }
+
+  // React to a review response (like/dislike)
+  async reactToResponse(reviewId: string, reaction: 'like' | 'dislike' | null): Promise<{ message: string; reaction?: string | null }> {
+    const response = await apiClient.post<{ message: string; reaction?: string | null }>(
+      `/reviews/${reviewId}/response/react`,
+      { reaction }
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error?.message || 'Failed to react to response');
+    }
+
+    return response.data;
+  }
+
   // Report a review
   async reportReview(reviewId: string, reason: string, details?: string): Promise<{ message: string }> {
     const response = await apiClient.post<{ message: string }>(
-      `/reviews/${reviewId}/report`, 
+      `/reviews/${reviewId}/report`,
       { reason, details }
     );
-    
+
     if (!response.success || !response.data) {
       throw new Error(response.error?.message || 'Failed to report review');
     }
-    
+
     return response.data;
   }
 

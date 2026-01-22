@@ -5,9 +5,13 @@ import { specialistService } from '@/services/specialist.service';
 import { ReviewFeed } from '@/components/reviews/ReviewFeed';
 import { ReviewCardData } from '@/components/reviews/ReviewCard';
 import { ReviewFiltersData } from '@/components/reviews/ReviewFilters';
+import { ReviewResponseModal } from '@/components/reviews/ReviewResponseModal';
+import { ReviewReportModal } from '@/components/reviews/ReviewReportModal';
+import { useAuth } from '@/contexts/AuthContext';
 
 const SpecialistReviews: React.FC = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,6 +26,10 @@ const SpecialistReviews: React.FC = () => {
     withComment: undefined,
     verified: undefined
   });
+  const [responseModalOpen, setResponseModalOpen] = useState(false);
+  const [respondingToReview, setRespondingToReview] = useState<Review | null>(null);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportingReviewId, setReportingReviewId] = useState<string | null>(null);
 
   // Load specialist profile to get specialist ID
   useEffect(() => {
@@ -134,33 +142,117 @@ const SpecialistReviews: React.FC = () => {
     setPage(1);
   };
 
-  const handleMarkHelpful = async (reviewId: string, helpful: boolean) => {
+  const handleReact = async (reviewId: string, reaction: 'like' | 'dislike' | null) => {
     try {
-      await reviewsService.markReviewHelpful(reviewId, helpful);
+      // Get current reaction from local state
+      const review = reviews.find(r => r.id === reviewId);
+      const prevReaction = review?.userReaction;
 
-      // Update local state
-      setReviews(prev => prev.map(review =>
-        review.id === reviewId
+      // Optimistically update UI
+      setReviews(prev => prev.map(r =>
+        r.id === reviewId
           ? {
-              ...review,
-              isHelpful: helpful,
-              helpfulCount: helpful
-                ? review.helpfulCount + 1
-                : Math.max(0, review.helpfulCount - 1)
+              ...r,
+              userReaction: reaction,
+              likeCount: reaction === 'like'
+                ? (prevReaction === 'like' ? (r.likeCount || 0) : (r.likeCount || 0) + 1)
+                : (prevReaction === 'like' ? Math.max(0, (r.likeCount || 0) - 1) : (r.likeCount || 0)),
+              dislikeCount: reaction === 'dislike'
+                ? (prevReaction === 'dislike' ? (r.dislikeCount || 0) : (r.dislikeCount || 0) + 1)
+                : (prevReaction === 'dislike' ? Math.max(0, (r.dislikeCount || 0) - 1) : (r.dislikeCount || 0))
             }
-          : review
+          : r
       ));
+
+      // Call backend API
+      await reviewsService.reactToReview(reviewId, reaction);
     } catch (err: any) {
-      console.error('Error marking review as helpful:', err);
+      console.error('Error reacting to review:', err);
+      // Revert optimistic update on error
+      loadReviews();
     }
   };
 
-  const handleMarkResponseHelpful = async (responseId: string, helpful: boolean) => {
+  const handleReactToResponse = async (responseId: string, reaction: 'like' | 'dislike' | null) => {
     try {
-      // TODO: Implement response helpful API when available
-      console.log('Mark response helpful:', responseId, helpful);
+      // Find the review with this response
+      const review = reviews.find(r => r.response?.id === responseId);
+      if (!review) return;
+
+      const prevReaction = review.response?.userReaction;
+
+      // Optimistically update UI
+      setReviews(prev => prev.map(r =>
+        r.response?.id === responseId && r.response
+          ? {
+              ...r,
+              response: {
+                ...r.response,
+                userReaction: reaction,
+                likeCount: reaction === 'like'
+                  ? (prevReaction === 'like' ? (r.response.likeCount || 0) : (r.response.likeCount || 0) + 1)
+                  : (prevReaction === 'like' ? Math.max(0, (r.response.likeCount || 0) - 1) : (r.response.likeCount || 0)),
+                dislikeCount: reaction === 'dislike'
+                  ? (prevReaction === 'dislike' ? (r.response.dislikeCount || 0) : (r.response.dislikeCount || 0) + 1)
+                  : (prevReaction === 'dislike' ? Math.max(0, (r.response.dislikeCount || 0) - 1) : (r.response.dislikeCount || 0))
+              }
+            }
+          : r
+      ));
+
+      // Call backend API
+      await reviewsService.reactToResponse(review.id, reaction);
     } catch (err: any) {
-      console.error('Error marking response as helpful:', err);
+      console.error('Error reacting to response:', err);
+      // Revert optimistic update on error
+      loadReviews();
+    }
+  };
+
+  const handleReport = async (reviewId: string) => {
+    setReportingReviewId(reviewId);
+    setReportModalOpen(true);
+  };
+
+  const handleSubmitReport = async (reason: string, details?: string) => {
+    try {
+      if (!reportingReviewId) return;
+      await reviewsService.reportReview(reportingReviewId, reason, details);
+    } catch (error: any) {
+      throw error; // Re-throw to let modal handle it
+    }
+  };
+
+  const handleRespondToReview = (reviewId: string) => {
+    const review = reviews.find(r => r.id === reviewId);
+    if (review) {
+      setRespondingToReview(review);
+      setResponseModalOpen(true);
+    }
+  };
+
+  const handleSubmitResponse = async (responseText: string) => {
+    if (!respondingToReview) return;
+
+    try {
+      const result = await reviewsService.respondToReview(respondingToReview.id, responseText);
+
+      // Update the review in local state with the new response
+      setReviews(prev => prev.map(review =>
+        review.id === respondingToReview.id
+          ? {
+              ...review,
+              response: result.response || {
+                id: result.response?.id || 'temp',
+                message: responseText,
+                createdAt: new Date().toISOString()
+              }
+            }
+          : review
+      ));
+    } catch (error: any) {
+      console.error('[Reviews] Error responding to review:', error);
+      throw error; // Re-throw to let modal handle it
     }
   };
 
@@ -171,8 +263,9 @@ const SpecialistReviews: React.FC = () => {
     comment: review.comment,
     tags: review.tags,
     isVerified: review.isVerified,
-    helpfulCount: review.helpfulCount,
-    isHelpful: review.isHelpful,
+    likeCount: review.likeCount || 0,
+    dislikeCount: review.dislikeCount || 0,
+    userReaction: review.userReaction || null,
     createdAt: review.createdAt,
     customer: review.customer,
     service: review.service,
@@ -209,13 +302,44 @@ const SpecialistReviews: React.FC = () => {
           error={error}
           hasMore={hasMore}
           onLoadMore={handleLoadMore}
-          onMarkHelpful={handleMarkHelpful}
-          onMarkResponseHelpful={handleMarkResponseHelpful}
+          onReact={handleReact}
+          onReactToResponse={handleReactToResponse}
+          onRespondToReview={handleRespondToReview}
+          onReport={handleReport}
           filters={filters}
           onFilterChange={handleFilterChange}
           emptyTitle={t('reviews.empty.title') || 'No reviews yet'}
           emptyDescription={t('reviews.empty.description') || 'Your reviews will appear here once customers leave feedback'}
+          showRespondButton={true}
         />
+
+        {/* Response Modal */}
+        {respondingToReview && (
+          <ReviewResponseModal
+            isOpen={responseModalOpen}
+            onClose={() => {
+              setResponseModalOpen(false);
+              setRespondingToReview(null);
+            }}
+            onSubmit={handleSubmitResponse}
+            reviewerName={`${respondingToReview.customer.firstName} ${respondingToReview.customer.lastName}`}
+            reviewText={respondingToReview.comment}
+            rating={respondingToReview.rating}
+          />
+        )}
+
+        {/* Report Modal */}
+        {reportingReviewId && (
+          <ReviewReportModal
+            isOpen={reportModalOpen}
+            onClose={() => {
+              setReportModalOpen(false);
+              setReportingReviewId(null);
+            }}
+            onSubmit={handleSubmitReport}
+            reviewId={reportingReviewId}
+          />
+        )}
       </div>
     </div>
   );

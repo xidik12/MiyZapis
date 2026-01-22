@@ -51,6 +51,9 @@ router.get('/my-reviews', authenticateToken, validateGetMyReviews, async (req: R
     let orderBy: any = { createdAt: 'desc' };
     if (sortBy === 'rating') {
       orderBy = { rating: sortOrder };
+    } else if (sortBy === 'likes' || sortBy === 'helpful') {
+      // Support both 'likes' and 'helpful' (legacy) for sorting
+      orderBy = [{ likeCount: 'desc' }, { createdAt: 'desc' }];
     }
 
     // Get total count
@@ -158,6 +161,9 @@ router.get('/service/:id', validateGetServiceReviews, async (req: Request, res: 
     let orderBy: any = { createdAt: 'desc' };
     if (sortBy === 'rating') {
       orderBy = { rating: sortOrder };
+    } else if (sortBy === 'likes' || sortBy === 'helpful') {
+      // Support both 'likes' and 'helpful' (legacy) for sorting
+      orderBy = [{ likeCount: 'desc' }, { createdAt: 'desc' }];
     } else if (sortBy === 'helpful') {
       // In production, you'd have a helpful count field
       orderBy = { createdAt: sortOrder };
@@ -672,10 +678,16 @@ router.get('/specialist/:id', validateGetSpecialistReviews, async (req: Request,
     let orderBy: any = { createdAt: 'desc' };
     if (sortBy === 'rating') {
       orderBy = { rating: sortOrder };
+    } else if (sortBy === 'likes' || sortBy === 'helpful') {
+      // Support both 'likes' and 'helpful' (legacy) for sorting
+      orderBy = [{ likeCount: 'desc' }, { createdAt: 'desc' }];
     }
 
     // Get total count
     const totalCount = await prisma.review.count({ where });
+
+    // Get current user ID if authenticated
+    const currentUserId = (req as AuthenticatedRequest).user?.id;
 
     // Get reviews
     const reviews = await prisma.review.findMany({
@@ -701,7 +713,17 @@ router.get('/specialist/:id', validateGetSpecialistReviews, async (req: Request,
               }
             }
           }
-        }
+        },
+        response: {
+          include: {
+            reactions: currentUserId ? {
+              where: { userId: currentUserId }
+            } : false
+          }
+        },
+        reactions: currentUserId ? {
+          where: { userId: currentUserId }
+        } : false
       },
       orderBy,
       skip,
@@ -715,6 +737,9 @@ router.get('/specialist/:id', validateGetSpecialistReviews, async (req: Request,
       comment: review.comment,
       tags: review.tags ? JSON.parse(review.tags) : [],
       isVerified: review.isVerified,
+      likeCount: review.likeCount || 0,
+      dislikeCount: review.dislikeCount || 0,
+      userReaction: review.reactions && review.reactions.length > 0 ? review.reactions[0].reactionType : null,
       createdAt: review.createdAt,
       customer: {
         id: review.customer.id,
@@ -723,7 +748,15 @@ router.get('/specialist/:id', validateGetSpecialistReviews, async (req: Request,
         avatar: review.customer.avatar
       },
       service: review.booking.service,
-      bookingDate: review.booking.scheduledAt
+      bookingDate: review.booking.scheduledAt,
+      response: review.response ? {
+        id: review.response.id,
+        responseText: review.response.responseText,
+        likeCount: review.response.likeCount || 0,
+        dislikeCount: review.response.dislikeCount || 0,
+        userReaction: review.response.reactions && review.response.reactions.length > 0 ? review.response.reactions[0].reactionType : null,
+        createdAt: review.response.createdAt
+      } : null
     }));
 
     // Calculate review statistics for this specialist
@@ -859,6 +892,11 @@ router.post('/:id/report', authenticateToken, validateReportReview, async (req: 
 
 // Specialist response to review
 router.post('/:id/response', authenticateToken, validateRespondToReview, ReviewController.addSpecialistResponse);
+
+// Review engagement endpoints
+router.post('/:id/react', authenticateToken, ReviewController.reactToReview);
+router.post('/:reviewId/response/react', authenticateToken, ReviewController.reactToResponse);
+router.post('/:id/report', authenticateToken, ReviewController.reportReview);
 
 // Enhanced endpoints using service pattern
 router.get('/enhanced', ReviewController.getReviews);

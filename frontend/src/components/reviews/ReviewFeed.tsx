@@ -13,12 +13,15 @@ interface ReviewFeedProps {
   error?: string | null;
   hasMore?: boolean;
   onLoadMore?: () => void;
-  onMarkHelpful?: (reviewId: string, helpful: boolean) => void;
-  onMarkResponseHelpful?: (responseId: string, helpful: boolean) => void;
+  onReact?: (reviewId: string, reaction: 'like' | 'dislike' | null) => void;
+  onReactToResponse?: (responseId: string, reaction: 'like' | 'dislike' | null) => void;
+  onRespondToReview?: (reviewId: string) => void;
+  onReport?: (reviewId: string) => void;
   filters?: ReviewFiltersData;
   onFilterChange?: (filters: ReviewFiltersData) => void;
   emptyTitle?: string;
   emptyDescription?: string;
+  showRespondButton?: boolean;
 }
 
 export const ReviewFeed: React.FC<ReviewFeedProps> = ({
@@ -28,15 +31,18 @@ export const ReviewFeed: React.FC<ReviewFeedProps> = ({
   error = null,
   hasMore = false,
   onLoadMore,
-  onMarkHelpful,
-  onMarkResponseHelpful,
+  onReact,
+  onReactToResponse,
+  onRespondToReview,
+  onReport,
   filters = {
     sortBy: 'createdAt',
     sortOrder: 'desc'
   },
   onFilterChange,
   emptyTitle = 'No Reviews Yet',
-  emptyDescription = 'Be the first to leave a review!'
+  emptyDescription = 'Be the first to leave a review!',
+  showRespondButton = false
 }) => {
   // Show loading screen only on initial load
   if (loading && reviews.length === 0) {
@@ -92,8 +98,10 @@ export const ReviewFeed: React.FC<ReviewFeedProps> = ({
               <ReviewCard
                 key={review.id}
                 review={review}
-                onMarkHelpful={onMarkHelpful}
-                onMarkResponseHelpful={onMarkResponseHelpful}
+                onReact={onReact}
+                onReactToResponse={onReactToResponse}
+                onRespondToReview={showRespondButton ? onRespondToReview : undefined}
+                onReport={onReport}
                 index={index}
               />
             ))}

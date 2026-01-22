@@ -7,7 +7,10 @@ import {
   HeartIcon,
   ChatCircleIcon as ChatBubbleLeftIcon,
   ShareIcon,
-  CheckCircleIcon as CheckBadgeIcon
+  CheckCircleIcon as CheckBadgeIcon,
+  HandThumbUpIcon,
+  HandThumbDownIcon,
+  FlagIcon
 } from '@/components/icons';
 import { Avatar } from '@/components/ui/Avatar';
 import { SpecialistResponse } from './SpecialistResponse';
@@ -18,8 +21,9 @@ export interface ReviewCardData {
   comment?: string;
   tags?: string[];
   isVerified: boolean;
-  helpfulCount: number;
-  isHelpful?: boolean;
+  likeCount: number;
+  dislikeCount: number;
+  userReaction?: 'like' | 'dislike' | null;
   createdAt: string;
   customer: {
     id: string;
@@ -42,27 +46,33 @@ export interface ReviewCardData {
       lastName: string;
       avatar?: string;
     };
-    helpfulCount?: number;
-    isHelpful?: boolean;
+    likeCount?: number;
+    dislikeCount?: number;
+    userReaction?: 'like' | 'dislike' | null;
   };
 }
 
 interface ReviewCardProps {
   review: ReviewCardData;
-  onMarkHelpful?: (reviewId: string, helpful: boolean) => void;
-  onMarkResponseHelpful?: (responseId: string, helpful: boolean) => void;
+  onReact?: (reviewId: string, reaction: 'like' | 'dislike' | null) => void;
+  onReactToResponse?: (responseId: string, reaction: 'like' | 'dislike' | null) => void;
+  onRespondToReview?: (reviewId: string) => void;
+  onReport?: (reviewId: string) => void;
   index?: number;
 }
 
 const ReviewCardComponent: React.FC<ReviewCardProps> = ({
   review,
-  onMarkHelpful,
-  onMarkResponseHelpful,
+  onReact,
+  onReactToResponse,
+  onRespondToReview,
+  onReport,
   index = 0
 }) => {
   const [showFullComment, setShowFullComment] = useState(false);
   const [showResponse, setShowResponse] = useState(true);
   const [isSharing, setIsSharing] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const customerName = `${review.customer.firstName} ${review.customer.lastName}`;
   const customerInitial = review.customer.firstName.charAt(0).toUpperCase();
@@ -72,9 +82,23 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
     ? review.comment
     : review.comment?.substring(0, 200) + '...';
 
-  const handleHelpfulClick = () => {
-    if (onMarkHelpful) {
-      onMarkHelpful(review.id, !review.isHelpful);
+  const handleLikeClick = () => {
+    if (onReact) {
+      // Toggle like: if already liked, remove it; otherwise set to like
+      onReact(review.id, review.userReaction === 'like' ? null : 'like');
+    }
+  };
+
+  const handleDislikeClick = () => {
+    if (onReact) {
+      // Toggle dislike: if already disliked, remove it; otherwise set to dislike
+      onReact(review.id, review.userReaction === 'dislike' ? null : 'dislike');
+    }
+  };
+
+  const handleReportClick = () => {
+    if (onReport) {
+      onReport(review.id);
     }
   };
 
@@ -230,21 +254,37 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
 
         {/* Engagement Section */}
         <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
+          {/* Like Button */}
           <button
-            onClick={handleHelpfulClick}
+            onClick={handleLikeClick}
             className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
-              review.isHelpful
-                ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+              review.userReaction === 'like'
+                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
-            <HeartIcon
-              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 ${review.isHelpful ? 'text-primary-600 dark:text-primary-400' : ''}`}
-              active={review.isHelpful}
+            <HandThumbUpIcon
+              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 ${review.userReaction === 'like' ? 'text-green-600 dark:text-green-400' : ''}`}
             />
-            <span className="text-xs font-semibold whitespace-nowrap">{review.helpfulCount} Helpful</span>
+            <span className="text-xs font-semibold whitespace-nowrap">{review.likeCount || 0}</span>
           </button>
 
+          {/* Dislike Button */}
+          <button
+            onClick={handleDislikeClick}
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
+              review.userReaction === 'dislike'
+                ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+            }`}
+          >
+            <HandThumbDownIcon
+              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 ${review.userReaction === 'dislike' ? 'text-red-600 dark:text-red-400' : ''}`}
+            />
+            <span className="text-xs font-semibold whitespace-nowrap">{review.dislikeCount || 0}</span>
+          </button>
+
+          {/* Comment Button */}
           <button
             onClick={handleCommentClick}
             className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
@@ -259,6 +299,29 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
             </span>
           </button>
 
+          {/* Respond Button (for specialists) */}
+          {onRespondToReview && !review.response && (
+            <button
+              onClick={() => onRespondToReview(review.id)}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-primary-600 dark:bg-primary-500 text-white hover:bg-primary-700 dark:hover:bg-primary-600 transition-all duration-200 hover:scale-105 active:scale-95"
+            >
+              <ChatBubbleLeftIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+              <span className="text-xs font-semibold whitespace-nowrap">Respond</span>
+            </button>
+          )}
+
+          {/* Report Button */}
+          {onReport && (
+            <button
+              onClick={handleReportClick}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-orange-100 dark:hover:bg-orange-900/30 hover:text-orange-700 dark:hover:text-orange-300 transition-all duration-200 hover:scale-105 active:scale-95"
+            >
+              <FlagIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+              <span className="text-xs font-semibold whitespace-nowrap">Report</span>
+            </button>
+          )}
+
+          {/* Share Button */}
           <button
             onClick={handleShareClick}
             disabled={isSharing}
@@ -287,9 +350,12 @@ export const ReviewCard = React.memo(ReviewCardComponent, (prevProps, nextProps)
   // Only re-render if these props change
   return (
     prevProps.review.id === nextProps.review.id &&
-    prevProps.review.isHelpful === nextProps.review.isHelpful &&
-    prevProps.review.helpfulCount === nextProps.review.helpfulCount &&
-    prevProps.review.response?.isHelpful === nextProps.review.response?.isHelpful &&
+    prevProps.review.userReaction === nextProps.review.userReaction &&
+    prevProps.review.likeCount === nextProps.review.likeCount &&
+    prevProps.review.dislikeCount === nextProps.review.dislikeCount &&
+    prevProps.review.response?.userReaction === nextProps.review.response?.userReaction &&
+    prevProps.review.response?.likeCount === nextProps.review.response?.likeCount &&
+    prevProps.review.response?.dislikeCount === nextProps.review.response?.dislikeCount &&
     prevProps.index === nextProps.index
   );
 });

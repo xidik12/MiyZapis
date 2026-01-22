@@ -42,6 +42,8 @@ export { XCircleIcon } from './XCircleIcon';
 export { CheckIcon } from './CheckIcon';
 export { WarningIcon } from './WarningIcon';
 export { FlagIcon } from './FlagIcon';
+export { HandThumbUpIcon } from './HandThumbUpIcon';
+export { HandThumbDownIcon } from './HandThumbDownIcon';
 
 // Communication
 export { EnvelopeIcon } from './EnvelopeIcon';

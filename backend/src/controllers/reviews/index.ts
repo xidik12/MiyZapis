@@ -558,4 +558,350 @@ export class ReviewController {
       );
     }
   }
+
+  /**
+   * React to a review (like/dislike)
+   * POST /reviews/:id/react
+   */
+  static async reactToReview(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { id } = req.params;
+      const { reaction } = req.body; // 'like', 'dislike', or null
+
+      if (!id) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Review ID is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (reaction !== null && reaction !== 'like' && reaction !== 'dislike') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Reaction must be "like", "dislike", or null',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Check if review exists
+      const review = await prisma.review.findUnique({
+        where: { id }
+      });
+
+      if (!review) {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Review not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (reaction === null) {
+        // Remove reaction
+        await prisma.reviewReaction.deleteMany({
+          where: {
+            reviewId: id,
+            userId: req.user.id
+          }
+        });
+
+        res.json(
+          createSuccessResponse({
+            message: 'Reaction removed successfully'
+          })
+        );
+        return;
+      }
+
+      // Upsert reaction (create or update)
+      await prisma.reviewReaction.upsert({
+        where: {
+          reviewId_userId: {
+            reviewId: id,
+            userId: req.user.id
+          }
+        },
+        update: {
+          reactionType: reaction
+        },
+        create: {
+          reviewId: id,
+          userId: req.user.id,
+          reactionType: reaction
+        }
+      });
+
+      res.json(
+        createSuccessResponse({
+          message: 'Reaction recorded successfully',
+          reaction
+        })
+      );
+    } catch (error: any) {
+      logger.error('React to review error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to react to review',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  /**
+   * Report a review
+   * POST /reviews/:id/report
+   */
+  static async reportReview(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { id } = req.params;
+      const { reason, details } = req.body;
+
+      if (!id) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Review ID is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (!reason) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Report reason is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const validReasons = ['spam', 'offensive', 'fake', 'harassment', 'personal_info', 'other'];
+      if (!validReasons.includes(reason)) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Invalid report reason',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Check if review exists
+      const review = await prisma.review.findUnique({
+        where: { id }
+      });
+
+      if (!review) {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Review not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Check if user already reported this review
+      const existingReport = await prisma.reviewReport.findUnique({
+        where: {
+          reviewId_reportedBy: {
+            reviewId: id,
+            reportedBy: req.user.id
+          }
+        }
+      });
+
+      if (existingReport) {
+        res.status(409).json(
+          createErrorResponse(
+            ErrorCodes.DUPLICATE_RESOURCE,
+            'You have already reported this review',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Create report
+      await prisma.reviewReport.create({
+        data: {
+          reviewId: id,
+          reportedBy: req.user.id,
+          reason,
+          details: details || null,
+          status: 'PENDING'
+        }
+      });
+
+      // TODO: Send notification to admin team
+
+      res.json(
+        createSuccessResponse({
+          message: 'Report submitted successfully. Our team will review it.'
+        })
+      );
+    } catch (error: any) {
+      logger.error('Report review error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to submit report',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  /**
+   * React to a review response (like/dislike)
+   * POST /reviews/:reviewId/response/react
+   */
+  static async reactToResponse(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { reviewId } = req.params;
+      const { reaction } = req.body; // 'like', 'dislike', or null
+
+      if (!reviewId) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Review ID is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (reaction !== null && reaction !== 'like' && reaction !== 'dislike') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Reaction must be "like", "dislike", or null',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Find the review response
+      const response = await prisma.reviewResponse.findUnique({
+        where: { reviewId }
+      });
+
+      if (!response) {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Review response not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (reaction === null) {
+        // Remove reaction
+        await prisma.reviewResponseReaction.deleteMany({
+          where: {
+            responseId: response.id,
+            userId: req.user.id
+          }
+        });
+
+        res.json(
+          createSuccessResponse({
+            message: 'Reaction removed successfully'
+          })
+        );
+        return;
+      }
+
+      // Upsert reaction (create or update)
+      await prisma.reviewResponseReaction.upsert({
+        where: {
+          responseId_userId: {
+            responseId: response.id,
+            userId: req.user.id
+          }
+        },
+        update: {
+          reactionType: reaction
+        },
+        create: {
+          responseId: response.id,
+          userId: req.user.id,
+          reactionType: reaction
+        }
+      });
+
+      res.json(
+        createSuccessResponse({
+          message: 'Reaction recorded successfully',
+          reaction
+        })
+      );
+    } catch (error: any) {
+      logger.error('React to response error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to react to response',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
 }
