@@ -61,9 +61,52 @@ router.get('/my-reviews', authenticateToken, validateGetMyReviews, async (req: R
       where: { customerId: userId }
     });
 
-    // Get user's reviews - simple customer view
+    // Get user's reviews with engagement data
     const reviews = await prisma.review.findMany({
       where: { customerId: userId },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatar: true
+          }
+        },
+        specialist: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            businessName: true,
+            avatar: true
+          }
+        },
+        booking: {
+          select: {
+            id: true,
+            scheduledAt: true,
+            completedAt: true,
+            service: {
+              select: {
+                id: true,
+                name: true,
+                category: true
+              }
+            }
+          }
+        },
+        response: {
+          include: {
+            reactions: {
+              where: { userId: userId }
+            }
+          }
+        },
+        reactions: {
+          where: { userId: userId }
+        }
+      },
       orderBy,
       skip,
       take
@@ -77,8 +120,27 @@ router.get('/my-reviews', authenticateToken, validateGetMyReviews, async (req: R
       tags: review.tags ? JSON.parse(review.tags) : [],
       isVerified: review.isVerified,
       isPublic: review.isPublic,
+      likeCount: review.likeCount || 0,
+      dislikeCount: review.dislikeCount || 0,
+      userReaction: review.reactions.length > 0 ? review.reactions[0].reactionType : null,
       createdAt: review.createdAt,
-      updatedAt: review.updatedAt
+      updatedAt: review.updatedAt,
+      customer: review.customer,
+      specialist: review.specialist,
+      service: review.booking?.service,
+      booking: review.booking ? {
+        id: review.booking.id,
+        scheduledAt: review.booking.scheduledAt,
+        completedAt: review.booking.completedAt
+      } : undefined,
+      response: review.response ? {
+        id: review.response.id,
+        responseText: review.response.responseText,
+        createdAt: review.response.createdAt,
+        likeCount: review.response.likeCount || 0,
+        dislikeCount: review.response.dislikeCount || 0,
+        userReaction: review.response.reactions.length > 0 ? review.response.reactions[0].reactionType : null
+      } : undefined
     }));
 
     const paginationMeta = createPaginationMeta(Number(page), Number(limit), totalCount);

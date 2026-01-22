@@ -2,7 +2,8 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import {
-  HeartIcon,
+  HandThumbUpIcon,
+  HandThumbDownIcon,
   ChevronUpIcon,
   ChevronDownIcon,
   BriefcaseIcon
@@ -20,20 +21,21 @@ interface SpecialistResponseData {
     lastName: string;
     avatar?: string;
   };
-  helpfulCount?: number;
-  isHelpful?: boolean;
+  likeCount?: number;
+  dislikeCount?: number;
+  userReaction?: 'like' | 'dislike' | null;
 }
 
 interface SpecialistResponseProps {
   response: SpecialistResponseData;
-  onMarkHelpful?: (responseId: string, helpful: boolean) => void;
+  onReact?: (responseId: string, reaction: 'like' | 'dislike' | null) => void;
   isExpanded?: boolean;
   onToggle?: () => void;
 }
 
 export const SpecialistResponse: React.FC<SpecialistResponseProps> = ({
   response,
-  onMarkHelpful,
+  onReact,
   isExpanded = true,
   onToggle
 }) => {
@@ -41,9 +43,15 @@ export const SpecialistResponse: React.FC<SpecialistResponseProps> = ({
   const initial = response.respondedBy.firstName.charAt(0).toUpperCase();
   const hasAvatar = response.respondedBy.avatar;
 
-  const handleHelpfulClick = () => {
-    if (onMarkHelpful) {
-      onMarkHelpful(response.id, !response.isHelpful);
+  const handleLikeClick = () => {
+    if (onReact) {
+      onReact(response.id, response.userReaction === 'like' ? null : 'like');
+    }
+  };
+
+  const handleDislikeClick = () => {
+    if (onReact) {
+      onReact(response.id, response.userReaction === 'dislike' ? null : 'dislike');
     }
   };
 
@@ -112,24 +120,37 @@ export const SpecialistResponse: React.FC<SpecialistResponseProps> = ({
                 {response.responseText}
               </p>
 
-              {/* Helpful Button */}
-              {response.helpfulCount !== undefined && (
-                <div className="pl-13">
+              {/* Engagement Buttons */}
+              {onReact && (
+                <div className="pl-13 flex gap-2">
+                  {/* Like Button */}
                   <button
-                    onClick={handleHelpfulClick}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
-                      response.isHelpful
-                        ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600'
+                    onClick={handleLikeClick}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
+                      response.userReaction === 'like'
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
                   >
-                    <HeartIcon
-                      className={`w-4 h-4 ${response.isHelpful ? 'text-primary-600 dark:text-primary-400' : ''}`}
-                      active={response.isHelpful}
+                    <HandThumbUpIcon
+                      className={`w-3.5 h-3.5 flex-shrink-0 ${response.userReaction === 'like' ? 'text-green-600 dark:text-green-400' : ''}`}
                     />
-                    <span className="text-xs font-semibold">
-                      {response.helpfulCount} Helpful
-                    </span>
+                    <span className="text-xs font-semibold">{response.likeCount || 0}</span>
+                  </button>
+
+                  {/* Dislike Button */}
+                  <button
+                    onClick={handleDislikeClick}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
+                      response.userReaction === 'dislike'
+                        ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    <HandThumbDownIcon
+                      className={`w-3.5 h-3.5 flex-shrink-0 ${response.userReaction === 'dislike' ? 'text-red-600 dark:text-red-400' : ''}`}
+                    />
+                    <span className="text-xs font-semibold">{response.dislikeCount || 0}</span>
                   </button>
                 </div>
               )}

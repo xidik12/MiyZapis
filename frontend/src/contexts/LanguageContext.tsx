@@ -2468,6 +2468,25 @@ const translations: Translations = {
   'common.viewDetails': { en: 'View Details', uk: 'Переглянути деталі', ru: 'Просмотреть детали' },
   'common.clear': { en: 'Clear', uk: 'Очистити', ru: 'Очистить' },
 
+  // Review Report Modal
+  'reviews.report.title': { en: 'Report Review', uk: 'Поскаржитися на відгук', ru: 'Пожаловаться на отзыв' },
+  'reviews.report.subtitle': { en: 'Help us understand the issue', uk: 'Допоможіть нам зрозуміти проблему', ru: 'Помогите нам понять проблему' },
+  'reviews.report.selectReason': { en: 'Please select a reason', uk: 'Будь ласка, оберіть причину', ru: 'Пожалуйста, выберите причину' },
+  'reviews.report.success': { en: 'Report submitted successfully. Our team will review it.', uk: 'Скаргу успішно надіслано. Наша команда розгляне її.', ru: 'Жалоба успешно отправлена. Наша команда рассмотрит её.' },
+  'reviews.report.error': { en: 'Failed to submit report', uk: 'Не вдалося надіслати скаргу', ru: 'Не удалось отправить жалобу' },
+  'reviews.report.reasonLabel': { en: 'Why are you reporting this review?', uk: 'Чому ви скаржитесь на цей відгук?', ru: 'Почему вы жалуетесь на этот отзыв?' },
+  'reviews.report.detailsLabel': { en: 'Additional details (optional)', uk: 'Додаткові деталі (опційно)', ru: 'Дополнительные детали (опционально)' },
+  'reviews.report.detailsPlaceholder': { en: 'Provide more context about the issue...', uk: 'Надайте більше інформації про проблему...', ru: 'Предоставьте больше информации о проблеме...' },
+  'reviews.report.privacyNote': { en: 'Reports are confidential and reviewed by our team', uk: 'Скарги конфіденційні та розглядаються нашою командою', ru: 'Жалобы конфиденциальны и рассматриваются нашей командой' },
+  'reviews.report.submitting': { en: 'Submitting...', uk: 'Надсилання...', ru: 'Отправка...' },
+  'reviews.report.submit': { en: 'Submit Report', uk: 'Надіслати скаргу', ru: 'Отправить жалобу' },
+  'reviews.report.reason.spam': { en: 'Spam or misleading', uk: 'Спам або оманлива інформація', ru: 'Спам или вводящая в заблуждение информация' },
+  'reviews.report.reason.offensive': { en: 'Offensive or inappropriate content', uk: 'Образливий або неприйнятний зміст', ru: 'Оскорбительное или неприемлемое содержание' },
+  'reviews.report.reason.fake': { en: 'Fake or fraudulent review', uk: 'Підроблений або шахрайський відгук', ru: 'Поддельный или мошеннический отзыв' },
+  'reviews.report.reason.harassment': { en: 'Harassment or bullying', uk: 'Переслідування або залякування', ru: 'Преследование или запугивание' },
+  'reviews.report.reason.personal_info': { en: 'Contains personal information', uk: 'Містить особисту інформацію', ru: 'Содержит личную информацию' },
+  'reviews.report.reason.other': { en: 'Other', uk: 'Інше', ru: 'Другое' },
+
   // Pagination
   'pagination.previous': { en: 'Previous', uk: 'Попередня', ru: 'Предыдущая' },
   'pagination.next': { en: 'Next', uk: 'Наступна', ru: 'Следующая' },

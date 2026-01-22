@@ -334,10 +334,10 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
       </div>
 
       {/* Specialist Response */}
-      {review.response && (
+      {review.response && showResponse && (
         <SpecialistResponse
           response={review.response}
-          onMarkHelpful={onMarkResponseHelpful}
+          onReact={onReactToResponse ? (responseId, reaction) => onReactToResponse(review.id, reaction) : undefined}
           isExpanded={showResponse}
           onToggle={() => setShowResponse(!showResponse)}
         />

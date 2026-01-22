@@ -12,12 +12,12 @@ interface ReviewReportModalProps {
 }
 
 const REPORT_REASONS = [
-  { value: 'spam', label: 'Spam or misleading' },
-  { value: 'offensive', label: 'Offensive or inappropriate content' },
-  { value: 'fake', label: 'Fake or fraudulent review' },
-  { value: 'harassment', label: 'Harassment or bullying' },
-  { value: 'personal_info', label: 'Contains personal information' },
-  { value: 'other', label: 'Other' }
+  { value: 'spam', labelKey: 'reviews.report.reason.spam' },
+  { value: 'offensive', labelKey: 'reviews.report.reason.offensive' },
+  { value: 'fake', labelKey: 'reviews.report.reason.fake' },
+  { value: 'harassment', labelKey: 'reviews.report.reason.harassment' },
+  { value: 'personal_info', labelKey: 'reviews.report.reason.personal_info' },
+  { value: 'other', labelKey: 'reviews.report.reason.other' }
 ];
 
 export const ReviewReportModal: React.FC<ReviewReportModalProps> = ({
@@ -130,7 +130,7 @@ export const ReviewReportModal: React.FC<ReviewReportModalProps> = ({
                         className="mr-3 text-primary-600 focus:ring-primary-500"
                       />
                       <span className="text-sm text-gray-900 dark:text-white font-medium">
-                        {reason.label}
+                        {t(reason.labelKey)}
                       </span>
                     </label>
                   ))}
