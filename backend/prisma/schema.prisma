@@ -114,6 +114,8 @@ model User {
   reviewReactions      ReviewReaction[]       @relation("UserReviewReactions")
   reviewReports        ReviewReport[]         @relation("UserReviewReports")
   responseReactions    ReviewResponseReaction[] @relation("UserResponseReactions")
+  reviewComments       ReviewComment[]        @relation("UserReviewComments")
+  commentReactions     ReviewCommentReaction[] @relation("UserCommentReactions")
 
   // Indexes for performance
   @@index([email])
@@ -427,6 +429,7 @@ model Review {
   reactions  ReviewReaction[]
   reports    ReviewReport[]
   response   ReviewResponse?
+  comments   ReviewComment[]
 
   @@map("reviews")
 }
@@ -532,6 +535,64 @@ model ReviewResponseReaction {
   @@index([responseId])
   @@index([userId])
   @@map("review_response_reactions")
+}
+
+model ReviewComment {
+  id       String @id @default(cuid())
+  reviewId String
+  userId   String
+  parentId String? // For nested replies (Reddit-style threading)
+
+  // Comment content
+  content String
+
+  // Engagement metrics
+  likeCount    Int @default(0)
+  dislikeCount Int @default(0)
+
+  // Moderation
+  isDeleted Boolean @default(false)
+  deletedAt DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  review   Review         @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user     User           @relation("UserReviewComments", fields: [userId], references: [id], onDelete: Cascade)
+  parent   ReviewComment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  ReviewComment[] @relation("CommentReplies")
+  reactions ReviewCommentReaction[]
+
+  @@index([reviewId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([createdAt])
+  @@map("review_comments")
+}
+
+model ReviewCommentReaction {
+  id        String @id @default(cuid())
+  commentId String
+  userId    String
+
+  // Reaction type: "like" or "dislike"
+  reactionType String // "like" | "dislike"
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  comment ReviewComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User          @relation("UserCommentReactions", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Ensure one reaction per user per comment
+  @@unique([commentId, userId])
+  @@index([commentId])
+  @@index([userId])
+  @@map("review_comment_reactions")
 }
 
 model LoyaltyTransaction {
