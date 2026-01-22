@@ -3,27 +3,60 @@ import multer from 'multer';
 import { initializeS3Service, getS3Service } from '@/services/s3.service';
 import { PrismaClient } from '@prisma/client';
 import path from 'path';
+import fs from 'fs/promises';
 
 const prisma = new PrismaClient();
+const enableLocalMirror = process.env.ENABLE_LOCAL_MIRROR === 'true';
+const localMirrorBaseDir =
+  process.env.RAILWAY_VOLUME_MOUNT_PATH ||
+  process.env.UPLOAD_DIR ||
+  process.env.UPLOAD_PATH ||
+  '/app/uploads';
 
 // Initialize S3 service
 const initS3 = () => {
-  if (!getS3Service()) {
-    const s3Config = {
-      region: process.env.AWS_REGION || 'us-east-1',
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-      bucketName: process.env.AWS_S3_BUCKET || '',
-      publicUrl: process.env.AWS_S3_URL
-    };
-
-    if (!s3Config.accessKeyId || !s3Config.secretAccessKey || !s3Config.bucketName) {
-      throw new Error('S3 configuration is incomplete. Please check environment variables.');
-    }
-
-    return initializeS3Service(s3Config);
+  const primaryBucket = process.env.AWS_S3_BUCKET || '';
+  const existing = primaryBucket ? getS3Service(primaryBucket) : getS3Service();
+  if (existing) {
+    return existing;
   }
-  return getS3Service()!;
+
+  const s3Config = {
+    region: process.env.AWS_REGION || 'us-east-1',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+    bucketName: primaryBucket,
+    publicUrl: process.env.AWS_S3_URL
+  };
+
+  if (!s3Config.accessKeyId || !s3Config.secretAccessKey || !s3Config.bucketName) {
+    throw new Error('S3 configuration is incomplete. Please check environment variables.');
+  }
+
+  return initializeS3Service(s3Config);
+};
+
+const writeLocalMirror = async (buffer: Buffer, key: string): Promise<void> => {
+  if (!enableLocalMirror) {
+    return;
+  }
+
+  const safeKey = key.replace(/^[/\\]+/, '');
+  const resolvedBase = path.resolve(localMirrorBaseDir);
+  const resolvedPath = path.resolve(localMirrorBaseDir, safeKey);
+
+  if (!resolvedPath.startsWith(resolvedBase)) {
+    console.warn('⚠️ Local mirror path rejected:', { key, resolvedPath });
+    return;
+  }
+
+  try {
+    await fs.mkdir(path.dirname(resolvedPath), { recursive: true, mode: 0o755 });
+    await fs.writeFile(resolvedPath, buffer, { mode: 0o644 });
+    console.log('🧷 Local mirror saved:', resolvedPath);
+  } catch (error) {
+    console.warn('⚠️ Local mirror write failed:', error instanceof Error ? error.message : String(error));
+  }
 };
 
 // Multer configuration for memory storage (we'll upload to S3 directly)
@@ -126,6 +159,8 @@ export const uploadFiles = async (req: Request, res: Response): Promise<void> =>
           file.mimetype,
           uploadOptions
         );
+
+        await writeLocalMirror(file.buffer, s3Result.key);
 
         // Create database record (temporarily without cloud fields until migration)
         // Save file record to database - handle missing cloudProvider field gracefully

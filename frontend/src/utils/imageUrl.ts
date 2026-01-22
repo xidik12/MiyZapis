@@ -14,6 +14,29 @@ const decodeHtmlEntities = (value: string): string =>
     .replace(/&lt;/gi, '<')
     .replace(/&gt;/gi, '>');
 
+const extractS3Info = (parsed: URL): { bucket?: string; key: string } => {
+  const host = parsed.hostname;
+  let key = parsed.pathname.replace(/^\/+/, '');
+  let bucket: string | undefined;
+
+  const isPathStyle =
+    host === 's3.amazonaws.com' ||
+    host.startsWith('s3.') ||
+    host.startsWith('s3-');
+
+  if (isPathStyle) {
+    const parts = key.split('/');
+    if (parts.length > 1) {
+      bucket = parts.shift();
+      key = parts.join('/');
+    }
+  } else if (host.includes('.s3.') || host.endsWith('.s3.amazonaws.com')) {
+    bucket = host.split('.')[0];
+  }
+
+  return { bucket, key };
+};
+
 export function getAbsoluteImageUrl(url: string | undefined | null | any): string {
   // Debug logging for all inputs
   console.log('🔧 getAbsoluteImageUrl input:', { url, type: typeof url, length: url?.length });
@@ -81,8 +104,15 @@ export function getAbsoluteImageUrl(url: string | undefined | null | any): strin
       const host = parsed.hostname;
       const isS3Host = host.includes('.s3.') || host.startsWith('s3.') || (host.includes('amazonaws.com') && host.includes('s3'));
       if (isS3Host) {
-        const s3Path = parsed.pathname.replace(/^\/+/, '');
-        const proxyUrl = `${environment.API_URL}/files/s3-proxy/${s3Path}`;
+        const { bucket, key } = extractS3Info(parsed);
+        if (!key) {
+          return url;
+        }
+        const params = new URLSearchParams();
+        if (bucket) {
+          params.set('bucket', bucket);
+        }
+        const proxyUrl = `${environment.API_URL}/files/s3-proxy/${key}${params.toString() ? `?${params.toString()}` : ''}`;
         console.log('🔄 Converting S3 URL to proxy:', proxyUrl.substring(0, 80) + '...');
         return proxyUrl;
       }

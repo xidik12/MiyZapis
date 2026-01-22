@@ -336,16 +336,24 @@ export class S3Service {
   }
 }
 
-// Singleton instance
-let s3ServiceInstance: S3Service | null = null;
+const s3Services = new Map<string, S3Service>();
 
 export function initializeS3Service(config: S3Config): S3Service {
-  if (!s3ServiceInstance) {
-    s3ServiceInstance = new S3Service(config);
+  const key = config.bucketName;
+  const existing = s3Services.get(key);
+  if (existing) {
+    return existing;
   }
-  return s3ServiceInstance;
+
+  const service = new S3Service(config);
+  s3Services.set(key, service);
+  return service;
 }
 
-export function getS3Service(): S3Service | null {
-  return s3ServiceInstance;
+export function getS3Service(bucketName?: string): S3Service | null {
+  if (bucketName) {
+    return s3Services.get(bucketName) || null;
+  }
+  const first = s3Services.values().next();
+  return first.done ? null : first.value;
 }

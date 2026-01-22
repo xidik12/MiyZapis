@@ -828,15 +828,32 @@ router.get('/s3-proxy/*', async (req, res) => {
     }
 
     const s3Path = rawPath.replace(/^\/+/, '');
-    console.log(`🔄 Proxying S3 request: ${s3Path}`);
+    const bucketParam = typeof req.query.bucket === 'string' ? req.query.bucket : undefined;
+    const primaryBucket = process.env.AWS_S3_BUCKET || '';
+    const legacyBucket = process.env.AWS_S3_LEGACY_BUCKET || '';
+    const requestedBucket = bucketParam || primaryBucket || legacyBucket;
 
-    const existingService = getS3Service();
+    console.log(`🔄 Proxying S3 request: ${s3Path}`, {
+      bucket: requestedBucket || 'unknown'
+    });
+
+    const isLegacyBucket = !!(legacyBucket && requestedBucket === legacyBucket);
+    const region = (isLegacyBucket ? process.env.AWS_S3_LEGACY_REGION : process.env.AWS_REGION) || 'us-east-1';
+    const accessKeyId =
+      (isLegacyBucket ? process.env.AWS_S3_LEGACY_ACCESS_KEY_ID : process.env.AWS_ACCESS_KEY_ID) ||
+      process.env.AWS_ACCESS_KEY_ID ||
+      '';
+    const secretAccessKey =
+      (isLegacyBucket ? process.env.AWS_S3_LEGACY_SECRET_ACCESS_KEY : process.env.AWS_SECRET_ACCESS_KEY) ||
+      process.env.AWS_SECRET_ACCESS_KEY ||
+      '';
+    const publicUrl =
+      (isLegacyBucket ? process.env.AWS_S3_LEGACY_URL : process.env.AWS_S3_URL) ||
+      (requestedBucket ? `https://${requestedBucket}.s3.${region}.amazonaws.com` : '');
+
+    const existingService = requestedBucket ? getS3Service(requestedBucket) : getS3Service();
     const s3Service = existingService || (() => {
-      const region = process.env.AWS_REGION || 'us-east-1';
-      const accessKeyId = process.env.AWS_ACCESS_KEY_ID || '';
-      const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY || '';
-      const bucketName = process.env.AWS_S3_BUCKET || '';
-      if (!accessKeyId || !secretAccessKey || !bucketName) {
+      if (!accessKeyId || !secretAccessKey || !requestedBucket) {
         return null;
       }
       try {
@@ -844,8 +861,8 @@ router.get('/s3-proxy/*', async (req, res) => {
           region,
           accessKeyId,
           secretAccessKey,
-          bucketName,
-          publicUrl: process.env.AWS_S3_URL
+          bucketName: requestedBucket,
+          publicUrl: publicUrl || undefined
         });
       } catch (initError) {
         logger.warn('S3 proxy could not initialize service', {
@@ -854,6 +871,23 @@ router.get('/s3-proxy/*', async (req, res) => {
         return null;
       }
     })();
+
+    const localFallbackEnabled = process.env.ENABLE_LOCAL_FALLBACK === 'true';
+    if (localFallbackEnabled) {
+      const fs = require('fs');
+      const baseDir =
+        process.env.RAILWAY_VOLUME_MOUNT_PATH ||
+        process.env.UPLOAD_DIR ||
+        process.env.UPLOAD_PATH ||
+        '/app/uploads';
+      const resolvedBase = path.resolve(baseDir);
+      const resolvedPath = path.resolve(baseDir, s3Path);
+      if (resolvedPath.startsWith(resolvedBase) && fs.existsSync(resolvedPath)) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Cache-Control', 'public, max-age=31536000');
+        return res.sendFile(resolvedPath);
+      }
+    }
 
     if (s3Service) {
       try {
@@ -867,7 +901,13 @@ router.get('/s3-proxy/*', async (req, res) => {
       }
     }
 
-    const baseUrl = (process.env.AWS_S3_URL || 'https://miyzapis-storage.s3.ap-southeast-2.amazonaws.com').replace(/\/+$/, '');
+    const baseUrl = (publicUrl || '').replace(/\/+$/, '');
+    if (!baseUrl) {
+      return res.status(500).json({
+        success: false,
+        error: 'S3 proxy not configured'
+      });
+    }
     const s3Url = `${baseUrl}/${s3Path}`;
 
     const controller = new AbortController();

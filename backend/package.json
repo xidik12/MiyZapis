@@ -31,7 +31,8 @@
     "postinstall": "prisma generate",
     "railway:migrate": "prisma migrate deploy",
     "railway:seed": "tsx prisma/seed.ts",
-    "loyalty:fix": "tsx src/scripts/loyalty-fix-provider-points.ts"
+    "loyalty:fix": "tsx src/scripts/loyalty-fix-provider-points.ts",
+    "migrate:file-storage": "tsx src/scripts/migrate-file-storage.ts"
   },
   "keywords": [
     "booking",

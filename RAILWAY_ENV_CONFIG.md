@@ -78,8 +78,31 @@ AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
 AWS_S3_BUCKET=your-bookingbot-bucket
 AWS_S3_URL=https://your-bookingbot-bucket.s3.ap-southeast-2.amazonaws.com
 
+# Optional: legacy bucket for existing files
+AWS_S3_LEGACY_BUCKET=your-legacy-bucket
+AWS_S3_LEGACY_URL=https://your-legacy-bucket.s3.ap-southeast-2.amazonaws.com
+AWS_S3_LEGACY_REGION=ap-southeast-2
+# If legacy bucket uses different credentials
+AWS_S3_LEGACY_ACCESS_KEY_ID=your-legacy-access-key-id
+AWS_S3_LEGACY_SECRET_ACCESS_KEY=your-legacy-secret-access-key
+
+# Optional: mirror S3 uploads to local volume and serve from local if available
+ENABLE_LOCAL_MIRROR=true
+ENABLE_LOCAL_FALLBACK=true
+RAILWAY_VOLUME_MOUNT_PATH=/app/uploads
+
 # Optional: public domain used for absolute URLs
 RAILWAY_PUBLIC_DOMAIN=huddle-backend-production.up.railway.app
+```
+
+### 7.1 Data Migration (legacy bucket -> new bucket)
+Run after you copy objects or decide to rewrite DB URLs.
+```
+# Dry run first
+DRY_RUN=true UPDATE_URLS=true AWS_S3_BUCKET=panhaha-storage AWS_S3_URL=https://panhaha-storage.s3.ap-southeast-2.amazonaws.com AWS_S3_LEGACY_BUCKET=miyzapis-storage AWS_S3_LEGACY_URL=https://miyzapis-storage.s3.ap-southeast-2.amazonaws.com npm run migrate:file-storage
+
+# Apply changes
+DRY_RUN=false UPDATE_URLS=true AWS_S3_BUCKET=panhaha-storage AWS_S3_URL=https://panhaha-storage.s3.ap-southeast-2.amazonaws.com AWS_S3_LEGACY_BUCKET=miyzapis-storage AWS_S3_LEGACY_URL=https://miyzapis-storage.s3.ap-southeast-2.amazonaws.com npm run migrate:file-storage
 ```
 
 ### 8. Email Configuration (Gmail SMTP)
