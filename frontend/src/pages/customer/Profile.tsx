@@ -25,6 +25,7 @@ import {
   ShieldCheckIcon,
   DocumentCheckIcon
 } from '@/components/icons';
+import { IMAGE_FILE_ACCEPT } from '../../utils/fileValidation';
 
 interface Address {
   id: string;
@@ -268,7 +269,7 @@ const CustomerProfile: React.FC = () => {
                 )}
                 {isEditing && (
                   <label className="absolute -bottom-2 -right-2 bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-xl cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl opacity-0 group-hover:opacity-100">
-                    <input type="file" accept="image/*" className="hidden" />
+                    <input type="file" accept={IMAGE_FILE_ACCEPT} className="hidden" />
                     <CameraIcon className="h-4 w-4" />
                   </label>
                 )}

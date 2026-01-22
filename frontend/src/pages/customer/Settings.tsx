@@ -8,6 +8,7 @@ import { PaymentMethod } from '../../types';
 import { PaymentMethodsService } from '../../services/paymentMethods';
 import { fileUploadService } from '../../services/fileUpload.service';
 import { userService } from '../../services/user.service';
+import { ALLOWED_IMAGE_MIME_TYPES, IMAGE_FILE_ACCEPT, isAllowedImageFile } from '../../utils/fileValidation';
 import { toast } from 'react-toastify';
 import { Avatar } from '../../components/ui/Avatar';
 import { LocationPicker } from '../../components/LocationPicker';
@@ -238,7 +239,7 @@ const CustomerSettings: React.FC = () => {
           const uploaded = await fileUploadService.uploadFile(paymentData.qrFile, {
             type: 'document',
             maxSize: 5 * 1024 * 1024,
-            allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'],
+            allowedTypes: ALLOWED_IMAGE_MIME_TYPES,
           });
           qrImageUrl = uploaded.url;
         }
@@ -292,7 +293,7 @@ const CustomerSettings: React.FC = () => {
     if (!file) return;
 
     // Validate file type and size
-    if (!file.type.startsWith('image/')) {
+    if (!isAllowedImageFile(file)) {
       setUploadError(t('settings.profile.imageSelectError'));
       return;
     }
@@ -441,7 +442,7 @@ const CustomerSettings: React.FC = () => {
                           <label className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                             <input
                               type="file"
-                              accept="image/*"
+                              accept={IMAGE_FILE_ACCEPT}
                               onChange={handleImageUpload}
                               className="hidden"
                               disabled={isUploadingImage}
@@ -1115,7 +1116,7 @@ const CustomerSettings: React.FC = () => {
                           <input
                             type="file"
                             name="qrImage"
-                            accept="image/png,image/jpeg,image/webp,image/svg+xml,image/heic,image/heif"
+                            accept={IMAGE_FILE_ACCEPT}
                             className="hidden"
                             onChange={(e) => {
                               const file = e.target.files?.[0] || null;

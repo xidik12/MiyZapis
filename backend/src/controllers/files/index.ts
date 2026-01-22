@@ -41,18 +41,38 @@ const upload = multer({
   }
 });
 
+const commonImageTypes = [
+  'image/jpeg',
+  'image/jpg',
+  'image/pjpeg',
+  'image/png',
+  'image/x-png',
+  'image/webp',
+  'image/gif',
+  'image/bmp',
+  'image/x-ms-bmp',
+  'image/tiff',
+  'image/tif',
+  'image/heic',
+  'image/heic-sequence',
+  'image/heif',
+  'image/heif-sequence',
+  'image/avif',
+  'image/avif-sequence'
+];
+
 function getAllowedFileTypes(purpose: string): string[] {
   switch (purpose) {
     case 'avatar':
-      return ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+      return commonImageTypes;
     case 'payment_qr':
-      return ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+      return commonImageTypes;
     case 'service_image':
     case 'portfolio':
-      return ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+      return commonImageTypes;
     case 'message_attachment':
       return [
-        'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+        ...commonImageTypes,
         'application/pdf',
         'application/msword',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -60,9 +80,9 @@ function getAllowedFileTypes(purpose: string): string[] {
         'audio/mpeg', 'audio/wav'
       ];
     case 'document':
-      return ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif', 'application/pdf'];
+      return [...commonImageTypes, 'application/pdf'];
     default:
-      return ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'];
+      return commonImageTypes;
   }
 }
 

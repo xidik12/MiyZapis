@@ -11,6 +11,7 @@ import { isFeatureEnabled } from '../../config/features';
 import { ProfessionDropdown } from '../../components/ui/ProfessionDropdown';
 import { LocationPicker } from '../../components/LocationPicker';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
+import { IMAGE_FILE_ACCEPT, isAllowedImageFile } from '../../utils/fileValidation';
 import { logger } from '@/utils/logger';
 import OptimizedImage from '../../components/ui/OptimizedImage';
 import { Avatar } from '../../components/ui/Avatar';
@@ -772,7 +773,7 @@ const SpecialistProfile: React.FC = () => {
 
     // Validate file type and size
     console.log('🔍 [AVATAR UPLOAD] Validating file type:', file.type);
-    if (!file.type.startsWith('image/')) {
+    if (!isAllowedImageFile(file)) {
       console.error('❌ [AVATAR UPLOAD] Invalid file type:', file.type);
       showErrorNotification(t('settings.profile.imageSelectError'));
       return;
@@ -835,7 +836,7 @@ const SpecialistProfile: React.FC = () => {
     const file = files[0];
     
     // Validate file type and size
-    if (!file.type.startsWith('image/')) {
+    if (!isAllowedImageFile(file)) {
       showErrorNotification(t('settings.profile.imageSelectError'));
       return;
     }
@@ -900,7 +901,7 @@ const SpecialistProfile: React.FC = () => {
       return;
     }
 
-    if (!file.type.startsWith('image/')) {
+    if (!isAllowedImageFile(file)) {
       console.log('[Profile Payment QR Upload] Invalid file type:', file.type);
       setPaymentQrError(t('settings.profile.imageSelectError'));
       return;
@@ -1046,7 +1047,7 @@ const SpecialistProfile: React.FC = () => {
                     <input
                       id="specialist-profile-avatar-upload"
                       type="file"
-                      accept="image/*"
+                      accept={IMAGE_FILE_ACCEPT}
                       className="hidden"
                       disabled={isUploadingAvatar}
                       onChange={handleAvatarUpload}
@@ -2145,7 +2146,7 @@ const SpecialistProfile: React.FC = () => {
                               <input
                                 id="payment-qr-upload"
                                 type="file"
-                                accept="image/*"
+                                accept={IMAGE_FILE_ACCEPT}
                                 onChange={handlePaymentQrUpload}
                                 className="hidden"
                                 disabled={isUploadingPaymentQr}
@@ -2201,7 +2202,7 @@ const SpecialistProfile: React.FC = () => {
                         <input
                           id="portfolio-image-upload"
                           type="file"
-                          accept="image/*"
+                          accept={IMAGE_FILE_ACCEPT}
                           onChange={handlePortfolioUpload}
                           className="hidden"
                           disabled={isUploadingPortfolio}

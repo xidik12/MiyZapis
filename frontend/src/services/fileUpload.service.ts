@@ -69,7 +69,17 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'avatar',
       maxSize: 5 * 1024 * 1024, // 5MB
-      allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
+      allowedTypes: [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+        'image/bmp',
+        'image/tiff',
+        'image/heic',
+        'image/heif',
+        'image/avif'
+      ]
     });
   }
 
@@ -78,7 +88,17 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'portfolio',
       maxSize: 10 * 1024 * 1024, // 10MB
-      allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
+      allowedTypes: [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+        'image/bmp',
+        'image/tiff',
+        'image/heic',
+        'image/heif',
+        'image/avif'
+      ]
     });
   }
 
@@ -87,7 +107,17 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'service',
       maxSize: 10 * 1024 * 1024, // 10MB
-      allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
+      allowedTypes: [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+        'image/bmp',
+        'image/tiff',
+        'image/heic',
+        'image/heif',
+        'image/avif'
+      ]
     });
   }
 
@@ -96,7 +126,20 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'document',
       maxSize: 20 * 1024 * 1024, // 20MB
-      allowedTypes: ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+      allowedTypes: [
+        'application/pdf',
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+        'image/bmp',
+        'image/tiff',
+        'image/heic',
+        'image/heif',
+        'image/avif',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ]
     });
   }
 
@@ -105,7 +148,18 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'certificate',
       maxSize: 20 * 1024 * 1024, // 20MB
-      allowedTypes: ['application/pdf', 'image/jpeg', 'image/png']
+      allowedTypes: [
+        'application/pdf',
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+        'image/bmp',
+        'image/tiff',
+        'image/heic',
+        'image/heif',
+        'image/avif'
+      ]
     });
   }
 
@@ -114,7 +168,17 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'payment_qr',
       maxSize: 5 * 1024 * 1024, // 5MB
-      allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
+      allowedTypes: [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+        'image/bmp',
+        'image/tiff',
+        'image/heic',
+        'image/heif',
+        'image/avif'
+      ]
     });
   }
 
@@ -178,9 +242,26 @@ export class FileUploadService {
       throw new Error(`File size exceeds ${maxSizeMB}MB limit`);
     }
 
+    const normalizedType = this.normalizeMimeType(file.type || '');
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    if (normalizedType === 'image/svg+xml' || extension === 'svg' || extension === 'svgz') {
+      throw new Error('File type is not allowed');
+    }
+
     // Check file type
-    if (options.allowedTypes && !options.allowedTypes.includes(file.type)) {
-      throw new Error(`File type ${file.type} is not allowed`);
+    if (options.allowedTypes) {
+      const normalizedAllowed = options.allowedTypes.map((type) => this.normalizeMimeType(type));
+      const allowedSet = new Set(normalizedAllowed);
+
+      if (normalizedType) {
+        if (!allowedSet.has(normalizedType)) {
+          if (!this.isExtensionAllowed(file.name, normalizedAllowed)) {
+            throw new Error(`File type ${file.type} is not allowed`);
+          }
+        }
+      } else if (!this.isExtensionAllowed(file.name, normalizedAllowed)) {
+        throw new Error('File type is not allowed');
+      }
     }
 
     // Check if file is empty
@@ -224,6 +305,54 @@ export class FileUploadService {
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to get presigned upload URL';
       throw new Error(errorMessage);
     }
+  }
+
+  private normalizeMimeType(type: string): string {
+    const normalized = type.toLowerCase();
+    const aliases: Record<string, string> = {
+      'image/jpg': 'image/jpeg',
+      'image/pjpeg': 'image/jpeg',
+      'image/x-png': 'image/png',
+      'image/x-ms-bmp': 'image/bmp',
+      'image/tif': 'image/tiff',
+      'image/heic-sequence': 'image/heic',
+      'image/heif-sequence': 'image/heif',
+      'image/avif-sequence': 'image/avif'
+    };
+    return aliases[normalized] || normalized;
+  }
+
+  private isExtensionAllowed(filename: string, allowedTypes: string[]): boolean {
+    const extension = filename.split('.').pop()?.toLowerCase();
+    if (!extension) {
+      return false;
+    }
+
+    const mimeToExtensions: Record<string, string[]> = {
+      'image/jpeg': ['jpg', 'jpeg'],
+      'image/png': ['png'],
+      'image/webp': ['webp'],
+      'image/gif': ['gif'],
+      'image/bmp': ['bmp'],
+      'image/tiff': ['tiff', 'tif'],
+      'image/svg+xml': ['svg'],
+      'image/heic': ['heic'],
+      'image/heif': ['heif'],
+      'image/avif': ['avif'],
+      'application/pdf': ['pdf'],
+      'application/msword': ['doc'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['docx']
+    };
+
+    const allowedExtensions = new Set<string>();
+    allowedTypes.forEach((type) => {
+      const extensions = mimeToExtensions[this.normalizeMimeType(type)];
+      if (extensions) {
+        extensions.forEach((ext) => allowedExtensions.add(ext));
+      }
+    });
+
+    return allowedExtensions.has(extension);
   }
 }
 

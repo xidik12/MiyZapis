@@ -33,12 +33,17 @@ try {
 }
 
 const enableS3Storage = process.env.ENABLE_S3_STORAGE === 'true';
+const hasS3Config = !!(
+  process.env.AWS_ACCESS_KEY_ID &&
+  process.env.AWS_SECRET_ACCESS_KEY &&
+  process.env.AWS_S3_BUCKET
+);
 const explicitLocalStorage = process.env.FORCE_LOCAL_STORAGE === 'true' ||
   process.env.FILE_STORAGE === 'local' ||
   process.env.USE_LOCAL_STORAGE === 'true';
 const forceLocalStorage = explicitLocalStorage || (!enableS3Storage && isRailwayEnv);
 // CRITICAL FIX: Only use S3 if AWS SDK is available
-const useS3Storage = enableS3Storage && !explicitLocalStorage && awsSdkAvailable;
+const useS3Storage = enableS3Storage && !explicitLocalStorage && awsSdkAvailable && hasS3Config;
 
 if (useS3Storage) {
   console.log('🌅 S3 storage enabled - adding S3 upload routes');
@@ -53,6 +58,7 @@ console.log('File storage selection', {
   useS3Storage,
   enableS3Storage,
   awsSdkAvailable,
+  hasS3Config,
   forceLocalStorage,
   explicitLocalStorage,
   isRailwayEnv,
@@ -104,6 +110,26 @@ const buildUploadOptions = (isRailway: boolean): string[] => {
 
   return Array.from(new Set(options.filter(Boolean) as string[]));
 };
+
+const commonImageTypes = [
+  'image/jpeg',
+  'image/jpg',
+  'image/pjpeg',
+  'image/png',
+  'image/x-png',
+  'image/webp',
+  'image/gif',
+  'image/bmp',
+  'image/x-ms-bmp',
+  'image/tiff',
+  'image/tif',
+  'image/heic',
+  'image/heic-sequence',
+  'image/heif',
+  'image/heif-sequence',
+  'image/avif',
+  'image/avif-sequence'
+];
 
 const getFileTypeFromBuffer = async (buffer: Buffer) => {
   try {
@@ -482,10 +508,10 @@ router.post('/upload-robust', authMiddleware, uploadRateLimit, fileController.up
 
     // Validate file type
     const allowedMimeTypes = {
-      avatar: ['image/jpeg', 'image/png', 'image/webp'],
-      portfolio: ['image/jpeg', 'image/png', 'image/webp'],
-      service: ['image/jpeg', 'image/png', 'image/webp'],
-      document: ['application/pdf', 'image/jpeg', 'image/png']
+      avatar: commonImageTypes,
+      portfolio: commonImageTypes,
+      service: commonImageTypes,
+      document: [...commonImageTypes, 'application/pdf']
     };
 
     const allowedTypes = allowedMimeTypes[purpose as keyof typeof allowedMimeTypes] || allowedMimeTypes.portfolio;

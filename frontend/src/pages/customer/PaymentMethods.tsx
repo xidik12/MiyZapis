@@ -5,6 +5,7 @@ import { selectUser } from '../../store/slices/authSlice';
 import { PaymentMethod } from '../../types';
 import { PaymentMethodsService } from '../../services/paymentMethods';
 import { fileUploadService } from '../../services/fileUpload.service';
+import { ALLOWED_IMAGE_MIME_TYPES, IMAGE_FILE_ACCEPT } from '../../utils/fileValidation';
 import { toast } from 'react-toastify';
 import { 
   CreditCardIcon,
@@ -94,7 +95,7 @@ const PaymentMethods: React.FC = () => {
           const uploaded = await fileUploadService.uploadFile(paymentData.qrFile, {
             type: 'document',
             maxSize: 5 * 1024 * 1024,
-            allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif'],
+            allowedTypes: ALLOWED_IMAGE_MIME_TYPES,
           });
           qrImageUrl = uploaded.url;
         }
@@ -442,7 +443,7 @@ const PaymentMethods: React.FC = () => {
                           <input
                             type="file"
                             name="qrImage"
-                            accept="image/png,image/jpeg,image/webp,image/svg+xml,image/heic,image/heif"
+                            accept={IMAGE_FILE_ACCEPT}
                             className="hidden"
                             onChange={(e) => {
                               const file = e.target.files?.[0] || null;

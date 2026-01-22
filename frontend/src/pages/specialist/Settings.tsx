@@ -8,6 +8,7 @@ import { userService } from '../../services/user.service';
 import { Avatar } from '../../components/ui/Avatar';
 import SetPasswordModal from '../../components/auth/SetPasswordModal';
 import ChangePasswordModal from '../../components/auth/ChangePasswordModal';
+import { IMAGE_FILE_ACCEPT, isAllowedImageFile } from '../../utils/fileValidation';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
 import {
   UserIcon,
@@ -119,7 +120,7 @@ const SpecialistSettings: React.FC = () => {
     if (!file) return;
 
     // Validate file type and size
-    if (!file.type.startsWith('image/')) {
+    if (!isAllowedImageFile(file)) {
       setUploadError(
         isKh ? 'សូមជ្រើសរើសឯកសាររូបភាព' : 'Please select an image file'
       );
@@ -350,7 +351,7 @@ const SpecialistSettings: React.FC = () => {
                               </button>
                               <input
                                 type="file"
-                                accept="image/*"
+                              accept={IMAGE_FILE_ACCEPT}
                                 onChange={handleImageUpload}
                                 disabled={isUploadingImage}
                                 aria-label={t('settings.upload.changePhoto') || 'Change Photo'}

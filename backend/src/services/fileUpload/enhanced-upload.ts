@@ -37,8 +37,18 @@ export class EnhancedFileUploadService {
   private fileConfigs: Map<string, FileUploadConfig> = new Map([
     ['avatar', {
       maxFileSize: 5 * 1024 * 1024, // 5MB
-      allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
-      allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp'],
+      allowedMimeTypes: [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+        'image/bmp',
+        'image/tiff',
+        'image/heic',
+        'image/heif',
+        'image/avif'
+      ],
+      allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp', '.tiff', '.tif', '.heic', '.heif', '.avif'],
       generateThumbnails: true,
       thumbnailSizes: [
         { width: 150, height: 150, suffix: '_thumb' },
@@ -47,8 +57,18 @@ export class EnhancedFileUploadService {
     }],
     ['service_image', {
       maxFileSize: 10 * 1024 * 1024, // 10MB
-      allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
-      allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp'],
+      allowedMimeTypes: [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+        'image/bmp',
+        'image/tiff',
+        'image/heic',
+        'image/heif',
+        'image/avif'
+      ],
+      allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp', '.tiff', '.tif', '.heic', '.heif', '.avif'],
       generateThumbnails: true,
       thumbnailSizes: [
         { width: 300, height: 200, suffix: '_thumb' },
@@ -58,8 +78,18 @@ export class EnhancedFileUploadService {
     }],
     ['portfolio', {
       maxFileSize: 15 * 1024 * 1024, // 15MB
-      allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
-      allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp'],
+      allowedMimeTypes: [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+        'image/bmp',
+        'image/tiff',
+        'image/heic',
+        'image/heif',
+        'image/avif'
+      ],
+      allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp', '.tiff', '.tif', '.heic', '.heif', '.avif'],
       generateThumbnails: true,
       thumbnailSizes: [
         { width: 400, height: 300, suffix: '_thumb' },
@@ -69,12 +99,12 @@ export class EnhancedFileUploadService {
     ['message_attachment', {
       maxFileSize: 20 * 1024 * 1024, // 20MB
       allowedMimeTypes: [
-        'image/jpeg', 'image/png', 'image/webp',
+        'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp', 'image/tiff', 'image/heic', 'image/heif', 'image/avif',
         'application/pdf',
         'application/msword',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       ],
-      allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp', '.pdf', '.doc', '.docx'],
+      allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp', '.tiff', '.tif', '.heic', '.heif', '.avif', '.pdf', '.doc', '.docx'],
       generateThumbnails: false,
       thumbnailSizes: []
     }],
@@ -84,16 +114,19 @@ export class EnhancedFileUploadService {
         'image/jpeg',
         'image/png',
         'image/webp',
-        'image/svg+xml',
+        'image/gif',
+        'image/bmp',
+        'image/tiff',
         'image/heic',
         'image/heif',
+        'image/avif',
         'application/pdf',
         'application/msword',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'application/vnd.ms-excel',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       ],
-      allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.heic', '.heif', '.pdf', '.doc', '.docx', '.xls', '.xlsx'],
+      allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp', '.tiff', '.tif', '.heic', '.heif', '.avif', '.pdf', '.doc', '.docx', '.xls', '.xlsx'],
       generateThumbnails: false,
       thumbnailSizes: []
     }]

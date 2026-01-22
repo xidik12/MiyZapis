@@ -341,14 +341,42 @@ export const deleteFile = async (req: Request, res: Response): Promise<void> => 
 /**
  * Validate file based on purpose
  */
+const commonImageTypes = [
+  'image/jpeg',
+  'image/jpg',
+  'image/pjpeg',
+  'image/png',
+  'image/x-png',
+  'image/webp',
+  'image/gif',
+  'image/bmp',
+  'image/x-ms-bmp',
+  'image/tiff',
+  'image/tif',
+  'image/heic',
+  'image/heic-sequence',
+  'image/heif',
+  'image/heif-sequence',
+  'image/avif',
+  'image/avif-sequence'
+];
+
 function validateFileForPurpose(file: Express.Multer.File, purpose: string): { valid: boolean; error?: string } {
   const allowedTypes: Record<string, string[]> = {
-    avatar: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
-    payment_qr: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
-    portfolio: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
-    service: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
-    document: ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/heic', 'image/heif', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-    certificate: ['application/pdf', 'image/jpeg', 'image/png']
+    avatar: commonImageTypes,
+    payment_qr: commonImageTypes,
+    portfolio: commonImageTypes,
+    service: commonImageTypes,
+    document: [
+      ...commonImageTypes,
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ],
+    certificate: [
+      ...commonImageTypes,
+      'application/pdf'
+    ]
   };
 
   const maxSizes: Record<string, number> = {

@@ -6,6 +6,7 @@ import { selectUser } from '../../store/slices/authSlice';
 import { specialistService } from '../../services/specialist.service';
 import { userService } from '../../services/user.service';
 import { isFeatureEnabled } from '../../config/features';
+import { isAllowedImageFile } from '../../utils/fileValidation';
 import { 
   CheckCircleIcon,
   XCircleIcon,
@@ -405,7 +406,7 @@ const SpecialistProfile: React.FC = () => {
     setPortfolioError('');
     
     // Validate file type
-    if (!file.type.startsWith('image/')) {
+    if (!isAllowedImageFile(file)) {
       setPortfolioError(language === 'uk' ? 'Завантажуйте лише зображення' : language === 'ru' ? 'Загружайте только изображения' : 'Please upload only image files');
       return;
     }
@@ -452,8 +453,8 @@ const SpecialistProfile: React.FC = () => {
     setCertificateError('');
     
     // Validate file type (images and PDFs allowed)
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
-    if (!allowedTypes.includes(file.type)) {
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    if (!isAllowedImageFile(file) && !isPdf) {
       setCertificateError(language === 'uk' ? 'Завантажуйте лише зображення (JPG, PNG) або PDF файли' : language === 'ru' ? 'Загружайте только изображения (JPG, PNG) или PDF файлы' : 'Please upload only images (JPG, PNG) or PDF files');
       return;
     }
@@ -473,7 +474,7 @@ const SpecialistProfile: React.FC = () => {
       
       // Create preview for images
       let preview = undefined;
-      if (file.type.startsWith('image/')) {
+      if (isAllowedImageFile(file)) {
         preview = URL.createObjectURL(file);
       }
       
@@ -1216,7 +1217,7 @@ const SpecialistProfile: React.FC = () => {
                                 <input
                                   type="file"
                                   onChange={handleCertificateUpload}
-                                  accept=".jpg,.jpeg,.png,.pdf"
+                                  accept=".jpg,.jpeg,.jpe,.jfif,.png,.webp,.gif,.bmp,.tiff,.tif,.heic,.heif,.avif,.pdf"
                                   className="hidden"
                                   disabled={uploadingCertificate}
                                 />
@@ -1597,7 +1598,7 @@ const SpecialistProfile: React.FC = () => {
                           <input
                             type="file"
                             id="portfolio-upload"
-                            accept="image/*"
+                            accept=".jpg,.jpeg,.jpe,.jfif,.png,.webp,.gif,.bmp,.tiff,.tif,.heic,.heif,.avif"
                             className="hidden"
                             onChange={handlePortfolioUpload}
                           />
