@@ -731,15 +731,17 @@ function App() {
               </Suspense>
             </ConditionalLayout>
           } />
-          <Route 
-            path="/specialist/:specialistId" 
+          <Route
+            path="/specialist/:specialistId"
             element={
-              <ConditionalLayout>
-                <Suspense fallback={<SuspenseLoader />}>
-                  <SpecialistProfilePage />
-                </Suspense>
-              </ConditionalLayout>
-            } 
+              <ProtectedRoute>
+                <ConditionalLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistProfilePage />
+                  </Suspense>
+                </ConditionalLayout>
+              </ProtectedRoute>
+            }
           />
           <Route path="/privacy" element={
             <MainLayout>
@@ -766,13 +768,18 @@ function App() {
           <Route path="/book/:serviceId" element={
             <BookingRouteRedirect />
           } />
-          <Route path="/booking/:serviceId" element={
-            <ConditionalLayout>
-              <Suspense fallback={<SuspenseLoader />}>
-                <BookingRouter />
-              </Suspense>
-            </ConditionalLayout>
-          } />
+          <Route
+            path="/booking/:serviceId"
+            element={
+              <ProtectedRoute>
+                <ConditionalLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <BookingRouter />
+                  </Suspense>
+                </ConditionalLayout>
+              </ProtectedRoute>
+            }
+          />
           <Route path="/payment/:bookingId" element={
             <MainLayout>
               <Suspense fallback={<SuspenseLoader />}>
