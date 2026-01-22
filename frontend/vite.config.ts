@@ -52,16 +52,9 @@ export default defineConfig({
           },
           {
             urlPattern: /^https:\/\/.*\.googleusercontent\.com\/.*/i,
-            handler: 'CacheFirst',
+            handler: 'NetworkOnly',
             options: {
-              cacheName: 'google-images-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
+              cacheName: 'google-images-cache'
             }
           },
           {

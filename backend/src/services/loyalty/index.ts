@@ -916,8 +916,15 @@ export class LoyaltyService {
             ]
           }
         }),
-        // Count reviews
-        prisma.review.count({ where: { userId } }),
+        // Count reviews (as customer or specialist)
+        prisma.review.count({
+          where: {
+            OR: [
+              { customerId: userId },
+              { specialistId: userId }
+            ]
+          }
+        }),
         // Count successful referrals
         prisma.loyaltyReferral.count({
           where: { referrerId: userId, status: 'COMPLETED' }

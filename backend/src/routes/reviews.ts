@@ -76,10 +76,15 @@ router.get('/my-reviews', authenticateToken, validateGetMyReviews, async (req: R
         specialist: {
           select: {
             id: true,
-            firstName: true,
-            lastName: true,
             businessName: true,
-            avatar: true
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                avatar: true
+              }
+            }
           }
         },
         booking: {
@@ -126,7 +131,13 @@ router.get('/my-reviews', authenticateToken, validateGetMyReviews, async (req: R
       createdAt: review.createdAt,
       updatedAt: review.updatedAt,
       customer: review.customer,
-      specialist: review.specialist,
+      specialist: {
+        id: review.specialist.id,
+        firstName: review.specialist.user.firstName,
+        lastName: review.specialist.user.lastName,
+        businessName: review.specialist.businessName,
+        avatar: review.specialist.user.avatar
+      },
       service: review.booking?.service,
       booking: review.booking ? {
         id: review.booking.id,
@@ -139,10 +150,10 @@ router.get('/my-reviews', authenticateToken, validateGetMyReviews, async (req: R
         createdAt: review.response.createdAt,
         respondedBy: {
           id: review.specialist.id,
-          firstName: review.specialist.firstName,
-          lastName: review.specialist.lastName,
+          firstName: review.specialist.user.firstName,
+          lastName: review.specialist.user.lastName,
           businessName: review.specialist.businessName,
-          avatar: review.specialist.avatar
+          avatar: review.specialist.user.avatar
         },
         likeCount: review.response.likeCount || 0,
         dislikeCount: review.response.dislikeCount || 0,
