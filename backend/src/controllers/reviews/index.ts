@@ -904,4 +904,420 @@ export class ReviewController {
       );
     }
   }
+
+  /**
+   * Get comments for a review
+   * GET /reviews/:reviewId/comments
+   */
+  static async getReviewComments(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const { reviewId } = req.params;
+      const currentUserId = req.user?.id;
+
+      if (!reviewId) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Review ID is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Get all comments for the review (including nested)
+      const comments = await prisma.reviewComment.findMany({
+        where: {
+          reviewId,
+          isDeleted: false
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              avatar: true
+            }
+          },
+          reactions: currentUserId ? {
+            where: { userId: currentUserId }
+          } : false,
+          _count: {
+            select: {
+              replies: {
+                where: { isDeleted: false }
+              }
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'asc'
+        }
+      });
+
+      // Format response with engagement data
+      const formattedComments = comments.map(comment => ({
+        id: comment.id,
+        content: comment.content,
+        createdAt: comment.createdAt,
+        parentId: comment.parentId,
+        likeCount: comment.likeCount || 0,
+        dislikeCount: comment.dislikeCount || 0,
+        userReaction: comment.reactions?.length > 0 ? comment.reactions[0].reactionType : null,
+        replyCount: comment._count.replies,
+        user: {
+          id: comment.user.id,
+          firstName: comment.user.firstName,
+          lastName: comment.user.lastName,
+          avatar: comment.user.avatar
+        }
+      }));
+
+      res.json(createSuccessResponse({ comments: formattedComments }));
+    } catch (error: any) {
+      logger.error('Get review comments error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to get comments',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  /**
+   * Create a comment on a review
+   * POST /reviews/:reviewId/comments
+   */
+  static async createReviewComment(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { reviewId } = req.params;
+      const { content, parentId } = req.body;
+
+      if (!reviewId || !content) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Review ID and content are required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (content.trim().length === 0) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Comment content cannot be empty',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Verify review exists
+      const review = await prisma.review.findUnique({
+        where: { id: reviewId }
+      });
+
+      if (!review) {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Review not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // If parentId is provided, verify parent comment exists
+      if (parentId) {
+        const parentComment = await prisma.reviewComment.findUnique({
+          where: { id: parentId }
+        });
+
+        if (!parentComment) {
+          res.status(404).json(
+            createErrorResponse(
+              ErrorCodes.RESOURCE_NOT_FOUND,
+              'Parent comment not found',
+              req.headers['x-request-id'] as string
+            )
+          );
+          return;
+        }
+
+        if (parentComment.reviewId !== reviewId) {
+          res.status(400).json(
+            createErrorResponse(
+              ErrorCodes.VALIDATION_ERROR,
+              'Parent comment does not belong to this review',
+              req.headers['x-request-id'] as string
+            )
+          );
+          return;
+        }
+      }
+
+      // Create comment
+      const comment = await prisma.reviewComment.create({
+        data: {
+          reviewId,
+          userId: req.user.id,
+          content: content.trim(),
+          parentId: parentId || null
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              avatar: true
+            }
+          }
+        }
+      });
+
+      res.json(
+        createSuccessResponse({
+          message: 'Comment created successfully',
+          comment: {
+            id: comment.id,
+            content: comment.content,
+            createdAt: comment.createdAt,
+            parentId: comment.parentId,
+            likeCount: 0,
+            dislikeCount: 0,
+            userReaction: null,
+            replyCount: 0,
+            user: comment.user
+          }
+        })
+      );
+    } catch (error: any) {
+      logger.error('Create review comment error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to create comment',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  /**
+   * React to a comment (like/dislike)
+   * POST /reviews/:reviewId/comments/:commentId/react
+   */
+  static async reactToComment(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { commentId } = req.params;
+      const { reaction } = req.body; // 'like', 'dislike', or null
+
+      if (!commentId) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Comment ID is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (reaction !== null && reaction !== 'like' && reaction !== 'dislike') {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Reaction must be "like", "dislike", or null',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Check if comment exists
+      const comment = await prisma.reviewComment.findUnique({
+        where: { id: commentId }
+      });
+
+      if (!comment || comment.isDeleted) {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Comment not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      if (reaction === null) {
+        // Remove reaction
+        await prisma.reviewCommentReaction.deleteMany({
+          where: {
+            commentId: commentId,
+            userId: req.user.id
+          }
+        });
+
+        res.json(
+          createSuccessResponse({
+            message: 'Reaction removed successfully'
+          })
+        );
+        return;
+      }
+
+      // Upsert reaction (create or update)
+      await prisma.reviewCommentReaction.upsert({
+        where: {
+          commentId_userId: {
+            commentId: commentId,
+            userId: req.user.id
+          }
+        },
+        update: {
+          reactionType: reaction
+        },
+        create: {
+          commentId: commentId,
+          userId: req.user.id,
+          reactionType: reaction
+        }
+      });
+
+      res.json(
+        createSuccessResponse({
+          message: 'Reaction recorded successfully',
+          reaction
+        })
+      );
+    } catch (error: any) {
+      logger.error('React to comment error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to react to comment',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  /**
+   * Delete a comment
+   * DELETE /reviews/:reviewId/comments/:commentId
+   */
+  static async deleteComment(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { commentId } = req.params;
+
+      if (!commentId) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Comment ID is required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Find comment
+      const comment = await prisma.reviewComment.findUnique({
+        where: { id: commentId }
+      });
+
+      if (!comment || comment.isDeleted) {
+        res.status(404).json(
+          createErrorResponse(
+            ErrorCodes.RESOURCE_NOT_FOUND,
+            'Comment not found',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Only allow user to delete their own comments
+      if (comment.userId !== req.user.id) {
+        res.status(403).json(
+          createErrorResponse(
+            ErrorCodes.FORBIDDEN,
+            'You can only delete your own comments',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      // Soft delete the comment
+      await prisma.reviewComment.update({
+        where: { id: commentId },
+        data: {
+          isDeleted: true,
+          deletedAt: new Date()
+        }
+      });
+
+      res.json(
+        createSuccessResponse({
+          message: 'Comment deleted successfully'
+        })
+      );
+    } catch (error: any) {
+      logger.error('Delete comment error:', error);
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to delete comment',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
 }

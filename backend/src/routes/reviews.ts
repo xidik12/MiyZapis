@@ -967,6 +967,12 @@ router.post('/:id/react', authenticateToken, ReviewController.reactToReview);
 router.post('/:reviewId/response/react', authenticateToken, ReviewController.reactToResponse);
 router.post('/:id/report', authenticateToken, ReviewController.reportReview);
 
+// Review comments endpoints (Reddit-style threading)
+router.get('/:reviewId/comments', ReviewController.getReviewComments);
+router.post('/:reviewId/comments', authenticateToken, ReviewController.createReviewComment);
+router.post('/:reviewId/comments/:commentId/react', authenticateToken, ReviewController.reactToComment);
+router.delete('/:reviewId/comments/:commentId', authenticateToken, ReviewController.deleteComment);
+
 // Enhanced endpoints using service pattern
 router.get('/enhanced', ReviewController.getReviews);
 router.get('/enhanced/:id', ReviewController.getReview);
