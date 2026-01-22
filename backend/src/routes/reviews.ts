@@ -284,6 +284,13 @@ router.get('/service/:id', validateGetServiceReviews, async (req: Request, res: 
               }
             }
           }
+        },
+        _count: {
+          select: {
+            comments: {
+              where: { isDeleted: false }
+            }
+          }
         }
       },
       orderBy,
@@ -298,6 +305,9 @@ router.get('/service/:id', validateGetServiceReviews, async (req: Request, res: 
       comment: review.comment,
       tags: review.tags ? JSON.parse(review.tags) : [],
       isVerified: review.isVerified,
+      commentCount: review._count.comments || 0,
+      likeCount: review.likeCount || 0,
+      dislikeCount: review.dislikeCount || 0,
       createdAt: review.createdAt,
       customer: {
         id: review.customer.id,
@@ -811,7 +821,14 @@ router.get('/specialist/:id', validateGetSpecialistReviews, async (req: Request,
         },
         reactions: currentUserId ? {
           where: { userId: currentUserId }
-        } : false
+        } : false,
+        _count: {
+          select: {
+            comments: {
+              where: { isDeleted: false }
+            }
+          }
+        }
       },
       orderBy,
       skip,
@@ -827,6 +844,7 @@ router.get('/specialist/:id', validateGetSpecialistReviews, async (req: Request,
       isVerified: review.isVerified,
       likeCount: review.likeCount || 0,
       dislikeCount: review.dislikeCount || 0,
+      commentCount: review._count.comments || 0,
       userReaction: review.reactions && review.reactions.length > 0 ? review.reactions[0].reactionType : null,
       createdAt: review.createdAt,
       customer: {

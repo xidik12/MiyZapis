@@ -405,15 +405,20 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
           >
             <ChatBubbleLeftIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
             <span className="text-xs font-semibold whitespace-nowrap">
-              {isLoadingComments
-                ? (t('reviews.comments.loading') || 'Loading...')
-                : (() => {
-                    // Use loaded comments length if available, otherwise use commentCount from review data
-                    const count = comments.length > 0 ? comments.length : (review.commentCount || 0);
-                    return count > 0
-                      ? `${count} ${count === 1 ? (t('reviews.comments.comment') || 'Comment') : (t('reviews.comments.comments') || 'Comments')}`
-                      : (t('reviews.comments.comment') || 'Comment');
-                  })()}
+              {(() => {
+                if (isLoadingComments) {
+                  return t('reviews.comments.loading') || 'Loading...';
+                }
+
+                // Use loaded comments length if available, otherwise use commentCount from review data
+                const count = comments.length > 0 ? comments.length : (review.commentCount || 0);
+
+                if (count > 0) {
+                  return `${count} ${count === 1 ? (t('reviews.comments.comment') || 'Comment') : (t('reviews.comments.comments') || 'Comments')}`;
+                }
+
+                return t('reviews.comments.comment') || 'Comment';
+              })()}
             </span>
           </button>
 
