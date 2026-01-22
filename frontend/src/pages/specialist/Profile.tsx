@@ -301,6 +301,7 @@ const SpecialistProfile: React.FC = () => {
   const [isUploadingPortfolio, setIsUploadingPortfolio] = useState(false);
   const [isUploadingPaymentQr, setIsUploadingPaymentQr] = useState(false);
   const [paymentQrError, setPaymentQrError] = useState('');
+  const specialtyInputRef = useRef<HTMLInputElement | null>(null);
   
   // Avatar upload states
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -333,13 +334,53 @@ const SpecialistProfile: React.FC = () => {
     try {
       const dateObj = new Date(date);
       if (isNaN(dateObj.getTime())) return null;
-      return dateObj.toLocaleDateString(language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US', {
+      return dateObj.toLocaleDateString(language === 'kh' ? 'km-KH' : 'en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
       });
     } catch {
       return null;
+    }
+  };
+
+  const getLanguageLabel = (code: string) => {
+    switch (code) {
+      case 'uk':
+        return t('language.ukrainian');
+      case 'en':
+        return t('language.english');
+      case 'ru':
+        return t('language.russian');
+      case 'de':
+        return t('language.german');
+      case 'fr':
+        return t('language.french');
+      case 'es':
+        return t('language.spanish');
+      default:
+        return code;
+    }
+  };
+
+  const getDayLabel = (day: string) => {
+    switch (day) {
+      case 'monday':
+        return t('schedule.monday');
+      case 'tuesday':
+        return t('schedule.tuesday');
+      case 'wednesday':
+        return t('schedule.wednesday');
+      case 'thursday':
+        return t('schedule.thursday');
+      case 'friday':
+        return t('schedule.friday');
+      case 'saturday':
+        return t('schedule.saturday');
+      case 'sunday':
+        return t('schedule.sunday');
+      default:
+        return day;
     }
   };
 
@@ -463,13 +504,7 @@ const SpecialistProfile: React.FC = () => {
         }
       } catch (error) {
         logger.error('Error loading profile:', error);
-        showErrorNotification(
-          language === 'uk' 
-            ? 'Не вдалося завантажити профіль' 
-            : language === 'ru' 
-            ? 'Не удалось загрузить профиль' 
-            : 'Failed to load profile'
-        );
+        showErrorNotification(t('profile.error.loadFailed'));
       } finally {
         setLoading(false);
       }
@@ -506,35 +541,35 @@ const SpecialistProfile: React.FC = () => {
     const errors: Record<string, string> = {};
 
     if (!profile.firstName?.trim()) {
-      errors.firstName = language === 'uk' ? 'Ім\'я обов\'язкове' : language === 'ru' ? 'Имя обязательно' : 'First name is required';
+      errors.firstName = t('profile.validation.firstNameRequired');
     }
     if (!profile.lastName?.trim()) {
-      errors.lastName = language === 'uk' ? 'Прізвище обов\'язкове' : language === 'ru' ? 'Фамилия обязательна' : 'Last name is required';
+      errors.lastName = t('profile.validation.lastNameRequired');
     }
     if (!profile.email?.trim()) {
-      errors.email = language === 'uk' ? 'Email обов\'язковий' : language === 'ru' ? 'Email обязателен' : 'Email is required';
+      errors.email = t('profile.validation.emailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email)) {
-      errors.email = language === 'uk' ? 'Невірний формат email' : language === 'ru' ? 'Неверный формат email' : 'Invalid email format';
+      errors.email = t('profile.validation.emailInvalid');
     }
     if (!profile.profession?.trim()) {
-      errors.profession = language === 'uk' ? 'Професія обов\'язкова' : language === 'ru' ? 'Профессия обязательна' : 'Profession is required';
+      errors.profession = t('profile.validation.professionRequired');
     }
 
     // Validate phone if provided
     if (profile.phone && profile.phone.trim() && !/^[\d\s\-\+\(\)]+$/.test(profile.phone)) {
-      errors.phone = language === 'uk' ? 'Невірний формат телефону' : language === 'ru' ? 'Неверный формат телефона' : 'Invalid phone format';
+      errors.phone = t('profile.validation.phoneInvalid');
     }
 
     // Validate precise address (required)
     if (!profile.preciseAddress?.trim()) {
-      errors.preciseAddress = language === 'uk' ? 'Точна адреса обов\'язкова' : language === 'ru' ? 'Точный адрес обязателен' : 'Precise address is required';
+      errors.preciseAddress = t('profile.validation.preciseAddressRequired');
     }
 
     // Validate business phone (required)
     if (!profile.businessPhone?.trim()) {
-      errors.businessPhone = language === 'uk' ? 'Робочий телефон обов\'язковий' : language === 'ru' ? 'Рабочий телефон обязателен' : 'Business phone is required';
+      errors.businessPhone = t('profile.validation.businessPhoneRequired');
     } else if (!/^[\d\s\-\+\(\)]+$/.test(profile.businessPhone)) {
-      errors.businessPhone = language === 'uk' ? 'Невірний формат телефону' : language === 'ru' ? 'Неверный формат телефона' : 'Invalid phone format';
+      errors.businessPhone = t('profile.validation.phoneInvalid');
     }
 
     setValidationErrors(errors);
@@ -546,47 +581,20 @@ const SpecialistProfile: React.FC = () => {
     if (!validateProfile()) {
       // Show specific validation errors
       const errorFields = Object.keys(validationErrors);
-      const errorMessage = errorFields.length > 0 
-        ? (language === 'uk'
-          ? `Будь ласка, заповніть обов'язкові поля: ${errorFields.map(field => {
-              switch(field) {
-                case 'firstName': return "Ім'я";
-                case 'lastName': return 'Прізвище';
-                case 'email': return 'Email';
-                case 'profession': return 'Професія';
-                case 'preciseAddress': return 'Точна адреса';
-                case 'businessPhone': return 'Робочий телефон';
-                default: return field;
-              }
-            }).join(', ')}`
-          : language === 'ru'
-          ? `Пожалуйста, заполните обязательные поля: ${errorFields.map(field => {
-              switch(field) {
-                case 'firstName': return 'Имя';
-                case 'lastName': return 'Фамилия';
-                case 'email': return 'Email';
-                case 'profession': return 'Профессия';
-                case 'preciseAddress': return 'Точный адрес';
-                case 'businessPhone': return 'Рабочий телефон';
-                default: return field;
-              }
-            }).join(', ')}`
-          : `Please fill in the required fields: ${errorFields.map(field => {
-              switch(field) {
-                case 'firstName': return 'First Name';
-                case 'lastName': return 'Last Name';
-                case 'email': return 'Email';
-                case 'profession': return 'Profession';
-                case 'preciseAddress': return 'Precise Address';
-                case 'businessPhone': return 'Business Phone';
-                default: return field;
-              }
-            }).join(', ')}`)
-        : (language === 'uk'
-          ? 'Будь ласка, виправте помилки у формі'
-          : language === 'ru'
-          ? 'Пожалуйста, исправьте ошибки в форме'
-          : 'Please fix the errors in the form');
+      const requiredFieldLabels: Record<string, string> = {
+        firstName: t('profile.firstName'),
+        lastName: t('profile.lastName'),
+        email: t('profile.email'),
+        profession: t('profile.profession'),
+        preciseAddress: t('profile.preciseAddress'),
+        businessPhone: t('profile.businessPhone'),
+      };
+      const errorMessage = errorFields.length > 0
+        ? t('profile.validation.requiredFields').replace(
+            '{fields}',
+            errorFields.map(field => requiredFieldLabels[field] || field).join(', ')
+          )
+        : t('profile.validation.formErrors');
           
       showErrorNotification(errorMessage);
       return;
@@ -728,23 +736,11 @@ const SpecialistProfile: React.FC = () => {
       setValidationErrors({});
       setJustSaved(true); // Prevent unnecessary reload after save
 
-      showSuccessNotification(
-        language === 'uk' 
-          ? 'Профіль успішно збережено!'
-          : language === 'ru'
-          ? 'Профиль успешно сохранен!'
-          : 'Profile saved successfully!'
-      );
+      showSuccessNotification(t('profile.saveSuccess'));
       
     } catch (error) {
       logger.error('Error saving profile:', error);
-      showErrorNotification(
-        language === 'uk' 
-          ? 'Не вдалося зберегти зміни'
-          : language === 'ru'
-          ? 'Не удалось сохранить изменения'
-          : 'Failed to save changes'
-      );
+      showErrorNotification(t('profile.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -762,10 +758,10 @@ const SpecialistProfile: React.FC = () => {
       console.log('⚠️ [AVATAR UPLOAD] Showing Google avatar replacement confirmation');
       const { confirm } = await import('../../components/ui/Confirm');
       const confirmed = await confirm({
-        title: language === 'uk' ? 'Замінити аватар?' : language === 'ru' ? 'Заменить аватар?' : 'Replace avatar?',
-        message: language === 'uk' ? 'Ви впевнені, що хочете замінити аватар з Google?' : language === 'ru' ? 'Вы уверены, что хотите заменить аватар из Google?' : 'Are you sure you want to replace your Google avatar?',
-        confirmText: language === 'uk' ? 'Замінити' : language === 'ru' ? 'Заменить' : 'Replace',
-        cancelText: language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отмена' : 'Cancel',
+        title: t('profile.confirm.replaceAvatar.title'),
+        message: t('profile.confirm.replaceAvatar.message'),
+        confirmText: t('profile.confirm.replaceAvatar.confirm'),
+        cancelText: t('profile.confirm.replaceAvatar.cancel'),
       });
       console.log('✅ [AVATAR UPLOAD] User confirmed:', confirmed);
       if (!confirmed) {
@@ -778,22 +774,14 @@ const SpecialistProfile: React.FC = () => {
     console.log('🔍 [AVATAR UPLOAD] Validating file type:', file.type);
     if (!file.type.startsWith('image/')) {
       console.error('❌ [AVATAR UPLOAD] Invalid file type:', file.type);
-      showErrorNotification(
-        language === 'uk' ? 'Будь ласка, оберіть файл зображення' :
-        language === 'ru' ? 'Пожалуйста, выберите файл изображения' :
-        'Please select an image file'
-      );
+      showErrorNotification(t('settings.profile.imageSelectError'));
       return;
     }
 
     console.log('🔍 [AVATAR UPLOAD] Validating file size:', (file.size / 1024 / 1024).toFixed(2) + 'MB');
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
       console.error('❌ [AVATAR UPLOAD] File too large:', (file.size / 1024 / 1024).toFixed(2) + 'MB');
-      showErrorNotification(
-        language === 'uk' ? 'Розмір файлу повинен бути менше 5МБ' :
-        language === 'ru' ? 'Размер файла должен быть меньше 5МБ' :
-        'File size must be less than 5MB'
-      );
+      showErrorNotification(t('settings.profile.imageSizeError'));
       return;
     }
 
@@ -815,11 +803,7 @@ const SpecialistProfile: React.FC = () => {
       dispatch(updateUserProfile({ avatar: result.url }));
       console.log('✅ [AVATAR UPLOAD] Redux store updated');
 
-      showSuccessNotification(
-        language === 'uk' ? 'Аватар успішно оновлено' :
-        language === 'ru' ? 'Аватар успешно обновлён' :
-        'Avatar updated successfully'
-      );
+      showSuccessNotification(t('settings.profile.photoUpdated'));
 
       // Clear the file input
       event.target.value = '';
@@ -835,10 +819,7 @@ const SpecialistProfile: React.FC = () => {
       });
       logger.error('❌ Avatar upload error:', error);
       showErrorNotification(
-        error.message ||
-        (language === 'uk' ? 'Помилка завантаження аватара' :
-         language === 'ru' ? 'Ошибка загрузки аватара' :
-         'Failed to upload avatar')
+        error.message || t('settings.profile.imageUploadError')
       );
     } finally {
       console.log('🏁 [AVATAR UPLOAD] Cleanup: Setting isUploadingAvatar to false');
@@ -855,20 +836,12 @@ const SpecialistProfile: React.FC = () => {
     
     // Validate file type and size
     if (!file.type.startsWith('image/')) {
-      showErrorNotification(
-        language === 'uk' ? 'Будь ласка, оберіть файл зображення' :
-        language === 'ru' ? 'Пожалуйста, выберите файл изображения' :
-        'Please select an image file'
-      );
+      showErrorNotification(t('settings.profile.imageSelectError'));
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      showErrorNotification(
-        language === 'uk' ? 'Розмір файлу повинен бути менше 5МБ' :
-        language === 'ru' ? 'Размер файла должен быть меньше 5МБ' :
-        'File size must be less than 5MB'
-      );
+      showErrorNotification(t('settings.profile.imageSizeError'));
       return;
     }
 
@@ -895,11 +868,7 @@ const SpecialistProfile: React.FC = () => {
       logger.debug('📋 Updated portfolio array:', updatedPortfolio.length, 'items');
       handleProfileChange('portfolio', updatedPortfolio);
       
-      showSuccessNotification(
-        language === 'uk' ? 'Зображення успішно додано до портфоліо' :
-        language === 'ru' ? 'Изображение успешно добавлено в портфолио' :
-        'Image successfully added to portfolio'
-      );
+      showSuccessNotification(t('profile.portfolio.added'));
 
       // Clear the file input
       event.target.value = '';
@@ -907,10 +876,7 @@ const SpecialistProfile: React.FC = () => {
     } catch (error: any) {
       logger.error('❌ Portfolio upload error:', error);
       showErrorNotification(
-        error.message || 
-        (language === 'uk' ? 'Помилка завантаження зображення' :
-         language === 'ru' ? 'Ошибка загрузки изображения' :
-         'Failed to upload image')
+        error.message || t('settings.profile.imageUploadError')
       );
     } finally {
       setIsUploadingPortfolio(false);
@@ -936,21 +902,13 @@ const SpecialistProfile: React.FC = () => {
 
     if (!file.type.startsWith('image/')) {
       console.log('[Profile Payment QR Upload] Invalid file type:', file.type);
-      setPaymentQrError(
-        language === 'uk' ? 'Будь ласка, оберіть файл зображення' :
-        language === 'ru' ? 'Пожалуйста, выберите файл изображения' :
-        'Please select an image file'
-      );
+      setPaymentQrError(t('settings.profile.imageSelectError'));
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
       console.log('[Profile Payment QR Upload] File too large:', file.size);
-      setPaymentQrError(
-        language === 'uk' ? 'Розмір файлу повинен бути менше 5МБ' :
-        language === 'ru' ? 'Размер файла должен быть меньше 5МБ' :
-        'File size must be less than 5MB'
-      );
+      setPaymentQrError(t('settings.profile.imageSizeError'));
       return;
     }
 
@@ -962,20 +920,13 @@ const SpecialistProfile: React.FC = () => {
       const result = await fileUploadService.uploadPaymentQr(file);
       console.log('[Profile Payment QR Upload] Upload result:', result);
       handleProfileChange('paymentQrCodeUrl', result.url);
-      showSuccessNotification(
-        language === 'uk' ? 'QR-код успішно завантажено' :
-        language === 'ru' ? 'QR-код успешно загружен' :
-        'QR code uploaded successfully'
-      );
+      showSuccessNotification(t('profile.paymentQr.uploaded'));
       event.target.value = '';
       console.log('[Profile Payment QR Upload] Upload complete');
     } catch (error: any) {
       console.error('[Profile Payment QR Upload] Upload failed:', error);
       setPaymentQrError(
-        error.message ||
-        (language === 'uk' ? 'Помилка завантаження QR-коду' :
-         language === 'ru' ? 'Ошибка загрузки QR-кода' :
-         'Failed to upload QR code')
+        error.message || t('profile.paymentQr.uploadFailed')
       );
     } finally {
       console.log('[Profile Payment QR Upload] Cleanup');
@@ -993,10 +944,10 @@ const SpecialistProfile: React.FC = () => {
     if (hasUnsavedChanges) {
       const { confirm } = await import('../../components/ui/Confirm');
       const ok = await confirm({
-        title: language === 'uk' ? 'Скасувати редагування?' : language === 'ru' ? 'Отменить редактирование?' : 'Cancel editing?',
-        message: language === 'uk' ? 'У вас є незбережені зміни.' : language === 'ru' ? 'У вас есть несохраненные изменения.' : 'You have unsaved changes.',
-        confirmText: language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Discard',
-        cancelText: language === 'uk' ? 'Повернутися' : language === 'ru' ? 'Назад' : 'Go back',
+        title: t('profile.confirm.cancelEdit.title'),
+        message: t('profile.confirm.cancelEdit.message'),
+        confirmText: t('profile.confirm.cancelEdit.confirm'),
+        cancelText: t('profile.confirm.cancelEdit.cancel'),
       });
       if (ok) {
         setProfile(originalProfile);
@@ -1010,7 +961,7 @@ const SpecialistProfile: React.FC = () => {
   };
 
   if (loading) {
-    const subtitle = language === 'uk' ? 'Завантаження профілю' : language === 'ru' ? 'Загрузка профиля' : 'Fetching your profile';
+    const subtitle = t('profile.loading');
     return (<FullScreenHandshakeLoader title={t('common.loading')} subtitle={subtitle} />);
   }
 
@@ -1030,14 +981,14 @@ const SpecialistProfile: React.FC = () => {
       
       {/* Success/Error Notifications */}
       {showSuccessMessage && (
-        <div className="fixed top-4 right-4 z-50 animate-slide-in">
+        <div className="fixed top-4 right-4 z-50 animate-slide-in max-w-[92vw]">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-success-200 dark:border-success-800 p-4 flex items-center gap-3 max-w-sm">
             <div className="w-10 h-10 rounded-full bg-success-100 dark:bg-success-900/30 flex items-center justify-center flex-shrink-0">
               <CheckCircleIcon className="h-6 w-6 text-success-600 dark:text-success-400" />
             </div>
             <div>
               <p className="text-success-800 dark:text-success-200 font-semibold text-sm mb-1">
-                {language === 'uk' ? 'Успішно!' : language === 'ru' ? 'Успешно!' : 'Success!'}
+                {t('common.success')}
               </p>
               <p className="text-success-700 dark:text-success-300 text-xs">
                 {successMessage}
@@ -1048,14 +999,14 @@ const SpecialistProfile: React.FC = () => {
       )}
 
       {showErrorMessage && (
-        <div className="fixed top-4 right-4 z-50 animate-slide-in">
+        <div className="fixed top-4 right-4 z-50 animate-slide-in max-w-[92vw]">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-error-200 dark:border-error-800 p-4 flex items-center gap-3 max-w-sm">
             <div className="w-10 h-10 rounded-full bg-error-100 dark:bg-error-900/30 flex items-center justify-center flex-shrink-0">
               <XCircleIcon className="h-6 w-6 text-error-600 dark:text-error-400" />
             </div>
             <div>
               <p className="text-error-800 dark:text-error-200 font-semibold text-sm mb-1">
-                {language === 'uk' ? 'Помилка!' : language === 'ru' ? 'Ошибка!' : 'Error!'}
+                {t('common.error')}
               </p>
               <p className="text-error-700 dark:text-error-300 text-xs">
                 {errorMessage}
@@ -1065,23 +1016,23 @@ const SpecialistProfile: React.FC = () => {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         {/* Modern Profile Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 sm:gap-8">
             {/* Profile Info Section */}
-            <div className="flex items-start gap-6">
+            <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6 min-w-0">
               {/* Modern Avatar */}
               <div className="relative group">
                 {user?.avatar ? (
                   <Avatar
                     src={user.avatar}
-                    alt={profile.firstName || 'Profile'}
+                    alt={profile.firstName || t('profile.avatarAlt')}
                     size="custom"
-                    className="w-28 h-28 rounded-2xl object-cover shadow-lg ring-4 ring-white dark:ring-gray-800"
+                    className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover shadow-lg ring-4 ring-white dark:ring-gray-800"
                   />
                 ) : (
-                  <div className="w-28 h-28 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg ring-4 ring-white dark:ring-gray-800">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-2xl sm:text-3xl font-bold shadow-lg ring-4 ring-white dark:ring-gray-800">
                     {profile.firstName?.[0]}{profile.lastName?.[0]}
                   </div>
                 )}
@@ -1102,7 +1053,7 @@ const SpecialistProfile: React.FC = () => {
                     />
                     <label
                       htmlFor="specialist-profile-avatar-upload"
-                      className={`absolute -bottom-2 -right-2 bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-xl cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl opacity-0 group-hover:opacity-100 ${isUploadingAvatar ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                      className={`absolute -bottom-2 -right-2 bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-xl cursor-pointer transition-all duration-200 shadow-lg hover:shadow-xl opacity-100 sm:opacity-0 sm:group-hover:opacity-100 ${isUploadingAvatar ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                     >
                       <CameraIcon className="h-4 w-4" />
                     </label>
@@ -1110,41 +1061,41 @@ const SpecialistProfile: React.FC = () => {
                 )}
               </div>
               
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                    <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2 break-words">
                       {profile.firstName} {profile.lastName}
                     </h1>
-                    <p className="text-xl text-primary-600 dark:text-primary-400 font-medium mb-3">
+                    <p className="text-lg sm:text-xl text-primary-600 dark:text-primary-400 font-medium mb-3 break-words">
                       {profile.profession || t('specialist.professionNotSpecified') || 'Profession not specified'}
                     </p>
                   </div>
                 </div>
                 
-                <div className="flex flex-wrap items-center gap-4 mb-4">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4">
                   {/* Profile Completion */}
-                  <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                  <div className="flex flex-wrap items-center gap-3 px-4 py-2 bg-gray-50 dark:bg-gray-700 rounded-xl">
                     <div className="w-24 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                       <div 
                         className="bg-gradient-to-r from-primary-500 to-primary-600 h-2 rounded-full transition-all duration-500" 
                         style={{ width: `${completionPercentage}%` }}
                       ></div>
                     </div>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="min-w-0 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 break-words">
                       {completionPercentage}% {t('profile.complete') || 'complete'}
                     </span>
                   </div>
                   
                   {/* Verification Badge */}
                   {profile.verification?.isVerified && (
-                    <div className="flex items-center gap-2 px-4 py-2 bg-success-50 text-success-700 dark:bg-success-900/20 dark:text-success-300 rounded-xl border border-success-200 dark:border-success-800">
+                    <div className="flex flex-wrap items-center gap-2 px-4 py-2 bg-success-50 text-success-700 dark:bg-success-900/20 dark:text-success-300 rounded-xl border border-success-200 dark:border-success-800">
                       <DocumentCheckIcon className="h-5 w-5" />
-                      <span className="font-medium text-sm">
+                      <span className="min-w-0 font-medium text-sm break-words">
                         {t('specialist.verified') || 'Verified'}
                       </span>
                       {formatVerificationDate(profile.verification?.verifiedDate) && (
-                        <span className="text-xs opacity-75 ml-1">
+                        <span className="min-w-0 text-xs opacity-75 ml-1 break-words">
                           ({formatVerificationDate(profile.verification?.verifiedDate)})
                         </span>
                       )}
@@ -1153,9 +1104,9 @@ const SpecialistProfile: React.FC = () => {
                   
                   {/* Unsaved Changes Warning */}
                   {hasUnsavedChanges && (
-                    <div className="flex items-center gap-2 px-4 py-2 bg-warning-50 text-warning-700 dark:bg-warning-900/20 dark:text-warning-300 rounded-xl border border-warning-200 dark:border-warning-800">
+                    <div className="flex flex-wrap items-center gap-2 px-4 py-2 bg-warning-50 text-warning-700 dark:bg-warning-900/20 dark:text-warning-300 rounded-xl border border-warning-200 dark:border-warning-800">
                       <ExclamationTriangleIcon className="h-5 w-5" />
-                      <span className="font-medium text-sm">
+                      <span className="min-w-0 font-medium text-sm break-words">
                         {t('profile.unsavedChanges') || 'Unsaved changes'}
                       </span>
                     </div>
@@ -1178,16 +1129,14 @@ const SpecialistProfile: React.FC = () => {
                     } else {
                       logger.warn('User is not a specialist');
                       showErrorNotification(
-                        language === 'uk' ? 'Профіль недоступний для перегляду' : 
-                        language === 'ru' ? 'Профиль недоступен для просмотра' : 
-                        'Profile not available for preview'
+                        t('profile.previewUnavailable')
                       );
                     }
                   }}
-                  className="px-6 py-3 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center gap-2"
+                  className="px-6 py-3 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center gap-2 w-full sm:w-auto"
                 >
                   <EyeIcon className="h-4 w-4" />
-                  {language === 'uk' ? 'Перегляд' : language === 'ru' ? 'Просмотр' : 'Preview'}
+                  {t('actions.preview')}
                 </button>
               )}
               <button
@@ -1199,7 +1148,7 @@ const SpecialistProfile: React.FC = () => {
                     setOriginalProfile(profile);
                   }
                 }}
-                className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 ${
+                className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 w-full sm:w-auto ${
                   isEditing
                     ? 'bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-300'
                     : 'bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-lg hover:shadow-xl'
@@ -1208,12 +1157,12 @@ const SpecialistProfile: React.FC = () => {
                 {isEditing ? (
                   <>
                     <XCircleIcon className="h-5 w-5" />
-                    {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Cancel'}
+                    {t('actions.cancel')}
                   </>
                 ) : (
                   <>
                     <PencilSquareIcon className="h-5 w-5" />
-                    {language === 'uk' ? 'Редагувати' : language === 'ru' ? 'Редактировать' : 'Edit Profile'}
+                    {t('actions.edit')}
                   </>
                 )}
               </button>
@@ -1222,32 +1171,32 @@ const SpecialistProfile: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
           {/* Sidebar Navigation */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sticky top-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 sm:sticky sm:top-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                {language === 'uk' ? 'Розділи профілю' : language === 'ru' ? 'Разделы профиля' : 'Profile Sections'}
+                {t('profile.sections.title')}
               </h3>
               <nav className="space-y-2">
                 {[
-                  { id: 'personal', name: language === 'uk' ? 'Особиста інформація' : language === 'ru' ? 'Личная информация' : 'Personal Info', icon: UserCircleIcon },
-                  { id: 'professional', name: language === 'uk' ? 'Професійне' : language === 'ru' ? 'Профессиональное' : 'Professional', icon: BriefcaseIcon },
-                  { id: 'business', name: language === 'uk' ? 'Бізнес' : language === 'ru' ? 'Бизнес' : 'Business', icon: BuildingOfficeIcon },
-                  { id: 'payment', name: language === 'uk' ? 'Оплата' : language === 'ru' ? 'Оплата' : 'Payment', icon: CreditCardIcon },
-                  { id: 'portfolio', name: language === 'uk' ? 'Портфоліо' : language === 'ru' ? 'Портфолио' : 'Portfolio', icon: PhotoIcon }
+                  { id: 'personal', name: t('profile.sections.personal'), icon: UserCircleIcon },
+                  { id: 'professional', name: t('profile.sections.professional'), icon: BriefcaseIcon },
+                  { id: 'business', name: t('profile.sections.business'), icon: BuildingOfficeIcon },
+                  { id: 'payment', name: t('profile.sections.payment'), icon: CreditCardIcon },
+                  { id: 'portfolio', name: t('profile.sections.portfolio'), icon: PhotoIcon }
                 ].map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 ${
+                    className={`w-full text-left px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl transition-all duration-200 flex items-center gap-3 min-w-0 ${
                       activeTab === tab.id
                         ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300 border border-primary-200 dark:border-primary-800'
                         : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200'
                     }`}
                   >
                     <tab.icon className="h-5 w-5" />
-                    <span className="font-medium">{tab.name}</span>
+                    <span className="font-medium break-words min-w-0">{tab.name}</span>
                   </button>
                 ))}
               </nav>
@@ -1260,24 +1209,24 @@ const SpecialistProfile: React.FC = () => {
               
               {/* Personal Information Tab */}
               {activeTab === 'personal' && (
-                <div className="p-8">
-                  <div className="flex items-center justify-between mb-6">
+                <div className="p-4 sm:p-6 lg:p-8">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {language === 'uk' ? 'Особиста інформація' : language === 'ru' ? 'Личная информация' : 'Personal Information'}
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white break-words">
+                        {t('profile.section.personal.title')}
                       </h2>
-                      <p className="text-gray-600 dark:text-gray-400 mt-1">
-                        {language === 'uk' ? 'Основні дані вашого профілю' : language === 'ru' ? 'Основные данные вашего профиля' : 'Basic information about you'}
+                      <p className="text-gray-600 dark:text-gray-400 mt-1 break-words">
+                        {t('profile.section.personal.subtitle')}
                       </p>
                     </div>
                   </div>
 
                   <div className="space-y-6">
                     {/* Name Fields */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {language === 'uk' ? 'Ім\'я *' : language === 'ru' ? 'Имя *' : 'First Name *'}
+                          {t('profile.firstName')} <span className="text-red-500">*</span>
                         </label>
                         <input
                           id="firstName"
@@ -1295,7 +1244,7 @@ const SpecialistProfile: React.FC = () => {
                               ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
                               : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                           } disabled:cursor-not-allowed dark:border-gray-600`}
-                          placeholder={language === 'uk' ? 'Введіть ім\'я' : language === 'ru' ? 'Введите имя' : 'Enter first name'}
+                          placeholder={t('profile.firstNamePlaceholder')}
                           autoComplete="given-name"
                         />
                         {validationErrors.firstName && (
@@ -1308,7 +1257,7 @@ const SpecialistProfile: React.FC = () => {
 
                       <div>
                         <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {language === 'uk' ? 'Прізвище *' : language === 'ru' ? 'Фамилия *' : 'Last Name *'}
+                          {t('profile.lastName')} <span className="text-red-500">*</span>
                         </label>
                         <input
                           id="lastName"
@@ -1327,7 +1276,7 @@ const SpecialistProfile: React.FC = () => {
                               ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
                               : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                           } disabled:cursor-not-allowed dark:border-gray-600`}
-                          placeholder={language === 'uk' ? 'Введіть прізвище' : language === 'ru' ? 'Введите фамилию' : 'Enter last name'}
+                          placeholder={t('profile.lastNamePlaceholder')}
                         />
                         {validationErrors.lastName && (
                           <p className="text-error-600 text-sm mt-1 flex items-center gap-1">
@@ -1339,10 +1288,10 @@ const SpecialistProfile: React.FC = () => {
                     </div>
 
                     {/* Contact Information */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {language === 'uk' ? 'Електронна пошта *' : language === 'ru' ? 'Электронная почта *' : 'Email *'}
+                          {t('profile.email')} <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
                           <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -1363,7 +1312,7 @@ const SpecialistProfile: React.FC = () => {
                                 ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
                                 : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                             } disabled:cursor-not-allowed dark:border-gray-600`}
-                            placeholder={language === 'uk' ? 'example@email.com' : language === 'ru' ? 'example@email.com' : 'example@email.com'}
+                            placeholder={t('profile.emailPlaceholder')}
                           />
                         </div>
                         {validationErrors.email && (
@@ -1376,7 +1325,7 @@ const SpecialistProfile: React.FC = () => {
 
                       <div>
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {language === 'uk' ? 'Телефон' : language === 'ru' ? 'Телефон' : 'Phone'}
+                          {t('profile.phone')}
                         </label>
                         <div className="relative">
                           <PhoneIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -1412,7 +1361,7 @@ const SpecialistProfile: React.FC = () => {
                     {/* Bio */}
                     <div>
                       <label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {language === 'uk' ? 'Про себе' : language === 'ru' ? 'О себе' : 'Bio'}
+                        {t('profile.bio')}
                       </label>
                       <textarea
                         id="bio"
@@ -1426,14 +1375,14 @@ const SpecialistProfile: React.FC = () => {
                             ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
                             : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                         } disabled:cursor-not-allowed dark:border-gray-600 resize-none`}
-                        placeholder={language === 'uk' ? 'Розкажіть про себе...' : language === 'ru' ? 'Расскажите о себе...' : 'Tell us about yourself...'}
+                        placeholder={t('profile.bioPlaceholder')}
                       />
                     </div>
 
                     {/* Location Picker */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {language === 'uk' ? 'Розташування' : language === 'ru' ? 'Местоположение' : 'Location'}
+                        {t('profile.location')}
                       </label>
                       {isEditing ? (
                         <LocationPicker
@@ -1443,13 +1392,13 @@ const SpecialistProfile: React.FC = () => {
                         />
                       ) : (
                         <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
-                          <div className="flex items-center space-x-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <MapPinIcon className="h-5 w-5 text-gray-400" />
-                            <span>
+                            <span className="min-w-0 break-words">
                               {profile.location?.address || profile.location?.city ? 
                                 [profile.location.address, profile.location.city, profile.location.region, profile.location.country]
                                   .filter(Boolean).join(', ') 
-                                : (language === 'uk' ? 'Локація не вказана' : language === 'ru' ? 'Местоположение не указано' : 'No location specified')
+                                : t('profile.locationNotSpecified')
                               }
                             </span>
                           </div>
@@ -1458,10 +1407,10 @@ const SpecialistProfile: React.FC = () => {
                     </div>
 
                     {/* Contact Information for Confirmed Bookings */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Precise Address (Shown only to confirmed customers) <span className="text-red-500">*</span>
+                          {t('profile.preciseAddressLabel')} <span className="text-red-500">*</span>
                         </label>
                         {isEditing ? (
                           <>
@@ -1469,7 +1418,7 @@ const SpecialistProfile: React.FC = () => {
                               type="text"
                               value={profile.preciseAddress || ''}
                               onChange={(e) => handleProfileChange('preciseAddress', e.target.value)}
-                              placeholder="Apt 5B, Building A, 123 Main Street"
+                              placeholder={t('profile.preciseAddressPlaceholder')}
                               className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
                                 validationErrors.preciseAddress
                                   ? 'border-error-300 focus:border-error-500 focus:ring-error-500'
@@ -1485,9 +1434,9 @@ const SpecialistProfile: React.FC = () => {
                           </>
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
-                            <div className="flex items-center space-x-2">
+                            <div className="flex flex-wrap items-center gap-2">
                               <BuildingOfficeIcon className="h-5 w-5 text-gray-400" />
-                              <span>{profile.preciseAddress || 'Not specified'}</span>
+                              <span className="min-w-0 break-words">{profile.preciseAddress || t('common.notSpecified')}</span>
                             </div>
                           </div>
                         )}
@@ -1495,7 +1444,7 @@ const SpecialistProfile: React.FC = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Business Phone <span className="text-red-500">*</span>
+                          {t('profile.businessPhone')} <span className="text-red-500">*</span>
                         </label>
                         {isEditing ? (
                           <>
@@ -1503,7 +1452,7 @@ const SpecialistProfile: React.FC = () => {
                               type="tel"
                               value={profile.businessPhone || ''}
                               onChange={(e) => handleProfileChange('businessPhone', e.target.value)}
-                              placeholder="+1 (555) 123-4567"
+                              placeholder={t('profile.businessPhonePlaceholder')}
                               className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
                                 validationErrors.businessPhone
                                   ? 'border-error-300 focus:border-error-500 focus:ring-error-500'
@@ -1519,9 +1468,9 @@ const SpecialistProfile: React.FC = () => {
                           </>
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
-                            <div className="flex items-center space-x-2">
+                            <div className="flex flex-wrap items-center gap-2">
                               <PhoneIcon className="h-5 w-5 text-gray-400" />
-                              <span>{profile.businessPhone || 'Not specified'}</span>
+                              <span className="min-w-0 break-words">{profile.businessPhone || t('common.notSpecified')}</span>
                             </div>
                           </div>
                         )}
@@ -1529,21 +1478,21 @@ const SpecialistProfile: React.FC = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          WhatsApp Number (Optional)
+                          {t('profile.whatsappNumber')}
                         </label>
                         {isEditing ? (
                           <input
                             type="tel"
                             value={profile.whatsappNumber || ''}
                             onChange={(e) => handleProfileChange('whatsappNumber', e.target.value)}
-                            placeholder="+1 (555) 123-4567"
+                            placeholder={t('profile.whatsappPlaceholder')}
                             className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           />
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
-                            <div className="flex items-center space-x-2">
+                            <div className="flex flex-wrap items-center gap-2">
                               <PhoneIcon className="h-5 w-5 text-green-500" />
-                              <span>{profile.whatsappNumber || 'Not specified'}</span>
+                              <span className="min-w-0 break-words">{profile.whatsappNumber || t('common.notSpecified')}</span>
                             </div>
                           </div>
                         )}
@@ -1551,57 +1500,57 @@ const SpecialistProfile: React.FC = () => {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Location Notes
+                          {t('bookings.locationNotes')}
                         </label>
                         {isEditing ? (
                           <textarea
                             value={profile.locationNotes || ''}
                             onChange={(e) => handleProfileChange('locationNotes', e.target.value)}
-                            placeholder="Special instructions for finding the location..."
+                            placeholder={t('profile.locationNotesPlaceholder')}
                             rows={3}
                             className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           />
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
-                            <span>{profile.locationNotes || 'No special instructions'}</span>
+                            <span className="break-words">{profile.locationNotes || t('profile.locationNotesEmpty')}</span>
                           </div>
                         )}
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Parking Information
+                          {t('bookings.parking')}
                         </label>
                         {isEditing ? (
                           <textarea
                             value={profile.parkingInfo || ''}
                             onChange={(e) => handleProfileChange('parkingInfo', e.target.value)}
-                            placeholder="Parking instructions, costs, restrictions..."
+                            placeholder={t('profile.parkingInfoPlaceholder')}
                             rows={3}
                             className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           />
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
-                            <span>{profile.parkingInfo || 'No parking information provided'}</span>
+                            <span className="break-words">{profile.parkingInfo || t('profile.parkingInfoEmpty')}</span>
                           </div>
                         )}
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Access Instructions
+                          {t('bookings.accessInstructions')}
                         </label>
                         {isEditing ? (
                           <textarea
                             value={profile.accessInstructions || ''}
                             onChange={(e) => handleProfileChange('accessInstructions', e.target.value)}
-                            placeholder="Building access codes, buzzer instructions, etc..."
+                            placeholder={t('profile.accessInstructionsPlaceholder')}
                             rows={3}
                             className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           />
                         ) : (
                           <div className="w-full p-3 border rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
-                            <span>{profile.accessInstructions || 'No access instructions provided'}</span>
+                            <span className="break-words">{profile.accessInstructions || t('profile.accessInstructionsEmpty')}</span>
                           </div>
                         )}
                       </div>
@@ -1612,11 +1561,10 @@ const SpecialistProfile: React.FC = () => {
                         <ShieldCheckIcon className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
                         <div>
                           <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                            Privacy Notice
+                            {t('profile.privacyNotice.title')}
                           </h4>
                           <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                            This detailed contact information will only be shared with customers after their booking is confirmed.
-                            Public profiles will only show your general city/area for privacy protection.
+                            {t('profile.privacyNotice.body')}
                           </p>
                         </div>
                       </div>
@@ -1627,14 +1575,14 @@ const SpecialistProfile: React.FC = () => {
 
               {/* Professional Tab */}
               {activeTab === 'professional' && (
-                <div className="p-8">
-                  <div className="flex items-center justify-between mb-6">
+                <div className="p-4 sm:p-6 lg:p-8">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {language === 'uk' ? 'Професійна інформація' : language === 'ru' ? 'Профессиональная информация' : 'Professional Information'}
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white break-words">
+                        {t('profile.section.professional.title')}
                       </h2>
-                      <p className="text-gray-600 dark:text-gray-400 mt-1">
-                        {language === 'uk' ? 'Ваші професійні навички та досвід' : language === 'ru' ? 'Ваши профессиональные навыки и опыт' : 'Your professional skills and experience'}
+                      <p className="text-gray-600 dark:text-gray-400 mt-1 break-words">
+                        {t('profile.section.professional.subtitle')}
                       </p>
                     </div>
                   </div>
@@ -1679,7 +1627,7 @@ const SpecialistProfile: React.FC = () => {
                     {/* Experience */}
                     <div>
                       <label htmlFor="experience" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {language === 'uk' ? 'Досвід роботи (років)' : language === 'ru' ? 'Опыт работы (лет)' : 'Years of Experience'}
+                        {t('profile.yearsExperience')}
                       </label>
                       <input
                         id="experience"
@@ -1705,7 +1653,7 @@ const SpecialistProfile: React.FC = () => {
                     {/* Education */}
                     <div>
                       <label htmlFor="education" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {language === 'uk' ? 'Освіта' : language === 'ru' ? 'Образование' : 'Education'}
+                        {t('profile.education')}
                       </label>
                       <div className="relative">
                         <AcademicCapIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
@@ -1721,7 +1669,7 @@ const SpecialistProfile: React.FC = () => {
                               ? 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100' 
                               : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                           } disabled:cursor-not-allowed dark:border-gray-600 resize-none`}
-                          placeholder={language === 'uk' ? 'Опишіть вашу освіту та кваліфікації...' : language === 'ru' ? 'Опишите ваше образование и квалификации...' : 'Describe your education and qualifications...'}
+                          placeholder={t('profile.educationPlaceholder')}
                         />
                       </div>
                     </div>
@@ -1729,7 +1677,7 @@ const SpecialistProfile: React.FC = () => {
                     {/* Languages */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {language === 'uk' ? 'Мови' : language === 'ru' ? 'Языки' : 'Languages'}
+                        {t('profile.languages')}
                       </label>
                       <div className="flex flex-wrap gap-2 mb-3">
                         {profile.languages?.map((lang, index) => (
@@ -1738,7 +1686,7 @@ const SpecialistProfile: React.FC = () => {
                             className="inline-flex items-center gap-2 px-3 py-2 bg-primary-100 text-primary-700 dark:bg-primary-900/20 dark:text-primary-300 rounded-xl text-sm font-medium"
                           >
                             <GlobeAltIcon className="h-4 w-4" />
-                            {lang === 'uk' ? 'Українська' : lang === 'en' ? 'English' : lang === 'ru' ? 'Русский' : lang}
+                            {getLanguageLabel(lang)}
                             {isEditing && (
                               <button
                                 onClick={() => {
@@ -1754,7 +1702,7 @@ const SpecialistProfile: React.FC = () => {
                         ))}
                       </div>
                       {isEditing && (
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <select
                             onChange={(e) => {
                               if (e.target.value && !(profile.languages || []).includes(e.target.value)) {
@@ -1762,15 +1710,15 @@ const SpecialistProfile: React.FC = () => {
                               }
                               e.target.value = '';
                             }}
-                            className="px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                            className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                           >
-                            <option value="">{language === 'uk' ? 'Додати мову' : language === 'ru' ? 'Добавить язык' : 'Add Language'}</option>
-                            <option value="uk">Українська</option>
-                            <option value="en">English</option>
-                            <option value="ru">Русский</option>
-                            <option value="de">Deutsch</option>
-                            <option value="fr">Français</option>
-                            <option value="es">Español</option>
+                            <option value="">{t('profile.languages.add')}</option>
+                            <option value="uk">{getLanguageLabel('uk')}</option>
+                            <option value="en">{getLanguageLabel('en')}</option>
+                            <option value="ru">{getLanguageLabel('ru')}</option>
+                            <option value="de">{getLanguageLabel('de')}</option>
+                            <option value="fr">{getLanguageLabel('fr')}</option>
+                            <option value="es">{getLanguageLabel('es')}</option>
                           </select>
                         </div>
                       )}
@@ -1779,7 +1727,7 @@ const SpecialistProfile: React.FC = () => {
                     {/* Specialties */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {language === 'uk' ? 'Спеціалізації' : language === 'ru' ? 'Специализации' : 'Specialties'}
+                        {t('profile.specialties')}
                       </label>
                       <div className="flex flex-wrap gap-2 mb-3">
                         {profile.specialties?.map((specialty, index) => (
@@ -1804,11 +1752,12 @@ const SpecialistProfile: React.FC = () => {
                         ))}
                       </div>
                       {isEditing && (
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <input
                             type="text"
-                            placeholder={language === 'uk' ? 'Додати спеціалізацію' : language === 'ru' ? 'Добавить специализацию' : 'Add Specialty'}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
+                            placeholder={t('profile.specialties.addPlaceholder')}
+                            ref={specialtyInputRef}
+                            className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
                             onKeyPress={(e) => {
                               if (e.key === 'Enter') {
                                 const value = (e.target as HTMLInputElement).value.trim();
@@ -1821,14 +1770,15 @@ const SpecialistProfile: React.FC = () => {
                           />
                           <button
                             onClick={() => {
-                              const input = document.querySelector('input[placeholder*="специализацию"], input[placeholder*="спеціалізацію"], input[placeholder*="Specialty"]') as HTMLInputElement;
-                              const value = input?.value.trim();
+                              const value = specialtyInputRef.current?.value.trim();
                               if (value && !(profile.specialties || []).includes(value)) {
                                 handleProfileChange('specialties', [...(profile.specialties || []), value]);
-                                input.value = '';
+                                if (specialtyInputRef.current) {
+                                  specialtyInputRef.current.value = '';
+                                }
                               }
                             }}
-                            className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors text-sm font-medium"
+                            className="w-full sm:w-auto px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors text-sm font-medium"
                           >
                             <PlusIcon className="h-4 w-4" />
                           </button>
@@ -1841,14 +1791,14 @@ const SpecialistProfile: React.FC = () => {
 
               {/* Business Tab */}
               {activeTab === 'business' && (
-                <div className="p-8">
-                  <div className="flex items-center justify-between mb-6">
+                <div className="p-4 sm:p-6 lg:p-8">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {language === 'uk' ? 'Бізнес інформація' : language === 'ru' ? 'Бизнес информация' : 'Business Information'}
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white break-words">
+                        {t('profile.section.business.title')}
                       </h2>
-                      <p className="text-gray-600 dark:text-gray-400 mt-1">
-                        {language === 'uk' ? 'Налаштування роботи та обслуговування' : language === 'ru' ? 'Настройки работы и обслуживания' : 'Work schedule and service settings'}
+                      <p className="text-gray-600 dark:text-gray-400 mt-1 break-words">
+                        {t('profile.section.business.subtitle')}
                       </p>
                     </div>
                   </div>
@@ -1858,31 +1808,14 @@ const SpecialistProfile: React.FC = () => {
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                         <ClockIcon className="h-5 w-5" />
-                        {language === 'uk' ? 'Графік роботи' : language === 'ru' ? 'График работы' : 'Business Hours'}
+                        {t('profile.businessHours')}
                       </h3>
                       <div className="space-y-3">
                         {profile.businessHours && Object.entries(profile.businessHours).map(([day, hours]) => (
                           <div key={day} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
                             <div className="w-full sm:w-24">
                               <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
-                                {language === 'uk' 
-                                  ? day === 'monday' ? 'Понеділок' 
-                                  : day === 'tuesday' ? 'Вівторок'
-                                  : day === 'wednesday' ? 'Середа'
-                                  : day === 'thursday' ? 'Четвер'
-                                  : day === 'friday' ? 'П\'ятниця'
-                                  : day === 'saturday' ? 'Субота'
-                                  : 'Неділя'
-                                  : language === 'ru'
-                                  ? day === 'monday' ? 'Понедельник' 
-                                  : day === 'tuesday' ? 'Вторник'
-                                  : day === 'wednesday' ? 'Среда'
-                                  : day === 'thursday' ? 'Четверг'
-                                  : day === 'friday' ? 'Пятница'
-                                  : day === 'saturday' ? 'Суббота'
-                                  : 'Воскресенье'
-                                  : day.charAt(0).toUpperCase() + day.slice(1)
-                                }
+                                {getDayLabel(day)}
                               </span>
                             </div>
                             <label className="flex items-center gap-2">
@@ -1906,12 +1839,12 @@ const SpecialistProfile: React.FC = () => {
                                 className="rounded text-primary-600 focus:ring-primary-500"
                               />
                               <span className="text-sm text-gray-600 dark:text-gray-400">
-                                {language === 'uk' ? 'Відкрито' : language === 'ru' ? 'Открыто' : 'Open'}
+                                {t('schedule.open')}
                               </span>
                             </label>
                             {hours.isOpen && (
                               <div className="flex flex-col gap-1">
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                                   <input
                                     type="time"
                                     value={hours.startTime || '09:00'}
@@ -1929,9 +1862,9 @@ const SpecialistProfile: React.FC = () => {
                                         handleProfileChange('businessHours', newBusinessHours);
                                       }
                                     }}
-                                    className="px-2 py-1 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                                    className="w-full sm:w-auto px-2 py-1 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
                                   />
-                                  <span className="text-gray-500">-</span>
+                                  <span className="hidden sm:inline text-gray-500">-</span>
                                   <input
                                     type="time"
                                     value={hours.endTime || '17:00'}
@@ -1949,7 +1882,7 @@ const SpecialistProfile: React.FC = () => {
                                         handleProfileChange('businessHours', newBusinessHours);
                                       }
                                     }}
-                                    className="px-2 py-1 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
+                                    className="w-full sm:w-auto px-2 py-1 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
                                   />
                                 </div>
                                 {(() => {
@@ -1964,16 +1897,12 @@ const SpecialistProfile: React.FC = () => {
 
                                   if (crossesMidnight) {
                                     return (
-                                      <div className="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-1 mt-1">
+                                      <div className="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-1 mt-1 break-words">
                                         <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                           <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                         </svg>
                                         <span>
-                                          {language === 'uk'
-                                            ? 'Увага: Час роботи перетинає північ. Слоти будуть генеруватися від часу початку до 23:45, а потім від 00:00 до часу закінчення.'
-                                            : language === 'ru'
-                                            ? 'Внимание: Время работы пересекает полночь. Слоты будут генерироваться от времени начала до 23:45, а затем от 00:00 до времени окончания.'
-                                            : 'Warning: Business hours cross midnight. Slots will be generated from start time to 11:45 PM, then from 12:00 AM to end time.'}
+                                          {t('profile.businessHours.crossesMidnightWarning')}
                                         </span>
                                       </div>
                                     );
@@ -1991,12 +1920,12 @@ const SpecialistProfile: React.FC = () => {
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                         <MapPinIcon className="h-5 w-5" />
-                        {language === 'uk' ? 'Зона обслуговування' : language === 'ru' ? 'Зона обслуживания' : 'Service Area'}
+                        {t('profile.serviceArea')}
                       </h3>
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            {language === 'uk' ? 'Радіус (км)' : language === 'ru' ? 'Радиус (км)' : 'Radius (km)'}
+                            {t('profile.serviceArea.radius')}
                           </label>
                           <input
                             type="number"
@@ -2030,18 +1959,14 @@ const SpecialistProfile: React.FC = () => {
 
               {/* Payment Tab */}
               {activeTab === 'payment' && (
-                <div className="p-8">
-                  <div className="flex items-center justify-between mb-6">
+                <div className="p-4 sm:p-6 lg:p-8">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {language === 'uk' ? 'Оплата' : language === 'ru' ? 'Оплата' : 'Payments'}
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white break-words">
+                        {t('profile.section.payment.title')}
                       </h2>
-                      <p className="text-gray-600 dark:text-gray-400 mt-1">
-                        {language === 'uk'
-                          ? 'Налаштуйте способи оплати та реквізити'
-                          : language === 'ru'
-                          ? 'Настройте способы оплаты и реквизиты'
-                          : 'Set payment methods and details'}
+                      <p className="text-gray-600 dark:text-gray-400 mt-1 break-words">
+                        {t('profile.section.payment.subtitle')}
                       </p>
                     </div>
                   </div>
@@ -2053,13 +1978,13 @@ const SpecialistProfile: React.FC = () => {
                         <CreditCardIcon className="h-5 w-5" />
                         {t('profile.paymentMethods') || 'Payment Methods'}
                       </h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         {[
-                          { id: 'cash', label: language === 'uk' ? 'Готівка' : language === 'ru' ? 'Наличные' : 'Cash' },
-                          { id: 'card', label: language === 'uk' ? 'Картка' : language === 'ru' ? 'Карта' : 'Card' },
-                          { id: 'bank_transfer', label: language === 'uk' ? 'Банківський переказ' : language === 'ru' ? 'Банковский перевод' : 'Bank transfer' },
-                          { id: 'online', label: language === 'uk' ? 'Онлайн' : language === 'ru' ? 'Онлайн' : 'Online' },
-                          { id: 'crypto', label: language === 'uk' ? 'Криптовалюта' : language === 'ru' ? 'Криптовалюта' : 'Crypto' },
+                          { id: 'cash', label: t('payments.method.cash') },
+                          { id: 'card', label: t('payments.method.card') },
+                          { id: 'bank_transfer', label: t('payments.method.bankTransfer') },
+                          { id: 'online', label: t('payments.method.online') },
+                          { id: 'crypto', label: t('payments.method.crypto') },
                         ].map((method) => (
                           <label
                             key={method.id}
@@ -2081,7 +2006,7 @@ const SpecialistProfile: React.FC = () => {
                               }}
                               className="rounded text-primary-600 focus:ring-primary-500"
                             />
-                            <span className="text-sm text-gray-700 dark:text-gray-300">{method.label}</span>
+                            <span className="min-w-0 text-sm text-gray-700 dark:text-gray-300 break-words">{method.label}</span>
                           </label>
                         ))}
                       </div>
@@ -2093,7 +2018,7 @@ const SpecialistProfile: React.FC = () => {
                         <DocumentCheckIcon className="h-5 w-5" />
                         {t('specialist.paymentDetails') || 'Payment Details'}
                       </h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             {t('specialist.bankName') || 'Bank name'}
@@ -2210,8 +2135,8 @@ const SpecialistProfile: React.FC = () => {
                               className="w-28 h-28 rounded-lg border border-gray-200 dark:border-gray-700 object-cover"
                             />
                           ) : (
-                            <div className="w-28 h-28 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-400 text-xs">
-                              {language === 'uk' ? 'Немає QR' : language === 'ru' ? 'Нет QR' : 'No QR'}
+                            <div className="w-28 h-28 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center text-gray-400 text-xs text-center px-2">
+                              {t('profile.paymentQr.empty')}
                             </div>
                           )}
 
@@ -2225,20 +2150,20 @@ const SpecialistProfile: React.FC = () => {
                                 className="hidden"
                                 disabled={isUploadingPaymentQr}
                               />
-                              <div className="flex gap-2">
+                              <div className="flex flex-col sm:flex-row gap-2">
                                 <label
                                   htmlFor="payment-qr-upload"
-                                  className={`px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors cursor-pointer ${isUploadingPaymentQr ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                                  className={`w-full sm:w-auto px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors cursor-pointer ${isUploadingPaymentQr ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                                 >
                                   {isUploadingPaymentQr
-                                    ? (language === 'uk' ? 'Завантаження...' : language === 'ru' ? 'Загрузка...' : 'Uploading...')
+                                    ? t('settings.upload.uploading')
                                     : (t('specialist.uploadQr') || 'Upload QR')}
                                 </label>
                                 {profile.paymentQrCodeUrl && (
                                   <button
                                     type="button"
                                     onClick={handlePaymentQrRemove}
-                                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                    className="w-full sm:w-auto px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                   >
                                     {t('specialist.removeQr') || 'Remove'}
                                   </button>
@@ -2261,14 +2186,14 @@ const SpecialistProfile: React.FC = () => {
 
               {/* Portfolio Tab */}
               {activeTab === 'portfolio' && (
-                <div className="p-8">
-                  <div className="flex items-center justify-between mb-6">
+                <div className="p-4 sm:p-6 lg:p-8">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {language === 'uk' ? 'Портфоліо' : language === 'ru' ? 'Портфолио' : 'Portfolio'}
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white break-words">
+                        {t('profile.section.portfolio.title')}
                       </h2>
-                      <p className="text-gray-600 dark:text-gray-400 mt-1">
-                        {language === 'uk' ? 'Покажіть свої роботи та досягнення' : language === 'ru' ? 'Покажите свои работы и достижения' : 'Showcase your work and achievements'}
+                      <p className="text-gray-600 dark:text-gray-400 mt-1 break-words">
+                        {t('profile.section.portfolio.subtitle')}
                       </p>
                     </div>
                     {isEditing && (
@@ -2283,31 +2208,29 @@ const SpecialistProfile: React.FC = () => {
                         />
                         <label
                           htmlFor="portfolio-image-upload"
-                          className={`px-4 py-2 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2 cursor-pointer ${isUploadingPortfolio ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                          className={`w-full sm:w-auto px-4 py-2 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-colors flex items-center justify-center gap-2 cursor-pointer ${isUploadingPortfolio ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                         >
                           {isUploadingPortfolio ? (
                             <>
                               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                              {language === 'uk' ? 'Завантаження...' : language === 'ru' ? 'Загрузка...' : 'Uploading...'}
+                              {t('settings.upload.uploading')}
                             </>
                           ) : (
                             <>
                               <PlusIcon className="h-4 w-4" />
-                              {language === 'uk' ? 'Додати фото' : language === 'ru' ? 'Добавить фото' : 'Add Photo'}
+                              {t('profile.portfolio.addPhoto')}
                             </>
                           )}
                         </label>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                          {language === 'uk' ? 'Максимальний розмір файлу: 5МБ. Підтримуються формати: JPG, PNG, WebP' :
-                           language === 'ru' ? 'Максимальный размер файла: 5МБ. Поддерживаемые форматы: JPG, PNG, WebP' :
-                           'Maximum file size: 5MB. Supported formats: JPG, PNG, WebP'}
+                          {t('profile.portfolio.fileHint')}
                         </p>
                       </div>
                     )}
                   </div>
 
                   {profile.portfolio && profile.portfolio.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                       {profile.portfolio.map((item, index) => (
                         <div
                           key={item.id || index}
@@ -2316,7 +2239,7 @@ const SpecialistProfile: React.FC = () => {
                           <div className="aspect-square overflow-hidden">
                             <img
                               src={getAbsoluteImageUrl(item.imageUrl)}
-                              alt={item.title || `Portfolio item ${index + 1}`}
+                              alt={item.title || t('profile.portfolio.itemAlt').replace('{number}', String(index + 1))}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               onError={(e) => {
                                 logger.error('Portfolio image failed to load:', item.imageUrl);
@@ -2330,11 +2253,11 @@ const SpecialistProfile: React.FC = () => {
                           </div>
                           {item.title && (
                             <div className="p-4">
-                              <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-1">
+                              <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-1 break-words">
                                 {item.title}
                               </h3>
                               {item.description && (
-                                <p className="text-gray-600 dark:text-gray-400 text-xs">
+                                <p className="text-gray-600 dark:text-gray-400 text-xs break-words">
                                   {item.description}
                                 </p>
                               )}
@@ -2346,7 +2269,7 @@ const SpecialistProfile: React.FC = () => {
                                 const updatedPortfolio = profile.portfolio.filter((_, i) => i !== index);
                                 handleProfileChange('portfolio', updatedPortfolio);
                               }}
-                              className="absolute top-2 right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="absolute top-2 right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                             >
                               <XCircleIcon className="h-4 w-4" />
                             </button>
@@ -2355,13 +2278,13 @@ const SpecialistProfile: React.FC = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-16">
+                    <div className="text-center py-10 sm:py-16">
                       <PhotoIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                        {language === 'uk' ? 'Портфоліо поки порожнє' : language === 'ru' ? 'Портфолио пока пустое' : 'Portfolio is empty'}
+                        {t('profile.portfolio.emptyTitle')}
                       </h3>
                       <p className="text-gray-600 dark:text-gray-400 mb-6">
-                        {language === 'uk' ? 'Додайте фотографії своїх робіт, щоб клієнти побачили ваші навички' : language === 'ru' ? 'Добавьте фотографии своих работ, чтобы клиенты увидели ваши навыки' : 'Add photos of your work to show clients your skills'}
+                        {t('profile.portfolio.emptySubtitle')}
                       </p>
                     </div>
                   )}
@@ -2370,25 +2293,25 @@ const SpecialistProfile: React.FC = () => {
 
               {/* Save Button */}
               {isEditing && (
-                <div className="px-8 py-6 bg-gray-50 dark:bg-gray-700 rounded-b-2xl border-t border-gray-200 dark:border-gray-600">
-                  <div className="flex gap-4 justify-end">
+                <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 bg-gray-50 dark:bg-gray-700 rounded-b-2xl border-t border-gray-200 dark:border-gray-600">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:justify-end">
                     <button
                       onClick={handleCancelEdit}
-                      className="px-6 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                      className="w-full sm:w-auto px-6 py-3 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-xl font-medium hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                     >
-                      {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Cancel'}
+                      {t('actions.cancel')}
                     </button>
                     <button
                       onClick={handleSave}
                       disabled={saving}
-                      className="px-8 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-semibold transition-all duration-200 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-semibold transition-all duration-200 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {saving && (
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                       )}
                       {saving 
-                        ? (language === 'uk' ? 'Збереження...' : language === 'ru' ? 'Сохранение...' : 'Saving...')
-                        : (language === 'uk' ? 'Зберегти зміни' : language === 'ru' ? 'Сохранить изменения' : 'Save Changes')
+                        ? t('actions.saving')
+                        : t('actions.saveChanges')
                       }
                     </button>
                   </div>
