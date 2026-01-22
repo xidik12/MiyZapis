@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/redux';
 import { selectIsAuthenticated, selectUser } from '../../store/slices/authSlice';
 import HomePage from '../../pages/HomePage';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const UserTypeRedirect: React.FC = () => {
   const navigate = useNavigate();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const user = useAppSelector(selectUser);
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -37,7 +39,7 @@ export const UserTypeRedirect: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Redirecting to your dashboard...</p>
+        <p className="text-gray-600">{t('navigation.redirectingDashboard')}</p>
       </div>
     </div>
   );

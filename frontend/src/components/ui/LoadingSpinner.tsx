@@ -1,5 +1,6 @@
 import React from 'react';
 import { clsx } from 'clsx';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -12,6 +13,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   color = 'primary',
   className,
 }) => {
+  const { t } = useLanguage();
   const sizeClass = {
     sm: 'w-4 h-4 border-2',
     md: 'w-6 h-6 border-2',
@@ -27,7 +29,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   }[color];
 
   return (
-    <div className={clsx('inline-flex items-center', className)} role="status" aria-label="Loading">
+    <div className={clsx('inline-flex items-center', className)} role="status" aria-label={t('common.loading')}>
       <div
         className={clsx(
           'rounded-full border-gray-200 dark:border-gray-700 border-t-current animate-spin',
@@ -35,7 +37,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           colorClass
         )}
       />
-      <span className="sr-only">Loading...</span>
+      <span className="sr-only">{t('common.loading')}</span>
     </div>
   );
 };

@@ -10,6 +10,7 @@ import {
 } from '@/components/icons';
 import { Avatar } from '@/components/ui/Avatar';
 import { SpecialistResponse } from './SpecialistResponse';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface ReviewCardData {
   id: string;
@@ -59,6 +60,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
   onMarkResponseHelpful,
   index = 0
 }) => {
+  const { t } = useLanguage();
   const [showFullComment, setShowFullComment] = useState(false);
   const [showResponse, setShowResponse] = useState(true);
 
@@ -129,7 +131,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
               {review.isVerified && (
                 <CheckBadgeIcon
                   className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0"
-                  title="Verified Purchase"
+                  title={t('reviews.verifiedPurchase')}
                 />
               )}
             </div>
@@ -166,7 +168,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
                 onClick={() => setShowFullComment(!showFullComment)}
                 className="text-primary-600 dark:text-primary-400 text-sm font-semibold mt-1 hover:underline"
               >
-                {showFullComment ? 'Show less' : 'Read more'}
+                {showFullComment ? t('reviews.showLess') : t('reviews.readMore')}
               </button>
             )}
           </div>
@@ -200,19 +202,19 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
               className={`w-4 h-4 ${review.isHelpful ? 'text-primary-600 dark:text-primary-400' : ''}`}
               active={review.isHelpful}
             />
-            <span className="text-xs font-semibold">{review.helpfulCount} Helpful</span>
+            <span className="text-xs font-semibold">{review.helpfulCount} {t('reviews.helpful')}</span>
           </button>
 
           <button className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 hover:scale-105 active:scale-95">
             <ChatBubbleLeftIcon className="w-4 h-4" />
             <span className="text-xs font-semibold">
-              {review.response ? '1 Comment' : 'Comment'}
+              {review.response ? t('reviews.commentSingle') : t('reviews.comment')}
             </span>
           </button>
 
           <button className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 hover:scale-105 active:scale-95">
             <ShareIcon className="w-4 h-4" />
-            <span className="text-xs font-semibold">Share</span>
+            <span className="text-xs font-semibold">{t('reviews.share')}</span>
           </button>
         </div>
       </div>

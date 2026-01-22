@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, CheckIcon } from '@/components/icons';
 import { NotificationCard } from './NotificationCard';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Notification {
   id: string;
@@ -35,6 +36,7 @@ export const NotificationGroup: React.FC<NotificationGroupProps> = ({
   deletingIds,
   defaultExpanded = true
 }) => {
+  const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   if (notifications.length === 0) {
@@ -72,7 +74,7 @@ export const NotificationGroup: React.FC<NotificationGroupProps> = ({
           {/* Unread Badge */}
           {unreadCount > 0 && (
             <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold bg-primary-500 text-white">
-              {unreadCount} new
+              {unreadCount} {t('notifications.new')}
             </span>
           )}
         </div>
@@ -85,10 +87,10 @@ export const NotificationGroup: React.FC<NotificationGroupProps> = ({
               onMarkAllAsRead();
             }}
             className="flex items-center gap-1.5 text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold px-2.5 py-1 rounded-lg hover:bg-primary-50/80 dark:hover:bg-primary-900/30 transition-all duration-200 hover:scale-105 active:scale-95"
-            title="Mark all as read"
+            title={t('notifications.markAllRead')}
           >
             <CheckIcon className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Mark all</span>
+            <span className="hidden sm:inline">{t('notifications.markAll')}</span>
           </button>
         )}
       </div>

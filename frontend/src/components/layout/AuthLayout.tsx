@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { environment } from '@/config/environment';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Logo } from '../common/Logo';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -11,6 +12,7 @@ interface AuthLayoutProps {
 export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   const brandName = environment.APP_NAME;
   const brandInitial = brandName.trim().charAt(0).toUpperCase() || 'H';
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col justify-center px-4 py-8 sm:px-6 lg:px-8">
@@ -40,7 +42,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
           className="inline-flex items-center text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 font-medium transition-colors duration-200"
         >
           <span aria-hidden="true">←</span>
-          <span className="ml-1">Back to home</span>
+          <span className="ml-1">{t('auth.backToHome')}</span>
         </Link>
       </div>
     </div>

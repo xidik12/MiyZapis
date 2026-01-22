@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { format, startOfWeek, addDays, isSameDay, isToday, isPast, parseISO } from 'date-fns';
 import { PlusIcon } from '@/components/icons';
 import { Booking } from '../../types';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TimeBlock {
   id: string;
@@ -36,6 +37,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
   onBookingReschedule,
   onBookingRightClick
 }) => {
+  const { t } = useLanguage();
   const [draggedBooking, setDraggedBooking] = useState<Booking | null>(null);
   const [dropTarget, setDropTarget] = useState<{date: Date; time: string} | null>(null);
 
@@ -99,7 +101,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
       <div className="grid grid-cols-8 border-b border-gray-200 dark:border-gray-700">
         {/* Time column header */}
         <div className="bg-gray-50 dark:bg-gray-900/50 p-3 border-r border-gray-200 dark:border-gray-700">
-          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">TIME</span>
+          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">{t('calendar.timeLabel')}</span>
         </div>
         {/* Day headers */}
         {weekDays.map((day) => (

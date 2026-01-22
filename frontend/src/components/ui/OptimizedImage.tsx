@@ -1,4 +1,5 @@
 import React, { useState, useEffect, ImgHTMLAttributes } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface OptimizedImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'> {
   src: string;
@@ -43,6 +44,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   className = '',
   ...props
 }) => {
+  const { t } = useLanguage();
   const [imageSrc, setImageSrc] = useState<string>(src);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -283,7 +285,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     return (
       <div className={`bg-gray-200 animate-pulse ${className}`} {...props}>
         <div className="w-full h-full flex items-center justify-center">
-          <div className="text-gray-400 text-sm">Loading...</div>
+          <div className="text-gray-400 text-sm">{t('common.loading')}</div>
         </div>
       </div>
     );
@@ -315,11 +317,11 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
                 </svg>
                 {isBackendUpload ? (
                   <div>
-                    <div className="font-medium">Image unavailable</div>
-                    <div className="text-xs mt-1">Re-upload needed</div>
+                    <div className="font-medium">{t('image.unavailable')}</div>
+                    <div className="text-xs mt-1">{t('image.reuploadNeeded')}</div>
                   </div>
                 ) : (
-                  'Image failed to load'
+                  t('image.loadFailed')
                 )}
               </>
             );

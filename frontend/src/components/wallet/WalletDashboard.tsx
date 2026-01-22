@@ -10,12 +10,14 @@ import { walletService } from '../../services/wallet.service';
 import { ReferralAnalytics } from '../../types/referral';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface WalletDashboardProps {
   className?: string;
 }
 
 const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('overview');
   const [referralAnalytics, setReferralAnalytics] = useState<ReferralAnalytics | null>(null);
   const { formatPrice } = useCurrency();
@@ -44,9 +46,9 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Wallet</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('wallet.dashboard.title')}</h1>
           <p className="text-muted-foreground">
-            Manage your balance and view transaction history
+            {t('wallet.dashboard.subtitle')}
           </p>
         </div>
       </div>
@@ -65,8 +67,8 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
               } whitespace-nowrap py-3 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1 sm:gap-2 flex-shrink-0 mobile-touch-target`}
             >
               <Wallet className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Overview</span>
-              <span className="xs:hidden">Main</span>
+              <span className="hidden xs:inline">{t('wallet.tab.overview')}</span>
+              <span className="xs:hidden">{t('wallet.tab.overviewShort')}</span>
             </button>
             <button
               onClick={() => setActiveTab('transactions')}
@@ -77,8 +79,8 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
               } whitespace-nowrap py-3 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1 sm:gap-2 flex-shrink-0 mobile-touch-target`}
             >
               <History className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Transactions</span>
-              <span className="xs:hidden">History</span>
+              <span className="hidden xs:inline">{t('wallet.tab.transactions')}</span>
+              <span className="xs:hidden">{t('wallet.tab.transactionsShort')}</span>
             </button>
             {isSpecialist && (
               <button
@@ -90,8 +92,8 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
                 } whitespace-nowrap py-3 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1 sm:gap-2 flex-shrink-0 mobile-touch-target`}
               >
                 <CreditCard className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden xs:inline">Earnings</span>
-                <span className="xs:hidden">Earn</span>
+                <span className="hidden xs:inline">{t('wallet.tab.earnings')}</span>
+                <span className="xs:hidden">{t('wallet.tab.earningsShort')}</span>
               </button>
             )}
           </nav>
@@ -114,9 +116,9 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
               {/* Recent Activity */}
               <Card>
                 <div className="p-4 sm:p-6">
-                  <h3 className="text-base sm:text-lg font-semibold mb-2">Recent Activity</h3>
+                  <h3 className="text-base sm:text-lg font-semibold mb-2">{t('wallet.recentActivity.title')}</h3>
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    Your latest wallet transactions
+                    {t('wallet.recentActivity.subtitle')}
                   </p>
                   <WalletTransactionHistory
                     limit={5}
@@ -129,18 +131,18 @@ const WalletDashboard: React.FC<WalletDashboardProps> = ({ className = '' }) => 
               {/* Quick Actions */}
               <Card>
                 <div className="p-4 sm:p-6">
-                  <h3 className="text-base sm:text-lg font-semibold mb-2">Quick Actions</h3>
+                  <h3 className="text-base sm:text-lg font-semibold mb-2">{t('wallet.quickActions.title')}</h3>
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    Common wallet operations
+                    {t('wallet.quickActions.subtitle')}
                   </p>
                   <div className="grid grid-cols-2 gap-3 sm:gap-4">
                     <Button variant="secondary" className="h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 text-xs sm:text-sm">
                       <Gift className="h-4 w-4 sm:h-6 sm:w-6" />
-                      <span>Redeem Rewards</span>
+                      <span>{t('wallet.quickActions.redeemRewards')}</span>
                     </Button>
                     <Button variant="secondary" className="h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 text-xs sm:text-sm">
                       <Users className="h-4 w-4 sm:h-6 sm:w-6" />
-                      <span>Refer Friends</span>
+                      <span>{t('wallet.quickActions.referFriends')}</span>
                     </Button>
                   </div>
                 </div>
@@ -173,6 +175,7 @@ interface EarningsOverviewProps {
 }
 
 const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, formatPrice }) => {
+  const { t } = useLanguage();
   const [walletTransactions, setWalletTransactions] = useState<any[]>([]);
   const [loadingTransactions, setLoadingTransactions] = useState(true);
 
@@ -214,6 +217,11 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
   };
 
   const earnings = calculateEarnings();
+  const reasonLabels: Record<string, string> = {
+    REFERRAL_REWARD: t('wallet.earnings.reason.referralReward'),
+    LOYALTY_POINTS_CONVERTED: t('wallet.earnings.reason.loyaltyConverted'),
+    FORFEITURE_SPLIT: t('wallet.earnings.reason.forfeitureSplit'),
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -221,17 +229,17 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
       <Card>
         <div className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium">Total Earnings</h3>
+            <h3 className="text-sm font-medium">{t('wallet.earnings.totalTitle')}</h3>
             <CreditCard className="h-4 w-4 text-gray-500" />
           </div>
           <div className="text-2xl font-bold">{formatPrice(earnings.totalEarnings)}</div>
           <p className="text-xs text-muted-foreground">
-            From referrals and rewards
+            {t('wallet.earnings.totalSubtitle')}
           </p>
           {earnings.totalEarnings > 0 && (
             <div className="flex items-center mt-2">
               <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-              <span className="text-xs text-green-600">Active earnings</span>
+              <span className="text-xs text-green-600">{t('wallet.earnings.active')}</span>
             </div>
           )}
         </div>
@@ -241,16 +249,17 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
       <Card>
         <div className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium">Referral Earnings</h3>
+            <h3 className="text-sm font-medium">{t('wallet.earnings.referralTitle')}</h3>
             <Users className="h-4 w-4 text-gray-500" />
           </div>
           <div className="text-2xl font-bold">{formatPrice(earnings.referralEarnings)}</div>
           <p className="text-xs text-muted-foreground">
-            From successful referrals
+            {t('wallet.earnings.referralSubtitle')}
           </p>
           {referralAnalytics && (
             <div className="text-xs text-gray-500 mt-1">
-              {referralAnalytics.overview.completedReferrals} completed referrals
+              {t('wallet.earnings.referralCount')
+                .replace('{count}', String(referralAnalytics.overview.completedReferrals))}
             </div>
           )}
         </div>
@@ -260,17 +269,17 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
       <Card>
         <div className="p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium">Reward Earnings</h3>
+            <h3 className="text-sm font-medium">{t('wallet.earnings.rewardTitle')}</h3>
             <Gift className="h-4 w-4 text-gray-500" />
           </div>
           <div className="text-2xl font-bold">{formatPrice(earnings.loyaltyEarnings + earnings.forfeitureEarnings)}</div>
           <p className="text-xs text-muted-foreground">
-            From loyalty rewards & forfeiture shares
+            {t('wallet.earnings.rewardSubtitle')}
           </p>
           {(earnings.loyaltyEarnings > 0 || earnings.forfeitureEarnings > 0) && (
             <div className="text-xs text-gray-500 mt-1">
-              {earnings.loyaltyEarnings > 0 && `Loyalty: ${formatPrice(earnings.loyaltyEarnings)}`}
-              {earnings.forfeitureEarnings > 0 && ` Forfeiture: ${formatPrice(earnings.forfeitureEarnings)}`}
+              {earnings.loyaltyEarnings > 0 && t('wallet.earnings.loyaltyLabel').replace('{amount}', formatPrice(earnings.loyaltyEarnings))}
+              {earnings.forfeitureEarnings > 0 && ` ${t('wallet.earnings.forfeitureLabel').replace('{amount}', formatPrice(earnings.forfeitureEarnings))}`}
             </div>
           )}
         </div>
@@ -279,9 +288,9 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
       {/* Earnings Breakdown */}
       <Card className="md:col-span-2 lg:col-span-3">
         <div className="p-4 sm:p-6">
-          <h3 className="text-base sm:text-lg font-semibold mb-2">Earnings Breakdown</h3>
+          <h3 className="text-base sm:text-lg font-semibold mb-2">{t('wallet.earnings.breakdownTitle')}</h3>
           <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4">
-            See how your earnings are distributed
+            {t('wallet.earnings.breakdownSubtitle')}
           </p>
           <div className="space-y-4">
             {/* Recent Earnings Transactions */}
@@ -291,7 +300,7 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
               </div>
             ) : walletTransactions.length > 0 ? (
               <div className="space-y-2 max-h-32 overflow-y-auto">
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">Recent Earnings</h4>
+                <h4 className="text-sm font-medium text-muted-foreground mb-2">{t('wallet.earnings.recentTitle')}</h4>
                 {walletTransactions.slice(0, 5).map((transaction) => (
                   <div key={transaction.id} className="flex items-center justify-between p-2 rounded border">
                     <div className="flex items-center gap-2">
@@ -299,7 +308,7 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
                         transaction.reason === 'REFERRAL_REWARD' ? 'bg-blue-500' :
                         transaction.reason === 'LOYALTY_POINTS_CONVERTED' ? 'bg-green-500' : 'bg-purple-500'
                       }`}></div>
-                      <span className="text-sm">{transaction.reason.replace(/_/g, ' ').toLowerCase()}</span>
+                      <span className="text-sm">{reasonLabels[transaction.reason] || transaction.reason.replace(/_/g, ' ').toLowerCase()}</span>
                     </div>
                     <div className="text-sm font-medium">+{formatPrice(transaction.amount)}</div>
                   </div>
@@ -307,7 +316,7 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
               </div>
             ) : (
               <div className="h-32 flex items-center justify-center text-muted-foreground border-2 border-dashed rounded-lg">
-                No earnings transactions yet
+                {t('wallet.earnings.none')}
               </div>
             )}
 
@@ -316,21 +325,21 @@ const EarningsOverview: React.FC<EarningsOverviewProps> = ({ referralAnalytics, 
               <div className="flex items-center justify-between p-2 sm:p-3 rounded-lg border">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
-                  <span className="text-xs sm:text-sm truncate">Referral Bonuses</span>
+                  <span className="text-xs sm:text-sm truncate">{t('wallet.earnings.category.referralBonuses')}</span>
                 </div>
                 <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2">{formatPrice(earnings.referralEarnings)}</span>
               </div>
               <div className="flex items-center justify-between p-2 sm:p-3 rounded-lg border">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0"></div>
-                  <span className="text-xs sm:text-sm truncate">Loyalty Rewards</span>
+                  <span className="text-xs sm:text-sm truncate">{t('wallet.earnings.category.loyaltyRewards')}</span>
                 </div>
                 <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2">{formatPrice(earnings.loyaltyEarnings)}</span>
               </div>
               <div className="flex items-center justify-between p-2 sm:p-3 rounded-lg border sm:col-span-2 md:col-span-1">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-purple-500 rounded-full flex-shrink-0"></div>
-                  <span className="text-xs sm:text-sm truncate">Forfeiture Share</span>
+                  <span className="text-xs sm:text-sm truncate">{t('wallet.earnings.category.forfeitureShare')}</span>
                 </div>
                 <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded whitespace-nowrap ml-2">{formatPrice(earnings.forfeitureEarnings)}</span>
               </div>

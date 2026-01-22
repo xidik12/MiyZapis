@@ -88,7 +88,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
       size="lg"
       closeOnBackdrop={!isLoading}
       closeOnEscape={!isLoading}
-      ariaLabel="Set password"
+      ariaLabel={t('auth.setPassword.modalLabel')}
       contentClassName="flex flex-col"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="flex h-full flex-col">
@@ -99,10 +99,10 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Set Your Password
+                {t('auth.setPassword.heading')}
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Secure your account with a strong password
+                {t('auth.setPassword.subheading')}
               </p>
             </div>
           </div>
@@ -111,7 +111,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
             onClick={handleClose}
             disabled={isLoading}
             className="rounded-lg p-2 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300 disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label="Close"
+            aria-label={t('common.close')}
           >
             <XMarkIcon className="h-5 w-5" />
           </button>
@@ -121,13 +121,12 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
           <div className="modal-body space-y-6">
             <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
               <p className="text-sm text-blue-700 dark:text-blue-300">
-                Since you signed up with Google, you don't currently have a password.
-                Setting a password will enable you to:
+                {t('auth.setPassword.notice')}
               </p>
               <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-blue-600 dark:text-blue-400">
-                <li>Reset your password if needed</li>
-                <li>Sign in with email/password as backup</li>
-                <li>Access additional security features</li>
+                <li>{t('auth.setPassword.benefit1')}</li>
+                <li>{t('auth.setPassword.benefit2')}</li>
+                <li>{t('auth.setPassword.benefit3')}</li>
               </ul>
             </div>
 
@@ -136,7 +135,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
                 htmlFor="password"
                 className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                New Password
+                {t('auth.password.newLabel')}
               </label>
               <div className="relative">
                 <input
@@ -151,7 +150,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
                       ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
                       : ''
                   }`}
-                  placeholder="Enter your new password"
+                  placeholder={t('auth.password.newPlaceholder')}
                 />
                 <button
                   type="button"
@@ -183,7 +182,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
                 htmlFor="confirmPassword"
                 className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                Confirm Password
+                {t('auth.password.confirmLabel')}
               </label>
               <div className="relative">
                 <input
@@ -201,7 +200,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
                       ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
                       : ''
                   }`}
-                  placeholder="Confirm your new password"
+                  placeholder={t('auth.password.confirmPlaceholder')}
                 />
                 <button
                   type="button"
@@ -231,7 +230,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
             disabled={isLoading}
             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 sm:w-auto"
           >
-            Cancel
+            {t('actions.cancel')}
           </button>
           <button
             type="submit"
@@ -239,7 +238,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
           >
             {isLoading && <LoadingSpinner size="sm" color="white" />}
-            <span>{isLoading ? 'Setting Password...' : 'Set Password'}</span>
+            <span>{isLoading ? t('auth.setPassword.loadingAction') : t('auth.setPassword.action')}</span>
           </button>
         </div>
       </form>

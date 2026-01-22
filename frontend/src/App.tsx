@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from './hooks/redux';
 import { getCurrentUser, selectIsAuthenticated, selectUser } from './store/slices/authSlice';
 import { getAuthToken } from './services/api';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { LanguageProvider } from './contexts/LanguageContext';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { FullScreenHandshakeLoader } from './components/ui/FullScreenHandshakeLoader';
@@ -82,9 +82,33 @@ const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage'));
 const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 
 // Loading component for Suspense - simple and clean
-const SuspenseLoader = () => (
-  <FullScreenHandshakeLoader title="Loading..." />
-);
+const CustomerNotificationsPlaceholder: React.FC = () => {
+  const { t } = useLanguage();
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">{t('notifications.pageTitle')}</h1>
+      <p className="text-gray-600 mt-2">{t('notifications.pageSubtitle')}</p>
+    </div>
+  );
+};
+
+const CustomerHistoryPlaceholder: React.FC = () => {
+  const { t } = useLanguage();
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold">{t('bookings.history.title')}</h1>
+      <p className="text-gray-600 mt-2">{t('bookings.history.subtitle')}</p>
+    </div>
+  );
+};
+
+const SuspenseLoader = () => {
+  const { t } = useLanguage();
+
+  return <FullScreenHandshakeLoader title={t('common.loading')} />;
+};
 
 // Component to redirect from /book/:serviceId to /booking/:serviceId
 const BookingRouteRedirect: React.FC = () => {
@@ -518,10 +542,7 @@ function App() {
             element={
               <ProtectedRoute requiredUserType="customer">
                 <CustomerLayout>
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">Notifications</h1>
-                    <p className="text-gray-600 mt-2">View your notifications and alerts</p>
-                  </div>
+                  <CustomerNotificationsPlaceholder />
                 </CustomerLayout>
               </ProtectedRoute>
             }
@@ -641,10 +662,7 @@ function App() {
             element={
               <ProtectedRoute requiredUserType="customer">
                 <CustomerLayout>
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">Booking History</h1>
-                    <p className="text-gray-600 mt-2">View your past bookings and service history</p>
-                  </div>
+                  <CustomerHistoryPlaceholder />
                 </CustomerLayout>
               </ProtectedRoute>
             }

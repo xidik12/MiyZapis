@@ -7,6 +7,7 @@ import React, {
   useMemo,
 } from 'react';
 import baseEnTranslations from './translations-en.json';
+import baseKhTranslations from './translations-kh.json';
 
 export type Language = 'en' | 'kh';
 
@@ -36,8 +37,10 @@ const createTranslations = (): Translations => {
 
   // First load all translations from JSON file
   for (const [key, value] of Object.entries(baseEnTranslations)) {
-    const normalized = normalize(value);
-    map[key] = { en: normalized, kh: normalized };
+    const normalizedEn = normalize(value);
+    const khValue = baseKhTranslations[key] ?? value;
+    const normalizedKh = normalize(khValue);
+    map[key] = { en: normalizedEn, kh: normalizedKh };
   }
 
   // Then allow manual overrides with ensure()

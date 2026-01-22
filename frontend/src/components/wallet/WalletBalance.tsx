@@ -5,6 +5,7 @@ import { Loader2, Wallet, Eye, EyeOff, TrendingUp, TrendingDown } from 'lucide-r
 import { walletService, WalletBalance as WalletBalanceType, WalletSummary } from '../../services/wallet.service';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { toast } from 'react-toastify';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface WalletBalanceProps {
   showTransactions?: boolean;
@@ -15,6 +16,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
   showTransactions = false,
   onTransactionsClick
 }) => {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<WalletSummary | null>(null);
   const [showBalance, setShowBalance] = useState(true);
@@ -30,7 +32,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
       setSummary(summaryData);
     } catch (error) {
       console.error('Error fetching wallet summary:', error);
-      toast.error('Failed to load wallet information');
+      toast.error(t('wallet.loadError'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -60,7 +62,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
       <Card className="w-full">
         <div className="p-6">
           <div className="text-center text-muted-foreground">
-            Unable to load wallet information
+            {t('wallet.loadEmpty')}
           </div>
         </div>
       </Card>
@@ -76,7 +78,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-medium flex items-center gap-2">
             <Wallet className="h-4 w-4" />
-            Wallet Balance
+            {t('wallet.balanceTitle')}
           </h3>
           <div className="flex items-center gap-2">
             <Button
@@ -110,7 +112,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
             {showBalance ? formatPrice(summary.balance) : '•••••'}
           </div>
           <div className="text-sm text-muted-foreground mt-1">
-            Available Balance
+            {t('wallet.availableBalance')}
           </div>
         </div>
 
@@ -123,7 +125,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
               <TrendingDown className="h-4 w-4 text-red-500" />
             )}
             <span className={isPositiveFlow ? 'text-green-600' : 'text-red-600'}>
-              {isPositiveFlow ? '+' : ''}{formatPrice(netFlow)} net flow
+              {isPositiveFlow ? '+' : ''}{formatPrice(netFlow)} {t('wallet.netFlow')}
             </span>
           </div>
         ) : null}
@@ -134,13 +136,13 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
             <div className="text-lg font-semibold text-green-600">
               {showBalance ? formatPrice(summary.totalCredits) : '•••••'}
             </div>
-            <div className="text-xs text-muted-foreground">Total Received</div>
+            <div className="text-xs text-muted-foreground">{t('wallet.totalReceived')}</div>
           </div>
           <div className="text-center">
             <div className="text-lg font-semibold text-red-600">
               {showBalance ? formatPrice(summary.totalDebits) : '•••••'}
             </div>
-            <div className="text-xs text-muted-foreground">Total Spent</div>
+            <div className="text-xs text-muted-foreground">{t('wallet.totalSpent')}</div>
           </div>
         </div>
 
@@ -148,7 +150,9 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
         {summary.pendingTransactions > 0 && (
           <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-md text-center">
             <div className="text-sm text-yellow-800 dark:text-yellow-200">
-              {summary.pendingTransactions} pending transaction{summary.pendingTransactions !== 1 ? 's' : ''}
+              {summary.pendingTransactions === 1
+                ? t('wallet.pendingTransactionSingle').replace('{count}', String(summary.pendingTransactions))
+                : t('wallet.pendingTransactionMultiple').replace('{count}', String(summary.pendingTransactions))}
             </div>
           </div>
         )}
@@ -156,7 +160,8 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
         {/* Last Transaction */}
         {summary.lastTransactionAt && (
           <div className="text-xs text-muted-foreground text-center">
-            Last transaction: {new Date(summary.lastTransactionAt).toLocaleDateString()}
+            {t('wallet.lastTransaction')
+              .replace('{date}', new Date(summary.lastTransactionAt).toLocaleDateString())}
           </div>
         )}
 
@@ -167,7 +172,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({
             className="w-full"
             onClick={onTransactionsClick}
           >
-            View Transaction History
+            {t('wallet.viewHistory')}
           </Button>
         )}
         </div>

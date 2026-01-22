@@ -334,7 +334,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
               className="w-full group flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200"
             >
               <ArrowRightOnRectangleIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-red-500" />
-              <span>Logout</span>
+              <span>{t('auth.logout')}</span>
             </button>
           </div>
 
