@@ -49,10 +49,28 @@ BCRYPT_ROUNDS=12
 
 ### 6. CORS Configuration (REQUIRED)
 ```
-CORS_ORIGIN=https://miyzapis-frontend.up.railway.app,https://miyzapis-miniapp.up.railway.app,http://localhost:3000
+CORS_ORIGIN=https://panhaha.com,https://www.panhaha.com,https://panhaha-website-production.up.railway.app,http://localhost:3000
 ```
 
-### 7. Email Configuration (Gmail SMTP)
+### 7. AWS S3 / File Uploads (RECOMMENDED)
+```
+# Enable S3 (set to false to force local storage)
+ENABLE_S3_STORAGE=true
+FORCE_LOCAL_STORAGE=false
+FILE_STORAGE=s3
+
+# S3 Credentials
+AWS_REGION=ap-southeast-2
+AWS_ACCESS_KEY_ID=your-aws-access-key-id
+AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
+AWS_S3_BUCKET=your-bookingbot-bucket
+AWS_S3_URL=https://your-bookingbot-bucket.s3.ap-southeast-2.amazonaws.com
+
+# Optional: public domain used for absolute URLs
+RAILWAY_PUBLIC_DOMAIN=huddle-backend-production.up.railway.app
+```
+
+### 8. Email Configuration (Gmail SMTP)
 ```
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
@@ -62,31 +80,31 @@ SMTP_PASS=your-gmail-app-password
 EMAIL_FROM=your-gmail-address@gmail.com
 ```
 
-### 8. Google OAuth Configuration (REQUIRED for Google Sign-In)
+### 9. Google OAuth Configuration (REQUIRED for Google Sign-In)
 ```
 GOOGLE_CLIENT_ID=your-google-oauth-client-id
 GOOGLE_CLIENT_SECRET=your-google-oauth-client-secret
-GOOGLE_REDIRECT_URI=https://miyzapis-backend.up.railway.app/api/v1/auth-enhanced/google/callback
+GOOGLE_REDIRECT_URI=https://huddle-backend-production.up.railway.app/api/v1/auth-enhanced/google/callback
 ```
 
-### 9. Rate Limiting & Security
+### 10. Rate Limiting & Security
 ```
 RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=100
 RATE_LIMIT_SKIP_SUCCESSFUL_REQUESTS=false
 ```
 
-### 10. Logging Configuration
+### 11. Logging Configuration
 ```
 LOG_LEVEL=info
 LOG_FILE_ENABLED=false
 LOG_FILE_PATH=/tmp/logs
 ```
 
-### 11. Optional: Telegram Bot (if configured)
+### 12. Optional: Telegram Bot (if configured)
 ```
 TELEGRAM_BOT_TOKEN=your-telegram-bot-token
-TELEGRAM_WEBHOOK_URL=https://miyzapis-backend.up.railway.app/api/v1/telegram/webhook
+TELEGRAM_WEBHOOK_URL=https://huddle-backend-production.up.railway.app/api/v1/telegram/webhook
 TELEGRAM_WEBHOOK_SECRET=auto-generated-webhook-secret
 ```
 
@@ -116,8 +134,8 @@ PORT=3000
 JWT_SECRET=EEIvVim9Gfj1CbafVDGUL7IBigQNMq7FH5Ln+A6+7zEZJhkl5mTyMlHkpdvrf4Wt
 JWT_REFRESH_SECRET=PRzF2A+kEZF6G7AJa/sILee91ocBoUWbwcgqgYEQUk8Ts+gxA+0cSZWP3dBI8q5M
 SESSION_SECRET=LqU/cQYx2pv/pOlYFtChl0K+Ay7G6b7JwaKpNgHGEJ8jdG5qaXCX5ovV0zoVi4+z
-EMAIL_FROM=noreply@miyzapis.com
-CORS_ORIGIN=https://miyzapis-frontend.up.railway.app,http://localhost:3000
+EMAIL_FROM=noreply@panhaha.com
+CORS_ORIGIN=https://panhaha.com,https://www.panhaha.com,https://panhaha-website-production.up.railway.app,http://localhost:3000
 REDIS_URL=redis://default:your-redis-password@redis.railway.internal:6379
 REDIS_PASSWORD=your-redis-password
 ```
@@ -132,7 +150,7 @@ REDIS_PASSWORD=your-redis-password
 
 1. **Save all variables** in Railway dashboard
 2. **Wait for automatic redeploy** (should take ~30 seconds)
-3. **Test backend health**: Visit `https://miyzapis-backend.up.railway.app/health`
+3. **Test backend health**: Visit `https://huddle-backend-production.up.railway.app/health`
 4. **Test authentication**: Try Google Sign-In from frontend
 
 ## Troubleshooting
@@ -144,9 +162,8 @@ If the backend still doesn't start:
 4. Ensure DATABASE_URL is automatically provided by PostgreSQL service
 
 ## Service URLs (Update these if different)
-- Backend: `https://miyzapis-backend.up.railway.app`
-- Frontend: `https://miyzapis-frontend.up.railway.app`
-- Mini App: `https://miyzapis-miniapp.up.railway.app`
+- Backend: `https://huddle-backend-production.up.railway.app`
+- Frontend: `https://panhaha-website-production.up.railway.app`
 
 ## Next Steps After Fix
 1. Configure Gmail SMTP credentials for email functionality

@@ -93,6 +93,19 @@ api.interceptors.request.use(
       config.timeout = 120000; // 2 minutes for file uploads
     }
 
+    // Allow browser to set multipart boundary for FormData uploads
+    const isFormData = typeof FormData !== 'undefined' && config.data instanceof FormData;
+    if (isFormData && config.headers) {
+      const headers: any = config.headers;
+      if (typeof headers.delete === 'function') {
+        headers.delete('Content-Type');
+        headers.delete('content-type');
+      } else {
+        delete headers['Content-Type'];
+        delete headers['content-type'];
+      }
+    }
+
     // Add detailed debugging information
     const requestStartTime = Date.now();
     const requestId = `req_${requestStartTime}_${Math.random().toString(36).substr(2, 9)}`;

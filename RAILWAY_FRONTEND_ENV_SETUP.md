@@ -4,12 +4,12 @@
 
 The frontend is trying to make requests to:
 ```
-https://panhaha-website-production.up.railway.app/auth/panhaha-backend-production.up.railway.app/api/v1/...
+https://panhaha-website-production.up.railway.app/auth/huddle-backend-production.up.railway.app/api/v1/...
 ```
 
 This is wrong! It should be:
 ```
-https://panhaha-backend-production.up.railway.app/api/v1/...
+https://huddle-backend-production.up.railway.app/api/v1/...
 ```
 
 ## Root Cause
@@ -24,10 +24,10 @@ Go to your **Frontend** Railway service (panhaha-website-production) and set the
 
 ```bash
 # Backend API URL - CRITICAL
-VITE_API_URL=https://panhaha-backend-production.up.railway.app/api/v1
+VITE_API_URL=https://huddle-backend-production.up.railway.app/api/v1
 
 # WebSocket URL for real-time features
-VITE_WS_URL=wss://panhaha-backend-production.up.railway.app
+VITE_WS_URL=wss://huddle-backend-production.up.railway.app
 
 # App Configuration
 VITE_APP_NAME=Panhaha
@@ -41,8 +41,8 @@ VITE_ENABLE_TELEGRAM_INTEGRATION=true
 VITE_DEBUG=false
 
 # Telegram Configuration
-VITE_TELEGRAM_BOT_USERNAME=@miyzapis_bot
-VITE_TELEGRAM_MINI_APP_URL=https://miyzapis-telegram-mini.up.railway.app
+VITE_TELEGRAM_BOT_USERNAME=@panhaha_bot
+VITE_TELEGRAM_MINI_APP_URL=https://panhaha-telegram-miniapp.up.railway.app
 ```
 
 ### Optional (Add when ready)
@@ -76,7 +76,7 @@ VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key_here
 
 5. **Verify**
    - Once deployed, check browser console
-   - Should see requests going to `https://panhaha-backend-production.up.railway.app/api/v1/...`
+   - Should see requests going to `https://huddle-backend-production.up.railway.app/api/v1/...`
    - Registration should work!
 
 ## Important Notes

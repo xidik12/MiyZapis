@@ -33,9 +33,25 @@ export const validateContentLength = (options?: {
 
     // Get Content-Length header
     const contentLength = req.headers['content-length'];
+    const contentType = req.headers['content-type']?.split(';')[0]?.trim() || '';
+    const transferEncoding = (req.headers['transfer-encoding'] || '').toString().toLowerCase();
+    const isChunked = transferEncoding.includes('chunked');
 
     // Require Content-Length for methods with body
     if (!contentLength) {
+      if (contentType === 'multipart/form-data' || isChunked) {
+        logger.info('Skipping Content-Length validation for streaming/multipart request', {
+          method: req.method,
+          path: req.path,
+          contentType,
+          transferEncoding,
+          ip: req.ip,
+          userId: (req as any).user?.id
+        });
+        next();
+        return;
+      }
+
       logger.warn('Missing Content-Length header', {
         method: req.method,
         path: req.path,
@@ -77,7 +93,6 @@ export const validateContentLength = (options?: {
     }
 
     // Get content type specific limit
-    const contentType = req.headers['content-type']?.split(';')[0]?.trim() || '';
     const limit = customLimits[contentType] || maxLength;
 
     // Check if Content-Length exceeds the limit
