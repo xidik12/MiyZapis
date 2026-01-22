@@ -4,7 +4,7 @@ import { formatDistanceToNow } from 'date-fns';
 import {
   HandThumbUpIcon,
   HandThumbDownIcon,
-  ChatBubbleLeftIcon,
+  ChatCircleIcon,
   TrashIcon
 } from '@/components/icons';
 import { Avatar } from '@/components/ui/Avatar';
@@ -157,7 +157,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                   onClick={() => onReply(comment.id)}
                   className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all hover:scale-105 active:scale-95"
                 >
-                  <ChatBubbleLeftIcon className="w-3 h-3" />
+                  <ChatCircleIcon className="w-3 h-3" />
                   <span className="text-xs font-semibold">
                     {t('reviews.comments.reply') || 'Reply'}
                   </span>
@@ -292,7 +292,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
       <div className="p-4 sm:p-6">
         {/* Comment count header */}
         <div className="flex items-center gap-2 mb-4">
-          <ChatBubbleLeftIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          <ChatCircleIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
             {comments.length} {comments.length === 1
               ? (t('reviews.comments.comment') || 'Comment')
@@ -325,7 +325,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
         <div className="space-y-1">
           {commentTree.length === 0 ? (
             <div className="text-center py-8">
-              <ChatBubbleLeftIcon className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+              <ChatCircleIcon className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {t('reviews.comments.empty') || 'No comments yet. Be the first to comment!'}
               </p>
