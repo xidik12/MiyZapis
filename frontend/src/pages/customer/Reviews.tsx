@@ -216,6 +216,7 @@ const CustomerReviews: React.FC = () => {
       isVerified: !!review.isVerified,
       likeCount: review.likeCount || 0,
       dislikeCount: review.dislikeCount || 0,
+      commentCount: review.commentCount || 0,
       userReaction: review.userReaction || null,
       createdAt: review.createdAt || new Date().toISOString(),
       customer,

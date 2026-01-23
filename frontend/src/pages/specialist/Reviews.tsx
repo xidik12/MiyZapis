@@ -263,6 +263,7 @@ const SpecialistReviews: React.FC = () => {
     isVerified: review.isVerified,
     likeCount: review.likeCount || 0,
     dislikeCount: review.dislikeCount || 0,
+    commentCount: review.commentCount || 0,
     userReaction: review.userReaction || null,
     createdAt: review.createdAt,
     customer: review.customer,

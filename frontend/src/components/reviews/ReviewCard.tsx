@@ -258,7 +258,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
           <StarIcon
             key={star}
             className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500"
-            active={star <= review.rating}
+            active={true}
           />
         ))}
       </div>
