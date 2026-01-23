@@ -11,14 +11,14 @@ export interface FileUploadResponse {
 }
 
 export interface FileUploadOptions {
-  type?: 'avatar' | 'portfolio' | 'service' | 'document' | 'certificate' | 'payment_qr';
+  type?: 'avatar' | 'portfolio' | 'service' | 'document' | 'certificate' | 'payment';
   folder?: string;
   maxSize?: number; // in bytes
   allowedTypes?: string[]; // mime types
 }
 
 export class FileUploadService {
-  // Upload a single file (using presigned URL to bypass Railway timeout)
+  // Upload a single file
   async uploadFile(file: File, options: FileUploadOptions = {}): Promise<FileUploadResponse> {
     console.log('[FileUploadService] uploadFile called', { fileName: file.name, size: file.size, type: file.type, options });
     try {
@@ -27,52 +27,32 @@ export class FileUploadService {
       this.validateFile(file, options);
       console.log('[FileUploadService] File validation passed');
 
-      // Step 1: Get presigned URL from backend (small API call, fast)
-      console.log('[FileUploadService] Getting presigned URL from backend...');
-      const presignedData = await apiClient.post<{uploadUrl: string; fileUrl: string; key: string}>('/files/presigned-upload', {
-        filename: file.name,
-        contentType: file.type,
-        type: options.type,
-        folder: options.folder
-      });
+      const formData = new FormData();
+      formData.append('files', file); // Use 'files' field name for multer array upload
+      console.log('[FileUploadService] FormData created, file appended to "files" field');
 
-      if (!presignedData.success || !presignedData.data) {
-        throw new Error('Failed to get presigned URL');
+      const queryParams = new URLSearchParams();
+      if (options.type) {
+        queryParams.append('purpose', options.type);
+      }
+      if (options.folder) {
+        queryParams.append('folder', options.folder);
       }
 
-      console.log('[FileUploadService] Presigned URL received, uploading directly to S3...');
+      const endpoint = `/files/upload${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+      console.log('[FileUploadService] Calling API endpoint:', endpoint);
+      console.log('[FileUploadService] FormData contents:', Array.from(formData.entries()));
 
-      // Step 2: Upload directly to S3 (bypasses Railway completely!)
-      const uploadResponse = await fetch(presignedData.data.uploadUrl, {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': file.type,
-        },
-      });
+      const response = await apiClient.post<FileUploadResponse[]>(endpoint, formData);
+      console.log('[FileUploadService] API response received:', response);
 
-      if (!uploadResponse.ok) {
-        throw new Error(`S3 upload failed: ${uploadResponse.statusText}`);
+      if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
+        console.error('[FileUploadService] Invalid response format:', response);
+        throw new Error(response.error?.message || 'Failed to upload file');
       }
 
-      console.log('[FileUploadService] S3 upload successful! Confirming with backend...');
-
-      // Step 3: Confirm upload with backend to create database record (small API call, fast)
-      const confirmResponse = await apiClient.post<FileUploadResponse>('/files/confirm-upload', {
-        key: presignedData.data.key,
-        filename: file.name,
-        originalName: file.name,
-        mimeType: file.type,
-        size: file.size,
-        purpose: options.type || 'general'
-      });
-
-      if (!confirmResponse.success || !confirmResponse.data) {
-        throw new Error('Failed to confirm upload');
-      }
-
-      console.log('[FileUploadService] Upload confirmed! Returning:', confirmResponse.data);
-      return confirmResponse.data;
+      console.log('[FileUploadService] Upload successful, returning:', response.data[0]);
+      return response.data[0]; // Return the first uploaded file
     } catch (error: any) {
       console.error('[FileUploadService] Upload error:', error);
       console.error('[FileUploadService] Error details:', {
