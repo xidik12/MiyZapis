@@ -257,11 +257,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
         {[1, 2, 3, 4, 5].map((star) => (
           <StarIcon
             key={star}
-            className={`w-4 h-4 sm:w-5 sm:h-5 ${
-              star <= review.rating
-                ? 'text-yellow-500'
-                : 'text-gray-300 dark:text-gray-600'
-            }`}
+            className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500"
             active={star <= review.rating}
           />
         ))}

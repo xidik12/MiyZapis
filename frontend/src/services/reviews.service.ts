@@ -9,6 +9,7 @@ export interface Review {
   isVerified: boolean;
   helpfulCount: number;
   isHelpful?: boolean;
+  commentCount?: number;
   createdAt: string;
   updatedAt: string;
   customer: {
