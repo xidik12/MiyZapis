@@ -1,6 +1,7 @@
 /**
  * Notification Center Component
- * Comprehensive notifications UI with full functionality
+ * Enhanced with glassmorphism effects and improved UX
+ * Based on Miyzapis design patterns with Panhaha brand colors
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -42,6 +43,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<NotificationType | 'all'>('all');
+  const [isFiltering, setIsFiltering] = useState(false); // For staggered animation
   const [serviceStatus, setServiceStatus] = useState<{
     mode: 'backend' | 'local';
     hasLocalData: boolean;
@@ -89,6 +91,14 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     const filtered = filterByCategory(allNotifications, selectedFilter);
     setNotifications(filtered);
   }, [selectedFilter, allNotifications]);
+
+  // Trigger filtering animation when filter changes
+  useEffect(() => {
+    if (!isOpen) return;
+    setIsFiltering(true);
+    const timer = window.setTimeout(() => setIsFiltering(false), 240);
+    return () => window.clearTimeout(timer);
+  }, [selectedFilter, isOpen]);
 
   // Close on Esc
   useEffect(() => {
@@ -217,47 +227,53 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   };
 
 
+  // Helper: Get notification category for consistent color mapping
+  const getNotificationCategory = (type: NotificationType) => {
+    const normalized = (type || '').toLowerCase();
+    if (normalized.includes('booking')) return 'booking';
+    if (normalized.includes('payment')) return 'payment';
+    if (normalized.includes('review')) return 'review';
+    if (normalized.includes('system')) return 'system';
+    return 'system';
+  };
+
   // Get notification type icon
   const getNotificationIcon = (type: NotificationType) => {
     const iconProps = { className: "h-5 w-5" };
-    
-    switch (type) {
-      case 'booking_confirmed':
-      case 'booking_cancelled':
-      case 'booking_reminder':
-      case 'new_booking':
-      case 'booking_updated':
+    const category = getNotificationCategory(type);
+
+    switch (category) {
+      case 'booking':
         return <CalendarIcon {...iconProps} />;
-      case 'payment_received':
-      case 'payment_failed':
+      case 'payment':
         return <CreditCardIcon {...iconProps} />;
-      case 'review_received':
+      case 'review':
         return <StarIcon {...iconProps} />;
-      case 'system_announcement':
+      case 'system':
         return <InformationCircleIcon {...iconProps} />;
       default:
         return <BellIcon {...iconProps} />;
     }
   };
 
-  // Get notification type color
+  // Get notification type color - Panhaha brand colors with glassmorphism
   const getNotificationColor = (type: NotificationType) => {
-    switch (type) {
-      case 'booking_confirmed':
-      case 'booking_cancelled':
-      case 'booking_reminder':
-      case 'new_booking':
-      case 'booking_updated':
-        return 'text-blue-600 bg-blue-100';
-      case 'payment_received':
-      case 'payment_failed':
-        return 'text-green-600 bg-green-100';
-      case 'review_received':
-        return 'text-yellow-600 bg-yellow-100';
-      case 'system_announcement':
-        return 'text-gray-600 bg-gray-100';
+    const category = getNotificationCategory(type);
+    switch (category) {
+      case 'booking':
+        // SECONDARY: #00739B (Deep Sea Blue) for booking notifications
+        return 'text-[#00739B] bg-[#00739B]/10 ring-1 ring-[#00739B]/20 dark:text-blue-300 dark:bg-[#00739B]/15 dark:ring-[#00739B]/20';
+      case 'payment':
+        // SUCCESS: emerald-500 for payment notifications
+        return 'text-emerald-600 bg-emerald-500/10 ring-1 ring-emerald-500/20 dark:text-emerald-300 dark:bg-emerald-500/15 dark:ring-emerald-400/20';
+      case 'review':
+        // ACCENT: #EAB308 (Rich Gold) for review notifications
+        return 'text-[#EAB308] bg-[#EAB308]/10 ring-1 ring-[#EAB308]/20 dark:text-amber-300 dark:bg-[#EAB308]/15 dark:ring-[#EAB308]/20';
+      case 'system':
+        // NEUTRAL: slate for system notifications
+        return 'text-slate-600 bg-slate-500/10 ring-1 ring-slate-500/20 dark:text-slate-300 dark:bg-slate-500/15 dark:ring-slate-400/20';
       default:
-        return 'text-gray-600 bg-gray-100';
+        return 'text-slate-600 bg-slate-500/10 ring-1 ring-slate-500/20 dark:text-slate-300 dark:bg-slate-500/15 dark:ring-slate-400/20';
     }
   };
 
@@ -344,16 +360,16 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
   return (
     <div className={`fixed inset-0 z-50 ${className}`}>
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      
-      {/* Notification Panel */}
+      {/* Backdrop with gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-l from-black/60 via-black/40 to-black/20 backdrop-blur-sm" onClick={onClose} />
+
+      {/* Notification Panel with Glassmorphism */}
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label="Notifications"
-        className="absolute right-0 top-0 h-full w-full max-w-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-2xl border-l border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-out translate-x-0 animate-slide-in-right will-change-transform overscroll-contain"
+        className="absolute right-0 top-0 h-full w-full max-w-md bg-white/90 dark:bg-gray-900/90 text-gray-900 dark:text-gray-100 shadow-2xl border-l border-white/60 dark:border-gray-700/70 ring-1 ring-black/5 dark:ring-white/10 backdrop-blur-2xl transform transition-transform duration-300 ease-out translate-x-0 animate-slide-in-right will-change-transform overscroll-contain relative overflow-hidden flex flex-col"
         style={{ transform: `translateX(${translateX}px)` }}
         onTouchStart={(e) => {
           const t = e.touches[0];
@@ -374,7 +390,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         onTouchEnd={() => {
           if (!swiping.current) return;
           swiping.current = false;
-          if (translateX > 80) {
+          // Swipe-to-close with 200px threshold (per Miyzapis pattern)
+          if (translateX > 200) {
             // Close on sufficient swipe to the right
             onClose();
             setTranslateX(0);
@@ -384,100 +401,120 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           }
         }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-2">
-            <BellIcon className="h-6 w-6 text-gray-700 dark:text-gray-200" />
-            <h2 className="text-lg font-semibold">{t('notifications.title') || 'Notifications'}</h2>
-            {unreadCount > 0 && (
-              <span className="bg-red-600 text-white text-xs px-2 py-1 rounded-full">
-                {unreadCount}
-              </span>
-            )}
-          </div>
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
-            aria-label={t('notifications.close') || 'Close notifications'}
-          >
-            <XMarkIcon className="h-5 w-5" />
-          </button>
-          <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">{t('notifications.swipeHint') || 'Swipe right or press Esc to close'}</span>
+        {/* Decorative gradient orbs for glassmorphism effect */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-24 -right-16 h-56 w-56 rounded-full bg-[#DC2626]/15 blur-3xl" />
+          <div className="absolute top-1/3 -right-24 h-44 w-44 rounded-full bg-[#00739B]/10 blur-2xl" />
         </div>
 
-        {/* Service Status removed per UX request */}
-
-        {/* Controls */}
-        <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 sticky top-0 z-10">
-          {/* Filter Tabs */}
-          <div className="flex gap-1 mb-3">
-            {['all', 'booking', 'payment', 'review', 'system'].map((filter) => (
+        <div className="relative flex h-full flex-col">
+          {/* Enhanced Header with glassmorphism */}
+          <div className="relative px-4 pt-4 pb-3 border-b border-gray-200/70 dark:border-gray-700/70 bg-gradient-to-r from-white/80 via-white/60 to-transparent dark:from-gray-900/70 dark:via-gray-900/40">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                {/* Bell icon in colored badge */}
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#DC2626]/10 ring-1 ring-[#DC2626]/20 shadow-sm">
+                  <BellIcon className="h-5 w-5 text-[#DC2626] dark:text-red-400" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold tracking-tight">{t('notifications.title') || 'Notifications'}</h2>
+                  {/* Swipe hint for mobile */}
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 hidden sm:block">
+                    {t('notifications.swipeHint') || 'Swipe right or press Esc to close'}
+                  </p>
+                </div>
+                {/* Unread count pill with Panhaha primary color */}
+                {unreadCount > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[#DC2626] to-rose-500 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm ring-1 ring-white/30">
+                    {unreadCount}
+                  </span>
+                )}
+              </div>
               <button
-                key={filter}
-                onClick={() => setSelectedFilter(filter as NotificationType | 'all')}
-                className={`px-3 py-1 text-sm rounded-full capitalize transition-colors ${
-                  selectedFilter === filter
-                    ? 'bg-primary-600 text-white'
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }`}
+                onClick={onClose}
+                className="p-2 rounded-xl bg-white/70 dark:bg-gray-800/70 hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 ring-1 ring-gray-200/70 dark:ring-gray-700/60 hover:scale-105 active:scale-95"
+                aria-label={t('notifications.close') || 'Close notifications'}
               >
-                {filter === 'all' ? (t('notifications.filter.all') || 'All')
-                  : filter === 'booking' ? (t('notifications.filter.booking') || 'Bookings')
-                  : filter === 'payment' ? (t('notifications.filter.payment') || 'Payments')
-                  : filter === 'review' ? (t('notifications.filter.review') || 'Reviews')
-                  : (t('notifications.filter.system') || 'System')}
+                <XMarkIcon className="h-5 w-5 text-gray-600 dark:text-gray-200" />
               </button>
-            ))}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-between items-center">
-            <div className="flex gap-2">
-              {unreadCount > 0 && (
-                <button
-                  onClick={markAllAsRead}
-                  className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
-                >
-                  <CheckIcon className="h-4 w-4" />
-                  {t('notifications.markAllRead') || 'Mark all read'}
-                </button>
-              )}
-              {notifications.length > 0 && (
-                <button
-                  onClick={deleteAllNotifications}
-                  className="flex items-center gap-1 text-sm text-red-600 hover:text-red-700"
-                >
-                  <TrashIcon className="h-4 w-4" />
-                  {t('notifications.clearAll') || 'Clear all'}
-                </button>
-              )}
             </div>
           </div>
-        </div>
 
-        {/* Notifications List */}
-        <div
-          className="flex-1 overflow-y-auto"
-          onScroll={(e) => {
-            const el = e.currentTarget as HTMLDivElement;
-            const rowH = 80;
-            const start = Math.floor(el.scrollTop / rowH);
-            const end = start + Math.ceil(el.clientHeight / rowH) + 5;
-            // Throttle updates to once per frame for smoother scrolling
-            if (!(window as any)._notifRaf) {
-              (window as any)._notifRaf = requestAnimationFrame(() => {
-                setWin({ start, end });
-                (window as any)._notifRaf = null;
-              });
-            }
-          }}
-        >
+          {/* Service Status removed per UX request */}
+
+          {/* Enhanced Controls with glassmorphism */}
+          <div className="px-4 pt-3 pb-4 border-b border-gray-200/70 dark:border-gray-700/70 bg-white/70 dark:bg-gray-900/60 backdrop-blur-xl">
+            {/* Enhanced Filter Tabs with staggered animation */}
+            <div className="flex flex-wrap gap-1.5 rounded-2xl bg-gray-100/80 dark:bg-gray-800/80 p-1 ring-1 ring-gray-200/70 dark:ring-gray-700/60 mb-3">
+              {['all', 'booking', 'payment', 'review', 'system'].map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setSelectedFilter(filter as NotificationType | 'all')}
+                  className={`px-3 py-1.5 text-xs rounded-xl font-semibold capitalize transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${
+                    selectedFilter === filter
+                      ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200/70 dark:bg-gray-900 dark:text-white dark:ring-gray-700/70'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-gray-700/70'
+                  }`}
+                >
+                  {filter === 'all' ? (t('notifications.filter.all') || 'All')
+                    : filter === 'booking' ? (t('notifications.filter.booking') || 'Bookings')
+                    : filter === 'payment' ? (t('notifications.filter.payment') || 'Payments')
+                    : filter === 'review' ? (t('notifications.filter.review') || 'Reviews')
+                    : (t('notifications.filter.system') || 'System')}
+                </button>
+              ))}
+            </div>
+
+            {/* Enhanced Action Buttons with glassmorphism */}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap gap-2">
+                {unreadCount > 0 && (
+                  <button
+                    onClick={markAllAsRead}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#00739B] dark:text-blue-300 bg-[#00739B]/10 dark:bg-[#00739B]/20 ring-1 ring-[#00739B]/20 dark:ring-[#00739B]/30 px-3 py-1.5 rounded-full hover:bg-[#00739B]/20 dark:hover:bg-[#00739B]/30 transition-all duration-200 hover:scale-105 active:scale-95"
+                  >
+                    <CheckIcon className="h-4 w-4" />
+                    {t('notifications.markAllRead') || 'Mark all read'}
+                  </button>
+                )}
+                {notifications.length > 0 && (
+                  <button
+                    onClick={deleteAllNotifications}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#DC2626] dark:text-red-300 bg-[#DC2626]/10 dark:bg-red-900/20 ring-1 ring-[#DC2626]/20 dark:ring-red-800/50 px-3 py-1.5 rounded-full hover:bg-[#DC2626]/20 dark:hover:bg-red-900/40 transition-all duration-200 hover:scale-105 active:scale-95"
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                    {t('notifications.clearAll') || 'Clear all'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Notifications List with virtualization */}
+          <div
+            className="flex-1 min-h-0 overflow-y-auto custom-scrollbar"
+            onScroll={(e) => {
+              const el = e.currentTarget as HTMLDivElement;
+              const rowH = 80;
+              const start = Math.floor(el.scrollTop / rowH);
+              const end = start + Math.ceil(el.clientHeight / rowH) + 5;
+              // Throttle updates to once per frame for smoother scrolling
+              if (!(window as any)._notifRaf) {
+                (window as any)._notifRaf = requestAnimationFrame(() => {
+                  setWin({ start, end });
+                  (window as any)._notifRaf = null;
+                });
+              }
+            }}
+          >
           {loading ? (
             <LoadingSkeleton />
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-              <BellIcon className="h-12 w-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
-              <p className="text-lg font-medium text-gray-800 dark:text-gray-200">{t('notifications.empty') || 'No notifications'}</p>
+              <div className="mx-auto mb-3 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100/80 dark:bg-gray-800/70 ring-1 ring-gray-200/70 dark:ring-gray-700/60">
+                <BellIcon className="h-8 w-8 text-gray-400 dark:text-gray-500" />
+              </div>
+              <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">{t('notifications.empty') || 'No notifications'}</p>
               <p className="text-sm">{t('notifications.caughtUp') || "You're all caught up!"}</p>
             </div>
           ) : (
@@ -489,61 +526,72 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
               const before = start * rowH;
               const after = (notifications.length - end) * rowH;
               return (
-                <div className="divide-y divide-gray-200 dark:divide-gray-700 relative">
+                <div className="divide-y divide-gray-200/70 dark:divide-gray-800/70 relative">
                   <div style={{ height: before }} />
-                  {items.map((notification) => (
+                  {items.map((notification, index) => (
                   <div
                     key={notification.id}
-                    className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
-                      !notification.isRead ? 'bg-blue-50 dark:bg-primary-900/20' : ''
-                    }`}
+                    className={`group relative px-4 py-4 transition-all duration-200 ${
+                      !notification.isRead
+                        ? 'bg-white/80 dark:bg-gray-900/70 shadow-sm'
+                        : 'bg-white/50 dark:bg-gray-900/40'
+                    } hover:bg-white/90 dark:hover:bg-gray-900/80 hover:-translate-y-0.5 hover:shadow-md`}
+                    style={isFiltering ? { animation: 'pageEnter 0.25s ease-out both', animationDelay: `${index * 20}ms` } : undefined}
                   >
-                  <div className="flex items-start gap-3">
-                    {/* Icon */}
-                    <div className={`p-2 rounded-full ${getNotificationColor(notification.type)} dark:bg-opacity-20` }>
-                      {getNotificationIcon(notification.type)}
-                    </div>
+                    {/* Gradient hover overlay */}
+                    <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-[#DC2626]/5 via-transparent to-transparent" />
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <h4 className={`text-sm font-medium ${
-                        !notification.isRead ? 'text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'
-                      }`}>
-                        {localizeNotification(notification).title}
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {localizeNotification(notification).message}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {formatTime(notification.createdAt)}
-                      </p>
-                    </div>
+                    {/* Unread indicator - vertical gradient bar on left */}
+                    {!notification.isRead && (
+                      <span className="absolute left-0 top-3 bottom-3 w-1 rounded-r-full bg-gradient-to-b from-[#DC2626] to-rose-600" />
+                    )}
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-1">
-                      {!notification.isRead && (
+                    <div className="relative z-10 flex items-start gap-3">
+                      {/* Icon with category-based colors and ring effects */}
+                      <div className={`p-2.5 rounded-2xl ${getNotificationColor(notification.type)}`}>
+                        {getNotificationIcon(notification.type)}
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h4 className={`text-sm font-semibold tracking-tight ${
+                            !notification.isRead ? 'text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'
+                          }`}>
+                            {localizeNotification(notification).title}
+                          </h4>
+                          {!notification.isRead && (
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#DC2626] shadow-sm" />
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          {localizeNotification(notification).message}
+                        </p>
+                        <p className="text-[11px] uppercase tracking-wide text-gray-400 dark:text-gray-500 mt-2">
+                          {formatTime(notification.createdAt)}
+                        </p>
+                      </div>
+
+                      {/* Enhanced Actions with scale animations */}
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        {!notification.isRead && (
+                          <button
+                            onClick={() => markAsRead(notification.id)}
+                            className="p-2 rounded-xl bg-white/70 dark:bg-gray-800/70 ring-1 ring-gray-200/70 dark:ring-gray-700/60 text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-300 transition-all duration-200 hover:scale-105 active:scale-95"
+                            title={t('notifications.markRead') || 'Mark as read'}
+                          >
+                            <CheckIcon className="h-4 w-4" />
+                          </button>
+                        )}
                         <button
-                          onClick={() => markAsRead(notification.id)}
-                          className="p-1 text-blue-600 hover:text-blue-700"
-                          title={t('notifications.markRead') || 'Mark as read'}
+                          onClick={() => deleteNotification(notification.id)}
+                          className="p-2 rounded-xl bg-white/70 dark:bg-gray-800/70 ring-1 ring-gray-200/70 dark:ring-gray-700/60 text-gray-500 hover:text-[#DC2626] dark:hover:text-red-300 transition-all duration-200 hover:scale-105 active:scale-95"
+                          title={t('notifications.delete') || 'Delete'}
                         >
-                          <CheckIcon className="h-4 w-4" />
+                          <TrashIcon className="h-4 w-4" />
                         </button>
-                      )}
-                      <button
-                        onClick={() => deleteNotification(notification.id)}
-                        className="p-1 text-red-600 hover:text-red-500"
-                        title={t('notifications.delete') || 'Delete'}
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
+                      </div>
                     </div>
-                  </div>
-
-                  {/* Unread indicator */}
-                  {!notification.isRead && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary-500 rounded-r" />
-                  )}
                   </div>
                   ))}
                   <div style={{ height: after }} />
@@ -551,6 +599,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
               );
             })()
           )}
+          </div>
         </div>
       </div>
     </div>
