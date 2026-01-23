@@ -62,6 +62,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       const filtered = filterByCategory(result.notifications, selectedFilter);
       setNotifications(filtered);
       setUnreadCount(result.unreadCount);
+      try {
+        window.dispatchEvent(new CustomEvent('notifications:update', { detail: { unreadCount: result.unreadCount } }));
+      } catch {}
       
       // Get service status
       const status = notificationService.getStatus();

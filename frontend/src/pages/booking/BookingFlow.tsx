@@ -9,7 +9,6 @@ import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { specialistService, serviceService, bookingService } from '../../services';
 import { paymentService } from '../../services/payment.service';
-import { paypalService } from '../../services/paypal.service';
 import { loyaltyService, UserLoyalty } from '@/services/loyalty.service';
 import { RewardsService, type RewardRedemption, type LoyaltyReward } from '@/services/rewards.service';
 import { filterSlotsByDuration, calculateEndTime } from '../../utils/timeSlotUtils';
@@ -64,7 +63,7 @@ const BookingFlow: React.FC = () => {
 
   // Payment states
   const [useWalletFirst, setUseWalletFirst] = useState<boolean>(true);
-  const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'paypal' | 'bank'>('crypto');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'bank'>('bank');
   const [paymentLoading, setPaymentLoading] = useState<boolean>(false);
   const [paymentResult, setPaymentResult] = useState<any>(null);
   const [showQRCode, setShowQRCode] = useState<boolean>(false);

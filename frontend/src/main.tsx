@@ -4,8 +4,6 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { BrowserRouter } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
-import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
 
 import App from './App';
 import { store, persistor } from './store';
@@ -14,9 +12,6 @@ import baseEnTranslations from './contexts/translations-en.json';
 import baseKhTranslations from './contexts/translations-kh.json';
 import './styles/globals.css';
 import 'react-toastify/dist/ReactToastify.css';
-
-// Initialize Stripe (only if publishable key is provided)
-const stripePromise = environment.STRIPE_PUBLISHABLE_KEY ? loadStripe(environment.STRIPE_PUBLISHABLE_KEY) : null;
 
 const getStoredLanguage = () => {
   if (typeof localStorage === 'undefined') {
@@ -154,13 +149,7 @@ const initializeApp = () => {
                 v7_relativeSplatPath: true
               }}
             >
-              {stripePromise ? (
-                <Elements stripe={stripePromise}>
-                  <App />
-                </Elements>
-              ) : (
-                <App />
-              )}
+              <App />
               <ToastContainer
                   position="top-right"
                   autoClose={5000}

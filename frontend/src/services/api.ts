@@ -88,9 +88,10 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Increase timeout specifically for file uploads (2 minutes)
+    // Increase timeout specifically for file uploads (30 seconds for S3)
     if (config.url?.includes('/files/upload')) {
-      config.timeout = 120000; // 2 minutes for file uploads
+      config.timeout = 30000; // 30 seconds for S3 uploads
+      console.log('🕐 [API] Upload timeout set to 30s for:', config.url);
     }
 
     // Allow browser to set multipart boundary for FormData uploads

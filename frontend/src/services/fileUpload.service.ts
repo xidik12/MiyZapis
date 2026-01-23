@@ -48,7 +48,20 @@ export class FileUploadService {
       console.log('🌐 [FileUploadService] Sending POST request to:', endpoint);
       console.log('⏱️ [FileUploadService] Request started at:', new Date().toISOString());
 
-      const response = await apiClient.post<FileUploadResponse[]>(endpoint, formData);
+      // Add timeout wrapper to detect if request hangs
+      const uploadWithTimeout = async () => {
+        const timeoutDuration = 30000; // 30 seconds
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Upload timeout after 30 seconds')), timeoutDuration);
+        });
+
+        const uploadPromise = apiClient.post<FileUploadResponse[]>(endpoint, formData);
+
+        return Promise.race([uploadPromise, timeoutPromise]) as Promise<any>;
+      };
+
+      console.log('⏳ [FileUploadService] Waiting for response...');
+      const response = await uploadWithTimeout();
 
       console.log('✅ [FileUploadService] Response received:', response);
 

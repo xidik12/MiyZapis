@@ -31,14 +31,40 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
     }
   };
 
-  // Load count on mount and periodically
+  // Load count on mount and periodically (pause when tab is hidden)
   useEffect(() => {
-    loadUnreadCount();
-    
-    // Refresh count every 30 seconds
-    const interval = setInterval(loadUnreadCount, 30000);
-    
-    return () => clearInterval(interval);
+    let intervalId: number | null = null;
+
+    const startPolling = () => {
+      if (intervalId !== null) {
+        return;
+      }
+      loadUnreadCount();
+      intervalId = window.setInterval(loadUnreadCount, 30000);
+    };
+
+    const stopPolling = () => {
+      if (intervalId !== null) {
+        window.clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    };
+
+    handleVisibility();
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, []);
 
   // Listen for notification changes
@@ -70,8 +96,6 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className = 
 
   const handleClick = () => {
     setIsOpen(true);
-    // Refresh count when opening
-    loadUnreadCount();
   };
 
   return (
