@@ -281,21 +281,45 @@ export const uploadFiles = async (req: Request, res: Response): Promise<void> =>
 };
 
 /**
+ * Test endpoint for presigned upload
+ */
+export const testPresignedEndpoint = async (req: Request, res: Response): Promise<void> => {
+  console.log('✅ Test presigned endpoint hit!', {
+    userId: req.user?.id,
+    timestamp: new Date().toISOString()
+  });
+
+  res.json({
+    success: true,
+    message: 'Presigned upload endpoint is working!',
+    userId: req.user?.id,
+    timestamp: new Date().toISOString()
+  });
+};
+
+/**
  * Generate presigned URL for direct S3 upload
  */
 export const getPresignedUploadUrl = async (req: Request, res: Response): Promise<void> => {
-  try {
-    console.log('🔗 Presigned URL request:', {
-      userId: req.user?.id,
-      body: req.body
-    });
+  console.log('🔗 [PRESIGNED URL] Request received!', {
+    timestamp: new Date().toISOString(),
+    userId: req.user?.id,
+    body: req.body,
+    headers: {
+      contentType: req.get('content-type'),
+      authorization: req.get('authorization') ? 'present' : 'missing'
+    }
+  });
 
+  try {
     if (!req.user?.id) {
+      console.error('❌ [PRESIGNED URL] No user ID');
       res.status(401).json({ success: false, error: 'Authentication required' });
       return;
     }
 
     const { filename, contentType, type, folder } = req.body;
+    console.log('📋 [PRESIGNED URL] Parsed request:', { filename, contentType, type, folder });
 
     if (!filename || !contentType) {
       res.status(400).json({ 

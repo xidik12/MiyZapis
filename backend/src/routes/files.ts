@@ -842,6 +842,9 @@ if (useS3Storage) {
   // S3 file upload endpoint
   router.post('/upload-s3', authMiddleware, uploadRateLimit, s3UploadController.uploadMiddleware, s3UploadController.uploadFiles);
 
+  // Test endpoint for presigned upload
+  router.get('/presigned-test', authMiddleware, s3UploadController.testPresignedEndpoint);
+
   // S3 presigned URL endpoint
   router.post('/presigned-upload', authMiddleware, uploadRateLimit, s3UploadController.getPresignedUploadUrl);
 

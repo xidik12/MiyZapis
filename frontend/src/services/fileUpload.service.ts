@@ -326,6 +326,13 @@ export class FileUploadService {
     key: string;
   }> {
     try {
+      console.log('📡 [FileUploadService] Making presigned URL request:', {
+        filename,
+        contentType,
+        type: options.type,
+        folder: options.folder
+      });
+
       const response = await apiClient.post<{
         uploadUrl: string;
         fileUrl: string;
@@ -337,12 +344,25 @@ export class FileUploadService {
         folder: options.folder
       });
 
+      console.log('📡 [FileUploadService] Presigned URL response:', response);
+
       if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Failed to get presigned upload URL');
       }
 
       return response.data;
     } catch (error: any) {
+      console.error('❌ [FileUploadService] Presigned URL error:', {
+        message: error.message,
+        response: error.response,
+        apiError: error.apiError,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        isAxiosError: error.isAxiosError,
+        code: error.code
+      });
+
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to get presigned upload URL';
       throw new Error(errorMessage);
     }
