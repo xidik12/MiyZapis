@@ -236,8 +236,8 @@ router.post('/test-auth', async (req, res) => {
 router.get('/railway-env', (req, res) => {
   try {
     const isRailway = !!(
-      process.env.RAILWAY_ENVIRONMENT || 
-      process.env.RAILWAY_SERVICE_NAME || 
+      process.env.RAILWAY_ENVIRONMENT ||
+      process.env.RAILWAY_SERVICE_NAME ||
       process.env.RAILWAY_PROJECT_NAME
     );
 
@@ -259,6 +259,45 @@ router.get('/railway-env', (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Debug endpoint failed'
+    });
+  }
+});
+
+// Storage configuration diagnostic endpoint (no auth needed)
+router.get('/storage-config', (req, res) => {
+  try {
+    res.json({
+      success: true,
+      data: {
+        storageType: useS3Storage ? 'S3' : 'LOCAL',
+        configuration: {
+          useS3Storage,
+          enableS3Storage,
+          awsSdkAvailable,
+          hasS3Config,
+          forceLocalStorage,
+          explicitLocalStorage,
+          isRailwayEnv
+        },
+        environmentVariables: {
+          ENABLE_S3_STORAGE: process.env.ENABLE_S3_STORAGE || 'NOT SET',
+          FORCE_LOCAL_STORAGE: process.env.FORCE_LOCAL_STORAGE || 'NOT SET',
+          USE_LOCAL_STORAGE: process.env.USE_LOCAL_STORAGE || 'NOT SET',
+          FILE_STORAGE: process.env.FILE_STORAGE || 'NOT SET',
+          AWS_S3_BUCKET: process.env.AWS_S3_BUCKET ? '✅ SET' : '❌ NOT SET',
+          AWS_REGION: process.env.AWS_REGION || 'NOT SET',
+          AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID ? '✅ SET' : '❌ NOT SET',
+          AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY ? '✅ SET' : '❌ NOT SET'
+        },
+        recommendation: useS3Storage
+          ? '✅ S3 storage is enabled and configured correctly'
+          : '⚠️ Local storage is being used. For Railway, please enable S3 storage by setting ENABLE_S3_STORAGE=true and removing FORCE_LOCAL_STORAGE/USE_LOCAL_STORAGE/FILE_STORAGE=local variables'
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Storage config diagnostic failed'
     });
   }
 });
