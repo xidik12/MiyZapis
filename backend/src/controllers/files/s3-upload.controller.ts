@@ -69,12 +69,40 @@ const upload = multer({
     files: 10 // Maximum 10 files at once
   },
   fileFilter: (req, file, callback) => {
+    console.log('📝 [MULTER] File filter called:', {
+      fieldname: file.fieldname,
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size
+    });
     // Allow all files, we'll validate by purpose later
     callback(null, true);
   }
 });
 
-export const uploadMiddleware = upload.array('files', 10);
+// Wrap multer middleware with error handling
+const multerMiddleware = upload.array('files', 10);
+
+export const uploadMiddleware = (req: any, res: any, next: any) => {
+  console.log('🎬 [MULTER MIDDLEWARE] Starting multer processing...');
+  multerMiddleware(req, res, (err) => {
+    if (err) {
+      console.error('❌ [MULTER ERROR]:', {
+        error: err.message,
+        code: err.code,
+        field: err.field,
+        stack: err.stack
+      });
+      return res.status(400).json({
+        success: false,
+        error: 'File upload error',
+        details: err.message
+      });
+    }
+    console.log('✅ [MULTER] Processing complete, files parsed');
+    next();
+  });
+};
 
 // Using global Request extension from types/global.d.ts
 
@@ -82,6 +110,19 @@ export const uploadMiddleware = upload.array('files', 10);
  * Upload files to S3 with proper validation and database storage
  */
 export const uploadFiles = async (req: Request, res: Response): Promise<void> => {
+  console.log('🎯 [S3 UPLOAD CONTROLLER] Request received!', {
+    timestamp: new Date().toISOString(),
+    method: req.method,
+    url: req.url,
+    userId: req.user?.id,
+    purpose: req.query.purpose,
+    hasFiles: !!req.files,
+    filesCount: Array.isArray(req.files) ? req.files.length : 0,
+    headers: {
+      contentType: req.get('content-type'),
+      contentLength: req.get('content-length')
+    }
+  });
   try {
     console.log('🚀 S3 Upload request:', {
       userId: req.user?.id,
