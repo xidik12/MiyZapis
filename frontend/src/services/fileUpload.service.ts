@@ -18,7 +18,7 @@ export interface FileUploadOptions {
 }
 
 export class FileUploadService {
-  // Upload a single file
+  // Upload a single file using presigned S3 URL (bypasses Railway timeout)
   async uploadFile(file: File, options: FileUploadOptions = {}): Promise<FileUploadResponse> {
     console.log('[FileUploadService] uploadFile called', { fileName: file.name, size: file.size, type: file.type, options });
     try {
@@ -27,40 +27,103 @@ export class FileUploadService {
       this.validateFile(file, options);
       console.log('[FileUploadService] File validation passed');
 
-      const formData = new FormData();
-      formData.append('files', file); // Use 'files' field name for multer array upload
-      console.log('[FileUploadService] FormData created, file appended to "files" field');
+      // STEP 1: Get presigned URL from backend (small API call, should be fast)
+      console.log('[FileUploadService] STEP 1: Getting presigned URL from backend...');
+      const presignedResponse = await apiClient.post<{uploadUrl: string; fileUrl: string; key: string}>('/files/presigned-upload', {
+        filename: file.name,
+        contentType: file.type,
+        type: options.type,
+        folder: options.folder
+      });
 
-      const queryParams = new URLSearchParams();
-      if (options.type) {
-        queryParams.append('purpose', options.type);
-      }
-      if (options.folder) {
-        queryParams.append('folder', options.folder);
-      }
+      console.log('[FileUploadService] Presigned URL response:', {
+        success: presignedResponse.success,
+        hasData: !!presignedResponse.data,
+        uploadUrlLength: presignedResponse.data?.uploadUrl?.length
+      });
 
-      const endpoint = `/files/upload${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-      console.log('[FileUploadService] Calling API endpoint:', endpoint);
-      console.log('[FileUploadService] FormData contents:', Array.from(formData.entries()));
-
-      const response = await apiClient.post<FileUploadResponse[]>(endpoint, formData);
-      console.log('[FileUploadService] API response received:', response);
-
-      if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
-        console.error('[FileUploadService] Invalid response format:', response);
-        throw new Error(response.error?.message || 'Failed to upload file');
+      if (!presignedResponse.success || !presignedResponse.data?.uploadUrl) {
+        console.error('[FileUploadService] Failed to get presigned URL:', presignedResponse);
+        throw new Error('Failed to get presigned URL from server');
       }
 
-      console.log('[FileUploadService] Upload successful, returning:', response.data[0]);
-      return response.data[0]; // Return the first uploaded file
+      const { uploadUrl, key } = presignedResponse.data;
+      console.log('[FileUploadService] Got presigned URL for key:', key);
+
+      // STEP 2: Upload directly to S3 (bypasses Railway completely)
+      console.log('[FileUploadService] STEP 2: Uploading directly to S3...');
+      const s3UploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+
+      console.log('[FileUploadService] S3 upload response:', {
+        status: s3UploadResponse.status,
+        statusText: s3UploadResponse.statusText,
+        ok: s3UploadResponse.ok
+      });
+
+      if (!s3UploadResponse.ok) {
+        const errorText = await s3UploadResponse.text().catch(() => 'Unknown error');
+        console.error('[FileUploadService] S3 upload failed:', errorText);
+        throw new Error(`S3 upload failed: ${s3UploadResponse.statusText}`);
+      }
+
+      console.log('[FileUploadService] ✅ S3 upload successful!');
+
+      // STEP 3: Confirm upload with backend to create database record (small API call)
+      console.log('[FileUploadService] STEP 3: Confirming upload with backend...');
+      const confirmResponse = await apiClient.post<FileUploadResponse>('/files/confirm-upload', {
+        key: key,
+        filename: file.name,
+        originalName: file.name,
+        mimeType: file.type,
+        size: file.size,
+        purpose: options.type || 'general'
+      });
+
+      console.log('[FileUploadService] Confirm response:', {
+        success: confirmResponse.success,
+        hasData: !!confirmResponse.data
+      });
+
+      if (!confirmResponse.success || !confirmResponse.data) {
+        console.error('[FileUploadService] Failed to confirm upload:', confirmResponse);
+        throw new Error('Failed to confirm upload with server');
+      }
+
+      console.log('[FileUploadService] ✅ Upload complete! Returning:', confirmResponse.data);
+      return confirmResponse.data;
     } catch (error: any) {
       console.error('[FileUploadService] Upload error:', error);
       console.error('[FileUploadService] Error details:', {
+        name: error.name,
+        message: error.message,
+        code: error.code,
         apiError: error.apiError,
         response: error.response?.data,
-        message: error.message
+        stack: error.stack?.split('\n')[0]
       });
-      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to upload file';
+
+      // Provide more specific error messages
+      let errorMessage = 'Failed to upload file';
+      if (error.message?.includes('presigned')) {
+        errorMessage = 'Failed to get upload URL from server';
+      } else if (error.message?.includes('S3')) {
+        errorMessage = 'Failed to upload to cloud storage';
+      } else if (error.message?.includes('confirm')) {
+        errorMessage = 'File uploaded but failed to save record';
+      } else if (error.apiError?.message) {
+        errorMessage = error.apiError.message;
+      } else if (error.response?.data?.error?.message) {
+        errorMessage = error.response.data.error.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
       throw new Error(errorMessage);
     }
   }
