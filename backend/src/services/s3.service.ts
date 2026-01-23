@@ -87,12 +87,14 @@ export class S3Service {
     mimeType: string,
     options: UploadOptions = {}
   ): Promise<UploadResult> {
+    const uploadStartTime = Date.now();
     try {
       console.log('📤 Starting S3 upload:', {
         originalName,
         mimeType,
         size: buffer.length,
-        options
+        options,
+        timestamp: new Date().toISOString()
       });
 
       // Process image if needed
@@ -101,33 +103,62 @@ export class S3Service {
 
       if (this.isImageFile(mimeType) && options.resize) {
         console.log('🖼️ Processing image with sharp...');
-        // Detect animated WebP and preserve without processing
-        const meta = await sharp(buffer, { animated: true }).metadata();
-        const isAnimatedWebp = (mimeType === 'image/webp') && (typeof meta.pages === 'number') && meta.pages > 1;
-        if (isAnimatedWebp) {
-          console.log('🌀 Animated WebP detected. Skipping processing to preserve animation.');
-        } else {
-          let sharpInstance = sharp(buffer);
-        
-          if (options.resize.width || options.resize.height) {
-            sharpInstance.resize(options.resize.width, options.resize.height, {
-              fit: 'inside',
-              withoutEnlargement: true
+        try {
+          // Add timeout wrapper for sharp operations to prevent hanging
+          const processImageWithTimeout = async (): Promise<Buffer> => {
+            return new Promise(async (resolve, reject) => {
+              const timeout = setTimeout(() => {
+                reject(new Error('Image processing timeout (30s)'));
+              }, 30000); // 30 second timeout
+
+              try {
+                // Detect animated WebP and preserve without processing
+                const meta = await sharp(buffer, { animated: true, limitInputPixels: false }).metadata();
+                const isAnimatedWebp = (mimeType === 'image/webp') && (typeof meta.pages === 'number') && meta.pages > 1;
+
+                if (isAnimatedWebp) {
+                  console.log('🌀 Animated WebP detected. Skipping processing to preserve animation.');
+                  clearTimeout(timeout);
+                  resolve(buffer);
+                  return;
+                }
+
+                let sharpInstance = sharp(buffer, { limitInputPixels: false });
+
+                if (options.resize.width || options.resize.height) {
+                  sharpInstance = sharpInstance.resize(options.resize.width, options.resize.height, {
+                    fit: 'inside',
+                    withoutEnlargement: true
+                  });
+                }
+
+                // Convert to WebP for better compression if it's not already
+                if (mimeType !== 'image/webp') {
+                  sharpInstance = sharpInstance.webp({ quality: options.resize.quality || 85 });
+                  finalMimeType = 'image/webp';
+                }
+
+                const result = await sharpInstance.toBuffer();
+                clearTimeout(timeout);
+                resolve(result);
+              } catch (error) {
+                clearTimeout(timeout);
+                reject(error);
+              }
             });
-          }
+          };
 
-          // Convert to WebP for better compression if it's not already
-          if (mimeType !== 'image/webp') {
-            sharpInstance.webp({ quality: options.resize.quality || 85 });
-            finalMimeType = 'image/webp';
-          }
-
-          processedBuffer = await sharpInstance.toBuffer();
+          processedBuffer = await processImageWithTimeout();
           console.log('✅ Image processed:', {
             originalSize: buffer.length,
             processedSize: processedBuffer.length,
             compression: `${(((buffer.length - processedBuffer.length) / buffer.length) * 100).toFixed(1)}%`
           });
+        } catch (sharpError) {
+          console.warn('⚠️ Image processing failed, uploading original:',
+            sharpError instanceof Error ? sharpError.message : 'Unknown error');
+          // Fall back to uploading original image without processing
+          processedBuffer = buffer;
         }
       }
 
@@ -159,10 +190,12 @@ export class S3Service {
         mimeType: finalMimeType
       };
 
+      const uploadDuration = Date.now() - uploadStartTime;
       console.log('✅ S3 upload successful:', {
         key,
         url: result.url,
-        size: result.size
+        size: result.size,
+        duration: `${uploadDuration}ms`
       });
 
       return result;
