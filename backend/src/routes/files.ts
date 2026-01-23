@@ -845,6 +845,9 @@ if (useS3Storage) {
   // S3 presigned URL endpoint
   router.post('/presigned-upload', authMiddleware, uploadRateLimit, s3UploadController.getPresignedUploadUrl);
 
+  // S3 confirm upload endpoint (after presigned upload)
+  router.post('/confirm-upload', authMiddleware, uploadRateLimit, s3UploadController.confirmUpload);
+
   // S3 file deletion endpoint
   router.delete('/s3/:id', authMiddleware, s3UploadController.deleteFile);
 

@@ -347,6 +347,86 @@ export const getPresignedUploadUrl = async (req: Request, res: Response): Promis
 };
 
 /**
+ * Confirm file upload after presigned URL upload
+ */
+export const confirmUpload = async (req: Request, res: Response): Promise<void> => {
+  try {
+    console.log('✅ Confirm upload request:', {
+      userId: req.user?.id,
+      body: req.body
+    });
+
+    if (!req.user?.id) {
+      res.status(401).json({ success: false, error: 'Authentication required' });
+      return;
+    }
+
+    const { key, filename, originalName, mimeType, size, purpose } = req.body;
+
+    if (!key || !filename || !size || !mimeType) {
+      res.status(400).json({
+        success: false,
+        error: 'Missing required fields: key, filename, size, mimeType'
+      });
+      return;
+    }
+
+    // Generate file URL
+    const fileUrl = `${process.env.AWS_S3_URL}/${key}`;
+
+    // Create database record
+    const fileData: any = {
+      filename: filename,
+      originalName: originalName || filename,
+      mimeType: mimeType,
+      size: size,
+      path: key,
+      url: fileUrl,
+      uploadedBy: req.user.id,
+      purpose: purpose || 'general',
+      isPublic: true,
+      isProcessed: true,
+      cloudProvider: 'S3',
+      cloudKey: key,
+      cloudBucket: process.env.AWS_S3_BUCKET
+    };
+
+    const fileRecord = await prisma.file.create({
+      data: fileData
+    });
+
+    console.log('✅ File record created:', fileRecord.id);
+
+    res.json({
+      success: true,
+      data: {
+        id: fileRecord.id,
+        filename: fileRecord.filename,
+        url: fileUrl,
+        originalName: fileRecord.originalName,
+        mimeType: fileRecord.mimeType,
+        size: fileRecord.size,
+        uploadedBy: req.user.id,
+        purpose: purpose || 'general',
+        createdAt: fileRecord.createdAt,
+        uploadedAt: fileRecord.createdAt,
+        cloudProvider: 'S3'
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Confirm upload failed:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to confirm upload',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+/**
  * Delete file from S3 and database
  */
 export const deleteFile = async (req: Request, res: Response): Promise<void> => {

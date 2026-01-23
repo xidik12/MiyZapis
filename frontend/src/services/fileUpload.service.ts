@@ -18,7 +18,7 @@ export interface FileUploadOptions {
 }
 
 export class FileUploadService {
-  // Upload a single file (simplified from development branch)
+  // Upload a single file using presigned URL (direct to S3)
   async uploadFile(file: File, options: FileUploadOptions = {}): Promise<FileUploadResponse> {
     try {
       console.log('📤 [FileUploadService] Starting upload:', {
@@ -32,46 +32,56 @@ export class FileUploadService {
       this.validateFile(file, options);
       console.log('✅ [FileUploadService] Validation passed');
 
-      const formData = new FormData();
-      formData.append('files', file); // Use 'files' field name for multer array upload
-      console.log('📦 [FileUploadService] FormData created');
+      // Step 1: Get presigned URL from backend
+      console.log('🔑 [FileUploadService] Getting presigned URL...');
+      const presignedData = await this.getPresignedUploadUrl(file.name, file.type, options);
+      console.log('✅ [FileUploadService] Presigned URL received:', {
+        uploadUrl: presignedData.uploadUrl.substring(0, 100) + '...',
+        fileUrl: presignedData.fileUrl
+      });
 
-      const queryParams = new URLSearchParams();
-      if (options.type) {
-        queryParams.append('purpose', options.type);
-      }
-      if (options.folder) {
-        queryParams.append('folder', options.folder);
-      }
+      // Step 2: Upload directly to S3 using presigned URL
+      console.log('☁️ [FileUploadService] Uploading directly to S3...');
+      console.log('⏱️ [FileUploadService] Upload started at:', new Date().toISOString());
 
-      const endpoint = `/files/upload${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-      console.log('🌐 [FileUploadService] Sending POST request to:', endpoint);
-      console.log('⏱️ [FileUploadService] Request started at:', new Date().toISOString());
+      const uploadResponse = await fetch(presignedData.uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
 
-      // Add timeout wrapper to detect if request hangs
-      const uploadWithTimeout = async () => {
-        const timeoutDuration = 30000; // 30 seconds
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Upload timeout after 30 seconds')), timeoutDuration);
+      if (!uploadResponse.ok) {
+        console.error('❌ [FileUploadService] S3 upload failed:', {
+          status: uploadResponse.status,
+          statusText: uploadResponse.statusText
         });
-
-        const uploadPromise = apiClient.post<FileUploadResponse[]>(endpoint, formData);
-
-        return Promise.race([uploadPromise, timeoutPromise]) as Promise<any>;
-      };
-
-      console.log('⏳ [FileUploadService] Waiting for response...');
-      const response = await uploadWithTimeout();
-
-      console.log('✅ [FileUploadService] Response received:', response);
-
-      if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
-        console.error('❌ [FileUploadService] Invalid response:', response);
-        throw new Error(response.error?.message || 'Failed to upload file');
+        throw new Error(`S3 upload failed: ${uploadResponse.statusText}`);
       }
 
-      console.log('🎉 [FileUploadService] Upload successful!', response.data[0]);
-      return response.data[0]; // Return the first uploaded file
+      console.log('✅ [FileUploadService] S3 upload successful!');
+      console.log('⏱️ [FileUploadService] Upload completed at:', new Date().toISOString());
+
+      // Step 3: Confirm upload with backend to create database record
+      console.log('💾 [FileUploadService] Confirming upload with backend...');
+      const confirmResponse = await apiClient.post<FileUploadResponse>('/files/confirm-upload', {
+        key: presignedData.key,
+        filename: file.name,
+        originalName: file.name,
+        mimeType: file.type,
+        size: file.size,
+        purpose: options.type || 'general'
+      });
+
+      if (!confirmResponse.success || !confirmResponse.data) {
+        console.error('❌ [FileUploadService] Failed to confirm upload:', confirmResponse);
+        throw new Error('Failed to confirm upload with server');
+      }
+
+      console.log('✅ [FileUploadService] Upload confirmed!', confirmResponse.data);
+      console.log('🎉 [FileUploadService] Upload complete!');
+      return confirmResponse.data;
     } catch (error: any) {
       console.error('❌ [FileUploadService] Upload error:', {
         message: error.message,
@@ -309,17 +319,17 @@ export class FileUploadService {
     return parts[parts.length - 1];
   }
 
-  // Generate presigned URL for direct upload (if using S3 or similar)
+  // Generate presigned URL for direct upload to S3
   async getPresignedUploadUrl(filename: string, contentType: string, options: FileUploadOptions = {}): Promise<{
     uploadUrl: string;
     fileUrl: string;
-    fields?: Record<string, string>;
+    key: string;
   }> {
     try {
       const response = await apiClient.post<{
         uploadUrl: string;
         fileUrl: string;
-        fields?: Record<string, string>;
+        key: string;
       }>('/files/presigned-upload', {
         filename,
         contentType,
