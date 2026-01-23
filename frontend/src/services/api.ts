@@ -88,10 +88,10 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Increase timeout specifically for file uploads (3 minutes for Railway S3)
+    // Increase timeout for file uploads (60s should be enough for compressed files)
     if (config.url?.includes('/files/upload') || config.url?.includes('/files/presigned') || config.url?.includes('/files/confirm')) {
-      config.timeout = 180000; // 3 minutes for Railway uploads (load balancer can be slow)
-      console.log('🕐 [API] Upload timeout set to 3min for:', config.url);
+      config.timeout = 60000; // 60 seconds (compressed files are small)
+      console.log('🕐 [API] Upload timeout set to 60s for:', config.url);
     }
 
     // Allow browser to set multipart boundary for FormData uploads
