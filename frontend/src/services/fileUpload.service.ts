@@ -21,11 +21,20 @@ export class FileUploadService {
   // Upload a single file (simplified from development branch)
   async uploadFile(file: File, options: FileUploadOptions = {}): Promise<FileUploadResponse> {
     try {
+      console.log('📤 [FileUploadService] Starting upload:', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        options
+      });
+
       // Validate file before upload
       this.validateFile(file, options);
+      console.log('✅ [FileUploadService] Validation passed');
 
       const formData = new FormData();
       formData.append('files', file); // Use 'files' field name for multer array upload
+      console.log('📦 [FileUploadService] FormData created');
 
       const queryParams = new URLSearchParams();
       if (options.type) {
@@ -36,14 +45,27 @@ export class FileUploadService {
       }
 
       const endpoint = `/files/upload${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+      console.log('🌐 [FileUploadService] Sending POST request to:', endpoint);
+      console.log('⏱️ [FileUploadService] Request started at:', new Date().toISOString());
+
       const response = await apiClient.post<FileUploadResponse[]>(endpoint, formData);
 
+      console.log('✅ [FileUploadService] Response received:', response);
+
       if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
+        console.error('❌ [FileUploadService] Invalid response:', response);
         throw new Error(response.error?.message || 'Failed to upload file');
       }
 
+      console.log('🎉 [FileUploadService] Upload successful!', response.data[0]);
       return response.data[0]; // Return the first uploaded file
     } catch (error: any) {
+      console.error('❌ [FileUploadService] Upload error:', {
+        message: error.message,
+        apiError: error.apiError,
+        response: error.response,
+        stack: error.stack
+      });
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to upload file';
       throw new Error(errorMessage);
     }
