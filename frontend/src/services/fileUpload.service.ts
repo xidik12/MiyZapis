@@ -18,76 +18,47 @@ export interface FileUploadOptions {
 }
 
 export class FileUploadService {
-  // Upload a single file using presigned URL (direct to S3)
+  // Upload a single file (traditional multipart upload - proven to work)
   async uploadFile(file: File, options: FileUploadOptions = {}): Promise<FileUploadResponse> {
+    console.log('[FileUploadService] uploadFile called', { fileName: file.name, size: file.size, type: file.type, options });
     try {
-      console.log('📤 [FileUploadService] Starting upload:', {
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type,
-        options
-      });
-
       // Validate file before upload
+      console.log('[FileUploadService] Validating file...');
       this.validateFile(file, options);
-      console.log('✅ [FileUploadService] Validation passed');
+      console.log('[FileUploadService] File validation passed');
 
-      // Step 1: Get presigned URL from backend
-      console.log('🔑 [FileUploadService] Getting presigned URL...');
-      const presignedData = await this.getPresignedUploadUrl(file.name, file.type, options);
-      console.log('✅ [FileUploadService] Presigned URL received:', {
-        uploadUrl: presignedData.uploadUrl.substring(0, 100) + '...',
-        fileUrl: presignedData.fileUrl
-      });
+      const formData = new FormData();
+      formData.append('files', file); // Use 'files' field name for multer array upload
+      console.log('[FileUploadService] FormData created, file appended to "files" field');
 
-      // Step 2: Upload directly to S3 using presigned URL
-      console.log('☁️ [FileUploadService] Uploading directly to S3...');
-      console.log('⏱️ [FileUploadService] Upload started at:', new Date().toISOString());
-
-      const uploadResponse = await fetch(presignedData.uploadUrl, {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': file.type,
-        },
-      });
-
-      if (!uploadResponse.ok) {
-        console.error('❌ [FileUploadService] S3 upload failed:', {
-          status: uploadResponse.status,
-          statusText: uploadResponse.statusText
-        });
-        throw new Error(`S3 upload failed: ${uploadResponse.statusText}`);
+      const queryParams = new URLSearchParams();
+      if (options.type) {
+        queryParams.append('purpose', options.type);
+      }
+      if (options.folder) {
+        queryParams.append('folder', options.folder);
       }
 
-      console.log('✅ [FileUploadService] S3 upload successful!');
-      console.log('⏱️ [FileUploadService] Upload completed at:', new Date().toISOString());
+      const endpoint = `/files/upload${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+      console.log('[FileUploadService] Calling API endpoint:', endpoint);
+      console.log('[FileUploadService] FormData contents:', Array.from(formData.entries()));
 
-      // Step 3: Confirm upload with backend to create database record
-      console.log('💾 [FileUploadService] Confirming upload with backend...');
-      const confirmResponse = await apiClient.post<FileUploadResponse>('/files/confirm-upload', {
-        key: presignedData.key,
-        filename: file.name,
-        originalName: file.name,
-        mimeType: file.type,
-        size: file.size,
-        purpose: options.type || 'general'
-      });
+      const response = await apiClient.post<FileUploadResponse[]>(endpoint, formData);
+      console.log('[FileUploadService] API response received:', response);
 
-      if (!confirmResponse.success || !confirmResponse.data) {
-        console.error('❌ [FileUploadService] Failed to confirm upload:', confirmResponse);
-        throw new Error('Failed to confirm upload with server');
+      if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
+        console.error('[FileUploadService] Invalid response format:', response);
+        throw new Error(response.error?.message || 'Failed to upload file');
       }
 
-      console.log('✅ [FileUploadService] Upload confirmed!', confirmResponse.data);
-      console.log('🎉 [FileUploadService] Upload complete!');
-      return confirmResponse.data;
+      console.log('[FileUploadService] Upload successful, returning:', response.data[0]);
+      return response.data[0]; // Return the first uploaded file
     } catch (error: any) {
-      console.error('❌ [FileUploadService] Upload error:', {
-        message: error.message,
+      console.error('[FileUploadService] Upload error:', error);
+      console.error('[FileUploadService] Error details:', {
         apiError: error.apiError,
-        response: error.response,
-        stack: error.stack
+        response: error.response?.data,
+        message: error.message
       });
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to upload file';
       throw new Error(errorMessage);
@@ -110,17 +81,7 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'avatar',
       maxSize: 5 * 1024 * 1024, // 5MB
-      allowedTypes: [
-        'image/jpeg',
-        'image/png',
-        'image/webp',
-        'image/gif',
-        'image/bmp',
-        'image/tiff',
-        'image/heic',
-        'image/heif',
-        'image/avif'
-      ]
+      allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
     });
   }
 
@@ -129,17 +90,7 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'portfolio',
       maxSize: 10 * 1024 * 1024, // 10MB
-      allowedTypes: [
-        'image/jpeg',
-        'image/png',
-        'image/webp',
-        'image/gif',
-        'image/bmp',
-        'image/tiff',
-        'image/heic',
-        'image/heif',
-        'image/avif'
-      ]
+      allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
     });
   }
 
@@ -148,17 +99,7 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'service',
       maxSize: 10 * 1024 * 1024, // 10MB
-      allowedTypes: [
-        'image/jpeg',
-        'image/png',
-        'image/webp',
-        'image/gif',
-        'image/bmp',
-        'image/tiff',
-        'image/heic',
-        'image/heif',
-        'image/avif'
-      ]
+      allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
     });
   }
 
@@ -167,20 +108,7 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'document',
       maxSize: 20 * 1024 * 1024, // 20MB
-      allowedTypes: [
-        'application/pdf',
-        'image/jpeg',
-        'image/png',
-        'image/webp',
-        'image/gif',
-        'image/bmp',
-        'image/tiff',
-        'image/heic',
-        'image/heif',
-        'image/avif',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-      ]
+      allowedTypes: ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
     });
   }
 
@@ -189,43 +117,24 @@ export class FileUploadService {
     return this.uploadFile(file, {
       type: 'certificate',
       maxSize: 20 * 1024 * 1024, // 20MB
-      allowedTypes: [
-        'application/pdf',
-        'image/jpeg',
-        'image/png',
-        'image/webp',
-        'image/gif',
-        'image/bmp',
-        'image/tiff',
-        'image/heic',
-        'image/heif',
-        'image/avif'
-      ]
+      allowedTypes: ['application/pdf', 'image/jpeg', 'image/png']
     });
   }
 
-  // Upload payment QR code (image only)
+  // Upload payment QR code
   async uploadPaymentQr(file: File): Promise<FileUploadResponse> {
     return this.uploadFile(file, {
-      type: 'payment_qr',
+      type: 'payment',
       maxSize: 5 * 1024 * 1024, // 5MB
-      allowedTypes: [
-        'image/jpeg',
-        'image/png',
-        'image/webp',
-        'image/gif',
-        'image/bmp',
-        'image/tiff',
-        'image/heic',
-        'image/heif',
-        'image/avif'
-      ]
+      allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
     });
   }
 
   // Save external image (e.g., Google avatar) to backend storage
   async saveExternalImage(imageUrl: string, purpose: 'avatar' | 'portfolio' = 'avatar'): Promise<FileUploadResponse> {
     try {
+      console.log('💾 Saving external image to backend:', imageUrl);
+
       const response = await apiClient.post<FileUploadResponse>('/files/save-external', {
         imageUrl,
         purpose
@@ -235,6 +144,7 @@ export class FileUploadService {
         throw new Error(response.error?.message || 'Failed to save external image');
       }
 
+      console.log('✅ External image saved to backend:', response.data.url);
       return response.data;
     } catch (error: any) {
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to save external image';
@@ -283,26 +193,9 @@ export class FileUploadService {
       throw new Error(`File size exceeds ${maxSizeMB}MB limit`);
     }
 
-    const normalizedType = this.normalizeMimeType(file.type || '');
-    const extension = file.name.split('.').pop()?.toLowerCase();
-    if (normalizedType === 'image/svg+xml' || extension === 'svg' || extension === 'svgz') {
-      throw new Error('File type is not allowed');
-    }
-
     // Check file type
-    if (options.allowedTypes) {
-      const normalizedAllowed = options.allowedTypes.map((type) => this.normalizeMimeType(type));
-      const allowedSet = new Set(normalizedAllowed);
-
-      if (normalizedType) {
-        if (!allowedSet.has(normalizedType)) {
-          if (!this.isExtensionAllowed(file.name, normalizedAllowed)) {
-            throw new Error(`File type ${file.type} is not allowed`);
-          }
-        }
-      } else if (!this.isExtensionAllowed(file.name, normalizedAllowed)) {
-        throw new Error('File type is not allowed');
-      }
+    if (options.allowedTypes && !options.allowedTypes.includes(file.type)) {
+      throw new Error(`File type ${file.type} is not allowed`);
     }
 
     // Check if file is empty
@@ -319,24 +212,17 @@ export class FileUploadService {
     return parts[parts.length - 1];
   }
 
-  // Generate presigned URL for direct upload to S3
+  // Generate presigned URL for direct upload (if using S3 or similar)
   async getPresignedUploadUrl(filename: string, contentType: string, options: FileUploadOptions = {}): Promise<{
     uploadUrl: string;
     fileUrl: string;
-    key: string;
+    fields?: Record<string, string>;
   }> {
     try {
-      console.log('📡 [FileUploadService] Making presigned URL request:', {
-        filename,
-        contentType,
-        type: options.type,
-        folder: options.folder
-      });
-
       const response = await apiClient.post<{
         uploadUrl: string;
         fileUrl: string;
-        key: string;
+        fields?: Record<string, string>;
       }>('/files/presigned-upload', {
         filename,
         contentType,
@@ -344,77 +230,17 @@ export class FileUploadService {
         folder: options.folder
       });
 
-      console.log('📡 [FileUploadService] Presigned URL response:', response);
-
       if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Failed to get presigned upload URL');
       }
 
       return response.data;
     } catch (error: any) {
-      console.error('❌ [FileUploadService] Presigned URL error:', {
-        message: error.message,
-        response: error.response,
-        apiError: error.apiError,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        isAxiosError: error.isAxiosError,
-        code: error.code
-      });
-
       const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to get presigned upload URL';
       throw new Error(errorMessage);
     }
   }
 
-  private normalizeMimeType(type: string): string {
-    const normalized = type.toLowerCase();
-    const aliases: Record<string, string> = {
-      'image/jpg': 'image/jpeg',
-      'image/pjpeg': 'image/jpeg',
-      'image/x-png': 'image/png',
-      'image/x-ms-bmp': 'image/bmp',
-      'image/tif': 'image/tiff',
-      'image/heic-sequence': 'image/heic',
-      'image/heif-sequence': 'image/heif',
-      'image/avif-sequence': 'image/avif'
-    };
-    return aliases[normalized] || normalized;
-  }
-
-  private isExtensionAllowed(filename: string, allowedTypes: string[]): boolean {
-    const extension = filename.split('.').pop()?.toLowerCase();
-    if (!extension) {
-      return false;
-    }
-
-    const mimeToExtensions: Record<string, string[]> = {
-      'image/jpeg': ['jpg', 'jpeg'],
-      'image/png': ['png'],
-      'image/webp': ['webp'],
-      'image/gif': ['gif'],
-      'image/bmp': ['bmp'],
-      'image/tiff': ['tiff', 'tif'],
-      'image/svg+xml': ['svg'],
-      'image/heic': ['heic'],
-      'image/heif': ['heif'],
-      'image/avif': ['avif'],
-      'application/pdf': ['pdf'],
-      'application/msword': ['doc'],
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['docx']
-    };
-
-    const allowedExtensions = new Set<string>();
-    allowedTypes.forEach((type) => {
-      const extensions = mimeToExtensions[this.normalizeMimeType(type)];
-      if (extensions) {
-        extensions.forEach((ext) => allowedExtensions.add(ext));
-      }
-    });
-
-    return allowedExtensions.has(extension);
-  }
 }
 
 export const fileUploadService = new FileUploadService();
