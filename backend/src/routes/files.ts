@@ -5,6 +5,7 @@ import { uploadRateLimit } from '@/middleware/security'; // ✅ SECURITY FIX: Ad
 import { validateRequest } from '@/middleware/validation';
 import { fileController } from '@/controllers/files';
 import * as s3UploadController from '@/controllers/files/s3-upload.controller';
+import * as base64UploadController from '@/controllers/files/base64-upload.controller';
 import { FileUploadService } from '@/services/fileUpload/index';
 import { prisma } from '@/config/database';
 import { logger } from '@/utils/logger';
@@ -860,6 +861,10 @@ if (useS3Storage) {
   // Main upload endpoint using proper FileController (local storage)
   router.post('/upload', authMiddleware, uploadRateLimit, fileController.uploadMiddleware, fileController.uploadFiles);
 }
+
+// Base64 upload endpoint (bypasses Railway's multipart upload timeout issue)
+// This works because Railway blocks multipart/form-data but allows JSON POST requests
+router.post('/upload-base64', authMiddleware, uploadRateLimit, base64UploadController.uploadBase64File);
 
 // Proxy S3 images to handle CORS issues
 router.get('/s3-proxy/*', async (req, res) => {
