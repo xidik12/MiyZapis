@@ -19,17 +19,7 @@ export interface FileUploadOptions {
 }
 
 export class FileUploadService {
-  // Convert File to Base64 string
-  private async convertFileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = () => reject(new Error('Failed to read file'));
-      reader.readAsDataURL(file);
-    });
-  }
-
-  // Upload a single file using Base64 JSON (bypasses Railway's multipart timeout)
+  // Upload a single file with compression + S3 (traditional FormData multipart)
   async uploadFile(file: File, options: FileUploadOptions = {}): Promise<FileUploadResponse> {
     console.log('[FileUploadService] uploadFile called', {
       fileName: file.name,
@@ -74,32 +64,34 @@ export class FileUploadService {
         }
       }
 
-      // STEP 2: Convert to Base64 (bypasses Railway's multipart upload timeout!)
-      console.log('[FileUploadService] STEP 2: Converting to Base64...');
-      const base64Data = await this.convertFileToBase64(fileToUpload);
-      const base64Size = base64Data.length;
-      console.log('[FileUploadService] ✅ Base64 conversion complete:', {
-        base64SizeKB: (base64Size / 1024).toFixed(2) + 'KB',
-        overhead: (((base64Size - fileToUpload.size) / fileToUpload.size) * 100).toFixed(1) + '%'
-      });
+      // STEP 2: Create FormData and upload to S3
+      console.log('[FileUploadService] STEP 2: Creating FormData for S3 upload...');
+      const formData = new FormData();
+      formData.append('files', fileToUpload);
+      console.log('[FileUploadService] FormData created with compressed file');
 
-      // STEP 3: Send as JSON POST (Railway doesn't block JSON, only multipart!)
-      console.log('[FileUploadService] STEP 3: Sending Base64 JSON to backend...');
-      const response = await apiClient.post<FileUploadResponse>('/files/upload-base64', {
-        base64Data,
-        filename: file.name,
-        purpose: options.type || 'general'
-      });
+      // Build query params
+      const queryParams = new URLSearchParams();
+      if (options.type) {
+        queryParams.append('purpose', options.type);
+      }
+      if (options.folder) {
+        queryParams.append('folder', options.folder);
+      }
 
+      const endpoint = `/files/upload${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+      console.log('[FileUploadService] STEP 3: Uploading to S3 via:', endpoint);
+
+      const response = await apiClient.post<FileUploadResponse[]>(endpoint, formData);
       console.log('[FileUploadService] API response received:', response);
 
-      if (!response.success || !response.data) {
+      if (!response.success || !response.data || !Array.isArray(response.data) || response.data.length === 0) {
         console.error('[FileUploadService] Invalid response format:', response);
         throw new Error(response.error?.message || 'Failed to upload file');
       }
 
-      console.log('[FileUploadService] ✅ Upload successful! Returning:', response.data);
-      return response.data;
+      console.log('[FileUploadService] ✅ Upload successful! Returning:', response.data[0]);
+      return response.data[0]; // Return the first uploaded file
     } catch (error: any) {
       console.error('[FileUploadService] Upload error:', error);
       console.error('[FileUploadService] Error details:', {
