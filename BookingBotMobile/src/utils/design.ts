@@ -1,36 +1,43 @@
 /**
- * Design system constants matching web version
- * Colors, typography, spacing extracted from tailwind.config.js
+ * Panhaha Design System
+ * Colors, typography, spacing for BookingBot mobile app
+ *
+ * Color Usage Guidelines:
+ * - PRIMARY (Crimson Red): Energy, action, CTAs, buttons
+ * - SECONDARY (Deep Sea Blue): Trust, structure, backgrounds, headers
+ * - ACCENT (Gold): Borders, highlights, premium features ONLY
  */
 
-// Primary - Dark Navy Blue
+// PRIMARY - Bright Crimson Red (was SECONDARY)
+// Use for: CTAs, buttons, important actions, brand energy
 export const PRIMARY_COLORS = {
-  50: '#EFF6FF',
-  100: '#DBEAFE',
-  200: '#BFDBFE',
-  300: '#93C5FD',
-  400: '#60A5FA',
-  500: '#1E40AF', // Main primary
-  600: '#1E3A8A',
-  700: '#1D4ED8',
-  800: '#1E40AF',
-  900: '#172554',
-  950: '#0F1729',
-};
-
-// Secondary - Bright Crimson Red
-export const SECONDARY_COLORS = {
   50: '#FEF2F2',
   100: '#FEE2E2',
   200: '#FECACA',
   300: '#FCA5A5',
   400: '#F87171',
-  500: '#DC2626', // Main secondary
+  500: '#DC2626', // Main primary - Crimson Red
   600: '#B91C1C',
   700: '#991B1B',
   800: '#7F1D1D',
   900: '#450A0A',
   950: '#2D0A0A',
+};
+
+// SECONDARY - Deep Sea Blue (NEW Panhaha color)
+// Use for: Trust elements, structure, headers, backgrounds
+export const SECONDARY_COLORS = {
+  50: '#E6F1F5',
+  100: '#CCE3EB',
+  200: '#99C7D7',
+  300: '#66ABC3',
+  400: '#338FAF',
+  500: '#00739B', // Main secondary - Deep Sea Blue
+  600: '#005C7C',
+  700: '#00455D',
+  800: '#002E3E',
+  900: '#001F29',
+  950: '#000B0F',
 };
 
 // Accent - Rich Gold (for borders/outlines only)
@@ -64,10 +71,10 @@ export const NEUTRAL_COLORS = {
 };
 
 // Semantic colors
-export const SUCCESS_COLOR = PRIMARY_COLORS[500];
-export const WARNING_COLOR = SECONDARY_COLORS[500];
-export const ERROR_COLOR = SECONDARY_COLORS[500];
-export const INFO_COLOR = PRIMARY_COLORS[500];
+export const SUCCESS_COLOR = '#10B981'; // Emerald Green
+export const WARNING_COLOR = '#F59E0B'; // Amber Yellow
+export const ERROR_COLOR = PRIMARY_COLORS[500]; // Crimson Red
+export const INFO_COLOR = SECONDARY_COLORS[500]; // Deep Sea Blue
 
 // Spacing scale (in pixels for React Native)
 export const SPACING = {
@@ -108,6 +115,28 @@ export const FONT_WEIGHTS = {
   medium: '500' as const,
   semibold: '600' as const,
   bold: '700' as const,
+};
+
+// Typography system (matching web's tailwind.config.js)
+export const TYPOGRAPHY = {
+  // Display text (hero, landing pages)
+  displayLg: { fontSize: 72, lineHeight: 79.2, fontWeight: '700' as const },
+  displayMd: { fontSize: 60, lineHeight: 66, fontWeight: '700' as const },
+  displaySm: { fontSize: 48, lineHeight: 57.6, fontWeight: '700' as const },
+  // Headings
+  h1: { fontSize: 36, lineHeight: 45, fontWeight: '600' as const },
+  h2: { fontSize: 30, lineHeight: 39, fontWeight: '600' as const },
+  h3: { fontSize: 24, lineHeight: 32.4, fontWeight: '600' as const },
+  h4: { fontSize: 20, lineHeight: 28, fontWeight: '600' as const },
+  h5: { fontSize: 18, lineHeight: 26.1, fontWeight: '600' as const },
+  h6: { fontSize: 16, lineHeight: 24, fontWeight: '600' as const },
+  // Body text
+  bodyLg: { fontSize: 18, lineHeight: 27, fontWeight: '400' as const },
+  body: { fontSize: 16, lineHeight: 24, fontWeight: '400' as const },
+  bodySm: { fontSize: 14, lineHeight: 21, fontWeight: '400' as const },
+  // Small text
+  caption: { fontSize: 12, lineHeight: 16.8, fontWeight: '400' as const },
+  overline: { fontSize: 10, lineHeight: 14, fontWeight: '500' as const },
 };
 
 // Shadows (elevation for React Native)
