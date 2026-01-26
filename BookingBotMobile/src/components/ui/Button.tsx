@@ -3,11 +3,11 @@
  * Adapted for React Native
  */
 import React from 'react';
-import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, ViewStyle, TextStyle, View } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
-import { PRIMARY_COLORS, SECONDARY_COLORS, ACCENT_COLORS, ERROR_COLOR, BORDER_RADIUS, FONT_SIZES, FONT_WEIGHTS } from '../../utils/design';
+import { PRIMARY_COLORS, SECONDARY_COLORS, ACCENT_COLORS, ERROR_COLOR, SUCCESS_COLOR, BORDER_RADIUS, FONT_SIZES, FONT_WEIGHTS } from '../../utils/design';
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'destructive' | 'accent' | 'outline';
+type Variant = 'primary' | 'secondary' | 'ghost' | 'destructive' | 'accent' | 'outline' | 'subtle' | 'success';
 type Size = 'sm' | 'md' | 'lg' | 'xl';
 
 interface ButtonProps {
@@ -40,20 +40,33 @@ export const Button: React.FC<ButtonProps> = ({
   const getVariantStyles = (): ViewStyle => {
     switch (variant) {
       case 'primary':
+        // Crimson Red - Energy, action, CTAs
         return {
-          backgroundColor: PRIMARY_COLORS[500],
+          backgroundColor: colors.primary, // #DC2626
         };
       case 'secondary':
+        // Deep Sea Blue - Trust, structure
         return {
-          backgroundColor: isDark ? SECONDARY_COLORS[900] : SECONDARY_COLORS[50],
-          borderWidth: 1,
-          borderColor: isDark ? SECONDARY_COLORS[700] : SECONDARY_COLORS[200],
+          backgroundColor: colors.secondary, // #00739B
+        };
+      case 'subtle':
+        // Subtle variant - Low emphasis background
+        return {
+          backgroundColor: isDark ? PRIMARY_COLORS[900] + '33' : SECONDARY_COLORS[50], // 20% opacity in dark mode
+          borderWidth: 0,
         };
       case 'accent':
+        // Gold - Borders, highlights (use sparingly)
         return {
           backgroundColor: ACCENT_COLORS[500],
         };
+      case 'success':
+        // Emerald Green - Success actions
+        return {
+          backgroundColor: SUCCESS_COLOR,
+        };
       case 'destructive':
+        // Crimson Red - Destructive actions
         return {
           backgroundColor: ERROR_COLOR,
         };
@@ -61,7 +74,7 @@ export const Button: React.FC<ButtonProps> = ({
         return {
           backgroundColor: 'transparent',
           borderWidth: 2,
-          borderColor: PRIMARY_COLORS[500],
+          borderColor: colors.primary,
         };
       case 'ghost':
         return {
@@ -77,13 +90,16 @@ export const Button: React.FC<ButtonProps> = ({
       case 'primary':
       case 'destructive':
       case 'accent':
+      case 'success':
         return '#FFFFFF';
       case 'secondary':
-        return isDark ? SECONDARY_COLORS[100] : SECONDARY_COLORS[900];
+        return '#FFFFFF'; // White text on Deep Sea Blue
+      case 'subtle':
+        return isDark ? SECONDARY_COLORS[200] : SECONDARY_COLORS[700];
       case 'outline':
-        return PRIMARY_COLORS[500];
+        return colors.primary;
       case 'ghost':
-        return isDark ? SECONDARY_COLORS[300] : SECONDARY_COLORS[600];
+        return colors.text;
       default:
         return '#FFFFFF';
     }
@@ -138,9 +154,9 @@ export const Button: React.FC<ButtonProps> = ({
       ]}
       onPress={onPress}
       disabled={disabled || loading}
-      activeOpacity={0.8}
+      activeOpacity={0.7} // More responsive feel
     >
-      {leftIcon && <>{leftIcon}</>}
+      {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
       {loading ? (
         <ActivityIndicator size="small" color={textColor} />
       ) : (
@@ -148,7 +164,7 @@ export const Button: React.FC<ButtonProps> = ({
           {children}
         </Text>
       )}
-      {rightIcon && <>{rightIcon}</>}
+      {rightIcon && <View style={styles.rightIcon}>{rightIcon}</View>}
     </TouchableOpacity>
   );
 };
@@ -158,11 +174,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
   },
   text: {
     fontWeight: FONT_WEIGHTS.semibold,
     textAlign: 'center',
+  },
+  leftIcon: {
+    marginRight: 8, // mr-2 in web (8px)
+    marginLeft: -4, // -ml-1 in web (tighten spacing)
+  },
+  rightIcon: {
+    marginLeft: 8, // ml-2 in web (8px)
+    marginRight: -4, // -mr-1 in web (tighten spacing)
   },
 });
 
