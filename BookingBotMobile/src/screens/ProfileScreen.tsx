@@ -1,4 +1,7 @@
-// Profile Screen - Full implementation matching web version
+/**
+ * ProfileScreen - Redesigned with Panhaha design system
+ * User profile management with avatar upload, edit mode, and account actions
+ */
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -7,25 +10,39 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  TextInput,
-  ActivityIndicator,
   Alert,
-  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { selectUser, updateProfile, uploadAvatar } from '../store/slices/authSlice';
+import { selectUser, updateProfile, uploadAvatar, logout } from '../store/slices/authSlice';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import * as ImagePicker from 'expo-image-picker';
 import { User } from '../types';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Divider } from '../components/ui/Divider';
+import {
+  PRIMARY_COLORS,
+  SECONDARY_COLORS,
+  ACCENT_COLORS,
+  SPACING,
+  BORDER_RADIUS,
+  TYPOGRAPHY,
+  FONT_SIZES,
+  FONT_WEIGHTS,
+} from '../utils/design';
 
 export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+  const { t } = useLanguage();
   const user = useAppSelector(selectUser);
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<User>>({
@@ -51,9 +68,9 @@ export const ProfileScreen: React.FC = () => {
       setLoading(true);
       await dispatch(updateProfile(formData)).unwrap();
       setIsEditing(false);
-      Alert.alert('Success', 'Profile updated successfully');
+      Alert.alert(t('profile.success'), t('profile.updateSuccess'));
     } catch (error: any) {
-      Alert.alert('Error', error || 'Failed to update profile');
+      Alert.alert(t('common.error'), error || t('profile.updateError'));
     } finally {
       setLoading(false);
     }
@@ -63,7 +80,7 @@ export const ProfileScreen: React.FC = () => {
     try {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permissionResult.granted) {
-        Alert.alert('Permission Required', 'Please grant camera roll permissions');
+        Alert.alert(t('profile.permissionRequired'), t('profile.permissionMessage'));
         return;
       }
 
@@ -77,283 +94,380 @@ export const ProfileScreen: React.FC = () => {
       if (!result.canceled && result.assets[0]) {
         setLoading(true);
         await dispatch(uploadAvatar(result.assets[0].uri)).unwrap();
-        Alert.alert('Success', 'Avatar updated successfully');
+        Alert.alert(t('profile.success'), t('profile.avatarSuccess'));
       }
     } catch (error: any) {
-      Alert.alert('Error', error || 'Failed to upload avatar');
+      Alert.alert(t('common.error'), error || t('profile.avatarError'));
     } finally {
       setLoading(false);
     }
   };
 
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    scrollView: {
-      flex: 1,
-    },
-    content: {
-      padding: 20,
-    },
-    header: {
-      alignItems: 'center',
-      marginBottom: 32,
-    },
-    avatarContainer: {
-      position: 'relative',
-      marginBottom: 16,
-    },
-    avatar: {
-      width: 120,
-      height: 120,
-      borderRadius: 60,
-      backgroundColor: colors.border,
-    },
-    avatarEditButton: {
-      position: 'absolute',
-      bottom: 0,
-      right: 0,
-      backgroundColor: colors.primary,
-      borderRadius: 20,
-      width: 40,
-      height: 40,
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderWidth: 3,
-      borderColor: colors.background,
-    },
-    name: {
-      fontSize: 24,
-      fontWeight: 'bold',
-      color: colors.text,
-      marginBottom: 4,
-    },
-    email: {
-      fontSize: 16,
-      color: colors.textSecondary,
-    },
-    section: {
-      marginBottom: 24,
-    },
-    sectionTitle: {
-      fontSize: 18,
-      fontWeight: '600',
-      color: colors.text,
-      marginBottom: 16,
-    },
-    inputGroup: {
-      marginBottom: 16,
-    },
-    label: {
-      fontSize: 14,
-      fontWeight: '600',
-      color: colors.text,
-      marginBottom: 8,
-    },
-    input: {
-      height: 50,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 12,
-      paddingHorizontal: 16,
-      fontSize: 16,
-      color: colors.text,
-      backgroundColor: colors.surface,
-    },
-    inputDisabled: {
-      backgroundColor: colors.border + '40',
-      color: colors.textSecondary,
-    },
-    button: {
-      height: 50,
-      backgroundColor: colors.primary,
-      borderRadius: 12,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginTop: 8,
-    },
-    buttonText: {
-      color: '#FFFFFF',
-      fontSize: 16,
-      fontWeight: '600',
-    },
-    buttonSecondary: {
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    buttonSecondaryText: {
-      color: colors.text,
-    },
-    menuItem: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: 16,
-      backgroundColor: colors.surface,
-      borderRadius: 12,
-      marginBottom: 12,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    menuItemText: {
-      fontSize: 16,
-      color: colors.text,
-    },
-    menuItemIcon: {
-      fontSize: 20,
-    },
-  });
-
-  if (!user) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: colors.text }}>Please log in to view your profile</Text>
-        </View>
-      </SafeAreaView>
+  const handleLogout = () => {
+    Alert.alert(
+      t('profile.logout'),
+      t('profile.logoutConfirm'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('profile.logout'),
+          style: 'destructive',
+          onPress: () => {
+            dispatch(logout());
+          },
+        },
+      ]
     );
-  }
+  };
+
+  const renderHeader = () => (
+    <View style={styles.heroContainer}>
+      <LinearGradient
+        colors={[PRIMARY_COLORS[500], PRIMARY_COLORS[700]]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.heroGradient}
+      >
+        {/* Decorative orbs */}
+        <View style={styles.decorativeOrbs}>
+          <View style={[styles.orb, styles.orb1, { backgroundColor: ACCENT_COLORS[500] + '20' }]} />
+          <View style={[styles.orb, styles.orb2, { backgroundColor: SECONDARY_COLORS[300] + '15' }]} />
+        </View>
+
+        <View style={styles.heroContent}>
+          {/* Avatar */}
+          <View style={styles.avatarContainer}>
+            <TouchableOpacity onPress={handleAvatarUpload} disabled={loading}>
+              {user?.avatar ? (
+                <Image source={{ uri: user.avatar }} style={styles.avatar} />
+              ) : (
+                <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                  <Text style={styles.avatarText}>
+                    {user?.firstName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
+                  </Text>
+                </View>
+              )}
+              <View style={styles.avatarEditButton}>
+                <Text style={styles.cameraIcon}>📷</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* Name and Email */}
+          <Text style={styles.heroName}>
+            {user?.firstName} {user?.lastName}
+          </Text>
+          <Text style={styles.heroEmail}>{user?.email}</Text>
+        </View>
+      </LinearGradient>
+    </View>
+  );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      {renderHeader()}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <View style={styles.avatarContainer}>
-            {user.avatar ? (
-              <Image source={{ uri: user.avatar }} style={styles.avatar} />
-            ) : (
-              <View style={[styles.avatar, { justifyContent: 'center', alignItems: 'center' }]}>
-                <Text style={{ fontSize: 48, color: colors.textSecondary }}>
-                  {user.firstName?.[0]?.toUpperCase() || 'U'}
+        {/* Profile Information */}
+        <Card style={styles.section} borderVariant="subtle" elevation="sm">
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              {t('profile.personalInfo')}
+            </Text>
+            <TouchableOpacity
+              onPress={() => (isEditing ? setIsEditing(false) : setIsEditing(true))}
+            >
+              <Text style={[styles.editButton, { color: PRIMARY_COLORS[500] }]}>
+                {isEditing ? t('common.cancel') : t('common.edit')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.form}>
+            {/* First Name */}
+            <View style={styles.inputGroup}>
+              <Text style={[styles.label, { color: colors.text }]}>
+                {t('profile.firstName')}
+              </Text>
+              <Input
+                value={formData.firstName}
+                onChangeText={(text) => setFormData({ ...formData, firstName: text })}
+                editable={isEditing}
+                placeholder={t('profile.firstNamePlaceholder')}
+              />
+            </View>
+
+            {/* Last Name */}
+            <View style={styles.inputGroup}>
+              <Text style={[styles.label, { color: colors.text }]}>
+                {t('profile.lastName')}
+              </Text>
+              <Input
+                value={formData.lastName}
+                onChangeText={(text) => setFormData({ ...formData, lastName: text })}
+                editable={isEditing}
+                placeholder={t('profile.lastNamePlaceholder')}
+              />
+            </View>
+
+            {/* Email (Read-only) */}
+            <View style={styles.inputGroup}>
+              <Text style={[styles.label, { color: colors.text }]}>
+                {t('profile.email')}
+              </Text>
+              <Input
+                value={formData.email}
+                editable={false}
+                placeholder={t('profile.emailPlaceholder')}
+              />
+            </View>
+
+            {/* Phone Number */}
+            <View style={styles.inputGroup}>
+              <Text style={[styles.label, { color: colors.text }]}>
+                {t('profile.phoneNumber')}
+              </Text>
+              <Input
+                value={formData.phoneNumber}
+                onChangeText={(text) => setFormData({ ...formData, phoneNumber: text })}
+                editable={isEditing}
+                keyboardType="phone-pad"
+                placeholder={t('profile.phoneNumberPlaceholder')}
+              />
+            </View>
+
+            {isEditing && (
+              <Button
+                variant="primary"
+                size="lg"
+                onPress={handleSave}
+                loading={loading}
+                disabled={loading}
+              >
+                {t('common.save')}
+              </Button>
+            )}
+          </View>
+        </Card>
+
+        <Divider spacing={SPACING.lg} />
+
+        {/* Quick Actions */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: SPACING.md }]}>
+            {t('profile.quickActions')}
+          </Text>
+
+          <TouchableOpacity onPress={() => navigation.navigate('Settings' as never)}>
+            <Card style={styles.menuItem} borderVariant="subtle">
+              <View style={styles.menuItemContent}>
+                <Text style={styles.menuIcon}>⚙️</Text>
+                <Text style={[styles.menuText, { color: colors.text }]}>
+                  {t('profile.settings')}
                 </Text>
               </View>
-            )}
-            <TouchableOpacity
-              style={styles.avatarEditButton}
-              onPress={handleAvatarUpload}
-              disabled={loading}
-            >
-              <Text style={{ color: '#FFF', fontSize: 18 }}>📷</Text>
-            </TouchableOpacity>
-          </View>
-          {!isEditing ? (
-            <>
-              <Text style={styles.name}>
-                {user.firstName} {user.lastName}
-              </Text>
-              <Text style={styles.email}>{user.email}</Text>
-            </>
-          ) : null}
-        </View>
-
-        <View style={styles.section}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <Text style={styles.sectionTitle}>Personal Information</Text>
-            {!isEditing ? (
-              <TouchableOpacity onPress={() => setIsEditing(true)}>
-                <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '600' }}>Edit</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity onPress={() => setIsEditing(false)}>
-                <Text style={{ color: colors.textSecondary, fontSize: 14 }}>Cancel</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>First Name</Text>
-            <TextInput
-              style={[styles.input, !isEditing && styles.inputDisabled]}
-              value={formData.firstName}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, firstName: text }))}
-              editable={isEditing}
-              placeholder="First name"
-              placeholderTextColor={colors.textSecondary}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Last Name</Text>
-            <TextInput
-              style={[styles.input, !isEditing && styles.inputDisabled]}
-              value={formData.lastName}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, lastName: text }))}
-              editable={isEditing}
-              placeholder="Last name"
-              placeholderTextColor={colors.textSecondary}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={[styles.input, styles.inputDisabled]}
-              value={formData.email}
-              editable={false}
-              placeholder="Email"
-              placeholderTextColor={colors.textSecondary}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Phone Number</Text>
-            <TextInput
-              style={[styles.input, !isEditing && styles.inputDisabled]}
-              value={formData.phoneNumber}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, phoneNumber: text }))}
-              editable={isEditing}
-              placeholder="Phone number"
-              placeholderTextColor={colors.textSecondary}
-              keyboardType="phone-pad"
-            />
-          </View>
-
-          {isEditing && (
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleSave}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#FFF" />
-              ) : (
-                <Text style={styles.buttonText}>Save Changes</Text>
-              )}
-            </TouchableOpacity>
-          )}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('Settings' as never)}
-          >
-            <Text style={styles.menuItemText}>⚙️ Settings</Text>
-            <Text style={styles.menuItemIcon}>→</Text>
+              <Text style={styles.chevron}>›</Text>
+            </Card>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('PaymentMethods' as never)}
-          >
-            <Text style={styles.menuItemText}>💳 Payment Methods</Text>
-            <Text style={styles.menuItemIcon}>→</Text>
+
+          <TouchableOpacity onPress={() => navigation.navigate('Bookings' as never)}>
+            <Card style={styles.menuItem} borderVariant="subtle">
+              <View style={styles.menuItemContent}>
+                <Text style={styles.menuIcon}>📅</Text>
+                <Text style={[styles.menuText, { color: colors.text }]}>
+                  {t('profile.myBookings')}
+                </Text>
+              </View>
+              <Text style={styles.chevron}>›</Text>
+            </Card>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate('Loyalty' as never)}
-          >
-            <Text style={styles.menuItemText}>🎁 Loyalty Program</Text>
-            <Text style={styles.menuItemIcon}>→</Text>
+
+          <TouchableOpacity onPress={() => navigation.navigate('Favorites' as never)}>
+            <Card style={styles.menuItem} borderVariant="subtle">
+              <View style={styles.menuItemContent}>
+                <Text style={styles.menuIcon}>❤️</Text>
+                <Text style={[styles.menuText, { color: colors.text }]}>
+                  {t('profile.favorites')}
+                </Text>
+              </View>
+              <Text style={styles.chevron}>›</Text>
+            </Card>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.navigate('Wallet' as never)}>
+            <Card style={styles.menuItem} borderVariant="subtle">
+              <View style={styles.menuItemContent}>
+                <Text style={styles.menuIcon}>💰</Text>
+                <Text style={[styles.menuText, { color: colors.text }]}>
+                  {t('profile.wallet')}
+                </Text>
+              </View>
+              <Text style={styles.chevron}>›</Text>
+            </Card>
           </TouchableOpacity>
         </View>
+
+        <Divider spacing={SPACING.lg} />
+
+        {/* Logout Button */}
+        <Button
+          variant="destructive"
+          size="lg"
+          onPress={handleLogout}
+        >
+          🚪 {t('profile.logout')}
+        </Button>
       </ScrollView>
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  heroContainer: {
+    height: 240,
+    overflow: 'hidden',
+  },
+  heroGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  decorativeOrbs: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  orb: {
+    position: 'absolute',
+    borderRadius: 999,
+  },
+  orb1: {
+    width: 150,
+    height: 150,
+    top: -30,
+    right: -30,
+    opacity: 0.3,
+  },
+  orb2: {
+    width: 120,
+    height: 120,
+    bottom: -20,
+    left: -20,
+    opacity: 0.2,
+  },
+  heroContent: {
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+  },
+  avatarContainer: {
+    position: 'relative',
+    marginBottom: SPACING.md,
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: BORDER_RADIUS.full,
+    borderWidth: 4,
+    borderColor: '#FFFFFF',
+  },
+  avatarPlaceholder: {
+    backgroundColor: SECONDARY_COLORS[100],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    fontSize: 40,
+    fontWeight: FONT_WEIGHTS.bold,
+    color: SECONDARY_COLORS[600],
+  },
+  avatarEditButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: BORDER_RADIUS.full,
+    backgroundColor: ACCENT_COLORS[500],
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+  },
+  cameraIcon: {
+    fontSize: 16,
+  },
+  heroName: {
+    fontSize: TYPOGRAPHY.h2.fontSize,
+    fontWeight: TYPOGRAPHY.h2.fontWeight as any,
+    color: '#FFFFFF',
+    marginBottom: SPACING.xs,
+  },
+  heroEmail: {
+    fontSize: FONT_SIZES.sm,
+    color: '#FFFFFF',
+    opacity: 0.9,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    padding: SPACING.lg,
+    paddingBottom: SPACING.xl,
+  },
+  section: {
+    marginBottom: SPACING.lg,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  sectionTitle: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: FONT_WEIGHTS.semibold,
+  },
+  editButton: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: FONT_WEIGHTS.semibold,
+  },
+  form: {
+    gap: SPACING.md,
+  },
+  inputGroup: {
+    gap: SPACING.sm,
+  },
+  label: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: FONT_WEIGHTS.semibold,
+  },
+  menuItem: {
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  menuItemContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+  },
+  menuIcon: {
+    fontSize: 24,
+  },
+  menuText: {
+    fontSize: FONT_SIZES.base,
+    fontWeight: FONT_WEIGHTS.medium,
+  },
+  chevron: {
+    fontSize: 24,
+    color: PRIMARY_COLORS[500],
+    fontWeight: FONT_WEIGHTS.bold,
+  },
+});
