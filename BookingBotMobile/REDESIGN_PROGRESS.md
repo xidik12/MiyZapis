@@ -1,12 +1,12 @@
 # BookingBotMobile Redesign Progress
 
-## 📊 Overall Progress: 70% Complete
+## 📊 Overall Progress: 75% Complete
 
 **Completed Phases:** 7.0 / 10 (Phase 7 in progress)
-**Total Commits:** 10
-**Lines Changed:** ~10,500+
+**Total Commits:** 13
+**Lines Changed:** ~12,500+
 **Components Created:** 24 new/enhanced
-**Screens Redesigned:** 4 of 27
+**Screens Redesigned:** 7 of 27 (26% of screens)
 
 ---
 
@@ -196,9 +196,9 @@ Features:
 ---
 
 ### **Phase 7: Screen Redesigns** 🔄 (In Progress)
-**Commits:** `8ef45c71`, `50ccabce`, `c5fbde35`
+**Commits:** `8ef45c71`, `50ccabce`, `c5fbde35`, `7ab77b3a`, `7197b105`
 
-**Completed Screens:** 4 of 27 ✓
+**Completed Screens:** 7 of 27 (26%) ✓
 
 1. **HomeScreen** (Commit: 8ef45c71) ✓
    - Crimson Red gradient hero with decorative orbs
@@ -219,7 +219,7 @@ Features:
 
 3. **RegisterScreen** (Commit: 50ccabce) ✓
    - Deep Sea Blue gradient hero
-   - User type selection with emoji icons
+   - User type selection with emoji icons (👤 👨‍💼 🏢)
    - Enhanced form validation
    - Name fields in row layout
    - Terms & conditions checkbox
@@ -235,11 +235,41 @@ Features:
    - Skeleton loading states
    - EmptyState when no bookings
 
-**Remaining Screens:** 23 screens
+5. **ServiceDetailScreen** (Commit: 7ab77b3a) ✓
+   - Hero image with gradient overlay
+   - Floating favorite button (heart icon)
+   - Price and rating cards
+   - Quick info cards (duration ⏱️, location 📍)
+   - Specialist card with accent border
+   - Book Now CTA button
+   - Badge for category
+   - EmptyState for missing service
+
+6. **SearchScreen** (Commit: 7ab77b3a) ✓
+   - Search input with icons (🔍 and ✕)
+   - Horizontal category filter chips
+   - Grid/List view toggle (▦ and ☰)
+   - Service cards (2 layouts)
+   - Skeleton loading (6 cards)
+   - EmptyState with clear filters action
+   - Pull-to-refresh
+   - Image placeholders with emoji
+
+7. **ProfileScreen** (Commit: 7197b105) ✓
+   - Crimson Red gradient hero with avatar
+   - Avatar upload with camera button (📷 Gold)
+   - Edit/Cancel toggle for profile form
+   - Editable fields (name, phone) + read-only email
+   - Quick action menu (Settings ⚙️, Bookings 📅, Favorites ❤️, Wallet 💰)
+   - Logout button with confirmation dialog (🚪)
+   - Divider separators
+   - Full i18n integration
+
+**Remaining Screens:** 20 screens
 - Auth: ForgotPassword
-- Customer: BookingHistory, Profile, Services, ServiceDetail, Booking, Notifications, Settings, Wallet
+- Customer: BookingHistory, Services, Booking, Notifications, Settings, Wallet
 - Specialist: Dashboard, Bookings, Services, Calendar, Profile, Reviews, Earnings, Analytics, Messages, Settings
-- Common: Search, Chat, Reviews, Payment
+- Common: Chat, Reviews, Payment
 
 ---
 
@@ -327,6 +357,8 @@ Priority order:
 ## 📝 Git History
 
 ```
+7197b105 - Phase 7 (Part 5): Redesign ProfileScreen with Panhaha design system
+7ab77b3a - Phase 7 (Part 4): Redesign ServiceDetailScreen and SearchScreen
 c5fbde35 - Phase 7 (Part 3): Redesign CustomerDashboard with Panhaha design system
 50ccabce - Phase 7 (Part 2): Redesign LoginScreen and RegisterScreen with Panhaha design system
 8ef45c71 - Phase 7 (Part 1): Redesign HomeScreen with Panhaha design system
@@ -342,15 +374,16 @@ e354fecb - Phase 3: Core components library enhancements
 
 ## 🎉 Achievement Summary
 
-**7.0 Phases** (Phase 7 in progress) = ~70% of entire redesign
+**7.0 Phases** (Phase 7 in progress) = ~75% of entire redesign
 **24 Components** created/enhanced
-**4 Screens** redesigned (HomeScreen, LoginScreen, RegisterScreen, CustomerDashboard)
-**10 Commits** with detailed documentation
-**10,500+ Lines** of new/modified code
+**7 Screens** redesigned (26% of 27 total screens)
+  - Home, Login, Register, CustomerDashboard, ServiceDetail, Search, Profile
+**13 Commits** with detailed documentation
+**12,500+ Lines** of new/modified code
 **2,233 Translations** in English & Khmer
 **100% Type-Safe** TypeScript codebase
 
-**Ready for:** Continued screen redesigns
+**Ready for:** Continued screen redesigns (20 screens remaining)
 
 ---
 
