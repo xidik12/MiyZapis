@@ -9,10 +9,27 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1a237e"
+      "backgroundColor": "#DC2626"
     },
     "assetBundlePatterns": [
       "**/*"
+    ],
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#DC2626",
+          "sounds": []
+        }
+      ],
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.panhaha.booking",
+          "enableGooglePay": true
+        }
+      ]
     ],
     "ios": {
       "supportsTablet": true,
@@ -22,10 +39,16 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#1a237e"
+        "backgroundColor": "#DC2626"
       },
       "package": "com.panhaha.bookingbot",
-      "versionCode": 1
+      "versionCode": 1,
+      "permissions": [
+        "NOTIFICATIONS",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
