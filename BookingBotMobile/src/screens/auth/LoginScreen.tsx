@@ -1,25 +1,47 @@
-// Login Screen - Full implementation matching web version
+/**
+ * LoginScreen - Redesigned with Panhaha design system
+ * Matches web version with gradient hero, glassmorphism, and full i18n
+ */
 import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
   Alert,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Dimensions,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useForm, Controller } from 'react-hook-form';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { login, selectIsAuthenticated, selectAuthError, selectIsLoading, clearError } from '../../store/slices/authSlice';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { LoginRequest } from '../../types';
 import { GoogleSignInButton } from '../../components/auth/GoogleSignInButton';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { Card } from '../../components/ui/Card';
+import { Divider } from '../../components/ui/Divider';
+import {
+  PRIMARY_COLORS,
+  SECONDARY_COLORS,
+  ACCENT_COLORS,
+  ERROR_COLOR,
+  SUCCESS_COLOR,
+  SPACING,
+  BORDER_RADIUS,
+  TYPOGRAPHY,
+  FONT_SIZES,
+  FONT_WEIGHTS,
+} from '../../utils/design';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface LoginFormData {
   email: string;
@@ -31,8 +53,9 @@ export const LoginScreen: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
-  const { colors } = useTheme();
-  
+  const { colors, isDark } = useTheme();
+  const { t } = useLanguage();
+
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const error = useAppSelector(selectAuthError);
   const isLoading = useAppSelector(selectIsLoading);
@@ -77,284 +100,183 @@ export const LoginScreen: React.FC = () => {
     }
   };
 
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    scrollView: {
-      flex: 1,
-    },
-    content: {
-      padding: 20,
-      paddingTop: 40,
-    },
-    title: {
-      fontSize: 28,
-      fontWeight: 'bold',
-      color: colors.text,
-      textAlign: 'center',
-      marginBottom: 8,
-    },
-    subtitle: {
-      fontSize: 16,
-      color: colors.textSecondary,
-      textAlign: 'center',
-      marginBottom: 32,
-    },
-    link: {
-      color: colors.primary,
-      fontWeight: '600',
-    },
-    form: {
-      gap: 16,
-    },
-    inputGroup: {
-      marginBottom: 16,
-    },
-    label: {
-      fontSize: 14,
-      fontWeight: '600',
-      color: colors.text,
-      marginBottom: 8,
-    },
-    input: {
-      height: 50,
-      borderWidth: 1,
-      borderColor: errors.email || errors.password ? colors.error : colors.border,
-      borderRadius: 12,
-      paddingHorizontal: 16,
-      fontSize: 16,
-      color: colors.text,
-      backgroundColor: colors.surface,
-    },
-    passwordContainer: {
-      position: 'relative',
-    },
-    passwordInput: {
-      paddingRight: 50,
-    },
-    eyeButton: {
-      position: 'absolute',
-      right: 12,
-      top: 12,
-      padding: 4,
-    },
-    eyeText: {
-      fontSize: 20,
-      color: colors.textSecondary,
-    },
-    errorText: {
-      fontSize: 12,
-      color: colors.error,
-      marginTop: 4,
-    },
-    rememberRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 24,
-    },
-    checkboxRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    checkbox: {
-      width: 20,
-      height: 20,
-      borderWidth: 2,
-      borderColor: colors.border,
-      borderRadius: 4,
-      marginRight: 8,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    checkboxChecked: {
-      backgroundColor: colors.primary,
-      borderColor: colors.primary,
-    },
-    checkboxText: {
-      fontSize: 14,
-      color: colors.text,
-    },
-    forgotPassword: {
-      fontSize: 14,
-      color: colors.primary,
-      fontWeight: '600',
-    },
-    submitButton: {
-      height: 50,
-      backgroundColor: colors.primary,
-      borderRadius: 12,
-      justifyContent: 'center',
-      alignItems: 'center',
-      flexDirection: 'row',
-      opacity: isLoading ? 0.6 : 1,
-    },
-    submitButtonText: {
-      color: '#FFFFFF',
-      fontSize: 16,
-      fontWeight: '600',
-    },
-    errorContainer: {
-      backgroundColor: colors.error + '20',
-      borderWidth: 1,
-      borderColor: colors.error,
-      borderRadius: 12,
-      padding: 12,
-      marginBottom: 16,
-    },
-    errorTextContainer: {
-      fontSize: 14,
-      color: colors.error,
-    },
-  });
-
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
         <ScrollView
           style={styles.scrollView}
-          contentContainerStyle={styles.content}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.title}>Sign In</Text>
-          <Text style={styles.subtitle}>
-            Don't have an account?{' '}
-            <Text
-              style={styles.link}
-              onPress={() => navigation.navigate('Register' as never)}
+          {/* Hero Section with Gradient */}
+          <View style={styles.heroContainer}>
+            <LinearGradient
+              colors={[PRIMARY_COLORS[500], PRIMARY_COLORS[700]]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.heroGradient}
             >
-              Sign up here
+              {/* Decorative orbs */}
+              <View style={styles.decorativeOrbs}>
+                <View style={[styles.orb, styles.orb1, { backgroundColor: ACCENT_COLORS[500] + '20' }]} />
+                <View style={[styles.orb, styles.orb2, { backgroundColor: SECONDARY_COLORS[300] + '15' }]} />
+              </View>
+
+              <View style={styles.heroContent}>
+                <Text style={styles.heroTitle}>{t('auth.login.title')}</Text>
+                <Text style={styles.heroSubtitle}>{t('auth.login.welcomeBack')}</Text>
+              </View>
+            </LinearGradient>
+          </View>
+
+          <View style={styles.content}>
+            {/* Sign up prompt */}
+            <Text style={[styles.signupPrompt, { color: colors.textSecondary }]}>
+              {t('auth.login.subtitle')}{' '}
+              <Text
+                style={[styles.signupLink, { color: PRIMARY_COLORS[500] }]}
+                onPress={() => navigation.navigate('Register' as never)}
+              >
+                {t('auth.login.createAccount')}
+              </Text>
             </Text>
-          </Text>
 
-          {error && (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorTextContainer}>{error}</Text>
-            </View>
-          )}
+            {/* Error Message */}
+            {error && (
+              <Card
+                style={[styles.messageCard, { backgroundColor: isDark ? ERROR_COLOR + '20' : ERROR_COLOR + '10', borderColor: ERROR_COLOR + '50' }]}
+                borderVariant="none"
+              >
+                <Text style={[styles.messageText, { color: ERROR_COLOR }]}>{error}</Text>
+              </Card>
+            )}
 
-          <View style={styles.form}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email</Text>
-              <Controller
-                control={control}
-                rules={{
-                  required: 'Email is required',
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: 'Invalid email address',
-                  },
-                }}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter your email"
-                    placeholderTextColor={colors.textSecondary}
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    autoComplete="email"
-                  />
-                )}
-                name="email"
-              />
-              {errors.email && (
-                <Text style={styles.errorText}>{errors.email.message}</Text>
-              )}
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Password</Text>
-              <View style={styles.passwordContainer}>
+            {/* Form Card */}
+            <Card style={styles.formCard} borderVariant="subtle" elevation="sm">
+              {/* Email Input */}
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { color: colors.text }]}>
+                  {t('auth.login.emailLabel')}
+                </Text>
                 <Controller
                   control={control}
                   rules={{
-                    required: 'Password is required',
-                    minLength: {
-                      value: 6,
-                      message: 'Password must be at least 6 characters',
+                    required: t('auth.error.emailRequired'),
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: t('auth.error.emailInvalid'),
                     },
                   }}
                   render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      style={[styles.input, styles.passwordInput]}
-                      placeholder="Enter your password"
-                      placeholderTextColor={colors.textSecondary}
+                    <Input
+                      placeholder={t('auth.login.emailPlaceholder')}
                       value={value}
                       onChangeText={onChange}
                       onBlur={onBlur}
+                      error={errors.email?.message}
+                      autoCapitalize="none"
+                      keyboardType="email-address"
+                      autoComplete="email"
+                    />
+                  )}
+                  name="email"
+                />
+              </View>
+
+              {/* Password Input */}
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { color: colors.text }]}>
+                  {t('auth.login.passwordLabel')}
+                </Text>
+                <Controller
+                  control={control}
+                  rules={{
+                    required: t('auth.error.passwordRequired'),
+                    minLength: {
+                      value: 6,
+                      message: t('auth.error.passwordMinLength'),
+                    },
+                  }}
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <Input
+                      placeholder={t('auth.login.passwordPlaceholder')}
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      error={errors.password?.message}
                       secureTextEntry={!showPassword}
                       autoCapitalize="none"
                       autoComplete="password"
+                      rightIcon={
+                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                          <Text style={styles.eyeIcon}>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
+                        </TouchableOpacity>
+                      }
                     />
                   )}
                   name="password"
                 />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowPassword(!showPassword)}
-                >
-                  <Text style={styles.eyeText}>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
-                </TouchableOpacity>
               </View>
-              {errors.password && (
-                <Text style={styles.errorText}>{errors.password.message}</Text>
-              )}
-            </View>
 
-            <View style={styles.rememberRow}>
-              <View style={styles.checkboxRow}>
+              {/* Remember Me & Forgot Password */}
+              <View style={styles.optionsRow}>
                 <Controller
                   control={control}
                   render={({ field: { onChange, value } }) => (
                     <TouchableOpacity
-                      style={[styles.checkbox, value && styles.checkboxChecked]}
+                      style={styles.checkboxContainer}
                       onPress={() => onChange(!value)}
+                      activeOpacity={0.7}
                     >
-                      {value && <Text style={{ color: '#FFF' }}>✓</Text>}
+                      <View style={[
+                        styles.checkbox,
+                        { borderColor: colors.border },
+                        value && { backgroundColor: PRIMARY_COLORS[500], borderColor: PRIMARY_COLORS[500] }
+                      ]}>
+                        {value && <Text style={styles.checkmark}>✓</Text>}
+                      </View>
+                      <Text style={[styles.checkboxLabel, { color: colors.text }]}>
+                        {t('auth.login.rememberMe')}
+                      </Text>
                     </TouchableOpacity>
                   )}
                   name="rememberMe"
                 />
-                <Text style={styles.checkboxText}>Remember me</Text>
+
+                <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword' as never)}>
+                  <Text style={[styles.forgotPassword, { color: PRIMARY_COLORS[500] }]}>
+                    {t('auth.login.forgotPassword')}
+                  </Text>
+                </TouchableOpacity>
               </View>
 
-              <TouchableOpacity
-                onPress={() => navigation.navigate('ForgotPassword' as never)}
+              {/* Sign In Button */}
+              <Button
+                variant="primary"
+                size="lg"
+                onPress={handleSubmit(onSubmit)}
+                loading={isLoading}
+                disabled={isLoading}
               >
-                <Text style={styles.forgotPassword}>Forgot password?</Text>
-              </TouchableOpacity>
-            </View>
+                {isLoading ? t('auth.login.signingIn') : t('auth.login.signIn')}
+              </Button>
+            </Card>
 
-            <TouchableOpacity
-              style={styles.submitButton}
-              onPress={handleSubmit(onSubmit)}
-              disabled={isLoading}
-            >
-              {isLoading && (
-                <ActivityIndicator color="#FFF" style={{ marginRight: 8 }} />
-              )}
-              <Text style={styles.submitButtonText}>
-                {isLoading ? 'Signing in...' : 'Sign In'}
-              </Text>
-            </TouchableOpacity>
+            {/* Social Login Section */}
+            <View style={styles.socialSection}>
+              <Divider text={t('auth.login.orContinueWith')} spacing={SPACING.lg} />
 
-            <View style={{ marginTop: 16, alignItems: 'center' }}>
-              <Text style={{ color: colors.textSecondary, marginBottom: 8 }}>or</Text>
               <GoogleSignInButton
                 disabled={isLoading}
                 onSuccess={() => {
                   // Navigation will be handled by AppNavigator
                 }}
                 onError={(error) => {
-                  Alert.alert('Google Sign-In Error', error);
+                  Alert.alert(t('auth.error.googleSignInError'), error);
                 }}
               />
             </View>
@@ -364,3 +286,135 @@ export const LoginScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  heroContainer: {
+    height: 200,
+    overflow: 'hidden',
+  },
+  heroGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  decorativeOrbs: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  orb: {
+    position: 'absolute',
+    borderRadius: 999,
+  },
+  orb1: {
+    width: 200,
+    height: 200,
+    top: -50,
+    right: -50,
+    opacity: 0.3,
+  },
+  orb2: {
+    width: 150,
+    height: 150,
+    bottom: -30,
+    left: -30,
+    opacity: 0.2,
+  },
+  heroContent: {
+    alignItems: 'center',
+    paddingHorizontal: SPACING.xl,
+  },
+  heroTitle: {
+    fontSize: TYPOGRAPHY.h1.fontSize,
+    fontWeight: TYPOGRAPHY.h1.fontWeight as any,
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: SPACING.xs,
+  },
+  heroSubtitle: {
+    fontSize: TYPOGRAPHY.bodyLg.fontSize,
+    color: '#FFFFFF',
+    opacity: 0.95,
+    textAlign: 'center',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.xl,
+    gap: SPACING.lg,
+  },
+  signupPrompt: {
+    fontSize: FONT_SIZES.sm,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  signupLink: {
+    fontWeight: FONT_WEIGHTS.semibold,
+  },
+  messageCard: {
+    padding: SPACING.md,
+    borderWidth: 1,
+  },
+  messageText: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: FONT_WEIGHTS.medium,
+    textAlign: 'center',
+  },
+  formCard: {
+    padding: SPACING.lg,
+    gap: SPACING.lg,
+  },
+  inputGroup: {
+    gap: SPACING.sm,
+  },
+  label: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: FONT_WEIGHTS.semibold,
+  },
+  eyeIcon: {
+    fontSize: 20,
+  },
+  optionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: -SPACING.xs,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: BORDER_RADIUS.sm,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkmark: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: FONT_WEIGHTS.bold,
+  },
+  checkboxLabel: {
+    fontSize: FONT_SIZES.sm,
+  },
+  forgotPassword: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: FONT_WEIGHTS.semibold,
+  },
+  socialSection: {
+    gap: SPACING.md,
+  },
+});
