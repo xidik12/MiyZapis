@@ -1,9 +1,10 @@
 /**
  * Skeleton component for loading states
- * Animated shimmer effect for React Native
+ * Enhanced gradient shimmer effect for React Native
  */
 import React, { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet, ViewStyle, Easing } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../contexts/ThemeContext';
 import { BORDER_RADIUS } from '../../utils/design';
 
@@ -31,20 +32,12 @@ export const Skeleton: React.FC<SkeletonProps> = ({
     if (!animated) return;
 
     const shimmer = Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmerAnimation, {
-          toValue: 1,
-          duration: 1500,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
-        Animated.timing(shimmerAnimation, {
-          toValue: 0,
-          duration: 1500,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
-      ])
+      Animated.timing(shimmerAnimation, {
+        toValue: 1,
+        duration: 1500,
+        easing: Easing.ease,
+        useNativeDriver: true,
+      })
     );
 
     shimmer.start();
@@ -52,9 +45,10 @@ export const Skeleton: React.FC<SkeletonProps> = ({
     return () => shimmer.stop();
   }, [animated, shimmerAnimation]);
 
-  const opacity = shimmerAnimation.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [0.3, 0.6, 0.3],
+  // Translate from -100% to 100% for shimmer effect
+  const translateX = shimmerAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['-100%', '100%'],
   });
 
   const getVariantStyles = (): ViewStyle => {
@@ -81,20 +75,54 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   };
 
   const baseColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.11)';
+  const highlightColor = isDark ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.04)';
 
+  if (!animated) {
+    // Static skeleton without animation
+    return (
+      <View
+        style={[
+          styles.skeleton,
+          {
+            width,
+            backgroundColor: baseColor,
+          },
+          getVariantStyles(),
+          style,
+        ]}
+      />
+    );
+  }
+
+  // Animated skeleton with gradient shimmer
   return (
-    <Animated.View
+    <View
       style={[
         styles.skeleton,
         {
           width,
           backgroundColor: baseColor,
-          opacity: animated ? opacity : 0.5,
         },
         getVariantStyles(),
         style,
       ]}
-    />
+    >
+      <Animated.View
+        style={[
+          StyleSheet.absoluteFillObject,
+          {
+            transform: [{ translateX }],
+          },
+        ]}
+      >
+        <LinearGradient
+          colors={[baseColor, highlightColor, baseColor]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+      </Animated.View>
+    </View>
   );
 };
 
