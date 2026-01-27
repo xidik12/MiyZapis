@@ -20,7 +20,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { messageService } from '../../services/message.service';
+import { messagingService } from '../../services/messaging.service';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
@@ -85,7 +85,7 @@ export const SpecialistMessagesScreen: React.FC = () => {
   const loadConversations = async () => {
     try {
       setLoading(true);
-      const result = await messageService.getConversations();
+      const result = await messagingService.getConversations();
       setConversations(result);
     } catch (error) {
       console.error('Failed to load conversations:', error);
@@ -96,7 +96,7 @@ export const SpecialistMessagesScreen: React.FC = () => {
 
   const loadMessages = async (conversationId: string) => {
     try {
-      const result = await messageService.getMessages(conversationId);
+      const result = await messagingService.getMessages(conversationId);
       setMessages(result);
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: false });
@@ -108,7 +108,7 @@ export const SpecialistMessagesScreen: React.FC = () => {
 
   const markAsRead = async (conversationId: string) => {
     try {
-      await messageService.markAsRead(conversationId);
+      await messagingService.markAsRead(conversationId);
       setConversations((prev) =>
         prev.map((conv) =>
           conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
@@ -127,7 +127,7 @@ export const SpecialistMessagesScreen: React.FC = () => {
     setSending(true);
 
     try {
-      const sentMessage = await messageService.sendMessage(selectedConversation, messageText);
+      const sentMessage = await messagingService.sendMessage(selectedConversation, messageText);
       setMessages((prev) => [...prev, sentMessage]);
 
       // Update last message in conversation list
@@ -159,7 +159,7 @@ export const SpecialistMessagesScreen: React.FC = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await messageService.archiveConversation(conversationId);
+              await messagingService.archiveConversation(conversationId);
               setConversations((prev) =>
                 prev.filter((conv) => conv.id !== conversationId)
               );
@@ -188,7 +188,7 @@ export const SpecialistMessagesScreen: React.FC = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await messageService.blockConversation(conversationId);
+              await messagingService.blockConversation(conversationId);
               setConversations((prev) =>
                 prev.map((conv) =>
                   conv.id === conversationId ? { ...conv, isBlocked: true } : conv
