@@ -1,4 +1,7 @@
-// Drawer Navigator - Complete navigation with customer and specialist screens
+/**
+ * DrawerNavigator - Enhanced with Panhaha design system
+ * Complete navigation with customer and specialist screens
+ */
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -7,6 +10,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useAppSelector } from '../store/hooks';
 import { selectUser } from '../store/slices/authSlice';
 import { UserType } from '../types';
+import { PRIMARY_COLORS, SECONDARY_COLORS } from '../utils/design';
 
 // Import screens
 import { HomeScreen } from '../screens/HomeScreen';
@@ -64,19 +68,26 @@ export const DrawerNavigator: React.FC = () => {
       )}
       screenOptions={{
         headerShown: true,
-        drawerActiveTintColor: colors.primary,
+        drawerActiveTintColor: PRIMARY_COLORS[600],
         drawerInactiveTintColor: colors.textSecondary,
         drawerStyle: {
-          backgroundColor: colors.surface,
-          width: 280,
+          backgroundColor: colors.background,
+          width: 300,
         },
         headerStyle: {
           backgroundColor: colors.surface,
+          elevation: 0,
+          shadowOpacity: 0,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
         },
         headerTintColor: colors.text,
         headerTitleStyle: {
           fontWeight: '600',
+          fontSize: 18,
         },
+        drawerType: 'slide',
+        overlayColor: 'rgba(0, 0, 0, 0.5)',
       }}
     >
       {/* Common screens */}

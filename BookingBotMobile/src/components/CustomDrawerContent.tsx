@@ -1,8 +1,26 @@
+/**
+ * CustomDrawerContent - Redesigned with Panhaha design system
+ * Enhanced with notification badges and gradient header
+ */
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { DrawerContentScrollView, DrawerContentComponentProps } from '@react-navigation/drawer';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useAppSelector } from '../store/hooks';
+import { selectUnreadNotificationsCount } from '../store/slices/notificationSlice';
 import { UserType } from '../types';
+import { Badge } from './ui/Badge';
+import {
+  PRIMARY_COLORS,
+  SECONDARY_COLORS,
+  ACCENT_COLORS,
+  SPACING,
+  BORDER_RADIUS,
+  FONT_SIZES,
+  FONT_WEIGHTS,
+} from '../utils/design';
 
 interface CustomDrawerContentProps extends DrawerContentComponentProps {
   userType?: UserType;
@@ -10,17 +28,32 @@ interface CustomDrawerContentProps extends DrawerContentComponentProps {
   userEmail?: string;
 }
 
+interface MenuItem {
+  name: string;
+  label: string;
+  icon: string;
+  badge?: number;
+  color?: string;
+}
+
 export const CustomDrawerContent: React.FC<CustomDrawerContentProps> = ({
   navigation,
+  state,
   userType = 'customer',
   userName = 'User',
   userEmail = 'user@example.com',
 }) => {
-  const { colors, isDark, toggleTheme } = useTheme();
+  const { colors, isDark } = useTheme();
+  const { t } = useLanguage();
+  const unreadNotifications = useAppSelector(selectUnreadNotificationsCount);
+
   // Normalize userType for comparison
   const normalizedUserType = userType.toUpperCase();
   const isSpecialist = normalizedUserType === 'SPECIALIST' || normalizedUserType === 'BUSINESS';
   const isBusiness = normalizedUserType === 'BUSINESS';
+
+  // Get current route name
+  const currentRoute = state.routes[state.index].name;
 
   const navigateTo = (screen: string) => {
     navigation.navigate(screen as any);
@@ -29,264 +62,193 @@ export const CustomDrawerContent: React.FC<CustomDrawerContentProps> = ({
   const getRoleBadgeColor = () => {
     switch (normalizedUserType) {
       case 'SPECIALIST':
-        return colors.secondary;
+        return SECONDARY_COLORS[600];
       case 'BUSINESS':
-        return colors.accent;
+        return ACCENT_COLORS[600];
       case 'ADMIN':
-        return colors.primary;
+        return PRIMARY_COLORS[600];
       default:
         return colors.textSecondary;
     }
   };
 
+  const getRoleLabel = () => {
+    switch (normalizedUserType) {
+      case 'SPECIALIST':
+        return t('drawer.specialist');
+      case 'BUSINESS':
+        return t('drawer.business');
+      case 'ADMIN':
+        return t('drawer.admin');
+      default:
+        return t('drawer.customer');
+    }
+  };
+
+  // Common menu items for all users
+  const commonMenuItems: MenuItem[] = [
+    { name: 'Home', label: t('drawer.home'), icon: '🏠' },
+    { name: 'Search', label: t('drawer.search'), icon: '🔍' },
+  ];
+
+  // Customer-specific menu items
+  const customerMenuItems: MenuItem[] = [
+    { name: 'Dashboard', label: t('drawer.dashboard'), icon: '📊' },
+    { name: 'Bookings', label: t('drawer.bookings'), icon: '📅', badge: 3 }, // Placeholder badge
+    { name: 'Favorites', label: t('drawer.favorites'), icon: '❤️' },
+    { name: 'Referrals', label: t('drawer.referrals'), icon: '🎁' },
+    { name: 'Wallet', label: t('drawer.wallet'), icon: '💰' },
+    { name: 'Messages', label: t('drawer.messages'), icon: '💬', badge: unreadNotifications },
+  ];
+
+  // Specialist menu items
+  const specialistMenuItems: MenuItem[] = [
+    { name: 'Dashboard', label: t('drawer.dashboard'), icon: '📊' },
+    { name: 'Calendar', label: t('drawer.calendar'), icon: '🗓️' },
+    { name: 'MyServices', label: t('drawer.myServices'), icon: '💼' },
+    { name: 'MyClients', label: t('drawer.myClients'), icon: '👥' },
+    { name: 'Earnings', label: t('drawer.earnings'), icon: '💰', color: ACCENT_COLORS[600] },
+    { name: 'Schedule', label: t('drawer.schedule'), icon: '📋' },
+    { name: 'Loyalty', label: t('drawer.loyalty'), icon: '🎁', color: ACCENT_COLORS[600] },
+    { name: 'Analytics', label: t('drawer.analytics'), icon: '📈' },
+    { name: 'Reviews', label: t('drawer.reviews'), icon: '⭐' },
+    { name: 'Referrals', label: t('drawer.referrals'), icon: '🎁' },
+    { name: 'Wallet', label: t('drawer.wallet'), icon: '💳' },
+    { name: 'Messages', label: t('drawer.messages'), icon: '💬', badge: unreadNotifications },
+  ];
+
+  // Business-only: Employees
+  const businessMenuItems: MenuItem[] = [
+    { name: 'Employees', label: t('drawer.employees'), icon: '👨‍💼' },
+  ];
+
+  // Settings menu items
+  const settingsMenuItems: MenuItem[] = [
+    { name: 'Profile', label: t('drawer.profile'), icon: '👤' },
+    { name: 'Settings', label: t('drawer.settings'), icon: '⚙️' },
+  ];
+
+  const renderMenuItem = (item: MenuItem, isActive: boolean) => {
+    return (
+      <TouchableOpacity
+        key={item.name}
+        style={[
+          styles.menuItem,
+          isActive && [
+            styles.menuItemActive,
+            { backgroundColor: isDark ? PRIMARY_COLORS[900] + '20' : PRIMARY_COLORS[50] },
+          ],
+        ]}
+        onPress={() => navigateTo(item.name)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.menuItemLeft}>
+          <Text style={styles.menuIcon}>{item.icon}</Text>
+          <Text
+            style={[
+              styles.menuText,
+              { color: isActive ? PRIMARY_COLORS[600] : colors.text },
+              isActive && styles.menuTextActive,
+            ]}
+          >
+            {item.label}
+          </Text>
+        </View>
+        {item.badge && item.badge > 0 && (
+          <Badge label={item.badge.toString()} variant="primary" size="sm" />
+        )}
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <DrawerContentScrollView
-      style={[styles.drawer, { backgroundColor: colors.surface }]}
+      style={[styles.drawer, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.drawerContent}
+      showsVerticalScrollIndicator={false}
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={[styles.appName, { color: colors.text }]}>Panhaha</Text>
-        <TouchableOpacity
-          onPress={() => navigation.closeDrawer()}
-          style={styles.closeButton}
-        >
-          <Text style={[styles.closeButtonText, { color: colors.text }]}>×</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Header with Gradient */}
+      <LinearGradient
+        colors={[PRIMARY_COLORS[600], PRIMARY_COLORS[800]]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
+        {/* Decorative orb */}
+        <View style={styles.decorativeOrbs}>
+          <View style={[styles.orb, { backgroundColor: ACCENT_COLORS[500] + '20' }]} />
+        </View>
 
-      {/* User Profile */}
-      <View style={styles.profileSection}>
-        <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
+        <View style={styles.headerContent}>
+          <Text style={styles.appName}>Panhaha</Text>
+          <TouchableOpacity
+            onPress={() => navigation.closeDrawer()}
+            style={styles.closeButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Text style={styles.closeButtonText}>✕</Text>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+
+      {/* User Profile Section */}
+      <View style={[styles.profileSection, { backgroundColor: colors.surface }]}>
+        <View style={[styles.avatar, { backgroundColor: getRoleBadgeColor() }]}>
           <Text style={styles.avatarText}>{userName.charAt(0).toUpperCase()}</Text>
         </View>
         <Text style={[styles.userName, { color: colors.text }]}>{userName}</Text>
         <View style={[styles.roleBadge, { backgroundColor: getRoleBadgeColor() }]}>
-          <Text style={styles.roleBadgeText}>{normalizedUserType}</Text>
+          <Text style={styles.roleBadgeText}>{getRoleLabel()}</Text>
         </View>
-        <Text style={[styles.userEmail, { color: colors.textSecondary }]}>{userEmail}</Text>
+        <Text style={[styles.userEmail, { color: colors.textSecondary }]} numberOfLines={1}>
+          {userEmail}
+        </Text>
       </View>
 
       {/* Main Navigation */}
       <View style={styles.menuSection}>
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => navigateTo('Home')}
-        >
-          <Text style={[styles.menuIcon]}>🏠</Text>
-          <Text style={[styles.menuText, { color: colors.text }]}>Home</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => navigateTo('Search')}
-        >
-          <Text style={[styles.menuIcon]}>🔍</Text>
-          <Text style={[styles.menuText, { color: colors.text }]}>Search Services</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => navigateTo('Bookings')}
-        >
-          <Text style={[styles.menuIcon]}>📅</Text>
-          <Text style={[styles.menuText, { color: colors.text }]}>My Bookings</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => navigateTo('Favorites')}
-        >
-          <Text style={[styles.menuIcon]}>⭐</Text>
-          <Text style={[styles.menuText, { color: colors.text }]}>Favorites</Text>
-        </TouchableOpacity>
-
-        {normalizedUserType === 'CUSTOMER' && (
-          <>
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => navigateTo('Referrals')}
-            >
-              <Text style={[styles.menuIcon]}>🎁</Text>
-              <Text style={[styles.menuText, { color: colors.text }]}>Referrals</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => navigateTo('Wallet')}
-            >
-              <Text style={[styles.menuIcon]}>💳</Text>
-              <Text style={[styles.menuText, { color: colors.text }]}>Wallet</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => navigateTo('Messages')}
-            >
-              <Text style={[styles.menuIcon]}>💬</Text>
-              <Text style={[styles.menuText, { color: colors.text }]}>Messages</Text>
-            </TouchableOpacity>
-          </>
-        )}
+        {commonMenuItems.map((item) => renderMenuItem(item, currentRoute === item.name))}
+        {normalizedUserType === 'CUSTOMER' &&
+          customerMenuItems.map((item) => renderMenuItem(item, currentRoute === item.name))}
       </View>
 
       {/* Specialist/Business Section */}
       {isSpecialist && (
         <View style={styles.menuSection}>
+          <View style={[styles.sectionDivider, { backgroundColor: colors.border }]} />
           <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
-            {isBusiness ? 'FOR BUSINESS' : 'FOR SPECIALISTS'}
+            {isBusiness ? t('drawer.forBusiness') : t('drawer.forSpecialists')}
           </Text>
-          
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigateTo('Dashboard')}
-          >
-            <Text style={[styles.menuIcon]}>📊</Text>
-            <Text style={[styles.menuText, { color: colors.text }]}>Dashboard</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigateTo('Calendar')}
-          >
-            <Text style={[styles.menuIcon]}>🗓️</Text>
-            <Text style={[styles.menuText, { color: colors.text }]}>Calendar</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigateTo('MyServices')}
-          >
-            <Text style={[styles.menuIcon]}>💼</Text>
-            <Text style={[styles.menuText, { color: colors.text }]}>My Services</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigateTo('MyClients')}
-          >
-            <Text style={[styles.menuIcon]}>👥</Text>
-            <Text style={[styles.menuText, { color: colors.text }]}>My Clients</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigateTo('Earnings')}
-          >
-            <Text style={[styles.menuIcon]}>💰</Text>
-            <Text style={[styles.menuText, { color: colors.text }]}>Earnings</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigateTo('Schedule')}
-          >
-            <Text style={[styles.menuIcon]}>📋</Text>
-            <Text style={[styles.menuText, { color: colors.text }]}>Schedule</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigateTo('Loyalty')}
-          >
-            <Text style={[styles.menuIcon]}>🎁</Text>
-            <Text style={[styles.menuText, { color: colors.text }]}>Loyalty</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigateTo('Analytics')}
-          >
-            <Text style={[styles.menuIcon]}>📊</Text>
-            <Text style={[styles.menuText, { color: colors.text }]}>Analytics</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigateTo('Reviews')}
-          >
-            <Text style={[styles.menuIcon]}>⭐</Text>
-            <Text style={[styles.menuText, { color: colors.text }]}>Reviews</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigateTo('Referrals')}
-          >
-            <Text style={[styles.menuIcon]}>🎁</Text>
-            <Text style={[styles.menuText, { color: colors.text }]}>Referrals</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigateTo('Wallet')}
-          >
-            <Text style={[styles.menuIcon]}>💳</Text>
-            <Text style={[styles.menuText, { color: colors.text }]}>Wallet</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigateTo('Messages')}
-          >
-            <Text style={[styles.menuIcon]}>💬</Text>
-            <Text style={[styles.menuText, { color: colors.text }]}>Messages</Text>
-          </TouchableOpacity>
-
-          {/* Business-only: Employees */}
-          {isBusiness && (
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => navigateTo('Employees')}
-            >
-              <Text style={[styles.menuIcon]}>👨‍💼</Text>
-              <Text style={[styles.menuText, { color: colors.text }]}>Employees</Text>
-            </TouchableOpacity>
-          )}
+          {specialistMenuItems.map((item) => renderMenuItem(item, currentRoute === item.name))}
+          {isBusiness &&
+            businessMenuItems.map((item) => renderMenuItem(item, currentRoute === item.name))}
         </View>
       )}
 
       {/* Settings Section */}
       <View style={styles.menuSection}>
-        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>SETTINGS</Text>
-        
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => navigateTo('Profile')}
-        >
-          <Text style={[styles.menuIcon]}>👤</Text>
-          <Text style={[styles.menuText, { color: colors.text }]}>Profile</Text>
-        </TouchableOpacity>
+        <View style={[styles.sectionDivider, { backgroundColor: colors.border }]} />
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+          {t('drawer.settings')}
+        </Text>
+        {settingsMenuItems.map((item) => renderMenuItem(item, currentRoute === item.name))}
 
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => navigateTo('Settings')}
-        >
-          <View style={styles.menuItemContent}>
-            <View style={styles.menuItemLeft}>
-              <Text style={[styles.menuIcon]}>⚙️</Text>
-              <Text style={[styles.menuText, { color: colors.text }]}>Settings</Text>
-            </View>
-            <Text style={[styles.themeToggle, { color: colors.textSecondary }]}>
-              {isDark ? '🌙' : '☀️'}
-            </Text>
-          </View>
-        </TouchableOpacity>
+        {/* Theme Toggle Indicator */}
+        <View style={styles.themeIndicator}>
+          <Text style={[styles.themeText, { color: colors.textSecondary }]}>
+            {isDark ? '🌙 ' + t('drawer.darkMode') : '☀️ ' + t('drawer.lightMode')}
+          </Text>
+        </View>
+      </View>
 
-        <TouchableOpacity style={styles.menuItem}>
-          <Text style={[styles.menuIcon]}>🌍</Text>
-          <Text style={[styles.menuText, { color: colors.text }]}>Language</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem}>
-          <Text style={[styles.menuIcon]}>ℹ️</Text>
-          <Text style={[styles.menuText, { color: colors.text }]}>About</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem}>
-          <Text style={[styles.menuIcon]}>🚪</Text>
-          <Text style={[styles.menuText, { color: colors.error }]}>Logout</Text>
-        </TouchableOpacity>
+      {/* Footer Info */}
+      <View style={styles.footer}>
+        <Text style={[styles.footerText, { color: colors.textSecondary }]}>
+          Version 1.0.0
+        </Text>
+        <Text style={[styles.footerText, { color: colors.textSecondary }]}>
+          © 2026 Panhaha
+        </Text>
       </View>
     </DrawerContentScrollView>
   );
@@ -297,108 +259,159 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   drawerContent: {
-    paddingTop: 0,
+    paddingBottom: SPACING.xl,
   },
   header: {
+    paddingTop: 50,
+    paddingBottom: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  decorativeOrbs: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  orb: {
+    position: 'absolute',
+    width: 120,
+    height: 120,
+    borderRadius: 999,
+    top: -30,
+    right: -30,
+    opacity: 0.3,
+  },
+  headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    paddingTop: 50,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
+    zIndex: 1,
   },
   appName: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: FONT_WEIGHTS.bold,
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
   closeButton: {
     width: 32,
     height: 32,
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: BORDER_RADIUS.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   closeButtonText: {
-    fontSize: 28,
-    lineHeight: 28,
+    fontSize: 20,
+    color: '#FFFFFF',
+    fontWeight: FONT_WEIGHTS.bold,
   },
   profileSection: {
     alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
+    padding: SPACING.lg,
+    paddingVertical: SPACING.xl,
   },
   avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 72,
+    height: 72,
+    borderRadius: BORDER_RADIUS.full,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: SPACING.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   avatarText: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: FONT_WEIGHTS.bold,
     color: '#FFFFFF',
   },
   userName: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontSize: FONT_SIZES.lg,
+    fontWeight: FONT_WEIGHTS.semibold,
+    marginBottom: SPACING.xs,
   },
   roleBadge: {
-    paddingHorizontal: 12,
+    paddingHorizontal: SPACING.md,
     paddingVertical: 4,
-    borderRadius: 12,
-    marginBottom: 8,
+    borderRadius: BORDER_RADIUS.full,
+    marginBottom: SPACING.xs,
   },
   roleBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: FONT_SIZES.xs,
+    fontWeight: FONT_WEIGHTS.bold,
     color: '#FFFFFF',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   userEmail: {
-    fontSize: 14,
+    fontSize: FONT_SIZES.sm,
+    maxWidth: '90%',
   },
   menuSection: {
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.05)',
+    paddingVertical: SPACING.sm,
+  },
+  sectionDivider: {
+    height: 1,
+    marginVertical: SPACING.md,
+    marginHorizontal: SPACING.lg,
   },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: FONT_SIZES.xs,
+    fontWeight: FONT_WEIGHTS.bold,
     textTransform: 'uppercase',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
     letterSpacing: 1,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  menuItemContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    flex: 1,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    marginHorizontal: SPACING.sm,
+    borderRadius: BORDER_RADIUS.md,
+  },
+  menuItemActive: {
+    borderLeftWidth: 3,
+    borderLeftColor: PRIMARY_COLORS[600],
   },
   menuItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   menuIcon: {
-    fontSize: 20,
-    marginRight: 12,
+    fontSize: 22,
+    marginRight: SPACING.md,
     width: 28,
   },
   menuText: {
-    fontSize: 16,
+    fontSize: FONT_SIZES.base,
+    fontWeight: FONT_WEIGHTS.medium,
   },
-  themeToggle: {
-    fontSize: 20,
+  menuTextActive: {
+    fontWeight: FONT_WEIGHTS.semibold,
+  },
+  themeIndicator: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    marginTop: SPACING.sm,
+  },
+  themeText: {
+    fontSize: FONT_SIZES.sm,
+  },
+  footer: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    marginTop: SPACING.xl,
+    alignItems: 'center',
+  },
+  footerText: {
+    fontSize: FONT_SIZES.xs,
+    marginBottom: 4,
   },
 });
-
