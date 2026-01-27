@@ -1,9 +1,10 @@
 /**
- * Button component matching web design
- * Adapted for React Native
+ * Button component - Enhanced with haptic feedback and animations
+ * Matching web design, adapted for React Native with premium interactions
  */
-import React from 'react';
-import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, ViewStyle, TextStyle, View } from 'react-native';
+import React, { useRef } from 'react';
+import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, ViewStyle, TextStyle, View, Animated } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../contexts/ThemeContext';
 import { PRIMARY_COLORS, SECONDARY_COLORS, ACCENT_COLORS, ERROR_COLOR, SUCCESS_COLOR, BORDER_RADIUS, FONT_SIZES, FONT_WEIGHTS } from '../../utils/design';
 
@@ -21,6 +22,7 @@ interface ButtonProps {
   textStyle?: TextStyle;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  hapticFeedback?: boolean; // Enable/disable haptic feedback
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -34,8 +36,10 @@ export const Button: React.FC<ButtonProps> = ({
   textStyle,
   leftIcon,
   rightIcon,
+  hapticFeedback = true, // Enabled by default
 }) => {
   const { colors, isDark } = useTheme();
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const getVariantStyles = (): ViewStyle => {
     switch (variant) {
@@ -135,6 +139,37 @@ export const Button: React.FC<ButtonProps> = ({
     }
   };
 
+  const handlePressIn = () => {
+    // Scale down animation
+    Animated.spring(scaleAnim, {
+      toValue: 0.95,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 4,
+    }).start();
+
+    // Haptic feedback
+    if (hapticFeedback && !disabled && !loading) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  };
+
+  const handlePressOut = () => {
+    // Scale back animation
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 4,
+    }).start();
+  };
+
+  const handlePress = () => {
+    if (onPress && !disabled && !loading) {
+      onPress();
+    }
+  };
+
   const sizeStyles = getSizeStyles();
   const variantStyles = getVariantStyles();
   const textColor = getTextColor();
@@ -142,29 +177,35 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <TouchableOpacity
-      style={[
-        styles.button,
-        variantStyles,
-        sizeStyles,
-        {
-          borderRadius: BORDER_RADIUS.lg,
-          opacity: disabled || loading ? 0.5 : 1,
-        },
-        style,
-      ]}
-      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      onPress={handlePress}
       disabled={disabled || loading}
-      activeOpacity={0.7} // More responsive feel
+      activeOpacity={1} // We control opacity through animation
     >
-      {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
-      {loading ? (
-        <ActivityIndicator size="small" color={textColor} />
-      ) : (
-        <Text style={[styles.text, { color: textColor, fontSize }, textStyle]}>
-          {children}
-        </Text>
-      )}
-      {rightIcon && <View style={styles.rightIcon}>{rightIcon}</View>}
+      <Animated.View
+        style={[
+          styles.button,
+          variantStyles,
+          sizeStyles,
+          {
+            borderRadius: BORDER_RADIUS.lg,
+            opacity: disabled || loading ? 0.5 : 1,
+            transform: [{ scale: scaleAnim }],
+          },
+          style,
+        ]}
+      >
+        {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
+        {loading ? (
+          <ActivityIndicator size="small" color={textColor} />
+        ) : (
+          <Text style={[styles.text, { color: textColor, fontSize }, textStyle]}>
+            {children}
+          </Text>
+        )}
+        {rightIcon && <View style={styles.rightIcon}>{rightIcon}</View>}
+      </Animated.View>
     </TouchableOpacity>
   );
 };
@@ -190,4 +231,3 @@ const styles = StyleSheet.create({
 });
 
 export default Button;
-

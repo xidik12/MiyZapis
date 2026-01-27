@@ -1,9 +1,10 @@
 /**
- * Card component matching web design
- * Adapted for React Native with Panhaha design system
+ * Card component - Enhanced with press animations
+ * Matching web design, adapted for React Native with Panhaha design system
  */
-import React from 'react';
-import { View, TouchableOpacity, StyleSheet, ViewStyle, Platform } from 'react-native';
+import React, { useRef } from 'react';
+import { View, TouchableOpacity, StyleSheet, ViewStyle, Platform, Animated } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../contexts/ThemeContext';
 import { BORDER_RADIUS, SPACING, SHADOWS, ACCENT_COLORS } from '../../utils/design';
 
@@ -20,6 +21,7 @@ interface CardProps {
   children: React.ReactNode;
   onPress?: () => void;
   style?: ViewStyle;
+  hapticFeedback?: boolean;
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -31,10 +33,11 @@ export const Card: React.FC<CardProps> = ({
   children,
   onPress,
   style,
+  hapticFeedback = false, // Disabled by default for cards (only important actions)
 }) => {
   const { colors, isDark } = useTheme();
-
-  const Component = onPress ? TouchableOpacity : View;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const elevationAnim = useRef(new Animated.Value(1)).current;
 
   // Get border styles based on variant
   const getBorderStyles = (): ViewStyle => {
@@ -82,8 +85,73 @@ export const Card: React.FC<CardProps> = ({
     return isDark ? colors.surface : colors.surface;
   };
 
+  const handlePressIn = () => {
+    if (onPress && hover) {
+      // Scale down animation
+      Animated.spring(scaleAnim, {
+        toValue: 0.98,
+        useNativeDriver: true,
+        speed: 50,
+        bounciness: 4,
+      }).start();
+
+      // Haptic feedback (only if enabled)
+      if (hapticFeedback) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    }
+  };
+
+  const handlePressOut = () => {
+    if (onPress && hover) {
+      // Scale back animation
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        speed: 50,
+        bounciness: 4,
+      }).start();
+    }
+  };
+
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+    }
+  };
+
+  // If onPress is provided, make it pressable with animations
+  if (onPress) {
+    return (
+      <TouchableOpacity
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={handlePress}
+        activeOpacity={1} // We control the animation
+      >
+        <Animated.View
+          style={[
+            styles.card,
+            {
+              backgroundColor: getBackgroundColor(),
+              borderRadius: BORDER_RADIUS.lg,
+              ...getBorderStyles(),
+              ...getElevationStyles(),
+              transform: [{ scale: scaleAnim }],
+            },
+            gradient && styles.gradient,
+            style,
+          ]}
+        >
+          {children}
+        </Animated.View>
+      </TouchableOpacity>
+    );
+  }
+
+  // Non-pressable card
   return (
-    <Component
+    <View
       style={[
         styles.card,
         {
@@ -95,11 +163,9 @@ export const Card: React.FC<CardProps> = ({
         gradient && styles.gradient,
         style,
       ]}
-      onPress={onPress}
-      activeOpacity={hover && onPress ? 0.7 : 1}
     >
       {children}
-    </Component>
+    </View>
   );
 };
 
@@ -115,4 +181,3 @@ const styles = StyleSheet.create({
 });
 
 export default Card;
-
