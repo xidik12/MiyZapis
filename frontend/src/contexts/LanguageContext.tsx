@@ -263,6 +263,11 @@ const translations: Translations = {
   'booking.slotConflict': { en: 'This time slot was just booked by someone else. Please choose another.', uk: 'Цей часовий слот щойно забронювали. Будь ласка, виберіть інший.', ru: 'Это время только что забронировали. Пожалуйста, выберите другое.' },
   'booking.createFailed': { en: 'Failed to create booking. Please try again.', uk: 'Не вдалося створити бронювання. Спробуйте ще раз.', ru: 'Не удалось создать бронирование. Повторите попытку.' },
   'booking.confirmBooking': { en: 'Confirm Booking', uk: 'Підтвердити бронювання', ru: 'Подтвердить бронирование' },
+  'booking.loadingSlots': { en: 'Loading available times...', uk: 'Завантаження доступного часу...', ru: 'Загрузка доступного времени...' },
+  'booking.selectDateFirst': { en: 'Please select a date first', uk: 'Будь ласка, спочатку оберіть дату', ru: 'Пожалуйста, сначала выберите дату' },
+  'booking.selectTimeFirst': { en: 'Please select a time slot', uk: 'Будь ласка, оберіть часовий слот', ru: 'Пожалуйста, выберите временной слот' },
+  'booking.completePaymentFirst': { en: 'Please complete payment to continue', uk: 'Будь ласка, завершіть оплату, щоб продовжити', ru: 'Пожалуйста, завершите оплату, чтобы продолжить' },
+  'booking.processing': { en: 'Processing...', uk: 'Обробка...', ru: 'Обработка...' },
 
   // Bookings (customer)
   'bookings.cancelFailed': { en: 'Failed to cancel booking. Please try again.', uk: 'Не вдалося скасувати бронювання. Спробуйте ще раз.', ru: 'Не удалось отменить бронирование. Повторите попытку.' },

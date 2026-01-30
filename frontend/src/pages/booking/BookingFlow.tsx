@@ -1046,8 +1046,15 @@ const BookingFlow: React.FC = () => {
                     </button>
                   </div>
                 )}
-                
-                {availableSlots.length > 0 ? (
+
+                {slotsLoading ? (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600 mb-3"></div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {t('booking.loadingSlots') || 'Loading available times...'}
+                    </p>
+                  </div>
+                ) : availableSlots.length > 0 ? (
                   <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
                     {availableSlots.map((slot: any) => {
                       const time = typeof slot === 'string' ? slot : slot.time;
@@ -2030,32 +2037,64 @@ const BookingFlow: React.FC = () => {
 
         {/* Navigation Buttons */}
         {currentStep < steps.length - 1 && (
-          <div className="flex justify-between gap-3 sm:gap-4 pb-safe-bottom">
-            <button
-              onClick={handlePrevStep}
-              disabled={currentStep === 0}
-              className={`flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 rounded-xl transition-colors flex-shrink-0 mobile-touch-target ${
-                currentStep === 0
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 active:scale-95'
-              }`}
-            >
-              <ArrowLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-              <span className="text-sm sm:text-base">{t('navigation.prev') || 'Prev'}</span>
-            </button>
+          <div className="pb-safe-bottom">
+            {/* Helper text for disabled Next button */}
+            {(() => {
+              const currentStepId = steps[currentStep]?.id;
+              let helperText = '';
 
-            <button
-              onClick={handleNextStep}
-              disabled={
-                (steps[currentStep]?.id === 'datetime' && (!selectedDate || !selectedTime)) ||
-                (steps[currentStep]?.id === 'details' && !service) ||
-                (steps[currentStep]?.id === 'payment' && (!paymentResult || (paymentResult.requiresPayment && paymentResult.status !== 'COMPLETED')))
+              if (currentStepId === 'datetime' && (!selectedDate || !selectedTime)) {
+                if (!selectedDate) helperText = t('booking.selectDateFirst') || 'Please select a date first';
+                else if (!selectedTime) helperText = t('booking.selectTimeFirst') || 'Please select a time slot';
+              } else if (currentStepId === 'payment' && (!paymentResult || (paymentResult.requiresPayment && paymentResult.status !== 'COMPLETED'))) {
+                helperText = t('booking.completePaymentFirst') || 'Please complete payment to continue';
               }
-              className="flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0 mobile-touch-target active:scale-95"
-            >
-              <span className="text-sm sm:text-base">{t('navigation.next') || 'Next'}</span>
-              <ArrowRightIcon className="w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2" />
-            </button>
+
+              return helperText ? (
+                <div className="mb-3 text-center">
+                  <p className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 rounded-xl inline-block">
+                    ℹ️ {helperText}
+                  </p>
+                </div>
+              ) : null;
+            })()}
+
+            <div className="flex justify-between gap-3 sm:gap-4">
+              <button
+                onClick={handlePrevStep}
+                disabled={currentStep === 0 || paymentLoading}
+                className={`flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 rounded-xl transition-colors flex-shrink-0 mobile-touch-target ${
+                  currentStep === 0 || paymentLoading
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 active:scale-95'
+                }`}
+              >
+                <ArrowLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                <span className="text-sm sm:text-base">{t('navigation.prev') || 'Prev'}</span>
+              </button>
+
+              <button
+                onClick={handleNextStep}
+                disabled={
+                  paymentLoading ||
+                  (steps[currentStep]?.id === 'datetime' && (!selectedDate || !selectedTime)) ||
+                  (steps[currentStep]?.id === 'details' && !service) ||
+                  (steps[currentStep]?.id === 'payment' && (!paymentResult || (paymentResult.requiresPayment && paymentResult.status !== 'COMPLETED')))
+                }
+                className="flex items-center px-3 sm:px-4 md:px-6 py-3 sm:py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex-shrink-0 mobile-touch-target active:scale-95"
+              >
+                {paymentLoading && (
+                  <svg className="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                )}
+                <span className="text-sm sm:text-base">
+                  {paymentLoading ? (t('booking.processing') || 'Processing...') : (t('navigation.next') || 'Next')}
+                </span>
+                {!paymentLoading && <ArrowRightIcon className="w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2" />}
+              </button>
+            </div>
           </div>
         )}
       </div>
