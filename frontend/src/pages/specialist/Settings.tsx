@@ -27,7 +27,10 @@ const SpecialistSettings: React.FC = () => {
   // Modal states
   const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
-  
+
+  // Active tab state
+  const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'security' | 'notifications' | 'privacy' | 'business' | 'language'>('profile');
+
   // Debug user avatar data
   console.log('🔍 Settings component - User avatar debug:', {
     userAvatar: user?.avatar,
@@ -277,40 +280,90 @@ const SpecialistSettings: React.FC = () => {
               {/* Settings Navigation */}
               <div className="lg:col-span-1">
                 <nav className="space-y-1 bg-white dark:bg-gray-800 rounded-xl shadow p-4">
-                  <a href="#profile" className="flex items-center px-3 py-2 text-sm font-medium text-primary-600 bg-primary-50 dark:bg-primary-900/20 rounded-xl">
+                  <button
+                    onClick={() => setActiveTab('profile')}
+                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
+                      activeTab === 'profile'
+                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
                     <UserIcon className="w-5 h-5 mr-3" />
                     {t('settings.profile') || 'Profile'}
-                  </a>
-                  <a href="#account" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl">
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('account')}
+                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
+                      activeTab === 'account'
+                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
                     <Cog6ToothIcon className="w-5 h-5 mr-3" />
                     {t('settings.account')}
-                  </a>
-                  <a href="#security" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl">
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('security')}
+                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
+                      activeTab === 'security'
+                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
                     <ShieldCheckIcon className="w-5 h-5 mr-3" />
                     {t('customer.settings.passwordSecurity')}
-                  </a>
-                  <a href="#notifications" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl">
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('notifications')}
+                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
+                      activeTab === 'notifications'
+                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
                     <BellIcon className="w-5 h-5 mr-3" />
                     {t('settings.notifications')}
-                  </a>
-                  <a href="#privacy" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl">
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('privacy')}
+                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
+                      activeTab === 'privacy'
+                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
                     <ShieldCheckIcon className="w-5 h-5 mr-3" />
                     {t('settings.privacy')}
-                  </a>
-                  <a href="#business" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl">
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('business')}
+                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
+                      activeTab === 'business'
+                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
                     <CreditCardIcon className="w-5 h-5 mr-3" />
                     {t('settings.business')}
-                  </a>
-                  <a href="#language" className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl">
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('language')}
+                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
+                      activeTab === 'language'
+                        ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
                     <GlobeAltIcon className="w-5 h-5 mr-3" />
                     {t('settings.language')}
-                  </a>
+                  </button>
                 </nav>
               </div>
 
               {/* Settings Content */}
               <div className="lg:col-span-2 space-y-8">
                 {/* Profile Settings */}
+                {activeTab === 'profile' && (
                 <div id="profile" className="bg-white dark:bg-gray-800 rounded-xl shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
@@ -398,8 +451,10 @@ const SpecialistSettings: React.FC = () => {
                     </div>
                   </div>
                 </div>
+                )}
 
                 {/* Account Settings */}
+                {activeTab === 'account' && (
                 <div id="account" className="bg-white dark:bg-gray-800 rounded-xl shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
@@ -437,8 +492,10 @@ const SpecialistSettings: React.FC = () => {
                     />
                   </div>
                 </div>
+                )}
 
                 {/* Security Settings */}
+                {activeTab === 'security' && (
                 <div id="security" className="bg-white dark:bg-gray-800 rounded-xl shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
@@ -540,8 +597,10 @@ const SpecialistSettings: React.FC = () => {
                     </div>
                   </div>
                 </div>
+                )}
 
                 {/* Notification Settings */}
+                {activeTab === 'notifications' && (
                 <div id="notifications" className="bg-white dark:bg-gray-800 rounded-xl shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
@@ -585,8 +644,10 @@ const SpecialistSettings: React.FC = () => {
                     />
                   </div>
                 </div>
+                )}
 
                 {/* Privacy Settings */}
+                {activeTab === 'privacy' && (
                 <div id="privacy" className="bg-white dark:bg-gray-800 rounded-xl shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
@@ -624,8 +685,10 @@ const SpecialistSettings: React.FC = () => {
                     />
                   </div>
                 </div>
+                )}
 
                 {/* Business Settings */}
+                {activeTab === 'business' && (
                 <div id="business" className="bg-white dark:bg-gray-800 rounded-xl shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
@@ -672,8 +735,10 @@ const SpecialistSettings: React.FC = () => {
                     </div>
                   </div>
                 </div>
+                )}
 
                 {/* Language & Currency Settings */}
+                {activeTab === 'language' && (
                 <div id="language" className="bg-white dark:bg-gray-800 rounded-xl shadow">
                   <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
@@ -716,6 +781,7 @@ const SpecialistSettings: React.FC = () => {
                     </div>
                   </div>
                 </div>
+                )}
 
                 {/* Save Button */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
