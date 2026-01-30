@@ -381,12 +381,24 @@ const SpecialistServices: React.FC = () => {
 
     const errors: {[key: string]: string} = {};
 
-    if (!formData.name.trim()) {
+    // Name validation: required, 3-100 characters
+    const nameTrimmed = formData.name.trim();
+    if (!nameTrimmed) {
       errors.name = t('serviceForm.required');
+    } else if (nameTrimmed.length < 3) {
+      errors.name = 'Service name must be at least 3 characters';
+    } else if (nameTrimmed.length > 100) {
+      errors.name = 'Service name cannot exceed 100 characters';
     }
 
-    if (!formData.description.trim()) {
+    // Description validation: required, 10-1000 characters
+    const descriptionTrimmed = formData.description.trim();
+    if (!descriptionTrimmed) {
       errors.description = t('serviceForm.required');
+    } else if (descriptionTrimmed.length < 10) {
+      errors.description = 'Description must be at least 10 characters';
+    } else if (descriptionTrimmed.length > 1000) {
+      errors.description = 'Description cannot exceed 1000 characters';
     }
 
     // Check category validation - formData.category should always contain the value (custom or regular)
@@ -1077,8 +1089,29 @@ const SpecialistServices: React.FC = () => {
                 </svg>
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Validation Error Summary */}
+              {hasAttemptedSubmit && Object.keys(formErrors).length > 0 && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+                  <div className="flex items-start">
+                    <svg className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <h3 className="text-sm font-semibold text-red-800 dark:text-red-300 mb-1">
+                        Please fix the following errors:
+                      </h3>
+                      <ul className="text-sm text-red-700 dark:text-red-400 list-disc list-inside space-y-1">
+                        {Object.entries(formErrors).map(([field, error]) => (
+                          <li key={field}>{error}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Service Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1091,7 +1124,16 @@ const SpecialistServices: React.FC = () => {
                   placeholder={t('serviceForm.serviceNamePlaceholder')}
                   className={`w-full px-4 py-3 rounded-xl border ${formErrors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
                 />
-                {formErrors.name && <p className="mt-1 text-sm text-red-500">{formErrors.name}</p>}
+                <div className="flex justify-between mt-1">
+                  {formErrors.name ? (
+                    <p className="text-sm text-red-500">{formErrors.name}</p>
+                  ) : (
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Minimum 3 characters</p>
+                  )}
+                  <p className={`text-xs ${formData.name.length > 100 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}>
+                    {formData.name.length}/100
+                  </p>
+                </div>
               </div>
 
               {/* Description */}
@@ -1106,7 +1148,16 @@ const SpecialistServices: React.FC = () => {
                   rows={4}
                   className={`w-full px-4 py-3 rounded-xl border ${formErrors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 dark:bg-gray-700 dark:text-white`}
                 />
-                {formErrors.description && <p className="mt-1 text-sm text-red-500">{formErrors.description}</p>}
+                <div className="flex justify-between mt-1">
+                  {formErrors.description ? (
+                    <p className="text-sm text-red-500">{formErrors.description}</p>
+                  ) : (
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Minimum 10 characters</p>
+                  )}
+                  <p className={`text-xs ${formData.description.length > 1000 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}>
+                    {formData.description.length}/1000
+                  </p>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
