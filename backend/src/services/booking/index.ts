@@ -563,13 +563,18 @@ export class BookingService {
           // Auto-booking ON: Send "booking confirmed" notifications
           await BookingService.notificationService.sendNotification(booking.customerId, {
             type: 'BOOKING_CONFIRMED',
-            title: 'Your booking is confirmed',
-            message: `Your booking for ${service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()} is automatically confirmed.`,
+            title: 'notifications.booking.confirmed.customer.title',
+            message: 'notifications.booking.confirmed.customer.message',
             data: {
               bookingId: booking.id,
               serviceName: service.name,
               scheduledAt: booking.scheduledAt,
-              status: 'CONFIRMED'
+              status: 'CONFIRMED',
+              // For frontend interpolation
+              _interpolate: {
+                serviceName: service.name,
+                date: new Date(booking.scheduledAt).toISOString(),
+              }
             },
             emailTemplate: 'booking_confirmed',
             smsTemplate: 'booking_confirmed_sms'
@@ -577,14 +582,20 @@ export class BookingService {
 
           await BookingService.notificationService.sendNotification(booking.specialistId, {
             type: 'BOOKING_CONFIRMED',
-            title: 'You have been booked',
-            message: `You have been booked for ${service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()}.`,
+            title: 'notifications.booking.confirmed.specialist.title',
+            message: 'notifications.booking.confirmed.specialist.message',
             data: {
               bookingId: booking.id,
               serviceName: service.name,
               scheduledAt: booking.scheduledAt,
               customerName: `${booking.customer.firstName} ${booking.customer.lastName}`,
-              status: 'CONFIRMED'
+              status: 'CONFIRMED',
+              // For frontend interpolation
+              _interpolate: {
+                serviceName: service.name,
+                date: new Date(booking.scheduledAt).toISOString(),
+                customerName: `${booking.customer.firstName} ${booking.customer.lastName}`,
+              }
             },
             emailTemplate: 'specialist_booking_confirmed',
             smsTemplate: 'specialist_booking_confirmed_sms'
@@ -599,13 +610,17 @@ export class BookingService {
           // Auto-booking OFF: Send "booking pending" notifications
           await BookingService.notificationService.sendNotification(booking.customerId, {
             type: 'BOOKING_PENDING',
-            title: 'Your booking request has been sent',
-            message: `Your booking request for ${service.name} has been sent to the specialist and is waiting for confirmation.`,
+            title: 'notifications.booking.pending.customer.title',
+            message: 'notifications.booking.pending.customer.message',
             data: {
               bookingId: booking.id,
               serviceName: service.name,
               scheduledAt: booking.scheduledAt,
-              status: 'PENDING'
+              status: 'PENDING',
+              // For frontend interpolation
+              _interpolate: {
+                serviceName: service.name,
+              }
             },
             emailTemplate: 'booking_pending',
             smsTemplate: 'booking_pending_sms'
@@ -613,14 +628,20 @@ export class BookingService {
 
           await BookingService.notificationService.sendNotification(booking.specialistId, {
             type: 'BOOKING_REQUEST',
-            title: 'New booking request requires confirmation',
-            message: `New booking request for ${service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()} - requires your confirmation.`,
+            title: 'notifications.booking.request.specialist.title',
+            message: 'notifications.booking.request.specialist.message',
             data: {
               bookingId: booking.id,
               serviceName: service.name,
               scheduledAt: booking.scheduledAt,
               customerName: `${booking.customer.firstName} ${booking.customer.lastName}`,
-              status: 'PENDING'
+              status: 'PENDING',
+              // For frontend interpolation
+              _interpolate: {
+                serviceName: service.name,
+                date: new Date(booking.scheduledAt).toISOString(),
+                customerName: `${booking.customer.firstName} ${booking.customer.lastName}`,
+              }
             },
             emailTemplate: 'specialist_booking_request',
             smsTemplate: 'specialist_booking_request_sms'
@@ -847,13 +868,18 @@ export class BookingService {
           // Booking was confirmed by specialist
           await BookingService.notificationService.sendNotification(booking.customerId, {
             type: 'BOOKING_CONFIRMED',
-            title: 'Your booking is confirmed',
-            message: `Your booking for ${updatedBooking.service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()} has been confirmed by the specialist.`,
+            title: 'notifications.booking.confirmedBySpecialist.customer.title',
+            message: 'notifications.booking.confirmedBySpecialist.customer.message',
             data: {
               bookingId: booking.id,
               serviceName: updatedBooking.service.name,
               scheduledAt: booking.scheduledAt,
-              status: 'CONFIRMED'
+              status: 'CONFIRMED',
+              // For frontend interpolation
+              _interpolate: {
+                serviceName: updatedBooking.service.name,
+                date: new Date(booking.scheduledAt).toISOString(),
+              }
             },
             emailTemplate: 'booking_confirmed',
             smsTemplate: 'booking_confirmed_sms'
@@ -861,14 +887,20 @@ export class BookingService {
 
           await BookingService.notificationService.sendNotification(booking.specialistId, {
             type: 'BOOKING_CONFIRMED',
-            title: 'Booking confirmed',
-            message: `You have confirmed the booking for ${updatedBooking.service.name} on ${new Date(booking.scheduledAt).toLocaleDateString()}.`,
+            title: 'notifications.booking.confirmedBySpecialist.specialist.title',
+            message: 'notifications.booking.confirmedBySpecialist.specialist.message',
             data: {
               bookingId: booking.id,
               serviceName: updatedBooking.service.name,
               scheduledAt: booking.scheduledAt,
               customerName: `${updatedBooking.customer.firstName} ${updatedBooking.customer.lastName}`,
-              status: 'CONFIRMED'
+              status: 'CONFIRMED',
+              // For frontend interpolation
+              _interpolate: {
+                serviceName: updatedBooking.service.name,
+                date: new Date(booking.scheduledAt).toISOString(),
+                customerName: `${updatedBooking.customer.firstName} ${updatedBooking.customer.lastName}`,
+              }
             },
             emailTemplate: 'specialist_booking_confirmed',
             smsTemplate: 'specialist_booking_confirmed_sms'
