@@ -606,10 +606,16 @@ export class SpecialistService {
       let orderBy: any = {};
       switch (sortBy) {
         case 'rating':
-          orderBy = { rating: 'desc' };
+          orderBy = [
+            { rating: 'desc' },
+            { reviewCount: 'desc' }, // Secondary sort by review count
+          ];
           break;
         case 'reviews':
-          orderBy = { reviewCount: 'desc' };
+          orderBy = [
+            { reviewCount: 'desc' },
+            { rating: 'desc' }, // Secondary sort by rating
+          ];
           break;
         case 'newest':
           orderBy = { createdAt: 'desc' };
