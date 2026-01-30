@@ -213,19 +213,24 @@ const SearchPage: React.FC = () => {
         }));
         
         // Optional refine: available now via backend availability (cap calls for perf)
-        if (availableNow && servicesWithSpecialists.length > 0) {
-          const cap = Math.min(servicesWithSpecialists.length, 24);
-          const subset = servicesWithSpecialists.slice(0, cap);
-          const refined = await Promise.allSettled(subset.map(async (svc) => {
-            try {
-              const availability = await serviceService.getServiceAvailability(svc.id, 1);
-              const today = availability?.[0];
-              if (today?.available && today?.earliestSlot) return svc;
-            } catch {}
-            return null;
-          }));
-          servicesWithSpecialists = refined.map(r => (r.status === 'fulfilled' ? r.value : null)).filter(Boolean) as typeof servicesWithSpecialists;
-        }
+        // NOTE: Temporarily disabled - backend availability endpoint not yet implemented
+        // Once /services/:id/availability endpoint is ready, uncomment this block
+        // if (availableNow && servicesWithSpecialists.length > 0) {
+        //   const cap = Math.min(servicesWithSpecialists.length, 24);
+        //   const subset = servicesWithSpecialists.slice(0, cap);
+        //   const refined = await Promise.allSettled(subset.map(async (svc) => {
+        //     try {
+        //       const availability = await serviceService.getServiceAvailability(svc.id, 1);
+        //       const today = availability?.[0];
+        //       if (today?.available && today?.earliestSlot) return svc;
+        //     } catch {}
+        //     return null;
+        //   }));
+        //   servicesWithSpecialists = refined.map(r => (r.status === 'fulfilled' ? r.value : null)).filter(Boolean) as typeof servicesWithSpecialists;
+        // }
+
+        // For now, "Available Now" filter shows all results (no backend filtering)
+        // Users can still enable the toggle, but it won't filter until backend is ready
 
         setServices(servicesWithSpecialists);
       } catch (error) {
