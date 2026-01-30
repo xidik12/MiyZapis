@@ -823,13 +823,13 @@ const SpecialistServices: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-500 text-xl mb-4">Error loading services</div>
+          <div className="text-red-500 text-xl mb-4">{t('services.errorLoading') || 'Error loading services'}</div>
           <p className="text-gray-600 dark:text-gray-400">{error}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700"
           >
-            Retry
+            {t('actions.retry') || 'Retry'}
           </button>
         </div>
       </div>

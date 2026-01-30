@@ -155,6 +155,7 @@ const translations: Translations = {
 
   // Misc
   'services.count': { en: 'services', uk: 'послуг', ru: 'услуг' },
+  'services.errorLoading': { en: 'Error loading services', uk: 'Помилка завантаження послуг', ru: 'Ошибка загрузки услуг' },
 
   // Search Page
   'search.title': { en: 'Search Services', uk: 'Пошук послуг', ru: 'Поиск услуг' },
@@ -274,6 +275,10 @@ const translations: Translations = {
 
   // Badges
   'badges.loadError': { en: 'Failed to load badges', uk: 'Не вдалося завантажити бейджі', ru: 'Не удалось загрузить значки' },
+  'badges.loading': { en: 'Loading badges...', uk: 'Завантаження бейджів...', ru: 'Загрузка значков...' },
+
+  // Analytics
+  'analytics.errorLoading': { en: 'Failed to Load Analytics', uk: 'Не вдалося завантажити аналітику', ru: 'Не удалось загрузить аналитику' },
 
   // Referrals
   'referrals.loadError': { en: 'Failed to load referral data', uk: 'Не вдалося завантажити дані рефералів', ru: 'Не удалось загрузить данные рефералов' },

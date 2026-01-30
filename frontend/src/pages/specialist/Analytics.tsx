@@ -915,13 +915,13 @@ Performance:
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.316 18.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Failed to Load Analytics</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('analytics.errorLoading') || 'Failed to Load Analytics'}</h3>
               <p className="text-gray-600 dark:text-gray-300 mb-4">{error}</p>
-              <button 
+              <button
                 onClick={() => window.location.reload()}
                 className="bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white px-4 py-2 rounded-xl font-medium transition-colors"
               >
-                Try Again
+                {t('actions.tryAgain') || 'Try Again'}
               </button>
             </div>
           </div>

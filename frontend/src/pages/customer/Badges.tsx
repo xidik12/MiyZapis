@@ -126,7 +126,7 @@ const CustomerBadges: React.FC = () => {
   const rarities = ['COMMON', 'RARE', 'EPIC', 'LEGENDARY'];
 
   if (loading) {
-    return <PageLoader text="Loading badges..." />;
+    return <PageLoader text={t('badges.loading') || 'Loading badges...'} />;
   }
 
   return (

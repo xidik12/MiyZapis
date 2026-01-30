@@ -467,7 +467,7 @@ const CustomerProfile: React.FC = () => {
             {/* Loyalty Program Card */}
             <div className="bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-gray-800 dark:to-gray-800 rounded-2xl shadow-sm border border-primary-200 dark:border-gray-700 p-8">
               {loadingLoyalty ? (
-                <ContentLoader text="Loading loyalty data..." minHeight="300px" />
+                <ContentLoader text={t('loyalty.loading') || 'Loading loyalty data...'} minHeight="300px" />
               ) : (
                 <>
                   <div className="text-center mb-6">
