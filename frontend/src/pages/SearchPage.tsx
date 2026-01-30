@@ -318,7 +318,7 @@ const SearchPage: React.FC = () => {
   const getFilteredServices = () => {
     let list = services;
     if (showFavoritesOnly) {
-      const favoriteSpecialistIds = favoriteSpecialists.map(fav => fav.id);
+      const favoriteSpecialistIds = favoriteSpecialists.map(fav => fav.specialist.id);
       list = list.filter(service => favoriteSpecialistIds.includes(service.specialist.id));
     }
     if (availableNow) {
