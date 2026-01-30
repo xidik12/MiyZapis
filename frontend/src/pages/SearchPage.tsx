@@ -60,6 +60,7 @@ const SearchPage: React.FC = () => {
   // State
   const [services, setServices] = useState<ServiceWithSpecialist[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
@@ -142,6 +143,7 @@ const SearchPage: React.FC = () => {
   const fetchServices = React.useCallback(async () => {
       try {
         setLoading(true);
+        setError(null);
         const filters = {
           query: debouncedSearchQuery,
           category: selectedCategory || undefined,
@@ -233,8 +235,10 @@ const SearchPage: React.FC = () => {
         // Users can still enable the toggle, but it won't filter until backend is ready
 
         setServices(servicesWithSpecialists);
-      } catch (error) {
+      } catch (error: any) {
         logger.error('Error fetching services:', error);
+        const errorMessage = error?.message || error?.toString() || 'Failed to load services';
+        setError(errorMessage);
         setServices([]);
       } finally {
         setLoading(false);
@@ -398,10 +402,12 @@ const SearchPage: React.FC = () => {
           </p>
 
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-4 mt-3 text-sm text-gray-500 dark:text-gray-400">
-            <div className="flex items-center">
-              <MapPinIcon className="w-4 h-4 mr-1" />
-              <span className="truncate">{service.location}</span>
-            </div>
+            {service.location && (
+              <div className="flex items-center">
+                <MapPinIcon className="w-4 h-4 mr-1" />
+                <span className="truncate">{service.location}</span>
+              </div>
+            )}
             <div className="flex items-center">
               <ClockIcon className="w-4 h-4 mr-1" />
               <span>{service.duration} {t('common.minutes')}</span>
@@ -941,14 +947,19 @@ const SearchPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                {/* Availability Toggle */}
-                <div className="flex items-center justify-between p-4 rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 backdrop-blur-sm">
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white">{t('search.availableNow') || 'Only available now'}</span>
+                {/* Availability Toggle - Temporarily disabled until backend ready */}
+                <div className="flex items-center justify-between p-4 rounded-xl bg-gray-100 dark:bg-gray-800/30 border border-gray-200 dark:border-gray-700 backdrop-blur-sm opacity-60">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-400">{t('search.availableNow') || 'Only available now'}</span>
+                    <span className="px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 rounded-full">
+                      {t('common.comingSoon') || 'Coming Soon'}
+                    </span>
+                  </div>
                   <button
-                    onClick={() => setAvailableNow(!availableNow)}
-                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-200 ${availableNow ? 'bg-primary-600 shadow-lg shadow-primary-500/30' : 'bg-gray-300 dark:bg-gray-700'}`}
+                    disabled
+                    className="relative inline-flex h-7 w-12 items-center rounded-full bg-gray-300 dark:bg-gray-700 cursor-not-allowed"
                   >
-                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform ${availableNow ? 'translate-x-6' : 'translate-x-1'}`} />
+                    <span className="inline-block h-5 w-5 transform rounded-full bg-white shadow-md translate-x-1" />
                   </button>
                 </div>
 
@@ -1043,6 +1054,27 @@ const SearchPage: React.FC = () => {
           </div>
         )}
 
+        {/* Error Message */}
+        {error && !loading && (
+          <div className="mb-6 bg-red-50/80 dark:bg-red-900/30 backdrop-blur-sm border border-red-200/50 dark:border-red-800/50 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl">
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <div className="flex-1">
+                <p className="font-medium">{t('search.error.title') || 'Failed to load services'}</p>
+                <p className="text-sm mt-1">{error}</p>
+                <button
+                  onClick={fetchServices}
+                  className="mt-2 text-sm font-semibold underline hover:no-underline"
+                >
+                  {t('actions.tryAgain') || 'Try Again'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Results */}
         {loading ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
@@ -1071,7 +1103,7 @@ const SearchPage: React.FC = () => {
           }`}>
             {getFilteredServices().map(renderServiceCard)}
           </div>
-        ) : (
+        ) : !error ? (
           <div className="text-center py-12">
             <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
               <MagnifyingGlassIcon className="w-12 h-12 text-gray-400" />
@@ -1094,7 +1126,7 @@ const SearchPage: React.FC = () => {
               </Link>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

@@ -190,8 +190,9 @@ const translations: Translations = {
   'search.results.loading': { en: 'Loading results...', uk: 'Завантаження результатів...', ru: 'Загрузка результатов...' },
   'search.results.loadMore': { en: 'Load More', uk: 'Завантажити більше', ru: 'Загрузить больше' },
   'search.results.endOfResults': { en: 'You\'ve reached the end of results', uk: 'Ви досягли кінця результатів', ru: 'Вы достигли конца результатов' },
+  'search.error.title': { en: 'Failed to load services', uk: 'Не вдалося завантажити послуги', ru: 'Не удалось загрузить услуги' },
   'common.notAvailable': { en: 'N/A', uk: 'Н/Д', ru: 'Н/Д' },
-  
+
   // Search Controls
   'search.favorites': { en: 'Favorites', uk: 'Улюблені', ru: 'Избранное' },
   'search.showAll': { en: 'Show All', uk: 'Показати все', ru: 'Показать все' },
@@ -217,6 +218,7 @@ const translations: Translations = {
   'search.locationPlaceholder': { en: 'Enter location...', uk: 'Введіть місцезнаходження...', ru: 'Введите местоположение...' },
   'search.favoritesOnly': { en: 'Favorites only', uk: 'Лише обрані', ru: 'Только избранные' },
   'actions.goHome': { en: 'Go Home', uk: 'На головну', ru: 'На главную' },
+  'actions.tryAgain': { en: 'Try Again', uk: 'Спробувати ще раз', ru: 'Попробовать еще раз' },
   'dashboard.customer.unreadMessages': { en: 'Unread Messages', uk: 'Непрочитані повідомлення', ru: 'Непрочитанные сообщения' },
   // Settings (shared)
   'settings.display': { en: 'Display', uk: 'Відображення', ru: 'Отображение' },
@@ -531,6 +533,7 @@ const translations: Translations = {
   'common.title': { en: 'Title', uk: 'Заголовок', ru: 'Название' },
   'common.description': { en: 'Description', uk: 'Опис', ru: 'Описание' },
   'common.creating': { en: 'Creating...', uk: 'Створення...', ru: 'Создание...' },
+  'common.comingSoon': { en: 'Coming Soon', uk: 'Незабаром', ru: 'Скоро' },
   // Loyalty - modal labels
   'loyalty.createRewardTitle': { en: 'Create New Reward', uk: 'Створити нову винагороду', ru: 'Создать новую награду' },
   'loyalty.rewardDescriptionPlaceholder': { en: 'Describe what customers get with this reward...', uk: 'Опишіть, що отримує клієнт з цією винагородою...', ru: 'Опишите, что получает клиент с этой наградой...' },
