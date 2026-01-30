@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { login, selectIsAuthenticated, selectAuthError, selectIsLoading, clearError } from '@/store/slices/authSlice';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -9,6 +10,7 @@ import { LoginRequest } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { environment } from '@/config/environment';
+import { apiClient } from '@/services/api';
 import EnhancedGoogleSignIn from '@/components/auth/EnhancedGoogleSignIn';
 import TelegramLogin from '@/components/auth/TelegramLogin';
 
@@ -21,18 +23,74 @@ interface LoginFormData {
 const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [resendingEmail, setResendingEmail] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { t } = useLanguage();
   const { theme } = useTheme();
-  
+
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const error = useAppSelector(selectAuthError);
   const isLoading = useAppSelector(selectIsLoading);
 
   const returnUrl = searchParams.get('returnUrl') || '/';
+
+  // Helper function to translate backend error messages
+  const getTranslatedError = (errorMessage: string | null): string => {
+    if (!errorMessage) return '';
+
+    // Check for email not verified error
+    if (errorMessage.includes('EMAIL_NOT_VERIFIED') ||
+        errorMessage.includes('verify your email') ||
+        errorMessage.includes('email address before logging in')) {
+      return t('auth.errors.verificationRequired');
+    }
+
+    // Check for invalid credentials
+    if (errorMessage.includes('INVALID_CREDENTIALS') ||
+        errorMessage.includes('Invalid email or password')) {
+      return t('auth.errors.invalidCredentials');
+    }
+
+    // Default: return the original message
+    return errorMessage;
+  };
+
+  // Check if error is email verification error
+  const isEmailNotVerified = (errorMessage: string | null): boolean => {
+    if (!errorMessage) return false;
+    return errorMessage.includes('EMAIL_NOT_VERIFIED') ||
+           errorMessage.includes('verify your email') ||
+           errorMessage.includes('email address before logging in');
+  };
+
+  // Handle resending verification email
+  const handleResendVerification = async () => {
+    if (!unverifiedEmail) return;
+
+    setResendingEmail(true);
+    try {
+      const response = await apiClient.post('/auth-enhanced/resend-verification', {
+        email: unverifiedEmail
+      });
+
+      if (response.success) {
+        toast.success(t('auth.verificationEmailSent'));
+        setSuccessMessage(t('auth.verificationEmailSent'));
+        dispatch(clearError());
+      } else {
+        toast.error(response.error?.message || 'Failed to resend verification email');
+      }
+    } catch (error: any) {
+      console.error('Resend verification error:', error);
+      toast.error('Failed to resend verification email. Please try again.');
+    } finally {
+      setResendingEmail(false);
+    }
+  };
 
   const {
     register,
@@ -83,7 +141,15 @@ const LoginPage: React.FC = () => {
 
       await dispatch(login(loginData)).unwrap();
       // Navigation will happen automatically due to the useEffect above
-    } catch (error) {
+    } catch (error: any) {
+      // Check if this is an email verification error
+      const errorMessage = error?.message || error?.toString() || '';
+      if (isEmailNotVerified(errorMessage)) {
+        // Store email for resend button
+        setUnverifiedEmail(data.email);
+      } else {
+        setUnverifiedEmail(null);
+      }
       // Error is handled by the Redux slice
       console.error('Login failed:', error);
     }
@@ -124,8 +190,25 @@ const LoginPage: React.FC = () => {
         )}
         
         {error && (
-          <div className="bg-red-50/80 dark:bg-red-900/30 backdrop-blur-sm border border-red-200/50 dark:border-red-800/50 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl font-medium">
-            {error}
+          <div className="bg-red-50/80 dark:bg-red-900/30 backdrop-blur-sm border border-red-200/50 dark:border-red-800/50 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl">
+            <p className="font-medium">{getTranslatedError(error)}</p>
+            {isEmailNotVerified(error) && unverifiedEmail && (
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resendingEmail}
+                className="mt-2 text-sm font-semibold text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 underline disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {resendingEmail ? (
+                  <>
+                    <LoadingSpinner size="sm" className="inline mr-1" />
+                    {t('auth.resendVerification')}...
+                  </>
+                ) : (
+                  t('auth.resendVerification')
+                )}
+              </button>
+            )}
           </div>
         )}
 

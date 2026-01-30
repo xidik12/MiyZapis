@@ -339,6 +339,14 @@ const translations: Translations = {
   'auth.passwordErrors.symbol': { en: 'Password must contain at least one symbol (!@#$%^&*()_+-=[]{}|;:,.<>?)', uk: 'Пароль має містити щонайменше один символ (!@#$%^&*()_+-=[]{}|;:,.<>?)', ru: 'Пароль должен содержать хотя бы один символ (!@#$%^&*()_+-=[]{}|;:,.<>?)' },
   'auth.passwordErrors.englishOnly': { en: 'Password must contain only English letters, numbers, and symbols', uk: 'Пароль має містити лише латинські літери, цифри та символи', ru: 'Пароль должен содержать только латинские буквы, цифры и символы' },
 
+  // Authentication - Registration & Login Errors
+  'auth.errors.registrationFailed': { en: 'Registration failed. Please try again.', uk: 'Реєстрація не вдалася. Спробуйте ще раз.', ru: 'Регистрация не удалась. Попробуйте еще раз.' },
+  'auth.errors.emailAlreadyRegistered': { en: 'This email address is already registered.', uk: 'Ця електронна адреса вже зареєстрована.', ru: 'Этот email уже зарегистрирован.' },
+  'auth.errors.verificationRequired': { en: 'Please verify your email address before logging in.', uk: 'Будь ласка, підтвердьте свою електронну адресу перед входом.', ru: 'Пожалуйста, подтвердите свой email перед входом.' },
+  'auth.errors.invalidCredentials': { en: 'Invalid email or password.', uk: 'Невірний email або пароль.', ru: 'Неверный email или пароль.' },
+  'auth.verificationEmailSent': { en: 'Verification email sent! Please check your inbox.', uk: 'Лист з підтвердженням надіслано! Перевірте свою пошту.', ru: 'Письмо с подтверждением отправлено! Проверьте свою почту.' },
+  'auth.resendVerification': { en: 'Resend verification email', uk: 'Надіслати лист з підтвердженням ще раз', ru: 'Отправить письмо с подтверждением еще раз' },
+
   // Specialist favorites
   'specialist.favorites.conflict': { en: 'You cannot favorite your own profile or this specialist is already in your favorites.', uk: 'Ви не можете додати до улюблених власний профіль або цього спеціаліста вже додано.', ru: 'Вы не можете добавить в избранное свой профиль или этот специалист уже в избранном.' },
   'specialist.favorites.loginRequired': { en: 'Please log in to add favorites.', uk: 'Увійдіть, щоб додати до улюблених.', ru: 'Войдите, чтобы добавить в избранное.' },

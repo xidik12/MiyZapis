@@ -38,6 +38,26 @@ const RegisterPage: React.FC = () => {
   const error = useAppSelector(selectAuthError);
   const isLoading = useAppSelector(selectIsLoading);
 
+  // Helper function to translate backend error messages
+  const getTranslatedError = (errorMessage: string | null): string => {
+    if (!errorMessage) return '';
+
+    // Map common backend error messages/codes to translation keys
+    if (errorMessage.includes('EMAIL_ALREADY_EXISTS') ||
+        errorMessage.includes('already registered') ||
+        errorMessage.includes('already exists')) {
+      return t('auth.errors.emailAlreadyRegistered');
+    }
+
+    if (errorMessage.includes('REGISTRATION_FAILED') ||
+        errorMessage.includes('Registration failed')) {
+      return t('auth.errors.registrationFailed');
+    }
+
+    // Default: return the original message
+    return errorMessage;
+  };
+
   const defaultUserType = (searchParams.get('type') as UserType) || 'customer';
   const referralCode = searchParams.get('ref') || searchParams.get('referralCode') || undefined;
 
@@ -179,7 +199,7 @@ const RegisterPage: React.FC = () => {
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
         {error && (
           <div className="bg-red-50/80 dark:bg-red-900/30 backdrop-blur-sm border border-red-200/50 dark:border-red-800/50 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl font-medium">
-            {error}
+            {getTranslatedError(error)}
           </div>
         )}
 
