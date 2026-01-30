@@ -208,23 +208,26 @@ export class EnhancedAuthService {
         firstName: user.firstName
       });
 
-      emailService.sendEmailVerification(user.id, verificationToken, user.language || 'en').then((emailSent) => {
+      emailService.sendVerificationEmail(user.email, {
+        firstName: user.firstName,
+        verificationLink: verificationLink
+      }).then((emailSent) => {
         if (!emailSent) {
-          logger.error('💥 Verification email failed to send', { 
-            userId: user.id, 
+          logger.error('💥 Verification email failed to send', {
+            userId: user.id,
             email: user.email,
             reason: 'Email service returned false - check SMTP configuration and logs above'
           });
         } else {
-          logger.info('✅ Verification email sent successfully', { 
+          logger.info('✅ Verification email sent successfully', {
             userId: user.id,
             email: user.email,
             verificationToken: verificationToken.substring(0, 8) + '...'
           });
         }
       }).catch((error) => {
-        logger.error('💥 Critical error sending verification email', { 
-          userId: user.id, 
+        logger.error('💥 Critical error sending verification email', {
+          userId: user.id,
           email: user.email,
           error: {
             message: error.message,
