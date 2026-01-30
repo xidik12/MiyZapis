@@ -230,6 +230,7 @@ const SpecialistServices: React.FC = () => {
 
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form handling functions
   const resetForm = () => {
@@ -286,6 +287,7 @@ const SpecialistServices: React.FC = () => {
     setShowCustomCategory(false);
     setFormErrors({});
     setHasAttemptedSubmit(false);
+    setIsSubmitting(false); // Reset submission state
   };
 
   const openAddModal = () => {
@@ -535,6 +537,9 @@ const SpecialistServices: React.FC = () => {
     logger.debug('Service data being sent to backend:', serviceData);
     logger.debug('Duration in service data:', serviceData.duration);
 
+    setIsSubmitting(true);
+    setError(null); // Clear any previous errors
+
     try {
       let updatedService;
       if (editingService) {
@@ -556,6 +561,8 @@ const SpecialistServices: React.FC = () => {
     } catch (err: any) {
       logger.error('Error saving service:', err);
       setError(err.message || 'Failed to save service');
+    } finally {
+      setIsSubmitting(false); // Always clear loading state
     }
   };
 
@@ -1615,9 +1622,21 @@ const SpecialistServices: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors duration-200"
+                  disabled={isSubmitting}
+                  className={`px-6 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors duration-200 flex items-center justify-center gap-2 ${
+                    isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
-                  {editingService ? t('common.save') : t('services.addService')}
+                  {isSubmitting && (
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  )}
+                  {isSubmitting
+                    ? (editingService ? 'Saving...' : 'Creating...')
+                    : (editingService ? t('common.save') : t('services.addService'))
+                  }
                 </button>
               </div>
             </form>
