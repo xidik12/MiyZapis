@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { UserIcon, WrenchScrewdriverIcon, XIcon as XMarkIcon } from '@/components/icons';
 
@@ -18,8 +19,16 @@ const UserTypeSelectionModal: React.FC<UserTypeSelectionModalProps> = ({
   userName,
 }) => {
   const { t } = useLanguage();
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleSelectUserType = (userType: 'customer' | 'specialist') => {
+    if (!agreeToTerms) {
+      return; // Don't proceed if terms not accepted
+    }
+    onSelectUserType(userType);
+  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -69,12 +78,59 @@ const UserTypeSelectionModal: React.FC<UserTypeSelectionModalProps> = ({
             {t('auth.userType.description')}
           </p>
 
+          {/* Terms Agreement */}
+          <div className="mb-6 p-4 bg-yellow-50/80 dark:bg-yellow-900/20 border border-yellow-200/50 dark:border-yellow-800/50 rounded-xl">
+            <div className="flex items-start">
+              <div className="flex items-center h-5">
+                <input
+                  id="agree-terms-google"
+                  type="checkbox"
+                  checked={agreeToTerms}
+                  onChange={(e) => setAgreeToTerms(e.target.checked)}
+                  className="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 cursor-pointer"
+                />
+              </div>
+              <div className="ml-3 text-sm">
+                <label htmlFor="agree-terms-google" className="text-gray-700 dark:text-gray-300 cursor-pointer">
+                  {t('auth.register.agreeToTerms')}{' '}
+                  <Link
+                    to="/terms"
+                    target="_blank"
+                    className="text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 font-semibold underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {t('auth.register.termsOfService')}
+                  </Link>{' '}
+                  {t('auth.register.and')}{' '}
+                  <Link
+                    to="/privacy"
+                    target="_blank"
+                    className="text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 font-semibold underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {t('auth.register.privacyPolicy')}
+                  </Link>
+                </label>
+              </div>
+            </div>
+            {!agreeToTerms && (
+              <p className="mt-2 text-xs text-yellow-700 dark:text-yellow-400 ml-7">
+                ⚠️ {t('auth.error.termsRequired')}
+              </p>
+            )}
+          </div>
+
           {/* User Type Options */}
           <div className="space-y-4">
             {/* Customer Option */}
             <button
-              onClick={() => onSelectUserType('customer')}
-              className="w-full p-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all group"
+              onClick={() => handleSelectUserType('customer')}
+              disabled={!agreeToTerms}
+              className={`w-full p-4 border-2 rounded-xl transition-all group ${
+                agreeToTerms
+                  ? 'border-gray-200 dark:border-gray-600 hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer'
+                  : 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
+              }`}
             >
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center group-hover:bg-primary-100 dark:group-hover:bg-primary-900/40">
@@ -93,8 +149,13 @@ const UserTypeSelectionModal: React.FC<UserTypeSelectionModalProps> = ({
 
             {/* Specialist Option */}
             <button
-              onClick={() => onSelectUserType('specialist')}
-              className="w-full p-4 border-2 border-gray-200 dark:border-gray-600 rounded-xl hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all group"
+              onClick={() => handleSelectUserType('specialist')}
+              disabled={!agreeToTerms}
+              className={`w-full p-4 border-2 rounded-xl transition-all group ${
+                agreeToTerms
+                  ? 'border-gray-200 dark:border-gray-600 hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 cursor-pointer'
+                  : 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
+              }`}
             >
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center group-hover:bg-primary-100 dark:group-hover:bg-primary-900/40">
