@@ -580,10 +580,10 @@ export class SpecialistService {
 
       if (query) {
         where.OR = [
-          { businessName: { contains: query } },
-          { bio: { contains: query } },
-          { user: { firstName: { contains: query } } },
-          { user: { lastName: { contains: query } } },
+          { businessName: { contains: query, mode: 'insensitive' } },
+          { bio: { contains: query, mode: 'insensitive' } },
+          { user: { firstName: { contains: query, mode: 'insensitive' } } },
+          { user: { lastName: { contains: query, mode: 'insensitive' } } },
         ];
       }
 
@@ -596,7 +596,7 @@ export class SpecialistService {
       }
 
       if (city) {
-        where.city = { contains: city };
+        where.city = { contains: city, mode: 'insensitive' };
       }
 
       if (minRating) {
