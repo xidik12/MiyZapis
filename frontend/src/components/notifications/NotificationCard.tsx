@@ -13,6 +13,7 @@ import {
   EyeIcon
 } from '@/components/icons';
 import { Avatar } from '@/components/ui/Avatar';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface NotificationCardProps {
   notification: {
@@ -109,12 +110,41 @@ const NotificationCardComponent: React.FC<NotificationCardProps> = ({
   onDelete,
   isDeleting = false
 }) => {
+  const { t } = useLanguage();
   const colors = getNotificationColor(notification.type);
   const priority = getPriorityLevel(notification.type);
 
   // Extract avatar/name from data if available
   const avatarUrl = notification.data?.customerAvatar || notification.data?.specialistAvatar;
   const actorName = notification.data?.customerName || notification.data?.specialistName;
+
+  // Helper function to translate and interpolate notification text
+  const translateNotificationText = (text: string): string => {
+    // Check if text is a translation key (starts with "notifications.")
+    if (!text.startsWith('notifications.')) {
+      return text; // Return as-is if not a translation key
+    }
+
+    // Get the translated text
+    let translated = t(text);
+
+    // Interpolate values from notification.data._interpolate
+    if (notification.data?._interpolate) {
+      Object.entries(notification.data._interpolate).forEach(([key, value]) => {
+        // Format dates if the value looks like an ISO date
+        let formattedValue = value;
+        if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}T/)) {
+          formattedValue = new Date(value).toLocaleDateString();
+        }
+        // Replace {{key}} with the value
+        translated = translated.replace(`{{${key}}}`, String(formattedValue));
+      });
+    }
+
+    return translated;
+  };
+
+  const translatedMessage = translateNotificationText(notification.message);
 
   return (
     <motion.div
@@ -168,7 +198,7 @@ const NotificationCardComponent: React.FC<NotificationCardProps> = ({
               ? 'text-gray-600 dark:text-gray-300'
               : 'text-gray-900 dark:text-white font-semibold'
           }`}>
-            {notification.message}
+            {translatedMessage}
           </p>
 
           {/* Secondary info */}
