@@ -27,7 +27,7 @@ declare global {
 const TelegramLogin: React.FC<TelegramLoginProps> = ({ onSuccess, onError, disabled = false }) => {
   const dispatch = useAppDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
-  const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME;
+  const botUsername = (import.meta.env as any).VITE_TELEGRAM_BOT_USERNAME;
 
   useEffect(() => {
     // Set up global callback function
@@ -51,7 +51,9 @@ const TelegramLogin: React.FC<TelegramLoginProps> = ({ onSuccess, onError, disab
       if (containerRef.current && script.parentNode) {
         containerRef.current.removeChild(script);
       }
-      delete window.onTelegramAuth;
+      if ('onTelegramAuth' in window) {
+        delete (window as any).onTelegramAuth;
+      }
     };
   }, [botUsername]);
 

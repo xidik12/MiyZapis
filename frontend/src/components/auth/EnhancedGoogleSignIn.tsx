@@ -23,7 +23,7 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const clientId = (import.meta.env as any).VITE_GOOGLE_CLIENT_ID;
   
   const [showUserTypeModal, setShowUserTypeModal] = useState(false);
   const [pendingGoogleData, setPendingGoogleData] = useState<any>(null);
@@ -72,7 +72,7 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
         });
         
         // Apply custom styling to make it full width
-        const googleButton = buttonContainer.querySelector('div[role="button"]');
+        const googleButton = buttonContainer.querySelector('div[role="button"]') as HTMLElement | null;
         if (googleButton) {
           googleButton.style.width = '100%';
           googleButton.style.justifyContent = 'center';
@@ -89,12 +89,12 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
 
       // Dispatch Google login action without userType first
       const result = await dispatch(googleLogin({ credential: response.credential })).unwrap();
-      
+
       // Check if user type selection is required
-      if (result.requiresUserTypeSelection) {
+      if ('requiresUserTypeSelection' in result && result.requiresUserTypeSelection) {
         setPendingGoogleData({
           credential: response.credential,
-          userData: result.googleData
+          userData: 'googleData' in result ? result.googleData : null
         });
         setShowUserTypeModal(true);
         return;
@@ -106,7 +106,7 @@ const EnhancedGoogleSignIn: React.FC<EnhancedGoogleSignInProps> = ({
       }
 
       // Navigate based on user type
-      if (result.user?.userType === 'specialist') {
+      if ('user' in result && result.user?.userType === 'specialist') {
         navigate('/specialist/dashboard');
       } else {
         navigate('/dashboard');
