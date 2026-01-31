@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -7,7 +6,7 @@ import {
   ListBulletsIcon,
   SquaresFourIcon
 } from '@/components/icons';
-import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from 'date-fns';
+import { format, startOfWeek, endOfWeek } from 'date-fns';
 
 export type ViewMode = 'week' | 'month' | 'day';
 

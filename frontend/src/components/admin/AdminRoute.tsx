@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAppSelector } from '@/hooks/redux';
 import { selectIsAuthenticated, selectUser } from '@/store/slices/authSlice';
 
@@ -17,7 +17,6 @@ interface AdminRouteProps {
  * 4. Not exposing admin routes to search engines or casual browsing
  */
 export const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
-  const location = useLocation();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const user = useAppSelector(selectUser);
 

@@ -6,7 +6,6 @@ import { getAuthToken } from './services/api';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
-import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { FullScreenHandshakeLoader } from './components/ui/FullScreenHandshakeLoader';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { AdminRoute } from './components/admin/AdminRoute';
@@ -16,11 +15,8 @@ import { ConditionalLayout } from './components/layout/ConditionalLayout';
 import { UserTypeRedirect } from './components/routing/UserTypeRedirect';
 
 // Lazy load pages for better performance
-const HomePage = React.lazy(() => import('./pages/HomePage'));
-const SearchPage = React.lazy(() => import('./pages/SearchPage'));
 const ServiceDetailPage = React.lazy(() => import('./pages/ServiceDetailPage'));
 const SpecialistProfilePage = React.lazy(() => import('./pages/SpecialistProfilePage'));
-const BookingFlow = React.lazy(() => import('./pages/booking/BookingFlow'));
 const CommunityPage = React.lazy(() => import('./pages/community/CommunityPage'));
 const PostDetailPage = React.lazy(() => import('./pages/community/PostDetailPage'));
 const CreatePostPage = React.lazy(() => import('./pages/community/CreatePostPage'));

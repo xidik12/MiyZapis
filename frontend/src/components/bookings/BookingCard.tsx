@@ -4,7 +4,6 @@ import { format } from 'date-fns';
 import {
   CalendarIcon,
   ClockIcon,
-  UserIcon,
   MapPinIcon,
   CurrencyDollarIcon,
   EllipsisVerticalIcon
