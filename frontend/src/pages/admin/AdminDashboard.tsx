@@ -439,50 +439,18 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Verification Tab */}
+        {/* Verification Tab - Placeholder for future implementation */}
         {activeTab === 'verification' && (
           <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
                 Pending Verifications
               </h3>
-              <div className="space-y-4">
-                {sampleUsers.filter(user => !user.verified || user.status === 'pending').map((user) => (
-                  <div key={user.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl">
-                    <div className="flex items-center space-x-4">
-                      <div className="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center">
-                        <span className="text-sm font-medium text-primary-600">
-                          {user.name.split(' ').map(n => n[0]).join('')}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {user.name}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {user.email} • {user.type}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          Joined: {new Date(user.joinDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleUserAction(user.id, 'verify')}
-                        className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => handleUserAction(user.id, 'delete')}
-                        className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  </div>
-                ))}
+              <div className="text-center py-12">
+                <ShieldCheckIcon className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" />
+                <p className="text-gray-500 dark:text-gray-400">
+                  No pending verifications at this time
+                </p>
               </div>
             </div>
           </div>
