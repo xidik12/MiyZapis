@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/redux';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { CheckCircleIcon, XCircleIcon, EnvelopeIcon } from '@/components/icons';
 
@@ -11,7 +12,8 @@ const VerifyEmailPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  
+  const { t } = useLanguage();
+
   const [status, setStatus] = useState<VerificationStatus>('loading');
   const [message, setMessage] = useState('');
   const [email, setEmail] = useState('');
@@ -244,7 +246,7 @@ const VerifyEmailPage: React.FC = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-700 transition-all duration-200 font-medium"
-                      placeholder="Enter your email address"
+                      placeholder={t('auth.register.emailPlaceholder')}
                     />
                   </div>
                   

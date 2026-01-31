@@ -231,7 +231,7 @@ const SpecialistProfilePage: React.FC = () => {
   }, [specialistId, specialist]);
 
   if (loading) {
-    return <PageLoader text="Loading specialist profile..." />;
+    return <PageLoader text={t('specialist.profileLoading')} />;
   }
 
   if (!specialist) {

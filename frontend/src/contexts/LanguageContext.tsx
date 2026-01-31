@@ -363,6 +363,7 @@ const translations: Translations = {
   'specialist.favorites.conflict': { en: 'You cannot favorite your own profile or this specialist is already in your favorites.', uk: 'Ви не можете додати до улюблених власний профіль або цього спеціаліста вже додано.', ru: 'Вы не можете добавить в избранное свой профиль или этот специалист уже в избранном.' },
   'specialist.favorites.loginRequired': { en: 'Please log in to add favorites.', uk: 'Увійдіть, щоб додати до улюблених.', ru: 'Войдите, чтобы добавить в избранное.' },
   'specialist.favorites.updateError': { en: 'Failed to update favorites. Please try again.', uk: 'Не вдалося оновити обране. Спробуйте ще раз.', ru: 'Не удалось обновить избранное. Повторите попытку.' },
+  'specialist.profileLoading': { en: 'Loading specialist profile...', uk: 'Завантаження профілю спеціаліста...', ru: 'Загрузка профиля специалиста...' },
 
   // Notifications UI
   'notifications.title': { en: 'Notifications', uk: 'Сповіщення', ru: 'Уведомления' },
@@ -1259,6 +1260,8 @@ const translations: Translations = {
   'admin.stats.reportedUsers': { en: 'Reported Users', uk: 'Скаржились користувачі', ru: 'Жалобы на пользователей' },
   'admin.stats.activeUsers24h': { en: 'Active Users (24h)', uk: 'Активні користувачі (24г)', ru: 'Активные пользователи (24ч)' },
   'admin.stats.popularSearchesToday': { en: 'Popular Searches Today', uk: 'Популярні пошуки сьогодні', ru: 'Популярные поиски сегодня' },
+  'admin.dashboardLoading': { en: 'Loading admin dashboard...', uk: 'Завантаження адмін-панелі...', ru: 'Загрузка админ-панели...' },
+  'admin.searchUsersPlaceholder': { en: 'Search users...', uk: 'Пошук користувачів...', ru: 'Поиск пользователей...' },
 
   // Admin Navigation
   'admin.nav.overview': { en: 'Overview', uk: 'Огляд', ru: 'Обзор' },
