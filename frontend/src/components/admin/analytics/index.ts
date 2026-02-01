@@ -1,6 +1,9 @@
 export { OverviewSection } from './OverviewSection';
-
-// Placeholder sections - to be implemented as needed
-// These can be added incrementally without breaking the dashboard
+export { SystemHealthSection } from './SystemHealthSection';
+export { UserManagementSection } from './UserManagementSection';
+export { DetailedAnalyticsSection } from './DetailedAnalyticsSection';
 
 export type { OverviewSectionProps } from './OverviewSection';
+export type { SystemHealthSectionProps } from './SystemHealthSection';
+export type { UserManagementSectionProps } from './UserManagementSection';
+export type { DetailedAnalyticsSectionProps } from './DetailedAnalyticsSection';
