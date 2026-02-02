@@ -306,12 +306,12 @@ export class AdminController {
       // Get user registration trends
       const userTrends = await prisma.$queryRaw`
         SELECT
-          created_at::date as date,
-          user_type,
+          "createdAt"::date as date,
+          "userType",
           COUNT(*) as count
         FROM users
-        WHERE created_at >= ${startDate}
-        GROUP BY created_at::date, user_type
+        WHERE "createdAt" >= ${startDate}
+        GROUP BY "createdAt"::date, "userType"
         ORDER BY date ASC
       `;
 
@@ -384,13 +384,13 @@ export class AdminController {
       // Booking trends over time
       const bookingTrends = await prisma.$queryRaw`
         SELECT
-          created_at::date as date,
+          "createdAt"::date as date,
           status,
           COUNT(*) as count,
-          AVG(total_amount) as avg_amount
+          AVG("totalAmount") as avg_amount
         FROM bookings
-        WHERE created_at >= ${startDate}
-        GROUP BY created_at::date, status
+        WHERE "createdAt" >= ${startDate}
+        GROUP BY "createdAt"::date, status
         ORDER BY date ASC
       `;
 
@@ -428,26 +428,26 @@ export class AdminController {
 
       // Peak hours analysis
       const hourlyStats = await prisma.$queryRaw`
-        SELECT 
-          EXTRACT(hour FROM scheduled_at) as hour,
+        SELECT
+          EXTRACT(hour FROM "scheduledAt") as hour,
           COUNT(*) as count
-        FROM bookings 
-        WHERE created_at >= ${startDate}
+        FROM bookings
+        WHERE "createdAt" >= ${startDate}
           AND status IN ('CONFIRMED', 'COMPLETED')
-        GROUP BY EXTRACT(hour FROM scheduled_at)
+        GROUP BY EXTRACT(hour FROM "scheduledAt")
         ORDER BY hour ASC
       `;
 
       // Average booking value by category
       const categoryRevenue = await prisma.$queryRaw`
-        SELECT 
+        SELECT
           s.category,
           COUNT(b.id) as booking_count,
-          AVG(b.total_amount) as avg_amount,
-          SUM(b.total_amount) as total_revenue
+          AVG(b."totalAmount") as avg_amount,
+          SUM(b."totalAmount") as total_revenue
         FROM bookings b
-        JOIN services s ON b.service_id = s.id
-        WHERE b.created_at >= ${startDate}
+        JOIN services s ON b."serviceId" = s.id
+        WHERE b."createdAt" >= ${startDate}
           AND b.status IN ('CONFIRMED', 'COMPLETED')
         GROUP BY s.category
         ORDER BY total_revenue DESC
@@ -491,14 +491,14 @@ export class AdminController {
       // Revenue trends
       const revenueTrends = await prisma.$queryRaw`
         SELECT
-          created_at::date as date,
+          "createdAt"::date as date,
           type,
           SUM(amount) as total_amount,
           COUNT(*) as transaction_count
         FROM payments
-        WHERE created_at >= ${startDate}
+        WHERE "createdAt" >= ${startDate}
           AND status = 'SUCCEEDED'
-        GROUP BY created_at::date, type
+        GROUP BY "createdAt"::date, type
         ORDER BY date ASC
       `;
 
@@ -526,23 +526,23 @@ export class AdminController {
 
       // Top earning specialists
       const topEarningSpecialists = await prisma.$queryRaw`
-        SELECT 
+        SELECT
           s.id,
-          s.business_name,
-          u.first_name,
-          u.last_name,
+          s."businessName",
+          u."firstName",
+          u."lastName",
           u.email,
           SUM(p.amount) as total_earnings,
           COUNT(p.id) as transaction_count,
           AVG(p.amount) as avg_transaction
         FROM payments p
-        JOIN bookings b ON p.booking_id = b.id
-        JOIN specialists s ON b.specialist_id = s.user_id
-        JOIN users u ON s.user_id = u.id
-        WHERE p.created_at >= ${startDate}
+        JOIN bookings b ON p."bookingId" = b.id
+        JOIN specialists s ON b."specialistId" = s."userId"
+        JOIN users u ON s."userId" = u.id
+        WHERE p."createdAt" >= ${startDate}
           AND p.status = 'SUCCEEDED'
           AND p.type IN ('FULL_PAYMENT', 'DEPOSIT')
-        GROUP BY s.id, s.business_name, u.first_name, u.last_name, u.email
+        GROUP BY s.id, s."businessName", u."firstName", u."lastName", u.email
         ORDER BY total_earnings DESC
         LIMIT 10
       `;
