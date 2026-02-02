@@ -305,13 +305,13 @@ export class AdminController {
 
       // Get user registration trends
       const userTrends = await prisma.$queryRaw`
-        SELECT 
-          DATE(created_at) as date,
+        SELECT
+          created_at::date as date,
           user_type,
           COUNT(*) as count
-        FROM users 
+        FROM users
         WHERE created_at >= ${startDate}
-        GROUP BY DATE(created_at), user_type
+        GROUP BY created_at::date, user_type
         ORDER BY date ASC
       `;
 
@@ -383,14 +383,14 @@ export class AdminController {
 
       // Booking trends over time
       const bookingTrends = await prisma.$queryRaw`
-        SELECT 
-          DATE(created_at) as date,
+        SELECT
+          created_at::date as date,
           status,
           COUNT(*) as count,
           AVG(total_amount) as avg_amount
-        FROM bookings 
+        FROM bookings
         WHERE created_at >= ${startDate}
-        GROUP BY DATE(created_at), status
+        GROUP BY created_at::date, status
         ORDER BY date ASC
       `;
 
@@ -490,15 +490,15 @@ export class AdminController {
 
       // Revenue trends
       const revenueTrends = await prisma.$queryRaw`
-        SELECT 
-          DATE(created_at) as date,
+        SELECT
+          created_at::date as date,
           type,
           SUM(amount) as total_amount,
           COUNT(*) as transaction_count
-        FROM payments 
+        FROM payments
         WHERE created_at >= ${startDate}
           AND status = 'SUCCEEDED'
-        GROUP BY DATE(created_at), type
+        GROUP BY created_at::date, type
         ORDER BY date ASC
       `;
 
