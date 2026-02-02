@@ -349,7 +349,7 @@ export class AdminController {
       res.status(500).json(
         createErrorResponse(
           ErrorCodes.INTERNAL_SERVER_ERROR,
-          'Failed to fetch user analytics',
+          `Failed to fetch user analytics: ${error instanceof Error ? error.message : 'Unknown error'}`,
           req.headers['x-request-id'] as string
         )
       );
@@ -466,7 +466,7 @@ export class AdminController {
       res.status(500).json(
         createErrorResponse(
           ErrorCodes.INTERNAL_SERVER_ERROR,
-          'Failed to fetch booking analytics',
+          `Failed to fetch booking analytics: ${error instanceof Error ? error.message : 'Unknown error'}`,
           req.headers['x-request-id'] as string
         )
       );
@@ -585,7 +585,7 @@ export class AdminController {
       res.status(500).json(
         createErrorResponse(
           ErrorCodes.INTERNAL_SERVER_ERROR,
-          'Failed to fetch financial analytics',
+          `Failed to fetch financial analytics: ${error instanceof Error ? error.message : 'Unknown error'}`,
           req.headers['x-request-id'] as string
         )
       );
