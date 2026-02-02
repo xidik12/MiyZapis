@@ -192,8 +192,8 @@ export const requireSpecialist = requireUserType('SPECIALIST');
 // Require customer access
 export const requireCustomer = requireUserType('CUSTOMER');
 
-// Require admin access
-export const requireAdmin = requireUserType('ADMIN');
+// Require admin access (accepts both 'ADMIN' and 'admin' for compatibility)
+export const requireAdmin = requireUserType('ADMIN', 'admin');
 
 // Resource ownership middleware
 export const requireOwnership = (resourceIdParam: string) => {
@@ -236,7 +236,7 @@ export const requireOwnership = (resourceIdParam: string) => {
           hasAccess = 
             booking.customerId === req.user.id || 
             booking.specialistId === req.user.id ||
-            req.user.userType === 'ADMIN';
+            ['ADMIN', 'admin'].includes(req.user.userType);
         }
       }
 
@@ -250,7 +250,7 @@ export const requireOwnership = (resourceIdParam: string) => {
         if (service) {
           hasAccess = 
             service.specialist.userId === req.user.id ||
-            req.user.userType === 'ADMIN';
+            ['ADMIN', 'admin'].includes(req.user.userType);
         }
       }
 
@@ -265,7 +265,7 @@ export const requireOwnership = (resourceIdParam: string) => {
           hasAccess = 
             review.customerId === req.user.id ||
             review.specialistId === req.user.id ||
-            req.user.userType === 'ADMIN';
+            ['ADMIN', 'admin'].includes(req.user.userType);
         }
       }
 
