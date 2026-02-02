@@ -500,10 +500,39 @@ export class EnhancedAuthService {
         throw new Error('EMAIL_NOT_VERIFIED');
       }
 
-      // Check available roles for multi-role support
-      const hasCustomerRole = user.userType === 'CUSTOMER' || user.userType === 'ADMIN';
+      // ADMIN users should always keep their admin role
+      if (user.userType === 'admin' || user.userType === 'ADMIN') {
+        // Update only last login, preserve admin userType
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            lastLoginAt: new Date(),
+            // Don't update userType for admin users
+          },
+        });
+
+        // Remove password from user object
+        const { password, ...userWithoutPassword } = user;
+        userWithoutPassword.userType = 'admin'; // Ensure lowercase admin
+
+        // Create tokens
+        const tokens = await this.createTokens(userWithoutPassword);
+
+        logger.info('Admin user logged in successfully', {
+          userId: user.id,
+          platform: data.platform,
+        });
+
+        return {
+          user: userWithoutPassword,
+          tokens,
+        };
+      }
+
+      // Check available roles for multi-role support (non-admin users)
+      const hasCustomerRole = user.userType === 'CUSTOMER';
       const hasSpecialistRole = user.specialist !== null;
-      
+
       // If user has both roles and no specific role is requested, ask for selection
       if (hasCustomerRole && hasSpecialistRole && !userType) {
         return {
@@ -511,7 +540,7 @@ export class EnhancedAuthService {
           loginData: data,
         };
       }
-      
+
       // If user has only one role, use that role
       if (!userType) {
         if (hasSpecialistRole && !hasCustomerRole) {
@@ -520,14 +549,14 @@ export class EnhancedAuthService {
           userType = 'customer';
         }
       }
-      
+
       // Update user type if switching roles (for users with multiple roles)
       const targetUserType = userType.toLowerCase() === 'specialist' ? 'SPECIALIST' : 'CUSTOMER';
-      
+
       // Update last login and potentially switch active role
       await prisma.user.update({
         where: { id: user.id },
-        data: { 
+        data: {
           lastLoginAt: new Date(),
           userType: targetUserType, // Switch active role
         },
@@ -707,43 +736,59 @@ export class EnhancedAuthService {
         // Send localized welcome email for new users
         await emailService.sendWelcomeEmail(user.id, user.language || 'en');
       } else {
-        // Existing user - check available roles
-        const hasCustomerRole = user.userType === 'CUSTOMER' || user.userType === 'ADMIN';
-        const hasSpecialistRole = user.specialist !== null;
-        
-        // If user has both roles and no specific role is requested, ask for selection
-        if (hasCustomerRole && hasSpecialistRole && !userType) {
-          return {
-            requiresUserTypeSelection: true,
-            googleData,
-          };
-        }
-        
-        // If user has only one role, use that role
-        if (!userType) {
-          if (hasSpecialistRole && !hasCustomerRole) {
-            userType = 'specialist';
-          } else {
-            userType = 'customer';
+        // Existing user - ADMIN users should always keep their admin role
+        if (user.userType === 'admin' || user.userType === 'ADMIN') {
+          // Update only last login, preserve admin userType
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              lastLoginAt: new Date(),
+              // Update avatar if user doesn't have one
+              ...(user.avatar ? {} : { avatar: googleData.picture }),
+              // Don't update userType for admin users
+            },
+          });
+
+          user.userType = 'admin'; // Ensure lowercase admin
+        } else {
+          // Non-admin existing user - check available roles
+          const hasCustomerRole = user.userType === 'CUSTOMER';
+          const hasSpecialistRole = user.specialist !== null;
+
+          // If user has both roles and no specific role is requested, ask for selection
+          if (hasCustomerRole && hasSpecialistRole && !userType) {
+            return {
+              requiresUserTypeSelection: true,
+              googleData,
+            };
           }
+
+          // If user has only one role, use that role
+          if (!userType) {
+            if (hasSpecialistRole && !hasCustomerRole) {
+              userType = 'specialist';
+            } else {
+              userType = 'customer';
+            }
+          }
+
+          // Update user type if switching roles (for users with multiple roles)
+          const targetUserType = userType.toLowerCase() === 'specialist' ? 'SPECIALIST' : 'CUSTOMER';
+
+          // Update last login and potentially switch active role
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              lastLoginAt: new Date(),
+              userType: targetUserType, // Switch active role
+              // Update avatar if user doesn't have one
+              ...(user.avatar ? {} : { avatar: googleData.picture }),
+            },
+          });
+
+          // Update the user object to reflect the current role
+          user.userType = targetUserType;
         }
-        
-        // Update user type if switching roles (for users with multiple roles)
-        const targetUserType = userType.toLowerCase() === 'specialist' ? 'SPECIALIST' : 'CUSTOMER';
-        
-        // Update last login and potentially switch active role
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { 
-            lastLoginAt: new Date(),
-            userType: targetUserType, // Switch active role
-            // Update avatar if user doesn't have one
-            ...(user.avatar ? {} : { avatar: googleData.picture }),
-          },
-        });
-        
-        // Update the user object to reflect the current role
-        user.userType = targetUserType;
       }
 
       if (!user.isActive) {
