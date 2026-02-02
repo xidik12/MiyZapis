@@ -83,6 +83,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 3000,
+    allowedHosts: ['localhost', 'miyzapis.com', '.miyzapis.com'],
     proxy: {
       '/api': {
         target: process.env.VITE_API_URL || 'https://miyzapis-backend-production.up.railway.app',
@@ -94,6 +95,7 @@ export default defineConfig({
   preview: {
     port: 3000,
     host: '0.0.0.0',
+    allowedHosts: ['localhost', 'miyzapis.com', '.miyzapis.com'],
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
       'Cross-Origin-Embedder-Policy': 'credentialless'
