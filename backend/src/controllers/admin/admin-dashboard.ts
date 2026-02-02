@@ -3,6 +3,7 @@ import { prisma } from '@/config/database';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { ErrorCodes, AuthenticatedRequest } from '@/types';
+import { serializeBigInt } from '@/utils/bigint';
 
 export class AdminController {
   // Get dashboard statistics
@@ -338,9 +339,9 @@ export class AdminController {
       const platformStats: any[] = [];
 
       res.json(createSuccessResponse({
-        userTrends,
-        engagementStats,
-        geographicStats,
+        userTrends: serializeBigInt(userTrends),
+        engagementStats: serializeBigInt(engagementStats),
+        geographicStats: serializeBigInt(geographicStats),
         platformStats
       }));
 
@@ -454,11 +455,11 @@ export class AdminController {
       `;
 
       res.json(createSuccessResponse({
-        statusStats,
-        bookingTrends,
-        popularServices: popularServicesWithDetails,
-        hourlyStats,
-        categoryRevenue
+        statusStats: serializeBigInt(statusStats),
+        bookingTrends: serializeBigInt(bookingTrends),
+        popularServices: serializeBigInt(popularServicesWithDetails),
+        hourlyStats: serializeBigInt(hourlyStats),
+        categoryRevenue: serializeBigInt(categoryRevenue)
       }));
 
     } catch (error) {
@@ -570,14 +571,14 @@ export class AdminController {
         : 0;
 
       res.json(createSuccessResponse({
-        revenueTrends,
-        paymentMethodStats,
-        currencyStats,
-        topEarningSpecialists,
-        refundStats: {
+        revenueTrends: serializeBigInt(revenueTrends),
+        paymentMethodStats: serializeBigInt(paymentMethodStats),
+        currencyStats: serializeBigInt(currencyStats),
+        topEarningSpecialists: serializeBigInt(topEarningSpecialists),
+        refundStats: serializeBigInt({
           ...refundStats,
           refundRate: Math.round(refundRate * 100) / 100
-        }
+        })
       }));
 
     } catch (error) {
