@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AdminController } from '@/controllers/admin/admin-dashboard';
-import { authenticateToken, requireUserType } from '@/middleware/auth/jwt';
+import { authenticateToken, requireAdmin } from '@/middleware/auth/jwt';
 import { ReferralProcessingService } from '@/services/referral/processing.service';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { ErrorCodes } from '@/types';
@@ -10,7 +10,7 @@ const router = Router();
 
 // All admin routes require authentication and admin role
 router.use(authenticateToken);
-router.use(requireUserType('ADMIN'));
+router.use(requireAdmin);
 
 // Dashboard and analytics routes
 router.get('/dashboard/stats', AdminController.getDashboardStats);
