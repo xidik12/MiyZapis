@@ -485,41 +485,48 @@ export class AdminAnalyticsService {
    * Optimized for initial dashboard load
    */
   async getAllDashboardData(period: Period = '30d'): Promise<AdminDashboardData> {
-    try {
-      const [
-        stats,
-        userAnalytics,
-        bookingAnalytics,
-        financialAnalytics,
-        contentAnalytics,
-        trafficAnalytics,
-        systemHealth,
-        referralAnalytics
-      ] = await Promise.all([
-        this.getDashboardStats(period),
-        this.getUserAnalytics(period),
-        this.getBookingAnalytics(period),
-        this.getFinancialAnalytics(period),
-        this.getContentAnalytics(period),
-        this.getTrafficAnalytics(period),
-        this.getSystemHealth(),
-        this.getReferralAnalytics()
-      ]);
+    // Use Promise.allSettled to allow partial success - individual endpoint failures won't break the entire dashboard
+    const results = await Promise.allSettled([
+      this.getDashboardStats(period),
+      this.getUserAnalytics(period),
+      this.getBookingAnalytics(period),
+      this.getFinancialAnalytics(period),
+      this.getContentAnalytics(period),
+      this.getTrafficAnalytics(period),
+      this.getSystemHealth(),
+      this.getReferralAnalytics()
+    ]);
 
-      return {
-        stats,
-        userAnalytics,
-        bookingAnalytics,
-        financialAnalytics,
-        contentAnalytics,
-        trafficAnalytics,
-        systemHealth,
-        referralAnalytics
-      };
-    } catch (error: any) {
-      console.error('Error fetching all dashboard data:', error);
-      throw new Error('Failed to load dashboard data');
-    }
+    // Extract successful results, log failures
+    const [
+      statsResult,
+      userAnalyticsResult,
+      bookingAnalyticsResult,
+      financialAnalyticsResult,
+      contentAnalyticsResult,
+      trafficAnalyticsResult,
+      systemHealthResult,
+      referralAnalyticsResult
+    ] = results;
+
+    // Log any failures for debugging
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        const names = ['stats', 'userAnalytics', 'bookingAnalytics', 'financialAnalytics', 'contentAnalytics', 'trafficAnalytics', 'systemHealth', 'referralAnalytics'];
+        console.warn(`Failed to fetch ${names[index]}:`, result.reason);
+      }
+    });
+
+    return {
+      stats: statsResult.status === 'fulfilled' ? statsResult.value : null,
+      userAnalytics: userAnalyticsResult.status === 'fulfilled' ? userAnalyticsResult.value : null,
+      bookingAnalytics: bookingAnalyticsResult.status === 'fulfilled' ? bookingAnalyticsResult.value : null,
+      financialAnalytics: financialAnalyticsResult.status === 'fulfilled' ? financialAnalyticsResult.value : null,
+      contentAnalytics: contentAnalyticsResult.status === 'fulfilled' ? contentAnalyticsResult.value : null,
+      trafficAnalytics: trafficAnalyticsResult.status === 'fulfilled' ? trafficAnalyticsResult.value : null,
+      systemHealth: systemHealthResult.status === 'fulfilled' ? systemHealthResult.value : null,
+      referralAnalytics: referralAnalyticsResult.status === 'fulfilled' ? referralAnalyticsResult.value : null
+    };
   }
 
   // ============================================================================
