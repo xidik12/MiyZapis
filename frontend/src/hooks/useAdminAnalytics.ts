@@ -33,6 +33,7 @@ export interface UseAdminAnalyticsReturn {
   error: string | null;
   refetch: () => Promise<void>;
   setPeriod: (period: Period) => void;
+  period: Period;
 }
 
 /**
@@ -102,7 +103,8 @@ export const useAdminAnalytics = (
     loading,
     error,
     refetch: fetchData,
-    setPeriod
+    setPeriod,
+    period
   };
 };
 

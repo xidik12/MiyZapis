@@ -20,9 +20,9 @@ import type { Period } from '@/types/admin.types';
 const AdminDashboard: React.FC = () => {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'analytics' | 'system'>('overview');
-  const [period, setPeriod] = useState<Period>('30d');
 
   // Fetch all dashboard data using custom hook
+  // Use the hook's setPeriod to ensure period changes trigger refetch
   const {
     data,
     stats,
@@ -31,9 +31,11 @@ const AdminDashboard: React.FC = () => {
     financialAnalytics,
     loading,
     error,
-    refetch
+    refetch,
+    setPeriod,
+    period
   } = useAdminAnalytics({
-    period,
+    period: '30d',
     autoFetch: true,
     onError: (err) => {
       console.error('Admin analytics error:', err);
