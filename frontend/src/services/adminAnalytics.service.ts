@@ -270,10 +270,9 @@ export class AdminAnalyticsService {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - periodDays);
 
-      // Fetch posts data (assuming there's a posts endpoint)
-      // Note: This might need adjustment based on actual API endpoints available
+      // Fetch posts data from community endpoint
       const [postsResponse] = await Promise.all([
-        apiClient.get<any>('/posts')
+        apiClient.get<any>('/community/posts')
       ]);
 
       if (!postsResponse.success || !postsResponse.data) {
@@ -428,10 +427,18 @@ export class AdminAnalyticsService {
     if (cached) return cached;
 
     try {
+      // Convert frontend period format to backend format
+      // Frontend: '7d', '30d', '90d', '1y' -> Backend: 'week', 'month', 'year'
+      const backendPeriod = {
+        '7d': 'week',
+        '30d': 'month',
+        '90d': 'year',
+        '1y': 'year'
+      }[period] || 'month';
+
       // Fetch profile views data
-      // Note: Adjust endpoint based on actual API structure
       const response = await apiClient.get<any>(
-        `/analytics/profile-views?period=${period}`
+        `/analytics/profile-views?period=${backendPeriod}`
       );
 
       if (!response.success) {

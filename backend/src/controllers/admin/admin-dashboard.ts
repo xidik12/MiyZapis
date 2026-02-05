@@ -4,6 +4,7 @@ import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import { logger } from '@/utils/logger';
 import { ErrorCodes, AuthenticatedRequest } from '@/types';
 import { serializeBigInt } from '@/utils/bigint';
+import { serializeQueryResult } from '@/utils/serialize';
 
 export class AdminController {
   // Get dashboard statistics
@@ -339,7 +340,7 @@ export class AdminController {
       const platformStats: any[] = [];
 
       res.json(createSuccessResponse({
-        userTrends: serializeBigInt(userTrends),
+        userTrends: serializeQueryResult(userTrends as any[]),
         engagementStats: serializeBigInt(engagementStats),
         geographicStats: serializeBigInt(geographicStats),
         platformStats
@@ -430,7 +431,7 @@ export class AdminController {
       // Peak hours analysis
       const hourlyStats = await prisma.$queryRaw`
         SELECT
-          EXTRACT(hour FROM "scheduledAt") as hour,
+          CAST(EXTRACT(hour FROM "scheduledAt") AS INTEGER) as hour,
           COUNT(*) as count
         FROM bookings
         WHERE "createdAt" >= ${startDate}
@@ -456,10 +457,10 @@ export class AdminController {
 
       res.json(createSuccessResponse({
         statusStats: serializeBigInt(statusStats),
-        bookingTrends: serializeBigInt(bookingTrends),
+        bookingTrends: serializeQueryResult(bookingTrends as any[]),
         popularServices: serializeBigInt(popularServicesWithDetails),
-        hourlyStats: serializeBigInt(hourlyStats),
-        categoryRevenue: serializeBigInt(categoryRevenue)
+        hourlyStats: serializeQueryResult(hourlyStats as any[]),
+        categoryRevenue: serializeQueryResult(categoryRevenue as any[])
       }));
 
     } catch (error) {
@@ -571,10 +572,10 @@ export class AdminController {
         : 0;
 
       res.json(createSuccessResponse({
-        revenueTrends: serializeBigInt(revenueTrends),
+        revenueTrends: serializeQueryResult(revenueTrends as any[]),
         paymentMethodStats: serializeBigInt(paymentMethodStats),
         currencyStats: serializeBigInt(currencyStats),
-        topEarningSpecialists: serializeBigInt(topEarningSpecialists),
+        topEarningSpecialists: serializeQueryResult(topEarningSpecialists as any[]),
         refundStats: serializeBigInt({
           ...refundStats,
           refundRate: Math.round(refundRate * 100) / 100

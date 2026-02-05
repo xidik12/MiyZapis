@@ -4,7 +4,7 @@ import {
   CurrencyDollarIcon,
   ClockIcon,
   UserGroupIcon,
-  ArrowArrowTrendingUpIcon,
+  ArrowTrendingUpIcon,
   CalendarIcon,
   CheckCircleIcon,
   XCircleIcon

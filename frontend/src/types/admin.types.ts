@@ -418,14 +418,14 @@ export interface TrafficAnalytics {
 // ============================================================================
 
 export interface AdminDashboardData {
-  stats: DashboardStats;
-  userAnalytics: UserAnalytics;
-  bookingAnalytics: BookingAnalytics;
-  financialAnalytics: FinancialAnalytics;
-  contentAnalytics: ContentAnalytics;
-  trafficAnalytics: TrafficAnalytics;
-  systemHealth: SystemHealth;
-  referralAnalytics: ReferralAnalytics;
+  stats: DashboardStats | null;
+  userAnalytics: UserAnalytics | null;
+  bookingAnalytics: BookingAnalytics | null;
+  financialAnalytics: FinancialAnalytics | null;
+  contentAnalytics: ContentAnalytics | null;
+  trafficAnalytics: TrafficAnalytics | null;
+  systemHealth: SystemHealth | null;
+  referralAnalytics: ReferralAnalytics | null;
 }
 
 // ============================================================================
