@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   MagnifyingGlassIcon,
   FunnelIcon,
   UsersIcon,
   CheckIcon,
   XMarkIcon,
-  TrashIcon
+  TrashIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { DataTable, Column } from '../ui/DataTable';
 import { StatCard } from '../ui/StatCard';
@@ -36,13 +37,63 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
   loading = false
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [userTypeFilter, setUserTypeFilter] = useState<'all' | 'CUSTOMER' | 'SPECIALIST' | 'ADMIN'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Mock users - in production, fetch from backend
-  const [users] = useState<User[]>([]);
+  // User list state
+  const [users, setUsers] = useState<User[]>([]);
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 20,
+    hasNext: false,
+    hasPrev: false
+  });
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setCurrentPage(1); // Reset to first page on search
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch users from API
+  const fetchUsers = useCallback(async () => {
+    try {
+      setUsersLoading(true);
+      const result = await adminAnalyticsService.listUsers({
+        page: currentPage,
+        limit: 20,
+        search: debouncedSearch || undefined,
+        userType: userTypeFilter,
+        status: statusFilter
+      });
+      setUsers(result.users);
+      setPagination(result.pagination);
+    } catch (error: any) {
+      console.error('Failed to fetch users:', error);
+      toast.error('Failed to load users');
+    } finally {
+      setUsersLoading(false);
+    }
+  }, [currentPage, debouncedSearch, userTypeFilter, statusFilter]);
+
+  // Fetch users when filters change
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [userTypeFilter, statusFilter]);
 
   if (loading || !data) {
     return (
@@ -61,23 +112,8 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
 
   const totalUsers = userTrends.reduce((sum, trend) => sum + (trend.count || 0), 0);
   // Handle both snake_case (from API) and camelCase property names
-  const customerCount = userTrends.filter(t => (t.user_type || t.userType) === 'CUSTOMER').reduce((sum, t) => sum + (t.count || 0), 0);
-  const specialistCount = userTrends.filter(t => (t.user_type || t.userType) === 'SPECIALIST').reduce((sum, t) => sum + (t.count || 0), 0);
-
-  // Filter users
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = searchQuery === '' ||
-      user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesType = userTypeFilter === 'all' || user.userType === userTypeFilter;
-    const matchesStatus = statusFilter === 'all' ||
-      (statusFilter === 'active' && user.isActive) ||
-      (statusFilter === 'inactive' && !user.isActive);
-
-    return matchesSearch && matchesType && matchesStatus;
-  });
+  const customerCount = userTrends.filter(t => (t.user_type || (t as any).userType) === 'CUSTOMER').reduce((sum, t) => sum + (t.count || 0), 0);
+  const specialistCount = userTrends.filter(t => (t.user_type || (t as any).userType) === 'SPECIALIST').reduce((sum, t) => sum + (t.count || 0), 0);
 
   const handleUserAction = async (action: 'activate' | 'deactivate' | 'delete', userIds: string[]) => {
     if (userIds.length === 0) {
@@ -96,7 +132,8 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
       await adminAnalyticsService.manageUsers({ action, userIds });
       toast.success(`Successfully ${action}d ${userIds.length} user(s)`);
       setSelectedUsers(new Set());
-      // Refresh user list here
+      // Refresh user list
+      fetchUsers();
     } catch (error: any) {
       toast.error(error.message || `Failed to ${action} users`);
     } finally {
@@ -115,10 +152,10 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
   };
 
   const toggleSelectAll = () => {
-    if (selectedUsers.size === filteredUsers.length) {
+    if (selectedUsers.size === users.length) {
       setSelectedUsers(new Set());
     } else {
-      setSelectedUsers(new Set(filteredUsers.map(u => u.id)));
+      setSelectedUsers(new Set(users.map(u => u.id)));
     }
   };
 
@@ -128,7 +165,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
       label: (
         <input
           type="checkbox"
-          checked={selectedUsers.size === filteredUsers.length && filteredUsers.length > 0}
+          checked={selectedUsers.size === users.length && users.length > 0}
           onChange={toggleSelectAll}
           className="rounded border-gray-300 dark:border-gray-600"
         />
@@ -209,7 +246,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard
           title="Total Users"
-          value={totalUsers}
+          value={totalUsers || pagination.totalItems}
           icon={<UsersIcon className="w-6 h-6" />}
           subtitle={`${period} period`}
         />
@@ -217,13 +254,13 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
           title="Customers"
           value={customerCount}
           icon={<UsersIcon className="w-6 h-6" />}
-          subtitle={`${((customerCount / Math.max(totalUsers, 1)) * 100).toFixed(1)}% of total`}
+          subtitle={`${((customerCount / Math.max(totalUsers || pagination.totalItems, 1)) * 100).toFixed(1)}% of total`}
         />
         <StatCard
           title="Specialists"
           value={specialistCount}
           icon={<UsersIcon className="w-6 h-6" />}
-          subtitle={`${((specialistCount / Math.max(totalUsers, 1)) * 100).toFixed(1)}% of total`}
+          subtitle={`${((specialistCount / Math.max(totalUsers || pagination.totalItems, 1)) * 100).toFixed(1)}% of total`}
         />
       </div>
 
@@ -269,6 +306,14 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
+
+            <button
+              onClick={() => fetchUsers()}
+              disabled={usersLoading}
+              className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+            >
+              <ArrowPathIcon className={`w-5 h-5 ${usersLoading ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
 
@@ -311,15 +356,40 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
       {/* Users Table */}
       <DataTable
         columns={columns}
-        data={filteredUsers}
+        data={users}
         pageSize={20}
-        loading={loading}
+        loading={usersLoading}
         emptyMessage="No users found matching your filters"
       />
 
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            Page {pagination.currentPage || currentPage} of {pagination.totalPages} ({pagination.totalItems} total users)
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={!pagination.hasPrev}
+              className="px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
+              disabled={!pagination.hasNext}
+              className="px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Results Summary */}
       <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-        Showing {filteredUsers.length} of {users.length} total users
+        Showing {users.length} of {pagination.totalItems} total users
       </div>
     </div>
   );

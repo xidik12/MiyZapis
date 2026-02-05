@@ -807,4 +807,91 @@ export class AdminController {
       );
     }
   }
+
+  // List all users with pagination and search
+  static async listUsers(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      const {
+        page = '1',
+        limit = '20',
+        search = '',
+        userType = 'all',
+        status = 'all'
+      } = req.query;
+
+      const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+      const limitNum = Math.min(100, Math.max(1, parseInt(limit as string, 10) || 20));
+      const skip = (pageNum - 1) * limitNum;
+
+      // Build where clause
+      const where: any = {};
+
+      // Search filter
+      if (search) {
+        where.OR = [
+          { firstName: { contains: search as string, mode: 'insensitive' } },
+          { lastName: { contains: search as string, mode: 'insensitive' } },
+          { email: { contains: search as string, mode: 'insensitive' } }
+        ];
+      }
+
+      // User type filter
+      if (userType !== 'all') {
+        where.userType = userType;
+      }
+
+      // Status filter
+      if (status === 'active') {
+        where.isActive = true;
+      } else if (status === 'inactive') {
+        where.isActive = false;
+      }
+
+      // Get total count and users
+      const [totalCount, users] = await Promise.all([
+        prisma.user.count({ where }),
+        prisma.user.findMany({
+          where,
+          skip,
+          take: limitNum,
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            userType: true,
+            isActive: true,
+            createdAt: true,
+            lastLoginAt: true,
+            avatar: true
+          },
+          orderBy: { createdAt: 'desc' }
+        })
+      ]);
+
+      const totalPages = Math.ceil(totalCount / limitNum);
+
+      res.json(createSuccessResponse({
+        users,
+        pagination: {
+          currentPage: pageNum,
+          totalPages,
+          totalItems: totalCount,
+          itemsPerPage: limitNum,
+          hasNext: pageNum < totalPages,
+          hasPrev: pageNum > 1
+        }
+      }));
+
+    } catch (error) {
+      logger.error('List users error:', error);
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to list users',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
 }

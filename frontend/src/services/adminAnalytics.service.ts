@@ -527,6 +527,57 @@ export class AdminAnalyticsService {
   // ============================================================================
 
   /**
+   * List all users with pagination and search
+   */
+  async listUsers(params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    userType?: 'all' | 'CUSTOMER' | 'SPECIALIST' | 'ADMIN';
+    status?: 'all' | 'active' | 'inactive';
+  } = {}): Promise<{
+    users: Array<{
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      userType: 'CUSTOMER' | 'SPECIALIST' | 'ADMIN';
+      isActive: boolean;
+      createdAt: string;
+      lastLoginAt: string | null;
+      avatar?: string;
+    }>;
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalItems: number;
+      itemsPerPage: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+  }> {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params.page) queryParams.append('page', params.page.toString());
+      if (params.limit) queryParams.append('limit', params.limit.toString());
+      if (params.search) queryParams.append('search', params.search);
+      if (params.userType && params.userType !== 'all') queryParams.append('userType', params.userType);
+      if (params.status && params.status !== 'all') queryParams.append('status', params.status);
+
+      const response = await apiClient.get<any>(`/admin/users?${queryParams.toString()}`);
+
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Failed to list users');
+      }
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Admin list users error:', error);
+      throw new Error(error.message || 'Failed to list users');
+    }
+  }
+
+  /**
    * Manage users (activate, deactivate, delete)
    */
   async manageUsers(request: UserManagementRequest): Promise<UserManagementResponse> {

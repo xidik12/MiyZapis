@@ -56,6 +56,7 @@ router.post('/referrals/cleanup-expired', async (req, res) => {
 });
 
 // User management routes
+router.get('/users', AdminController.listUsers);
 router.post('/users/manage', AdminController.manageUsers);
 
 // System health and monitoring
