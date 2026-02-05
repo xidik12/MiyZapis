@@ -69,16 +69,18 @@ export const useAdminAnalytics = (
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to fetch analytics data';
       setError(errorMessage);
-
-      if (onError) {
-        onError(err);
-      }
-
       console.error('useAdminAnalytics error:', err);
     } finally {
       setLoading(false);
     }
-  }, [period, onError]);
+  }, [period]); // Remove onError from deps to prevent infinite re-render loop
+
+  // Call onError separately when error state changes
+  useEffect(() => {
+    if (error && onError) {
+      onError(new Error(error));
+    }
+  }, [error]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-fetch on mount and when period changes
   useEffect(() => {

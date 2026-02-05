@@ -427,35 +427,21 @@ export class AdminAnalyticsService {
     if (cached) return cached;
 
     try {
-      // Convert frontend period format to backend format
-      // Frontend: '7d', '30d', '90d', '1y' -> Backend: 'week', 'month', 'year'
-      const backendPeriod = {
-        '7d': 'week',
-        '30d': 'month',
-        '90d': 'year',
-        '1y': 'year'
-      }[period] || 'month';
-
-      // Fetch profile views data
-      const response = await apiClient.get<any>(
-        `/analytics/profile-views?period=${backendPeriod}`
-      );
-
-      if (!response.success) {
-        throw new Error('Failed to fetch traffic data');
-      }
+      // Note: /analytics/profile-views is for specialists only (returns 403 for admins)
+      // For admin dashboard, we use referral data to populate traffic metrics
+      // A proper admin traffic endpoint should be created in the future
 
       // Get referral analytics for conversion metrics
       const referralData = await this.getReferralAnalytics();
 
-      // Mock traffic analytics structure
-      // In production, this should aggregate real profile view data
+      // Return traffic analytics based on referral data
+      // Profile view aggregation requires a dedicated admin endpoint
       const trafficAnalytics: TrafficAnalytics = {
-        totalViews: response.data?.totalViews || 0,
-        uniqueVisitors: response.data?.uniqueVisitors || 0,
-        viewTrends: response.data?.trends || [],
-        trafficSources: response.data?.sources || [],
-        topViewedProfiles: response.data?.topProfiles || [],
+        totalViews: 0, // TODO: Add admin endpoint for aggregated profile views
+        uniqueVisitors: 0,
+        viewTrends: [],
+        trafficSources: [],
+        topViewedProfiles: [],
         referralMetrics: {
           totalClicks: referralData.totalReferrals || 0,
           totalConversions: referralData.completedReferrals || 0,
