@@ -56,9 +56,13 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
     );
   }
 
-  const totalUsers = data.userTrends.reduce((sum, trend) => sum + trend.count, 0);
-  const customerCount = data.userTrends.filter(t => t.user_type === 'CUSTOMER').reduce((sum, t) => sum + t.count, 0);
-  const specialistCount = data.userTrends.filter(t => t.user_type === 'SPECIALIST').reduce((sum, t) => sum + t.count, 0);
+  // Add null checks for arrays
+  const userTrends = data?.userTrends || [];
+
+  const totalUsers = userTrends.reduce((sum, trend) => sum + (trend.count || 0), 0);
+  // Handle both snake_case (from API) and camelCase property names
+  const customerCount = userTrends.filter(t => (t.user_type || t.userType) === 'CUSTOMER').reduce((sum, t) => sum + (t.count || 0), 0);
+  const specialistCount = userTrends.filter(t => (t.user_type || t.userType) === 'SPECIALIST').reduce((sum, t) => sum + (t.count || 0), 0);
 
   // Filter users
   const filteredUsers = users.filter(user => {

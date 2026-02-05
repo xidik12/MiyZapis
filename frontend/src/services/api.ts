@@ -310,6 +310,8 @@ api.interceptors.response.use(
     // Check if this is a login or logout request - don't show toast for these failures
     const isLoginRequest = originalRequest.url?.includes('/auth/login');
     const isLogoutRequest = originalRequest.url?.includes('/auth/logout') || originalRequest.url?.includes('/logout');
+    // Check if toast should be skipped for this request (used by admin analytics with Promise.allSettled)
+    const skipToast = (originalRequest as any)?.skipToast === true;
 
     // Handle different error types
     if (error.response) {
@@ -319,8 +321,8 @@ api.interceptors.response.use(
         timestamp: new Date().toISOString(),
       };
       
-      // Show user-friendly error messages (except for login/logout errors)
-      if (!isLogoutRequest) {
+      // Show user-friendly error messages (except for login/logout errors or skipToast requests)
+      if (!isLogoutRequest && !skipToast) {
         switch (error.response.status) {
           case 400:
             toast.error(apiError.message || 'Invalid request data');
@@ -361,8 +363,8 @@ api.interceptors.response.use(
         apiError,
       });
     } else if (error.request) {
-      // Network error - don't show toast for logout requests
-      if (!isLogoutRequest) {
+      // Network error - don't show toast for logout requests or skipToast requests
+      if (!isLogoutRequest && !skipToast) {
         toast.error('Network error. Please check your connection');
       }
       return Promise.reject({

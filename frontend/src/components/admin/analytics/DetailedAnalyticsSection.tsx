@@ -109,15 +109,20 @@ export const DetailedAnalyticsSection: React.FC<DetailedAnalyticsSectionProps> =
 
 // Booking Analytics Sub-component
 const BookingAnalyticsTab: React.FC<{ data: BookingAnalytics; period: Period }> = ({ data, period }) => {
+  // Add null checks for all arrays
+  const bookingTrends = data?.bookingTrends || [];
+  const statusDistribution = data?.statusDistribution || [];
+  const servicePopularity = data?.servicePopularity || [];
+
   // Prepare booking timeline data
-  const bookingTimelineData = data.bookingTrends.map((trend) => ({
+  const bookingTimelineData = bookingTrends.map((trend) => ({
     date: trend.date,
     bookings: trend.count,
     revenue: trend.totalRevenue || 0
   }));
 
   // Prepare status distribution data
-  const statusDistributionData = data.statusDistribution.map((status) => ({
+  const statusDistributionData = statusDistribution.map((status) => ({
     name: status.status,
     value: status._count,
     color:
@@ -128,7 +133,7 @@ const BookingAnalyticsTab: React.FC<{ data: BookingAnalytics; period: Period }> 
   }));
 
   // Prepare service popularity data
-  const servicePopularityData = data.servicePopularity.slice(0, 10).map((service) => ({
+  const servicePopularityData = servicePopularity.slice(0, 10).map((service) => ({
     name: service.name,
     bookings: service._count,
     revenue: service._sum?.totalAmount || 0
@@ -136,7 +141,7 @@ const BookingAnalyticsTab: React.FC<{ data: BookingAnalytics; period: Period }> 
 
   // Peak hours data
   const peakHoursData = Array.from({ length: 24 }, (_, hour) => {
-    const hourBookings = data.bookingTrends.filter(t => {
+    const hourBookings = bookingTrends.filter(t => {
       const bookingHour = new Date(t.date).getHours();
       return bookingHour === hour;
     }).reduce((sum, t) => sum + t.count, 0);
@@ -148,9 +153,9 @@ const BookingAnalyticsTab: React.FC<{ data: BookingAnalytics; period: Period }> 
   });
 
   // Calculate metrics
-  const totalBookings = data.statusDistribution.reduce((sum, s) => sum + s._count, 0);
-  const completedBookings = data.statusDistribution.find(s => s.status === 'COMPLETED')?._count || 0;
-  const cancelledBookings = data.statusDistribution.find(s => s.status === 'CANCELLED')?._count || 0;
+  const totalBookings = statusDistribution.reduce((sum, s) => sum + s._count, 0);
+  const completedBookings = statusDistribution.find(s => s.status === 'COMPLETED')?._count || 0;
+  const cancelledBookings = statusDistribution.find(s => s.status === 'CANCELLED')?._count || 0;
   const completionRate = totalBookings > 0 ? (completedBookings / totalBookings) * 100 : 0;
   const cancellationRate = totalBookings > 0 ? (cancelledBookings / totalBookings) * 100 : 0;
   const avgBookingsPerDay = bookingTimelineData.length > 0
@@ -248,8 +253,14 @@ const BookingAnalyticsTab: React.FC<{ data: BookingAnalytics; period: Period }> 
 
 // Revenue Analytics Sub-component
 const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period }> = ({ data, period }) => {
+  // Add null checks for all arrays
+  const revenueTrends = data?.revenueTrends || [];
+  const paymentMethodDistribution = data?.paymentMethodDistribution || [];
+  const topEarningSpecialists = data?.topEarningSpecialists || [];
+  const categoryRevenue = data?.categoryRevenue || [];
+
   // Prepare revenue timeline data
-  const revenueTimelineData = data.revenueTrends.map((trend) => ({
+  const revenueTimelineData = revenueTrends.map((trend) => ({
     date: trend.date,
     revenue: trend.totalRevenue,
     fees: trend.platformFees,
@@ -257,7 +268,7 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period }
   }));
 
   // Prepare payment method distribution
-  const paymentMethodData = data.paymentMethodDistribution.map((method) => ({
+  const paymentMethodData = paymentMethodDistribution.map((method) => ({
     name: method.paymentMethod,
     value: method._sum?.totalAmount || 0,
     color:
@@ -266,8 +277,8 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period }
       method.paymentMethod === 'WALLET' ? '#F59E0B' : '#6B7280'
   }));
 
-  // Prepare top earners table data
-  const topEarnersColumns: Column<typeof data.topEarningSpecialists[0]>[] = [
+  // Prepare top earners table data - handle empty array case
+  const topEarnersColumns: Column<any>[] = [
     {
       key: 'name',
       label: 'Specialist',
@@ -303,18 +314,18 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period }
   ];
 
   // Prepare category revenue data
-  const categoryRevenueData = data.categoryRevenue.slice(0, 10).map((cat) => ({
+  const categoryRevenueData = categoryRevenue.slice(0, 10).map((cat) => ({
     name: cat.category,
     revenue: cat._sum?.totalAmount || 0
   }));
 
   // Calculate metrics
-  const totalRevenue = data.revenueTrends.reduce((sum, t) => sum + t.totalRevenue, 0);
-  const totalFees = data.revenueTrends.reduce((sum, t) => sum + t.platformFees, 0);
-  const totalRefunds = data.revenueTrends.reduce((sum, t) => sum + (t.refunds || 0), 0);
+  const totalRevenue = revenueTrends.reduce((sum, t) => sum + t.totalRevenue, 0);
+  const totalFees = revenueTrends.reduce((sum, t) => sum + t.platformFees, 0);
+  const totalRefunds = revenueTrends.reduce((sum, t) => sum + (t.refunds || 0), 0);
   const netRevenue = totalRevenue - totalRefunds;
-  const avgTransactionValue = data.paymentMethodDistribution.reduce((sum, m) => sum + (m._sum?.totalAmount || 0), 0) /
-    Math.max(data.paymentMethodDistribution.reduce((sum, m) => sum + m._count, 0), 1);
+  const avgTransactionValue = paymentMethodDistribution.reduce((sum, m) => sum + (m._sum?.totalAmount || 0), 0) /
+    Math.max(paymentMethodDistribution.reduce((sum, m) => sum + m._count, 0), 1);
 
   return (
     <div className="space-y-6">
@@ -397,7 +408,7 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period }
         </h3>
         <DataTable
           columns={topEarnersColumns}
-          data={data.topEarningSpecialists}
+          data={topEarningSpecialists}
           pageSize={10}
           emptyMessage="No specialists found"
         />
