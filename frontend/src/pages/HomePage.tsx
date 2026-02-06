@@ -178,10 +178,10 @@ const HomePage: React.FC = () => {
       <section className="relative bg-primary-500 text-white overflow-hidden min-h-[100vh] xs:min-h-[90vh] sm:min-h-[85vh] lg:min-h-[80vh] flex items-center w-full prevent-overflow">
         <div className="absolute inset-0 bg-black bg-opacity-10"></div>
         
-        {/* Animated background elements - hide some on mobile */}
-        <div className="hidden lg:block absolute top-20 right-20 w-32 h-32 rounded-full morph-shape opacity-20 float-animation"></div>
-        <div className="hidden lg:block absolute bottom-20 left-20 w-48 h-48 rounded-full bg-white/10 animate-pulse"></div>
-        <div className="hidden lg:block absolute top-1/2 right-1/4 w-16 h-16 bg-primary-500 rounded-full animate-bounce"></div>
+        {/* Animated background elements - hide on mobile, contained within section */}
+        <div className="hidden lg:block absolute top-20 right-20 w-32 h-32 rounded-full morph-shape opacity-20 float-animation pointer-events-none"></div>
+        <div className="hidden lg:block absolute bottom-20 left-20 w-48 h-48 rounded-full bg-white/10 animate-pulse pointer-events-none"></div>
+        <div className="hidden lg:block absolute top-1/2 right-1/4 w-16 h-16 bg-primary-500 rounded-full animate-bounce pointer-events-none"></div>
         
         <div className="relative w-full max-w-7xl mx-auto mobile-container py-12 xs:py-16 sm:py-20 lg:py-24 prevent-overflow">
           <div className="text-center w-full prevent-overflow">
@@ -245,9 +245,9 @@ const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-primary-500 opacity-20 transform translate-x-32 -translate-y-32"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-secondary-500 opacity-10 transform -translate-x-48 translate-y-48"></div>
+        {/* Decorative elements - clipped by parent overflow-hidden */}
+        <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-primary-500 opacity-20 transform translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-secondary-500 opacity-10 transform -translate-x-1/2 translate-y-1/2 pointer-events-none"></div>
       </section>
 
       {/* Service Categories */}
