@@ -37,6 +37,28 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
+        {/* Legal & Contact links */}
+        <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-6 xs:mb-8">
+          <Link
+            to="/terms"
+            className="text-gray-400 hover:text-white text-sm sm:text-base transition-all duration-200 px-3 py-1.5 rounded-xl hover:bg-gray-800/50"
+          >
+            {t('footer.termsOfService')}
+          </Link>
+          <Link
+            to="/privacy"
+            className="text-gray-400 hover:text-white text-sm sm:text-base transition-all duration-200 px-3 py-1.5 rounded-xl hover:bg-gray-800/50"
+          >
+            {t('footer.privacyPolicy')}
+          </Link>
+          <Link
+            to="/contact"
+            className="text-gray-400 hover:text-white text-sm sm:text-base transition-all duration-200 px-3 py-1.5 rounded-xl hover:bg-gray-800/50"
+          >
+            {t('footer.contactUs')}
+          </Link>
+        </div>
+
         {/* Brand and social */}
         <div className="mt-6 xs:mt-8 sm:mt-12 pt-4 xs:pt-6 sm:pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center">
