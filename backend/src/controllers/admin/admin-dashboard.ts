@@ -694,77 +694,92 @@ export class AdminController {
   // Get system health
   static async getSystemHealth(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      const checks = [];
+      // Database health check with latency measurement
+      let databaseStatus: 'healthy' | 'degraded' | 'down' = 'healthy';
+      let databaseLatency = 0;
 
-      // Database health
       try {
+        const dbStart = Date.now();
         await prisma.$queryRaw`SELECT 1`;
-        checks.push({
-          name: 'Database',
-          status: 'healthy',
-          responseTime: 'good'
-        });
+        databaseLatency = Date.now() - dbStart;
+        // Set degraded if latency is high (> 1 second)
+        if (databaseLatency > 1000) {
+          databaseStatus = 'degraded';
+        }
       } catch (error) {
-        checks.push({
-          name: 'Database',
-          status: 'unhealthy',
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
+        databaseStatus = 'down';
+        logger.error('Database health check failed:', error);
       }
 
-      // Redis health (if configured)
+      // Redis health check with latency measurement
+      let redisStatus: 'healthy' | 'degraded' | 'down' = 'healthy';
+      let redisLatency = 0;
+      let redisMemoryUsed = 0;
+
       try {
         const { redis } = await import('@/config/redis');
+        const redisStart = Date.now();
         await redis.ping();
-        checks.push({
-          name: 'Redis',
-          status: 'healthy',
-          responseTime: 'good'
-        });
+        redisLatency = Date.now() - redisStart;
+
+        // Get Redis memory info if available
+        try {
+          const info = await redis.info('memory');
+          const memMatch = info.match(/used_memory:(\d+)/);
+          if (memMatch) {
+            redisMemoryUsed = parseInt(memMatch[1], 10);
+          }
+        } catch {
+          // Ignore memory info errors
+        }
       } catch (error) {
-        checks.push({
-          name: 'Redis',
-          status: 'unhealthy',
-          error: error instanceof Error ? error.message : 'Not configured'
-        });
+        redisStatus = 'down';
       }
 
       // System metrics
-      const systemMetrics = {
-        uptime: process.uptime(),
-        memory: process.memoryUsage(),
-        cpuUsage: process.cpuUsage(),
-        version: process.version,
-        platform: process.platform,
-        environment: process.env.NODE_ENV || 'development'
-      };
+      const memoryUsage = process.memoryUsage();
+      const totalMemory = require('os').totalmem();
+      const usedMemory = memoryUsage.heapUsed + memoryUsage.external;
+      const memoryPercentage = (usedMemory / totalMemory) * 100;
 
-      // Application metrics
-      const appMetrics = {
-        totalUsers: await prisma.user.count(),
-        activeUsers: await prisma.user.count({
-          where: {
-            lastLoginAt: {
-              gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
-            }
-          }
-        }),
-        totalBookings: await prisma.booking.count(),
-        todayBookings: await prisma.booking.count({
-          where: {
-            createdAt: {
-              gte: new Date(new Date().toDateString())
-            }
-          }
-        })
-      };
+      // Determine overall status
+      const overall =
+        databaseStatus === 'down' ? 'down' :
+        (databaseStatus === 'degraded' || redisStatus === 'down') ? 'degraded' :
+        'healthy';
 
+      // Return data in the format the frontend expects
       res.json(createSuccessResponse({
-        healthChecks: checks,
-        systemMetrics,
-        appMetrics,
-        timestamp: new Date().toISOString(),
-        overallStatus: checks.every(check => check.status === 'healthy') ? 'healthy' : 'degraded'
+        overall,
+        database: {
+          status: databaseStatus,
+          latency: databaseLatency,
+          connections: {
+            active: 1, // Prisma manages connection pooling internally
+            idle: 0,
+            total: 1
+          }
+        },
+        redis: {
+          status: redisStatus,
+          latency: redisLatency,
+          memoryUsed: redisMemoryUsed
+        },
+        system: {
+          uptime: process.uptime() * 1000, // Convert to milliseconds
+          memory: {
+            used: usedMemory,
+            total: totalMemory,
+            percentage: memoryPercentage
+          }
+        },
+        app: {
+          activeConnections: 0, // Would need request tracking middleware
+          requestsPerMinute: 0, // Would need request tracking middleware
+          averageResponseTime: Math.round((databaseLatency + redisLatency) / 2),
+          errorRate: 0 // Would need error tracking middleware
+        },
+        timestamp: new Date().toISOString()
       }));
 
     } catch (error) {

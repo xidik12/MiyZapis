@@ -14,6 +14,12 @@ import type { UserAnalytics, Period } from '@/types/admin.types';
 import { adminAnalyticsService } from '@/services/adminAnalytics.service';
 import { toast } from 'react-toastify';
 
+// Sanitize user-provided strings to prevent XSS from stored malicious names
+function sanitizeDisplayName(name: string): string {
+  if (!name) return '';
+  return name.replace(/<[^>]*>/g, '').replace(/[<>'"&]/g, '').trim();
+}
+
 export interface UserManagementSectionProps {
   data: UserAnalytics | null;
   period: Period;
@@ -186,7 +192,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
       render: (user) => (
         <div>
           <div className="font-medium text-gray-900 dark:text-white">
-            {user.firstName} {user.lastName}
+            {sanitizeDisplayName(user.firstName)} {sanitizeDisplayName(user.lastName)}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
         </div>
@@ -366,7 +372,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
       {pagination.totalPages > 1 && (
         <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            Page {pagination.currentPage || currentPage} of {pagination.totalPages} ({pagination.totalItems} total users)
+            Page {currentPage} of {pagination.totalPages} ({pagination.totalItems} total users)
           </div>
           <div className="flex items-center space-x-2">
             <button

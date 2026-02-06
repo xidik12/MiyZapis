@@ -29,6 +29,15 @@ router.post('/register', async (req, res) => {
       return res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'Missing required fields', req.id));
     }
 
+    // Sanitize names - strip HTML tags and validate
+    const nameRegex = /^[a-zA-Z\u0400-\u04FF\u0100-\u017F\s\-']+$/;
+    req.body.firstName = req.body.firstName.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    req.body.lastName = req.body.lastName.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+
+    if (!nameRegex.test(req.body.firstName) || !nameRegex.test(req.body.lastName)) {
+      return res.status(400).json(createErrorResponse('VALIDATION_ERROR', 'Names can only contain letters, spaces, hyphens, and apostrophes', req.id));
+    }
+
     const result = await EnhancedAuthService.register(req.body);
     res.status(201).json(createSuccessResponse(result));
   } catch (error: any) {

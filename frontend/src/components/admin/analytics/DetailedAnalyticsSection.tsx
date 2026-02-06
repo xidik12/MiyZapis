@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   ChartBarIcon,
   CurrencyDollarIcon,
-  ClockIcon,
   UserGroupIcon,
   ArrowTrendingUpIcon,
   CalendarIcon,
@@ -96,7 +95,7 @@ export const DetailedAnalyticsSection: React.FC<DetailedAnalyticsSectionProps> =
 
       {/* Revenue Analytics Tab */}
       {activeSubTab === 'revenue' && financialAnalytics && (
-        <RevenueAnalyticsTab data={financialAnalytics} period={period} />
+        <RevenueAnalyticsTab data={financialAnalytics} period={period} categoryRevenue={bookingAnalytics?.categoryRevenue} />
       )}
 
       {/* Referral Analytics Tab */}
@@ -109,22 +108,31 @@ export const DetailedAnalyticsSection: React.FC<DetailedAnalyticsSectionProps> =
 
 // Booking Analytics Sub-component
 const BookingAnalyticsTab: React.FC<{ data: BookingAnalytics; period: Period }> = ({ data, period }) => {
-  // Add null checks for all arrays
+  // Add null checks for all arrays - use correct property names from backend
   const bookingTrends = data?.bookingTrends || [];
-  const statusDistribution = data?.statusDistribution || [];
-  const servicePopularity = data?.servicePopularity || [];
+  const statusStats = data?.statusStats || [];
+  const popularServices = data?.popularServices || [];
+  const hourlyStats = data?.hourlyStats || [];
 
-  // Prepare booking timeline data
-  const bookingTimelineData = bookingTrends.map((trend) => ({
-    date: trend.date,
-    bookings: trend.count,
-    revenue: trend.totalRevenue || 0
-  }));
+  // Prepare booking timeline data - aggregate by date
+  const bookingTimelineMap = new Map<string, { bookings: number; revenue: number }>();
+  bookingTrends.forEach((trend) => {
+    const dateKey = trend.date;
+    const existing = bookingTimelineMap.get(dateKey) || { bookings: 0, revenue: 0 };
+    existing.bookings += trend.count || 0;
+    existing.revenue += trend.avg_amount ? trend.avg_amount * (trend.count || 0) : 0;
+    bookingTimelineMap.set(dateKey, existing);
+  });
+  const bookingTimelineData = Array.from(bookingTimelineMap.entries()).map(([date, data]) => ({
+    date,
+    bookings: data.bookings,
+    revenue: data.revenue
+  })).sort((a, b) => a.date.localeCompare(b.date));
 
-  // Prepare status distribution data
-  const statusDistributionData = statusDistribution.map((status) => ({
+  // Prepare status distribution data - use statusStats from backend
+  const statusDistributionData = statusStats.map((status) => ({
     name: status.status,
-    value: status._count,
+    value: status._count?.id || 0,
     color:
       status.status === 'COMPLETED' ? '#10B981' :
       status.status === 'CONFIRMED' ? '#3B82F6' :
@@ -132,30 +140,26 @@ const BookingAnalyticsTab: React.FC<{ data: BookingAnalytics; period: Period }> 
       status.status === 'CANCELLED' ? '#EF4444' : '#6B7280'
   }));
 
-  // Prepare service popularity data
-  const servicePopularityData = servicePopularity.slice(0, 10).map((service) => ({
-    name: service.name,
-    bookings: service._count,
-    revenue: service._sum?.totalAmount || 0
+  // Prepare service popularity data - use popularServices from backend
+  const servicePopularityData = popularServices.slice(0, 10).map((service) => ({
+    name: service.service?.name || 'Unknown Service',
+    bookings: service._count?.id || 0,
+    revenue: 0 // Not available in current API
   }));
 
-  // Peak hours data
+  // Peak hours data - use hourlyStats from backend
   const peakHoursData = Array.from({ length: 24 }, (_, hour) => {
-    const hourBookings = bookingTrends.filter(t => {
-      const bookingHour = new Date(t.date).getHours();
-      return bookingHour === hour;
-    }).reduce((sum, t) => sum + t.count, 0);
-
+    const hourData = hourlyStats.find(h => h.hour === hour);
     return {
-      hour: `${hour.toString().padStart(2, '0')}:00`,
-      bookings: hourBookings
+      name: `${hour.toString().padStart(2, '0')}:00`,
+      bookings: hourData?.count || 0
     };
   });
 
-  // Calculate metrics
-  const totalBookings = statusDistribution.reduce((sum, s) => sum + s._count, 0);
-  const completedBookings = statusDistribution.find(s => s.status === 'COMPLETED')?._count || 0;
-  const cancelledBookings = statusDistribution.find(s => s.status === 'CANCELLED')?._count || 0;
+  // Calculate metrics from statusStats
+  const totalBookings = statusStats.reduce((sum, s) => sum + (s._count?.id || 0), 0);
+  const completedBookings = statusStats.find(s => s.status === 'COMPLETED')?._count?.id || 0;
+  const cancelledBookings = statusStats.find(s => s.status === 'CANCELLED')?._count?.id || 0;
   const completionRate = totalBookings > 0 ? (completedBookings / totalBookings) * 100 : 0;
   const cancellationRate = totalBookings > 0 ? (cancelledBookings / totalBookings) * 100 : 0;
   const avgBookingsPerDay = bookingTimelineData.length > 0
@@ -252,33 +256,50 @@ const BookingAnalyticsTab: React.FC<{ data: BookingAnalytics; period: Period }> 
 };
 
 // Revenue Analytics Sub-component
-const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period }> = ({ data, period }) => {
-  // Add null checks for all arrays
+const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; categoryRevenue?: Array<{ category: string; total_revenue: number }> }> = ({ data, period, categoryRevenue: categoryRevenueProp }) => {
+  // Add null checks for all arrays - use correct property names from backend
   const revenueTrends = data?.revenueTrends || [];
-  const paymentMethodDistribution = data?.paymentMethodDistribution || [];
+  const paymentMethodStats = data?.paymentMethodStats || [];
   const topEarningSpecialists = data?.topEarningSpecialists || [];
-  const categoryRevenue = data?.categoryRevenue || [];
+  const categoryRevenue = categoryRevenueProp || [];
 
-  // Prepare revenue timeline data
-  const revenueTimelineData = revenueTrends.map((trend) => ({
-    date: trend.date,
-    revenue: trend.totalRevenue,
-    fees: trend.platformFees,
-    refunds: trend.refunds || 0
-  }));
+  // Prepare revenue timeline data - aggregate by date
+  const revenueTimelineMap = new Map<string, { revenue: number; count: number }>();
+  revenueTrends.forEach((trend) => {
+    const dateKey = trend.date;
+    const existing = revenueTimelineMap.get(dateKey) || { revenue: 0, count: 0 };
+    existing.revenue += trend.total_amount || 0;
+    existing.count += trend.transaction_count || 0;
+    revenueTimelineMap.set(dateKey, existing);
+  });
+  const revenueTimelineData = Array.from(revenueTimelineMap.entries()).map(([date, data]) => ({
+    date,
+    revenue: data.revenue,
+    fees: 0, // Platform fees not in current API
+    refunds: 0 // Refunds tracked separately
+  })).sort((a, b) => a.date.localeCompare(b.date));
 
-  // Prepare payment method distribution
-  const paymentMethodData = paymentMethodDistribution.map((method) => ({
-    name: method.paymentMethod,
-    value: method._sum?.totalAmount || 0,
+  // Prepare payment method distribution - use paymentMethodStats from backend
+  const paymentMethodData = paymentMethodStats.map((method) => ({
+    name: method.paymentMethodType || 'Unknown',
+    value: method._sum?.amount || 0,
     color:
-      method.paymentMethod === 'CARD' ? '#3B82F6' :
-      method.paymentMethod === 'CASH' ? '#10B981' :
-      method.paymentMethod === 'WALLET' ? '#F59E0B' : '#6B7280'
+      method.paymentMethodType === 'card' ? '#3B82F6' :
+      method.paymentMethodType === 'telegram_payment' ? '#10B981' :
+      method.paymentMethodType === 'wallet' ? '#F59E0B' :
+      method.paymentMethodType === 'crypto' ? '#8B5CF6' : '#6B7280'
   }));
 
-  // Prepare top earners table data - handle empty array case
-  const topEarnersColumns: Column<any>[] = [
+  // Prepare top earners table data - map backend property names
+  const topEarnersData = topEarningSpecialists.map((specialist) => ({
+    name: `${specialist.first_name || ''} ${specialist.last_name || ''}`.trim() || 'Unknown',
+    businessName: specialist.business_name || 'N/A',
+    revenue: specialist.total_earnings || 0,
+    bookings: specialist.transaction_count || 0,
+    avgBookingValue: specialist.avg_transaction || 0
+  }));
+
+  const topEarnersColumns: Column<typeof topEarnersData[0]>[] = [
     {
       key: 'name',
       label: 'Specialist',
@@ -296,7 +317,7 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period }
       sortable: true,
       render: (row) => (
         <span className="font-semibold text-green-600 dark:text-green-400">
-          ${row.revenue.toFixed(2)}
+          ${(row.revenue || 0).toFixed(2)}
         </span>
       )
     },
@@ -309,23 +330,26 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period }
       key: 'avgBookingValue',
       label: 'Avg Value',
       sortable: true,
-      render: (row) => `$${row.avgBookingValue.toFixed(2)}`
+      render: (row) => `$${(row.avgBookingValue || 0).toFixed(2)}`
     }
   ];
 
-  // Prepare category revenue data
+  // Prepare category revenue data - use correct property names
   const categoryRevenueData = categoryRevenue.slice(0, 10).map((cat) => ({
-    name: cat.category,
-    revenue: cat._sum?.totalAmount || 0
+    name: cat.category || 'Unknown',
+    revenue: cat.total_revenue || 0
   }));
 
-  // Calculate metrics
-  const totalRevenue = revenueTrends.reduce((sum, t) => sum + t.totalRevenue, 0);
-  const totalFees = revenueTrends.reduce((sum, t) => sum + t.platformFees, 0);
-  const totalRefunds = revenueTrends.reduce((sum, t) => sum + (t.refunds || 0), 0);
+  // Calculate metrics from revenueTrends
+  const totalRevenue = revenueTrends.reduce((sum, t) => sum + (t.total_amount || 0), 0);
+  const totalFees = 0; // Platform fees not in current API
+  const refundStats = data?.refundStats;
+  const totalRefunds = refundStats?._sum?.amount || 0;
   const netRevenue = totalRevenue - totalRefunds;
-  const avgTransactionValue = paymentMethodDistribution.reduce((sum, m) => sum + (m._sum?.totalAmount || 0), 0) /
-    Math.max(paymentMethodDistribution.reduce((sum, m) => sum + m._count, 0), 1);
+  const totalTransactions = paymentMethodStats.reduce((sum, m) => sum + (m._count?.id || 0), 0);
+  const avgTransactionValue = totalTransactions > 0
+    ? paymentMethodStats.reduce((sum, m) => sum + (m._sum?.amount || 0), 0) / totalTransactions
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -408,7 +432,7 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period }
         </h3>
         <DataTable
           columns={topEarnersColumns}
-          data={topEarningSpecialists}
+          data={topEarnersData}
           pageSize={10}
           emptyMessage="No specialists found"
         />
@@ -418,9 +442,10 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period }
 };
 
 // Referral Analytics Sub-component
-const ReferralAnalyticsTab: React.FC<{ data: AdminDashboardData; period: Period }> = ({ data, period }) => {
+const ReferralAnalyticsTab: React.FC<{ data: AdminDashboardData; period: Period }> = (_props) => {
   // This would need referral data from the API
   // For now, showing placeholder with the structure
+  // Note: _props contains data and period for future implementation
 
   return (
     <div className="space-y-6">

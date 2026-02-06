@@ -52,6 +52,15 @@ export const HealthIndicator: React.FC<HealthIndicatorProps> = ({
           dot: 'bg-red-500',
           text: 'Down'
         };
+      default:
+        return {
+          color: 'bg-gray-100 dark:bg-gray-900/20 text-gray-800 dark:text-gray-400',
+          borderColor: 'border-gray-200 dark:border-gray-800',
+          icon: ExclamationTriangleIcon,
+          iconColor: 'text-gray-600 dark:text-gray-400',
+          dot: 'bg-gray-500',
+          text: 'Unknown'
+        };
     }
   };
 

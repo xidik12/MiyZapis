@@ -18,13 +18,19 @@ export const validateRegister = [
   
   body('firstName')
     .trim()
+    .customSanitizer((value: string) => value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim())
     .isLength({ min: 1, max: 50 })
-    .withMessage('First name must be between 1 and 50 characters'),
-  
+    .withMessage('First name must be between 1 and 50 characters')
+    .matches(/^[a-zA-Z\u0400-\u04FF\u0100-\u017F\s\-']+$/)
+    .withMessage('First name can only contain letters, spaces, hyphens, and apostrophes'),
+
   body('lastName')
     .trim()
+    .customSanitizer((value: string) => value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim())
     .isLength({ min: 1, max: 50 })
-    .withMessage('Last name must be between 1 and 50 characters'),
+    .withMessage('Last name must be between 1 and 50 characters')
+    .matches(/^[a-zA-Z\u0400-\u04FF\u0100-\u017F\s\-']+$/)
+    .withMessage('Last name can only contain letters, spaces, hyphens, and apostrophes'),
   
   body('phoneNumber')
     .optional()
@@ -68,18 +74,21 @@ export const validateTelegramAuth = [
   
   body('firstName')
     .trim()
+    .customSanitizer((value: string) => value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim())
     .isLength({ min: 1, max: 50 })
     .withMessage('First name is required'),
-  
+
   body('lastName')
     .optional()
     .trim()
+    .customSanitizer((value: string) => value ? value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim() : value)
     .isLength({ max: 50 })
     .withMessage('Last name must be less than 50 characters'),
-  
+
   body('username')
     .optional()
     .trim()
+    .customSanitizer((value: string) => value ? value.replace(/<[^>]*>/g, '').trim() : value)
     .isLength({ max: 50 })
     .withMessage('Username must be less than 50 characters'),
   

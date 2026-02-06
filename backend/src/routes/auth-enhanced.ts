@@ -47,8 +47,16 @@ const googleClient = new OAuth2Client(
 
 // Validation middleware
 const validateRegistration = [
-  body('firstName').trim().isLength({ min: 1 }).withMessage('First name is required'),
-  body('lastName').trim().isLength({ min: 1 }).withMessage('Last name is required'),
+  body('firstName')
+    .trim()
+    .isLength({ min: 1, max: 50 }).withMessage('First name is required (max 50 characters)')
+    .matches(/^[a-zA-Z\u0400-\u04FF\u0100-\u017F\s\-']+$/).withMessage('First name can only contain letters, spaces, hyphens, and apostrophes')
+    .customSanitizer((value: string) => value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()),
+  body('lastName')
+    .trim()
+    .isLength({ min: 1, max: 50 }).withMessage('Last name is required (max 50 characters)')
+    .matches(/^[a-zA-Z\u0400-\u04FF\u0100-\u017F\s\-']+$/).withMessage('Last name can only contain letters, spaces, hyphens, and apostrophes')
+    .customSanitizer((value: string) => value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()),
   body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
   body('userType').isIn(['CUSTOMER', 'SPECIALIST']).withMessage('Valid user type is required'),
@@ -70,7 +78,9 @@ const validateGoogleAuth = [
 
 const validateTelegramAuth = [
   body('telegramId').isLength({ min: 1 }).withMessage('Telegram ID is required'),
-  body('firstName').isLength({ min: 1 }).withMessage('First name is required'),
+  body('firstName')
+    .isLength({ min: 1, max: 50 }).withMessage('First name is required')
+    .customSanitizer((value: string) => value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()),
   body('authDate').isNumeric().withMessage('Auth date is required'),
   body('hash').isLength({ min: 1 }).withMessage('Hash is required'),
 ];

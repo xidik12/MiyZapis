@@ -89,7 +89,7 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
     );
   }
 
-  if (error) {
+  if (error && !health) {
     return (
       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6">
         <h3 className="text-lg font-medium text-red-800 dark:text-red-400 mb-2">
@@ -110,6 +110,21 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Error banner when refresh fails but we have stale data */}
+      {error && health && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg px-4 py-3 flex items-center justify-between">
+          <p className="text-sm text-yellow-700 dark:text-yellow-300">
+            Failed to refresh: {error}. Showing last known data.
+          </p>
+          <button
+            onClick={fetchHealth}
+            className="text-sm font-medium text-yellow-800 dark:text-yellow-400 hover:underline ml-4"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* Header with Status and Refresh */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
