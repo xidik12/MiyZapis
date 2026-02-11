@@ -6,6 +6,7 @@ interface SheetProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
+  title?: string;
   height?: 'auto' | 'half' | 'full';
 }
 
@@ -13,6 +14,7 @@ export const Sheet: React.FC<SheetProps> = ({
   isOpen,
   onClose,
   children,
+  title,
   height = 'auto'
 }) => {
   const { hapticFeedback } = useTelegram();
@@ -54,7 +56,14 @@ export const Sheet: React.FC<SheetProps> = ({
       <div className={`sheet-content animate-slide-up ${heightClasses[height]}`}>
         {/* Handle */}
         <div className="sheet-handle" />
-        
+
+        {/* Title */}
+        {title && (
+          <div className="px-4 pb-3">
+            <h2 className="text-lg font-semibold text-primary">{title}</h2>
+          </div>
+        )}
+
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-4 pb-4">
           {children}

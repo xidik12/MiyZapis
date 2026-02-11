@@ -18,6 +18,9 @@ import {
   HelpCircle,
   LogOut,
   ChevronRight,
+  Wallet,
+  MessageCircle,
+  Users,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
@@ -40,7 +43,6 @@ export const ProfilePage: React.FC = () => {
   const { bookings } = useSelector((state: RootState) => state.bookings);
 
   const [showEditProfile, setShowEditProfile] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [profileData, setProfileData] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
@@ -195,6 +197,18 @@ export const ProfilePage: React.FC = () => {
               </div>
             </Card>
 
+            <Card hover onClick={() => navigate('/wallet')}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                  <Wallet size={20} className="text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-primary">Wallet</h3>
+                  <p className="text-xs text-secondary">Balance & payments</p>
+                </div>
+              </div>
+            </Card>
+
             <Card hover onClick={() => navigate('/favorites')}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
@@ -207,18 +221,6 @@ export const ProfilePage: React.FC = () => {
               </div>
             </Card>
 
-            <Card hover onClick={() => navigate('/search')}>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Star size={20} className="text-green-600" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-primary">Book Service</h3>
-                  <p className="text-xs text-secondary">Find specialists</p>
-                </div>
-              </div>
-            </Card>
-
             <Card hover onClick={() => navigate('/loyalty')}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -227,6 +229,30 @@ export const ProfilePage: React.FC = () => {
                 <div>
                   <h3 className="font-medium text-primary">Rewards</h3>
                   <p className="text-xs text-secondary">Loyalty points</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card hover onClick={() => navigate('/reviews')}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                  <Star size={20} className="text-yellow-600" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-primary">Reviews</h3>
+                  <p className="text-xs text-secondary">My reviews</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card hover onClick={() => navigate('/community')}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                  <Users size={20} className="text-indigo-600" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-primary">Community</h3>
+                  <p className="text-xs text-secondary">Posts & tips</p>
                 </div>
               </div>
             </Card>
@@ -304,41 +330,21 @@ export const ProfilePage: React.FC = () => {
         <div className="px-4 py-4">
           <h2 className="text-lg font-semibold text-primary mb-3">Settings</h2>
           <div className="space-y-1">
-            <Card hover onClick={() => setShowSettings(true)}>
+            <Card hover onClick={() => { hapticFeedback.impactLight(); navigate('/settings'); }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Settings size={20} className="text-secondary" />
-                  <span className="text-primary">Preferences</span>
+                  <span className="text-primary">Settings & Preferences</span>
                 </div>
                 <ChevronRight size={18} className="text-secondary" />
               </div>
             </Card>
 
-            <Card hover>
+            <Card hover onClick={() => { hapticFeedback.impactLight(); navigate('/analytics'); }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Bell size={20} className="text-secondary" />
-                  <span className="text-primary">Notifications</span>
-                </div>
-                <ChevronRight size={18} className="text-secondary" />
-              </div>
-            </Card>
-
-            <Card hover>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Shield size={20} className="text-secondary" />
-                  <span className="text-primary">Privacy & Security</span>
-                </div>
-                <ChevronRight size={18} className="text-secondary" />
-              </div>
-            </Card>
-
-            <Card hover>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <HelpCircle size={20} className="text-secondary" />
-                  <span className="text-primary">Help & Support</span>
+                  <MapPin size={20} className="text-secondary" />
+                  <span className="text-primary">Analytics</span>
                 </div>
                 <ChevronRight size={18} className="text-secondary" />
               </div>
@@ -414,48 +420,6 @@ export const ProfilePage: React.FC = () => {
         </div>
       </Sheet>
 
-      {/* Settings Sheet */}
-      <Sheet
-        isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
-        title="Preferences"
-      >
-        <div className="space-y-4">
-          <div>
-            <h3 className="font-medium mb-3">Notification Preferences</h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-secondary">Booking Reminders</span>
-                <div className="w-12 h-6 bg-accent rounded-full relative">
-                  <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 right-0.5"></div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-secondary">Promotional Messages</span>
-                <div className="w-12 h-6 bg-gray-300 rounded-full relative">
-                  <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="font-medium mb-3">App Preferences</h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-secondary">Dark Mode</span>
-                <div className="w-12 h-6 bg-gray-300 rounded-full relative">
-                  <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <Button onClick={() => setShowSettings(false)} className="w-full">
-            Save Settings
-          </Button>
-        </div>
-      </Sheet>
     </div>
   );
 };

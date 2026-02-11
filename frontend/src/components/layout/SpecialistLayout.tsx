@@ -9,7 +9,7 @@ import { isFeatureEnabled } from '../../config/features';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
-import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, UserIcon, BriefcaseIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon } from '@/components/icons';
+import { ChartBarIcon, CalendarIcon, ClipboardDocumentListIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, UserIcon, BriefcaseIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ChatBubbleLeftRightIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, HouseIcon as HomeIcon, PresentationChartLineIcon, GiftIcon, UsersIcon, ShareIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -109,8 +109,8 @@ const navigation: SidebarNavItem[] = [
     name: 'Referrals',
     nameUk: 'Реферали',
     href: '/specialist/referrals',
-    icon: UsersIcon,
-    iconActive: UsersIcon,
+    icon: ShareIcon,
+    iconActive: ShareIcon,
   },
   {
     name: 'Messages',

@@ -69,6 +69,99 @@ export class NotificationService {
     return translations[key]?.[language] || translations[key]?.['en'] || key;
   }
 
+  // Notification-specific translations for i18n keys used by booking service
+  private static readonly notificationTranslations: Record<string, Record<string, string>> = {
+    'notifications.booking.confirmed.customer.title': {
+      en: 'Booking Confirmed', uk: 'Бронювання підтверджено', ru: 'Бронирование подтверждено'
+    },
+    'notifications.booking.confirmed.customer.message': {
+      en: 'Your booking for {{serviceName}} has been confirmed.',
+      uk: 'Ваше бронювання послуги "{{serviceName}}" підтверджено.',
+      ru: 'Ваше бронирование услуги "{{serviceName}}" подтверждено.'
+    },
+    'notifications.booking.confirmed.specialist.title': {
+      en: 'Booking Confirmed', uk: 'Бронювання підтверджено', ru: 'Бронирование подтверждено'
+    },
+    'notifications.booking.confirmed.specialist.message': {
+      en: 'Booking for {{serviceName}} with {{customerName}} has been confirmed.',
+      uk: 'Бронювання послуги "{{serviceName}}" з {{customerName}} підтверджено.',
+      ru: 'Бронирование услуги "{{serviceName}}" с {{customerName}} подтверждено.'
+    },
+    'notifications.booking.pending.customer.title': {
+      en: 'Booking Request Sent', uk: 'Запит на бронювання відправлено', ru: 'Запрос на бронирование отправлен'
+    },
+    'notifications.booking.pending.customer.message': {
+      en: 'Your booking request for {{serviceName}} has been sent and is awaiting confirmation.',
+      uk: 'Ваш запит на бронювання послуги "{{serviceName}}" відправлено і очікує підтвердження.',
+      ru: 'Ваш запрос на бронирование услуги "{{serviceName}}" отправлен и ожидает подтверждения.'
+    },
+    'notifications.booking.request.specialist.title': {
+      en: 'New Booking Request', uk: 'Новий запит на бронювання', ru: 'Новый запрос на бронирование'
+    },
+    'notifications.booking.request.specialist.message': {
+      en: 'You have a new booking request for {{serviceName}} from {{customerName}}.',
+      uk: 'Ви отримали новий запит на бронювання послуги "{{serviceName}}" від {{customerName}}.',
+      ru: 'Вы получили новый запрос на бронирование услуги "{{serviceName}}" от {{customerName}}.'
+    },
+    'notifications.booking.confirmedBySpecialist.customer.title': {
+      en: 'Booking Confirmed by Specialist', uk: 'Бронювання підтверджено спеціалістом', ru: 'Бронирование подтверждено специалистом'
+    },
+    'notifications.booking.confirmedBySpecialist.customer.message': {
+      en: 'Your booking for {{serviceName}} has been confirmed by the specialist.',
+      uk: 'Ваше бронювання послуги "{{serviceName}}" підтверджено спеціалістом.',
+      ru: 'Ваше бронирование услуги "{{serviceName}}" подтверждено специалистом.'
+    },
+    'notifications.booking.confirmedBySpecialist.specialist.title': {
+      en: 'Booking Confirmed', uk: 'Бронювання підтверджено', ru: 'Бронирование подтверждено'
+    },
+    'notifications.booking.confirmedBySpecialist.specialist.message': {
+      en: 'You confirmed the booking for {{serviceName}} with {{customerName}}.',
+      uk: 'Ви підтвердили бронювання послуги "{{serviceName}}" з {{customerName}}.',
+      ru: 'Вы подтвердили бронирование услуги "{{serviceName}}" с {{customerName}}.'
+    },
+  };
+
+  /**
+   * Resolve i18n key to translated text with variable interpolation.
+   * If the text is not an i18n key (doesn't start with 'notifications.'), return as-is.
+   */
+  private resolveNotificationText(text: string, language: string, interpolateData?: Record<string, any>): string {
+    // Check if the text looks like an i18n key
+    if (!text.startsWith('notifications.')) {
+      return text;
+    }
+
+    const translations = NotificationService.notificationTranslations[text];
+    if (!translations) {
+      return text;
+    }
+
+    let resolved = translations[language] || translations['en'] || text;
+
+    // Interpolate {{variables}} from data
+    if (interpolateData) {
+      Object.entries(interpolateData).forEach(([key, value]) => {
+        const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+        resolved = resolved.replace(regex, String(value || ''));
+      });
+    }
+
+    return resolved;
+  }
+
+  /**
+   * Build details HTML from notification data, filtering out internal fields and non-string values.
+   */
+  private buildDetailsHtml(data: any): string {
+    if (!data) return '';
+    return `<div style="background:#f9fafb;padding:16px;border-radius:8px;margin:12px 0;">` +
+      Object.entries(data)
+        .filter(([k, v]) => k !== '_interpolate' && typeof v !== 'object' && v !== null && v !== undefined)
+        .map(([k, v]) => `<p><strong>${k.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}:</strong> ${v}</p>`)
+        .join('') +
+      `</div>`;
+  }
+
   async sendNotification(userId: string, data: NotificationData): Promise<Notification> {
     try {
       logger.info('🔔 Starting notification send process', {
@@ -110,13 +203,19 @@ export class NotificationService {
         telegramNotifications: user.telegramNotifications
       });
 
-      // Create notification record
+      // Resolve i18n keys for notification record
+      const userLang = user.language || 'en';
+      const interpolateVars = data.data?._interpolate || {};
+      const resolvedRecordTitle = this.resolveNotificationText(data.title, userLang, interpolateVars);
+      const resolvedRecordMessage = this.resolveNotificationText(data.message, userLang, interpolateVars);
+
+      // Create notification record with resolved text
       const notification = await this.prisma.notification.create({
         data: {
           userId,
           type: data.type,
-          title: data.title,
-          message: data.message,
+          title: resolvedRecordTitle,
+          message: resolvedRecordMessage,
           data: data.data ? JSON.stringify(data.data) : null,
         }
       });
@@ -254,44 +353,38 @@ export class NotificationService {
         }
       }
 
+      // Resolve i18n keys in title and message
+      const userLanguage = user.language || 'en';
+      const interpolateData = data.data?._interpolate || {};
+      const resolvedTitle = this.resolveNotificationText(data.title, userLanguage, interpolateData);
+      const resolvedMessage = this.resolveNotificationText(data.message, userLanguage, interpolateData);
+
       // Use specific email methods based on notification type
       if (!emailSent && (data.type === 'BOOKING_CONFIRMED' || data.type === 'BOOKING_PENDING' || data.type === 'BOOKING_REQUEST')) {
-        // Create a simple booking notification email with proper language support
-        const userLanguage = user.language || 'en';
-        const greeting = this.getTranslatedText('greeting', userLanguage);
-        const bookingDetailsLabel = this.getTranslatedText('bookingDetails', userLanguage);
-        const manageBookingsText = this.getTranslatedText('manageBookings', userLanguage);
-        const copyrightText = this.getTranslatedText('copyright', userLanguage);
-        const automatedEmailText = this.getTranslatedText('automatedEmail', userLanguage);
-
-        const detailsHtml = data.data ? `<div style="background:#f9fafb;padding:16px;border-radius:8px;margin:12px 0;">` +
-          Object.entries(data.data).map(([k, v]) => `<p><strong>${k.replace(/([A-Z])/g,' $1').replace(/^./,s=>s.toUpperCase())}:</strong> ${v as any}</p>`).join('') +
-          `</div>` : '';
+        const detailsHtml = this.buildDetailsHtml(data.data);
 
         emailSent = await templatedEmailService.sendTemplateEmail({
           to: user.email,
           templateKey: 'notificationGeneric',
-          language: user.language || 'en',
+          language: userLanguage,
           data: {
             firstName: user.firstName,
-            title: data.title,
-            message: data.message,
+            title: resolvedTitle,
+            message: resolvedMessage,
             detailsHtml,
           }
         });
       } else {
         // Other types: generic template
-        const detailsHtml = data.data ? `<div style="background:#f9fafb;padding:16px;border-radius:8px;margin:12px 0;">` +
-          Object.entries(data.data).map(([k, v]) => `<p><strong>${k.replace(/([A-Z])/g,' $1').replace(/^./,s=>s.toUpperCase())}:</strong> ${v as any}</p>`).join('') +
-          `</div>` : '';
+        const detailsHtml = this.buildDetailsHtml(data.data);
         emailSent = await templatedEmailService.sendTemplateEmail({
           to: user.email,
           templateKey: 'notificationGeneric',
-          language: user.language || 'en',
+          language: userLanguage,
           data: {
             firstName: user.firstName,
-            title: data.title,
-            message: data.message,
+            title: resolvedTitle,
+            message: resolvedMessage,
             detailsHtml,
           }
         });

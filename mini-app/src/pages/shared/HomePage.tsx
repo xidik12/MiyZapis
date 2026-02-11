@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { 
-  Search, 
-  MapPin, 
-  Star, 
-  Clock, 
+import {
+  Search,
+  MapPin,
+  Star,
+  Clock,
   TrendingUp,
   Calendar,
   Heart,
-  Filter
+  Filter,
+  Wallet,
+  Award,
+  Users,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
@@ -183,26 +186,41 @@ export const HomePage: React.FC = () => {
         {/* Quick Actions */}
         {(isAuthenticated || authState) && (
           <div className="px-4 py-4">
-            <div className="flex gap-3">
-              <Button
-                variant="secondary"
-                onClick={() => navigate('/bookings')}
-                className="flex-1"
-              >
-                <Calendar size={18} className="mr-2" />
-                My Bookings
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => navigate('/favorites')}
-                className="flex-1"
-              >
-                <Heart size={18} className="mr-2" />
-                Favorites
-              </Button>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { icon: <Calendar size={20} className="text-blue-500" />, label: 'Bookings', path: '/bookings' },
+                { icon: <Wallet size={20} className="text-green-500" />, label: 'Wallet', path: '/wallet' },
+                { icon: <Heart size={20} className="text-red-500" />, label: 'Favorites', path: '/favorites' },
+                { icon: <Award size={20} className="text-purple-500" />, label: 'Rewards', path: '/loyalty' },
+              ].map(item => (
+                <button
+                  key={item.path}
+                  onClick={() => { hapticFeedback.selectionChanged(); navigate(item.path); }}
+                  className="flex flex-col items-center gap-1 py-3 rounded-xl bg-secondary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  {item.icon}
+                  <span className="text-xs text-primary font-medium">{item.label}</span>
+                </button>
+              ))}
             </div>
           </div>
         )}
+
+        {/* Community Banner */}
+        <div className="px-4 pb-2">
+          <Card hover onClick={() => { hapticFeedback.impactLight(); navigate('/community'); }}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                <Users size={20} className="text-indigo-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-primary">Community</h3>
+                <p className="text-xs text-secondary">Share tips, ask questions & connect</p>
+              </div>
+              <span className="text-xs text-accent font-medium">Explore →</span>
+            </div>
+          </Card>
+        </div>
 
         {/* Categories */}
         <div className="px-4 py-4">

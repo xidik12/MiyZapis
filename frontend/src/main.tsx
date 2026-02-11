@@ -7,6 +7,7 @@ import { ToastContainer } from 'react-toastify';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 
+import { HelmetProvider } from 'react-helmet-async';
 import App from './App';
 import { store, persistor } from './store';
 import { environment } from './config/environment';
@@ -126,6 +127,7 @@ const initializeApp = () => {
 
   root.render(
     <React.StrictMode>
+      <HelmetProvider>
       <ErrorBoundary>
         <Provider store={store}>
           <PersistGate loading={<LoadingComponent />} persistor={persistor}>
@@ -160,6 +162,7 @@ const initializeApp = () => {
           </PersistGate>
         </Provider>
       </ErrorBoundary>
+      </HelmetProvider>
     </React.StrictMode>
   );
 };

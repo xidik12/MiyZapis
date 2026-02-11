@@ -1,9 +1,25 @@
 User-agent: *
 Allow: /
+Allow: /search
+Allow: /auth/register
+Allow: /auth/login
+Allow: /loyalty
+Allow: /community
 
-# Disallow non-HTML build assets
+# Block private/authenticated routes
+Disallow: /dashboard
+Disallow: /bookings
+Disallow: /profile
+Disallow: /settings
+Disallow: /payments
+Disallow: /customer/
+Disallow: /specialist/
+Disallow: /admin/
+Disallow: /favorites
+Disallow: /reviews
+
+# Block build assets
 Disallow: /assets/
 
 # Sitemap
 Sitemap: https://miyzapis.com/sitemap.xml
-

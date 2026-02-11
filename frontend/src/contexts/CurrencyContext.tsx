@@ -52,7 +52,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
     const priceInUAH = fromCurrency === 'UAH' ? price : price * EXCHANGE_RATES[fromCurrency];
 
     // Convert from UAH to target currency
-    if (currency === 'UAH') return priceInUAH;
+    if (currency === 'UAH') return Math.round(priceInUAH * 100) / 100;
     return Math.round((priceInUAH / EXCHANGE_RATES[currency]) * 100) / 100;
   };
 
@@ -67,17 +67,25 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
     const convertedPrice = convertPrice(price, fromCurrency);
     const symbol = getCurrencySymbol(currency);
 
-    // Format numbers appropriately for each currency
+    // Smart formatting: whole numbers when no cents, .XX only when there are real cents
+    const isWholeNumber = convertedPrice === Math.floor(convertedPrice);
+
     if (currency === 'UAH') {
-      // Ukrainian Hryvnia: show as whole numbers for larger amounts, with comma separators
-      return convertedPrice >= 1000
-        ? `${symbol}${Math.round(convertedPrice).toLocaleString('uk-UA')}`
-        : `${symbol}${convertedPrice}`;
+      // Ukrainian Hryvnia: always whole numbers with locale separator for large amounts
+      const rounded = Math.round(convertedPrice);
+      return rounded >= 1000
+        ? `${symbol}${rounded.toLocaleString('uk-UA')}`
+        : `${symbol}${rounded}`;
     } else {
-      // USD/EUR: show with 2 decimal places for smaller amounts, whole numbers for larger
-      return convertedPrice >= 100
-        ? `${symbol}${Math.round(convertedPrice)}`
-        : `${symbol}${convertedPrice.toFixed(2)}`;
+      // USD/EUR: show .XX only when there are actual cents, otherwise whole number
+      if (isWholeNumber) {
+        const rounded = Math.round(convertedPrice);
+        return rounded >= 1000
+          ? `${symbol}${rounded.toLocaleString('en-US')}`
+          : `${symbol}${rounded}`;
+      } else {
+        return `${symbol}${convertedPrice.toFixed(2)}`;
+      }
     }
   };
 

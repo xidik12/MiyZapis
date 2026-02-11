@@ -8,7 +8,7 @@ import { selectUser, logout } from '../../store/slices/authSlice';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
-import { HouseIcon as HomeIcon, CalendarIcon, UserIcon, Cog6ToothIcon, StarIcon, HeartIcon, QuestionMarkCircleIcon, GiftIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ClockIcon, CreditCardIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, ChatBubbleLeftEllipsisIcon, UsersIcon, WalletIcon } from '@/components/icons';
+import { HouseIcon as HomeIcon, CalendarIcon, UserIcon, Cog6ToothIcon, StarIcon, HeartIcon, QuestionMarkCircleIcon, GiftIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ClockIcon, CreditCardIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, ChatBubbleLeftEllipsisIcon, UsersIcon, WalletIcon, ShareIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -90,7 +90,7 @@ const navigation: SidebarNavItem[] = [
     name: 'Referrals',
     nameKey: 'customer.nav.referrals',
     href: '/customer/referrals',
-    icon: UsersIcon,
+    icon: ShareIcon,
   },
   {
     name: 'Profile',

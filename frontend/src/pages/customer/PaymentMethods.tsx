@@ -11,7 +11,8 @@ const PaymentMethods: React.FC = () => {
   const { t, language } = useLanguage();
   const currentUser = useAppSelector(selectUser);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [editingMethod, setEditingMethod] = useState<PaymentMethod | null>(null);
   const [loading, setLoading] = useState(false);
 
   // Load payment methods from backend when component mounts
@@ -35,27 +36,52 @@ const PaymentMethods: React.FC = () => {
   }, [currentUser, language]);
 
   const handleAddPaymentMethod = () => {
-    setShowAddModal(true);
+    setEditingMethod(null);
+    setShowModal(true);
+  };
+
+  const handleEditPaymentMethod = (method: PaymentMethod) => {
+    setEditingMethod(method);
+    setShowModal(true);
   };
 
   const handleSavePaymentMethod = async (paymentData: any) => {
     try {
       setLoading(true);
-      const newMethod = await PaymentMethodsService.addPaymentMethod({
-        type: 'CARD', // Default to card type
-        cardLast4: paymentData.last4 || '',
-        cardBrand: paymentData.name?.toLowerCase().includes('visa') ? 'visa' : 'mastercard',
-        cardExpMonth: paymentData.expiryMonth,
-        cardExpYear: paymentData.expiryYear,
-        nickname: paymentData.name,
-      });
-      
-      setPaymentMethods(prev => [...prev, newMethod]);
-      setShowAddModal(false);
-      toast.success(t('payments.addSuccess') || 'Payment method added successfully');
+
+      if (editingMethod) {
+        // Update existing method
+        const updated = await PaymentMethodsService.updatePaymentMethod(editingMethod.id, {
+          nickname: paymentData.name,
+          cardExpMonth: paymentData.expiryMonth,
+          cardExpYear: paymentData.expiryYear,
+        });
+        setPaymentMethods(prev =>
+          prev.map(pm => pm.id === editingMethod.id ? { ...pm, ...updated } : pm)
+        );
+        toast.success(language === 'uk' ? 'Спосіб оплати оновлено' : language === 'ru' ? 'Способ оплаты обновлен' : 'Payment method updated successfully');
+      } else {
+        // Add new method
+        const newMethod = await PaymentMethodsService.addPaymentMethod({
+          type: 'CARD',
+          cardLast4: paymentData.last4 || '',
+          cardBrand: paymentData.name?.toLowerCase().includes('visa') ? 'visa' : 'mastercard',
+          cardExpMonth: paymentData.expiryMonth,
+          cardExpYear: paymentData.expiryYear,
+          nickname: paymentData.name,
+        });
+        setPaymentMethods(prev => [...prev, newMethod]);
+        toast.success(t('payments.addSuccess') || 'Payment method added successfully');
+      }
+
+      setShowModal(false);
+      setEditingMethod(null);
     } catch (error) {
-      console.error('Failed to add payment method:', error);
-      toast.error(t('payments.addError') || 'Failed to add payment method');
+      console.error('Failed to save payment method:', error);
+      toast.error(editingMethod
+        ? (language === 'uk' ? 'Не вдалося оновити спосіб оплати' : 'Failed to update payment method')
+        : (t('payments.addError') || 'Failed to add payment method')
+      );
     } finally {
       setLoading(false);
     }
@@ -78,8 +104,8 @@ const PaymentMethods: React.FC = () => {
   const handleSetDefault = async (id: string) => {
     try {
       setLoading(true);
-      const updatedMethod = await PaymentMethodsService.setDefaultPaymentMethod(id);
-      setPaymentMethods(prev => 
+      await PaymentMethodsService.setDefaultPaymentMethod(id);
+      setPaymentMethods(prev =>
         prev.map(pm => ({ ...pm, isDefault: pm.id === id }))
       );
       toast.success(t('payments.defaultSetSuccess') || 'Default payment method updated');
@@ -91,6 +117,8 @@ const PaymentMethods: React.FC = () => {
     }
   };
 
+  const isEditing = !!editingMethod;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -100,7 +128,7 @@ const PaymentMethods: React.FC = () => {
             {language === 'uk' ? 'Способи оплати' : language === 'ru' ? 'Способы оплаты' : 'Payment Methods'}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            {language === 'uk' 
+            {language === 'uk'
               ? 'Керуйте вашими способами оплати та історією транзакцій'
               : language === 'ru'
               ? 'Управляйте вашими способами оплаты и историей транзакций'
@@ -116,7 +144,7 @@ const PaymentMethods: React.FC = () => {
               <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                 {language === 'uk' ? 'Ваші способи оплати' : language === 'ru' ? 'Ваши способы оплаты' : 'Your Payment Methods'}
               </h2>
-              <button 
+              <button
                 onClick={handleAddPaymentMethod}
                 className="bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
               >
@@ -133,14 +161,14 @@ const PaymentMethods: React.FC = () => {
                     {language === 'uk' ? 'Способи оплати не додано' : language === 'ru' ? 'Способы оплаты не добавлены' : 'No payment methods added yet'}
                   </h3>
                   <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                    {language === 'uk' 
+                    {language === 'uk'
                       ? 'Додайте спосіб оплати для швидкого та зручного бронювання послуг. Ваші дані будуть надійно захищені.'
                       : language === 'ru'
                       ? 'Добавьте способ оплаты для быстрого и удобного бронирования услуг. Ваши данные будут надежно защищены.'
                       : 'Add a payment method for quick and convenient service bookings. Your data will be securely protected.'
                     }
                   </p>
-                  <button 
+                  <button
                     onClick={handleAddPaymentMethod}
                     className="bg-primary-600 text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
                   >
@@ -185,14 +213,17 @@ const PaymentMethods: React.FC = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       {!method.isDefault && (
-                        <button 
+                        <button
                           onClick={() => handleSetDefault(method.id)}
                           className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium"
                         >
                           {language === 'uk' ? 'Зробити основним' : language === 'ru' ? 'Сделать основным' : 'Make Default'}
                         </button>
                       )}
-                      <button className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
+                      <button
+                        onClick={() => handleEditPaymentMethod(method)}
+                        className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium"
+                      >
                         <PencilIcon className="h-4 w-4" />
                       </button>
                       <button
@@ -222,7 +253,7 @@ const PaymentMethods: React.FC = () => {
                 {language === 'uk' ? 'Безпека ваших даних' : language === 'ru' ? 'Безопасность ваших данных' : 'Your Data Security'}
               </h3>
               <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
-                {language === 'uk' 
+                {language === 'uk'
                   ? 'Ми використовуємо найсучасні методи шифрування для захисту ваших платіжних даних. Номери карток зберігаються в зашифрованому вигляді та відповідають стандартам PCI DSS.'
                   : language === 'ru'
                   ? 'Мы используем современные методы шифрования для защиты ваших платежных данных. Номера карт хранятся в зашифрованном виде и соответствуют стандартам PCI DSS.'
@@ -234,12 +265,15 @@ const PaymentMethods: React.FC = () => {
         </div>
       </div>
 
-      {/* Add Payment Method Modal */}
-      {showAddModal && (
+      {/* Add/Edit Payment Method Modal */}
+      {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md mx-4">
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
-              {language === 'uk' ? 'Додати спосіб оплати' : language === 'ru' ? 'Добавить способ оплаты' : 'Add Payment Method'}
+              {isEditing
+                ? (language === 'uk' ? 'Редагувати спосіб оплати' : language === 'ru' ? 'Редактировать способ оплаты' : 'Edit Payment Method')
+                : (language === 'uk' ? 'Додати спосіб оплати' : language === 'ru' ? 'Добавить способ оплаты' : 'Add Payment Method')
+              }
             </h3>
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -247,27 +281,29 @@ const PaymentMethods: React.FC = () => {
               handleSavePaymentMethod({
                 type: 'card',
                 name: formData.get('cardName'),
-                last4: formData.get('cardNumber')?.toString().slice(-4) || '',
+                last4: isEditing ? editingMethod?.cardLast4 : (formData.get('cardNumber')?.toString().slice(-4) || ''),
                 expiryMonth: parseInt(formData.get('expiryMonth')?.toString() || '0'),
                 expiryYear: parseInt(formData.get('expiryYear')?.toString() || '0'),
               });
             }}>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {language === 'uk' ? 'Тип оплати' : language === 'ru' ? 'Тип оплаты' : 'Payment Type'}
-                  </label>
-                  <select 
-                    name="paymentType"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-primary-500 focus:border-primary-500"
-                  >
-                    <option value="card">{language === 'uk' ? 'Банківська картка' : language === 'ru' ? 'Банковская карта' : 'Bank Card'}</option>
-                    <option value="privat">PrivatBank</option>
-                    <option value="mono">Monobank</option>
-                    <option value="ukrsib">UkrSibbank</option>
-                    <option value="oschadbank">Oschadbank</option>
-                  </select>
-                </div>
+                {!isEditing && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'uk' ? 'Тип оплати' : language === 'ru' ? 'Тип оплаты' : 'Payment Type'}
+                    </label>
+                    <select
+                      name="paymentType"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-primary-500 focus:border-primary-500"
+                    >
+                      <option value="card">{language === 'uk' ? 'Банківська картка' : language === 'ru' ? 'Банковская карта' : 'Bank Card'}</option>
+                      <option value="privat">PrivatBank</option>
+                      <option value="mono">Monobank</option>
+                      <option value="ukrsib">UkrSibbank</option>
+                      <option value="oschadbank">Oschadbank</option>
+                    </select>
+                  </div>
+                )}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {language === 'uk' ? 'Назва картки' : language === 'ru' ? 'Название карты' : 'Card Name'}
@@ -275,29 +311,41 @@ const PaymentMethods: React.FC = () => {
                   <input
                     type="text"
                     name="cardName"
+                    defaultValue={editingMethod?.nickname || ''}
                     placeholder="Visa •••• 4242"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-primary-500 focus:border-primary-500"
                     required
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {language === 'uk' ? 'Номер картки' : language === 'ru' ? 'Номер карты' : 'Card Number'}
-                  </label>
-                  <input
-                    type="text"
-                    name="cardNumber"
-                    placeholder="1234 5678 9012 3456"
-                    maxLength={19}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-primary-500 focus:border-primary-500"
-                    onChange={(e) => {
-                      // Format card number with spaces
-                      let value = e.target.value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
-                      e.target.value = value;
-                    }}
-                    required
-                  />
-                </div>
+                {!isEditing && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'uk' ? 'Номер картки' : language === 'ru' ? 'Номер карты' : 'Card Number'}
+                    </label>
+                    <input
+                      type="text"
+                      name="cardNumber"
+                      placeholder="1234 5678 9012 3456"
+                      maxLength={19}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-primary-500 focus:border-primary-500"
+                      onChange={(e) => {
+                        let value = e.target.value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+                        e.target.value = value;
+                      }}
+                      required
+                    />
+                  </div>
+                )}
+                {isEditing && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'uk' ? 'Номер картки' : language === 'ru' ? 'Номер карты' : 'Card Number'}
+                    </label>
+                    <p className="px-3 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 rounded-xl">
+                      **** **** **** {editingMethod?.cardLast4}
+                    </p>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -305,6 +353,7 @@ const PaymentMethods: React.FC = () => {
                     </label>
                     <select
                       name="expiryMonth"
+                      defaultValue={editingMethod?.cardExpMonth || ''}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-primary-500 focus:border-primary-500"
                       required
                     >
@@ -322,6 +371,7 @@ const PaymentMethods: React.FC = () => {
                     </label>
                     <select
                       name="expiryYear"
+                      defaultValue={editingMethod?.cardExpYear || ''}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-primary-500 focus:border-primary-500"
                       required
                     >
@@ -341,7 +391,7 @@ const PaymentMethods: React.FC = () => {
               <div className="flex justify-end space-x-3 mt-6">
                 <button
                   type="button"
-                  onClick={() => setShowAddModal(false)}
+                  onClick={() => { setShowModal(false); setEditingMethod(null); }}
                   className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
                 >
                   {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отменить' : 'Cancel'}
@@ -350,7 +400,10 @@ const PaymentMethods: React.FC = () => {
                   type="submit"
                   className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700"
                 >
-                  {language === 'uk' ? 'Додати спосіб оплати' : language === 'ru' ? 'Добавить способ оплаты' : 'Add Payment Method'}
+                  {isEditing
+                    ? (language === 'uk' ? 'Зберегти зміни' : language === 'ru' ? 'Сохранить изменения' : 'Save Changes')
+                    : (language === 'uk' ? 'Додати спосіб оплати' : language === 'ru' ? 'Добавить способ оплаты' : 'Add Payment Method')
+                  }
                 </button>
               </div>
             </form>

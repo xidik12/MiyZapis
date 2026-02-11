@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -889,71 +890,29 @@ const CustomerSettings: React.FC = () => {
                 </div>
               )}
 
-              {/* Payment Methods */}
+              {/* Payment Methods - Redirect to dedicated page */}
               {activeSection === 'payments' && (
                 <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                  <div className="text-center py-12">
+                    <CreditCardIcon className="h-16 w-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                    <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                       {t('customer.settings.payments')}
                     </h2>
-                    <button
-                      onClick={handleAddPaymentMethod}
-                      className="bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors flex items-center"
+                    <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                      {language === 'uk'
+                        ? 'Керуйте вашими способами оплати на спеціальній сторінці'
+                        : language === 'ru'
+                        ? 'Управляйте вашими способами оплаты на специальной странице'
+                        : 'Manage your payment methods on the dedicated page'
+                      }
+                    </p>
+                    <Link
+                      to="/payments"
+                      className="inline-flex items-center bg-primary-600 text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors"
                     >
-                      <PlusIcon className="h-4 w-4 mr-2" />
-                      {t('customer.settings.addPaymentMethod')}
-                    </button>
-                  </div>
-
-                  <div className="space-y-4">
-                    {paymentMethods.length === 0 ? (
-                      <div className="text-center py-8">
-                        <CreditCardIcon className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                        <p className="text-gray-500 dark:text-gray-400 mb-4">{t('customer.settings.noPaymentMethods')}</p>
-                        <button
-                          onClick={handleAddPaymentMethod}
-                          className="bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors flex items-center mx-auto"
-                        >
-                          <PlusIcon className="h-4 w-4 mr-2" />
-                          {t('customer.settings.addFirstPayment')}
-                        </button>
-                      </div>
-                    ) : (
-                      paymentMethods.map((method) => (
-                      <div key={method.id} className="border border-gray-200 dark:border-gray-600 rounded-xl p-4 flex items-center justify-between">
-                        <div className="flex items-center">
-                          <CreditCardIcon className="h-8 w-8 text-gray-400 dark:text-gray-500 mr-3" />
-                          <div>
-                            <p className="font-medium text-gray-900 dark:text-gray-100">{method.nickname || `${method.cardBrand} •••• ${method.cardLast4}`}</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              **** **** **** {method.cardLast4}
-                              {method.cardExpMonth && method.cardExpYear && (
-                                <span className="ml-2">
-                                  {t('customer.settings.expires')} {method.cardExpMonth.toString().padStart(2, '0')}/{method.cardExpYear}
-                                </span>
-                              )}
-                            </p>
-                            {method.isDefault && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                                {t('customer.settings.defaultPayment')}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <button className="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
-                            {t('customer.settings.editPayment')}
-                          </button>
-                          <button
-                            onClick={() => handleRemovePaymentMethod(method.id)}
-                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
-                          >
-                            {t('customer.settings.removePayment')}
-                          </button>
-                        </div>
-                      </div>
-                      ))
-                    )}
+                      <CreditCardIcon className="h-4 w-4 mr-2" />
+                      {language === 'uk' ? 'Перейти до способів оплати' : language === 'ru' ? 'Перейти к способам оплаты' : 'Go to Payment Methods'}
+                    </Link>
                   </div>
                 </div>
               )}
@@ -1029,91 +988,6 @@ const CustomerSettings: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Add Payment Method Modal */}
-      {showAddPaymentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-black dark:bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-200 dark:border-gray-700">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center">
-              <CreditCardIcon className="h-6 w-6 mr-2 text-primary-600 dark:text-primary-400" />
-              {t('customer.settings.addPaymentMethod')}
-            </h3>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.target as HTMLFormElement);
-              handleSavePaymentMethod({
-                type: 'card',
-                name: formData.get('cardName'),
-                last4: formData.get('cardNumber')?.toString().slice(-4) || ''
-              });
-            }}>
-              <div className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                    {language === 'uk' ? 'Тип оплати' : language === 'ru' ? 'Тип оплаты' : 'Payment Type'}
-                  </label>
-                  <select 
-                    name="paymentType"
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                  >
-                    <option value="card">{language === 'uk' ? 'Банківська картка' : language === 'ru' ? 'Банковская карта' : 'Bank Card'}</option>
-                    <option value="privat">PrivatBank</option>
-                    <option value="mono">Monobank</option>
-                    <option value="ukrsib">UkrSibbank</option>
-                    <option value="oschadbank">Oschadbank</option>
-                    <option value="paypal">PayPal</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                    {language === 'uk' ? 'Назва картки' : language === 'ru' ? 'Название карты' : 'Card Name'}
-                  </label>
-                  <input
-                    type="text"
-                    name="cardName"
-                    placeholder={language === 'uk' ? 'Моя картка Visa' : language === 'ru' ? 'Моя карта Visa' : 'My Visa Card'}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
-                    {language === 'uk' ? 'Номер картки' : language === 'ru' ? 'Номер карты' : 'Card Number'}
-                  </label>
-                  <input
-                    type="text"
-                    name="cardNumber"
-                    placeholder="1234 5678 9012 3456"
-                    maxLength={19}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                    onChange={(e) => {
-                      // Format card number with spaces
-                      let value = e.target.value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
-                      e.target.value = value;
-                    }}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end space-x-3 mt-8 pt-4 border-t border-gray-200 dark:border-gray-600">
-                <button
-                  type="button"
-                  onClick={() => setShowAddPaymentModal(false)}
-                  className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium rounded-xl transition-colors"
-                >
-                  {language === 'uk' ? 'Скасувати' : language === 'ru' ? 'Отмена' : 'Cancel'}
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-medium transition-colors shadow-sm"
-                >
-                  {t('customer.settings.addPaymentMethod')}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Add Address Modal */}
       {showAddAddressModal && (

@@ -53,7 +53,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
         onClick={onCancel}
       />
       <div
-        className={`relative bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-gray-200/20 dark:border-gray-700/20 rounded-2xl shadow-2xl w-full max-w-md p-6 transition-all duration-200 ${
+        className={`relative bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-gray-200/20 dark:border-gray-700/20 rounded-2xl shadow-2xl w-full max-w-[calc(100vw-2rem)] sm:max-w-md p-4 sm:p-6 transition-all duration-200 ${
           isAnimating
             ? 'opacity-100 scale-100 translate-y-0'
             : 'opacity-0 scale-95 translate-y-4'

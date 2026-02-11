@@ -154,7 +154,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-end sm:items-start justify-center px-0 sm:px-4 py-0 sm:py-4" onClick={onClose}>
-      <div ref={panelRef} className={`relative w-full max-w-lg shadow-lg rounded-t-lg sm:rounded-xl ${
+      <div ref={panelRef} className={`relative w-full max-w-[calc(100vw-2rem)] sm:max-w-lg shadow-lg rounded-t-lg sm:rounded-xl ${
         theme === 'dark' 
           ? 'bg-gray-800 border-gray-600' 
           : 'bg-white border-gray-300'

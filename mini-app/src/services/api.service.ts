@@ -222,6 +222,118 @@ class ApiService {
     return this.post('/payments/confirm', { paymentIntentId });
   }
 
+  // Wallet endpoints
+  async getWalletBalance() {
+    return this.get('/wallet/balance');
+  }
+
+  async getWalletTransactions(params?: {
+    page?: number;
+    limit?: number;
+    type?: string;
+  }): Promise<PaginatedResponse<any>> {
+    return this.get('/wallet/transactions', params);
+  }
+
+  // Favorites endpoints
+  async getFavorites(params?: {
+    page?: number;
+    limit?: number;
+    type?: 'specialist' | 'service';
+  }): Promise<PaginatedResponse<any>> {
+    return this.get('/favorites', params);
+  }
+
+  async addFavorite(data: { targetId: string; type: 'specialist' | 'service' }) {
+    return this.post('/favorites', data);
+  }
+
+  async removeFavorite(id: string) {
+    return this.delete(`/favorites/${id}`);
+  }
+
+  // Loyalty endpoints
+  async getLoyaltyStatus() {
+    return this.get('/loyalty/status');
+  }
+
+  async getLoyaltyHistory(params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<PaginatedResponse<any>> {
+    return this.get('/loyalty/history', params);
+  }
+
+  async redeemReward(rewardId: string) {
+    return this.post('/loyalty/redeem', { rewardId });
+  }
+
+  async getLoyaltyRewards(): Promise<any[]> {
+    return this.get('/loyalty/rewards');
+  }
+
+  // Community endpoints
+  async getCommunityPosts(params?: {
+    page?: number;
+    limit?: number;
+    type?: string;
+    search?: string;
+  }): Promise<PaginatedResponse<any>> {
+    return this.get('/community/posts', params);
+  }
+
+  async createCommunityPost(data: { title: string; content: string; type: string; image?: string }) {
+    return this.post('/community/posts', data);
+  }
+
+  async likeCommunityPost(postId: string) {
+    return this.post(`/community/posts/${postId}/like`);
+  }
+
+  async unlikeCommunityPost(postId: string) {
+    return this.delete(`/community/posts/${postId}/like`);
+  }
+
+  // Specialist service management
+  async getMyServices(): Promise<any[]> {
+    return this.get('/specialists/me/services');
+  }
+
+  async createService(data: {
+    name: string;
+    description: string;
+    categoryId: string;
+    duration: number;
+    price: number;
+    currency?: string;
+  }) {
+    return this.post('/specialists/me/services', data);
+  }
+
+  async updateService(id: string, data: any) {
+    return this.put(`/specialists/me/services/${id}`, data);
+  }
+
+  async deleteService(id: string) {
+    return this.delete(`/specialists/me/services/${id}`);
+  }
+
+  // Notifications preferences
+  async getNotificationPreferences() {
+    return this.get('/users/notification-preferences');
+  }
+
+  async updateNotificationPreferences(prefs: {
+    email?: boolean;
+    sms?: boolean;
+    push?: boolean;
+    telegram?: boolean;
+    bookingReminders?: boolean;
+    promotions?: boolean;
+  }) {
+    return this.put('/users/notification-preferences', prefs);
+  }
+
   // Health check
   async healthCheck() {
     return this.get('/health');
