@@ -543,7 +543,7 @@ const SpecialistProfilePage: React.FC = () => {
                           <img
                             src={finalImageUrl}
                             alt={`Portfolio ${index + 1}`}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform cursor-pointer"
+                            className="w-full h-full object-cover transition-transform cursor-pointer"
                             loading="lazy"
                             onClick={() => setLightbox({ open: true, images: (lightbox.images?.length ? lightbox.images : portfolioImages.map((p:any)=>p.imageUrl||p)), index })}
                             onError={(e) => {

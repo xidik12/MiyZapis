@@ -35,6 +35,8 @@ import cronRoutes from './cron';
 import groupSessionsRoutes from './group-sessions';
 import expenseRoutes from './expenses';
 import communityRoutes from './community';
+import pushRoutes from './push';
+import waitlistRoutes from './waitlist';
 
 const router = Router();
 
@@ -74,13 +76,17 @@ router.use('/diagnostics', diagnosticsRoutes);
 router.use('/group-sessions', groupSessionsRoutes);
 router.use('/expenses', expenseRoutes);
 router.use('/community', communityRoutes);
+router.use('/push', pushRoutes);
+router.use('/waitlist', waitlistRoutes);
 
-// Admin setup routes (for initial setup only)
+// Admin setup routes (for initial setup only - production gated internally)
 router.use('/setup', setupAdminRoutes);
 
-// Debug routes (for testing only)
-router.use('/debug', debugAdminRoutes);
-router.use('/debug/email', debugEmailRoutes);
+// Debug routes - only available in development
+if (process.env.NODE_ENV !== 'production') {
+  router.use('/debug', debugAdminRoutes);
+  router.use('/debug/email', debugEmailRoutes);
+}
 
 // Cron job routes (internal use only - should be protected)
 router.use('/cron', cronRoutes);

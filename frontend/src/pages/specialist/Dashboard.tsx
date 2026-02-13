@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -25,21 +25,14 @@ import { CalendarIcon, ChartBarIcon, CurrencyDollarIcon, StarIcon, UserGroupIcon
 
 // Helper function to get the booking currency
 const getBookingCurrency = (booking: any): 'USD' | 'EUR' | 'UAH' => {
-  // Debug logging to see what currency is stored
-  console.log(`🔍 getBookingCurrency for booking ${booking.id}:`, {
-    serviceName: booking.service?.name || booking.serviceName,
-    storedCurrency: booking.service?.currency,
-    totalAmount: booking.totalAmount
-  });
-  
   // Use the service's stored currency, defaulting to UAH if not specified
   const currency = (booking.service?.currency as 'USD' | 'EUR' | 'UAH') || 'USD';
-  console.log(`💱 Final currency for ${booking.service?.name || booking.serviceName}: ${currency}`);
   return currency;
 };
 
 const SpecialistDashboard: React.FC = () => {
   const user = useAppSelector(selectUser);
+  const navigate = useNavigate();
   const { formatPrice, convertPrice, currency } = useCurrency();
   const { t, language } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -63,6 +56,27 @@ const SpecialistDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   // Removed sidebarOpen state - layout is handled by SpecialistLayout
 
+  // Check if specialist needs onboarding (no services created yet)
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      try {
+        const services = await specialistService.getServices();
+        // If no services exist, redirect to onboarding wizard
+        if (!services || services.length === 0) {
+          // Also check if this is a previously-dismissed onboarding
+          const dismissed = localStorage.getItem('miyzapis_onboarding_dismissed');
+          if (!dismissed) {
+            navigate('/specialist/onboarding', { replace: true });
+          }
+        }
+      } catch (err) {
+        // If API fails, don't block the dashboard - just skip check
+        console.warn('Onboarding check skipped:', err);
+      }
+    };
+    checkOnboarding();
+  }, [navigate]);
+
   // Update time every minute
   useEffect(() => {
     const timer = setInterval(() => {
@@ -77,22 +91,12 @@ const SpecialistDashboard: React.FC = () => {
       try {
         setLoading(true);
         
-        console.log('🔍 Dashboard: Starting data load...');
-        console.log('🔍 Auth token present:', !!localStorage.getItem('auth_token'));
-        console.log('🔍 User from Redux:', user);
-        
         // Load data from multiple sources with retry logic - prioritize bookings API for accuracy
         const [analyticsData, upcomingBookingsData, completedBookingsData] = await Promise.allSettled([
           retryRequest(() => analyticsService.getOverview(), 2, 1000),
           retryRequest(() => bookingService.getBookings({ limit: 10, status: 'confirmed,pending,inProgress' }, 'specialist'), 2, 1000),
           retryRequest(() => bookingService.getBookings({ limit: 100, status: 'COMPLETED' }, 'specialist'), 2, 1000)
         ]);
-
-        console.log('🔍 Dashboard API results:', {
-          analytics: analyticsData.status,
-          upcomingBookings: upcomingBookingsData.status,
-          completedBookings: completedBookingsData.status
-        });
 
         if (analyticsData.status === 'rejected') {
           console.error('🔍 Analytics failed:', analyticsData.reason);
@@ -123,43 +127,23 @@ const SpecialistDashboard: React.FC = () => {
         if (completedBookingsData.status === 'fulfilled' && completedBookingsData.value) {
           try {
             const completedBookings = Array.isArray(completedBookingsData.value.bookings) ? completedBookingsData.value.bookings : [];
-            console.log('📊 Dashboard completed bookings:', completedBookings.length);
-            
+
             // Calculate total bookings and monthly revenue from actual completed bookings
             stats.totalBookings = completedBookings.length;
             
             // Calculate total revenue from completed bookings (accurate amounts)
-            console.log('🔍 Dashboard: Raw completed bookings data:', completedBookings.map(b => ({ 
-              id: b.id, 
-              service: b.service?.name, 
-              totalAmount: b.totalAmount,
-              amount: b.amount,
-              currency: b.service?.currency
-            })));
-            
             const totalRevenue = Math.round(completedBookings.reduce((sum, booking) => {
               const amount = booking.totalAmount || 0;
               const bookingCurrency = getBookingCurrency(booking);
 
-              console.log(`🔍 Adding booking ${booking.id} (${booking.service?.name}): ${amount} ${bookingCurrency}`);
-
               // Convert to user's preferred currency for consistent total
               const convertedAmount = convertPrice(amount, bookingCurrency);
-
-              console.log(`💱 Converted ${amount} ${bookingCurrency} → ${convertedAmount} (user currency)`);
 
               return sum + convertedAmount;
             }, 0) * 100) / 100;
             
-            console.log('🔍 Dashboard: Calculated total revenue:', totalRevenue);
-            
             // For now, use total revenue as monthly revenue (can be refined later)
             stats.monthlyRevenue = totalRevenue;
-            
-            console.log('📊 Dashboard calculated stats:', {
-              totalBookings: stats.totalBookings,
-              monthlyRevenue: stats.monthlyRevenue
-            });
             
             // Calculate completion rate based on completed vs total (real calculation only)
             if (upcomingBookingsData.status === 'fulfilled' && upcomingBookingsData.value) {
@@ -195,7 +179,6 @@ const SpecialistDashboard: React.FC = () => {
             
             if (responsiveBookings > 0) {
               stats.responseTime = Math.round(totalResponseTimeMinutes / responsiveBookings);
-              console.log('📊 Calculated response time:', stats.responseTime, 'minutes from', responsiveBookings, 'bookings');
             }
             
             // Only use real data - no estimates or defaults
@@ -223,7 +206,6 @@ const SpecialistDashboard: React.FC = () => {
         // Try to enhance with analytics data if available, but don't rely on it
         if (analyticsData.status === 'fulfilled' && analyticsData.value) {
           const overview = analyticsData.value;
-          console.log('📊 Dashboard analytics enhancement:', overview);
           
           // Only use analytics data if it seems reasonable (not zeros)
           if (overview.averageRating > 0) {
@@ -260,7 +242,6 @@ const SpecialistDashboard: React.FC = () => {
         if (completedBookingsData.status === 'fulfilled' && completedBookingsData.value) {
           try {
             const completedBookings = Array.isArray(completedBookingsData.value.bookings) ? completedBookingsData.value.bookings : [];
-            console.log('📊 Dashboard recent completed bookings:', completedBookings);
 
             recentBookings = completedBookings
               .filter(booking => booking && booking.id)
@@ -297,8 +278,6 @@ const SpecialistDashboard: React.FC = () => {
                   service: booking.service // Preserve service object for currency detection
                 };
                 
-                console.log(`🔍 Dashboard recent booking ${booking.id}: totalAmount=${booking.totalAmount}, processed amount=${processedBooking.amount}`);
-                
                 return processedBooking;
               });
           } catch (err) {
@@ -310,7 +289,6 @@ const SpecialistDashboard: React.FC = () => {
         if (upcomingBookingsData.status === 'fulfilled' && upcomingBookingsData.value) {
           try {
             const upcomingBookings = Array.isArray(upcomingBookingsData.value.bookings) ? upcomingBookingsData.value.bookings : [];
-            console.log('📊 Dashboard upcoming bookings for today:', upcomingBookings);
 
             upcomingAppointments = upcomingBookings
               .filter(booking => {
@@ -338,16 +316,11 @@ const SpecialistDashboard: React.FC = () => {
           }
         }
 
-        console.log('📊 Final dashboard data:', { stats, recentBookings, upcomingAppointments });
-        console.log('📊 Monthly Revenue being set to:', stats.monthlyRevenue);
-
         setDashboardData({
           stats,
           recentBookings,
           upcomingAppointments
         });
-
-        console.log('📊 Dashboard state updated. Current monthlyRevenue should be:', stats.monthlyRevenue);
 
       } catch (err) {
         console.error('Error loading dashboard data:', err);
@@ -498,7 +471,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
         <div className="mt-4 lg:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
           <Link
             to="/specialist/services"
-            className="inline-flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
+            className="inline-flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl text-sm sm:text-base"
           >
             <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             {t('dashboard.specialist.addService')}
@@ -664,12 +637,7 @@ ${dashboardData.upcomingAppointments?.length ? dashboardData.upcomingAppointment
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-gray-900 dark:text-white">
-                    {(() => {
-                      const currency = getBookingCurrency(booking);
-                      const formatted = formatPrice(booking.totalAmount, currency);
-                      console.log(`💰 Displaying price for ${booking.service?.name}: ${booking.totalAmount} ${currency} → ${formatted}`);
-                      return formatted;
-                    })()}
+                    {formatPrice(booking.totalAmount, getBookingCurrency(booking))}
                   </p>
                   <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(booking.status)}`}>
                     {getStatusText(booking.status)}

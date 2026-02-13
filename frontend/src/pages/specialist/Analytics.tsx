@@ -293,7 +293,6 @@ const SpecialistAnalytics: React.FC = () => {
 
   // Export handlers
   const handleExportPDF = async () => {
-    console.log('Export PDF clicked!', analyticsData);
     try {
       // Create a simplified analytics report
       const reportData = {
@@ -433,34 +432,25 @@ Performance:
         setError(null);
         
         // Load booking data instead of broken analytics APIs
-        console.log('📊 Analytics: Loading completed bookings for real data...');
         const completedBookingsResult = await retryRequest(
           () => bookingService.getBookings({ limit: 100, status: 'COMPLETED' }, 'specialist'), 
           2, 1000
         );
         
-        console.log('📊 Analytics: Completed bookings result:', completedBookingsResult);
-
         // Calculate analytics from actual booking data
         const completedBookings = Array.isArray(completedBookingsResult.bookings) ? completedBookingsResult.bookings : [];
-        console.log('📊 Analytics: Processing', completedBookings.length, 'completed bookings');
         
         // Calculate real metrics from booking data with proper currency conversion
         const totalRevenue = completedBookings.reduce((sum, booking) => {
           const amount = booking.totalAmount || 0;
           const bookingCurrency = getBookingCurrency(booking);
           
-          console.log(`📊 Analytics: Adding booking ${booking.id} (${booking.service?.name}): ${amount} ${bookingCurrency}`);
-          
           // Convert to user's preferred currency for consistent total
           const convertedAmount = convertPrice(amount, bookingCurrency);
-          
-          console.log(`💱 Analytics: Converted ${amount} ${bookingCurrency} → ${convertedAmount} (user currency)`);
           
           return sum + Math.round(convertedAmount * 100) / 100;
         }, 0);
         
-        console.log('📊 Analytics: Calculated total revenue:', totalRevenue);
         const totalBookings = completedBookings.length;
         
         // Count unique customers
@@ -505,7 +495,6 @@ Performance:
           period: { start: filters.startDate, end: filters.endDate }
         };
         
-        console.log('📊 Analytics: Calculated overview:', overview);
 
         const performance: any = {
           averageResponseTime: averageResponseTime,
@@ -602,8 +591,6 @@ Performance:
           period: { start: filters.startDate, end: filters.endDate }
         };
 
-        console.log('📊 Analytics data loaded:', { overview, performance, bookings, revenue, services });
-        
         setAnalyticsData({
           overview,
           performance,
@@ -697,15 +684,12 @@ Performance:
           yearly: generateChartDataForPeriod('yearly')
         };
         
-        console.log('📈 Generated chart data:', newChartData);
-        
         setChartData(newChartData);
 
         // Load profile view statistics
         try {
           const profileStats = await profileViewService.getProfileViewStats('month');
           setProfileViewStats(profileStats);
-          console.log('👁️ Profile view stats loaded:', profileStats);
         } catch (profileError) {
           console.warn('Failed to load profile view stats:', profileError);
           setProfileViewStats({
@@ -819,7 +803,6 @@ Performance:
   // Get the appropriate data based on selected period
   const getCurrentPeriodData = () => {
     const data = chartData[selectedPeriod] || { revenue: [], bookings: [], labels: [] };
-    console.log(`📈 getCurrentPeriodData for ${selectedPeriod}:`, data);
     return data;
   };
   
@@ -1120,14 +1103,7 @@ Performance:
             {!loading && (currentPeriodData.revenue.length > 0 || currentPeriodData.bookings.length > 0) ? (
               <>
                 <SimpleLineChart
-                  data={(() => {
-                    const data = selectedView === 'revenue' ? currentPeriodData.revenue : currentPeriodData.bookings;
-                    console.log(`📊 Chart data for ${selectedView}:`, data, 'Values:', data.join(', '));
-                    console.log(`📊 Revenue data:`, currentPeriodData.revenue, 'Values:', currentPeriodData.revenue.join(', '));
-                    console.log(`📊 Bookings data:`, currentPeriodData.bookings, 'Values:', currentPeriodData.bookings.join(', '));
-                    console.log(`📊 Selected period: ${selectedPeriod}`);
-                    return data;
-                  })()}
+                  data={selectedView === 'revenue' ? currentPeriodData.revenue : currentPeriodData.bookings}
                   labels={translateChartLabels(currentPeriodData.labels, selectedPeriod)}
                   color={selectedView === 'revenue' ? '#059669' : '#2563eb'} // Green for revenue, blue for bookings
                   type="line"

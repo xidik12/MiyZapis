@@ -126,7 +126,7 @@ export const SpecialistResponse: React.FC<SpecialistResponseProps> = ({
                   {/* Like Button */}
                   <button
                     onClick={handleLikeClick}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-95 ${
                       response.userReaction === 'like'
                         ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -141,7 +141,7 @@ export const SpecialistResponse: React.FC<SpecialistResponseProps> = ({
                   {/* Dislike Button */}
                   <button
                     onClick={handleDislikeClick}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-95 ${
                       response.userReaction === 'dislike'
                         ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'

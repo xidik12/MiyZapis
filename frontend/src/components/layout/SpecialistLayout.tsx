@@ -6,6 +6,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser, logout } from '../../store/slices/authSlice';
 import { isFeatureEnabled } from '../../config/features';
+import { Logo } from '@/components/ui/Logo';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
@@ -204,34 +205,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
                 window.scrollTo(0, 0);
               }}
             >
-              <img 
-                src="/miyzapis_logo.png" 
-                alt="МійЗапис Logo" 
-                className="w-8 h-8 group-hover:scale-110 transition-all duration-300"
-                onError={(e) => {
-                  const img = e.currentTarget as HTMLImageElement;
-                  const currentSrc = img.src;
-                  
-                  if (currentSrc.includes('miyzapis_logo.png')) {
-                    console.log('🖼️ SpecialistLayout logo failed, trying SVG fallback');
-                    img.src = '/logo.svg';
-                  } else if (currentSrc.includes('logo.svg')) {
-                    console.log('🖼️ SpecialistLayout SVG logo failed, trying favicon fallback');
-                    img.src = '/favicon.svg';
-                  } else {
-                    console.log('🖼️ SpecialistLayout all logos failed, replacing with text fallback');
-                    img.style.display = 'none';
-                    const parent = img.parentElement;
-                    if (parent && !parent.querySelector('.logo-fallback')) {
-                      const fallback = document.createElement('div');
-                      fallback.className = 'logo-fallback w-8 h-8 bg-blue-600 text-white rounded flex items-center justify-center text-xs font-bold';
-                      fallback.textContent = 'МЗ';
-                      parent.insertBefore(fallback, img);
-                    }
-                  }
-                }}
-                onLoad={() => console.log('✅ SpecialistLayout logo loaded successfully')}
-              />
+              <Logo size="md" className="group-hover:scale-110 transition-all duration-300" />
               <span className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-500 transition-colors duration-300">
                 МійЗапис
               </span>
@@ -303,8 +277,8 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
                 className={`
                   flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200
                   ${isActive
-                    ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30 transform scale-105'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 hover:scale-105'
+                    ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80'
                   }
                   ${isCollapsed ? 'justify-center' : 'justify-between'}
                 `}
@@ -347,7 +321,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
             className={`
               flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-3'} text-sm font-semibold rounded-xl transition-all duration-200
               text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 mobile-touch-target
-              ${isCollapsed ? 'justify-center hover:scale-105 hover:shadow-lg hover:shadow-primary-500/20' : 'justify-start space-x-3'}
+              ${isCollapsed ? 'justify-center hover:shadow-lg hover:shadow-primary-500/20' : 'justify-start space-x-3'}
             `}
             aria-label={theme === 'dark' ? t('theme.light') : t('theme.dark')}
           >
@@ -385,7 +359,7 @@ const SpecialistLayout: React.FC<SpecialistLayoutProps> = ({ children }) => {
             className={`
               flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-3'} text-sm font-semibold rounded-xl transition-all duration-200
               text-red-600 hover:bg-red-50/80 dark:text-red-400 dark:hover:bg-red-900/30 mobile-touch-target
-              ${isCollapsed ? 'justify-center hover:scale-105 hover:shadow-lg hover:shadow-red-500/20' : 'justify-start space-x-3'}
+              ${isCollapsed ? 'justify-center hover:shadow-lg hover:shadow-red-500/20' : 'justify-start space-x-3'}
             `}
           >
             <ArrowRightOnRectangleIcon className={isCollapsed ? 'w-5 h-5' : 'w-7 h-7 sm:w-6 sm:h-6'} />

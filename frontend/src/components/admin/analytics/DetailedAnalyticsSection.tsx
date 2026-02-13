@@ -8,6 +8,7 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { StatCard } from '../ui/StatCard';
 import { TrendLineChart } from '../charts/TrendLineChart';
 import { DistributionPieChart } from '../charts/DistributionPieChart';
@@ -26,6 +27,7 @@ export const DetailedAnalyticsSection: React.FC<DetailedAnalyticsSectionProps> =
   period,
   loading = false
 }) => {
+  const { t } = useLanguage();
   const [activeSubTab, setActiveSubTab] = useState<'bookings' | 'revenue' | 'referrals'>('bookings');
 
   if (loading || !data) {
@@ -44,9 +46,9 @@ export const DetailedAnalyticsSection: React.FC<DetailedAnalyticsSectionProps> =
 
   // Sub-tabs configuration
   const subTabs = [
-    { id: 'bookings' as const, name: 'Booking Analytics', icon: CalendarIcon },
-    { id: 'revenue' as const, name: 'Revenue Analytics', icon: CurrencyDollarIcon },
-    { id: 'referrals' as const, name: 'Referral Performance', icon: UserGroupIcon }
+    { id: 'bookings' as const, name: t('admin.analytics.bookingAnalytics'), icon: CalendarIcon },
+    { id: 'revenue' as const, name: t('admin.analytics.revenueAnalytics'), icon: CurrencyDollarIcon },
+    { id: 'referrals' as const, name: t('admin.analytics.referralPerformance'), icon: UserGroupIcon }
   ];
 
   return (
@@ -108,6 +110,7 @@ export const DetailedAnalyticsSection: React.FC<DetailedAnalyticsSectionProps> =
 
 // Booking Analytics Sub-component
 const BookingAnalyticsTab: React.FC<{ data: BookingAnalytics; period: Period }> = ({ data, period }) => {
+  const { t } = useLanguage();
   // Add null checks for all arrays - use correct property names from backend
   const bookingTrends = data?.bookingTrends || [];
   const statusStats = data?.statusStats || [];
@@ -171,28 +174,28 @@ const BookingAnalyticsTab: React.FC<{ data: BookingAnalytics; period: Period }> 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total Bookings"
+          title={t('admin.overview.totalBookings')}
           value={totalBookings}
           icon={<CalendarIcon className="w-6 h-6" />}
-          subtitle={`${period} period`}
+          subtitle={`${period} ${t('admin.analytics.period')}`}
         />
         <StatCard
-          title="Completion Rate"
+          title={t('admin.analytics.completionRate')}
           value={`${completionRate.toFixed(1)}%`}
           icon={<CheckCircleIcon className="w-6 h-6" />}
-          subtitle={`${completedBookings} completed`}
+          subtitle={`${completedBookings} ${t('admin.analytics.completed')}`}
         />
         <StatCard
-          title="Cancellation Rate"
+          title={t('admin.analytics.cancellationRate')}
           value={`${cancellationRate.toFixed(1)}%`}
           icon={<XCircleIcon className="w-6 h-6" />}
-          subtitle={`${cancelledBookings} cancelled`}
+          subtitle={`${cancelledBookings} ${t('admin.analytics.cancelled')}`}
         />
         <StatCard
-          title="Avg/Day"
+          title={t('admin.analytics.avgPerDay')}
           value={avgBookingsPerDay.toFixed(1)}
           icon={<ArrowTrendingUpIcon className="w-6 h-6" />}
-          subtitle="Daily average"
+          subtitle={t('admin.analytics.dailyAverage')}
         />
       </div>
 
@@ -201,12 +204,12 @@ const BookingAnalyticsTab: React.FC<{ data: BookingAnalytics; period: Period }> 
         {/* Booking Timeline */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Booking Volume Timeline
+            {t('admin.analytics.bookingVolume')}
           </h3>
           <TrendLineChart
             data={bookingTimelineData}
             dataKeys={[
-              { key: 'bookings', name: 'Bookings', color: '#3B82F6' }
+              { key: 'bookings', name: t('admin.analytics.bookings'), color: '#3B82F6' }
             ]}
             height={300}
           />
@@ -215,7 +218,7 @@ const BookingAnalyticsTab: React.FC<{ data: BookingAnalytics; period: Period }> 
         {/* Status Distribution */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Status Distribution
+            {t('admin.analytics.statusDistribution')}
           </h3>
           <DistributionPieChart
             data={statusDistributionData}
@@ -227,12 +230,12 @@ const BookingAnalyticsTab: React.FC<{ data: BookingAnalytics; period: Period }> 
       {/* Service Popularity */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Most Popular Services
+          {t('admin.analytics.mostPopularServices')}
         </h3>
         <ComparisonBarChart
           data={servicePopularityData}
           bars={[
-            { dataKey: 'bookings', name: 'Bookings', color: '#3B82F6' }
+            { dataKey: 'bookings', name: t('admin.analytics.bookings'), color: '#3B82F6' }
           ]}
           height={300}
         />
@@ -241,12 +244,12 @@ const BookingAnalyticsTab: React.FC<{ data: BookingAnalytics; period: Period }> 
       {/* Peak Hours */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Peak Booking Hours
+          {t('admin.analytics.peakBookingHours')}
         </h3>
         <ComparisonBarChart
           data={peakHoursData}
           bars={[
-            { dataKey: 'bookings', name: 'Bookings', color: '#10B981' }
+            { dataKey: 'bookings', name: t('admin.analytics.bookings'), color: '#10B981' }
           ]}
           height={300}
         />
@@ -257,6 +260,7 @@ const BookingAnalyticsTab: React.FC<{ data: BookingAnalytics; period: Period }> 
 
 // Revenue Analytics Sub-component
 const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; categoryRevenue?: Array<{ category: string; total_revenue: number }> }> = ({ data, period, categoryRevenue: categoryRevenueProp }) => {
+  const { t } = useLanguage();
   // Add null checks for all arrays - use correct property names from backend
   const revenueTrends = data?.revenueTrends || [];
   const paymentMethodStats = data?.paymentMethodStats || [];
@@ -302,7 +306,7 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
   const topEarnersColumns: Column<typeof topEarnersData[0]>[] = [
     {
       key: 'name',
-      label: 'Specialist',
+      label: t('admin.analytics.specialist'),
       sortable: true,
       render: (row) => (
         <div>
@@ -313,7 +317,7 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
     },
     {
       key: 'revenue',
-      label: 'Revenue',
+      label: t('admin.analytics.revenue'),
       sortable: true,
       render: (row) => (
         <span className="font-semibold text-green-600 dark:text-green-400">
@@ -323,12 +327,12 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
     },
     {
       key: 'bookings',
-      label: 'Bookings',
+      label: t('admin.analytics.bookings'),
       sortable: true
     },
     {
       key: 'avgBookingValue',
-      label: 'Avg Value',
+      label: t('admin.analytics.avgValue'),
       sortable: true,
       render: (row) => `$${(row.avgBookingValue || 0).toFixed(2)}`
     }
@@ -356,42 +360,42 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total Revenue"
+          title={t('admin.analytics.totalRevenue')}
           value={`$${(totalRevenue / 1000).toFixed(1)}K`}
           icon={<CurrencyDollarIcon className="w-6 h-6" />}
-          subtitle={`${period} period`}
+          subtitle={`${period} ${t('admin.analytics.period')}`}
         />
         <StatCard
-          title="Platform Fees"
+          title={t('admin.analytics.platformFees')}
           value={`$${(totalFees / 1000).toFixed(1)}K`}
           icon={<ArrowTrendingUpIcon className="w-6 h-6" />}
-          subtitle={`${((totalFees / Math.max(totalRevenue, 1)) * 100).toFixed(1)}% of revenue`}
+          subtitle={`${((totalFees / Math.max(totalRevenue, 1)) * 100).toFixed(1)}${t('admin.analytics.ofRevenue')}`}
         />
         <StatCard
-          title="Net Revenue"
+          title={t('admin.analytics.netRevenue')}
           value={`$${(netRevenue / 1000).toFixed(1)}K`}
           icon={<ChartBarIcon className="w-6 h-6" />}
-          subtitle={`After ${totalRefunds} refunds`}
+          subtitle={t('admin.analytics.afterRefunds')}
         />
         <StatCard
-          title="Avg Transaction"
+          title={t('admin.analytics.avgTransaction')}
           value={`$${avgTransactionValue.toFixed(2)}`}
           icon={<CurrencyDollarIcon className="w-6 h-6" />}
-          subtitle="Per booking"
+          subtitle={t('admin.analytics.perBooking')}
         />
       </div>
 
       {/* Revenue Timeline */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Revenue Trends
+          {t('admin.analytics.revenueTrends')}
         </h3>
         <TrendLineChart
           data={revenueTimelineData}
           dataKeys={[
-            { key: 'revenue', name: 'Total Revenue', color: '#3B82F6' },
-            { key: 'fees', name: 'Platform Fees', color: '#10B981' },
-            { key: 'refunds', name: 'Refunds', color: '#EF4444' }
+            { key: 'revenue', name: t('admin.analytics.totalRevenue'), color: '#3B82F6' },
+            { key: 'fees', name: t('admin.analytics.platformFees'), color: '#10B981' },
+            { key: 'refunds', name: t('admin.analytics.refunds'), color: '#EF4444' }
           ]}
           height={300}
         />
@@ -402,7 +406,7 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
         {/* Payment Method Distribution */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Payment Methods
+            {t('admin.analytics.paymentMethods')}
           </h3>
           <DistributionPieChart
             data={paymentMethodData}
@@ -413,12 +417,12 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
         {/* Category Revenue */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Revenue by Category
+            {t('admin.analytics.revenueByCategory')}
           </h3>
           <ComparisonBarChart
             data={categoryRevenueData}
             bars={[
-              { dataKey: 'revenue', name: 'Revenue', color: '#10B981' }
+              { dataKey: 'revenue', name: t('admin.analytics.revenue'), color: '#10B981' }
             ]}
             height={300}
           />
@@ -428,13 +432,13 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
       {/* Top Earners Table */}
       <div>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Top Earning Specialists
+          {t('admin.analytics.topEarningSpecialists')}
         </h3>
         <DataTable
           columns={topEarnersColumns}
           data={topEarnersData}
           pageSize={10}
-          emptyMessage="No specialists found"
+          emptyMessage={t('admin.analytics.noSpecialists')}
         />
       </div>
     </div>
@@ -443,6 +447,7 @@ const RevenueAnalyticsTab: React.FC<{ data: FinancialAnalytics; period: Period; 
 
 // Referral Analytics Sub-component
 const ReferralAnalyticsTab: React.FC<{ data: AdminDashboardData; period: Period }> = (_props) => {
+  const { t } = useLanguage();
   // This would need referral data from the API
   // For now, showing placeholder with the structure
   // Note: _props contains data and period for future implementation
@@ -452,10 +457,10 @@ const ReferralAnalyticsTab: React.FC<{ data: AdminDashboardData; period: Period 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center">
         <UserGroupIcon className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" />
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-          Referral Analytics
+          {t('admin.analytics.referralAnalytics')}
         </h3>
         <p className="text-gray-500 dark:text-gray-400">
-          Referral tracking and performance metrics will be displayed here once the referral system is fully integrated.
+          {t('admin.analytics.referralDescription')}
         </p>
       </div>
     </div>

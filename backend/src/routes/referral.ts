@@ -95,7 +95,7 @@ router.get('/config', authenticateToken, async (req: Request, res: Response) => 
       })
     ]);
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       config: REFERRAL_CONFIG,
       userType: user.userType,
       isSpecialist,
@@ -112,7 +112,7 @@ router.get('/config', authenticateToken, async (req: Request, res: Response) => 
 
   } catch (error) {
     logger.error('Get referral config error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to get referral configuration',
@@ -151,7 +151,7 @@ router.post('/create', authenticateToken, createReferralValidation, async (req: 
 
     const referral = await ReferralService.createReferral(createData);
 
-    res.status(201).json(createSuccessResponse({
+    return res.status(201).json(createSuccessResponse({
       referral: {
         id: referral.id,
         referralCode: referral.referralCode,
@@ -199,7 +199,7 @@ router.post('/create', authenticateToken, createReferralValidation, async (req: 
       }
     }
 
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to create referral',
@@ -293,7 +293,7 @@ router.get('/my-referrals', authenticateToken, async (req: Request, res: Respons
       isExpired: referral.expiresAt < new Date()
     }));
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       referrals: formattedReferrals,
       pagination: {
         total,
@@ -305,7 +305,7 @@ router.get('/my-referrals', authenticateToken, async (req: Request, res: Respons
 
   } catch (error) {
     logger.error('Get my referrals error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to get referrals',
@@ -325,7 +325,7 @@ router.get('/code/:referralCode', async (req: Request, res: Response) => {
     // Track view
     await ReferralService.trackReferralActivity(referralCode, 'VIEW');
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       referral: {
         id: referral.id,
         referralCode: referral.referralCode,
@@ -357,7 +357,7 @@ router.get('/code/:referralCode', async (req: Request, res: Response) => {
       }
     }
 
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to get referral information',
@@ -386,7 +386,7 @@ router.post('/process', authenticateToken, processReferralValidation, async (req
 
     const result = await ReferralService.processReferralCompletion(processData);
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       success: true,
       referral: result,
       message: 'Referral processed successfully'
@@ -420,7 +420,7 @@ router.post('/process', authenticateToken, processReferralValidation, async (req
       }
     }
 
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to process referral',
@@ -442,11 +442,11 @@ router.get('/analytics', authenticateToken, async (req: Request, res: Response) 
 
     const analytics = await ReferralService.getReferralAnalytics(userId);
 
-    res.json(createSuccessResponse({ analytics }));
+    return res.json(createSuccessResponse({ analytics }));
 
   } catch (error) {
     logger.error('Get referral analytics error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to get referral analytics',

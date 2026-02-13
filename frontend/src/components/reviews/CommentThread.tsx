@@ -131,7 +131,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
               {/* Like Button */}
               <button
                 onClick={handleLikeClick}
-                className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-all hover:scale-105 active:scale-95 ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-all active:scale-95 ${
                   comment.userReaction === 'like'
                     ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -144,7 +144,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
               {/* Dislike Button */}
               <button
                 onClick={handleDislikeClick}
-                className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-all hover:scale-105 active:scale-95 ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-all active:scale-95 ${
                   comment.userReaction === 'dislike'
                     ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -158,7 +158,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
               {depth < 3 && ( // Limit nesting depth
                 <button
                   onClick={() => onReply(comment.id)}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all hover:scale-105 active:scale-95"
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all active:scale-95"
                 >
                   <ChatCircleIcon className="w-3 h-3" />
                   <span className="text-xs font-semibold">
@@ -173,7 +173,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
                 <button
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <TrashIcon className="w-3 h-3" />
                   <span className="text-xs font-semibold">

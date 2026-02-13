@@ -83,7 +83,7 @@ export const ReviewFilters: React.FC<ReviewFiltersProps> = ({
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => handleRatingFilter(undefined)}
-            className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-105 active:scale-95 ${
+            className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-95 ${
               filters.rating === undefined
                 ? 'bg-primary-600 text-white shadow-md'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -95,7 +95,7 @@ export const ReviewFilters: React.FC<ReviewFiltersProps> = ({
             <button
               key={rating}
               onClick={() => handleRatingFilter(rating)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-105 active:scale-95 ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-95 ${
                 filters.rating === rating
                   ? 'bg-primary-600 text-white shadow-md'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -155,7 +155,7 @@ export const ReviewFilters: React.FC<ReviewFiltersProps> = ({
         <div className="flex flex-wrap gap-2">
           <button
             onClick={handleVerifiedToggle}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-105 active:scale-95 ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-95 ${
               filters.verified === true
                 ? 'bg-green-600 text-white shadow-md'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -166,7 +166,7 @@ export const ReviewFilters: React.FC<ReviewFiltersProps> = ({
           </button>
           <button
             onClick={handleWithCommentToggle}
-            className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-105 active:scale-95 ${
+            className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 active:scale-95 ${
               filters.withComment === true
                 ? 'bg-blue-600 text-white shadow-md'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'

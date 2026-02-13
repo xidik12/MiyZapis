@@ -6,7 +6,7 @@ async function ensureLoyaltySchema() {
   if (schemaEnsured) return;
   try {
     // Create rewards table
-    await prisma.$executeRawUnsafe(`
+    await prisma.$executeRaw`
       CREATE TABLE IF NOT EXISTS "loyalty_rewards" (
         "id" TEXT PRIMARY KEY,
         "specialistId" TEXT NOT NULL,
@@ -28,22 +28,22 @@ async function ensureLoyaltySchema() {
         "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
-    `);
-    await prisma.$executeRawUnsafe(`
+    `;
+    await prisma.$executeRaw`
       DO $$ BEGIN
         ALTER TABLE "loyalty_rewards" ADD CONSTRAINT "loyalty_rewards_specialistId_fkey"
           FOREIGN KEY ("specialistId") REFERENCES "users" ("id") ON DELETE CASCADE;
       EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-    `);
-    await prisma.$executeRawUnsafe(`
+    `;
+    await prisma.$executeRaw`
       CREATE INDEX IF NOT EXISTS "loyalty_rewards_specialist_active_idx" ON "loyalty_rewards" ("specialistId", "isActive");
-    `);
-    await prisma.$executeRawUnsafe(`
+    `;
+    await prisma.$executeRaw`
       CREATE INDEX IF NOT EXISTS "loyalty_rewards_active_valid_idx" ON "loyalty_rewards" ("isActive", "validFrom", "validUntil");
-    `);
+    `;
 
     // Create redemptions table
-    await prisma.$executeRawUnsafe(`
+    await prisma.$executeRaw`
       CREATE TABLE IF NOT EXISTS "reward_redemptions" (
         "id" TEXT PRIMARY KEY,
         "rewardId" TEXT NOT NULL,
@@ -61,34 +61,34 @@ async function ensureLoyaltySchema() {
         "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
-    `);
-    await prisma.$executeRawUnsafe(`
+    `;
+    await prisma.$executeRaw`
       DO $$ BEGIN
         ALTER TABLE "reward_redemptions" ADD CONSTRAINT "reward_redemptions_rewardId_fkey"
           FOREIGN KEY ("rewardId") REFERENCES "loyalty_rewards" ("id") ON DELETE CASCADE;
       EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-    `);
-    await prisma.$executeRawUnsafe(`
+    `;
+    await prisma.$executeRaw`
       DO $$ BEGIN
         ALTER TABLE "reward_redemptions" ADD CONSTRAINT "reward_redemptions_userId_fkey"
           FOREIGN KEY ("userId") REFERENCES "users" ("id") ON DELETE CASCADE;
       EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-    `);
-    await prisma.$executeRawUnsafe(`
+    `;
+    await prisma.$executeRaw`
       DO $$ BEGIN
         ALTER TABLE "reward_redemptions" ADD CONSTRAINT "reward_redemptions_bookingId_fkey"
           FOREIGN KEY ("bookingId") REFERENCES "bookings" ("id") ON DELETE SET NULL;
       EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-    `);
-    await prisma.$executeRawUnsafe(`
+    `;
+    await prisma.$executeRaw`
       CREATE INDEX IF NOT EXISTS "reward_redemptions_user_status_idx" ON "reward_redemptions" ("userId", "status");
-    `);
-    await prisma.$executeRawUnsafe(`
+    `;
+    await prisma.$executeRaw`
       CREATE INDEX IF NOT EXISTS "reward_redemptions_reward_status_idx" ON "reward_redemptions" ("rewardId", "status");
-    `);
-    await prisma.$executeRawUnsafe(`
+    `;
+    await prisma.$executeRaw`
       CREATE INDEX IF NOT EXISTS "reward_redemptions_status_expires_idx" ON "reward_redemptions" ("status", "expiresAt");
-    `);
+    `;
 
     schemaEnsured = true;
   } catch (e: any) {

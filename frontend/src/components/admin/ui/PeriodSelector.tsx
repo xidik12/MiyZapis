@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import type { Period } from '@/types/admin.types';
 
 export interface PeriodSelectorProps {
@@ -9,15 +10,15 @@ export interface PeriodSelectorProps {
 
 interface PeriodOption {
   value: Period;
-  label: string;
-  description: string;
+  labelKey: string;
+  descriptionKey: string;
 }
 
 const PERIOD_OPTIONS: PeriodOption[] = [
-  { value: '7d', label: '7 Days', description: 'Last 7 days' },
-  { value: '30d', label: '30 Days', description: 'Last 30 days' },
-  { value: '90d', label: '90 Days', description: 'Last 90 days' },
-  { value: '1y', label: '1 Year', description: 'Last 365 days' }
+  { value: '7d', labelKey: 'admin.period.7days', descriptionKey: 'admin.period.7daysDesc' },
+  { value: '30d', labelKey: 'admin.period.30days', descriptionKey: 'admin.period.30daysDesc' },
+  { value: '90d', labelKey: 'admin.period.90days', descriptionKey: 'admin.period.90daysDesc' },
+  { value: '1y', labelKey: 'admin.period.1year', descriptionKey: 'admin.period.1yearDesc' }
 ];
 
 export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
@@ -25,10 +26,12 @@ export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
   onChange,
   className = ''
 }) => {
+  const { t } = useLanguage();
+
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
       <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">
-        Period:
+        {t('admin.period.label')}
       </span>
       <div className="inline-flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
         {PERIOD_OPTIONS.map((option) => (
@@ -43,9 +46,9 @@ export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }
             `}
-            title={option.description}
+            title={t(option.descriptionKey)}
           >
-            {option.label}
+            {t(option.labelKey)}
           </button>
         ))}
       </div>

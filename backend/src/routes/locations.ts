@@ -112,13 +112,13 @@ router.get('/search', async (req: Request, res: Response) => {
         secondaryText: prediction.structured_formatting.secondary_text,
       }));
 
-      res.json(createSuccessResponse({ predictions }));
+      return res.json(createSuccessResponse({ predictions }));
     } else {
-      res.json(createSuccessResponse({ predictions: [] }));
+      return res.json(createSuccessResponse({ predictions: [] }));
     }
   } catch (error: any) {
     logger.error('Error searching locations:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         'SEARCH_LOCATIONS_ERROR',
         'Failed to search locations',
@@ -269,7 +269,7 @@ router.get('/geocode', async (req: Request, res: Response) => {
       }
     }
 
-    res.status(404).json(
+    return res.status(404).json(
       createErrorResponse(
         'LOCATION_NOT_FOUND',
         'Location not found',
@@ -278,7 +278,7 @@ router.get('/geocode', async (req: Request, res: Response) => {
     );
   } catch (error: any) {
     logger.error('Error geocoding location:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         'GEOCODE_ERROR',
         'Failed to geocode location',
@@ -391,7 +391,7 @@ router.get('/nearby', async (req: Request, res: Response) => {
       specialistsCount: 1, // Could be aggregated
     }));
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       locations,
       total: locations.length,
       searchCenter: { latitude, longitude },
@@ -399,7 +399,7 @@ router.get('/nearby', async (req: Request, res: Response) => {
     }));
   } catch (error: any) {
     logger.error('Error fetching nearby locations:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         'FETCH_NEARBY_ERROR',
         'Failed to fetch nearby locations',
@@ -469,13 +469,13 @@ router.get('/cities', async (req: Request, res: Response) => {
         specialistsCount: group._count.id,
       }));
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       cities,
       total: cities.length,
     }));
   } catch (error: any) {
     logger.error('Error fetching cities:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         'FETCH_CITIES_ERROR',
         'Failed to fetch cities',
@@ -590,7 +590,7 @@ router.get('/reverse-geocode', async (req: Request, res: Response) => {
       return res.json(createSuccessResponse({ location }));
     }
 
-    res.status(404).json(
+    return res.status(404).json(
       createErrorResponse(
         'LOCATION_NOT_FOUND',
         'Location not found',
@@ -599,7 +599,7 @@ router.get('/reverse-geocode', async (req: Request, res: Response) => {
     );
   } catch (error: any) {
     logger.error('Error reverse geocoding:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         'REVERSE_GEOCODE_ERROR',
         'Failed to reverse geocode',

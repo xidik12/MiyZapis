@@ -3,7 +3,6 @@ import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 // Import reducers
 import authSlice from './slices/authSlice';
-import userSlice from './slices/userSlice';
 import bookingSlice from './slices/bookingSlice';
 import serviceSlice from './slices/serviceSlice';
 import specialistSlice from './slices/specialistSlice';
@@ -15,7 +14,6 @@ import favoritesSlice from './slices/favoritesSlice';
 // Root reducer
 const rootReducer = combineReducers({
   auth: authSlice,
-  user: userSlice,
   booking: bookingSlice,
   service: serviceSlice,
   specialist: specialistSlice,
@@ -29,7 +27,7 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['auth', 'user', 'ui'], // Only persist certain slices
+  whitelist: ['auth', 'ui'], // Only persist certain slices
   blacklist: ['booking', 'service', 'specialist', 'notification', 'payment', 'favorites'], // Don't persist real-time data
 };
 

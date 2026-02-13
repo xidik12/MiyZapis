@@ -4,6 +4,7 @@ import { ApiResponse, ApiError } from '../types';
 import { environment, STORAGE_KEYS, APP_CONSTANTS } from '../config/environment';
 import { LRUCache } from '../utils/LRUCache';
 import { logger } from '../utils/logger';
+import { getHttpErrorMessage, getErrorMessage } from '../utils/errorMessages';
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
@@ -287,8 +288,8 @@ api.interceptors.response.use(
               refreshToken: refreshTokenValue,
             });
             
-            const { accessToken } = response.data.data;
-            setAuthTokens({ accessToken, refreshToken: refreshTokenValue });
+            const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+            setAuthTokens({ accessToken, refreshToken: newRefreshToken || refreshTokenValue });
             
             // Retry original request with new token
             originalRequest.headers.Authorization = `Bearer ${accessToken}`;
@@ -323,38 +324,13 @@ api.interceptors.response.use(
       
       // Show user-friendly error messages (except for login/logout errors or skipToast requests)
       if (!isLogoutRequest && !skipToast) {
-        switch (error.response.status) {
-          case 400:
-            toast.error(apiError.message || 'Invalid request data');
-            break;
-          case 401:
-            // Don't show toast for login failures - let the form handle it
-            if (!isLoginRequest) {
-              toast.error('Authentication failed. Please log in again.');
-            }
-            break;
-          case 403:
-            toast.error('You do not have permission to perform this action');
-            break;
-          case 404:
-            toast.error('The requested resource was not found');
-            break;
-          case 409:
-            toast.error(apiError.message || 'A conflict occurred');
-            break;
-          case 422:
-            toast.error(apiError.message || 'Unable to process the request');
-            break;
-          case 429:
-            toast.error('Too many requests. Please try again later');
-            break;
-          case 500:
-            toast.error('Server error. Please try again later');
-            break;
-                    default:
-            if (error.response.status >= 500) {
-              toast.error('Server error. Please try again later');
-            }
+        const status = error.response.status;
+        if (status === 401) {
+          if (!isLoginRequest) {
+            toast.error(getHttpErrorMessage(401));
+          }
+        } else if (status >= 400) {
+          toast.error(getHttpErrorMessage(status, apiError.message));
         }
       }
 
@@ -365,19 +341,19 @@ api.interceptors.response.use(
     } else if (error.request) {
       // Network error - don't show toast for logout requests or skipToast requests
       if (!isLogoutRequest && !skipToast) {
-        toast.error('Network error. Please check your connection');
+        toast.error(getErrorMessage('NETWORK_ERROR'));
       }
       return Promise.reject({
         ...error,
         apiError: {
           code: 'NETWORK_ERROR',
-          message: 'Network error. Please check your connection',
+          message: getErrorMessage('NETWORK_ERROR'),
           timestamp: new Date().toISOString(),
         },
       });
     } else {
       // Something else happened
-      toast.error('An unexpected error occurred');
+      toast.error(getErrorMessage('UNEXPECTED_ERROR'));
       return Promise.reject(error);
     }
   }

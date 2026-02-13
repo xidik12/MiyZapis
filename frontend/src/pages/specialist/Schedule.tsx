@@ -1414,7 +1414,6 @@ const SpecialistSchedule: React.FC = () => {
         isOpen={showRecurringModal}
         onClose={() => setShowRecurringModal(false)}
         onSave={(recurrenceData: RecurrenceData) => {
-          console.log('Create recurring bookings:', recurrenceData);
           toast.info(t('schedule.recurringFeature') || 'Recurring booking feature coming soon');
           // TODO: Implement recurring booking creation logic
         }}

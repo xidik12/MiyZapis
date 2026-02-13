@@ -41,44 +41,6 @@
   left: 100%;
 }
 
-/* Morphic shape effects */
-.morph-shape {
-  position: relative;
-  overflow: hidden;
-}
-
-.morph-shape::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: conic-gradient(
-    from 0deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  border-radius: 50%;
-  animation: morph-rotate 8s linear infinite;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.morph-shape:hover::before {
-  opacity: 1;
-}
-
-@keyframes morph-rotate {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
 /* Glowing effect for active items */
 .nav-item-active {
   position: relative;

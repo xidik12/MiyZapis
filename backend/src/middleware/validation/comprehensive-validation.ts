@@ -562,7 +562,7 @@ export const validationChains = {
 // Middleware to handle validation results
 export const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
-  
+
   if (!errors.isEmpty()) {
     const formattedErrors = errors.array().map(error => ({
       field: 'location' in error ? error.location : 'param' in error ? (error as any).param : undefined,
@@ -581,7 +581,7 @@ export const handleValidationErrors = (req: Request, res: Response, next: NextFu
     );
   }
 
-  next();
+  return next();
 };
 
 // Combined validation middleware creator

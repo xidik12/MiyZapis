@@ -26,23 +26,42 @@ router.get('/profile', authenticateToken, async (req: AuthenticatedRequest, res:
   try {
     const userId = req.userId;
     
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        specialist: {
-          include: {
-            services: {
-              where: { isActive: true },
-              take: 5
-            },
-            reviews: {
-              take: 5,
-              orderBy: { createdAt: 'desc' }
+    // Run all three queries in parallel to avoid sequential N+1
+    const [user, loyaltyTransactions, recentBookings] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          specialist: {
+            include: {
+              services: {
+                where: { isActive: true },
+                take: 5
+              },
+              reviews: {
+                take: 5,
+                orderBy: { createdAt: 'desc' }
+              }
             }
           }
         }
-      }
-    });
+      }),
+      prisma.loyaltyTransaction.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        take: 10
+      }),
+      prisma.booking.count({
+        where: {
+          OR: [
+            { customerId: userId },
+            { specialistId: userId }
+          ],
+          createdAt: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+          }
+        }
+      }),
+    ]);
 
     if (!user) {
       return res.status(404).json(
@@ -53,26 +72,6 @@ router.get('/profile', authenticateToken, async (req: AuthenticatedRequest, res:
         )
       );
     }
-
-    // Get loyalty transaction summary
-    const loyaltyTransactions = await prisma.loyaltyTransaction.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
-      take: 10
-    });
-
-    // Get recent activity counts
-    const recentBookings = await prisma.booking.count({
-      where: {
-        OR: [
-          { customerId: userId },
-          { specialistId: userId }
-        ],
-        createdAt: {
-          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
-        }
-      }
-    });
 
     return res.json(createSuccessResponse({
       id: user.id,
@@ -114,7 +113,7 @@ router.get('/profile', authenticateToken, async (req: AuthenticatedRequest, res:
     }));
   } catch (error) {
     logger.error('Get profile error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to get user profile',
@@ -197,7 +196,7 @@ router.put('/profile', authenticateToken, validateUpdateProfile, async (req: Aut
     return res.json(createSuccessResponse(user));
   } catch (error) {
     logger.error('Update profile error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to update user profile',
@@ -224,7 +223,7 @@ router.post('/avatar', authenticateToken, async (req: AuthenticatedRequest, res:
     );
   } catch (error) {
     logger.error('Avatar upload endpoint error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to handle avatar upload request',
@@ -304,7 +303,7 @@ router.put('/password', authenticateToken, validateUpdatePassword, async (req: A
     }));
   } catch (error) {
     logger.error('Update password error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to update password',
@@ -373,7 +372,7 @@ router.post('/telegram/link', authenticateToken, validateLinkTelegram, async (re
     }));
   } catch (error) {
     logger.error('Link Telegram error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to link Telegram account',
@@ -426,7 +425,7 @@ router.post('/telegram/unlink', authenticateToken, validateUnlinkTelegram, async
     }));
   } catch (error) {
     logger.error('Unlink Telegram error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to unlink Telegram account',
@@ -582,7 +581,7 @@ router.get('/activity', authenticateToken, validateGetUserActivity, async (req: 
     }));
   } catch (error) {
     logger.error('Get user activity error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to get user activity',
@@ -692,7 +691,7 @@ router.post('/export', authenticateToken, validateExportUserData, async (req: Au
     }));
   } catch (error) {
     logger.error('Export user data error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to export user data',
@@ -804,7 +803,7 @@ router.delete('/account', authenticateToken, validateDeleteAccount, async (req: 
     }));
   } catch (error) {
     logger.error('Delete account error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to delete account',

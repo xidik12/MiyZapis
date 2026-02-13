@@ -171,13 +171,13 @@ router.get('/my-reviews', authenticateToken, validateGetMyReviews, async (req: R
 
     const paginationMeta = createPaginationMeta(Number(page), Number(limit), totalCount);
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       reviews: formattedReviews,
       pagination: paginationMeta
     }));
   } catch (error) {
     logger.error('Get my reviews error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to get your reviews',
@@ -346,14 +346,14 @@ router.get('/service/:id', validateGetServiceReviews, async (req: Request, res: 
 
     const paginationMeta = createPaginationMeta(Number(page), Number(limit), totalCount);
 
-    res.json(createSuccessResponse(formattedReviews, { 
-      pagination: paginationMeta, 
+    return res.json(createSuccessResponse(formattedReviews, {
+      pagination: paginationMeta,
       total: totalCount,
-      stats 
+      stats
     }));
   } catch (error) {
     logger.error('Get service reviews error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to get service reviews',
@@ -523,7 +523,7 @@ router.post('/', authenticateToken, validateCreateReview, async (req: Request, r
       }
     });
 
-    res.status(201).json(createSuccessResponse({
+    return res.status(201).json(createSuccessResponse({
       id: review.id,
       rating: review.rating,
       comment: review.comment,
@@ -541,7 +541,7 @@ router.post('/', authenticateToken, validateCreateReview, async (req: Request, r
     }));
   } catch (error) {
     logger.error('Create review error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to create review',
@@ -607,7 +607,7 @@ router.put('/:id', authenticateToken, validateUpdateReview, requireOwnership('re
       });
     }
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       id: updatedReview.id,
       rating: updatedReview.rating,
       comment: updatedReview.comment,
@@ -617,7 +617,7 @@ router.put('/:id', authenticateToken, validateUpdateReview, requireOwnership('re
     }));
   } catch (error) {
     logger.error('Update review error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to update review',
@@ -704,10 +704,10 @@ router.delete('/:id', authenticateToken, validateReviewId, requireOwnership('rev
       }
     });
 
-    res.json(createSuccessResponse({ message: 'Review deleted successfully' }));
+    return res.json(createSuccessResponse({ message: 'Review deleted successfully' }));
   } catch (error) {
     logger.error('Delete review error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to delete review',
@@ -892,14 +892,14 @@ router.get('/specialist/:id', validateGetSpecialistReviews, async (req: Request,
 
     const paginationMeta = createPaginationMeta(Number(page), Number(limit), totalCount);
 
-    res.json(createSuccessResponse(formattedReviews, { 
-      pagination: paginationMeta, 
+    return res.json(createSuccessResponse(formattedReviews, {
+      pagination: paginationMeta,
       total: totalCount,
-      stats 
+      stats
     }));
   } catch (error) {
     logger.error('Get specialist reviews error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to get specialist reviews',
@@ -926,14 +926,14 @@ router.post('/:id/helpful', authenticateToken, validateMarkReviewHelpful, async 
 
     // This is a placeholder for helpful functionality
     // In production, you'd have a separate table to track helpful votes
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       message: 'Helpful vote recorded',
       reviewId: req.params.id,
       helpful: req.body.helpful
     }));
   } catch (error) {
     logger.error('Mark review helpful error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to mark review as helpful',
@@ -979,14 +979,14 @@ router.post('/:id/report', authenticateToken, validateReportReview, async (req: 
       }
     });
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       message: 'Review report submitted successfully',
       reviewId: id,
       reason
     }));
   } catch (error) {
     logger.error('Report review error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to report review',

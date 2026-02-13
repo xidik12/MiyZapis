@@ -48,12 +48,26 @@ export class BookingController {
 
       const booking = await BookingService.createBooking(bookingData);
 
+      // Send notification email to specialist about new booking
+      try {
+        // booking.specialist is the User object (not SpecialistProfile)
+        const specialistLang = booking.specialist?.language || 'en';
+        await templatedEmailService.sendSpecialistBookingNotification(booking.id, specialistLang);
+        // If auto-confirmed, also send confirmation to customer
+        if (booking.service.specialist.autoBooking) {
+          const customerLang = resolveLanguage(booking.customer?.language, req.headers['accept-language']);
+          await templatedEmailService.sendBookingConfirmation(booking.id, customerLang);
+        }
+      } catch (e) {
+        // Don't block success on email errors
+      }
+
       res.status(201).json(
         createSuccessResponse({
           booking,
           autoBooking: booking.service.specialist.autoBooking,
-          message: booking.service.specialist.autoBooking 
-            ? 'Your booking is automatically confirmed!' 
+          message: booking.service.specialist.autoBooking
+            ? 'Your booking is automatically confirmed!'
             : 'Your booking request has been sent and is waiting for specialist confirmation.',
         })
       );
@@ -207,6 +221,109 @@ export class BookingController {
         createErrorResponse(
           ErrorCodes.INTERNAL_SERVER_ERROR,
           'Failed to create booking',
+          req.headers['x-request-id'] as string
+        )
+      );
+    }
+  }
+
+  // Create a recurring booking series
+  static async createRecurringBooking(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json(
+          createErrorResponse(
+            ErrorCodes.AUTHENTICATION_REQUIRED,
+            'Authentication required',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const { recurrence, ...bookingFields } = req.body;
+
+      if (!recurrence || !recurrence.frequency || !recurrence.endType) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            'Recurrence configuration is required (frequency, endType)',
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const validFrequencies = ['daily', 'weekly', 'biweekly', 'monthly'];
+      if (!validFrequencies.includes(recurrence.frequency)) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            `Invalid frequency. Must be one of: ${validFrequencies.join(', ')}`,
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const validEndTypes = ['never', 'after', 'on'];
+      if (!validEndTypes.includes(recurrence.endType)) {
+        res.status(400).json(
+          createErrorResponse(
+            ErrorCodes.VALIDATION_ERROR,
+            `Invalid endType. Must be one of: ${validEndTypes.join(', ')}`,
+            req.headers['x-request-id'] as string
+          )
+        );
+        return;
+      }
+
+      const result = await BookingService.createRecurringBooking({
+        ...bookingFields,
+        customerId: req.user.id,
+        scheduledAt: new Date(bookingFields.scheduledAt),
+        recurrence: {
+          frequency: recurrence.frequency,
+          daysOfWeek: recurrence.daysOfWeek,
+          endType: recurrence.endType,
+          endAfterCount: recurrence.endAfterCount || recurrence.occurrences,
+          endDate: recurrence.endDate,
+        },
+      });
+
+      res.status(201).json(
+        createSuccessResponse({
+          parentBooking: result.parentBooking,
+          childrenCount: result.childrenCount,
+          message: `Recurring booking created: 1 parent + ${result.childrenCount} recurring bookings.`,
+        })
+      );
+    } catch (error: any) {
+      logger.error('Create recurring booking error:', error);
+
+      if (error.message === 'SERVICE_NOT_FOUND') {
+        res.status(404).json(
+          createErrorResponse(ErrorCodes.RESOURCE_NOT_FOUND, 'Service not found', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+      if (error.message === 'TIME_SLOT_NOT_AVAILABLE') {
+        res.status(409).json(
+          createErrorResponse(ErrorCodes.BOOKING_CONFLICT, 'The selected time slot is not available for the initial booking', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+      if (error.message === 'CANNOT_BOOK_OWN_SERVICE') {
+        res.status(400).json(
+          createErrorResponse(ErrorCodes.BUSINESS_RULE_VIOLATION, 'You cannot book your own service', req.headers['x-request-id'] as string)
+        );
+        return;
+      }
+
+      res.status(500).json(
+        createErrorResponse(
+          ErrorCodes.INTERNAL_SERVER_ERROR,
+          'Failed to create recurring booking',
           req.headers['x-request-id'] as string
         )
       );
@@ -488,6 +605,14 @@ export class BookingController {
 
       const booking = await BookingService.rejectBooking(bookingId, req.user.id, reason);
 
+      // Send rejection notification to customer
+      try {
+        const customerLang = resolveLanguage(booking.customer?.language, req.headers['accept-language']);
+        await templatedEmailService.sendBookingStatusChangeEmail(booking.id, 'REJECTED', reason, customerLang);
+      } catch (e) {
+        // Don't block success on email errors
+      }
+
       res.json(
         createSuccessResponse({
           booking,
@@ -582,6 +707,14 @@ export class BookingController {
       }
 
       const booking = await BookingService.cancelBooking(bookingId, req.user.id, reason);
+
+      // Send cancellation notification to both parties
+      try {
+        const customerLang = resolveLanguage(booking.customer?.language, req.headers['accept-language']);
+        await templatedEmailService.sendBookingStatusChangeEmail(booking.id, 'CANCELLED', reason, customerLang);
+      } catch (e) {
+        // Don't block success on email errors
+      }
 
       res.json(
         createSuccessResponse({
@@ -786,10 +919,20 @@ export class BookingController {
         { paymentConfirmed, completionNotes, specialistNotes }
       );
 
+      // Send completion notification to customer
+      if (paymentConfirmed) {
+        try {
+          const customerLang = resolveLanguage(booking.customer?.language, req.headers['accept-language']);
+          await templatedEmailService.sendBookingStatusChangeEmail(booking.id, 'COMPLETED', undefined, customerLang);
+        } catch (e) {
+          // Don't block success on email errors
+        }
+      }
+
       res.json(
         createSuccessResponse({
           booking,
-          message: paymentConfirmed 
+          message: paymentConfirmed
             ? 'Booking completed and payment recorded successfully'
             : 'Booking completion cancelled - please ensure payment is received first',
         })

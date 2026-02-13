@@ -362,7 +362,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
           {/* Like Button */}
           <button
             onClick={handleLikeClick}
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-95 ${
               review.userReaction === 'like'
                 ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -377,7 +377,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
           {/* Dislike Button */}
           <button
             onClick={handleDislikeClick}
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 ${
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-95 ${
               review.userReaction === 'dislike'
                 ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -393,7 +393,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
           <button
             onClick={handleCommentClick}
             disabled={isLoadingComments}
-            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
               showComments
                 ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -422,7 +422,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
           {onRespondToReview && !review.response && (
             <button
               onClick={() => onRespondToReview(review.id)}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-primary-600 dark:bg-primary-500 text-white hover:bg-primary-700 dark:hover:bg-primary-600 transition-all duration-200 hover:scale-105 active:scale-95"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-primary-600 dark:bg-primary-500 text-white hover:bg-primary-700 dark:hover:bg-primary-600 transition-all duration-200 active:scale-95"
             >
               <ChatBubbleLeftIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               <span className="text-xs font-semibold whitespace-nowrap">Respond</span>
@@ -433,7 +433,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
           {onReport && (
             <button
               onClick={handleReportClick}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-orange-100 dark:hover:bg-orange-900/30 hover:text-orange-700 dark:hover:text-orange-300 transition-all duration-200 hover:scale-105 active:scale-95"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-orange-100 dark:hover:bg-orange-900/30 hover:text-orange-700 dark:hover:text-orange-300 transition-all duration-200 active:scale-95"
             >
               <FlagIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               <span className="text-xs font-semibold whitespace-nowrap">Report</span>
@@ -444,7 +444,7 @@ const ReviewCardComponent: React.FC<ReviewCardProps> = ({
           <button
             onClick={handleShareClick}
             disabled={isSharing}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ShareIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
             <span className="text-xs font-semibold whitespace-nowrap">{isSharing ? 'Sharing...' : 'Share'}</span>

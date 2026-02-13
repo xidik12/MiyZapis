@@ -3,6 +3,7 @@ import { body } from 'express-validator';
 import { SpecialistController } from '@/controllers/specialists';
 import { AvailabilityController } from '@/controllers/specialists/availability';
 import { authenticateToken, requireSpecialist, requireAdmin } from '@/middleware/auth/jwt';
+import { cacheMiddleware } from '@/middleware/cache';
 
 const router = Router();
 
@@ -146,10 +147,10 @@ router.put('/profile', authenticateToken, requireSpecialist, SpecialistControlle
 // Admin routes (must come before parameterized routes)
 router.put('/:specialistId/verification', authenticateToken, requireAdmin, SpecialistController.toggleVerification);
 
-// Public routes (parameterized routes must come last)
-router.get('/', SpecialistController.searchSpecialists);
-router.get('/:specialistId', SpecialistController.getProfile);
-router.get('/:specialistId/public', SpecialistController.getPublicProfile);
-router.get('/:specialistId/services', SpecialistController.getSpecialistServices);
+// Public routes (parameterized routes must come last, with caching)
+router.get('/', cacheMiddleware(120, 'specialists'), SpecialistController.searchSpecialists);
+router.get('/:specialistId', cacheMiddleware(300, 'specialist'), SpecialistController.getProfile);
+router.get('/:specialistId/public', cacheMiddleware(300, 'specialist-pub'), SpecialistController.getPublicProfile);
+router.get('/:specialistId/services', cacheMiddleware(300, 'specialist-svc'), SpecialistController.getSpecialistServices);
 
 export default router;

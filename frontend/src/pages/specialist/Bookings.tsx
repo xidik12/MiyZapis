@@ -844,15 +844,12 @@ const SpecialistBookings: React.FC = () => {
     }
 
     try {
-      console.log('📝 Updating booking status:', { bookingId, newStatus });
-      
-      const result = await dispatch(updateBookingStatus({ 
+      const result = await dispatch(updateBookingStatus({
         bookingId, 
         status: newStatus as BookingStatus 
       }));
       
       if (updateBookingStatus.fulfilled.match(result)) {
-        console.log('✅ Booking status updated successfully');
         // Refresh bookings so the item moves between status groups without manual reload
         const userType = activeTab === 'provider' ? 'specialist' : 'customer';
         dispatch(fetchBookings({ filters: {}, userType }));
@@ -868,8 +865,6 @@ const SpecialistBookings: React.FC = () => {
 
   const handlePaymentConfirmation = async (bookingId: string, paymentConfirmed: boolean, notes?: string) => {
     try {
-      console.log('📝 Completing booking with payment confirmation:', { bookingId, paymentConfirmed, notes });
-      
       if (!paymentConfirmed) {
         // Show a message that payment must be received first
         toast.info('Please ensure payment is received before completing the booking.');
@@ -882,8 +877,6 @@ const SpecialistBookings: React.FC = () => {
         paymentConfirmed,
         completionNotes: notes,
       });
-      console.log('✅ Booking completed with payment confirmation:', result);
-
       // Refresh bookings to show updated status
       const userType = activeTab === 'provider' ? 'specialist' : 'customer';
       dispatch(fetchBookings({ filters: {}, userType }));

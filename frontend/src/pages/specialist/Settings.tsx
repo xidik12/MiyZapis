@@ -5,11 +5,13 @@ import { useAppSelector, useAppDispatch } from '../../hooks/redux';
 import { selectUser, updateUserProfile } from '../../store/slices/authSlice';
 import { fileUploadService } from '../../services/fileUpload.service';
 import { userService } from '../../services/user.service';
+import { specialistService } from '../../services/specialist.service';
 import { Avatar } from '../../components/ui/Avatar';
 import SetPasswordModal from '../../components/auth/SetPasswordModal';
 import ChangePasswordModal from '../../components/auth/ChangePasswordModal';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
 import { UserIcon, BellIcon, ShieldCheckIcon, CreditCardIcon, GlobeIcon as GlobeAltIcon, CalendarIcon, Cog6ToothIcon, EyeIcon, DeviceMobileIcon as DevicePhoneMobileIcon, EnvelopeIcon, CheckIcon, CameraIcon, TrashIcon, KeyIcon, LockClosedIcon } from '@/components/icons';
+import { usePushNotifications } from '../../hooks/usePushNotifications';
 
 const SpecialistSettings: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
@@ -17,6 +19,15 @@ const SpecialistSettings: React.FC = () => {
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
   
+  // Web Push subscription management
+  const {
+    isSupported: isPushSupported,
+    isSubscribed: isPushSubscribed,
+    isDenied: isPushDenied,
+    isLoading: isPushLoading,
+    toggle: togglePushSubscription,
+  } = usePushNotifications();
+
   // Profile image state
   const [profileImage, setProfileImage] = useState(user?.avatar || '');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -31,22 +42,36 @@ const SpecialistSettings: React.FC = () => {
   // Active tab state
   const [activeTab, setActiveTab] = useState<'profile' | 'account' | 'security' | 'notifications' | 'privacy' | 'business' | 'language'>('profile');
 
-  // Debug user avatar data
-  console.log('🔍 Settings component - User avatar debug:', {
-    userAvatar: user?.avatar,
-    profileImageState: profileImage,
-    userKeys: user ? Object.keys(user) : 'No user',
-    userId: user?.id
-  });
-  
   // Update profileImage when user avatar changes
   useEffect(() => {
     if (user?.avatar !== profileImage) {
-      console.log('🔄 Settings: Updating profileImage state from user avatar:', user?.avatar);
       setProfileImage(user?.avatar || '');
     }
   }, [user?.avatar]);
-  
+
+  // Load specialist profile settings on mount
+  useEffect(() => {
+    const loadSpecialistSettings = async () => {
+      try {
+        const profile = await specialistService.getProfile();
+        setSettings(prev => ({
+          ...prev,
+          accountSettings: {
+            ...prev.accountSettings,
+            autoAcceptBookings: profile.autoBooking ?? false,
+          },
+          business: {
+            ...prev.business,
+            cancellationWindow: (profile as any).cancellationWindowHours ?? 24,
+          },
+        }));
+      } catch (error) {
+        console.error('Error loading specialist settings:', error);
+      }
+    };
+    loadSpecialistSettings();
+  }, []);
+
   // Settings state
   const [settings, setSettings] = useState({
     // Account Settings
@@ -102,17 +127,13 @@ const SpecialistSettings: React.FC = () => {
 
   // Handle profile image upload
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('[Settings Avatar Upload] handleImageUpload triggered', { event });
     const file = event.target.files?.[0];
-    console.log('[Settings Avatar Upload] File selected:', file);
     if (!file) {
-      console.log('[Settings Avatar Upload] No file selected, returning');
       return;
     }
 
     // Validate file type and size
     if (!file.type.startsWith('image/')) {
-      console.log('[Settings Avatar Upload] Invalid file type:', file.type);
       setUploadError(
         language === 'uk' ? 'Будь ласка, оберіть файл зображення' :
         language === 'ru' ? 'Пожалуйста, выберите файл изображения' :
@@ -122,7 +143,6 @@ const SpecialistSettings: React.FC = () => {
     }
 
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      console.log('[Settings Avatar Upload] File too large:', file.size);
       setUploadError(
         language === 'uk' ? 'Розмір файлу повинен бути менше 5МБ' :
         language === 'ru' ? 'Размер файла должен быть меньше 5МБ' :
@@ -132,20 +152,15 @@ const SpecialistSettings: React.FC = () => {
     }
 
     try {
-      console.log('[Settings Avatar Upload] Starting upload...');
       setIsUploadingImage(true);
       setUploadError('');
       setUploadSuccess(false);
 
       // Upload the image
-      console.log('[Settings Avatar Upload] Calling fileUploadService.uploadAvatar');
       const result = await fileUploadService.uploadAvatar(file);
-      console.log('[Settings Avatar Upload] Upload result:', result);
 
       // Update user profile with new avatar URL
-      console.log('[Settings Avatar Upload] Updating user profile');
       const updatedUser = await userService.updateProfile({ avatar: result.url });
-      console.log('[Settings Avatar Upload] Profile updated:', updatedUser);
 
       // Update Redux store with only the avatar field
       dispatch(updateUserProfile({ avatar: result.url }));
@@ -153,7 +168,6 @@ const SpecialistSettings: React.FC = () => {
       // Update local state
       setProfileImage(result.url);
       setUploadSuccess(true);
-      console.log('[Settings Avatar Upload] Upload complete');
 
       // Clear success message after 3 seconds
       setTimeout(() => setUploadSuccess(false), 3000);
@@ -167,7 +181,6 @@ const SpecialistSettings: React.FC = () => {
          'Failed to upload image')
       );
     } finally {
-      console.log('[Settings Avatar Upload] Cleanup');
       setIsUploadingImage(false);
       // Clear the file input
       event.target.value = '';
@@ -239,26 +252,33 @@ const SpecialistSettings: React.FC = () => {
     </div>
   );
 
+  // State to track saving in progress
+  const [isSaving, setIsSaving] = useState(false);
+
   // Handle saving all settings
   const handleSaveSettings = async () => {
     try {
-      // For now, this would save the settings state to user preferences
-      // The specific settings (toggles, dropdowns) would need to be mapped to user profile fields
-      console.log('Saving settings:', settings);
-      
-      // Example: if we have profile-related settings, we'd save them like this:
-      // const updatedUser = await userService.updateProfile({
-      //   // Map settings to user fields here
-      // });
-      // dispatch(updateUserProfile(updatedUser));
-      
-      // For now, just show success feedback
+      setIsSaving(true);
+      setUploadError('');
+
+      // Save cancellation window and other business settings to the specialist profile
+      await specialistService.updateProfile({
+        cancellationWindowHours: settings.business.cancellationWindow,
+        autoBooking: settings.accountSettings.autoAcceptBookings,
+      } as any);
+
       setUploadSuccess(true);
       setTimeout(() => setUploadSuccess(false), 3000);
     } catch (error) {
       console.error('Error saving settings:', error);
-      setUploadError('Failed to save settings');
+      setUploadError(
+        language === 'uk' ? 'Помилка збереження налаштувань' :
+        language === 'ru' ? 'Ошибка сохранения настроек' :
+        'Failed to save settings'
+      );
       setTimeout(() => setUploadError(''), 3000);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -630,6 +650,39 @@ const SpecialistSettings: React.FC = () => {
                       label={t('settings.pushNotifications')}
                       description={t('settings.pushNotificationsDesc')}
                     />
+                    {/* Web Push Subscription Toggle */}
+                    {isPushSupported && (
+                      <div className="py-4 border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {language === 'uk' ? 'Браузерні push-сповіщення' : language === 'ru' ? 'Браузерные push-уведомления' : 'Browser Push Notifications'}
+                            </h4>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                              {language === 'uk' ? 'Отримуйте сповіщення навіть коли браузер згорнуто' : language === 'ru' ? 'Получайте уведомления даже когда браузер свёрнут' : 'Receive notifications even when the browser is minimized'}
+                            </p>
+                            {isPushDenied && (
+                              <p className="text-xs text-red-500 mt-1">
+                                {language === 'uk' ? 'Сповіщення заблоковані в налаштуваннях браузера' : language === 'ru' ? 'Уведомления заблокированы в настройках браузера' : 'Notifications blocked in browser settings'}
+                              </p>
+                            )}
+                          </div>
+                          <button
+                            onClick={togglePushSubscription}
+                            disabled={isPushLoading || isPushDenied}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                              isPushSubscribed ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
+                            } ${(isPushLoading || isPushDenied) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                isPushSubscribed ? 'translate-x-6' : 'translate-x-1'
+                              }`}
+                            />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                     <ToggleSwitch
                       enabled={settings.notifications.newBookingAlert}
                       onChange={(value) => handleSettingChange('notifications', 'newBookingAlert', value)}
@@ -789,11 +842,12 @@ const SpecialistSettings: React.FC = () => {
                     <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                       {t('common.cancel')}
                     </button>
-                    <button 
+                    <button
                       onClick={handleSaveSettings}
-                      className="px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
+                      disabled={isSaving}
+                      className={`px-4 py-2 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                      {t('common.save')}
+                      {isSaving ? (t('common.saving') || 'Saving...') : t('common.save')}
                     </button>
                   </div>
                 </div>

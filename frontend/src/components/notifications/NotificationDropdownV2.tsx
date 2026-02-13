@@ -182,7 +182,7 @@ export const NotificationDropdownV2: React.FC<NotificationDropdownV2Props> = ({
               {totalUnread > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
-                  className="text-xs sm:text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold px-3 py-1.5 rounded-xl hover:bg-primary-50/80 dark:hover:bg-primary-900/30 transition-all duration-200 hover:scale-105 active:scale-95"
+                  className="text-xs sm:text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold px-3 py-1.5 rounded-xl hover:bg-primary-50/80 dark:hover:bg-primary-900/30 transition-all duration-200 active:scale-95"
                 >
                   {t('notifications.markAllRead')}
                 </button>
@@ -273,7 +273,7 @@ export const NotificationDropdownV2: React.FC<NotificationDropdownV2Props> = ({
               <Link
                 to="/notifications"
                 onClick={onClose}
-                className="inline-flex items-center gap-2 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold px-3 py-2 rounded-xl hover:bg-primary-50/80 dark:hover:bg-primary-900/30 transition-all duration-200 hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-2 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold px-3 py-2 rounded-xl hover:bg-primary-50/80 dark:hover:bg-primary-900/30 transition-all duration-200 active:scale-95"
               >
                 {t('notifications.viewAll')}
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

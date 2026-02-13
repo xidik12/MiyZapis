@@ -86,7 +86,7 @@ const envSchema = z.object({
 
   // Security
   BCRYPT_ROUNDS: z.string().transform(Number).default('12'),
-  SESSION_SECRET: z.string().min(32, 'Session secret must be at least 32 characters').default('miyzapis-default-session-secret-change-in-production-32chars'),
+  SESSION_SECRET: z.string().min(32, 'Session secret must be at least 32 characters. Set SESSION_SECRET environment variable.'),
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
 
   // External APIs
@@ -99,6 +99,11 @@ const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GOOGLE_REDIRECT_URI: z.string().optional(),
+
+  // Web Push (VAPID)
+  VAPID_PUBLIC_KEY: z.string().optional(),
+  VAPID_PRIVATE_KEY: z.string().optional(),
+  VAPID_EMAIL: z.string().optional(),
 
   // WebSocket
   WEBSOCKET_PORT: z.string().transform(Number).default('3001'),
@@ -263,6 +268,13 @@ export const config = {
     clientId: env.GOOGLE_CLIENT_ID,
     clientSecret: env.GOOGLE_CLIENT_SECRET,
     redirectUri: env.GOOGLE_REDIRECT_URI,
+  },
+
+  // Web Push (VAPID)
+  vapid: {
+    publicKey: env.VAPID_PUBLIC_KEY,
+    privateKey: env.VAPID_PRIVATE_KEY,
+    email: env.VAPID_EMAIL,
   },
 
   // WebSocket

@@ -76,7 +76,7 @@ router.get('/availability/:serviceId', async (req: Request, res: Response) => {
       service.maxParticipants
     );
 
-    res.json(
+    return res.json(
       createSuccessResponse({
         serviceId,
         serviceName: service.name,
@@ -91,7 +91,7 @@ router.get('/availability/:serviceId', async (req: Request, res: Response) => {
     );
   } catch (error: any) {
     logger.error('Error checking group session availability:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         'INTERNAL_SERVER_ERROR',
         'Failed to check availability',
@@ -137,7 +137,7 @@ router.get('/participants/:serviceId', async (req: Request, res: Response) => {
     // Calculate total participants
     const totalParticipants = bookings.reduce((sum, booking) => sum + booking.participantCount, 0);
 
-    res.json(
+    return res.json(
       createSuccessResponse({
         groupSessionId,
         serviceId,
@@ -160,7 +160,7 @@ router.get('/participants/:serviceId', async (req: Request, res: Response) => {
     );
   } catch (error: any) {
     logger.error('Error getting group session participants:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         'INTERNAL_SERVER_ERROR',
         'Failed to get participants',

@@ -56,9 +56,12 @@ const SpecialistLoyalty = React.lazy(() => import('./pages/specialist/Loyalty'))
 const SpecialistMessages = React.lazy(() => import('./pages/specialist/Messages'));
 const SpecialistReferrals = React.lazy(() => import('./pages/specialist/Referrals'));
 const SpecialistWallet = React.lazy(() => import('./pages/specialist/Wallet'));
+const SpecialistClients = React.lazy(() => import('./pages/specialist/Clients'));
+const SpecialistOnboarding = React.lazy(() => import('./pages/specialist/Onboarding'));
 
-// Customer pages
+// Customer pages (continued)
 const CustomerReviews = React.lazy(() => import('./pages/customer/Reviews'));
+const CustomerNotifications = React.lazy(() => import('./pages/customer/Notifications'));
 const SpecialistSettings = React.lazy(() => import('./pages/specialist/Settings'));
 const SpecialistNotifications = React.lazy(() => import('./pages/specialist/Notifications'));
 
@@ -115,8 +118,10 @@ const usePageTitle = () => {
       '/specialist/reviews': 'Reviews - МійЗапис',
       '/specialist/loyalty': 'Loyalty Program - МійЗапис',
       '/specialist/messages': 'Messages - МійЗапис',
+      '/specialist/clients': 'Clients - МійЗапис',
       '/specialist/settings': 'Settings - МійЗапис',
       '/specialist/notifications': 'Notifications - МійЗапис',
+      '/specialist/onboarding': 'Getting Started - МійЗапис',
       '/community': 'Community - МійЗапис',
       '/admin/dashboard': 'Admin Dashboard - МійЗапис',
     };
@@ -198,6 +203,16 @@ function App() {
           />
 
           {/* Specialist protected routes - MUST come before customer routes to avoid conflicts */}
+          <Route
+            path="/specialist/onboarding"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <Suspense fallback={<SuspenseLoader />}>
+                  <SpecialistOnboarding />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/specialist/dashboard"
             element={
@@ -378,6 +393,18 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/specialist/clients"
+            element={
+              <ProtectedRoute requiredUserType="specialist">
+                <SpecialistLayout>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <SpecialistClients />
+                  </Suspense>
+                </SpecialistLayout>
+              </ProtectedRoute>
+            }
+          />
 
           {/* Customer protected routes with /customer prefix */}
           <Route
@@ -504,10 +531,9 @@ function App() {
             element={
               <ProtectedRoute requiredUserType="customer">
                 <CustomerLayout>
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">Notifications</h1>
-                    <p className="text-gray-600 mt-2">View your notifications and alerts</p>
-                  </div>
+                  <Suspense fallback={<SuspenseLoader />}>
+                    <CustomerNotifications />
+                  </Suspense>
                 </CustomerLayout>
               </ProtectedRoute>
             }
@@ -537,138 +563,18 @@ function App() {
             }
           />
 
-          {/* Legacy customer routes without /customer prefix for backward compatibility */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute requiredUserType="customer">
-                <CustomerLayout>
-                  <Suspense fallback={<SuspenseLoader />}>
-                    <CustomerDashboard />
-                  </Suspense>
-                </CustomerLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/bookings"
-            element={
-              <ProtectedRoute requiredUserType="customer">
-                <CustomerLayout>
-                  <Suspense fallback={<SuspenseLoader />}>
-                    <CustomerBookings />
-                  </Suspense>
-                </CustomerLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute requiredUserType="customer">
-                <CustomerLayout>
-                  <Suspense fallback={<SuspenseLoader />}>
-                    <CustomerProfile />
-                  </Suspense>
-                </CustomerLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/loyalty"
-            element={
-              <ProtectedRoute requiredUserType="customer">
-                <CustomerLayout>
-                  <Suspense fallback={<SuspenseLoader />}>
-                    <CustomerLoyalty />
-                  </Suspense>
-                </CustomerLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/favorites"
-            element={
-              <ProtectedRoute requiredUserType="customer">
-                <CustomerLayout>
-                  <Suspense fallback={<SuspenseLoader />}>
-                    <CustomerFavorites />
-                  </Suspense>
-                </CustomerLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute requiredUserType="customer">
-                <CustomerLayout>
-                  <Suspense fallback={<SuspenseLoader />}>
-                    <CustomerSettings />
-                  </Suspense>
-                </CustomerLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/help"
-            element={
-              <ProtectedRoute requiredUserType="customer">
-                <CustomerLayout>
-                  <Suspense fallback={<SuspenseLoader />}>
-                    <CustomerHelpSupport />
-                  </Suspense>
-                </CustomerLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/history"
-            element={
-              <ProtectedRoute requiredUserType="customer">
-                <CustomerLayout>
-                  <div className="p-6">
-                    <h1 className="text-2xl font-bold">Booking History</h1>
-                    <p className="text-gray-600 mt-2">View your past bookings and service history</p>
-                  </div>
-                </CustomerLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/reviews"
-            element={
-              <ProtectedRoute requiredUserType="customer">
-                <CustomerLayout>
-                  <CustomerReviews />
-                </CustomerLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/payments"
-            element={
-              <ProtectedRoute requiredUserType="customer">
-                <CustomerLayout>
-                  <Suspense fallback={<SuspenseLoader />}>
-                    <PaymentMethods />
-                  </Suspense>
-                </CustomerLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/wallet"
-            element={
-              <ProtectedRoute requiredUserType="customer">
-                <CustomerLayout>
-                  <Suspense fallback={<SuspenseLoader />}>
-                    <CustomerWallet />
-                  </Suspense>
-                </CustomerLayout>
-              </ProtectedRoute>
-            }
-          />
+          {/* Legacy customer routes - redirect to /customer/ prefixed versions */}
+          <Route path="/dashboard" element={<Navigate to="/customer/dashboard" replace />} />
+          <Route path="/bookings" element={<Navigate to="/customer/bookings" replace />} />
+          <Route path="/profile" element={<Navigate to="/customer/profile" replace />} />
+          <Route path="/loyalty" element={<Navigate to="/customer/loyalty" replace />} />
+          <Route path="/favorites" element={<Navigate to="/customer/favorites" replace />} />
+          <Route path="/settings" element={<Navigate to="/customer/settings" replace />} />
+          <Route path="/help" element={<Navigate to="/customer/support" replace />} />
+          <Route path="/history" element={<Navigate to="/customer/bookings" replace />} />
+          <Route path="/reviews" element={<Navigate to="/customer/reviews" replace />} />
+          <Route path="/payments" element={<Navigate to="/customer/payments" replace />} />
+          <Route path="/wallet" element={<Navigate to="/customer/wallet" replace />} />
           {/* Remove duplicate /search route - handled by public routes */}
           {/* Remove duplicate /book/:serviceId route - handled by public routes */}
 
@@ -731,13 +637,11 @@ function App() {
           <Route
             path="/specialist/:specialistId"
             element={
-              <ProtectedRoute>
-                <ConditionalLayout>
-                  <Suspense fallback={<SuspenseLoader />}>
-                    <SpecialistProfilePage />
-                  </Suspense>
-                </ConditionalLayout>
-              </ProtectedRoute>
+              <ConditionalLayout>
+                <Suspense fallback={<SuspenseLoader />}>
+                  <SpecialistProfilePage />
+                </Suspense>
+              </ConditionalLayout>
             }
           />
           <Route path="/privacy" element={

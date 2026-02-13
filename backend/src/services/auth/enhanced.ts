@@ -1041,9 +1041,10 @@ export class EnhancedAuthService {
     }
   }
 
-  // Refresh access token using refresh token
+  // Refresh access token using refresh token (with token rotation)
   static async refreshAuthToken(refreshToken: string): Promise<{
     accessToken: string;
+    refreshToken: string;
     expiresIn: number;
   }> {
     try {
@@ -1053,7 +1054,7 @@ export class EnhancedAuthService {
       // Check if refresh token exists in database
       const tokenRecord = await prisma.refreshToken.findUnique({
         where: { token: refreshToken },
-        include: { 
+        include: {
           user: {
             select: {
               id: true,
@@ -1084,10 +1085,35 @@ export class EnhancedAuthService {
         expiresIn: config.jwt.expiresIn
       } as SignOptions);
 
-      logger.info('Token refreshed successfully', { userId: tokenRecord.user.id });
+      // Rotate refresh token: revoke old, generate new
+      await prisma.refreshToken.delete({
+        where: { id: tokenRecord.id },
+      });
+
+      const newRefreshTokenId = crypto.randomUUID();
+      const newRefreshPayload: RefreshTokenPayload = {
+        userId: tokenRecord.user.id,
+        tokenId: newRefreshTokenId,
+      };
+
+      const newRefreshToken = jwt.sign(newRefreshPayload, config.jwt.refreshSecret, {
+        expiresIn: config.jwt.refreshExpiresIn
+      } as SignOptions);
+
+      await prisma.refreshToken.create({
+        data: {
+          id: newRefreshTokenId,
+          userId: tokenRecord.user.id,
+          token: newRefreshToken,
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+        },
+      });
+
+      logger.info('Token refreshed with rotation', { userId: tokenRecord.user.id });
 
       return {
         accessToken,
+        refreshToken: newRefreshToken,
         expiresIn: 3600, // 1 hour
       };
     } catch (error) {

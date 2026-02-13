@@ -81,7 +81,20 @@ export type MessageKey =
   | 'errors.general'
   | 'loading.specialists'
   | 'loading.booking'
-  | 'loading.payment';
+  | 'loading.payment'
+  | 'buttons.near_me'
+  | 'buttons.reviews'
+  | 'buttons.view_details'
+  | 'buttons.reschedule'
+  | 'buttons.message_specialist'
+  | 'buttons.get_directions'
+  | 'buttons.confirm_booking'
+  | 'buttons.add_notes'
+  | 'buttons.change_time'
+  | 'buttons.previous'
+  | 'buttons.next'
+  | 'buttons.retry'
+  | 'buttons.contact_support';
 
 export const messages: Record<MessageKey, LocalizedText> = {
   // Welcome messages
@@ -583,6 +596,84 @@ export const messages: Record<MessageKey, LocalizedText> = {
     uk: 'Експорт звіту',
     ru: 'Экспорт отчета',
     en: 'Export Report'
+  },
+
+  'buttons.near_me': {
+    uk: '📍 Поблизу',
+    ru: '📍 Рядом',
+    en: '📍 Near Me'
+  },
+
+  'buttons.reviews': {
+    uk: '⭐ Відгуки',
+    ru: '⭐ Отзывы',
+    en: '⭐ Reviews'
+  },
+
+  'buttons.view_details': {
+    uk: '📝 Деталі',
+    ru: '📝 Подробнее',
+    en: '📝 View Details'
+  },
+
+  'buttons.reschedule': {
+    uk: '📅 Перенести',
+    ru: '📅 Перенести',
+    en: '📅 Reschedule'
+  },
+
+  'buttons.message_specialist': {
+    uk: '💬 Написати спеціалісту',
+    ru: '💬 Написать специалисту',
+    en: '💬 Message Specialist'
+  },
+
+  'buttons.get_directions': {
+    uk: '📍 Маршрут',
+    ru: '📍 Маршрут',
+    en: '📍 Get Directions'
+  },
+
+  'buttons.confirm_booking': {
+    uk: '✅ Підтвердити запис',
+    ru: '✅ Подтвердить запись',
+    en: '✅ Confirm Booking'
+  },
+
+  'buttons.add_notes': {
+    uk: 'ℹ️ Додати примітки',
+    ru: 'ℹ️ Добавить заметки',
+    en: 'ℹ️ Add Notes'
+  },
+
+  'buttons.change_time': {
+    uk: '🔄 Змінити час',
+    ru: '🔄 Изменить время',
+    en: '🔄 Change Time'
+  },
+
+  'buttons.previous': {
+    uk: '◀️ Попередня',
+    ru: '◀️ Предыдущая',
+    en: '◀️ Previous'
+  },
+
+  'buttons.next': {
+    uk: 'Наступна ▶️',
+    ru: 'Следующая ▶️',
+    en: 'Next ▶️'
+  },
+
+  'buttons.retry': {
+    uk: '🔄 Спробувати знову',
+    ru: '🔄 Попробовать снова',
+    en: '🔄 Retry'
+  },
+
+  'buttons.contact_support': {
+    uk: '💬 Підтримка',
+    ru: '💬 Поддержка',
+    en: '💬 Contact Support'
   }
 };
 

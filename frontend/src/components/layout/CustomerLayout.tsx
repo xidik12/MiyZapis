@@ -8,6 +8,8 @@ import { selectUser, logout } from '../../store/slices/authSlice';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { getAbsoluteImageUrl } from '../../utils/imageUrl';
 import { NotificationBell } from '../notifications/NotificationBell';
+import { Logo } from '@/components/ui/Logo';
+import { MobileBottomNav } from './MobileBottomNav';
 import { HouseIcon as HomeIcon, CalendarIcon, UserIcon, Cog6ToothIcon, StarIcon, HeartIcon, QuestionMarkCircleIcon, GiftIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, SunIcon, MoonIcon, ChevronDownIcon, BellIcon, ClockIcon, CreditCardIcon, MagnifyingGlassIcon, ArrowRightOnRectangleIcon, ChatBubbleLeftEllipsisIcon, UsersIcon, WalletIcon, ShareIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
@@ -29,7 +31,7 @@ const navigation: SidebarNavItem[] = [
   {
     name: 'Dashboard',
     nameKey: 'customer.nav.dashboard',
-    href: '/dashboard',
+    href: '/customer/dashboard',
     icon: HomeIcon,
   },
   {
@@ -41,19 +43,19 @@ const navigation: SidebarNavItem[] = [
   {
     name: 'Bookings',
     nameKey: 'customer.nav.bookings',
-    href: '/bookings',
+    href: '/customer/bookings',
     icon: CalendarIcon,
   },
   {
     name: 'Favorites',
     nameKey: 'customer.nav.favorites',
-    href: '/favorites',
+    href: '/customer/favorites',
     icon: HeartIcon,
   },
   {
     name: 'Reviews',
     nameKey: 'customer.nav.reviews',
-    href: '/reviews',
+    href: '/customer/reviews',
     icon: StarIcon,
   },
   {
@@ -77,13 +79,13 @@ const navigation: SidebarNavItem[] = [
   {
     name: 'Payments',
     nameKey: 'customer.nav.payments',
-    href: '/payments',
+    href: '/customer/payments',
     icon: CreditCardIcon,
   },
   {
     name: 'Loyalty Points',
     nameKey: 'customer.nav.loyalty',
-    href: '/loyalty',
+    href: '/customer/loyalty',
     icon: GiftIcon,
   },
   {
@@ -95,13 +97,13 @@ const navigation: SidebarNavItem[] = [
   {
     name: 'Profile',
     nameKey: 'customer.nav.profile',
-    href: '/profile',
+    href: '/customer/profile',
     icon: UserIcon,
   },
   {
     name: 'Settings',
     nameKey: 'customer.nav.settings',
-    href: '/settings',
+    href: '/customer/settings',
     icon: Cog6ToothIcon,
   },
 ];
@@ -133,10 +135,6 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
   }, []);
 
   const isCurrentPath = (path: string) => {
-    // Handle wallet routes - both /wallet and /customer/wallet should highlight the wallet nav item
-    if (path === '/customer/wallet') {
-      return location.pathname === '/customer/wallet' || location.pathname === '/wallet';
-    }
     return location.pathname === path;
   };
 
@@ -180,34 +178,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
           {!isCollapsed && (
             <div className="flex items-center space-x-2">
-              <img 
-                src="/miyzapis_logo.png" 
-                alt="МійЗапис Logo" 
-                className="w-8 h-8"
-                onError={(e) => {
-                  const img = e.currentTarget as HTMLImageElement;
-                  const currentSrc = img.src;
-                  
-                  if (currentSrc.includes('miyzapis_logo.png')) {
-                    console.log('🖼️ CustomerLayout logo failed, trying SVG fallback');
-                    img.src = '/logo.svg';
-                  } else if (currentSrc.includes('logo.svg')) {
-                    console.log('🖼️ CustomerLayout SVG logo failed, trying favicon fallback');
-                    img.src = '/favicon.svg';
-                  } else {
-                    console.log('🖼️ CustomerLayout all logos failed, replacing with text fallback');
-                    img.style.display = 'none';
-                    const parent = img.parentElement;
-                    if (parent && !parent.querySelector('.logo-fallback')) {
-                      const fallback = document.createElement('div');
-                      fallback.className = 'logo-fallback w-8 h-8 bg-blue-600 text-white rounded flex items-center justify-center text-xs font-bold';
-                      fallback.textContent = 'МЗ';
-                      parent.insertBefore(fallback, img);
-                    }
-                  }
-                }}
-                onLoad={() => console.log('✅ CustomerLayout logo loaded successfully')}
-              />
+              <Logo size="md" />
               <span className="text-lg font-bold text-gray-900 dark:text-white">
                 МійЗапис
               </span>
@@ -276,8 +247,8 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
                 className={`
                   flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200
                   ${isActive
-                    ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30 transform scale-105'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 hover:scale-105'
+                    ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80'
                   }
                   ${isCollapsed ? 'justify-center' : 'justify-between'}
                 `}
@@ -320,7 +291,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
             className={`
               flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-3'} text-sm font-semibold rounded-xl transition-all duration-200
               text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80 mobile-touch-target
-              ${isCollapsed ? 'justify-center hover:scale-105 hover:shadow-lg hover:shadow-primary-500/20' : 'justify-start space-x-3'}
+              ${isCollapsed ? 'justify-center hover:shadow-lg hover:shadow-primary-500/20' : 'justify-start space-x-3'}
             `}
             aria-label={theme === 'dark' ? t('theme.light') : t('theme.dark')}
           >
@@ -358,7 +329,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
             className={`
               flex items-center w-full px-3 ${isCollapsed ? 'py-2.5 min-h-10 h-10' : 'py-3'} text-sm font-semibold rounded-xl transition-all duration-200
               text-red-600 dark:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-900/30 mobile-touch-target
-              ${isCollapsed ? 'justify-center hover:scale-105 hover:shadow-lg hover:shadow-red-500/20' : 'justify-start space-x-3'}
+              ${isCollapsed ? 'justify-center hover:shadow-lg hover:shadow-red-500/20' : 'justify-start space-x-3'}
             `}
           >
             <ArrowRightOnRectangleIcon className={isCollapsed ? 'w-5 h-5' : 'w-7 h-7 sm:w-6 sm:h-6'} />
@@ -386,7 +357,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
 
             {/* Settings */}
             <Link
-              to="/settings"
+              to="/customer/settings"
               className="p-3 sm:p-2 rounded-xl hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
             >
               <Cog6ToothIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
@@ -395,12 +366,15 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({ children }) => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
+        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 pb-16 lg:pb-0">
           <div key={location.pathname} className="page-enter">
             {children}
           </div>
         </main>
       </div>
+
+      {/* Mobile bottom tab bar */}
+      <MobileBottomNav />
     </div>
   );
 };

@@ -225,10 +225,10 @@ router.post('/resend-verification', async (req, res) => {
       );
     }
 
-    res.json(createSuccessResponse({ message: result.message }));
+    return res.json(createSuccessResponse({ message: result.message }));
   } catch (error: any) {
     logger.error('Resend verification error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse('RESEND_FAILED', 'Failed to resend verification email', req.id)
     );
   }

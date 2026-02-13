@@ -198,7 +198,7 @@ export const ProfessionDropdown: React.FC<ProfessionDropdownProps> = ({
             type="button"
             onClick={handleCustomSubmit}
             disabled={!customValue.trim()}
-            className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 font-semibold transition-all duration-200 hover:scale-105"
+            className="px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-all duration-200"
           >
             {t('common.add') || 'Add'}
           </button>

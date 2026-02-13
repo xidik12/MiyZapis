@@ -69,7 +69,7 @@ router.post('/fix-my-points', authenticateToken, async (req: Request, res: Respo
         difference
       });
 
-      res.json(createSuccessResponse({
+      return res.json(createSuccessResponse({
         message: 'Loyalty points fixed successfully!',
         user: {
           id: user.id,
@@ -98,7 +98,7 @@ router.post('/fix-my-points', authenticateToken, async (req: Request, res: Respo
         }
       }));
     } else {
-      res.json(createSuccessResponse({
+      return res.json(createSuccessResponse({
         message: 'Loyalty points are already correct!',
         user: {
           id: user.id,
@@ -130,7 +130,7 @@ router.post('/fix-my-points', authenticateToken, async (req: Request, res: Respo
 
   } catch (error) {
     logger.error('Error fixing user loyalty points:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to fix loyalty points',

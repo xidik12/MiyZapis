@@ -8,39 +8,6 @@
 @tailwind utilities;
 
 @layer base {
-  /* Design tokens */
-  :root {
-    --color-bg: 255 255 255;
-    --color-bg-elev: 248 250 252;
-    --color-fg: 17 24 39;
-    --color-fg-muted: 75 85 99;
-    --color-border: 229 231 235;
-    --color-primary: 59 130 246;
-    --color-secondary: 14 165 233;
-    --color-success: 22 163 74;
-    --color-danger: 220 38 38;
-    --color-warning: 234 179 8;
-    --radius-sm: 0.375rem;
-    --radius-md: 0.75rem;
-    --radius-lg: 1rem;
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 20px -2px rgb(0 0 0 / 0.06);
-    --shadow-lg: 0 10px 30px -6px rgb(0 0 0 / 0.20);
-    --motion-fast: 120ms;
-    --motion-normal: 200ms;
-    --motion-slow: 300ms;
-    --easing: cubic-bezier(0.2, 0.6, 0.2, 1);
-  }
-
-  .dark {
-    --color-bg: 10 12 16;
-    --color-bg-elev: 17 24 39;
-    --color-fg: 243 244 246;
-    --color-fg-muted: 156 163 175;
-    --color-border: 55 65 81;
-    --color-primary: 96 165 250;
-    --color-secondary: 56 189 248;
-  }
   :root {
     /* Custom CSS Variables for Design System */
     --radius: 0.5rem;
@@ -137,9 +104,6 @@
   body {
     background-color: rgb(var(--bg-secondary));
     color: rgb(var(--text-primary));
-    /* Apply token-based fallbacks */
-    background-color: rgb(var(--color-bg));
-    color: rgb(var(--color-fg));
     @apply font-sans antialiased transition-colors duration-300;
     font-feature-settings: "rlig" 1, "calt" 1;
     /* Prevent horizontal scroll and ensure proper mobile scaling */
@@ -197,7 +161,7 @@
   }
 
   /* Sticky controls helper */
-  .sticky-controls { position: sticky; top: 64px; z-index: var(--z-sticky); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-bottom: 1px solid rgb(var(--color-border) / 0.6); background-color: rgb(var(--color-bg) / 0.8); }
+  .sticky-controls { position: sticky; top: 64px; z-index: var(--z-sticky); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-bottom: 1px solid rgb(var(--border-primary) / 0.6); background-color: rgb(var(--bg-primary) / 0.8); }
 
   /* Loading animation */
   @keyframes shimmer {
@@ -596,27 +560,6 @@
   .glow-secondary {
     box-shadow: 0 0 20px rgba(255, 196, 31, 0.3);
     animation: glow-pulse 2s ease-in-out infinite alternate;
-  }
-
-  /* Neumorphism effects */
-  .neomorphism {
-    background: #f0f0f3;
-    box-shadow: 20px 20px 60px #d1d1e0, -20px -20px 60px #ffffff;
-  }
-
-  .dark .neomorphism {
-    background: #2d3748;
-    box-shadow: 20px 20px 60px #1a202c, -20px -20px 60px #3a4662;
-  }
-
-  .neomorphism-inset {
-    background: #f0f0f3;
-    box-shadow: inset 20px 20px 60px #d1d1e0, inset -20px -20px 60px #ffffff;
-  }
-
-  .dark .neomorphism-inset {
-    background: #2d3748;
-    box-shadow: inset 20px 20px 60px #1a202c, inset -20px -20px 60px #3a4662;
   }
 
   /* Shimmer effect */
@@ -1123,7 +1066,7 @@
   }
 
   .smooth-button {
-    @apply transition-all duration-200 ease-out hover:scale-105 hover:shadow-md active:scale-95;
+    @apply transition-all duration-200 ease-out hover:shadow-md active:scale-95;
   }
 
   .smooth-card {

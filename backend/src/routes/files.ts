@@ -544,15 +544,15 @@ router.post('/upload-robust', authMiddleware, fileController.uploadMiddleware, a
 
     console.log('📤 Upload successful:', { filename, url: fileUrl });
 
-    res.json({ 
-      success: true, 
+    return res.json({
+      success: true,
       data: response,
       message: 'File uploaded successfully'
     });
   } catch (error) {
     console.error('💥 Upload error:', error);
-    res.status(500).json({ 
-      success: false, 
+    return res.status(500).json({
+      success: false,
       error: 'File upload failed',
       details: error instanceof Error ? error.message : String(error)
     });
@@ -656,15 +656,15 @@ router.post('/upload-simple', authMiddleware, fileController.uploadMiddleware, a
     console.log('File saved:', filepath);
     console.log('File URL:', fileUrl);
 
-    res.json({ 
-      success: true, 
+    return res.json({
+      success: true,
       data: mockResponse,
       message: 'File uploaded successfully'
     });
   } catch (error) {
     console.error('Upload error:', error);
-    res.status(500).json({ 
-      success: false, 
+    return res.status(500).json({
+      success: false,
       error: 'File upload failed',
       details: error instanceof Error ? error.message : String(error)
     });
@@ -727,11 +727,11 @@ router.get('/s3-proxy/*', async (req, res) => {
     
     // Stream the response
     const buffer = await response.arrayBuffer();
-    res.send(Buffer.from(buffer));
-    
+    return res.send(Buffer.from(buffer));
+
   } catch (error) {
     console.error('❌ S3 proxy error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'S3 proxy failed',
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -793,10 +793,10 @@ router.get('/uploads/:filename', (req, res) => {
       });
     }
     
-    res.sendFile(filepath);
+    return res.sendFile(filepath);
   } catch (error) {
     console.error('Error serving file:', error);
-    res.status(500).json({ success: false, error: 'Failed to serve file' });
+    return res.status(500).json({ success: false, error: 'Failed to serve file' });
   }
 });
 

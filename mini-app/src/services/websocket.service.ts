@@ -35,6 +35,11 @@ export type WebSocketEventType =
   | 'new_message'
   | 'system_notification';
 
+const isDev = import.meta.env.DEV;
+const log = (...args: any[]) => { if (isDev) console.log('[WS]', ...args); };
+const logWarn = (...args: any[]) => { if (isDev) console.warn('[WS]', ...args); };
+const logError = (...args: any[]) => { console.error('[WS]', ...args); };
+
 class WebSocketService {
   private socket: Socket | null = null;
   private reconnectAttempts = 0;
@@ -44,6 +49,7 @@ class WebSocketService {
   private isConnected = false;
   private userId: string | null = null;
   private token: string | null = null;
+  private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     this.setupSocketListeners();
@@ -54,7 +60,7 @@ class WebSocketService {
    */
   connect(userId: string, token: string): void {
     if (this.socket?.connected) {
-      console.log('WebSocket already connected');
+      log('Already connected');
       return;
     }
 
@@ -82,6 +88,10 @@ class WebSocketService {
    * Disconnect WebSocket
    */
   disconnect(): void {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
@@ -98,7 +108,7 @@ class WebSocketService {
     if (!this.socket) return;
 
     this.socket.on('connect', () => {
-      console.log('WebSocket connected');
+      log('Connected');
       this.isConnected = true;
       this.reconnectAttempts = 0;
       
@@ -111,91 +121,91 @@ class WebSocketService {
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.log('WebSocket disconnected:', reason);
+      log('Disconnected:', reason);
       this.isConnected = false;
       this.emit('connection_status', { connected: false, reason });
     });
 
     this.socket.on('connect_error', (error) => {
-      console.error('WebSocket connection error:', error);
+      logError('Connection error:', error);
       this.emit('connection_error', { error: error.message });
     });
 
     this.socket.on('reconnect', (attemptNumber) => {
-      console.log('WebSocket reconnected after', attemptNumber, 'attempts');
+      log('Reconnected after', attemptNumber, 'attempts');
       this.emit('reconnected', { attempts: attemptNumber });
     });
 
     this.socket.on('reconnect_error', (error) => {
-      console.error('WebSocket reconnection error:', error);
+      logError('Reconnection error:', error);
       this.reconnectAttempts++;
     });
 
     // Booking events
     this.socket.on('booking_updated', (data: BookingUpdate) => {
-      console.log('Booking updated:', data);
+      log('Booking updated:', data);
       this.emit('booking_updated', data);
     });
 
     this.socket.on('booking_confirmed', (data: BookingUpdate) => {
-      console.log('Booking confirmed:', data);
+      log('Booking confirmed:', data);
       this.emit('booking_confirmed', data);
       this.showTelegramNotification('Booking Confirmed', `Your booking has been confirmed!`);
     });
 
     this.socket.on('booking_cancelled', (data: BookingUpdate) => {
-      console.log('Booking cancelled:', data);
+      log('Booking cancelled:', data);
       this.emit('booking_cancelled', data);
       this.showTelegramNotification('Booking Cancelled', 'A booking has been cancelled.');
     });
 
     this.socket.on('booking_reminder', (data: any) => {
-      console.log('Booking reminder:', data);
+      log('Booking reminder:', data);
       this.emit('booking_reminder', data);
       this.showTelegramNotification('Booking Reminder', `You have an upcoming appointment in ${data.timeUntil}.`);
     });
 
     // Payment events
     this.socket.on('payment_completed', (data: any) => {
-      console.log('Payment completed:', data);
+      log('Payment completed:', data);
       this.emit('payment_completed', data);
       this.showTelegramNotification('Payment Successful', 'Your payment has been processed successfully.');
     });
 
     this.socket.on('payment_failed', (data: any) => {
-      console.log('Payment failed:', data);
+      log('Payment failed:', data);
       this.emit('payment_failed', data);
       this.showTelegramNotification('Payment Failed', 'There was an issue processing your payment.');
     });
 
     // Specialist status events
     this.socket.on('specialist_online', (data: any) => {
-      console.log('Specialist online:', data);
+      log('Specialist online:', data);
       this.emit('specialist_online', data);
     });
 
     this.socket.on('specialist_offline', (data: any) => {
-      console.log('Specialist offline:', data);
+      log('Specialist offline:', data);
       this.emit('specialist_offline', data);
     });
 
     // Message events
     this.socket.on('new_message', (data: any) => {
-      console.log('New message:', data);
+      log('New message:', data);
       this.emit('new_message', data);
       this.showTelegramNotification('New Message', `You have a new message from ${data.senderName}.`);
     });
 
     // System notifications
     this.socket.on('system_notification', (data: NotificationData) => {
-      console.log('System notification:', data);
+      log('System notification:', data);
       this.emit('system_notification', data);
       this.showTelegramNotification(data.title, data.message);
     });
 
     // Generic message handler
     this.socket.on('message', (message: WebSocketMessage) => {
-      console.log('WebSocket message:', message);
+      log('Message:', message);
       this.emit(message.type, message.data);
     });
   }
@@ -246,7 +256,7 @@ class WebSocketService {
         try {
           callback(data);
         } catch (error) {
-          console.error('Error in event listener:', error);
+          logError('Error in event listener:', error);
         }
       });
     }
@@ -259,7 +269,7 @@ class WebSocketService {
     if (this.socket?.connected) {
       this.socket.emit(event, data);
     } else {
-      console.warn('WebSocket not connected, cannot send message:', event, data);
+      logWarn('Not connected, cannot send:', event);
     }
   }
 
@@ -369,9 +379,12 @@ class WebSocketService {
    * Start heartbeat interval
    */
   startHeartbeat(): void {
-    setInterval(() => {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+    }
+    this.heartbeatInterval = setInterval(() => {
       this.sendHeartbeat();
-    }, 30000); // Send heartbeat every 30 seconds
+    }, 30000);
   }
 }
 

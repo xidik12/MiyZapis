@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { BookingController } from '@/controllers/bookings';
 import { authenticateToken, requireAdmin } from '@/middleware/auth/jwt';
+import { bookingRateLimit } from '@/middleware/rate-limiter';
 import {
   validateCreateBooking,
   validateUpdateBookingStatus,
@@ -13,8 +14,9 @@ import {
 const router = Router();
 
 // Protected routes - require authentication
-router.post('/', authenticateToken, validateCreateBooking, BookingController.createBooking);
-router.post('/with-payment', authenticateToken, BookingController.createBookingWithPayment);
+router.post('/', authenticateToken, bookingRateLimit, validateCreateBooking, BookingController.createBooking);
+router.post('/with-payment', authenticateToken, bookingRateLimit, BookingController.createBookingWithPayment);
+router.post('/recurring', authenticateToken, bookingRateLimit, BookingController.createRecurringBooking);
 router.get('/', authenticateToken, validateGetBookings, BookingController.getUserBookings);
 router.get('/stats', authenticateToken, BookingController.getSpecialistBookingStats);
 router.get('/:bookingId', authenticateToken, validateBookingId, BookingController.getBooking);

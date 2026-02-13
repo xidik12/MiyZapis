@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSelector, useAppDispatch } from '@/hooks/redux';
 import { selectUser, logout } from '@/store/slices/authSlice';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
-import { HouseIcon as HomeIcon, CalendarIcon, CogIcon, ChartBarIcon, PresentationChartLineIcon, CurrencyDollarIcon, StarIcon, ChatBubbleLeftRightIcon, UserIcon, ClockIcon, BellIcon, ArrowRightOnRectangleIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, Cog6ToothIcon, WrenchScrewdriverIcon, UserGroupIcon } from '@/components/icons';
+import { HouseIcon as HomeIcon, CalendarIcon, CogIcon, ChartBarIcon, PresentationChartLineIcon, CurrencyDollarIcon, StarIcon, ChatBubbleLeftRightIcon, UserIcon, ClockIcon, BellIcon, ArrowRightOnRectangleIcon, ListIcon as Bars3Icon, XIcon as XMarkIcon, Cog6ToothIcon, WrenchScrewdriverIcon, UserGroupIcon, UsersIcon } from '@/components/icons';
 // Note: Use active prop for filled icons: <Icon active />
 ;
 
@@ -45,6 +45,12 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
       href: '/specialist/bookings',
       icon: CalendarIcon,
       badge: 0, // Dynamic count from API
+    },
+    {
+      name: 'Clients',
+      translationKey: 'dashboard.nav.clients',
+      href: '/specialist/clients',
+      icon: UsersIcon,
     },
     {
       name: 'Services',
@@ -204,7 +210,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
                   className={`
                     group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
                     ${isActive
-                      ? 'bg-primary-500 text-white shadow-lg transform scale-105'
+                      ? 'bg-primary-500 text-white shadow-lg'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                     }
                     ${item.comingSoon ? 'opacity-50 cursor-not-allowed' : ''}
@@ -311,7 +317,7 @@ const SpecialistSidebar: React.FC<SpecialistSidebarProps> = ({
           {/* Brand footer */}
           <div className="border-t border-gray-200 dark:border-gray-700 p-4">
             <div className="text-center">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500 dark:text-gray-400 cursor-default select-none transition-all duration-300 hover:text-primary-500 hover:scale-110 hover:drop-shadow-[0_0_6px_rgba(102,126,234,0.5)]">
                 {t('brand.name')} Specialist
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">

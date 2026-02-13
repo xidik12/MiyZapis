@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { socketService, subscribeToPaymentUpdates, ensureSocketConnection } from '../../services/socket.service';
 import { translateProfession } from '@/utils/profession';
 import { toast } from 'react-toastify';
@@ -8,6 +9,7 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import { useAppSelector } from '../../hooks/redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { specialistService, serviceService, bookingService } from '../../services';
+import { waitlistService } from '../../services/waitlist.service';
 import { paymentService } from '../../services/payment.service';
 import { paypalService } from '../../services/paypal.service';
 import { loyaltyService, UserLoyalty } from '@/services/loyalty.service';
@@ -15,8 +17,10 @@ import { RewardsService, type RewardRedemption, type LoyaltyReward } from '@/ser
 import { filterSlotsByDuration, calculateEndTime } from '../../utils/timeSlotUtils';
 import { environment } from '@/config/environment';
 import { logger } from '@/utils/logger';
-import { CalendarIcon, ClockIcon, MapPinIcon, CreditCardIcon, CheckCircleIcon, ArrowLeftIcon, ArrowRightIcon, GiftIcon, StarIcon } from '@/components/icons';
+import { CalendarIcon, ClockIcon, MapPinIcon, CreditCardIcon, CheckCircleIcon, ArrowLeftIcon, ArrowRightIcon, GiftIcon, StarIcon, ArrowPathIcon } from '@/components/icons';
+import { fireSuccessConfetti } from '@/utils/confetti';
 import { PageLoader } from '@/components/ui';
+import { RecurringBookingModal, type RecurrenceData } from '@/components/modals/RecurringBookingModal';
 
 interface BookingStep {
   id: string;
@@ -59,6 +63,11 @@ const BookingFlow: React.FC = () => {
   const [redemptions, setRedemptions] = useState<RewardRedemption[]>([]);
   const [selectedRedemptionId, setSelectedRedemptionId] = useState<string>('');
 
+  // Recurring booking states
+  const [isRecurring, setIsRecurring] = useState<boolean>(false);
+  const [recurrenceData, setRecurrenceData] = useState<RecurrenceData | null>(null);
+  const [showRecurringModal, setShowRecurringModal] = useState<boolean>(false);
+
   // Payment states
   const [useWalletFirst, setUseWalletFirst] = useState<boolean>(true);
   const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'paypal'>('crypto');
@@ -70,6 +79,13 @@ const BookingFlow: React.FC = () => {
   const [paymentTimeRemaining, setPaymentTimeRemaining] = useState<number>(0);
   const [slotsLoading, setSlotsLoading] = useState<boolean>(false);
   const [pollingIntervalId, setPollingIntervalId] = useState<NodeJS.Timeout | null>(null);
+
+  // Waitlist states
+  const [showWaitlistModal, setShowWaitlistModal] = useState<boolean>(false);
+  const [waitlistNotes, setWaitlistNotes] = useState<string>('');
+  const [waitlistPreferredTime, setWaitlistPreferredTime] = useState<string>('');
+  const [waitlistLoading, setWaitlistLoading] = useState<boolean>(false);
+  const [waitlistJoined, setWaitlistJoined] = useState<boolean>(false);
 
   // Ref to prevent duplicate booking submissions
   const bookingInProgressRef = useRef<boolean>(false);
@@ -285,11 +301,6 @@ const BookingFlow: React.FC = () => {
           const firstDate = new Date(dates[0].date);
           logger.debug('📅 BookingFlow: Auto-selecting first available date:', firstDate);
           setSelectedDate(firstDate);
-
-          // Show a subtle notification about auto-selection
-          setTimeout(() => {
-            toast.info(`Auto-selected ${firstDate.toLocaleDateString()} - earliest available date`);
-          }, 1000);
         }
       } catch (error) {
         logger.error('❌ BookingFlow: Error fetching available dates:', error);
@@ -414,11 +425,35 @@ const BookingFlow: React.FC = () => {
         };
 
         logger.debug('📝 BookingFlow: Creating free booking (payments disabled)', bookingData);
-        const result = await bookingService.createBooking(bookingData);
+
+        let result: any;
+        if (isRecurring && recurrenceData) {
+          logger.debug('📝 BookingFlow: Creating recurring booking series', recurrenceData);
+          const recurringResult = await bookingService.createRecurringBooking({
+            ...bookingData,
+            recurrence: {
+              frequency: recurrenceData.frequency,
+              daysOfWeek: recurrenceData.daysOfWeek,
+              endType: recurrenceData.endType,
+              occurrences: recurrenceData.occurrences,
+              endDate: recurrenceData.endDate,
+            },
+          });
+          result = {
+            booking: recurringResult.parentBooking,
+            childrenCount: recurringResult.childrenCount,
+            message: recurringResult.message,
+          };
+        } else {
+          result = await bookingService.createBooking(bookingData);
+        }
         logger.debug('✅ BookingFlow: Booking created successfully:', result);
 
         setBookingResult(result);
-        toast.success('Booking created successfully!');
+        toast.success(isRecurring && recurrenceData
+          ? `Recurring booking created! ${(result as any).childrenCount || 0} additional bookings scheduled.`
+          : 'Booking created successfully!');
+        fireSuccessConfetti();
         bookingInProgressRef.current = false;
         setPaymentLoading(false);
         setCurrentStep(currentStep + 1);
@@ -696,6 +731,7 @@ const BookingFlow: React.FC = () => {
                   // Navigate to confirmation
                   setCurrentStep(steps.length - 1);
                   toast.success('Payment completed! Your booking is confirmed.');
+                  fireSuccessConfetti();
                 })
                 .catch(err => {
                   logger.error('❌ BookingFlow: Error fetching booking after payment:', err);
@@ -813,6 +849,7 @@ const BookingFlow: React.FC = () => {
         });
         logger.debug('✅ BookingFlow: Booking created after wallet payment:', bookingResult);
         setBookingResult(bookingResult);
+        fireSuccessConfetti();
 
         // Navigate to confirmation step
         setCurrentStep(steps.length - 1);
@@ -861,6 +898,40 @@ const BookingFlow: React.FC = () => {
     } finally {
       bookingInProgressRef.current = false;
       setPaymentLoading(false);
+    }
+  };
+
+  // Handle joining the waitlist
+  const handleJoinWaitlist = async () => {
+    if (!user || !service || !selectedDate) return;
+
+    const currentSpecialistId = specialist?.id || service?.specialistId || service?.specialist?.id || specialistId;
+    if (!currentSpecialistId) return;
+
+    setWaitlistLoading(true);
+    try {
+      await waitlistService.joinWaitlist({
+        serviceId: service.id,
+        specialistId: currentSpecialistId,
+        preferredDate: selectedDate.toISOString(),
+        preferredTime: waitlistPreferredTime || undefined,
+        notes: waitlistNotes || undefined,
+      });
+      setWaitlistJoined(true);
+      setShowWaitlistModal(false);
+      setWaitlistNotes('');
+      setWaitlistPreferredTime('');
+      toast.success(t('waitlist.joinedSuccess') || 'You have been added to the waitlist! We will notify you when a slot becomes available.');
+    } catch (error: any) {
+      const code = error?.apiError?.code || error?.response?.data?.error?.code;
+      if (code === 'ALREADY_ON_WAITLIST') {
+        // Already on waitlist -- mark as joined, the API interceptor may already show a toast
+        setWaitlistJoined(true);
+        setShowWaitlistModal(false);
+      }
+      // Other errors are shown by the API interceptor
+    } finally {
+      setWaitlistLoading(false);
     }
   };
 
@@ -988,7 +1059,7 @@ const BookingFlow: React.FC = () => {
                   {getDisplayDates().slice(0, 14).map(({ date, dateInfo }) => (
                     <button
                       key={date.toISOString()}
-                      onClick={() => setSelectedDate(date)}
+                      onClick={() => { setSelectedDate(date); setWaitlistJoined(false); }}
                       className={`p-2 sm:p-3 text-xs sm:text-sm rounded-xl border transition-colors relative mobile-touch-target ${
                         selectedDate?.toDateString() === date.toDateString()
                           ? 'bg-primary-600 text-white border-primary-600'
@@ -1038,7 +1109,7 @@ const BookingFlow: React.FC = () => {
                         const next = idx >= 0 && idx < availableSlots.length - 1 ? availableSlots[idx + 1] : availableSlots[0];
                         setSelectedTime(next);
                         setConflictHint({ active: false });
-                        setTimeout(() => handleBookingSubmit(), 50);
+                        toast.success(t('booking.timeUpdated') || 'Time updated — review and proceed when ready');
                       }}
                       className="btn btn-error btn-sm text-white"
                     >
@@ -1055,40 +1126,85 @@ const BookingFlow: React.FC = () => {
                     </p>
                   </div>
                 ) : availableSlots.length > 0 ? (
-                  <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
-                    {availableSlots.map((slot: any) => {
-                      const time = typeof slot === 'string' ? slot : slot.time;
-                      const count = typeof slot === 'string' ? undefined : slot.count;
-                      const serviceDuration = service?.duration || 60;
-                      const endTime = calculateEndTime(time, serviceDuration);
+                  <div className="space-y-4">
+                    {(() => {
+                      const groups: { label: string; slots: typeof availableSlots } = [] as any;
+                      const morning: typeof availableSlots = [];
+                      const afternoon: typeof availableSlots = [];
+                      const evening: typeof availableSlots = [];
 
-                      return (
-                        <button
-                          key={time}
-                          onClick={() => setSelectedTime(time)}
-                          className={`relative px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm rounded-xl border transition-colors mobile-touch-target ${
-                            selectedTime === time
-                              ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
-                              : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300 active:scale-95'
-                          }`}
-                        >
-                          <div className="text-center">
-                            <div className="font-medium">{time}</div>
-                            {serviceDuration > 15 && (
-                              <div className="text-xs opacity-75">to {endTime}</div>
-                            )}
+                      availableSlots.forEach((slot: any) => {
+                        const time = typeof slot === 'string' ? slot : slot.time;
+                        const hour = parseInt(time.split(':')[0], 10);
+                        if (hour < 12) morning.push(slot);
+                        else if (hour < 17) afternoon.push(slot);
+                        else evening.push(slot);
+                      });
+
+                      const sections = [
+                        { label: t('booking.morning') || 'Morning', slots: morning },
+                        { label: t('booking.afternoon') || 'Afternoon', slots: afternoon },
+                        { label: t('booking.evening') || 'Evening', slots: evening },
+                      ].filter(s => s.slots.length > 0);
+
+                      return sections.map(section => (
+                        <div key={section.label}>
+                          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">{section.label}</h4>
+                          <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+                            {section.slots.map((slot: any) => {
+                              const time = typeof slot === 'string' ? slot : slot.time;
+                              const count = typeof slot === 'string' ? undefined : slot.count;
+                              const serviceDuration = service?.duration || 60;
+                              const endTime = calculateEndTime(time, serviceDuration);
+
+                              return (
+                                <button
+                                  key={time}
+                                  onClick={() => setSelectedTime(time)}
+                                  className={`relative px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm rounded-xl border transition-colors mobile-touch-target ${
+                                    selectedTime === time
+                                      ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
+                                      : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-primary-300 active:scale-95'
+                                  }`}
+                                >
+                                  <div className="text-center">
+                                    <div className="font-medium">{time}</div>
+                                    {serviceDuration > 15 && (
+                                      <div className="text-xs opacity-75">to {endTime}</div>
+                                    )}
+                                  </div>
+                                  {count === 1 && (
+                                    <span className="absolute -top-1 -right-1 text-[10px] px-1 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">1</span>
+                                  )}
+                                </button>
+                              );
+                            })}
                           </div>
-                          {count === 1 && (
-                            <span className="absolute -top-1 -right-1 text-[10px] px-1 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">1</span>
-                          )}
-                        </button>
-                      );
-                    })}
+                        </div>
+                      ));
+                    })()}
                   </div>
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-400 text-center py-8">
-                    {t('booking.noAvailableSlots')}
-                  </p>
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 dark:text-gray-400 mb-4">
+                      {t('booking.noAvailableSlots')}
+                    </p>
+                    {user && !waitlistJoined && (
+                      <button
+                        onClick={() => setShowWaitlistModal(true)}
+                        className="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-xl transition-colors shadow-sm"
+                      >
+                        <ClockIcon className="w-4 h-4 mr-2" />
+                        {t('waitlist.joinWaitlist') || 'Join Waitlist'}
+                      </button>
+                    )}
+                    {waitlistJoined && (
+                      <div className="inline-flex items-center px-4 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-xl">
+                        <CheckCircleIcon className="w-4 h-4 mr-2" />
+                        {t('waitlist.alreadyJoined') || 'You are on the waitlist for this date'}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             )}
@@ -1147,6 +1263,106 @@ const BookingFlow: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* Recurring Booking Toggle */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
+                    <ArrowPathIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">
+                      {t('booking.makeRecurring') || 'Make this recurring'}
+                    </h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {t('booking.makeRecurringDesc') || 'Automatically schedule this booking on a regular basis'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isRecurring}
+                  onClick={() => {
+                    if (isRecurring) {
+                      setIsRecurring(false);
+                      setRecurrenceData(null);
+                    } else {
+                      setIsRecurring(true);
+                      setShowRecurringModal(true);
+                    }
+                  }}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+                    isRecurring ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isRecurring ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Recurrence Summary */}
+              {isRecurring && recurrenceData && (
+                <div className="mt-4 p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-primary-900 dark:text-primary-300">
+                        {recurrenceData.frequency === 'daily' && 'Every day'}
+                        {recurrenceData.frequency === 'weekly' && (
+                          recurrenceData.daysOfWeek && recurrenceData.daysOfWeek.length > 0
+                            ? `Every week on ${recurrenceData.daysOfWeek.map(d => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]).join(', ')}`
+                            : 'Every week'
+                        )}
+                        {recurrenceData.frequency === 'biweekly' && 'Every 2 weeks'}
+                        {recurrenceData.frequency === 'monthly' && 'Every month'}
+                      </p>
+                      <p className="text-xs text-primary-700 dark:text-primary-400 mt-0.5">
+                        {recurrenceData.endType === 'never' && 'Repeats indefinitely (up to 52 times)'}
+                        {recurrenceData.endType === 'after' && `${recurrenceData.occurrences || 10} occurrences`}
+                        {recurrenceData.endType === 'on' && recurrenceData.endDate && `Until ${recurrenceData.endDate}`}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowRecurringModal(true)}
+                      className="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium"
+                    >
+                      {t('common.edit') || 'Edit'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {isRecurring && !recurrenceData && (
+                <div className="mt-4">
+                  <button
+                    onClick={() => setShowRecurringModal(true)}
+                    className="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium"
+                  >
+                    {t('booking.configureRecurrence') || 'Configure recurrence pattern...'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Recurring Booking Modal */}
+            <RecurringBookingModal
+              isOpen={showRecurringModal}
+              onClose={() => {
+                setShowRecurringModal(false);
+                if (!recurrenceData) {
+                  setIsRecurring(false);
+                }
+              }}
+              onSave={(data: RecurrenceData) => {
+                setRecurrenceData(data);
+                setIsRecurring(true);
+              }}
+              initialData={recurrenceData || undefined}
+            />
 
             {/* Reward Selection */}
             {redemptions.length > 0 && (
@@ -1232,7 +1448,21 @@ const BookingFlow: React.FC = () => {
                     {service.duration} {t('time.minutes')}
                   </span>
                 </div>
-                
+
+                {isRecurring && recurrenceData && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">{t('booking.recurrence') || 'Recurrence'}</span>
+                    <span className="font-medium text-primary-600 dark:text-primary-400">
+                      {recurrenceData.frequency === 'daily' && 'Daily'}
+                      {recurrenceData.frequency === 'weekly' && 'Weekly'}
+                      {recurrenceData.frequency === 'biweekly' && 'Biweekly'}
+                      {recurrenceData.frequency === 'monthly' && 'Monthly'}
+                      {recurrenceData.endType === 'after' && ` (${recurrenceData.occurrences}x)`}
+                      {recurrenceData.endType === 'on' && recurrenceData.endDate && ` until ${recurrenceData.endDate}`}
+                    </span>
+                  </div>
+                )}
+
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
                   {/* Show discount breakdown if reward is selected */}
                   {discount > 0 && (
@@ -1736,6 +1966,21 @@ const BookingFlow: React.FC = () => {
                 }
               </p>
 
+              {/* Recurring Booking Summary */}
+              {isRecurring && bookingResult?.childrenCount !== undefined && (
+                <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-xl p-4 mb-6">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <ArrowPathIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                    <h4 className="font-semibold text-primary-900 dark:text-primary-100">
+                      {t('booking.recurringCreated') || 'Recurring Booking Created'}
+                    </h4>
+                  </div>
+                  <p className="text-sm text-primary-800 dark:text-primary-200">
+                    {bookingResult.message || `${bookingResult.childrenCount} additional bookings have been scheduled.`}
+                  </p>
+                </div>
+              )}
+
               {/* Payment Required Section */}
               {needsPayment && (
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4 mb-6">
@@ -2031,8 +2276,18 @@ const BookingFlow: React.FC = () => {
         </div>
 
         {/* Step Content */}
-        <div className="mb-8">
-          {renderStepContent()}
+        <div className="mb-8 min-h-[300px]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={steps[currentStep]?.id}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+            >
+              {renderStepContent()}
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         {/* Navigation Buttons */}
@@ -2098,6 +2353,108 @@ const BookingFlow: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Waitlist Modal */}
+      <AnimatePresence>
+        {showWaitlistModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            onClick={() => setShowWaitlistModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                {t('waitlist.joinWaitlist') || 'Join Waitlist'}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                {t('waitlist.joinDescription') || 'Get notified when a slot opens up for this date.'}
+              </p>
+
+              {/* Date confirmation */}
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 mb-4">
+                <div className="flex items-center text-sm">
+                  <CalendarIcon className="w-4 h-4 mr-2 text-gray-400" />
+                  <span className="text-gray-700 dark:text-gray-300 font-medium">
+                    {selectedDate?.toLocaleDateString(language || 'en', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  </span>
+                </div>
+                <div className="flex items-center text-sm mt-1">
+                  <ClockIcon className="w-4 h-4 mr-2 text-gray-400" />
+                  <span className="text-gray-600 dark:text-gray-400">
+                    {service?.name} ({service?.duration} {t('time.minutes') || 'min'})
+                  </span>
+                </div>
+              </div>
+
+              {/* Preferred time */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {t('waitlist.preferredTime') || 'Preferred time (optional)'}
+                </label>
+                <select
+                  value={waitlistPreferredTime}
+                  onChange={(e) => setWaitlistPreferredTime(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white text-sm"
+                >
+                  <option value="">{t('waitlist.anyTime') || 'Any time'}</option>
+                  <option value="morning">{t('booking.morning') || 'Morning'}</option>
+                  <option value="afternoon">{t('booking.afternoon') || 'Afternoon'}</option>
+                  <option value="evening">{t('booking.evening') || 'Evening'}</option>
+                </select>
+              </div>
+
+              {/* Notes */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {t('waitlist.notes') || 'Notes (optional)'}
+                </label>
+                <textarea
+                  value={waitlistNotes}
+                  onChange={(e) => setWaitlistNotes(e.target.value)}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white text-sm"
+                  placeholder={t('waitlist.notesPlaceholder') || 'Any additional preferences...'}
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowWaitlistModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium"
+                >
+                  {t('actions.cancel') || 'Cancel'}
+                </button>
+                <button
+                  onClick={handleJoinWaitlist}
+                  disabled={waitlistLoading}
+                  className="flex-1 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-sm font-medium flex items-center justify-center"
+                >
+                  {waitlistLoading ? (
+                    <svg className="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <ClockIcon className="w-4 h-4 mr-2" />
+                  )}
+                  {waitlistLoading
+                    ? (t('waitlist.joining') || 'Joining...')
+                    : (t('waitlist.joinWaitlist') || 'Join Waitlist')}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

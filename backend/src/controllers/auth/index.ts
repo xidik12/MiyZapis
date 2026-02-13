@@ -339,6 +339,7 @@ export class AuthController {
       res.json(
         createSuccessResponse({
           accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
           expiresIn: result.expiresIn,
         })
       );

@@ -15,6 +15,7 @@ import { LocationPicker } from '../../components/LocationPicker';
 import SetPasswordModal from '../../components/auth/SetPasswordModal';
 import ChangePasswordModal from '../../components/auth/ChangePasswordModal';
 import { UserCircleIcon, BellIcon, ShieldCheckIcon, GlobeIcon as GlobeAltIcon, CreditCardIcon, MapPinIcon, DeviceMobileIcon as DevicePhoneMobileIcon, EyeIcon, EyeSlashIcon, PencilIcon, TrashIcon, PlusIcon, CameraIcon } from '@/components/icons';
+import { usePushNotifications } from '../../hooks/usePushNotifications';
 
 
 interface Address {
@@ -51,6 +52,15 @@ const CustomerSettings: React.FC = () => {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
+
+  // Web Push subscription management
+  const {
+    isSupported: isPushSupported,
+    isSubscribed: isPushSubscribed,
+    isDenied: isPushDenied,
+    isLoading: isPushLoading,
+    toggle: togglePushSubscription,
+  } = usePushNotifications();
 
   // Notification settings
   const [notifications, setNotifications] = useState({
@@ -733,6 +743,38 @@ const CustomerSettings: React.FC = () => {
                     {/* Push Notifications */}
                     <div>
                       <h3 className="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">{t('customer.settings.pushNotifications')}</h3>
+
+                      {/* Master Push Subscription Toggle */}
+                      {isPushSupported && (
+                        <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                {language === 'uk' ? 'Увімкнути push-сповіщення' : language === 'ru' ? 'Включить push-уведомления' : 'Enable Push Notifications'}
+                              </span>
+                              {isPushDenied && (
+                                <p className="text-xs text-red-500 mt-1">
+                                  {language === 'uk' ? 'Сповіщення заблоковані в налаштуваннях браузера' : language === 'ru' ? 'Уведомления заблокированы в настройках браузера' : 'Notifications blocked in browser settings'}
+                                </p>
+                              )}
+                            </div>
+                            <button
+                              onClick={togglePushSubscription}
+                              disabled={isPushLoading || isPushDenied}
+                              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                isPushSubscribed ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
+                              } ${(isPushLoading || isPushDenied) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                              <span
+                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                  isPushSubscribed ? 'translate-x-6' : 'translate-x-1'
+                                }`}
+                              />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="space-y-3">
                         {[
                           { key: 'pushBookingConfirmation', label: t('customer.settings.bookingConfirmations') },

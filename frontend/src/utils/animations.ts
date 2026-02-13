@@ -87,12 +87,12 @@ export const animationClasses = {
 
   // Hover effects
   hoverLift: 'hover:-translate-y-1 hover:shadow-lg transition-all duration-200',
-  hoverScale: 'hover:scale-105 transition-transform duration-200',
+  hoverScale: 'transition-transform duration-200',
   hoverBrightness: 'hover:brightness-110 transition-all duration-200',
 
   // Button animations
   buttonPress: 'active:scale-95 transition-transform duration-100',
-  buttonHover: 'hover:scale-105 active:scale-95 transition-transform duration-200',
+  buttonHover: 'active:scale-95 transition-transform duration-200',
 
   // Card animations
   cardHover: 'hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-out',

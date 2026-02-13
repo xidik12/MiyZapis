@@ -7,6 +7,7 @@ import {
   ChartBarIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { StatCard } from '../ui/StatCard';
 import { TrendLineChart } from '../charts/TrendLineChart';
 import { DistributionPieChart } from '../charts/DistributionPieChart';
@@ -22,9 +23,10 @@ export interface OverviewSectionProps {
 
 export const OverviewSection: React.FC<OverviewSectionProps> = ({
   data,
-  period,
   loading = false
 }) => {
+  const { t } = useLanguage();
+
   if (loading || !data) {
     return (
       <div className="space-y-6">
@@ -54,8 +56,8 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
 
   // Prepare booking status pie chart data
   const bookingStatusData = [
-    { name: 'Completed', value: overview.completedBookings, color: '#10B981' },
-    { name: 'Pending', value: overview.totalBookings - overview.completedBookings, color: '#F59E0B' }
+    { name: t('admin.overview.completed'), value: overview.completedBookings, color: '#10B981' },
+    { name: t('admin.overview.pending'), value: overview.totalBookings - overview.completedBookings, color: '#F59E0B' }
   ];
 
   // Prepare category stats for bar chart
@@ -69,7 +71,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
   const specialistColumns: Column<typeof analytics.topSpecialists[0]>[] = [
     {
       key: 'name',
-      label: 'Specialist',
+      label: t('admin.analytics.specialist'),
       sortable: true,
       render: (row) => (
         <div>
@@ -101,7 +103,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
     },
     {
       key: 'isVerified',
-      label: 'Status',
+      label: t('admin.users.status'),
       render: (row) => (
         <span
           className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
@@ -111,7 +113,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
           }`}
         >
           {row.isVerified && <CheckCircleIcon className="w-3 h-3 mr-1" />}
-          {row.isVerified ? 'Verified' : 'Unverified'}
+          {row.isVerified ? t('admin.overview.verified') : t('admin.overview.unverified')}
         </span>
       )
     }
@@ -122,59 +124,59 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total Users"
+          title={t('admin.overview.totalUsers')}
           value={overview.totalUsers}
           growth={growth.newUsers.growthRate}
           icon={<UsersIcon className="w-6 h-6" />}
-          subtitle={`+${growth.newUsers.current} this period`}
+          subtitle={`+${growth.newUsers.current} ${t('admin.overview.thisPeriod')}`}
         />
         <StatCard
-          title="Total Specialists"
+          title={t('admin.overview.totalSpecialists')}
           value={overview.totalSpecialists}
           icon={<UserGroupIcon className="w-6 h-6" />}
-          subtitle={`${((overview.totalSpecialists / overview.totalUsers) * 100).toFixed(1)}% of users`}
+          subtitle={`${((overview.totalSpecialists / overview.totalUsers) * 100).toFixed(1)}${t('admin.overview.ofUsers')}`}
         />
         <StatCard
-          title="Total Services"
+          title={t('admin.overview.totalServices')}
           value={overview.totalServices}
           icon={<BriefcaseIcon className="w-6 h-6" />}
-          subtitle={`${(overview.totalServices / Math.max(overview.totalSpecialists, 1)).toFixed(1)} per specialist`}
+          subtitle={`${(overview.totalServices / Math.max(overview.totalSpecialists, 1)).toFixed(1)} ${t('admin.overview.perSpecialist')}`}
         />
         <StatCard
-          title="Total Revenue"
+          title={t('admin.overview.totalRevenue')}
           value={`$${(overview.totalRevenue / 1000).toFixed(1)}K`}
           growth={growth.revenue.growthRate}
           icon={<CurrencyDollarIcon className="w-6 h-6" />}
-          subtitle={`+$${(growth.revenue.current / 1000).toFixed(1)}K this period`}
+          subtitle={`+$${(growth.revenue.current / 1000).toFixed(1)}${t('admin.overview.kThisPeriod')}`}
         />
       </div>
 
       {/* Secondary Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total Bookings"
+          title={t('admin.overview.totalBookings')}
           value={overview.totalBookings}
           growth={growth.newBookings.growthRate}
           icon={<ChartBarIcon className="w-6 h-6" />}
-          subtitle={`+${growth.newBookings.current} this period`}
+          subtitle={`+${growth.newBookings.current} ${t('admin.overview.thisPeriod')}`}
         />
         <StatCard
-          title="Completed Bookings"
+          title={t('admin.overview.completedBookings')}
           value={overview.completedBookings}
           icon={<CheckCircleIcon className="w-6 h-6" />}
-          subtitle={`${((overview.completedBookings / Math.max(overview.totalBookings, 1)) * 100).toFixed(1)}% completion rate`}
+          subtitle={`${((overview.completedBookings / Math.max(overview.totalBookings, 1)) * 100).toFixed(1)}${t('admin.overview.completionRate')}`}
         />
         <StatCard
-          title="Active Users"
+          title={t('admin.overview.activeUsers')}
           value={overview.activeUsers}
           icon={<UsersIcon className="w-6 h-6" />}
-          subtitle={`${((overview.activeUsers / Math.max(overview.totalUsers, 1)) * 100).toFixed(1)}% of total`}
+          subtitle={`${((overview.activeUsers / Math.max(overview.totalUsers, 1)) * 100).toFixed(1)}${t('admin.overview.ofTotal')}`}
         />
         <StatCard
-          title="Conversion Rate"
+          title={t('admin.overview.conversionRate')}
           value={`${overview.conversionRate.toFixed(1)}%`}
           icon={<ChartBarIcon className="w-6 h-6" />}
-          subtitle="Bookings per user"
+          subtitle={t('admin.overview.bookingsPerUser')}
         />
       </div>
 
@@ -183,12 +185,12 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
         {/* User Growth Trend */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            User Growth
+            {t('admin.overview.userGrowth')}
           </h3>
           <TrendLineChart
             data={userGrowthData}
             dataKeys={[
-              { key: 'users', name: 'New Users', color: '#3B82F6' }
+              { key: 'users', name: t('admin.overview.newUsers'), color: '#3B82F6' }
             ]}
             height={250}
           />
@@ -197,7 +199,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
         {/* Booking Status Distribution */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Booking Status
+            {t('admin.overview.bookingStatus')}
           </h3>
           <DistributionPieChart
             data={bookingStatusData}
@@ -210,12 +212,12 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
       {categoryChartData.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Top Service Categories
+            {t('admin.overview.topCategories')}
           </h3>
           <ComparisonBarChart
             data={categoryChartData.slice(0, 10)}
             bars={[
-              { dataKey: 'services', name: 'Number of Services', color: '#3B82F6' }
+              { dataKey: 'services', name: t('admin.overview.numberOfServices'), color: '#3B82F6' }
             ]}
             height={300}
           />
@@ -225,13 +227,13 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
       {/* Top Specialists */}
       <div>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Top Performing Specialists
+          {t('admin.overview.topSpecialists')}
         </h3>
         <DataTable
           columns={specialistColumns}
           data={analytics.topSpecialists}
           pageSize={5}
-          emptyMessage="No specialists found"
+          emptyMessage={t('admin.overview.noSpecialists')}
         />
       </div>
 
@@ -240,7 +242,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
         {/* Recent Bookings */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Recent Bookings
+            {t('admin.overview.recentBookings')}
           </h3>
           <div className="space-y-3">
             {recentActivity.bookings.slice(0, 5).map((booking) => (
@@ -280,7 +282,7 @@ export const OverviewSection: React.FC<OverviewSectionProps> = ({
         {/* Recent Users */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Recent Users
+            {t('admin.overview.recentUsers')}
           </h3>
           <div className="space-y-3">
             {recentActivity.users.slice(0, 5).map((user) => (

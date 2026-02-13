@@ -282,11 +282,7 @@ export class EnhancedEmailService {
         where: { id: bookingId },
         include: {
           customer: true,
-          specialist: {
-            include: {
-              user: true,
-            },
-          },
+          specialist: true,
           service: true,
         },
       });
@@ -316,7 +312,7 @@ export class EnhancedEmailService {
         data: {
           customerName: booking.customer.firstName,
           serviceName: booking.service.name,
-          specialistName: `${booking.specialist.user.firstName} ${booking.specialist.user.lastName}`,
+          specialistName: `${booking.specialist.firstName} ${booking.specialist.lastName}`,
           bookingDateTime,
           duration: booking.duration,
           totalAmount: booking.totalAmount,
@@ -347,11 +343,7 @@ export class EnhancedEmailService {
         where: { id: bookingId },
         include: {
           customer: true,
-          specialist: {
-            include: {
-              user: true,
-            },
-          },
+          specialist: true,
           service: true,
         },
       });
@@ -385,7 +377,7 @@ export class EnhancedEmailService {
       const reminderData = {
         customerName: booking.customer.firstName,
         serviceName: booking.service.name,
-        specialistName: `${booking.specialist.user.firstName} ${booking.specialist.user.lastName}`,
+        specialistName: `${booking.specialist.firstName} ${booking.specialist.lastName}`,
         bookingDateTime,
         bookingUrl,
         hoursUntil: Math.round(hoursUntilBooking),
@@ -398,7 +390,7 @@ export class EnhancedEmailService {
         data: {
           customerName: booking.customer.firstName,
           serviceName: booking.service.name,
-          specialistName: `${booking.specialist.user.firstName} ${booking.specialist.user.lastName}`,
+          specialistName: `${booking.specialist.firstName} ${booking.specialist.lastName}`,
           bookingDateTime,
           bookingUrl,
         }
@@ -419,11 +411,7 @@ export class EnhancedEmailService {
         where: { id: bookingId },
         include: {
           customer: true,
-          specialist: {
-            include: {
-              user: true,
-            },
-          },
+          specialist: true,
           service: true,
         },
       });
@@ -441,7 +429,7 @@ export class EnhancedEmailService {
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-        timeZone: booking.specialist.user.timezone,
+        timeZone: booking.specialist.timezone,
       }).format(new Date(booking.scheduledAt));
 
       const subject = language === 'uk' 
@@ -453,7 +441,7 @@ export class EnhancedEmailService {
       const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2>${language === 'uk' ? 'У вас новий запис!' : language === 'ru' ? 'У вас новая запись!' : 'You have a new booking!'}</h2>
-          <p>${language === 'uk' ? 'Привіт' : language === 'ru' ? 'Привет' : 'Hello'} ${booking.specialist.user.firstName},</p>
+          <p>${language === 'uk' ? 'Привіт' : language === 'ru' ? 'Привет' : 'Hello'} ${booking.specialist.firstName},</p>
           <p>${language === 'uk' 
             ? `У вас новий запис від клієнта:`
             : language === 'ru' 
@@ -476,13 +464,186 @@ export class EnhancedEmailService {
       `;
 
       return await this.sendEmail({
-        to: booking.specialist.user.email,
+        to: booking.specialist.email,
         subject,
         html,
       });
 
     } catch (error) {
       logger.error('Failed to send specialist booking notification:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Send booking status change email (rejected, cancelled, completed)
+   */
+  async sendBookingStatusChangeEmail(
+    bookingId: string,
+    newStatus: 'REJECTED' | 'CANCELLED' | 'COMPLETED',
+    reason?: string,
+    language: string = 'en'
+  ): Promise<boolean> {
+    try {
+      const booking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        include: {
+          customer: true,
+          specialist: true,
+          service: true,
+        },
+      });
+
+      if (!booking) {
+        logger.error('Booking not found for status change email:', bookingId);
+        return false;
+      }
+
+      const bookingUrl = `${config.frontend.url}/bookings/${bookingId}`;
+
+      // Format date and time
+      const bookingDateTime = new Intl.DateTimeFormat(
+        language === 'uk' ? 'uk-UA' : language === 'ru' ? 'ru-RU' : 'en-US',
+        {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZone: booking.customer.timezone,
+        }
+      ).format(new Date(booking.scheduledAt));
+
+      const specialistName = `${booking.specialist.firstName} ${booking.specialist.lastName}`;
+      const customerName = `${booking.customer.firstName} ${booking.customer.lastName}`;
+
+      if (newStatus === 'CANCELLED') {
+        // Use existing bookingCancelled template for both customer and specialist
+        const customerResult = await this.sendTemplateEmail({
+          to: booking.customer.email,
+          templateKey: 'bookingCancelled',
+          language,
+          data: {
+            name: booking.customer.firstName,
+            serviceName: booking.service.name,
+            bookingDateTime,
+            reason: reason || '',
+          },
+        });
+
+        // Also notify the specialist
+        const specialistLang = booking.specialist.language || 'en';
+        await this.sendTemplateEmail({
+          to: booking.specialist.email,
+          templateKey: 'bookingCancelled',
+          language: specialistLang,
+          data: {
+            name: booking.specialist.firstName,
+            serviceName: booking.service.name,
+            bookingDateTime,
+            reason: reason || '',
+          },
+        });
+
+        return customerResult;
+      }
+
+      if (newStatus === 'REJECTED') {
+        // Notify the customer that booking was rejected
+        const statusText = {
+          en: 'Booking Rejected',
+          uk: 'Бронювання відхилено',
+          ru: 'Бронирование отклонено',
+        };
+        const messageText = {
+          en: `Your booking for ${booking.service.name} with ${specialistName} on ${bookingDateTime} has been rejected by the specialist.`,
+          uk: `Ваше бронювання ${booking.service.name} зі спеціалістом ${specialistName} на ${bookingDateTime} було відхилено спеціалістом.`,
+          ru: `Ваше бронирование ${booking.service.name} со специалистом ${specialistName} на ${bookingDateTime} было отклонено специалистом.`,
+        };
+        const lang = language as 'en' | 'uk' | 'ru';
+
+        const subject = statusText[lang] || statusText.en;
+        const html = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: #ef4444; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 28px;">${subject}</h1>
+            </div>
+            <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
+              <p style="color: #6b7280; line-height: 1.6;">${messageText[lang] || messageText.en}</p>
+              ${reason ? `<div style="background: #fef2f2; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ef4444;">
+                <p style="margin: 0; color: #991b1b;"><strong>${lang === 'uk' ? 'Причина' : lang === 'ru' ? 'Причина' : 'Reason'}:</strong> ${reason}</p>
+              </div>` : ''}
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${bookingUrl}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                  ${lang === 'uk' ? 'Переглянути запис' : lang === 'ru' ? 'Посмотреть запись' : 'View Booking'}
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+
+        return await this.sendEmail({
+          to: booking.customer.email,
+          subject: `${subject} - ${booking.service.name}`,
+          html,
+        });
+      }
+
+      if (newStatus === 'COMPLETED') {
+        // Notify the customer that booking was completed
+        const statusText = {
+          en: 'Booking Completed',
+          uk: 'Бронювання завершено',
+          ru: 'Бронирование завершено',
+        };
+        const messageText = {
+          en: `Your booking for ${booking.service.name} with ${specialistName} has been completed successfully.`,
+          uk: `Ваше бронювання ${booking.service.name} зі спеціалістом ${specialistName} було успішно завершено.`,
+          ru: `Ваше бронирование ${booking.service.name} со специалистом ${specialistName} было успешно завершено.`,
+        };
+        const reviewPrompt = {
+          en: 'We would love to hear about your experience! Please leave a review for the specialist.',
+          uk: 'Ми хотіли б дізнатися про ваш досвід! Будь ласка, залиште відгук про спеціаліста.',
+          ru: 'Мы хотели бы узнать о вашем опыте! Пожалуйста, оставьте отзыв о специалисте.',
+        };
+        const lang = language as 'en' | 'uk' | 'ru';
+
+        const subject = statusText[lang] || statusText.en;
+        const reviewUrl = `${config.frontend.url}/bookings/${bookingId}?review=true`;
+        const html = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: #10b981; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 28px;">${subject}</h1>
+            </div>
+            <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px;">
+              <h2 style="color: #374151;">${lang === 'uk' ? 'Привіт' : lang === 'ru' ? 'Привет' : 'Hello'} ${booking.customer.firstName}!</h2>
+              <p style="color: #6b7280; line-height: 1.6;">${messageText[lang] || messageText.en}</p>
+              <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0ea5e9;">
+                <p style="margin: 5px 0;"><strong>${lang === 'uk' ? 'Послуга' : lang === 'ru' ? 'Услуга' : 'Service'}:</strong> ${booking.service.name}</p>
+                <p style="margin: 5px 0;"><strong>${lang === 'uk' ? 'Спеціаліст' : lang === 'ru' ? 'Специалист' : 'Specialist'}:</strong> ${specialistName}</p>
+                <p style="margin: 5px 0;"><strong>${lang === 'uk' ? 'Дата і час' : lang === 'ru' ? 'Дата и время' : 'Date & Time'}:</strong> ${bookingDateTime}</p>
+                <p style="margin: 5px 0;"><strong>${lang === 'uk' ? 'Сума' : lang === 'ru' ? 'Сумма' : 'Amount'}:</strong> ${booking.totalAmount} ${booking.customer.currency}</p>
+              </div>
+              <p style="color: #6b7280; line-height: 1.6;">${reviewPrompt[lang] || reviewPrompt.en}</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${reviewUrl}" style="background: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                  ${lang === 'uk' ? 'Залишити відгук' : lang === 'ru' ? 'Оставить отзыв' : 'Leave a Review'}
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+
+        return await this.sendEmail({
+          to: booking.customer.email,
+          subject: `${subject} - ${booking.service.name}`,
+          html,
+        });
+      }
+
+      return false;
+    } catch (error) {
+      logger.error('Failed to send booking status change email:', error);
       return false;
     }
   }

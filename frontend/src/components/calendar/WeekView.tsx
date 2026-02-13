@@ -216,7 +216,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
                           if (onBlockClick) onBlockClick(block);
                         }}
                         style={style}
-                        className={`absolute left-1 right-1 rounded-lg p-2 shadow-md pointer-events-auto cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 ${
+                        className={`absolute left-1 right-1 rounded-lg p-2 shadow-md pointer-events-auto cursor-pointer transition-all duration-200 hover:shadow-lg ${
                           block.isAvailable
                             ? 'bg-green-500 text-white border-2 border-green-600'
                             : 'bg-red-500 text-white border-2 border-red-600'
@@ -280,7 +280,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
                         }}
                         style={style}
                         className={`absolute left-1 right-1 rounded-lg p-2 shadow-lg pointer-events-auto transition-all duration-200 hover:shadow-xl text-white border-2 ${statusColor} ${
-                          isDraggable && onBookingReschedule ? 'cursor-move hover:scale-105' : 'cursor-pointer'
+                          isDraggable && onBookingReschedule ? 'cursor-move' : 'cursor-pointer'
                         } ${draggedBooking?.id === booking.id ? 'ring-2 ring-primary-500' : ''}`}
                       >
                         {/* Status Badge */}

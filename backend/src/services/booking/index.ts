@@ -9,6 +9,7 @@ import { ReferralService } from '@/services/referral';
 import { ReferralProcessingService } from '@/services/referral/processing.service';
 import { Booking, User, Service, Specialist } from '@prisma/client';
 import { generateGroupSessionId, canAccommodateParticipants, logGroupSessionInfo } from '@/utils/groupSessions';
+import { WaitlistService } from '@/services/waitlist';
 
 interface CreateBookingData {
   customerId: string;
@@ -213,7 +214,7 @@ export class BookingService {
         const endMinute = Math.floor(bookingEndTime.getTime() / 60000);
         for (let m = startMinute; m < endMinute; m++) {
           // Use two-int variant to avoid bigint collisions
-          await tx.$executeRawUnsafe('SELECT pg_advisory_xact_lock($1::int, $2::int)', specialistKey, m);
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(${specialistKey}::int, ${m}::int)`;
         }
 
         // For group sessions, skip conflict check (multiple bookings allowed)
@@ -226,10 +227,10 @@ export class BookingService {
               status: {
                 in: ['PENDING', 'PENDING_PAYMENT', 'CONFIRMED', 'IN_PROGRESS'],
               },
-              // Add time range filter to reduce the dataset
+              // Add time range filter to reduce the dataset (service duration + 1 hour buffer)
               scheduledAt: {
-                gte: new Date(bookingStartTime.getTime() - (24 * 60 * 60 * 1000)), // 24 hours before
-                lte: new Date(bookingEndTime.getTime() + (24 * 60 * 60 * 1000)), // 24 hours after
+                gte: new Date(bookingStartTime.getTime() - ((bookingDuration + 60) * 60 * 1000)),
+                lte: new Date(bookingEndTime.getTime() + (60 * 60 * 1000)), // 1 hour after
               }
             },
             select: {
@@ -769,14 +770,29 @@ export class BookingService {
           newStatus
         });
 
-        // Very minimal validation - only prevent obviously invalid transitions
-        const invalidTransitions = [
-          // Don't allow transitions from final states to earlier states without explicit business logic
-          // For now, allow all transitions to give specialists full control
-        ];
+        // Define valid status transitions
+        const validTransitions: Record<string, string[]> = {
+          'PENDING': ['PENDING_PAYMENT', 'CONFIRMED', 'CANCELLED', 'REJECTED'],
+          'PENDING_PAYMENT': ['CONFIRMED', 'CANCELLED'],
+          'CONFIRMED': ['IN_PROGRESS', 'CANCELLED', 'NO_SHOW'],
+          'IN_PROGRESS': ['COMPLETED', 'CANCELLED'],
+          'COMPLETED': [], // Final state
+          'CANCELLED': [], // Final state
+          'REJECTED': [], // Final state
+          'NO_SHOW': [],  // Final state
+        };
 
-        // For now, allow all status transitions to give specialists maximum flexibility
-        // This can be tightened later based on business requirements
+        const allowedNextStatuses = validTransitions[currentStatus] || [];
+        if (!allowedNextStatuses.includes(newStatus)) {
+          logger.warn('Invalid status transition blocked', {
+            bookingId: booking.id,
+            from: currentStatus,
+            to: newStatus,
+            allowed: allowedNextStatuses
+          });
+          throw new Error(`Invalid status transition from ${currentStatus} to ${newStatus}`);
+        }
+
         logger.info('Status transition allowed', {
           bookingId: booking.id,
           from: currentStatus,
@@ -988,12 +1004,19 @@ export class BookingService {
         throw new Error('BOOKING_NOT_FOUND');
       }
 
+      // Look up the specialist's cancellation window setting
+      const specialist = await prisma.specialist.findUnique({
+        where: { userId: booking.specialistId },
+        select: { cancellationWindowHours: true },
+      });
+      const cancellationWindowHours = specialist?.cancellationWindowHours ?? 24;
+
       // Check if cancellation is allowed
       const now = new Date();
       const scheduledTime = new Date(booking.scheduledAt);
       const hoursUntilBooking = (scheduledTime.getTime() - now.getTime()) / (1000 * 60 * 60);
 
-      if (hoursUntilBooking < 24) {
+      if (hoursUntilBooking < cancellationWindowHours) {
         throw new Error('CANCELLATION_TOO_LATE');
       }
 
@@ -1110,6 +1133,29 @@ export class BookingService {
           });
         }
 
+        // Refund loyalty points inside transaction for atomicity
+        if (booking.loyaltyPointsUsed > 0) {
+          await tx.user.update({
+            where: { id: booking.customerId },
+            data: {
+              loyaltyPoints: {
+                increment: booking.loyaltyPointsUsed,
+              },
+            },
+          });
+
+          await tx.loyaltyTransaction.create({
+            data: {
+              userId: booking.customerId,
+              type: 'EARNED',
+              points: booking.loyaltyPointsUsed,
+              reason: 'Booking cancellation refund',
+              description: `Refunded ${booking.loyaltyPointsUsed} points for cancelled booking ${booking.id}`,
+              referenceId: booking.id,
+            },
+          });
+        }
+
         return booking;
       });
 
@@ -1168,35 +1214,22 @@ export class BookingService {
         logger.error('Failed to send cancellation emails', { bookingId, error: e });
       }
 
-      // Refund loyalty points if they were used
-      if (booking.loyaltyPointsUsed > 0) {
-        await prisma.user.update({
-          where: { id: booking.customerId },
-          data: {
-            loyaltyPoints: {
-              increment: booking.loyaltyPointsUsed,
-            },
-          },
-        });
-
-        // Create loyalty transaction record
-        await prisma.loyaltyTransaction.create({
-          data: {
-            userId: booking.customerId,
-            type: 'EARNED',
-            points: booking.loyaltyPointsUsed,
-            reason: 'Booking cancellation refund',
-            description: `Refunded ${booking.loyaltyPointsUsed} points for cancelled booking ${booking.id}`,
-            referenceId: booking.id,
-          },
-        });
-      }
-
-      logger.info('Booking cancelled successfully', { 
+      logger.info('Booking cancelled successfully', {
         bookingId,
         cancelledBy,
         refundAmount,
       });
+
+      // Notify waitlist users that a slot has opened up
+      try {
+        await WaitlistService.checkAndNotifyWaitlist(
+          updatedBooking.specialistId,
+          new Date(updatedBooking.scheduledAt)
+        );
+      } catch (waitlistError) {
+        // Non-blocking - don't fail the cancellation if waitlist notification fails
+        logger.error('Failed to notify waitlist after cancellation', { bookingId, error: waitlistError });
+      }
 
       return updatedBooking as BookingWithDetails;
     } catch (error) {
@@ -1537,13 +1570,230 @@ export class BookingService {
         averageBookingValue: 0,
       };
 
-      stats.averageBookingValue = stats.completedBookings > 0 
-        ? stats.totalRevenue / stats.completedBookings 
+      stats.averageBookingValue = stats.completedBookings > 0
+        ? stats.totalRevenue / stats.completedBookings
         : 0;
 
       return stats;
     } catch (error) {
       logger.error('Error getting specialist booking stats:', error);
+      throw error;
+    }
+  }
+
+  // ─── Recurring Booking Support ──────────────────────────────────
+
+  /**
+   * Generate an array of dates based on a recurrence pattern starting from
+   * a given anchor date.  The anchor date itself is NOT included in the
+   * output because it is used as the "parent" booking date.
+   *
+   * Maximum 52 occurrences to keep things reasonable.
+   */
+  static generateRecurringDates(
+    anchorDate: Date,
+    pattern: {
+      frequency: 'daily' | 'weekly' | 'biweekly' | 'monthly';
+      daysOfWeek?: number[];   // 0 = Sunday … 6 = Saturday
+      endType: 'never' | 'after' | 'on';
+      endAfterCount?: number;
+      endDate?: string;
+    }
+  ): Date[] {
+    const MAX_OCCURRENCES = 52;
+    const dates: Date[] = [];
+
+    // Determine how many dates we need
+    let maxCount = MAX_OCCURRENCES;
+    if (pattern.endType === 'after' && pattern.endAfterCount) {
+      maxCount = Math.min(pattern.endAfterCount, MAX_OCCURRENCES);
+    }
+
+    const endDate = pattern.endType === 'on' && pattern.endDate
+      ? new Date(pattern.endDate)
+      : null;
+
+    // If weekly/biweekly with specific days, generate per-day sequences
+    if (
+      (pattern.frequency === 'weekly' || pattern.frequency === 'biweekly') &&
+      pattern.daysOfWeek &&
+      pattern.daysOfWeek.length > 0
+    ) {
+      const weekStep = pattern.frequency === 'biweekly' ? 2 : 1;
+      // Start from the Monday of the week AFTER the anchor date
+      const weekStart = new Date(anchorDate);
+      weekStart.setDate(weekStart.getDate() + (7 * weekStep));
+      // Align to start of week (Monday)
+      const dayOfWeek = weekStart.getDay();
+      weekStart.setDate(weekStart.getDate() - ((dayOfWeek + 6) % 7)); // shift to Monday
+
+      let currentWeekStart = new Date(weekStart);
+      while (dates.length < maxCount) {
+        for (const day of pattern.daysOfWeek.sort((a, b) => a - b)) {
+          if (dates.length >= maxCount) break;
+
+          const candidate = new Date(currentWeekStart);
+          // Shift from Monday to the requested day
+          const mondayBasedDay = (day + 6) % 7; // convert Sun=0 .. Sat=6 to Mon=0 .. Sun=6
+          candidate.setDate(currentWeekStart.getDate() + mondayBasedDay);
+
+          // Preserve the original time-of-day from anchor
+          candidate.setHours(
+            anchorDate.getHours(),
+            anchorDate.getMinutes(),
+            anchorDate.getSeconds(),
+            anchorDate.getMilliseconds()
+          );
+
+          // Must be after the anchor date
+          if (candidate <= anchorDate) continue;
+          if (endDate && candidate > endDate) break;
+
+          dates.push(new Date(candidate));
+        }
+
+        if (endDate) {
+          // Check if we've gone past the end date
+          const lastCandidate = dates[dates.length - 1];
+          if (lastCandidate && lastCandidate >= endDate) break;
+        }
+
+        currentWeekStart.setDate(currentWeekStart.getDate() + (7 * weekStep));
+
+        // Safety: break after scanning a very long horizon
+        if (currentWeekStart.getTime() - anchorDate.getTime() > 366 * 24 * 60 * 60 * 1000) break;
+      }
+    } else {
+      // Simple interval-based generation (daily / weekly / biweekly / monthly)
+      let current = new Date(anchorDate);
+
+      for (let i = 0; i < maxCount; i++) {
+        switch (pattern.frequency) {
+          case 'daily':
+            current = new Date(current);
+            current.setDate(current.getDate() + 1);
+            break;
+          case 'weekly':
+            current = new Date(current);
+            current.setDate(current.getDate() + 7);
+            break;
+          case 'biweekly':
+            current = new Date(current);
+            current.setDate(current.getDate() + 14);
+            break;
+          case 'monthly':
+            current = new Date(current);
+            current.setMonth(current.getMonth() + 1);
+            break;
+        }
+
+        if (endDate && current > endDate) break;
+        dates.push(new Date(current));
+      }
+    }
+
+    return dates;
+  }
+
+  /**
+   * Create a recurring booking series.
+   *
+   * Creates a "parent" booking for the initial date, then creates child
+   * bookings for every subsequent recurrence date.  All bookings share
+   * the same service, specialist, and pricing parameters.
+   *
+   * Returns the parent booking together with the number of child bookings
+   * that were created.
+   */
+  static async createRecurringBooking(
+    data: CreateBookingData & {
+      recurrence: {
+        frequency: 'daily' | 'weekly' | 'biweekly' | 'monthly';
+        daysOfWeek?: number[];
+        endType: 'never' | 'after' | 'on';
+        endAfterCount?: number;
+        endDate?: string;
+      };
+    }
+  ): Promise<{ parentBooking: BookingWithDetails; childrenCount: number }> {
+    try {
+      const { recurrence, ...bookingData } = data;
+
+      // 1. Create the parent booking using the standard flow
+      const parentBooking = await BookingService.createBooking(bookingData);
+
+      // 2. Mark the parent booking as recurring
+      await prisma.booking.update({
+        where: { id: parentBooking.id },
+        data: {
+          isRecurring: true,
+          recurringPattern: JSON.stringify(recurrence),
+        },
+      });
+
+      // 3. Generate the child dates
+      const childDates = BookingService.generateRecurringDates(
+        new Date(bookingData.scheduledAt),
+        {
+          frequency: recurrence.frequency,
+          daysOfWeek: recurrence.daysOfWeek,
+          endType: recurrence.endType,
+          endAfterCount: recurrence.endAfterCount,
+          endDate: recurrence.endDate,
+        }
+      );
+
+      logger.info('Generating recurring child bookings', {
+        parentBookingId: parentBooking.id,
+        frequency: recurrence.frequency,
+        childCount: childDates.length,
+      });
+
+      // 4. Create child bookings (best-effort: skip dates that conflict)
+      let childrenCreated = 0;
+      for (const childDate of childDates) {
+        try {
+          const childBooking = await BookingService.createBooking({
+            ...bookingData,
+            scheduledAt: childDate,
+          });
+
+          // Link child to parent and mark as recurring
+          await prisma.booking.update({
+            where: { id: childBooking.id },
+            data: {
+              isRecurring: true,
+              recurringPattern: JSON.stringify(recurrence),
+              parentBookingId: parentBooking.id,
+            },
+          });
+
+          childrenCreated++;
+        } catch (childError: any) {
+          // Skip dates that conflict or fail validation – log but continue
+          logger.warn('Skipping recurring child booking date due to error', {
+            parentBookingId: parentBooking.id,
+            childDate: childDate.toISOString(),
+            error: childError.message,
+          });
+        }
+      }
+
+      logger.info('Recurring booking series created', {
+        parentBookingId: parentBooking.id,
+        totalChildren: childrenCreated,
+        skipped: childDates.length - childrenCreated,
+      });
+
+      // Re-fetch the parent so the caller gets the updated isRecurring flag
+      const updatedParent = await BookingService.getBooking(parentBooking.id);
+
+      return {
+        parentBooking: updatedParent,
+        childrenCount: childrenCreated,
+      };
+    } catch (error) {
+      logger.error('Error creating recurring booking:', error);
       throw error;
     }
   }

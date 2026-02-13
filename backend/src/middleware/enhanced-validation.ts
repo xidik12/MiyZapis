@@ -254,14 +254,14 @@ export function validateRequest(schemaName: string, location: 'body' | 'query' |
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const platform = detectPlatform(req);
-      
+
       // Get appropriate schema
       let schema: z.ZodSchema<any>;
-      
+
       // First check platform-specific schemas
       if (platformSchemas[platform]?.[schemaName]) {
         schema = platformSchemas[platform][schemaName];
-      } 
+      }
       // Then check common schemas
       else if (commonSchemas[schemaName]) {
         schema = commonSchemas[schemaName];
@@ -284,15 +284,15 @@ export function validateRequest(schemaName: string, location: 'body' | 'query' |
       // Validate the request data
       const dataToValidate = req[location];
       const validatedData = schema.parse(dataToValidate);
-      
+
       // Replace the original data with validated data
       req[location] = validatedData;
-      
-      next();
+
+      return next();
     } catch (error) {
       if (error instanceof z.ZodError) {
         const validationError = new CustomValidationError(error);
-        
+
         logger.warn('Validation error', {
           schema: schemaName,
           platform: detectPlatform(req),
@@ -300,7 +300,7 @@ export function validateRequest(schemaName: string, location: 'body' | 'query' |
           url: req.originalUrl,
           method: req.method
         });
-        
+
         return res.status(400).json({
           success: false,
           error: {
@@ -312,9 +312,9 @@ export function validateRequest(schemaName: string, location: 'body' | 'query' |
           requestId: req.headers['x-request-id']
         });
       }
-      
+
       logger.error('Validation middleware error:', error);
-      next(error);
+      return next(error);
     }
   };
 }
@@ -369,31 +369,31 @@ export function validateBusinessRules(ruleName: string) {
         case 'booking_availability':
           await validateBookingAvailability(req);
           break;
-          
+
         case 'specialist_ownership':
           await validateSpecialistOwnership(req);
           break;
-          
+
         case 'booking_modification_allowed':
           await validateBookingModification(req);
           break;
-          
+
         case 'payment_amount':
           await validatePaymentAmount(req);
           break;
-          
+
         case 'review_eligibility':
           await validateReviewEligibility(req);
           break;
-          
+
         default:
           throw new Error(`Unknown business rule: ${ruleName}`);
       }
-      
-      next();
+
+      return next();
     } catch (error) {
       logger.error('Business rule validation failed:', error);
-      
+
       return res.status(400).json({
         success: false,
         error: {
@@ -436,14 +436,14 @@ async function validateReviewEligibility(req: Request) {
 export function requireFeature(feature: string) {
   return (req: Request, res: Response, next: NextFunction) => {
     const platform = detectPlatform(req);
-    
+
     // This would integrate with your API configuration
     const platformConfig = {
       web: ['full_api', 'oauth', 'file_upload', 'websockets', 'push_notifications'],
       telegram_bot: ['core_api', 'telegram_auth', 'limited_upload', 'bot_commands'],
       telegram_miniapp: ['full_api', 'telegram_auth', 'file_upload', 'websockets', 'telegram_payments']
     };
-    
+
     if (!platformConfig[platform]?.includes(feature)) {
       return res.status(403).json({
         success: false,
@@ -453,8 +453,8 @@ export function requireFeature(feature: string) {
         }
       });
     }
-    
-    next();
+
+    return next();
   };
 }
 

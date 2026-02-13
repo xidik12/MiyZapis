@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { AuthController } from '@/controllers/auth';
 import { authenticateToken } from '@/middleware/auth/jwt';
+import { authRateLimit } from '@/middleware/security';
 import { logger } from '@/utils/logger';
 import { createSuccessResponse, createErrorResponse } from '@/utils/response';
 import {
@@ -39,10 +40,10 @@ router.post('/register', async (req, res) => {
     }
 
     const result = await EnhancedAuthService.register(req.body);
-    res.status(201).json(createSuccessResponse(result));
+    return res.status(201).json(createSuccessResponse(result));
   } catch (error: any) {
     logger.error('Registration proxy error:', error);
-    
+
     let errorCode = 'REGISTRATION_FAILED';
     let errorMessage = 'Registration failed';
 
@@ -51,7 +52,7 @@ router.post('/register', async (req, res) => {
       errorMessage = 'Email address is already registered';
     }
 
-    res.status(400).json(createErrorResponse(errorCode, errorMessage, req.id));
+    return res.status(400).json(createErrorResponse(errorCode, errorMessage, req.id));
   }
 });
 router.post('/login', validateLogin, AuthController.login);
@@ -63,9 +64,9 @@ router.post('/logout', AuthController.logout);
 // Email verification
 router.post('/verify-email', validateEmailVerification, AuthController.verifyEmail);
 
-// Password reset
-router.post('/request-password-reset', validatePasswordResetRequest, AuthController.requestPasswordReset);
-router.post('/reset-password', validatePasswordReset, AuthController.resetPassword);
+// Password reset (rate limited)
+router.post('/request-password-reset', authRateLimit, validatePasswordResetRequest, AuthController.requestPasswordReset);
+router.post('/reset-password', authRateLimit, validatePasswordReset, AuthController.resetPassword);
 
 // Password management (authenticated routes)
 router.post('/change-password', authenticateToken, validateChangePassword, AuthController.changePassword);

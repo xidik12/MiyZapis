@@ -42,7 +42,7 @@ export const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
         <div className="flex items-center gap-4">
           <button
             onClick={() => onNavigate('today')}
-            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
+            className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-all duration-200 active:scale-95"
           >
             Today
           </button>

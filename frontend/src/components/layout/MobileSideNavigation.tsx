@@ -5,6 +5,7 @@ import { selectUser, selectIsAuthenticated, logout } from '@/store/slices/authSl
 import { selectNotifications } from '@/store/slices/notificationSlice';
 import { environment } from '@/config/environment';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Logo } from '@/components/ui/Logo';
 import { HouseIcon as HomeIcon, MagnifyingGlassIcon, CalendarDaysIcon, UserCircleIcon, CogIcon, BellIcon, XIcon as XMarkIcon, ArrowRightOnRectangleIcon, UserPlusIcon, IdentificationIcon } from '@/components/icons';
 ;
 import { ThemeToggle } from '../ui/ThemeToggle';
@@ -220,34 +221,7 @@ export const MobileSideNavigation: React.FC<MobileSideNavigationProps> = ({
               onClose();
             }}
           >
-            <img 
-              src="/miyzapis_logo.png" 
-              alt="МійЗапис Logo" 
-              className="w-10 h-10 group-hover:scale-110 transition-all duration-300"
-              onError={(e) => {
-                const img = e.currentTarget as HTMLImageElement;
-                const currentSrc = img.src;
-                
-                if (currentSrc.includes('miyzapis_logo.png')) {
-                  console.log('🖼️ MobileSideNav logo failed, trying SVG fallback');
-                  img.src = '/logo.svg';
-                } else if (currentSrc.includes('logo.svg')) {
-                  console.log('🖼️ MobileSideNav SVG logo failed, trying favicon fallback');
-                  img.src = '/favicon.svg';
-                } else {
-                  console.log('🖼️ MobileSideNav all logos failed, replacing with text fallback');
-                  img.style.display = 'none';
-                  const parent = img.parentElement;
-                  if (parent && !parent.querySelector('.logo-fallback')) {
-                    const fallback = document.createElement('div');
-                    fallback.className = 'logo-fallback w-10 h-10 bg-blue-600 text-white rounded flex items-center justify-center text-sm font-bold';
-                    fallback.textContent = 'МЗ';
-                    parent.insertBefore(fallback, img);
-                  }
-                }
-              }}
-              onLoad={() => console.log('✅ MobileSideNav logo loaded successfully')}
-            />
+            <Logo size="lg" className="group-hover:scale-110 transition-all duration-300" />
             <span className="text-xl font-bold text-primary-600 dark:text-primary-400 group-hover:text-primary-500 transition-colors duration-300">
               {environment.APP_NAME}
             </span>

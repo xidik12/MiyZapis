@@ -209,7 +209,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
           <div className="p-4 bg-primary-50 dark:bg-primary-900/20 border-b border-gray-200 dark:border-gray-700">
             <Link
               to="/search"
-              className="w-full flex items-center justify-center px-4 py-3 bg-primary-500 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              className="w-full flex items-center justify-center px-4 py-3 bg-primary-500 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200"
               onClick={() => {
                 if (onToggle && window.innerWidth < 1024) {
                   onToggle();
@@ -234,7 +234,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
                   className={`
                     group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200
                     ${isActive
-                      ? 'bg-primary-500 text-white shadow-lg transform scale-105'
+                      ? 'bg-primary-500 text-white shadow-lg'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                     }
                     ${item.comingSoon ? 'opacity-50 cursor-not-allowed' : ''}
@@ -341,7 +341,7 @@ const CustomerSidebar: React.FC<CustomerSidebarProps> = ({
           {/* Brand footer */}
           <div className="border-t border-gray-200 dark:border-gray-700 p-4">
             <div className="text-center">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500 dark:text-gray-400 cursor-default select-none transition-all duration-300 hover:text-primary-500 hover:scale-110 hover:drop-shadow-[0_0_6px_rgba(102,126,234,0.5)]">
                 {t('brand.name')} Customer
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">

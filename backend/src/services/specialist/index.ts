@@ -77,6 +77,7 @@ interface UpdateSpecialistData {
   portfolioImages?: string[];
   certifications?: string[];
   autoBooking?: boolean;
+  cancellationWindowHours?: number;
 }
 
 interface SpecialistWithUser extends Specialist {
@@ -345,6 +346,7 @@ export class SpecialistService {
           ...(data.portfolioImages && { portfolioImages: JSON.stringify(data.portfolioImages) }),
           ...(data.certifications && { certifications: JSON.stringify(data.certifications) }),
           ...(data.autoBooking !== undefined && { autoBooking: data.autoBooking }),
+          ...(data.cancellationWindowHours !== undefined && { cancellationWindowHours: data.cancellationWindowHours }),
           updatedAt: new Date(),
         },
         include: {

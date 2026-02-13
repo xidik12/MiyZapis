@@ -338,12 +338,6 @@ export const authenticateTokenOptional = async (
       return;
     }
 
-    // Update last login time
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { lastLoginAt: new Date() }
-    });
-
     req.user = user as any; // Type assertion for compatibility
     next();
   } catch (error) {

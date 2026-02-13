@@ -4,7 +4,7 @@ import { HouseIcon as HomeIcon, ArrowLeftIcon } from '@/components/icons';
 
 const NotFoundPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-700 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="text-center">
         <div className="mx-auto max-w-md">
           {/* 404 Illustration */}

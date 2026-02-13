@@ -82,7 +82,7 @@ export const HeatmapTable: React.FC<HeatmapTableProps> = ({
           <div
             key={item.hour}
             className={`
-              relative rounded-lg p-3 transition-all duration-200 hover:scale-105 cursor-pointer
+              relative rounded-lg p-3 transition-all duration-200 cursor-pointer
               ${getColorIntensity(item.count)}
             `}
             title={`${formatHour(item.hour)}: ${item.count} bookings`}

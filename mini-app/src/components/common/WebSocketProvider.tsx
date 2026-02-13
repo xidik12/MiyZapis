@@ -66,12 +66,12 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
 
     const handleConnectionError = (data: { error: string }) => {
       setConnectionStatus('error');
-      console.error('WebSocket connection error:', data.error);
+      if (import.meta.env.DEV) console.error('WebSocket connection error:', data.error);
     };
 
     const handleReconnected = (data: { attempts: number }) => {
       setConnectionStatus('connected');
-      console.log('WebSocket reconnected after', data.attempts, 'attempts');
+      if (import.meta.env.DEV) console.log('WebSocket reconnected after', data.attempts, 'attempts');
     };
 
     const handleMessage = (data: any) => {

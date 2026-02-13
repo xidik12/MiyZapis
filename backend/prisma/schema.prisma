@@ -46,7 +46,7 @@ model User {
   loyaltyPoints          Int     @default(0)
 
   // Wallet and Payment
-  walletBalance          Float   @default(0.0)
+  walletBalance          Decimal @default(0.0)
   walletCurrency         String  @default("USD")
 
   // Specialist subscription
@@ -103,6 +103,8 @@ model User {
   subscriptions        SpecialistSubscription[]
   onrampSessions       OnrampSession[]
   expenses             Expense[]              @relation("SpecialistExpenses")
+  pushSubscriptions    PushSubscription[]
+  waitlists            Waitlist[]
 
   // Community relations
   posts                Post[]                 @relation("UserPosts")
@@ -121,6 +123,7 @@ model User {
   @@index([email])
   @@index([telegramId])
   @@index([userType, isActive])
+  @@index([userType, isActive, createdAt])
   @@index([lastLoginAt])
 
   @@map("users")
@@ -172,7 +175,8 @@ model Specialist {
   privacy        String? // JSON string for privacy settings
   socialMedia    String? // JSON string for social media profiles
   autoBooking    Boolean @default(false) // Auto-approve bookings without manual confirmation
-  
+  cancellationWindowHours Int @default(24) // Hours before booking that cancellation is allowed (2, 6, 12, 24, 48)
+
   // Verification details
   verifiedDate   DateTime? // Date when verified
   documentsSubmitted String? // JSON string of submitted documents
@@ -217,7 +221,7 @@ model Service {
   category    String
   
   // Pricing
-  basePrice      Float
+  basePrice      Decimal
   currency       String @default("USD")
 
   // Loyalty Points Pricing
@@ -228,7 +232,7 @@ model Service {
   // Service Discounts
   discountEnabled      Boolean @default(false)
   discountType         String? // PERCENTAGE, FIXED_AMOUNT
-  discountValue        Float?  // Percentage (0-100) or fixed amount
+  discountValue        Decimal?  // Percentage (0-100) or fixed amount
   discountValidFrom    DateTime?
   discountValidUntil   DateTime?
   discountDescription  String? // Optional description for the discount
@@ -273,6 +277,7 @@ model Service {
   categoryModel  Category?  @relation(fields: [categoryId], references: [id])
   bookings       Booking[]
   favorites      FavoriteService[] @relation("ServiceFavorites")
+  waitlists      Waitlist[]
 
   // Indexes for performance
   @@index([categoryId, isActive, isDeleted])
@@ -299,9 +304,9 @@ model Booking {
   duration    Int           // Duration in minutes
   
   // Pricing
-  totalAmount    Float
-  depositAmount  Float
-  remainingAmount Float
+  totalAmount    Decimal
+  depositAmount  Decimal
+  remainingAmount Decimal
   loyaltyPointsUsed Int @default(0)
   paidWithLoyaltyPoints Boolean @default(false) // True if booking was paid entirely with loyalty points
 
@@ -310,7 +315,7 @@ model Booking {
   depositPaidAt        DateTime?
   depositRefundedAt    DateTime?
   depositCurrency      String @default("USD")
-  walletAmountUsed     Float @default(0.0)
+  walletAmountUsed     Decimal @default(0.0)
   
   // Additional information
   customerNotes    String?
@@ -332,19 +337,29 @@ model Booking {
   // Cancellation details
   cancellationReason String?
   cancelledBy        String? // customerId or specialistId
-  refundAmount       Float?
-  
+  refundAmount       Decimal?
+
+  // Recurring booking support
+  isRecurring       Boolean   @default(false)
+  recurringPattern  String?   // JSON: { frequency, daysOfWeek?, endType, endAfterCount?, endDate? }
+  parentBookingId   String?
+  parentBooking     Booking?  @relation("RecurringBookings", fields: [parentBookingId], references: [id])
+  childBookings     Booking[] @relation("RecurringBookings")
+
   // Metadata
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   // Indexes for performance
   @@index([status, scheduledAt])
   @@index([customerId, status])
+  @@index([customerId, createdAt])
   @@index([specialistId, status])
+  @@index([specialistId, status, scheduledAt])
   @@index([scheduledAt])
   @@index([groupSessionId])
   @@index([scheduledAt, serviceId])
+  @@index([parentBookingId])
 
   // Relations
   customer      User        @relation("CustomerBookings", fields: [customerId], references: [id])
@@ -355,7 +370,7 @@ model Booking {
   review        Review?
   notifications Notification[]
   conversations Conversation[]
-  
+
   // Loyalty Relations
   pointsRedemptions PointsRedemption[]
   reviewRewards     ReviewReward[]
@@ -377,7 +392,7 @@ model Payment {
   // Payment details
   status    String  // PENDING, PROCESSING, SUCCEEDED, FAILED, CANCELLED, REFUNDED
   type      String  // DEPOSIT, FULL_PAYMENT, REFUND, LOYALTY_REDEMPTION, SUBSCRIPTION
-  amount    Float
+  amount    Decimal
   currency  String  @default("USD")
 
   // External payment provider info
@@ -396,6 +411,8 @@ model Payment {
   user    User     @relation(fields: [userId], references: [id])
   booking Booking? @relation(fields: [bookingId], references: [id])
 
+  @@index([status, userId])
+  @@index([bookingId])
   @@map("payments")
 }
 
@@ -650,6 +667,7 @@ model Notification {
   user    User     @relation(fields: [userId], references: [id])
   booking Booking? @relation(fields: [bookingId], references: [id])
 
+  @@index([userId, isRead, createdAt])
   @@map("notifications")
 }
 
@@ -736,7 +754,7 @@ model SpecialistAnalytics {
   bookingsCount     Int   @default(0)
   completedBookings Int   @default(0)
   cancelledBookings Int   @default(0)
-  totalRevenue      Float @default(0.0)
+  totalRevenue      Decimal @default(0.0)
   averageRating     Float @default(0.0)
   responseTimeAvg   Int   @default(0)
   
@@ -976,9 +994,9 @@ model PromoCode {
   
   // Discount details
   discountType  String // PERCENTAGE, FIXED_AMOUNT
-  discountValue Float
-  maxDiscount   Float?
-  minOrderAmount Float?
+  discountValue Decimal
+  maxDiscount   Decimal?
+  minOrderAmount Decimal?
   
   // Usage limits
   maxUses       Int?
@@ -1283,8 +1301,8 @@ model LoyaltyReferral {
   // Enhanced rewards tracking
   referrerRewardType String? // POINTS, DISCOUNT, CREDIT, CUSTOM
   referredRewardType String? // POINTS, DISCOUNT, CREDIT, CUSTOM
-  referrerRewardValue Float? // Monetary value or percentage for non-points rewards
-  referredRewardValue Float? // Monetary value or percentage for non-points rewards
+  referrerRewardValue Decimal? // Monetary value or percentage for non-points rewards
+  referredRewardValue Decimal? // Monetary value or percentage for non-points rewards
 
   // Metadata
   inviteChannel     String? // EMAIL, SMS, SOCIAL, DIRECT, LINK
@@ -1381,7 +1399,7 @@ model PointsRedemption {
   type            String // DISCOUNT, PAYMENT, PERK
   pointsUsed      Int
   discountPercent Float?
-  cashValue       Float? // For partial payments
+  cashValue       Decimal? // For partial payments
   
   // Service/booking reference
   bookingId       String?
@@ -1393,17 +1411,17 @@ model PointsRedemption {
   
   // Metadata
   description     String
-  originalAmount  Float?
-  finalAmount     Float?
-  
+  originalAmount  Decimal?
+  finalAmount     Decimal?
+
   // Timestamps
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  
+
   // Relations
   user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
   booking         Booking? @relation(fields: [bookingId], references: [id])
-  
+
   @@index([userId])
   @@index([bookingId])
   @@map("points_redemptions")
@@ -1447,8 +1465,8 @@ model LoyaltyReward {
 
   // Reward value
   pointsRequired  Int
-  discountPercent Float? // For percentage-based discounts
-  discountAmount  Float? // For fixed amount discounts
+  discountPercent Decimal? // For percentage-based discounts
+  discountAmount  Decimal? // For fixed amount discounts
   serviceIds      String? // JSON array of applicable service IDs (null = all services)
 
   // Usage limits
@@ -1487,9 +1505,9 @@ model RewardRedemption {
   // Redemption details
   status          String @default("PENDING") // PENDING, APPROVED, USED, EXPIRED, CANCELLED
   pointsUsed      Int
-  discountApplied Float?
-  originalAmount  Float?
-  finalAmount     Float?
+  discountApplied Decimal?
+  originalAmount  Decimal?
+  finalAmount     Decimal?
 
   // Usage tracking
   redeemedAt      DateTime @default(now())
@@ -1526,13 +1544,13 @@ model CryptoPayment {
   // Payment details
   status          String // PENDING, PAID, FAILED, EXPIRED, CANCELLED, REFUNDED
   type            String // DEPOSIT, SUBSCRIPTION
-  amount          Float
+  amount          Decimal
   currency        String @default("USD")
 
   // Crypto details
-  cryptoAmount    Float?
+  cryptoAmount    Decimal?
   cryptoCurrency  String? // BTC, ETH, USDC, etc.
-  exchangeRate    Float? // USD to crypto rate at time of payment
+  exchangeRate    Decimal? // USD to crypto rate at time of payment
 
   // Payment URLs and QR codes
   paymentUrl      String
@@ -1565,10 +1583,10 @@ model WalletTransaction {
 
   // Transaction details
   type            String // CREDIT, DEBIT, REFUND, FORFEITURE_SPLIT
-  amount          Float
+  amount          Decimal
   currency        String @default("USD")
-  balanceBefore   Float
-  balanceAfter    Float
+  balanceBefore   Decimal
+  balanceAfter    Decimal
 
   // Transaction context
   reason          String // DEPOSIT_REFUND, CANCELLATION_CREDIT, BOOKING_PAYMENT, etc.
@@ -1604,9 +1622,9 @@ model SpecialistSubscription {
   status                String @default("ACTIVE") // ACTIVE, CANCELLED, EXPIRED, PENDING
 
   // Billing
-  monthlyRate           Float @default(10.0) // $10/month
+  monthlyRate           Decimal @default(10.0) // $10/month
   currency              String @default("USD")
-  transactionFee        Float @default(20.0) // 20₴ per transaction for pay-per-use
+  transactionFee        Decimal @default(20.0) // 20₴ per transaction for pay-per-use
 
   // Coinbase Commerce subscription (if applicable)
   coinbaseSubscriptionId String?
@@ -1622,11 +1640,11 @@ model SpecialistSubscription {
 
   // Usage tracking (for pay-per-use)
   currentMonthTransactions Int @default(0)
-  currentMonthFees      Float @default(0.0)
+  currentMonthFees      Decimal @default(0.0)
 
   // Payment tracking
   lastPaymentDate       DateTime?
-  lastPaymentAmount     Float?
+  lastPaymentAmount     Decimal?
   paymentFailures       Int @default(0)
 
   // Metadata
@@ -1687,9 +1705,9 @@ model OnrampSession {
   status            String @default("PENDING") // PENDING, COMPLETED, FAILED, EXPIRED
 
   // Payment amounts
-  amount            Float // Fiat amount
+  amount            Decimal // Fiat amount
   currency          String @default("USD") // Fiat currency
-  cryptoAmount      Float? // Actual crypto received
+  cryptoAmount      Decimal? // Actual crypto received
   cryptoCurrency    String? // USDC, ETH, BTC, etc.
   blockchain        String? // ethereum, base, bitcoin, etc.
 
@@ -1727,7 +1745,7 @@ model Expense {
 
   // Expense details
   category            String    // RENT, UTILITIES, CONSUMABLES, EQUIPMENT, INSURANCE, MARKETING, SALARIES, OTHER
-  amount              Float
+  amount              Decimal
   currency            String    @default("UAH")
   description         String
   date                DateTime  @default(now())
@@ -1764,7 +1782,7 @@ model Post {
   content         String    @db.Text
 
   // Sale-specific fields
-  price           Float?
+  price           Decimal?
   currency        String?   @default("UAH")
   contactPhone    String?
   contactEmail    String?
@@ -1844,4 +1862,43 @@ model CommentLike {
 
   @@unique([commentId, userId])
   @@map("comment_likes")
+}
+
+// Web Push Notification Subscriptions
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+// Waitlist Model - allows customers to join a waitlist when no slots are available
+model Waitlist {
+  id             String    @id @default(uuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceId      String
+  service        Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  specialistId   String
+  preferredDate  DateTime
+  preferredTime  String?   // e.g., "morning", "afternoon", "evening", or specific time
+  status         String    @default("WAITING") // WAITING, NOTIFIED, BOOKED, CANCELLED, EXPIRED
+  notifiedAt     DateTime?
+  bookedAt       DateTime?
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([specialistId, preferredDate])
+  @@index([userId])
+  @@index([status])
+  @@map("waitlists")
 }

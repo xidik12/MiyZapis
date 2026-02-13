@@ -28,6 +28,7 @@ import { bot } from '@/bot';
 import { enhancedTelegramBot } from '@/services/telegram/enhanced-bot';
 import { startBookingReminderWorker } from '@/workers/bookingReminderWorker';
 import { subscriptionWorker } from '@/workers/subscription.worker';
+import { initializeVapid } from '@/services/push';
 
 // Create Express app
 const app = express();
@@ -394,6 +395,12 @@ const startServer = async () => {
         timestamp: new Date().toISOString()
       });
     }
+
+    // Initialize Web Push VAPID keys
+    const vapidReady = initializeVapid();
+    logger.info(vapidReady ? '✅ Web Push VAPID initialized' : '⚠️ Web Push VAPID not configured - push notifications disabled', {
+      timestamp: new Date().toISOString()
+    });
 
     // Start server
     logger.info('🌐 Starting HTTP server...', {

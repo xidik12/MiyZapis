@@ -406,7 +406,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
               </div>
               <button 
                 onClick={onClose}
-                className="p-2 rounded-xl bg-white/70 dark:bg-gray-800/70 hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 ring-1 ring-gray-200/70 dark:ring-gray-700/60 hover:scale-105 active:scale-95"
+                className="p-2 rounded-xl bg-white/70 dark:bg-gray-800/70 hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 ring-1 ring-gray-200/70 dark:ring-gray-700/60 active:scale-95"
                 aria-label={t('notifications.close') || 'Close notifications'}
               >
                 <XMarkIcon className="h-5 w-5 text-gray-600 dark:text-gray-200" />
@@ -547,7 +547,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                         {!notification.isRead && (
                           <button
                             onClick={() => markAsRead(notification.id)}
-                            className="p-2 rounded-xl bg-white/70 dark:bg-gray-800/70 ring-1 ring-gray-200/70 dark:ring-gray-700/60 text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-300 transition-all duration-200 hover:scale-105 active:scale-95"
+                            className="p-2 rounded-xl bg-white/70 dark:bg-gray-800/70 ring-1 ring-gray-200/70 dark:ring-gray-700/60 text-gray-500 hover:text-emerald-600 dark:hover:text-emerald-300 transition-all duration-200 active:scale-95"
                             title={t('notifications.markRead') || 'Mark as read'}
                           >
                             <CheckIcon className="h-4 w-4" />
@@ -555,7 +555,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                         )}
                         <button
                           onClick={() => deleteNotification(notification.id)}
-                          className="p-2 rounded-xl bg-white/70 dark:bg-gray-800/70 ring-1 ring-gray-200/70 dark:ring-gray-700/60 text-gray-500 hover:text-red-600 dark:hover:text-red-300 transition-all duration-200 hover:scale-105 active:scale-95"
+                          className="p-2 rounded-xl bg-white/70 dark:bg-gray-800/70 ring-1 ring-gray-200/70 dark:ring-gray-700/60 text-gray-500 hover:text-red-600 dark:hover:text-red-300 transition-all duration-200 active:scale-95"
                           title={t('notifications.delete') || 'Delete'}
                         >
                           <TrashIcon className="h-4 w-4" />

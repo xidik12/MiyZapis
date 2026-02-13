@@ -8,6 +8,7 @@ import {
   TrashIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { DataTable, Column } from '../ui/DataTable';
 import { StatCard } from '../ui/StatCard';
 import type { UserAnalytics, Period } from '@/types/admin.types';
@@ -42,6 +43,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
   period,
   loading = false
 }) => {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [userTypeFilter, setUserTypeFilter] = useState<'all' | 'CUSTOMER' | 'SPECIALIST' | 'ADMIN'>('all');
@@ -85,7 +87,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
       setPagination(result.pagination);
     } catch (error: any) {
       console.error('Failed to fetch users:', error);
-      toast.error('Failed to load users');
+      toast.error(t('admin.users.failedToLoad'));
     } finally {
       setUsersLoading(false);
     }
@@ -123,12 +125,12 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
 
   const handleUserAction = async (action: 'activate' | 'deactivate' | 'delete', userIds: string[]) => {
     if (userIds.length === 0) {
-      toast.warning('Please select users first');
+      toast.warning(t('admin.users.selectFirst'));
       return;
     }
 
     const confirmed = window.confirm(
-      `Are you sure you want to ${action} ${userIds.length} user(s)?`
+      `${t('admin.users.confirmAction')} ${action} ${userIds.length} ${t('admin.users.userCount')}`
     );
 
     if (!confirmed) return;
@@ -136,7 +138,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
     try {
       setActionLoading(true);
       await adminAnalyticsService.manageUsers({ action, userIds });
-      toast.success(`Successfully ${action}d ${userIds.length} user(s)`);
+      toast.success(`${t('admin.users.successfully')} ${action}d ${userIds.length} ${t('admin.users.userCount')}`);
       setSelectedUsers(new Set());
       // Refresh user list
       fetchUsers();
@@ -187,7 +189,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
     },
     {
       key: 'name',
-      label: 'Name',
+      label: t('admin.users.name'),
       sortable: true,
       render: (user) => (
         <div>
@@ -200,7 +202,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
     },
     {
       key: 'userType',
-      label: 'Type',
+      label: t('admin.users.type'),
       sortable: true,
       render: (user) => (
         <span
@@ -218,7 +220,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
     },
     {
       key: 'isActive',
-      label: 'Status',
+      label: t('admin.users.status'),
       sortable: true,
       render: (user) => (
         <span
@@ -228,21 +230,21 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
               : 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400'
           }`}
         >
-          {user.isActive ? 'Active' : 'Inactive'}
+          {user.isActive ? t('admin.users.active') : t('admin.users.inactive')}
         </span>
       )
     },
     {
       key: 'createdAt',
-      label: 'Joined',
+      label: t('admin.users.joined'),
       sortable: true,
       render: (user) => new Date(user.createdAt).toLocaleDateString()
     },
     {
       key: 'lastLoginAt',
-      label: 'Last Login',
+      label: t('admin.users.lastLogin'),
       sortable: true,
-      render: (user) => user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : 'Never'
+      render: (user) => user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : t('admin.users.never')
     }
   ];
 
@@ -251,22 +253,22 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard
-          title="Total Users"
+          title={t('admin.overview.totalUsers')}
           value={totalUsers || pagination.totalItems}
           icon={<UsersIcon className="w-6 h-6" />}
-          subtitle={`${period} period`}
+          subtitle={`${period} ${t('admin.analytics.period')}`}
         />
         <StatCard
-          title="Customers"
+          title={t('admin.users.customers')}
           value={customerCount}
           icon={<UsersIcon className="w-6 h-6" />}
-          subtitle={`${((customerCount / Math.max(totalUsers || pagination.totalItems, 1)) * 100).toFixed(1)}% of total`}
+          subtitle={`${((customerCount / Math.max(totalUsers || pagination.totalItems, 1)) * 100).toFixed(1)}${t('admin.overview.ofTotal')}`}
         />
         <StatCard
-          title="Specialists"
+          title={t('admin.users.specialists')}
           value={specialistCount}
           icon={<UsersIcon className="w-6 h-6" />}
-          subtitle={`${((specialistCount / Math.max(totalUsers || pagination.totalItems, 1)) * 100).toFixed(1)}% of total`}
+          subtitle={`${((specialistCount / Math.max(totalUsers || pagination.totalItems, 1)) * 100).toFixed(1)}${t('admin.overview.ofTotal')}`}
         />
       </div>
 
@@ -279,7 +281,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by name or email..."
+                placeholder={t('admin.users.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -296,10 +298,10 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
                 onChange={(e) => setUserTypeFilter(e.target.value as any)}
                 className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
               >
-                <option value="all">All Types</option>
-                <option value="CUSTOMER">Customers</option>
-                <option value="SPECIALIST">Specialists</option>
-                <option value="ADMIN">Admins</option>
+                <option value="all">{t('admin.users.allTypes')}</option>
+                <option value="CUSTOMER">{t('admin.users.customers')}</option>
+                <option value="SPECIALIST">{t('admin.users.specialists')}</option>
+                <option value="ADMIN">{t('admin.users.admins')}</option>
               </select>
             </div>
 
@@ -308,9 +310,9 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
               onChange={(e) => setStatusFilter(e.target.value as any)}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
             >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+              <option value="all">{t('admin.users.allStatus')}</option>
+              <option value="active">{t('admin.users.active')}</option>
+              <option value="inactive">{t('admin.users.inactive')}</option>
             </select>
 
             <button
@@ -327,7 +329,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
         {selectedUsers.size > 0 && (
           <div className="mt-4 flex items-center justify-between p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
             <span className="text-sm font-medium text-primary-900 dark:text-primary-100">
-              {selectedUsers.size} user(s) selected
+              {selectedUsers.size} {t('admin.users.selected')}
             </span>
             <div className="flex items-center space-x-2">
               <button
@@ -336,7 +338,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
                 className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900/20 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/40 disabled:opacity-50 transition-colors"
               >
                 <CheckIcon className="w-4 h-4 mr-1" />
-                Activate
+                {t('admin.users.activate')}
               </button>
               <button
                 onClick={() => handleUserAction('deactivate', Array.from(selectedUsers))}
@@ -344,7 +346,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
                 className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-yellow-700 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg hover:bg-yellow-200 dark:hover:bg-yellow-900/40 disabled:opacity-50 transition-colors"
               >
                 <XMarkIcon className="w-4 h-4 mr-1" />
-                Deactivate
+                {t('admin.users.deactivate')}
               </button>
               <button
                 onClick={() => handleUserAction('delete', Array.from(selectedUsers))}
@@ -352,7 +354,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
                 className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/20 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/40 disabled:opacity-50 transition-colors"
               >
                 <TrashIcon className="w-4 h-4 mr-1" />
-                Delete
+                {t('admin.users.delete')}
               </button>
             </div>
           </div>
@@ -365,14 +367,14 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
         data={users}
         pageSize={20}
         loading={usersLoading}
-        emptyMessage="No users found matching your filters"
+        emptyMessage={t('admin.users.noUsersFound')}
       />
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
         <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            Page {currentPage} of {pagination.totalPages} ({pagination.totalItems} total users)
+            {t('admin.users.page')} {currentPage} {t('admin.table.of')} {pagination.totalPages} ({pagination.totalItems} {t('admin.users.totalUsers')})
           </div>
           <div className="flex items-center space-x-2">
             <button
@@ -380,14 +382,14 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
               disabled={!pagination.hasPrev}
               className="px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              Previous
+              {t('admin.table.previous')}
             </button>
             <button
               onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
               disabled={!pagination.hasNext}
               className="px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              Next
+              {t('admin.table.next')}
             </button>
           </div>
         </div>
@@ -395,7 +397,7 @@ export const UserManagementSection: React.FC<UserManagementSectionProps> = ({
 
       {/* Results Summary */}
       <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-        Showing {users.length} of {pagination.totalItems} total users
+        {t('admin.table.showing')} {users.length} {t('admin.table.of')} {pagination.totalItems} {t('admin.users.totalUsers')}
       </div>
     </div>
   );

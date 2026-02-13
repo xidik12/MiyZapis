@@ -545,6 +545,26 @@ export class NotificationService {
         await redis.ltrim(`notifications:${user.id}`, 0, 99);
       }
 
+      // Send Web Push notification via web-push VAPID
+      try {
+        const { sendPushToUser, isVapidInitialized } = await import('@/services/push');
+        if (isVapidInitialized()) {
+          const userLang = user.language || 'en';
+          const interpolateVars = data.data?._interpolate || {};
+          const resolvedTitle = this.resolveNotificationText(data.title, userLang, interpolateVars);
+          const resolvedBody = this.resolveNotificationText(data.message, userLang, interpolateVars);
+
+          const result = await sendPushToUser(this.prisma, user.id, resolvedTitle, resolvedBody, {
+            type: data.type,
+            notificationId,
+            ...data.data,
+          });
+          logger.info('Web Push notification result', { userId: user.id, sent: result.sent, failed: result.failed });
+        }
+      } catch (webPushError) {
+        logger.warn('Web Push delivery error (non-fatal):', webPushError);
+      }
+
       // Update notification status
       await this.prisma.notification.update({
         where: { id: notificationId },

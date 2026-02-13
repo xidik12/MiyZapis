@@ -113,7 +113,7 @@ router.post('/recalculate-points', authenticateToken, async (req: Request, res: 
       totalErrors
     });
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       message: 'Loyalty points recalculation completed',
       summary: {
         totalUsers: users.length,
@@ -126,7 +126,7 @@ router.post('/recalculate-points', authenticateToken, async (req: Request, res: 
 
   } catch (error) {
     logger.error('Error recalculating loyalty points:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to recalculate loyalty points',
@@ -195,7 +195,7 @@ router.get('/points-report', authenticateToken, async (req: Request, res: Respon
       }
     }
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       totalUsers: users.length,
       usersWithDiscrepancies: discrepancies.length,
       discrepancies
@@ -203,7 +203,7 @@ router.get('/points-report', authenticateToken, async (req: Request, res: Respon
 
   } catch (error) {
     logger.error('Error generating loyalty points report:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to generate loyalty points report',

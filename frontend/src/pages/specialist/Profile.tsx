@@ -903,16 +903,12 @@ const SpecialistProfile: React.FC = () => {
   };
 
   const handlePaymentQrUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('[Profile Payment QR Upload] handlePaymentQrUpload triggered', { event });
     const file = event.target.files?.[0];
-    console.log('[Profile Payment QR Upload] File selected:', file);
     if (!file) {
-      console.log('[Profile Payment QR Upload] No file selected, returning');
       return;
     }
 
     if (!file.type.startsWith('image/')) {
-      console.log('[Profile Payment QR Upload] Invalid file type:', file.type);
       setPaymentQrError(
         language === 'uk' ? 'Будь ласка, оберіть файл зображення' :
         language === 'ru' ? 'Пожалуйста, выберите файл изображения' :
@@ -922,7 +918,6 @@ const SpecialistProfile: React.FC = () => {
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      console.log('[Profile Payment QR Upload] File too large:', file.size);
       setPaymentQrError(
         language === 'uk' ? 'Розмір файлу повинен бути менше 5МБ' :
         language === 'ru' ? 'Размер файла должен быть меньше 5МБ' :
@@ -932,12 +927,9 @@ const SpecialistProfile: React.FC = () => {
     }
 
     try {
-      console.log('[Profile Payment QR Upload] Starting upload...');
       setIsUploadingPaymentQr(true);
       setPaymentQrError('');
-      console.log('[Profile Payment QR Upload] Calling fileUploadService.uploadPaymentQr');
       const result = await fileUploadService.uploadPaymentQr(file);
-      console.log('[Profile Payment QR Upload] Upload result:', result);
       handleProfileChange('paymentQrCodeUrl', result.url);
       showSuccessNotification(
         language === 'uk' ? 'QR-код успішно завантажено' :
@@ -945,7 +937,6 @@ const SpecialistProfile: React.FC = () => {
         'QR code uploaded successfully'
       );
       event.target.value = '';
-      console.log('[Profile Payment QR Upload] Upload complete');
     } catch (error: any) {
       console.error('[Profile Payment QR Upload] Upload failed:', error);
       setPaymentQrError(
@@ -955,7 +946,6 @@ const SpecialistProfile: React.FC = () => {
          'Failed to upload QR code')
       );
     } finally {
-      console.log('[Profile Payment QR Upload] Cleanup');
       setIsUploadingPaymentQr(false);
     }
   };
@@ -2294,7 +2284,7 @@ const SpecialistProfile: React.FC = () => {
                             <img
                               src={getAbsoluteImageUrl(item.imageUrl)}
                               alt={item.title || `Portfolio item ${index + 1}`}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              className="w-full h-full object-cover transition-transform duration-300"
                               onError={(e) => {
                                 logger.error('Portfolio image failed to load:', item.imageUrl);
                                 // Hide broken images

@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/solid';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface StatCardProps {
   title: string;
@@ -20,6 +21,8 @@ export const StatCard: React.FC<StatCardProps> = ({
   loading = false,
   className = ''
 }) => {
+  const { t } = useLanguage();
+
   const formatValue = (val: string | number): string => {
     if (typeof val === 'number') {
       // Format large numbers with commas
@@ -101,7 +104,7 @@ export const StatCard: React.FC<StatCardProps> = ({
             </span>
           </div>
           <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-            vs previous period
+            {t('admin.stat.vsPrevious')}
           </span>
         </div>
       )}

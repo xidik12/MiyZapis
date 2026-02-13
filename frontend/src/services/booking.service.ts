@@ -74,6 +74,55 @@ export class BookingService {
     }
   }
 
+  // Create a recurring booking series
+  async createRecurringBooking(data: CreateBookingRequest & {
+    recurrence: {
+      frequency: 'daily' | 'weekly' | 'biweekly' | 'monthly';
+      daysOfWeek?: number[];
+      endType: 'never' | 'after' | 'on';
+      occurrences?: number;
+      endDate?: string;
+    };
+  }): Promise<{ parentBooking: Booking; childrenCount: number; message: string }> {
+    console.log('BookingService: Creating recurring booking with data:', data);
+
+    try {
+      const response = await apiClient.post<{ parentBooking: Booking; childrenCount: number; message: string }>(
+        '/bookings/recurring',
+        {
+          ...data,
+          recurrence: {
+            frequency: data.recurrence.frequency,
+            daysOfWeek: data.recurrence.daysOfWeek,
+            endType: data.recurrence.endType,
+            endAfterCount: data.recurrence.occurrences,
+            endDate: data.recurrence.endDate,
+          },
+        }
+      );
+      console.log('BookingService: Recurring booking response:', response);
+
+      if (!response.success || !response.data) {
+        console.error('BookingService: Failed to create recurring booking:', response.error);
+        throw new Error(response.error?.message || 'Failed to create recurring booking');
+      }
+
+      console.log('BookingService: Recurring booking created successfully');
+      return response.data;
+    } catch (error: any) {
+      console.error('BookingService: Recurring booking creation failed:', error);
+      if (error.response) {
+        throw error;
+      }
+      const wrappedError = new Error(error.message || 'Failed to create recurring booking');
+      (wrappedError as any).response = {
+        status: 500,
+        data: { error: error.message },
+      };
+      throw wrappedError;
+    }
+  }
+
   // Update booking (status, notes, etc.)
   async updateBooking(bookingId: string, data: { status?: string; specialistNotes?: string; customerNotes?: string; preparationNotes?: string; completionNotes?: string; }): Promise<Booking> {
     console.log('📤 BookingService: Updating booking:', bookingId, data);

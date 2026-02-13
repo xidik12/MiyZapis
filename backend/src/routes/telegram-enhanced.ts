@@ -54,15 +54,15 @@ router.post('/set-webhook-enhanced', async (req, res) => {
     }
 
     await enhancedTelegramBot.setWebhook();
-    
-    res.json({
+
+    return res.json({
       success: true,
       message: 'Enhanced Telegram webhook set successfully'
     });
-    
+
   } catch (error) {
     logger.error('Set webhook error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to set webhook'
     });
@@ -101,15 +101,15 @@ router.post('/send-notification-enhanced', async (req, res) => {
     }
 
     const sent = await enhancedTelegramBot.sendNotification(userId, message, keyboard);
-    
-    res.json({
+
+    return res.json({
       success: sent,
       message: sent ? 'Notification sent successfully' : 'Failed to send notification'
     });
-    
+
   } catch (error) {
     logger.error('Send notification error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to send notification'
     });
@@ -129,15 +129,15 @@ router.post('/broadcast-enhanced', async (req, res) => {
     }
 
     await enhancedTelegramBot.broadcastMessage(message, userType);
-    
-    res.json({
+
+    return res.json({
       success: true,
       message: 'Broadcast sent successfully'
     });
-    
+
   } catch (error) {
     logger.error('Broadcast error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       error: 'Failed to send broadcast'
     });

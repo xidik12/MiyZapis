@@ -111,6 +111,13 @@ export const API_ENDPOINTS = {
     MARK_ALL_READ: '/notifications/mark-all-read',
     PREFERENCES: '/notifications/preferences',
   },
+
+  // Push Notifications
+  PUSH: {
+    VAPID_KEY: '/push/vapid-key',
+    SUBSCRIBE: '/push/subscribe',
+    UNSUBSCRIBE: '/push/unsubscribe',
+  },
   
   // Loyalty
   LOYALTY: {

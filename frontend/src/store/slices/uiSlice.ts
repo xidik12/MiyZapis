@@ -1,8 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface UIState {
-  // Theme and appearance
-  theme: 'light' | 'dark' | 'system';
+  // Layout appearance
   sidebarOpen: boolean;
   mobileMenuOpen: boolean;
   
@@ -40,9 +39,7 @@ interface UIState {
   isOnline: boolean;
   socketConnected: boolean;
   
-  // User preferences
-  language: string;
-  currency: string;
+  // User preferences (theme/language/currency managed by Context providers)
   timezone: string;
   
   // Layout preferences
@@ -56,7 +53,6 @@ interface UIState {
 }
 
 const initialState: UIState = {
-  theme: 'system',
   sidebarOpen: true,
   mobileMenuOpen: false,
   globalLoading: false,
@@ -71,8 +67,6 @@ const initialState: UIState = {
   pageTitle: '',
   isOnline: navigator.onLine,
   socketConnected: false,
-  language: 'en',
-  currency: 'USD',
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   layout: 'grid',
   density: 'comfortable',
@@ -85,10 +79,7 @@ const uiSlice = createSlice({
   name: 'ui',
   initialState,
   reducers: {
-    // Theme and appearance
-    setTheme: (state, action: PayloadAction<'light' | 'dark' | 'system'>) => {
-      state.theme = action.payload;
-    },
+    // Layout appearance
     toggleSidebar: (state) => {
       state.sidebarOpen = !state.sidebarOpen;
     },
@@ -173,13 +164,7 @@ const uiSlice = createSlice({
       state.socketConnected = action.payload;
     },
     
-    // User preferences
-    setLanguage: (state, action: PayloadAction<string>) => {
-      state.language = action.payload;
-    },
-    setCurrency: (state, action: PayloadAction<string>) => {
-      state.currency = action.payload;
-    },
+    // User preferences (theme/language/currency managed by Context providers)
     setTimezone: (state, action: PayloadAction<string>) => {
       state.timezone = action.payload;
     },
@@ -216,8 +201,7 @@ const uiSlice = createSlice({
 });
 
 export const {
-  // Theme and appearance
-  setTheme,
+  // Layout appearance
   toggleSidebar,
   setSidebarOpen,
   toggleMobileMenu,
@@ -252,8 +236,6 @@ export const {
   setSocketConnected,
   
   // User preferences
-  setLanguage,
-  setCurrency,
   setTimezone,
   
   // Layout preferences
@@ -275,7 +257,6 @@ export const {
 export default uiSlice.reducer;
 
 // Selectors
-export const selectTheme = (state: { ui: UIState }) => state.ui.theme;
 export const selectSidebarOpen = (state: { ui: UIState }) => state.ui.sidebarOpen;
 export const selectMobileMenuOpen = (state: { ui: UIState }) => state.ui.mobileMenuOpen;
 export const selectGlobalLoading = (state: { ui: UIState }) => state.ui.globalLoading;
@@ -289,8 +270,6 @@ export const selectCurrentPage = (state: { ui: UIState }) => state.ui.currentPag
 export const selectPageTitle = (state: { ui: UIState }) => state.ui.pageTitle;
 export const selectIsOnline = (state: { ui: UIState }) => state.ui.isOnline;
 export const selectSocketConnected = (state: { ui: UIState }) => state.ui.socketConnected;
-export const selectLanguage = (state: { ui: UIState }) => state.ui.language;
-export const selectCurrency = (state: { ui: UIState }) => state.ui.currency;
 export const selectTimezone = (state: { ui: UIState }) => state.ui.timezone;
 export const selectLayout = (state: { ui: UIState }) => state.ui.layout;
 export const selectDensity = (state: { ui: UIState }) => state.ui.density;

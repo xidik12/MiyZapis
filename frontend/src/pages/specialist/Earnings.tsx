@@ -118,11 +118,6 @@ const SpecialistEarnings: React.FC = () => {
         setLoading(prev => ({ ...prev, earnings: true, analytics: true }));
         setErrors(prev => ({ ...prev, earnings: null, analytics: null }));
         
-        console.log('🔍 Earnings: Starting data load...');
-        console.log('🔍 Auth token present:', !!localStorage.getItem('auth_token'));
-        console.log('🔍 Auth token preview:', localStorage.getItem('auth_token')?.substring(0, 20) + '...' || 'None');
-        console.log('🔍 User from Redux:', user);
-        
         // Load data from backend endpoints - prioritize bookings API over payments API for accurate amounts
         const [completedBookingsData, analyticsOverview, bookingAnalytics, servicesData, performanceData] = await Promise.allSettled([
           retryRequest(() => bookingService.getBookings({ limit: 100, status: 'COMPLETED' }, 'specialist'), 2, 1000),
@@ -132,14 +127,6 @@ const SpecialistEarnings: React.FC = () => {
           retryRequest(() => analyticsService.getPerformanceAnalytics(), 2, 1000)
         ]);
 
-        console.log('🔍 Earnings API results:', {
-          completedBookings: completedBookingsData.status,
-          analytics: analyticsOverview.status,
-          bookingAnalytics: bookingAnalytics.status,
-          services: servicesData.status,
-          performance: performanceData.status
-        });
-        
         // Process bookings data to calculate accurate earnings
         let totalEarnings = 0;
         let thisMonthEarnings = 0;
@@ -150,10 +137,8 @@ const SpecialistEarnings: React.FC = () => {
         if (completedBookingsData.status === 'fulfilled' && completedBookingsData.value) {
           try {
             const bookingResponse = completedBookingsData.value;
-            console.log('📊 Processing completed bookings data:', bookingResponse);
-            
+
             const completedBookings = Array.isArray(bookingResponse.bookings) ? bookingResponse.bookings : [];
-            console.log('📊 Completed bookings:', completedBookings.length, 'bookings');
             
             // Count unique customers from actual booking data
             const uniqueCustomerIds = new Set();
@@ -163,25 +148,17 @@ const SpecialistEarnings: React.FC = () => {
               }
             });
             uniqueCustomers = uniqueCustomerIds.size;
-            console.log('📊 Unique customers calculated from bookings:', uniqueCustomers);
             
             // Calculate total earnings from completed bookings (accurate amounts with currency conversion)
             totalEarnings = completedBookings.reduce((sum, booking) => {
               const amount = booking.totalAmount || 0;
               const bookingCurrency = getBookingCurrency(booking);
               
-              console.log(`📊 Earnings: Adding booking ${booking.id} (${booking.service?.name}): ${amount} ${bookingCurrency}`);
-              
               // Convert to user's preferred currency for consistent total
               const convertedAmount = convertPrice(amount, bookingCurrency);
               
-              console.log(`💱 Earnings: Converted ${amount} ${bookingCurrency} → ${convertedAmount} (user currency)`);
-              
               return sum + Math.round(convertedAmount * 100) / 100;
             }, 0);
-            
-            console.log('📊 Total earnings calculated from bookings:', totalEarnings);
-            console.log('📊 No pending earnings (all completed):', pendingEarnings);
             
             // Calculate this month's earnings from completed bookings
             const currentMonth = new Date().getMonth();
@@ -229,8 +206,6 @@ const SpecialistEarnings: React.FC = () => {
                 bookings: data.bookings
               }))
               .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
-              
-            console.log('📊 Monthly breakdown from bookings:', monthlyBreakdown);
           } catch (err) {
             console.error('Error processing bookings data:', err);
           }
@@ -240,7 +215,6 @@ const SpecialistEarnings: React.FC = () => {
         
         // Calculate analytics data from actual payment/booking data since analytics APIs are unreliable
         const totalBookingsFromPayments = monthlyBreakdown.reduce((sum, month) => sum + month.bookings, 0);
-        console.log('📊 Total bookings calculated from payments:', totalBookingsFromPayments);
         
         // Initialize analytics with data derived from actual earnings data
         let analyticsData = {
@@ -256,7 +230,6 @@ const SpecialistEarnings: React.FC = () => {
         if (analyticsOverview.status === 'fulfilled' && analyticsOverview.value) {
           try {
             const overview = analyticsOverview.value;
-            console.log('📊 Processing analytics overview (supplemental):', overview);
             
             // Only use analytics data if it seems reasonable (not zeros or null)
             if (overview.totalBookings > 0) {
@@ -286,7 +259,6 @@ const SpecialistEarnings: React.FC = () => {
         if (bookingAnalytics.status === 'fulfilled' && bookingAnalytics.value) {
           try {
             const bookings = bookingAnalytics.value;
-            console.log('📊 Processing booking analytics (supplemental):', bookings);
             
             if (bookings.completedBookings > 0) {
               analyticsData.completedBookings = Math.max(analyticsData.completedBookings, bookings.completedBookings);
@@ -325,8 +297,6 @@ const SpecialistEarnings: React.FC = () => {
             ? Math.round((totalEarnings / safeAnalyticsData.totalBookings) * 100) / 100 
             : 0
         };
-        
-        console.log('📊 Final transformed earnings data:', transformedEarnings);
         
         setEarningsData(transformedEarnings);
         setMonthlyEarnings(monthlyBreakdown);
@@ -372,8 +342,6 @@ const SpecialistEarnings: React.FC = () => {
         setLoading(prev => ({ ...prev, payments: true }));
         setErrors(prev => ({ ...prev, payments: null }));
         
-        console.log('📊 Loading recent completed bookings for earnings...');
-        
         // Use the same bookings API that the Bookings page uses - this has correct amounts
         const bookingData = await retryRequest(
           () => bookingService.getBookings({
@@ -383,20 +351,11 @@ const SpecialistEarnings: React.FC = () => {
           2, 1000
         );
         
-        console.log('📊 Raw booking data for recent earnings:', bookingData);
-        
         // Transform booking data to match payout history interface
         const bookings = Array.isArray(bookingData.bookings) ? bookingData.bookings : [];
         const recentEarnings: PayoutHistory[] = bookings
           .filter(booking => booking && booking.id && booking.totalAmount) // Only valid completed bookings
           .map((booking: any) => {
-            console.log('📊 Processing completed booking:', {
-              id: booking.id,
-              totalAmount: booking.totalAmount,
-              serviceName: booking.service?.name,
-              completedAt: booking.completedAt
-            });
-            
             return {
               id: booking.id,
               date: booking.completedAt || booking.updatedAt || new Date().toISOString(),
@@ -407,7 +366,6 @@ const SpecialistEarnings: React.FC = () => {
             };
           });
         
-        console.log('📊 Transformed recent completed bookings:', recentEarnings);
         setPayoutHistory(recentEarnings);
         setLoading(prev => ({ ...prev, payments: false }));
       } catch (err: any) {
@@ -422,10 +380,8 @@ const SpecialistEarnings: React.FC = () => {
     const loadExpenseSummary = async () => {
       try {
         setLoadingExpenses(true);
-        console.log('📊 Loading expense summary...');
 
         const summary = await expenseService.getExpenseSummary();
-        console.log('📊 Expense summary loaded:', summary);
         setExpenseSummary(summary);
       } catch (err: any) {
         console.error('Error loading expense summary:', err);

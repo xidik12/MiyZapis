@@ -6,6 +6,7 @@ import {
   ClockIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { HealthIndicator } from '../ui/HealthIndicator';
 import { MetricCard } from '../ui/MetricCard';
 import { adminAnalyticsService } from '@/services/adminAnalytics.service';
@@ -20,6 +21,7 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
   autoRefresh = true,
   refreshInterval = 30
 }) => {
+  const { t } = useLanguage();
   const [health, setHealth] = useState<SystemHealth | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,14 +95,14 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
     return (
       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6">
         <h3 className="text-lg font-medium text-red-800 dark:text-red-400 mb-2">
-          Failed to Load System Health
+          {t('admin.system.failedToLoad')}
         </h3>
         <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
         <button
           onClick={fetchHealth}
           className="mt-4 text-sm font-medium text-red-800 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 underline"
         >
-          Retry
+          {t('admin.system.retry')}
         </button>
       </div>
     );
@@ -120,7 +122,7 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
             onClick={fetchHealth}
             className="text-sm font-medium text-yellow-800 dark:text-yellow-400 hover:underline ml-4"
           >
-            Retry
+            {t('admin.system.retry')}
           </button>
         </div>
       )}
@@ -130,13 +132,13 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
         <div className="flex items-center space-x-4">
           <HealthIndicator
             status={health.overall}
-            label={health.overall === 'healthy' ? 'All Systems Operational' : health.overall === 'degraded' ? 'Degraded Performance' : 'System Down'}
+            label={health.overall === 'healthy' ? t('admin.system.allOperational') : health.overall === 'degraded' ? t('admin.system.degradedPerformance') : t('admin.system.systemDown')}
             size="lg"
           />
         </div>
         <div className="flex items-center space-x-4">
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            Updated: {lastUpdated.toLocaleTimeString()}
+            {t('admin.system.updated')} {lastUpdated.toLocaleTimeString()}
           </span>
           <button
             onClick={fetchHealth}
@@ -144,7 +146,7 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
             className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 transition-colors duration-200"
           >
             <ArrowPathIcon className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
+            {t('admin.system.refresh')}
           </button>
         </div>
       </div>
@@ -155,19 +157,19 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Database
+              {t('admin.system.database')}
             </h3>
             <CircleStackIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           </div>
           <HealthIndicator
             status={health.database.status}
-            label={health.database.status === 'healthy' ? 'Connected' : 'Issues Detected'}
+            label={health.database.status === 'healthy' ? t('admin.system.connected') : t('admin.system.issuesDetected')}
             className="mb-4"
           />
           {health.database.latency !== undefined && (
             <div className="mt-4 space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Latency:</span>
+                <span className="text-gray-600 dark:text-gray-400">{t('admin.system.latency')}</span>
                 <span className="font-medium text-gray-900 dark:text-white">
                   {health.database.latency.toFixed(0)}ms
                 </span>
@@ -175,13 +177,13 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
               {health.database.connections && (
                 <>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Active:</span>
+                    <span className="text-gray-600 dark:text-gray-400">{t('admin.system.active')}</span>
                     <span className="font-medium text-gray-900 dark:text-white">
                       {health.database.connections.active}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Idle:</span>
+                    <span className="text-gray-600 dark:text-gray-400">{t('admin.system.idle')}</span>
                     <span className="font-medium text-gray-900 dark:text-white">
                       {health.database.connections.idle}
                     </span>
@@ -197,25 +199,25 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Redis Cache
+                {t('admin.system.redisCache')}
               </h3>
               <ServerIcon className="w-6 h-6 text-red-600 dark:text-red-400" />
             </div>
             <HealthIndicator
               status={health.redis.status}
-              label={health.redis.status === 'healthy' ? 'Connected' : 'Issues Detected'}
+              label={health.redis.status === 'healthy' ? t('admin.system.connected') : t('admin.system.issuesDetected')}
               className="mb-4"
             />
             {health.redis.memoryUsed !== undefined && (
               <div className="mt-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Latency:</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t('admin.system.latency')}</span>
                   <span className="font-medium text-gray-900 dark:text-white">
                     {health.redis.latency?.toFixed(0)}ms
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Memory:</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t('admin.system.memory')}</span>
                   <span className="font-medium text-gray-900 dark:text-white">
                     {formatBytes(health.redis.memoryUsed)}
                   </span>
@@ -229,19 +231,19 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              System
+              {t('admin.system.systemLabel')}
             </h3>
             <CpuChipIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
           </div>
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Uptime:</span>
+              <span className="text-gray-600 dark:text-gray-400">{t('admin.system.uptime')}</span>
               <span className="font-medium text-gray-900 dark:text-white">
                 {formatUptime(health.system.uptime)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600 dark:text-gray-400">Memory:</span>
+              <span className="text-gray-600 dark:text-gray-400">{t('admin.system.memory')}</span>
               <span className="font-medium text-gray-900 dark:text-white">
                 {health.system.memory.percentage.toFixed(1)}%
               </span>
@@ -273,25 +275,25 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <MetricCard
-            label="Active Connections"
+            label={t('admin.system.activeConnections')}
             value={health.app.activeConnections}
             icon={<ServerIcon className="w-5 h-5" />}
             color="primary"
           />
           <MetricCard
-            label="Requests/Min"
+            label={t('admin.system.requestsPerMin')}
             value={health.app.requestsPerMinute}
             icon={<ClockIcon className="w-5 h-5" />}
             color="success"
           />
           <MetricCard
-            label="Avg Response Time"
+            label={t('admin.system.avgResponseTime')}
             value={`${health.app.averageResponseTime.toFixed(0)}ms`}
             icon={<ClockIcon className="w-5 h-5" />}
             color={health.app.averageResponseTime > 1000 ? 'warning' : 'success'}
           />
           <MetricCard
-            label="Error Rate"
+            label={t('admin.system.errorRate')}
             value={`${health.app.errorRate.toFixed(2)}%`}
             icon={<ServerIcon className="w-5 h-5" />}
             color={health.app.errorRate > 5 ? 'danger' : health.app.errorRate > 2 ? 'warning' : 'success'}
@@ -303,7 +305,7 @@ export const SystemHealthSection: React.FC<SystemHealthSectionProps> = ({
       {autoRefresh && (
         <div className="text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Auto-refreshing every {refreshInterval} seconds
+            {t('admin.system.autoRefreshing')} {refreshInterval} {t('admin.system.seconds')}
           </p>
         </div>
       )}

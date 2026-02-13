@@ -84,7 +84,7 @@ export const NotificationGroup: React.FC<NotificationGroupProps> = ({
               e.stopPropagation();
               onMarkAllAsRead();
             }}
-            className="flex items-center gap-1.5 text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold px-2.5 py-1 rounded-lg hover:bg-primary-50/80 dark:hover:bg-primary-900/30 transition-all duration-200 hover:scale-105 active:scale-95"
+            className="flex items-center gap-1.5 text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-semibold px-2.5 py-1 rounded-lg hover:bg-primary-50/80 dark:hover:bg-primary-900/30 transition-all duration-200 active:scale-95"
             title="Mark all as read"
           >
             <CheckIcon className="w-3.5 h-3.5" />

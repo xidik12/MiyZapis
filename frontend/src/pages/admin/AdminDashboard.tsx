@@ -46,33 +46,33 @@ const AdminDashboard: React.FC = () => {
   const tabs = [
     {
       id: 'overview' as const,
-      name: 'Overview',
+      name: t('admin.tabs.overview'),
       icon: ChartBarIcon,
-      description: 'Platform overview and key metrics'
+      description: t('admin.tabs.overviewDesc')
     },
     {
       id: 'users' as const,
-      name: 'Users',
+      name: t('admin.tabs.users'),
       icon: UsersIcon,
-      description: 'User management and analytics'
+      description: t('admin.tabs.usersDesc')
     },
     {
       id: 'analytics' as const,
-      name: 'Analytics',
+      name: t('admin.tabs.analytics'),
       icon: ChartBarIcon,
-      description: 'Detailed analytics and reports'
+      description: t('admin.tabs.analyticsDesc')
     },
     {
       id: 'system' as const,
-      name: 'System',
+      name: t('admin.tabs.system'),
       icon: CogIcon,
-      description: 'System health and performance'
+      description: t('admin.tabs.systemDesc')
     }
   ];
 
   // Show loading state
   if (loading && !stats) {
-    return <PageLoader text="Loading admin dashboard..." />;
+    return <PageLoader text={t('admin.loading')} />;
   }
 
   return (
@@ -83,10 +83,10 @@ const AdminDashboard: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Admin Dashboard
+                {t('admin.dashboard.title')}
               </h1>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                Comprehensive platform analytics and management
+                {t('admin.dashboard.subtitle')}
               </p>
             </div>
             <div className="mt-4 sm:mt-0">
@@ -109,7 +109,7 @@ const AdminDashboard: React.FC = () => {
               </div>
               <div className="ml-3 flex-1">
                 <h3 className="text-sm font-medium text-red-800 dark:text-red-400">
-                  Error loading dashboard data
+                  {t('admin.errorLoading')}
                 </h3>
                 <div className="mt-2 text-sm text-red-700 dark:text-red-300">
                   <p>{error}</p>
@@ -119,7 +119,7 @@ const AdminDashboard: React.FC = () => {
                     onClick={() => refetch()}
                     className="text-sm font-medium text-red-800 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 underline"
                   >
-                    Try again
+                    {t('admin.tryAgain')}
                   </button>
                 </div>
               </div>
@@ -225,7 +225,7 @@ const AdminDashboard: React.FC = () => {
                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
               />
             </svg>
-            {loading ? 'Refreshing...' : 'Refresh Data'}
+            {loading ? t('admin.refreshing') : t('admin.refreshData')}
           </button>
         </div>
       </div>

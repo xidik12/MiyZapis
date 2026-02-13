@@ -120,19 +120,19 @@ export function createRateLimiter(category?: string) {
     try {
       const platform = getPlatform(req);
       const endpointCategory = category || getEndpointCategory(req.path);
-      
+
       const rateLimitConfig = RATE_LIMITS[endpointCategory]?.[platform] || DEFAULT_RATE_LIMIT[platform];
       const key = generateKey(req, endpointCategory, platform);
-      
+
       const { count, ttl } = await incrementCounter(key, rateLimitConfig.windowMs);
-      
+
       // Set rate limit headers
       res.set({
         'X-RateLimit-Limit': rateLimitConfig.max.toString(),
         'X-RateLimit-Remaining': Math.max(0, rateLimitConfig.max - count).toString(),
         'X-RateLimit-Reset': new Date(Date.now() + ttl * 1000).toISOString()
       });
-      
+
       if (count > rateLimitConfig.max) {
         logger.warn('Rate limit exceeded', {
           key,
@@ -143,11 +143,11 @@ export function createRateLimiter(category?: string) {
           ip: req.ip,
           userId: req.user?.id
         });
-        
+
         if (rateLimitConfig.onLimitReached) {
           rateLimitConfig.onLimitReached(req, res);
         }
-        
+
         return res.status(429).json({
           success: false,
           error: {
@@ -158,12 +158,12 @@ export function createRateLimiter(category?: string) {
           timestamp: new Date().toISOString()
         });
       }
-      
-      next();
+
+      return next();
     } catch (error) {
       logger.error('Rate limiter error:', error);
       // Don't block requests if rate limiter fails
-      next();
+      return next();
     }
   };
 }
@@ -179,7 +179,7 @@ export const paymentRateLimit = createRateLimiter('payment');
 export function telegramSecurityMiddleware(req: Request, res: Response, next: NextFunction) {
   const telegramWebApp = req.get('X-Telegram-Web-App');
   const telegramBot = req.get('X-Telegram-Bot');
-  
+
   if (telegramWebApp) {
     // Validate Telegram Web App init data
     const initData = req.body.initData || req.query.initData;
@@ -192,10 +192,10 @@ export function telegramSecurityMiddleware(req: Request, res: Response, next: Ne
         }
       });
     }
-    
+
     // Telegram init data validation would go here
   }
-  
+
   if (telegramBot) {
     // Validate Telegram Bot token
     const botToken = req.get('X-Telegram-Bot-Token');
@@ -209,6 +209,6 @@ export function telegramSecurityMiddleware(req: Request, res: Response, next: Ne
       });
     }
   }
-  
-  next();
+
+  return next();
 }

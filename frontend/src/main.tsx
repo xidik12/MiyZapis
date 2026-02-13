@@ -98,7 +98,7 @@ class ErrorBoundary extends React.Component<
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="bg-primary-600 text-white px-4 py-3 rounded-xl hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 font-semibold transition-all duration-200 hover:scale-105"
+              className="bg-primary-600 text-white px-4 py-3 rounded-xl hover:bg-primary-700 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 font-semibold transition-all duration-200"
             >
               Refresh Page
             </button>
@@ -186,6 +186,25 @@ if (environment.ENABLE_PWA && 'serviceWorker' in navigator && import.meta.env.PR
       .catch((registrationError) => {
         if (environment.DEBUG) {
           console.log('SW registration failed: ', registrationError);
+        }
+      });
+  });
+}
+
+// Register Push Notification service worker (separate from PWA SW)
+// This runs in both dev and prod so push can be tested locally
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/sw.js')
+      .then((registration) => {
+        if (environment.DEBUG) {
+          console.log('[Push SW] registered:', registration.scope);
+        }
+      })
+      .catch((error) => {
+        if (environment.DEBUG) {
+          console.log('[Push SW] registration failed:', error);
         }
       });
   });

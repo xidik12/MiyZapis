@@ -11,24 +11,28 @@ router.post('/setup-admin', async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Setup only available in production' });
     }
 
-    // Require special setup key for security
+    // Require setup key from environment variable - no hardcoded fallback
     const setupKey = req.headers['x-setup-key'];
-    if (setupKey !== process.env.ADMIN_SETUP_KEY && setupKey !== 'railway-admin-setup-2025') {
+    if (!process.env.ADMIN_SETUP_KEY || setupKey !== process.env.ADMIN_SETUP_KEY) {
       return res.status(403).json({ error: 'Invalid setup key' });
     }
 
-    // Configuration for Railway deployment
+    // Configuration for Railway deployment - all values must come from env vars
+    if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
+      return res.status(400).json({ error: 'ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required' });
+    }
+
     const RAILWAY_ADMIN_CONFIG = {
-      email: process.env.ADMIN_EMAIL || 'admin@miyzapis.com',
+      email: process.env.ADMIN_EMAIL,
       firstName: process.env.ADMIN_FIRST_NAME || 'System',
       lastName: process.env.ADMIN_LAST_NAME || 'Administrator',
-      password: process.env.ADMIN_PASSWORD || 'Admin123!@#Railway'
+      password: process.env.ADMIN_PASSWORD
     };
 
     console.log('🚀 Starting admin setup via HTTP endpoint...');
     await createRailwayAdmin(RAILWAY_ADMIN_CONFIG);
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Admin user created successfully',
       adminEmail: RAILWAY_ADMIN_CONFIG.email,
@@ -37,7 +41,7 @@ router.post('/setup-admin', async (req: Request, res: Response) => {
 
   } catch (error: any) {
     console.error('❌ Admin setup failed:', error.message);
-    
+
     if (error.message.includes('Admin user already exists')) {
       return res.status(409).json({
         error: 'Admin user already exists',
@@ -46,7 +50,7 @@ router.post('/setup-admin', async (req: Request, res: Response) => {
       });
     }
 
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Admin setup failed',
       message: error.message
     });

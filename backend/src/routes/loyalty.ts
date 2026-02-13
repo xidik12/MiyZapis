@@ -227,10 +227,10 @@ router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
       totalSpentPoints
     };
 
-    res.json(createSuccessResponse(responsePayload));
+    return res.json(createSuccessResponse(responsePayload));
   } catch (error) {
     logger.error('Get loyalty stats (frontend) error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to get loyalty statistics',
@@ -347,7 +347,7 @@ router.get('/profile', authenticateToken, async (req: Request, res: Response) =>
       progressToNext = 1;
     }
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       profile: {
         totalPoints: stats.totalPoints,
         tier: stats.tier,
@@ -366,7 +366,7 @@ router.get('/profile', authenticateToken, async (req: Request, res: Response) =>
 
   } catch (error) {
     logger.error('Get loyalty profile error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to get loyalty profile',
@@ -416,14 +416,14 @@ router.get('/transactions', [
 
     const paginationMeta = createPaginationMeta(Number(page), Number(limit), totalCount);
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       transactions,
       pagination: paginationMeta
     }));
 
   } catch (error) {
     logger.error('Get loyalty transactions error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to get loyalty transactions',
@@ -450,7 +450,7 @@ router.get('/discounts', authenticateToken, async (req: Request, res: Response) 
 
     const availableDiscounts = await LoyaltyService.getAvailableDiscounts(user.loyaltyPoints);
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       currentPoints: user.loyaltyPoints,
       availableDiscounts,
       discountTiers: LOYALTY_CONFIG.DISCOUNT_TIERS
@@ -458,7 +458,7 @@ router.get('/discounts', authenticateToken, async (req: Request, res: Response) 
 
   } catch (error) {
     logger.error('Get available discounts error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to get available discounts',
@@ -522,7 +522,7 @@ router.post('/apply-discount', [
     const discountedAmount = LoyaltyService.calculateDiscountedAmount(amount, applicableDiscount.discount);
     const savedAmount = amount - discountedAmount;
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       originalAmount: amount,
       discountPercent: applicableDiscount.discount * 100,
       discountedAmount,
@@ -532,7 +532,7 @@ router.post('/apply-discount', [
 
   } catch (error) {
     logger.error('Apply discount error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to apply discount',
@@ -679,14 +679,14 @@ router.get('/referrals', [
 
     const paginationMeta = createPaginationMeta(Number(page), Number(limit), totalCount);
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       referrals,
       pagination: paginationMeta
     }));
 
   } catch (error) {
     logger.error('Get user referrals error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to get user referrals',
@@ -755,7 +755,7 @@ router.post('/referrals/use', [
       }
     });
 
-    res.json(createSuccessResponse({
+    return res.json(createSuccessResponse({
       message: 'Referral code applied successfully',
       referrerName: `${referral.referrer.firstName} ${referral.referrer.lastName}`,
       bonusPoints: referral.referredPoints
@@ -763,7 +763,7 @@ router.post('/referrals/use', [
 
   } catch (error) {
     logger.error('Use referral code error:', error);
-    res.status(500).json(
+    return res.status(500).json(
       createErrorResponse(
         ErrorCodes.INTERNAL_SERVER_ERROR,
         'Failed to use referral code',

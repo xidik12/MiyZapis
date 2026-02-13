@@ -47,7 +47,7 @@ const BookingCards: React.FC<BookingCardsProps> = ({ bookings, onViewDetails }) 
                 </p>
               </div>
               <div className="flex items-center space-x-2 ml-3">
-                <span className={`inline-flex px-3 py-1.5 text-xs font-bold rounded-xl border shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md ${statusColors[booking.status] || statusColors.PENDING}`}>
+                <span className={`inline-flex px-3 py-1.5 text-xs font-bold rounded-xl border shadow-sm transition-all duration-200 hover:shadow-md ${statusColors[booking.status] || statusColors.PENDING}`}>
                   {booking.status.charAt(0).toUpperCase() + booking.status.slice(1).toLowerCase()}
                 </span>
                 <button

@@ -6,93 +6,17 @@ import { SearchBar } from '@/components/common/SearchBar';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { communityService, PostPreview } from '@/services';
+import { communityService, specialistService, serviceService, PostPreview } from '@/services';
 import { MagnifyingGlassIcon, StarIcon, ClockIcon, ShieldCheckIcon, UserGroupIcon, CalendarIcon, CreditCardIcon, ChatBubbleLeftRightIcon, SealCheckIcon as CheckBadgeIcon, ArrowRightIcon, SparklesIcon, HeartIcon, HouseIcon as HomeIcon, BriefcaseIcon, BookOpenIcon, RobotIcon } from '@/components/icons';
 
-// Service categories and featured specialists - data from API
-const getServiceCategories = (t: (key: string) => string) => [
-  {
-    id: '1',
-    name: t('category.beautyWellness'),
-    description: t('category.beautyWellness.desc'),
-    icon: SparklesIcon,
-    serviceCount: 156,
-    href: '/search?category=beauty-wellness',
-  },
-  {
-    id: '2',
-    name: t('category.healthFitness'),
-    description: t('category.healthFitness.desc'),
-    icon: HeartIcon,
-    serviceCount: 89,
-    href: '/search?category=health-fitness',
-  },
-  {
-    id: '3',
-    name: t('category.homeServices'),
-    description: t('category.homeServices.desc'),
-    icon: HomeIcon,
-    serviceCount: 124,
-    href: '/search?category=home-services',
-  },
-  {
-    id: '4',
-    name: t('category.professional'),
-    description: t('category.professional.desc'),
-    icon: BriefcaseIcon,
-    serviceCount: 78,
-    href: '/search?category=professional-services',
-  },
-  {
-    id: '5',
-    name: t('category.education'),
-    description: t('category.education.desc'),
-    icon: BookOpenIcon,
-    serviceCount: 92,
-    href: '/search?category=education',
-  },
-  {
-    id: '6',
-    name: t('category.technology'),
-    description: t('category.technology.desc'),
-    icon: RobotIcon,
-    serviceCount: 67,
-    href: '/search?category=technology',
-  },
-];
-
-const getFeaturedSpecialists = (t: (key: string) => string) => [
-  {
-    id: '1',
-    name: 'Sarah Johnson',
-    specialty: t('profession.hairStylistColorist'),
-    rating: 4.9,
-    reviews: 127,
-    image: '/images/specialists/sarah.jpg',
-    location: t('location.newYork'),
-    startingPrice: 3150, // Price in UAH (base currency)
-  },
-  {
-    id: '2',
-    name: 'Michael Chen',
-    specialty: t('profession.personalTrainer'),
-    rating: 4.8,
-    reviews: 94,
-    image: '/images/specialists/michael.jpg',
-    location: t('location.sanFrancisco'),
-    startingPrice: 2220, // Price in UAH (base currency)
-  },
-  {
-    id: '3',
-    name: 'Emily Rodriguez',
-    specialty: t('profession.businessConsultant'),
-    rating: 5.0,
-    reviews: 76,
-    image: '/images/specialists/emily.jpg',
-    location: t('location.austin'),
-    startingPrice: 5550, // Price in UAH (base currency)
-  },
-];
+const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  'beauty-wellness': SparklesIcon,
+  'health-fitness': HeartIcon,
+  'home-services': HomeIcon,
+  'professional-services': BriefcaseIcon,
+  'education': BookOpenIcon,
+  'technology': RobotIcon,
+};
 
 const getHowItWorksSteps = (t: (key: string) => string) => [
   {
@@ -134,35 +58,62 @@ const HomePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [communityPosts, setCommunityPosts] = useState<PostPreview[]>([]);
   const [communityLoading, setCommunityLoading] = useState(true);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [topSpecialists, setTopSpecialists] = useState<any[]>([]);
+  const [specialistsLoading, setSpecialistsLoading] = useState(true);
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
 
-  const serviceCategories = getServiceCategories(t);
   const howItWorksSteps = getHowItWorksSteps(t);
   const stats = getStats(t);
-  const featuredSpecialists = getFeaturedSpecialists(t);
 
   useEffect(() => {
     let isMounted = true;
+
     const loadCommunityPreview = async () => {
       try {
         setCommunityLoading(true);
         const posts = await communityService.getPostsPreview(3);
-        if (isMounted) {
-          setCommunityPosts(posts);
-        }
-      } catch (error) {
-        if (isMounted) {
-          setCommunityPosts([]);
-        }
+        if (isMounted) setCommunityPosts(posts);
+      } catch {
+        if (isMounted) setCommunityPosts([]);
       } finally {
-        if (isMounted) {
-          setCommunityLoading(false);
-        }
+        if (isMounted) setCommunityLoading(false);
+      }
+    };
+
+    const loadCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        const data = await serviceService.getCategories();
+        if (isMounted) setCategories(data);
+      } catch {
+        if (isMounted) setCategories([]);
+      } finally {
+        if (isMounted) setCategoriesLoading(false);
+      }
+    };
+
+    const loadTopSpecialists = async () => {
+      try {
+        setSpecialistsLoading(true);
+        const result = await specialistService.searchSpecialists('', {
+          rating: 4,
+          limit: 3,
+        });
+        if (isMounted) setTopSpecialists(result.specialists || []);
+      } catch {
+        if (isMounted) setTopSpecialists([]);
+      } finally {
+        if (isMounted) setSpecialistsLoading(false);
       }
     };
 
     loadCommunityPreview();
+    loadCategories();
+    loadTopSpecialists();
+
     return () => {
       isMounted = false;
     };
@@ -207,19 +158,19 @@ const HomePage: React.FC = () => {
             <div className="flex flex-wrap justify-center gap-2 xs:gap-3 sm:gap-4 mb-6 xs:mb-8 sm:mb-12 px-2 xs:px-0">
               <Link
                 to="/search?category=beauty-wellness"
-                className="glass-effect text-white px-3 xs:px-4 sm:px-6 py-2 xs:py-2 sm:py-3 rounded-full font-semibold hover:scale-105 transition-all duration-300 hover:glow-primary text-xs xs:text-sm sm:text-base whitespace-nowrap"
+                className="glass-effect text-white px-3 xs:px-4 sm:px-6 py-2 xs:py-2 sm:py-3 rounded-full font-semibold transition-all duration-300 hover:glow-primary text-xs xs:text-sm sm:text-base whitespace-nowrap"
               >
                 {t('category.beautyWellness')}
               </Link>
               <Link
                 to="/search?category=health-fitness"
-                className="glass-effect text-white px-3 xs:px-4 sm:px-6 py-2 xs:py-2 sm:py-3 rounded-full font-semibold hover:scale-105 transition-all duration-300 hover:glow-primary text-xs xs:text-sm sm:text-base whitespace-nowrap"
+                className="glass-effect text-white px-3 xs:px-4 sm:px-6 py-2 xs:py-2 sm:py-3 rounded-full font-semibold transition-all duration-300 hover:glow-primary text-xs xs:text-sm sm:text-base whitespace-nowrap"
               >
                 {t('category.healthFitness')}
               </Link>
               <Link
                 to="/search?category=home-services"
-                className="glass-effect text-white px-3 xs:px-4 sm:px-6 py-2 xs:py-2 sm:py-3 rounded-full font-semibold hover:scale-105 transition-all duration-300 hover:glow-primary text-xs xs:text-sm sm:text-base whitespace-nowrap"
+                className="glass-effect text-white px-3 xs:px-4 sm:px-6 py-2 xs:py-2 sm:py-3 rounded-full font-semibold transition-all duration-300 hover:glow-primary text-xs xs:text-sm sm:text-base whitespace-nowrap"
               >
                 {t('category.homeServices')}
               </Link>
@@ -230,7 +181,7 @@ const HomePage: React.FC = () => {
               {stats.map((stat, index) => (
                 <div
                   key={index} 
-                  className="glass-effect text-center p-3 xs:p-4 sm:p-6 hover:scale-105 transition-all duration-300 rounded-xl border border-white/20"
+                  className="glass-effect text-center p-3 xs:p-4 sm:p-6 transition-all duration-300 rounded-xl border border-white/20"
                   style={{
                     background: 'rgba(255, 255, 255, 0.15)',
                     backdropFilter: 'blur(20px)'
@@ -262,48 +213,60 @@ const HomePage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-6 md:gap-8">
-            {serviceCategories.map((category, index) => {
-              const CategoryIcon = category.icon;
-              return (
-                <Link
-                  key={category.id}
-                  to={category.href}
-                  className="group relative overflow-hidden rounded-2xl hover:scale-105 transition-all duration-300 block h-full"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
-                  }}
-                >
-                  {/* Glass morphism background overlay */}
-                  <div className="absolute inset-0 bg-white/5 dark:bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                  <div className="relative p-4 xs:p-6 sm:p-8">
-                    {/* Icon with glass circle background */}
-                    <div className="flex items-center justify-center w-16 h-16 mb-6 rounded-2xl bg-white/10 dark:bg-white/5 backdrop-blur-sm border border-white/20 dark:border-white/10 group-hover:scale-110 transition-transform duration-300">
-                      <CategoryIcon className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+          {categoriesLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-6 md:gap-8">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={`cat-skel-${i}`} className="rounded-2xl p-6 sm:p-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                  <div className="w-16 h-16 rounded-2xl bg-gray-200 dark:bg-gray-700 mb-6 animate-pulse" />
+                  <div className="h-6 w-3/4 bg-gray-200 dark:bg-gray-700 rounded mb-3 animate-pulse" />
+                  <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded mb-6 animate-pulse" />
+                  <div className="h-4 w-1/3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
+          ) : categories.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-6 md:gap-8">
+              {categories.slice(0, 6).map((category: any) => {
+                const slug = category.slug || category.id;
+                const CategoryIcon = categoryIcons[slug] || SparklesIcon;
+                return (
+                  <Link
+                    key={category.id}
+                    to={`/search?category=${slug}`}
+                    className="group relative overflow-hidden rounded-2xl transition-all duration-300 block h-full"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(20px)',
+                      WebkitBackdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-white/5 dark:bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="relative p-4 xs:p-6 sm:p-8">
+                      <div className="flex items-center justify-center w-16 h-16 mb-6 rounded-2xl bg-white/10 dark:bg-white/5 backdrop-blur-sm border border-white/20 dark:border-white/10 transition-transform duration-300">
+                        <CategoryIcon className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 group-hover:text-primary-600 transition-all duration-300">
+                        {category.name}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+                        {category.description || ''}
+                      </p>
+                      <div className="flex items-center justify-between text-sm">
+                        {category.serviceCount != null && (
+                          <span className="text-primary-600 font-semibold px-3 py-1 bg-primary-50 dark:bg-primary-900/30 rounded-full">
+                            {category.serviceCount} {t('services.count')}
+                          </span>
+                        )}
+                        <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-all duration-300 group-hover:translate-x-1" />
+                      </div>
                     </div>
-
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 group-hover:text-primary-600 transition-all duration-300">
-                      {category.name}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
-                      {category.description}
-                    </p>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-primary-600 font-semibold px-3 py-1 bg-primary-50 dark:bg-primary-900/30 rounded-full">
-                        {category.serviceCount} {t('services.count')}
-                      </span>
-                      <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-all duration-300 group-hover:translate-x-1" />
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -354,55 +317,65 @@ const HomePage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-6 md:gap-8">
-            {featuredSpecialists.map((specialist) => (
-              <Link
-                key={specialist.id}
-                to={`/specialist/${specialist.id}`}
-                className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:shadow-lg hover:border-primary-200 dark:hover:border-primary-600 transition-all duration-300"
-              >
-                <div className="aspect-w-16 aspect-h-12">
+          {specialistsLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-6 md:gap-8">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={`spec-skel-${i}`} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                  <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 animate-pulse" />
+                  <div className="p-6 space-y-3">
+                    <div className="h-6 w-2/3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                    <div className="h-4 w-1/2 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                    <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : topSpecialists.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-6 md:gap-8">
+              {topSpecialists.map((specialist: any) => (
+                <Link
+                  key={specialist.id}
+                  to={`/specialist/${specialist.id}`}
+                  className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:shadow-lg hover:border-primary-200 dark:hover:border-primary-600 transition-all duration-300"
+                >
                   <div className="relative w-full h-48 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                    <UserGroupIcon className="w-16 h-16 text-gray-400" />
-                    {/* Online indicator if available in data */}
-                    { (specialist as any).isOnline && (
-                      <span className="absolute top-3 right-3 inline-flex h-3.5 w-3.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-green-500 border-2 border-white"></span>
-                      </span>
+                    {specialist.avatar ? (
+                      <img src={specialist.avatar} alt={specialist.businessName || `${specialist.firstName} ${specialist.lastName}`} className="w-full h-full object-cover" />
+                    ) : (
+                      <UserGroupIcon className="w-16 h-16 text-gray-400" />
                     )}
                   </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-1 group-hover:text-primary-600">
-                    {specialist.name}
-                  </h3>
-                  <p className="text-gray-600 mb-3">{specialist.specialty}</p>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-1">
-                      <StarIcon className="w-5 h-5 text-yellow-400 fill-current" />
-                      <span className="font-semibold">{specialist.rating}</span>
-                      <span className="text-gray-500 text-sm">({specialist.reviews})</span>
-                    </div>
-                    <span className="text-sm text-gray-500">
-                      {specialist.location}
-                      { (specialist as any).responseTime && (
-                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-700">
-                          ~{(specialist as any).responseTime} {t('common.minutes') || 'min'}
-                        </span>
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-primary-600">
+                      {specialist.businessName || `${specialist.firstName} ${specialist.lastName}`}
+                    </h3>
+                    {specialist.specialties && specialist.specialties.length > 0 && (
+                      <p className="text-gray-600 dark:text-gray-400 mb-3">{specialist.specialties[0]}</p>
+                    )}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-1">
+                        <StarIcon className="w-5 h-5 text-yellow-400 fill-current" />
+                        <span className="font-semibold">{specialist.averageRating?.toFixed(1) || '—'}</span>
+                        {specialist.reviewCount != null && (
+                          <span className="text-gray-500 text-sm">({specialist.reviewCount})</span>
+                        )}
+                      </div>
+                      {specialist.city && (
+                        <span className="text-sm text-gray-500 dark:text-gray-400">{specialist.city}</span>
                       )}
-                    </span>
+                    </div>
+                    <div className="flex items-center justify-end">
+                      <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-colors" />
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-semibold text-gray-900">
-                      {t('currency.from')} {formatPrice(specialist.startingPrice)}
-                    </span>
-                    <ArrowRightIcon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-colors" />
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+              {t('featuredSpecialists.noSpecialists') || 'No specialists found yet. Be the first to join!'}
+            </p>
+          )}
 
           <div className="text-center mt-12">
             <Link
@@ -591,7 +564,7 @@ const HomePage: React.FC = () => {
             {user ? (
               <Link
                 to="/search"
-                className="bg-primary-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl text-center"
+                className="bg-primary-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:shadow-xl text-center"
               >
                 {t('cta.browseServices')}
               </Link>
@@ -599,7 +572,7 @@ const HomePage: React.FC = () => {
               <>
                 <Link
                   to="/auth/register"
-                  className="bg-primary-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl text-center"
+                  className="bg-primary-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:shadow-xl text-center"
                 >
                   {t('cta.signUpCustomer')}
                 </Link>

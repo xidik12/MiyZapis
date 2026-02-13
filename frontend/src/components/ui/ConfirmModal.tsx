@@ -65,13 +65,13 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
         <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={onCancel}
-            className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all duration-200 hover:scale-105 active:scale-95"
+            className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all duration-200 active:scale-95"
           >
             {cancelText}
           </button>
           <button
             onClick={onConfirm}
-            className={`px-5 py-2.5 rounded-xl text-white font-semibold transition-all duration-200 hover:scale-105 active:scale-95 ${confirmButtonStyles[variant]}`}
+            className={`px-5 py-2.5 rounded-xl text-white font-semibold transition-all duration-200 active:scale-95 ${confirmButtonStyles[variant]}`}
           >
             {confirmText}
           </button>

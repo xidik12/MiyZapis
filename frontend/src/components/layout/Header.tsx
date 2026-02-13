@@ -5,6 +5,7 @@ import { selectUser, selectIsAuthenticated, logout } from '@/store/slices/authSl
 import { selectNotifications } from '@/store/slices/notificationSlice';
 import { environment } from '@/config/environment';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Logo } from '@/components/ui/Logo';
 import { getAbsoluteImageUrl } from '@/utils/imageUrl';
 import {
   ListIcon as Bars3Icon,
@@ -101,35 +102,7 @@ export const Header: React.FC = () => {
                 window.scrollTo(0, 0);
               }}
             >
-              <img 
-                src="/miyzapis_logo.png" 
-                alt="МійЗапис Logo" 
-                className="w-8 h-8 xs:w-10 xs:h-10 group-hover:scale-110 transition-all duration-300"
-                onError={(e) => {
-                  const img = e.currentTarget as HTMLImageElement;
-                  const currentSrc = img.src;
-                  
-                  if (currentSrc.includes('miyzapis_logo.png')) {
-                    console.log('🖼️ Primary logo failed, trying SVG fallback');
-                    img.src = '/logo.svg';
-                  } else if (currentSrc.includes('logo.svg')) {
-                    console.log('🖼️ SVG logo failed, trying favicon fallback');
-                    img.src = '/favicon.svg';
-                  } else {
-                    console.log('🖼️ All logos failed, replacing with app name');
-                    img.style.display = 'none';
-                    // Add app name as fallback
-                    const parent = img.parentElement;
-                    if (parent && !parent.querySelector('.logo-fallback')) {
-                      const fallback = document.createElement('div');
-                      fallback.className = 'logo-fallback w-8 h-8 xs:w-10 xs:h-10 bg-blue-600 text-white rounded flex items-center justify-center text-xs font-bold';
-                      fallback.textContent = 'МЗ';
-                      parent.insertBefore(fallback, img);
-                    }
-                  }
-                }}
-                onLoad={() => console.log('✅ Logo loaded successfully')}
-              />
+              <Logo size="md" className="group-hover:scale-110 transition-all duration-300" />
               <div className="flex items-center space-x-2">
                 <span className="text-lg xs:text-xl font-bold text-primary-600 dark:text-primary-400 hidden xs:block group-hover:text-primary-500 transition-colors duration-300">
                   {environment.APP_NAME}
@@ -163,7 +136,7 @@ export const Header: React.FC = () => {
                         element?.scrollIntoView({ behavior: 'smooth' });
                       }
                     }}
-                    className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 hover:scale-105 ${
+                    className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
                       item.current
                         ? 'text-primary-600 glass-card shadow-lg'
                         : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 hover:glass-effect'
@@ -179,7 +152,7 @@ export const Header: React.FC = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 hover:scale-105 ${
+                  className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
                     item.current
                       ? 'text-primary-600 glass-card shadow-lg'
                       : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 hover:glass-effect'
@@ -265,7 +238,7 @@ export const Header: React.FC = () => {
                 </Link>
                 <Link
                   to="/auth/register"
-                  className="bg-primary-600 text-white px-3 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all duration-300 hover:scale-105 whitespace-nowrap"
+                  className="bg-primary-600 text-white px-3 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all duration-300 whitespace-nowrap"
                 >
                   {t('nav.getStarted')}
                 </Link>
