@@ -124,21 +124,21 @@ export const FavoritesPage: React.FC = () => {
   });
 
   return (
-    <div className="flex flex-col min-h-screen bg-primary">
+    <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header title="Favorites" />
 
-      <div className="flex-1 overflow-y-auto pb-20">
+      <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {/* Tabs */}
         <div className="px-4 pt-4 pb-2">
-          <div className="flex bg-secondary rounded-xl p-1">
+          <div className="flex bg-bg-secondary rounded-xl p-1">
             {(['specialist', 'service'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => { setActiveTab(tab); hapticFeedback.selectionChanged(); }}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
                   activeTab === tab
-                    ? 'bg-tg-button text-tg-button-text shadow-sm'
-                    : 'text-secondary'
+                    ? 'bg-tg-button text-tg-button-text shadow-card'
+                    : 'text-text-secondary'
                 }`}
               >
                 {tab === 'specialist' ? 'Specialists' : 'Services'}
@@ -150,7 +150,7 @@ export const FavoritesPage: React.FC = () => {
         {/* Search */}
         <div className="px-4 pb-3">
           <div className="relative">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary" />
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
             <input
               type="text"
               value={searchQuery}
@@ -169,9 +169,9 @@ export const FavoritesPage: React.FC = () => {
             </div>
           ) : filtered.length === 0 ? (
             <Card className="text-center py-12">
-              <Heart size={40} className="text-secondary mx-auto mb-3" />
-              <p className="text-primary font-medium">No favorites yet</p>
-              <p className="text-secondary text-sm mt-1">
+              <Heart size={40} className="text-text-secondary mx-auto mb-3" />
+              <p className="text-text-primary font-medium">No favorites yet</p>
+              <p className="text-text-secondary text-sm mt-1">
                 {activeTab === 'specialist'
                   ? 'Save your favorite specialists for quick access'
                   : 'Save services you want to book later'}
@@ -186,27 +186,27 @@ export const FavoritesPage: React.FC = () => {
                 <Card key={fav.id} hover>
                   <div className="flex items-start gap-3" onClick={() => handleNavigate(fav)}>
                     {/* Avatar/Image */}
-                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-secondary flex-shrink-0">
+                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-bg-secondary flex-shrink-0">
                       {fav.type === 'specialist' && fav.specialist ? (
                         fav.specialist.user.avatar ? (
                           <img src={fav.specialist.user.avatar} alt="" className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <User size={24} className="text-secondary" />
+                            <User size={24} className="text-text-secondary" />
                           </div>
                         )
                       ) : fav.service?.images?.[0] ? (
                         <img src={fav.service.images[0]} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <Briefcase size={24} className="text-secondary" />
+                          <Briefcase size={24} className="text-text-secondary" />
                         </div>
                       )}
                     </div>
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-semibold text-primary truncate">
+                      <h3 className="text-sm font-semibold text-text-primary truncate">
                         {fav.type === 'specialist'
                           ? fav.specialist?.businessName || `${fav.specialist?.user.firstName} ${fav.specialist?.user.lastName}`
                           : fav.service?.name}
@@ -214,15 +214,15 @@ export const FavoritesPage: React.FC = () => {
                       {fav.type === 'specialist' && fav.specialist && (
                         <>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <Star size={12} className="text-yellow-500 fill-yellow-500" />
-                            <span className="text-xs text-secondary">
+                            <Star size={12} className="text-accent-yellow fill-yellow-500" />
+                            <span className="text-xs text-text-secondary">
                               {fav.specialist.rating.toFixed(1)} ({fav.specialist.totalReviews})
                             </span>
                           </div>
                           {fav.specialist.location?.city && (
                             <div className="flex items-center gap-1 mt-0.5">
-                              <MapPin size={12} className="text-secondary" />
-                              <span className="text-xs text-secondary">{fav.specialist.location.city}</span>
+                              <MapPin size={12} className="text-text-secondary" />
+                              <span className="text-xs text-text-secondary">{fav.specialist.location.city}</span>
                             </div>
                           )}
                         </>
@@ -230,14 +230,14 @@ export const FavoritesPage: React.FC = () => {
                       {fav.type === 'service' && fav.service && (
                         <>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <Clock size={12} className="text-secondary" />
-                            <span className="text-xs text-secondary">{fav.service.duration} min</span>
-                            <span className="text-xs font-medium text-accent">
+                            <Clock size={12} className="text-text-secondary" />
+                            <span className="text-xs text-text-secondary">{fav.service.duration} min</span>
+                            <span className="text-xs font-medium text-accent-primary">
                               ₴{fav.service.price}
                             </span>
                           </div>
                           {fav.service.specialist && (
-                            <p className="text-xs text-secondary mt-0.5 truncate">
+                            <p className="text-xs text-text-secondary mt-0.5 truncate">
                               by {fav.service.specialist.businessName}
                             </p>
                           )}
@@ -248,9 +248,9 @@ export const FavoritesPage: React.FC = () => {
                     {/* Remove */}
                     <button
                       onClick={e => { e.stopPropagation(); handleRemove(fav); }}
-                      className="p-2 rounded-lg hover:bg-secondary"
+                      className="p-2 rounded-lg hover:bg-bg-hover"
                     >
-                      <Trash2 size={16} className="text-red-400" />
+                      <Trash2 size={16} className="text-accent-red" />
                     </button>
                   </div>
                 </Card>

@@ -103,19 +103,19 @@ export const WalletPage: React.FC = () => {
 
   const getTransactionIcon = (type: string) => {
     switch (type) {
-      case 'CREDIT': return <ArrowDownLeft size={18} className="text-green-500" />;
-      case 'DEBIT': return <ArrowUpRight size={18} className="text-red-500" />;
-      case 'REFUND': return <RotateCcw size={18} className="text-blue-500" />;
-      default: return <CreditCard size={18} className="text-purple-500" />;
+      case 'CREDIT': return <ArrowDownLeft size={18} className="text-accent-green" />;
+      case 'DEBIT': return <ArrowUpRight size={18} className="text-accent-red" />;
+      case 'REFUND': return <RotateCcw size={18} className="text-accent-primary" />;
+      default: return <CreditCard size={18} className="text-accent-purple" />;
     }
   };
 
   const getTransactionColor = (type: string) => {
     switch (type) {
-      case 'CREDIT': return 'text-green-500';
-      case 'DEBIT': return 'text-red-500';
-      case 'REFUND': return 'text-blue-500';
-      default: return 'text-purple-500';
+      case 'CREDIT': return 'text-accent-green';
+      case 'DEBIT': return 'text-accent-red';
+      case 'REFUND': return 'text-accent-primary';
+      default: return 'text-accent-purple';
     }
   };
 
@@ -145,13 +145,13 @@ export const WalletPage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-primary">
+    <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header title="Wallet" />
 
-      <div className="flex-1 overflow-y-auto pb-20">
+      <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {/* Balance Card */}
         <div className="px-4 pt-4 pb-2">
-          <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-5 text-white shadow-lg">
+          <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-5 text-white shadow-card">
             <div className="flex items-center justify-between mb-1">
               <span className="text-sm opacity-80">Available Balance</span>
               <div className="flex items-center gap-2">
@@ -181,15 +181,15 @@ export const WalletPage: React.FC = () => {
 
         {/* Tabs */}
         <div className="px-4 py-3">
-          <div className="flex bg-secondary rounded-xl p-1">
+          <div className="flex bg-bg-secondary rounded-xl p-1">
             {(['overview', 'transactions'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => { setActiveTab(tab); hapticFeedback.selectionChanged(); }}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
                   activeTab === tab
-                    ? 'bg-tg-button text-tg-button-text shadow-sm'
-                    : 'text-secondary'
+                    ? 'bg-tg-button text-tg-button-text shadow-card'
+                    : 'text-text-secondary'
                 }`}
               >
                 {tab === 'overview' ? 'Overview' : 'Transactions'}
@@ -202,19 +202,19 @@ export const WalletPage: React.FC = () => {
           <div className="px-4 space-y-4">
             {/* Quick Actions */}
             <div>
-              <h3 className="text-sm font-semibold text-secondary mb-2">Quick Actions</h3>
+              <h3 className="text-sm font-semibold text-text-secondary mb-2">Quick Actions</h3>
               <div className="grid grid-cols-3 gap-3">
                 <Card hover onClick={() => navigate('/bookings')} className="text-center py-4">
-                  <CreditCard size={24} className="text-blue-500 mx-auto mb-1" />
-                  <span className="text-xs text-primary">Pay</span>
+                  <CreditCard size={24} className="text-accent-primary mx-auto mb-1" />
+                  <span className="text-xs text-text-primary">Pay</span>
                 </Card>
                 <Card hover onClick={() => navigate('/analytics')} className="text-center py-4">
-                  <TrendingUp size={24} className="text-green-500 mx-auto mb-1" />
-                  <span className="text-xs text-primary">Analytics</span>
+                  <TrendingUp size={24} className="text-accent-green mx-auto mb-1" />
+                  <span className="text-xs text-text-primary">Analytics</span>
                 </Card>
                 <Card hover onClick={() => { setActiveTab('transactions'); hapticFeedback.impactLight(); }} className="text-center py-4">
-                  <Clock size={24} className="text-purple-500 mx-auto mb-1" />
-                  <span className="text-xs text-primary">History</span>
+                  <Clock size={24} className="text-accent-purple mx-auto mb-1" />
+                  <span className="text-xs text-text-primary">History</span>
                 </Card>
               </div>
             </div>
@@ -222,30 +222,30 @@ export const WalletPage: React.FC = () => {
             {/* Recent Transactions */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-semibold text-secondary">Recent Activity</h3>
+                <h3 className="text-sm font-semibold text-text-secondary">Recent Activity</h3>
                 <button
                   onClick={() => setActiveTab('transactions')}
-                  className="text-xs text-accent"
+                  className="text-xs text-accent-primary"
                 >
                   View All
                 </button>
               </div>
               {transactions.length === 0 ? (
                 <Card className="text-center py-8">
-                  <Wallet size={32} className="text-secondary mx-auto mb-2" />
-                  <p className="text-secondary text-sm">No transactions yet</p>
+                  <Wallet size={32} className="text-text-secondary mx-auto mb-2" />
+                  <p className="text-text-secondary text-sm">No transactions yet</p>
                 </Card>
               ) : (
                 <div className="space-y-2">
                   {transactions.slice(0, 5).map(tx => (
                     <Card key={tx.id}>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center">
+                        <div className="w-10 h-10 bg-bg-secondary rounded-lg flex items-center justify-center">
                           {getTransactionIcon(tx.type)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-primary truncate">{tx.reason || tx.type}</p>
-                          <p className="text-xs text-secondary">{formatDate(tx.createdAt)}</p>
+                          <p className="text-sm font-medium text-text-primary truncate">{tx.reason || tx.type}</p>
+                          <p className="text-xs text-text-secondary">{formatDate(tx.createdAt)}</p>
                         </div>
                         <span className={`text-sm font-semibold ${getTransactionColor(tx.type)}`}>
                           {formatAmount(tx.amount, tx.type)}
@@ -261,27 +261,27 @@ export const WalletPage: React.FC = () => {
           <div className="px-4 space-y-2">
             {transactions.length === 0 && !txLoading ? (
               <Card className="text-center py-12">
-                <Clock size={40} className="text-secondary mx-auto mb-3" />
-                <p className="text-secondary">No transactions yet</p>
-                <p className="text-xs text-secondary mt-1">Your transaction history will appear here</p>
+                <Clock size={40} className="text-text-secondary mx-auto mb-3" />
+                <p className="text-text-secondary">No transactions yet</p>
+                <p className="text-xs text-text-secondary mt-1">Your transaction history will appear here</p>
               </Card>
             ) : (
               <>
                 {transactions.map(tx => (
                   <Card key={tx.id}>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center">
+                      <div className="w-10 h-10 bg-bg-secondary rounded-lg flex items-center justify-center">
                         {getTransactionIcon(tx.type)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-primary truncate">{tx.reason || tx.type}</p>
-                        <p className="text-xs text-secondary">{tx.description || formatDate(tx.createdAt)}</p>
+                        <p className="text-sm font-medium text-text-primary truncate">{tx.reason || tx.type}</p>
+                        <p className="text-xs text-text-secondary">{tx.description || formatDate(tx.createdAt)}</p>
                       </div>
                       <div className="text-right">
                         <span className={`text-sm font-semibold ${getTransactionColor(tx.type)}`}>
                           {formatAmount(tx.amount, tx.type)}
                         </span>
-                        <p className="text-xs text-secondary">{formatDate(tx.createdAt)}</p>
+                        <p className="text-xs text-text-secondary">{formatDate(tx.createdAt)}</p>
                       </div>
                     </div>
                   </Card>

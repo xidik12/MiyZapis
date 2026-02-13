@@ -29,7 +29,7 @@ export const Button: React.FC<ButtonProps> = ({
     primary: 'btn-telegram',
     secondary: 'btn-telegram-secondary',
     destructive: 'btn-telegram-destructive',
-    ghost: 'bg-transparent text-accent hover:bg-secondary active:bg-secondary/80'
+    ghost: 'bg-transparent text-accent-primary hover:bg-bg-hover active:bg-bg-hover/80'
   };
 
   const sizeClasses = {

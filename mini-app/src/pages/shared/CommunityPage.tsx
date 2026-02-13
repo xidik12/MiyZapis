@@ -155,14 +155,14 @@ export const CommunityPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-primary">
+    <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header
         title="Community"
         rightContent={
           isAuthenticated ? (
             <button
               onClick={() => { setShowCreatePost(true); hapticFeedback.impactLight(); }}
-              className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center"
+              className="w-8 h-8 bg-accent-primary rounded-lg flex items-center justify-center"
             >
               <Plus size={18} className="text-white" />
             </button>
@@ -170,11 +170,11 @@ export const CommunityPage: React.FC = () => {
         }
       />
 
-      <div className="flex-1 overflow-y-auto pb-20">
+      <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {/* Search */}
         <div className="px-4 pt-4 pb-2">
           <div className="relative">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary" />
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
             <input
               type="text"
               value={searchQuery}
@@ -195,8 +195,8 @@ export const CommunityPage: React.FC = () => {
                 onClick={() => { setActiveFilter(type); hapticFeedback.selectionChanged(); }}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
                   activeFilter === type
-                    ? 'bg-accent text-white'
-                    : 'bg-secondary text-secondary'
+                    ? 'bg-accent-primary text-white'
+                    : 'bg-bg-secondary text-text-secondary'
                 }`}
               >
                 {type === 'ALL' ? 'All' : type.charAt(0) + type.slice(1).toLowerCase()}
@@ -213,9 +213,9 @@ export const CommunityPage: React.FC = () => {
             </div>
           ) : posts.length === 0 ? (
             <Card className="text-center py-12">
-              <MessageCircle size={40} className="text-secondary mx-auto mb-3" />
-              <p className="text-primary font-medium">No posts yet</p>
-              <p className="text-secondary text-sm mt-1">Be the first to share something!</p>
+              <MessageCircle size={40} className="text-text-secondary mx-auto mb-3" />
+              <p className="text-text-primary font-medium">No posts yet</p>
+              <p className="text-text-secondary text-sm mt-1">Be the first to share something!</p>
               {isAuthenticated && (
                 <Button size="sm" onClick={() => setShowCreatePost(true)} className="mt-4">
                   Create Post
@@ -228,29 +228,29 @@ export const CommunityPage: React.FC = () => {
                 <Card key={post.id}>
                   {/* Author */}
                   <div className="flex items-center gap-2.5 mb-3">
-                    <div className="w-9 h-9 rounded-full overflow-hidden bg-secondary flex-shrink-0">
+                    <div className="w-9 h-9 rounded-full overflow-hidden bg-bg-secondary flex-shrink-0">
                       {post.author.avatar ? (
                         <img src={post.author.avatar} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <User size={16} className="text-secondary" />
+                          <User size={16} className="text-text-secondary" />
                         </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-primary truncate">
+                      <p className="text-sm font-medium text-text-primary truncate">
                         {post.author.firstName} {post.author.lastName}
                       </p>
-                      <p className="text-xs text-secondary">{formatDate(post.createdAt)}</p>
+                      <p className="text-xs text-text-secondary">{formatDate(post.createdAt)}</p>
                     </div>
-                    <span className="px-2 py-0.5 bg-secondary rounded-full text-xs text-secondary">
+                    <span className="px-2 py-0.5 bg-bg-secondary rounded-full text-xs text-text-secondary">
                       {post.type.charAt(0) + post.type.slice(1).toLowerCase()}
                     </span>
                   </div>
 
                   {/* Content */}
-                  <h3 className="text-sm font-semibold text-primary mb-1">{post.title}</h3>
-                  <p className="text-sm text-secondary line-clamp-3 mb-3">{post.content}</p>
+                  <h3 className="text-sm font-semibold text-text-primary mb-1">{post.title}</h3>
+                  <p className="text-sm text-text-secondary line-clamp-3 mb-3">{post.content}</p>
 
                   {post.image && (
                     <div className="rounded-xl overflow-hidden mb-3 max-h-48">
@@ -259,24 +259,24 @@ export const CommunityPage: React.FC = () => {
                   )}
 
                   {/* Actions */}
-                  <div className="flex items-center gap-5 pt-2 border-t border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center gap-5 pt-2 border-t border-white/5">
                     <button
                       onClick={() => handleLike(post)}
                       className="flex items-center gap-1.5"
                     >
                       <Heart
                         size={16}
-                        className={post.isLiked ? 'text-red-500 fill-red-500' : 'text-secondary'}
+                        className={post.isLiked ? 'text-accent-red fill-accent-red' : 'text-text-secondary'}
                       />
-                      <span className="text-xs text-secondary">{post.likesCount}</span>
+                      <span className="text-xs text-text-secondary">{post.likesCount}</span>
                     </button>
                     <div className="flex items-center gap-1.5">
-                      <MessageCircle size={16} className="text-secondary" />
-                      <span className="text-xs text-secondary">{post.commentsCount}</span>
+                      <MessageCircle size={16} className="text-text-secondary" />
+                      <span className="text-xs text-text-secondary">{post.commentsCount}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <Eye size={16} className="text-secondary" />
-                      <span className="text-xs text-secondary">{post.viewsCount}</span>
+                      <Eye size={16} className="text-text-secondary" />
+                      <span className="text-xs text-text-secondary">{post.viewsCount}</span>
                     </div>
                   </div>
                 </Card>
@@ -307,7 +307,7 @@ export const CommunityPage: React.FC = () => {
           />
 
           <div>
-            <label className="block text-sm font-medium text-primary mb-1.5">Content</label>
+            <label className="block text-sm font-medium text-text-primary mb-1.5">Content</label>
             <textarea
               value={newPost.content}
               onChange={e => setNewPost(p => ({ ...p, content: e.target.value }))}
@@ -318,7 +318,7 @@ export const CommunityPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-primary mb-1.5">Type</label>
+            <label className="block text-sm font-medium text-text-primary mb-1.5">Type</label>
             <div className="flex flex-wrap gap-2">
               {POST_TYPES.filter(t => t !== 'ALL').map(type => (
                 <button
@@ -326,8 +326,8 @@ export const CommunityPage: React.FC = () => {
                   onClick={() => setNewPost(p => ({ ...p, type }))}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                     newPost.type === type
-                      ? 'bg-accent text-white'
-                      : 'bg-secondary text-secondary'
+                      ? 'bg-accent-primary text-white'
+                      : 'bg-bg-secondary text-text-secondary'
                   }`}
                 >
                   {type.charAt(0) + type.slice(1).toLowerCase()}

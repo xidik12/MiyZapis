@@ -156,26 +156,26 @@ export const SpecialistServicesPage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-primary">
+    <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header
         title="My Services"
         rightContent={
           <button
             onClick={() => handleOpenForm()}
-            className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center"
+            className="w-8 h-8 bg-accent-primary rounded-lg flex items-center justify-center"
           >
             <Plus size={18} className="text-white" />
           </button>
         }
       />
 
-      <div className="flex-1 overflow-y-auto pb-20">
+      <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         <div className="px-4 pt-4 space-y-3">
           {services.length === 0 ? (
             <Card className="text-center py-12">
-              <Briefcase size={40} className="text-secondary mx-auto mb-3" />
-              <p className="text-primary font-medium">No services yet</p>
-              <p className="text-secondary text-sm mt-1">Add your first service to start receiving bookings</p>
+              <Briefcase size={40} className="text-text-secondary mx-auto mb-3" />
+              <p className="text-text-primary font-medium">No services yet</p>
+              <p className="text-text-secondary text-sm mt-1">Add your first service to start receiving bookings</p>
               <Button size="sm" onClick={() => handleOpenForm()} className="mt-4">
                 <Plus size={16} className="mr-1" /> Add Service
               </Button>
@@ -185,56 +185,56 @@ export const SpecialistServicesPage: React.FC = () => {
               <Card key={service.id}>
                 <div className="flex items-start gap-3">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                    service.isActive ? 'bg-blue-100' : 'bg-gray-100'
+                    service.isActive ? 'bg-accent-primary/10' : 'bg-bg-secondary'
                   }`}>
-                    <Briefcase size={22} className={service.isActive ? 'text-blue-600' : 'text-gray-400'} />
+                    <Briefcase size={22} className={service.isActive ? 'text-accent-primary' : 'text-text-muted'} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-semibold text-primary truncate">{service.name}</h3>
+                      <h3 className="text-sm font-semibold text-text-primary truncate">{service.name}</h3>
                       {!service.isActive && (
-                        <span className="px-1.5 py-0.5 bg-gray-200 text-gray-500 text-xs rounded">Inactive</span>
+                        <span className="px-1.5 py-0.5 bg-bg-hover text-text-secondary text-xs rounded">Inactive</span>
                       )}
                     </div>
-                    <p className="text-xs text-secondary truncate mt-0.5">{service.description}</p>
+                    <p className="text-xs text-text-secondary truncate mt-0.5">{service.description}</p>
                     <div className="flex items-center gap-3 mt-1.5">
                       <div className="flex items-center gap-1">
-                        <Clock size={12} className="text-secondary" />
-                        <span className="text-xs text-secondary">{service.duration} min</span>
+                        <Clock size={12} className="text-text-secondary" />
+                        <span className="text-xs text-text-secondary">{service.duration} min</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <DollarSign size={12} className="text-secondary" />
-                        <span className="text-xs font-medium text-accent">
-                          ₴{service.price}
+                        <DollarSign size={12} className="text-text-secondary" />
+                        <span className="text-xs font-medium text-accent-primary">
+                          &#8372;{service.price}
                         </span>
                       </div>
-                      <span className="text-xs text-secondary">{service.category.name}</span>
+                      <span className="text-xs text-text-secondary">{service.category.name}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-white/5">
                   <button
                     onClick={() => handleToggleActive(service)}
-                    className="p-2 rounded-lg hover:bg-secondary"
+                    className="p-2 rounded-lg hover:bg-bg-hover"
                   >
                     {service.isActive
-                      ? <ToggleRight size={20} className="text-green-500" />
-                      : <ToggleLeft size={20} className="text-gray-400" />
+                      ? <ToggleRight size={20} className="text-accent-green" />
+                      : <ToggleLeft size={20} className="text-text-muted" />
                     }
                   </button>
                   <button
                     onClick={() => handleOpenForm(service)}
-                    className="p-2 rounded-lg hover:bg-secondary"
+                    className="p-2 rounded-lg hover:bg-bg-hover"
                   >
-                    <Edit size={16} className="text-blue-500" />
+                    <Edit size={16} className="text-accent-primary" />
                   </button>
                   <button
                     onClick={() => handleDelete(service)}
-                    className="p-2 rounded-lg hover:bg-secondary"
+                    className="p-2 rounded-lg hover:bg-bg-hover"
                   >
-                    <Trash2 size={16} className="text-red-400" />
+                    <Trash2 size={16} className="text-accent-red" />
                   </button>
                 </div>
               </Card>
@@ -258,7 +258,7 @@ export const SpecialistServicesPage: React.FC = () => {
           />
 
           <div>
-            <label className="block text-sm font-medium text-primary mb-1.5">Description</label>
+            <label className="block text-sm font-medium text-text-primary mb-1.5">Description</label>
             <textarea
               value={formData.description}
               onChange={e => setFormData(p => ({ ...p, description: e.target.value }))}
@@ -269,7 +269,7 @@ export const SpecialistServicesPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-primary mb-1.5">Category *</label>
+            <label className="block text-sm font-medium text-text-primary mb-1.5">Category *</label>
             <select
               value={formData.categoryId}
               onChange={e => setFormData(p => ({ ...p, categoryId: e.target.value }))}
@@ -291,7 +291,7 @@ export const SpecialistServicesPage: React.FC = () => {
               icon={<Clock size={16} />}
             />
             <Input
-              label="Price (₴) *"
+              label="Price (&#8372;) *"
               type="number"
               value={formData.price.toString()}
               onChange={e => setFormData(p => ({ ...p, price: parseFloat(e.target.value) || 0 }))}

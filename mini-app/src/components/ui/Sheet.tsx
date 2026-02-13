@@ -60,7 +60,7 @@ export const Sheet: React.FC<SheetProps> = ({
         {/* Title */}
         {title && (
           <div className="px-4 pb-3">
-            <h2 className="text-lg font-semibold text-primary">{title}</h2>
+            <h2 className="text-lg font-semibold text-text-primary">{title}</h2>
           </div>
         )}
 

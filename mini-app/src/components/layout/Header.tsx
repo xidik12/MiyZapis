@@ -23,9 +23,9 @@ export const Header: React.FC<HeaderProps> = ({
   onMenu,
   rightContent,
   leftContent,
-  transparent = false
+  transparent = false,
 }) => {
-  const { hapticFeedback, backButton } = useTelegram();
+  const { hapticFeedback } = useTelegram();
 
   const handleBack = () => {
     hapticFeedback.impactLight();
@@ -42,10 +42,10 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header 
+    <header
       className={`
         flex items-center justify-between px-4 py-3 safe-top
-        ${transparent ? 'bg-transparent' : 'bg-header border-b border-gray-200'}
+        ${transparent ? 'bg-transparent' : 'bg-bg-secondary/90 backdrop-blur-lg border-b border-white/5'}
       `}
     >
       {/* Left side */}
@@ -53,28 +53,28 @@ export const Header: React.FC<HeaderProps> = ({
         {showBackButton && (
           <button
             onClick={handleBack}
-            className="p-2 -ml-2 touch-manipulation"
+            className="p-2 -ml-2 touch-manipulation rounded-lg hover:bg-bg-hover transition-colors"
             type="button"
           >
-            <ArrowLeft size={20} className="text-primary" />
+            <ArrowLeft size={20} className="text-text-primary" />
           </button>
         )}
-        
+
         {leftContent && (
           <div className="flex items-center">
             {leftContent}
           </div>
         )}
-        
+
         {(title || subtitle) && (
           <div className="flex flex-col min-w-0 flex-1">
             {title && (
-              <h1 className="text-lg font-semibold text-primary truncate">
+              <h1 className="text-lg font-semibold text-text-primary truncate">
                 {title}
               </h1>
             )}
             {subtitle && (
-              <p className="text-sm text-secondary truncate">
+              <p className="text-xs text-text-secondary truncate">
                 {subtitle}
               </p>
             )}
@@ -85,14 +85,14 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Right side */}
       <div className="flex items-center gap-2">
         {rightContent}
-        
+
         {showMenuButton && (
           <button
             onClick={handleMenu}
-            className="p-2 touch-manipulation"
+            className="p-2 touch-manipulation rounded-lg hover:bg-bg-hover transition-colors"
             type="button"
           >
-            <MoreVertical size={20} className="text-primary" />
+            <MoreVertical size={20} className="text-text-secondary" />
           </button>
         )}
       </div>

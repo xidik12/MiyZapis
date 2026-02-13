@@ -32,14 +32,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-primary mb-2">
+        <label className="block text-sm font-medium text-text-primary mb-2">
           {label}
         </label>
       )}
       
       <div className="relative">
         {icon && (
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary">
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted">
             {icon}
           </div>
         )}
@@ -53,7 +53,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
             input-telegram
             ${icon ? 'pl-10' : ''}
             ${rightElement ? 'pr-10' : ''}
-            ${error ? 'border-destructive focus:border-destructive' : ''}
+            ${error ? 'border-accent-red focus:border-accent-red' : ''}
             ${className}
           `}
         />
@@ -66,7 +66,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
       </div>
       
       {error && (
-        <p className="mt-2 text-sm text-destructive">{error}</p>
+        <p className="mt-2 text-sm text-accent-red">{error}</p>
       )}
     </div>
   );

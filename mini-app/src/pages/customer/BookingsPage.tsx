@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
+import {
   Calendar,
   Clock,
   MapPin,
@@ -80,35 +80,35 @@ const mockBookings = [
 ];
 
 const statusConfig = {
-  pending: { 
-    label: 'Pending', 
-    color: 'bg-yellow-100 text-yellow-800',
+  pending: {
+    label: 'Pending',
+    color: 'bg-accent-yellow/15 text-accent-yellow',
     icon: Clock
   },
-  confirmed: { 
-    label: 'Confirmed', 
-    color: 'bg-green-100 text-green-800',
+  confirmed: {
+    label: 'Confirmed',
+    color: 'bg-accent-green/15 text-accent-green',
     icon: Check
   },
-  completed: { 
-    label: 'Completed', 
-    color: 'bg-blue-100 text-blue-800',
+  completed: {
+    label: 'Completed',
+    color: 'bg-accent-primary/10 text-accent-primary',
     icon: Check
   },
-  cancelled: { 
-    label: 'Cancelled', 
-    color: 'bg-red-100 text-red-800',
+  cancelled: {
+    label: 'Cancelled',
+    color: 'bg-accent-red/15 text-accent-red',
     icon: X
   }
 };
 
 export const BookingsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { 
-    hapticFeedback, 
-    showAlert, 
-    showConfirm, 
-    openLink 
+  const {
+    hapticFeedback,
+    showAlert,
+    showConfirm,
+    openLink
   } = useTelegram();
 
   const [selectedTab, setSelectedTab] = useState<'upcoming' | 'past'>('upcoming');
@@ -119,7 +119,7 @@ export const BookingsPage: React.FC = () => {
   const filteredBookings = mockBookings.filter(booking => {
     const bookingDate = new Date(`${booking.date}T${booking.time}`);
     const now = new Date();
-    
+
     if (selectedTab === 'upcoming') {
       return bookingDate >= now || booking.status === 'pending' || booking.status === 'confirmed';
     } else {
@@ -156,7 +156,7 @@ export const BookingsPage: React.FC = () => {
 
   const handleCancelBooking = async (bookingId: string) => {
     const confirmed = await showConfirm('Are you sure you want to cancel this booking?');
-    
+
     if (confirmed) {
       setIsLoading(true);
       try {
@@ -189,15 +189,15 @@ export const BookingsPage: React.FC = () => {
   const formatDate = (dateString: string, timeString: string) => {
     const date = new Date(`${dateString}T${timeString}`);
     return {
-      date: date.toLocaleDateString('en-US', { 
+      date: date.toLocaleDateString('en-US', {
         weekday: 'short',
-        month: 'short', 
-        day: 'numeric' 
+        month: 'short',
+        day: 'numeric'
       }),
-      time: date.toLocaleTimeString('en-US', { 
+      time: date.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
-        hour12: true 
+        hour12: true
       })
     };
   };
@@ -207,11 +207,10 @@ export const BookingsPage: React.FC = () => {
     const formatted = formatDate(booking.date, booking.time);
 
     return (
-      <Card
+      <div
         key={booking.id}
-        hover
         onClick={() => handleBookingPress(booking)}
-        className="mb-3"
+        className="bg-bg-card rounded-2xl shadow-card border border-white/5 p-4 mb-3 cursor-pointer hover:bg-bg-hover transition-colors"
       >
         <div className="flex gap-3">
           <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
@@ -221,10 +220,10 @@ export const BookingsPage: React.FC = () => {
               className="w-full h-full object-cover"
             />
           </div>
-          
+
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="font-semibold text-primary truncate">
+              <h3 className="font-semibold text-text-primary truncate">
                 {booking.service.name}
               </h3>
               <div className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfig[booking.status as keyof typeof statusConfig]?.color}`}>
@@ -234,34 +233,34 @@ export const BookingsPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            
-            <p className="text-sm text-secondary mb-2">
+
+            <p className="text-sm text-text-secondary mb-2">
               {booking.specialist.name}
             </p>
-            
-            <div className="flex items-center gap-4 text-sm">
+
+            <div className="flex items-center gap-4 text-sm text-text-secondary">
               <div className="flex items-center gap-1">
-                <Calendar size={14} className="text-secondary" />
+                <Calendar size={14} className="text-text-muted" />
                 <span>{formatted.date}</span>
               </div>
               <div className="flex items-center gap-1">
-                <Clock size={14} className="text-secondary" />
+                <Clock size={14} className="text-text-muted" />
                 <span>{formatted.time}</span>
               </div>
             </div>
-            
+
             <div className="flex items-center justify-between mt-2">
-              <span className="text-sm font-medium text-accent">
+              <span className="text-sm font-medium text-accent-primary">
                 ${booking.service.price}
               </span>
               <div className="flex items-center gap-1">
-                <Star size={12} className="text-yellow-400 fill-current" />
-                <span className="text-sm">{booking.specialist.rating}</span>
+                <Star size={12} className="text-accent-yellow fill-current" />
+                <span className="text-sm text-text-secondary">{booking.specialist.rating}</span>
               </div>
             </div>
           </div>
         </div>
-      </Card>
+      </div>
     );
   };
 
@@ -282,47 +281,47 @@ export const BookingsPage: React.FC = () => {
               className="w-full h-full object-cover"
             />
           </div>
-          <h3 className="text-lg font-semibold text-primary">
+          <h3 className="text-lg font-semibold text-text-primary">
             {selectedBooking.service.name}
           </h3>
-          <p className="text-secondary">{selectedBooking.specialist.name}</p>
+          <p className="text-text-secondary">{selectedBooking.specialist.name}</p>
         </div>
 
-        <Card>
+        <div className="bg-bg-card rounded-2xl shadow-card border border-white/5 p-4">
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-secondary">Date:</span>
-              <span className="font-medium">{formatted.date}</span>
+              <span className="text-text-secondary">Date:</span>
+              <span className="font-medium text-text-primary">{formatted.date}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-secondary">Time:</span>
-              <span className="font-medium">{formatted.time}</span>
+              <span className="text-text-secondary">Time:</span>
+              <span className="font-medium text-text-primary">{formatted.time}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-secondary">Duration:</span>
-              <span className="font-medium">{selectedBooking.service.duration} min</span>
+              <span className="text-text-secondary">Duration:</span>
+              <span className="font-medium text-text-primary">{selectedBooking.service.duration} min</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-secondary">Price:</span>
-              <span className="font-medium text-accent">${selectedBooking.service.price}</span>
+              <span className="text-text-secondary">Price:</span>
+              <span className="font-medium text-accent-primary">${selectedBooking.service.price}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-secondary">Status:</span>
+              <span className="text-text-secondary">Status:</span>
               <div className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfig[selectedBooking.status as keyof typeof statusConfig]?.color}`}>
                 {statusConfig[selectedBooking.status as keyof typeof statusConfig]?.label}
               </div>
             </div>
           </div>
-        </Card>
+        </div>
 
-        <Card>
+        <div className="bg-bg-card rounded-2xl shadow-card border border-white/5 p-4">
           <div className="flex items-center gap-3 mb-3">
-            <MapPin size={18} className="text-secondary" />
+            <MapPin size={18} className="text-text-muted" />
             <div>
-              <p className="font-medium text-primary">{selectedBooking.specialist.location}</p>
+              <p className="font-medium text-text-primary">{selectedBooking.specialist.location}</p>
             </div>
           </div>
-        </Card>
+        </div>
 
         {/* Action Buttons */}
         <div className="space-y-2">
@@ -335,7 +334,7 @@ export const BookingsPage: React.FC = () => {
               <Phone size={16} />
               Call
             </Button>
-            
+
             <Button
               variant="secondary"
               onClick={handleMessageSpecialist}
@@ -398,12 +397,12 @@ export const BookingsPage: React.FC = () => {
 
   if (isLoading && !showBookingSheet) {
     return (
-      <div className="flex flex-col min-h-screen bg-primary">
+      <div className="flex flex-col min-h-screen bg-bg-primary">
         <Header title="My Bookings" />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <LoadingSpinner size="lg" className="mb-4 mx-auto" />
-            <p className="text-secondary">Loading your bookings...</p>
+            <p className="text-text-secondary">Loading your bookings...</p>
           </div>
         </div>
       </div>
@@ -411,8 +410,8 @@ export const BookingsPage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-primary">
-      <Header 
+    <div className="flex flex-col min-h-screen bg-bg-primary">
+      <Header
         title="My Bookings"
         rightContent={
           <Button
@@ -426,15 +425,15 @@ export const BookingsPage: React.FC = () => {
       />
 
       {/* Tabs */}
-      <div className="px-4 py-3 bg-header">
-        <div className="flex bg-secondary rounded-lg p-1">
+      <div className="px-4 py-3 bg-bg-card border-b border-white/5">
+        <div className="flex bg-bg-secondary rounded-lg p-1">
           <button
             onClick={() => handleTabChange('upcoming')}
             className={`
               flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors touch-manipulation
-              ${selectedTab === 'upcoming' 
-                ? 'bg-white text-primary shadow-sm' 
-                : 'text-secondary'
+              ${selectedTab === 'upcoming'
+                ? 'bg-bg-card text-text-primary shadow-card'
+                : 'text-text-secondary'
               }
             `}
           >
@@ -444,9 +443,9 @@ export const BookingsPage: React.FC = () => {
             onClick={() => handleTabChange('past')}
             className={`
               flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors touch-manipulation
-              ${selectedTab === 'past' 
-                ? 'bg-white text-primary shadow-sm' 
-                : 'text-secondary'
+              ${selectedTab === 'past'
+                ? 'bg-bg-card text-text-primary shadow-card'
+                : 'text-text-secondary'
               }
             `}
           >
@@ -456,15 +455,15 @@ export const BookingsPage: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 pb-20">
+      <div className="flex-1 overflow-y-auto p-4 pb-20 page-stagger">
         {filteredBookings.length === 0 ? (
           <div className="text-center py-12">
-            <Calendar size={48} className="text-secondary mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-primary mb-2">
+            <Calendar size={48} className="text-text-muted mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-text-primary mb-2">
               No {selectedTab} bookings
             </h3>
-            <p className="text-secondary mb-4">
-              {selectedTab === 'upcoming' 
+            <p className="text-text-secondary mb-4">
+              {selectedTab === 'upcoming'
                 ? "You don't have any upcoming appointments."
                 : "You haven't completed any bookings yet."
               }

@@ -129,66 +129,66 @@ export const SettingsPage: React.FC = () => {
   const Toggle: React.FC<{ value: boolean; onChange: (v: boolean) => void }> = ({ value, onChange }) => (
     <button
       onClick={() => { onChange(!value); hapticFeedback.selectionChanged(); }}
-      className={`w-12 h-7 rounded-full relative transition-colors ${value ? 'bg-accent' : 'bg-gray-300'}`}
+      className={`w-12 h-7 rounded-full relative transition-colors ${value ? 'bg-accent-primary' : 'bg-text-muted'}`}
     >
-      <div className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-transform ${value ? 'translate-x-6' : 'translate-x-1'}`} />
+      <div className={`w-5 h-5 bg-bg-card rounded-full absolute top-1 transition-transform ${value ? 'translate-x-6' : 'translate-x-1'}`} />
     </button>
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-primary">
+    <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header title="Settings" />
 
-      <div className="flex-1 overflow-y-auto pb-20">
+      <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {/* Profile Section */}
         <div className="px-4 pt-4 pb-2">
           <Card hover onClick={() => setShowEditProfile(true)}>
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full overflow-hidden bg-secondary">
+              <div className="w-14 h-14 rounded-full overflow-hidden bg-bg-secondary">
                 {user?.avatar ? (
                   <img src={user.avatar} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <User size={24} className="text-secondary" />
+                    <User size={24} className="text-text-secondary" />
                   </div>
                 )}
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-primary">{user?.firstName} {user?.lastName}</h3>
-                <p className="text-sm text-secondary">{user?.email}</p>
+                <h3 className="font-semibold text-text-primary">{user?.firstName} {user?.lastName}</h3>
+                <p className="text-sm text-text-secondary">{user?.email}</p>
               </div>
-              <ChevronRight size={18} className="text-secondary" />
+              <ChevronRight size={18} className="text-text-secondary" />
             </div>
           </Card>
         </div>
 
         {/* Preferences */}
         <div className="px-4 py-2">
-          <h3 className="text-sm font-semibold text-secondary mb-2 px-1">Preferences</h3>
+          <h3 className="text-sm font-semibold text-text-secondary mb-2 px-1">Preferences</h3>
           <div className="space-y-1">
             <Card hover onClick={() => { setShowNotifications(true); hapticFeedback.impactLight(); }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-red-100 rounded-lg flex items-center justify-center">
-                    <Bell size={18} className="text-red-600" />
+                  <div className="w-9 h-9 bg-accent-red/15 rounded-lg flex items-center justify-center">
+                    <Bell size={18} className="text-accent-red" />
                   </div>
-                  <span className="text-sm text-primary">Notifications</span>
+                  <span className="text-sm text-text-primary">Notifications</span>
                 </div>
-                <ChevronRight size={18} className="text-secondary" />
+                <ChevronRight size={18} className="text-text-secondary" />
               </div>
             </Card>
 
             <Card hover onClick={() => { setShowLanguage(true); hapticFeedback.impactLight(); }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Globe size={18} className="text-blue-600" />
+                  <div className="w-9 h-9 bg-accent-primary/10 rounded-lg flex items-center justify-center">
+                    <Globe size={18} className="text-accent-primary" />
                   </div>
-                  <span className="text-sm text-primary">Language</span>
+                  <span className="text-sm text-text-primary">Language</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-xs text-secondary">{language === 'uk' ? 'Українська' : language === 'ru' ? 'Русский' : 'English'}</span>
-                  <ChevronRight size={18} className="text-secondary" />
+                  <span className="text-xs text-text-secondary">{language === 'uk' ? 'Українська' : language === 'ru' ? 'Русский' : 'English'}</span>
+                  <ChevronRight size={18} className="text-text-secondary" />
                 </div>
               </div>
             </Card>
@@ -196,10 +196,10 @@ export const SettingsPage: React.FC = () => {
             <Card hover onClick={toggleTheme}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-purple-100 rounded-lg flex items-center justify-center">
-                    {theme === 'dark' ? <Moon size={18} className="text-purple-600" /> : <Sun size={18} className="text-yellow-600" />}
+                  <div className="w-9 h-9 bg-accent-purple/15 rounded-lg flex items-center justify-center">
+                    {theme === 'dark' ? <Moon size={18} className="text-accent-purple" /> : <Sun size={18} className="text-accent-yellow" />}
                   </div>
-                  <span className="text-sm text-primary">Dark Mode</span>
+                  <span className="text-sm text-text-primary">Dark Mode</span>
                 </div>
                 <Toggle value={theme === 'dark'} onChange={toggleTheme} />
               </div>
@@ -209,29 +209,29 @@ export const SettingsPage: React.FC = () => {
 
         {/* Support */}
         <div className="px-4 py-2">
-          <h3 className="text-sm font-semibold text-secondary mb-2 px-1">Support</h3>
+          <h3 className="text-sm font-semibold text-text-secondary mb-2 px-1">Support</h3>
           <div className="space-y-1">
             <Card hover>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center">
-                    <Shield size={18} className="text-green-600" />
+                  <div className="w-9 h-9 bg-accent-green/15 rounded-lg flex items-center justify-center">
+                    <Shield size={18} className="text-accent-green" />
                   </div>
-                  <span className="text-sm text-primary">Privacy & Security</span>
+                  <span className="text-sm text-text-primary">Privacy & Security</span>
                 </div>
-                <ChevronRight size={18} className="text-secondary" />
+                <ChevronRight size={18} className="text-text-secondary" />
               </div>
             </Card>
 
             <Card hover>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <HelpCircle size={18} className="text-orange-600" />
+                  <div className="w-9 h-9 bg-accent-yellow/15 rounded-lg flex items-center justify-center">
+                    <HelpCircle size={18} className="text-accent-yellow" />
                   </div>
-                  <span className="text-sm text-primary">Help & Support</span>
+                  <span className="text-sm text-text-primary">Help & Support</span>
                 </div>
-                <ChevronRight size={18} className="text-secondary" />
+                <ChevronRight size={18} className="text-text-secondary" />
               </div>
             </Card>
           </div>
@@ -241,8 +241,8 @@ export const SettingsPage: React.FC = () => {
         <div className="px-4 py-4">
           <Card hover onClick={handleLogout}>
             <div className="flex items-center gap-3 justify-center">
-              <LogOut size={18} className="text-red-500" />
-              <span className="text-red-500 font-medium">Sign Out</span>
+              <LogOut size={18} className="text-accent-red" />
+              <span className="text-accent-red font-medium">Sign Out</span>
             </div>
           </Card>
         </div>
@@ -294,7 +294,7 @@ export const SettingsPage: React.FC = () => {
       <Sheet isOpen={showNotifications} onClose={() => setShowNotifications(false)} title="Notifications">
         <div className="space-y-4">
           <div>
-            <h4 className="text-sm font-semibold text-primary mb-3">Channels</h4>
+            <h4 className="text-sm font-semibold text-text-primary mb-3">Channels</h4>
             <div className="space-y-3">
               {[
                 { key: 'email' as const, label: 'Email', icon: <Mail size={16} /> },
@@ -304,8 +304,8 @@ export const SettingsPage: React.FC = () => {
               ].map(ch => (
                 <div key={ch.key} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-secondary">{ch.icon}</span>
-                    <span className="text-sm text-primary">{ch.label}</span>
+                    <span className="text-text-secondary">{ch.icon}</span>
+                    <span className="text-sm text-text-primary">{ch.label}</span>
                   </div>
                   <Toggle
                     value={notifPrefs[ch.key]}
@@ -317,17 +317,17 @@ export const SettingsPage: React.FC = () => {
           </div>
 
           <div>
-            <h4 className="text-sm font-semibold text-primary mb-3">Types</h4>
+            <h4 className="text-sm font-semibold text-text-primary mb-3">Types</h4>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-primary">Booking Reminders</span>
+                <span className="text-sm text-text-primary">Booking Reminders</span>
                 <Toggle
                   value={notifPrefs.bookingReminders}
                   onChange={v => setNotifPrefs(p => ({ ...p, bookingReminders: v }))}
                 />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-primary">Promotions</span>
+                <span className="text-sm text-text-primary">Promotions</span>
                 <Toggle
                   value={notifPrefs.promotions}
                   onChange={v => setNotifPrefs(p => ({ ...p, promotions: v }))}
@@ -360,14 +360,14 @@ export const SettingsPage: React.FC = () => {
               }}
               className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${
                 language === lang.code
-                  ? 'bg-accent/10 border border-accent'
-                  : 'bg-secondary hover:bg-secondary'
+                  ? 'bg-accent-primary/10 border border-accent-primary'
+                  : 'bg-bg-secondary hover:bg-bg-hover'
               }`}
             >
               <span className="text-xl">{lang.flag}</span>
-              <span className="text-sm font-medium text-primary">{lang.label}</span>
+              <span className="text-sm font-medium text-text-primary">{lang.label}</span>
               {language === lang.code && (
-                <span className="ml-auto text-accent text-xs font-medium">Selected</span>
+                <span className="ml-auto text-accent-primary text-xs font-medium">Selected</span>
               )}
             </button>
           ))}

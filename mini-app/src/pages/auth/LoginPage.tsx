@@ -15,17 +15,17 @@ import { addToast } from '@/store/slices/uiSlice';
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-  const { 
-    user: telegramUser, 
+  const {
+    user: telegramUser,
     hapticFeedback,
     initData,
-    initDataUnsafe 
+    initDataUnsafe
   } = useTelegram();
 
   const { user, isAuthenticated, isLoading, error } = useSelector(
     (state: RootState) => state.auth
   );
-  
+
   const [registrationData, setRegistrationData] = useState({
     firstName: '',
     lastName: '',
@@ -88,7 +88,7 @@ export const LoginPage: React.FC = () => {
         password: 'temp_telegram_password', // Will be handled by backend
         telegramId: telegramUser?.id.toString()
       };
-      
+
       await dispatch(registerAsync(userData)).unwrap();
       dispatch(addToast({
         type: 'success',
@@ -111,12 +111,12 @@ export const LoginPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col min-h-screen bg-primary">
+      <div className="flex flex-col min-h-screen bg-bg-primary">
         <Header title="Signing In..." />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <LoadingSpinner size="lg" className="mb-4 mx-auto" />
-            <p className="text-secondary">Authenticating with Telegram...</p>
+            <p className="text-text-secondary">Authenticating with Telegram...</p>
           </div>
         </div>
       </div>
@@ -124,13 +124,13 @@ export const LoginPage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-primary">
-      <Header 
-        title="Welcome" 
+    <div className="flex flex-col min-h-screen bg-bg-primary text-text-primary">
+      <Header
+        title="Welcome"
         subtitle="Sign in to continue"
       />
 
-      <div className="flex-1 px-4 py-6">
+      <div className="flex-1 px-4 py-6 page-stagger">
         {/* Telegram User Info */}
         {telegramUser && (
           <Card className="mb-6">
@@ -142,27 +142,27 @@ export const LoginPage: React.FC = () => {
                   className="w-16 h-16 rounded-full"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-accent-primary flex items-center justify-center">
                   <User size={24} className="text-white" />
                 </div>
               )}
               <div>
-                <h3 className="font-semibold text-primary">
+                <h3 className="font-semibold text-text-primary">
                   {telegramUser.first_name} {telegramUser.last_name}
                 </h3>
                 {telegramUser.username && (
-                  <p className="text-secondary">@{telegramUser.username}</p>
+                  <p className="text-text-secondary">@{telegramUser.username}</p>
                 )}
               </div>
             </div>
-            
+
             {!showRegistrationForm ? (
               <div>
-                <p className="text-secondary mb-4">
+                <p className="text-text-secondary mb-4">
                   Continue with your Telegram account to access all booking features.
                 </p>
-                <Button 
-                  fullWidth 
+                <Button
+                  fullWidth
                   onClick={handleAutoLogin}
                   disabled={isLoading}
                 >
@@ -171,10 +171,10 @@ export const LoginPage: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                <p className="text-secondary">
+                <p className="text-text-secondary">
                   Complete your profile to get started:
                 </p>
-                
+
                 <Input
                   label="First Name"
                   value={registrationData.firstName}
@@ -183,7 +183,7 @@ export const LoginPage: React.FC = () => {
                   placeholder="Enter your first name"
                   required
                 />
-                
+
                 <Input
                   label="Last Name (Optional)"
                   value={registrationData.lastName}
@@ -191,7 +191,7 @@ export const LoginPage: React.FC = () => {
                   icon={<User size={18} />}
                   placeholder="Enter your last name"
                 />
-                
+
                 <Input
                   label="Email (Optional)"
                   type="email"
@@ -200,7 +200,7 @@ export const LoginPage: React.FC = () => {
                   icon={<Mail size={18} />}
                   placeholder="Enter your email"
                 />
-                
+
                 <Input
                   label="Phone (Optional)"
                   type="tel"
@@ -209,9 +209,9 @@ export const LoginPage: React.FC = () => {
                   icon={<Phone size={18} />}
                   placeholder="Enter your phone number"
                 />
-                
-                <Button 
-                  fullWidth 
+
+                <Button
+                  fullWidth
                   onClick={handleRegistration}
                   disabled={!registrationData.firstName.trim() || isLoading}
                   loading={isLoading}
@@ -225,19 +225,19 @@ export const LoginPage: React.FC = () => {
 
         {/* Error Display */}
         {error && (
-          <Card className="mb-6 bg-red-50 border-red-200">
+          <Card className="mb-6 bg-accent-red/15 border-accent-red/30">
             <div className="flex items-center gap-3">
-              <AlertCircle size={20} className="text-red-500 flex-shrink-0" />
+              <AlertCircle size={20} className="text-accent-red flex-shrink-0" />
               <div>
-                <h4 className="font-medium text-red-800">Authentication Error</h4>
-                <p className="text-sm text-red-600 mt-1">{error}</p>
+                <h4 className="font-medium text-accent-red">Authentication Error</h4>
+                <p className="text-sm text-accent-red/80 mt-1">{error}</p>
               </div>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => dispatch(clearError())}
-              className="mt-3 text-red-600"
+              className="mt-3 text-accent-red"
             >
               Try Again
             </Button>
@@ -245,17 +245,17 @@ export const LoginPage: React.FC = () => {
         )}
 
         {/* Info Section */}
-        <Card className="bg-blue-50 border-blue-200">
+        <Card className="bg-accent-primary/10 border-accent-primary/20">
           <div className="text-center">
-            <h3 className="font-semibold text-blue-800 mb-2">
+            <h3 className="font-semibold text-accent-primary mb-2">
               Why sign in?
             </h3>
-            <ul className="text-sm text-blue-700 space-y-1">
-              <li>• Book and manage appointments</li>
-              <li>• Save favorite specialists</li>
-              <li>• Track booking history</li>
-              <li>• Get personalized recommendations</li>
-              <li>• Earn loyalty points</li>
+            <ul className="text-sm text-accent-primary/80 space-y-1">
+              <li>Book and manage appointments</li>
+              <li>Save favorite specialists</li>
+              <li>Track booking history</li>
+              <li>Get personalized recommendations</li>
+              <li>Earn loyalty points</li>
             </ul>
           </div>
         </Card>
@@ -265,7 +265,7 @@ export const LoginPage: React.FC = () => {
           <Button
             variant="ghost"
             onClick={() => navigate('/')}
-            className="text-secondary"
+            className="text-text-secondary"
           >
             Browse without account
           </Button>

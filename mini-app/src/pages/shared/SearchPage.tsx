@@ -96,7 +96,7 @@ export const SearchPage: React.FC = () => {
 
   const handleApplyFilters = () => {
     const newFilters: any = {};
-    
+
     if (localFilters.category) newFilters.category = localFilters.category;
     if (localFilters.minPrice) newFilters.minPrice = Number(localFilters.minPrice);
     if (localFilters.maxPrice) newFilters.maxPrice = Number(localFilters.maxPrice);
@@ -141,7 +141,7 @@ export const SearchPage: React.FC = () => {
           className="mb-3"
         >
           <div className="flex gap-3">
-            <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
+            <div className="w-20 h-20 rounded-lg overflow-hidden bg-bg-hover flex-shrink-0">
               <img
                 src={service.images?.[0] || '/api/placeholder/80/80'}
                 alt={service.name}
@@ -149,20 +149,20 @@ export const SearchPage: React.FC = () => {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-primary truncate">{service.name}</h3>
-              <p className="text-sm text-secondary mb-1">{service.specialist.name}</p>
+              <h3 className="font-semibold text-text-primary truncate">{service.name}</h3>
+              <p className="text-sm text-text-secondary mb-1">{service.specialist.name}</p>
               <div className="flex items-center gap-2 mb-2">
                 <div className="flex items-center gap-1">
-                  <Star size={12} className="text-yellow-400 fill-current" />
+                  <Star size={12} className="text-accent-yellow fill-current" />
                   <span className="text-sm font-medium">{service.specialist.rating}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Clock size={12} className="text-secondary" />
-                  <span className="text-sm text-secondary">{service.duration}min</span>
+                  <Clock size={12} className="text-text-secondary" />
+                  <span className="text-sm text-text-secondary">{service.duration}min</span>
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-lg font-bold text-accent">${service.price}</span>
+                <span className="text-lg font-bold text-accent-primary">${service.price}</span>
                 <Button size="sm">Book</Button>
               </div>
             </div>
@@ -177,7 +177,7 @@ export const SearchPage: React.FC = () => {
         onClick={() => handleServicePress(service)}
         className="h-full"
       >
-        <div className="aspect-square bg-gray-200 rounded-lg mb-3 overflow-hidden">
+        <div className="aspect-square bg-bg-hover rounded-lg mb-3 overflow-hidden">
           <img
             src={service.images?.[0] || '/api/placeholder/200/200'}
             alt={service.name}
@@ -186,21 +186,21 @@ export const SearchPage: React.FC = () => {
         </div>
         <div className="space-y-2">
           <div>
-            <h3 className="font-semibold text-primary text-sm">{service.name}</h3>
-            <p className="text-xs text-secondary">{service.specialist.name}</p>
+            <h3 className="font-semibold text-text-primary text-sm">{service.name}</h3>
+            <p className="text-xs text-text-secondary">{service.specialist.name}</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
-              <Star size={10} className="text-yellow-400 fill-current" />
+              <Star size={10} className="text-accent-yellow fill-current" />
               <span className="text-xs font-medium">{service.specialist.rating}</span>
             </div>
             <div className="flex items-center gap-1">
-              <Clock size={10} className="text-secondary" />
-              <span className="text-xs text-secondary">{service.duration}min</span>
+              <Clock size={10} className="text-text-secondary" />
+              <span className="text-xs text-text-secondary">{service.duration}min</span>
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-accent">${service.price}</span>
+            <span className="text-sm font-bold text-accent-primary">${service.price}</span>
             <Button size="sm" className="text-xs px-2 py-1">Book</Button>
           </div>
         </div>
@@ -209,7 +209,7 @@ export const SearchPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-primary">
+    <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header
         title="Search Services"
         showBackButton
@@ -218,17 +218,17 @@ export const SearchPage: React.FC = () => {
             onClick={() => setShowFilters(true)}
             className="p-2 touch-manipulation relative"
           >
-            <SlidersHorizontal size={20} className="text-secondary" />
+            <SlidersHorizontal size={20} className="text-text-secondary" />
             {Object.keys(filters).length > 0 && (
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent-primary rounded-full" />
             )}
           </button>
         }
       />
 
-      <div className="flex-1 overflow-y-auto pb-20">
+      <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {/* Search Bar */}
-        <div className="px-4 py-3 bg-header sticky top-0 z-10">
+        <div className="px-4 py-3 bg-bg-secondary sticky top-0 z-10">
           <div className="flex gap-2 items-center">
             <div className="flex-1">
               <Input
@@ -243,9 +243,9 @@ export const SearchPage: React.FC = () => {
               className="p-2 touch-manipulation"
             >
               {viewMode === 'grid' ? (
-                <List size={20} className="text-secondary" />
+                <List size={20} className="text-text-secondary" />
               ) : (
-                <Grid3X3 size={20} className="text-secondary" />
+                <Grid3X3 size={20} className="text-text-secondary" />
               )}
             </button>
           </div>
@@ -258,7 +258,7 @@ export const SearchPage: React.FC = () => {
               {Object.entries(filters).map(([key, value]) => (
                 <span
                   key={key}
-                  className="inline-flex items-center gap-1 px-2 py-1 bg-accent text-white rounded-full text-xs"
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-accent-primary text-white rounded-full text-xs"
                 >
                   {key}: {String(value)}
                   <button
@@ -274,7 +274,7 @@ export const SearchPage: React.FC = () => {
               ))}
               <button
                 onClick={handleClearFilters}
-                className="text-xs text-accent underline"
+                className="text-xs text-accent-primary underline"
               >
                 Clear all
               </button>
@@ -290,15 +290,15 @@ export const SearchPage: React.FC = () => {
             </div>
           ) : services.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-secondary mb-2">No services found</p>
-              <p className="text-sm text-secondary">
+              <p className="text-text-secondary mb-2">No services found</p>
+              <p className="text-sm text-text-secondary">
                 Try adjusting your search or filters
               </p>
             </div>
           ) : (
             <>
               <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-secondary">
+                <p className="text-sm text-text-secondary">
                   {pagination.total} services found
                 </p>
               </div>
@@ -338,8 +338,8 @@ export const SearchPage: React.FC = () => {
                   onClick={() => handleCategorySelect(category.name)}
                   className={`p-3 rounded-lg border text-left ${
                     localFilters.category === category.name
-                      ? 'border-accent bg-accent bg-opacity-10'
-                      : 'border-gray-200'
+                      ? 'border-accent-primary bg-accent-primary/10'
+                      : 'border-white/5'
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -394,8 +394,8 @@ export const SearchPage: React.FC = () => {
                   }
                   className={`w-full p-3 rounded-lg border text-left ${
                     localFilters.sort === option.value
-                      ? 'border-accent bg-accent bg-opacity-10'
-                      : 'border-gray-200'
+                      ? 'border-accent-primary bg-accent-primary/10'
+                      : 'border-white/5'
                   }`}
                 >
                   {option.label}
@@ -416,11 +416,11 @@ export const SearchPage: React.FC = () => {
                   }
                   className={`flex items-center gap-1 px-3 py-2 rounded-lg border ${
                     localFilters.rating === rating.toString()
-                      ? 'border-accent bg-accent bg-opacity-10'
-                      : 'border-gray-200'
+                      ? 'border-accent-primary bg-accent-primary/10'
+                      : 'border-white/5'
                   }`}
                 >
-                  <Star size={14} className="text-yellow-400 fill-current" />
+                  <Star size={14} className="text-accent-yellow fill-current" />
                   <span className="text-sm">{rating}+</span>
                 </button>
               ))}

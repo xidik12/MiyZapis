@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { 
+import {
   Calendar,
-  Clock, 
-  MapPin, 
-  Star, 
+  Clock,
+  MapPin,
+  Star,
   ChevronRight,
   Check,
   User,
@@ -58,13 +58,13 @@ const mockAvailableSlots = [
 export const BookingFlow: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { 
-    user, 
-    mainButton, 
-    backButton, 
+  const {
+    user,
+    mainButton,
+    backButton,
     hapticFeedback,
     showAlert,
-    showConfirm 
+    showConfirm
   } = useTelegram();
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -86,7 +86,7 @@ export const BookingFlow: React.FC = () => {
   useEffect(() => {
     backButton.show();
     backButton.onClick(handleBack);
-    
+
     return () => {
       backButton.hide();
       backButton.offClick(handleBack);
@@ -110,14 +110,14 @@ export const BookingFlow: React.FC = () => {
 
   const updateMainButton = () => {
     const step = bookingSteps[currentStep];
-    
+
     switch (step.id) {
       case 'service':
         mainButton.setText('Continue');
         mainButton.show();
         mainButton.onClick(handleServiceNext);
         break;
-        
+
       case 'datetime':
         if (selectedDate && selectedTime) {
           mainButton.setText('Continue');
@@ -127,7 +127,7 @@ export const BookingFlow: React.FC = () => {
           mainButton.hide();
         }
         break;
-        
+
       case 'details':
         if (bookingDetails.firstName && bookingDetails.phone) {
           mainButton.setText('Continue');
@@ -137,7 +137,7 @@ export const BookingFlow: React.FC = () => {
           mainButton.hide();
         }
         break;
-        
+
       case 'payment':
         mainButton.setText('Book & Pay');
         mainButton.show();
@@ -165,15 +165,15 @@ export const BookingFlow: React.FC = () => {
     const confirmed = await showConfirm(
       `Confirm booking for ${selectedDate} at ${selectedTime}?`
     );
-    
+
     if (confirmed) {
       setIsLoading(true);
       mainButton.showProgress();
-      
+
       try {
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 2000));
-        
+
         await showAlert('Booking confirmed! You will receive a confirmation message.');
         hapticFeedback.notificationSuccess();
         navigate('/bookings');
@@ -202,15 +202,15 @@ export const BookingFlow: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric'
     });
   };
 
   const renderStepIndicator = () => (
-    <div className="px-4 py-3 bg-header">
+    <div className="px-4 py-3 bg-bg-card border-b border-white/5">
       <div className="flex items-center justify-between">
         {bookingSteps.map((step, index) => (
           <div
@@ -220,16 +220,16 @@ export const BookingFlow: React.FC = () => {
             <div
               className={`
                 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
-                ${index < currentStep ? 'bg-accent text-white' : 
-                  index === currentStep ? 'bg-accent text-white' : 'bg-gray-200 text-gray-500'}
+                ${index < currentStep ? 'bg-accent-primary text-white' :
+                  index === currentStep ? 'bg-accent-primary text-white' : 'bg-bg-hover text-text-muted'}
               `}
             >
               {index < currentStep ? <Check size={16} /> : index + 1}
             </div>
             {index < bookingSteps.length - 1 && (
-              <div 
+              <div
                 className={`h-0.5 flex-1 mx-2 ${
-                  index < currentStep ? 'bg-accent' : 'bg-gray-200'
+                  index < currentStep ? 'bg-accent-primary' : 'bg-bg-hover'
                 }`}
               />
             )}
@@ -237,7 +237,7 @@ export const BookingFlow: React.FC = () => {
         ))}
       </div>
       <div className="mt-2">
-        <p className="text-sm font-medium text-primary">
+        <p className="text-sm font-medium text-text-primary">
           {bookingSteps[currentStep].title}
         </p>
       </div>
@@ -246,37 +246,37 @@ export const BookingFlow: React.FC = () => {
 
   const renderServiceStep = () => (
     <div className="p-4 space-y-4">
-      <Card>
+      <div className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
         <div className="flex gap-4">
-          <div className="w-20 h-20 rounded-lg bg-gray-200 flex-shrink-0">
+          <div className="w-20 h-20 rounded-lg bg-bg-hover flex-shrink-0">
             <img
               src="/api/placeholder/80/80"
               alt={mockService.name}
               className="w-full h-full object-cover rounded-lg"
             />
           </div>
-          
+
           <div className="flex-1">
-            <h3 className="font-semibold text-primary mb-1">
+            <h3 className="font-semibold text-text-primary mb-1">
               {mockService.name}
             </h3>
-            <p className="text-sm text-secondary mb-2">
+            <p className="text-sm text-text-secondary mb-2">
               {mockService.description}
             </p>
             <div className="flex items-center gap-3 text-sm">
               <div className="flex items-center gap-1">
-                <Clock size={14} className="text-secondary" />
-                <span>{mockService.duration}min</span>
+                <Clock size={14} className="text-text-secondary" />
+                <span className="text-text-secondary">{mockService.duration}min</span>
               </div>
               <div className="flex items-center gap-1">
-                <span className="font-semibold text-accent">${mockService.price}</span>
+                <span className="font-semibold text-accent-primary">${mockService.price}</span>
               </div>
             </div>
           </div>
         </div>
-      </Card>
+      </div>
 
-      <Card>
+      <div className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full overflow-hidden">
             <img
@@ -285,44 +285,44 @@ export const BookingFlow: React.FC = () => {
               className="w-full h-full object-cover"
             />
           </div>
-          
+
           <div className="flex-1">
-            <h4 className="font-semibold text-primary">
+            <h4 className="font-semibold text-text-primary">
               {mockService.specialist.name}
             </h4>
             <div className="flex items-center gap-2 text-sm">
               <div className="flex items-center gap-1">
                 <Star size={12} className="text-yellow-400 fill-current" />
-                <span>{mockService.specialist.rating}</span>
-                <span className="text-secondary">({mockService.specialist.reviews})</span>
+                <span className="text-text-primary">{mockService.specialist.rating}</span>
+                <span className="text-text-secondary">({mockService.specialist.reviews})</span>
               </div>
             </div>
-            <div className="flex items-center gap-1 text-sm text-secondary mt-1">
+            <div className="flex items-center gap-1 text-sm text-text-secondary mt-1">
               <MapPin size={12} />
               <span>{mockService.specialist.location}</span>
             </div>
           </div>
-          
-          <ChevronRight size={18} className="text-secondary" />
+
+          <ChevronRight size={18} className="text-text-secondary" />
         </div>
-      </Card>
+      </div>
     </div>
   );
 
   const renderDateTimeStep = () => (
     <div className="p-4 space-y-4">
       <div>
-        <h3 className="font-semibold text-primary mb-3">Select Date & Time</h3>
-        
+        <h3 className="font-semibold text-text-primary mb-3">Select Date & Time</h3>
+
         <div className="space-y-4">
           {mockAvailableSlots.map((daySlots) => (
-            <Card key={daySlots.date}>
+            <div key={daySlots.date} className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
               <div className="mb-3">
-                <h4 className="font-medium text-primary">
+                <h4 className="font-medium text-text-primary">
                   {formatDate(daySlots.date)}
                 </h4>
               </div>
-              
+
               <div className="grid grid-cols-3 gap-2">
                 {daySlots.slots.map((time) => (
                   <button
@@ -331,8 +331,8 @@ export const BookingFlow: React.FC = () => {
                     className={`
                       py-2 px-3 rounded-lg text-sm font-medium transition-colors touch-manipulation
                       ${selectedDate === daySlots.date && selectedTime === time
-                        ? 'bg-accent text-white'
-                        : 'bg-secondary text-primary hover:bg-accent hover:text-white'
+                        ? 'bg-accent-primary text-white'
+                        : 'bg-bg-secondary text-text-primary hover:bg-accent-primary hover:text-white'
                       }
                     `}
                   >
@@ -340,25 +340,25 @@ export const BookingFlow: React.FC = () => {
                   </button>
                 ))}
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       </div>
 
       {selectedDate && selectedTime && (
-        <Card className="bg-green-50 border-green-200">
+        <div className="bg-accent-green/15 rounded-2xl p-4 shadow-card border border-white/5">
           <div className="flex items-center gap-2">
-            <Calendar size={18} className="text-green-600" />
+            <Calendar size={18} className="text-accent-green" />
             <div>
-              <p className="font-medium text-green-800">
+              <p className="font-medium text-accent-green">
                 {formatDate(selectedDate)} at {selectedTime}
               </p>
-              <p className="text-sm text-green-600">
+              <p className="text-sm text-accent-green/80">
                 Duration: {mockService.duration} minutes
               </p>
             </div>
           </div>
-        </Card>
+        </div>
       )}
     </div>
   );
@@ -366,8 +366,8 @@ export const BookingFlow: React.FC = () => {
   const renderDetailsStep = () => (
     <div className="p-4 space-y-4">
       <div>
-        <h3 className="font-semibold text-primary mb-3">Contact Information</h3>
-        
+        <h3 className="font-semibold text-text-primary mb-3">Contact Information</h3>
+
         <div className="space-y-4">
           <Input
             label="First Name *"
@@ -377,7 +377,7 @@ export const BookingFlow: React.FC = () => {
             placeholder="Enter your first name"
             required
           />
-          
+
           <Input
             label="Last Name"
             value={bookingDetails.lastName}
@@ -385,7 +385,7 @@ export const BookingFlow: React.FC = () => {
             icon={<User size={18} />}
             placeholder="Enter your last name"
           />
-          
+
           <Input
             label="Phone Number *"
             type="tel"
@@ -395,7 +395,7 @@ export const BookingFlow: React.FC = () => {
             placeholder="Enter your phone number"
             required
           />
-          
+
           <Input
             label="Email"
             type="email"
@@ -404,9 +404,9 @@ export const BookingFlow: React.FC = () => {
             icon={<Mail size={18} />}
             placeholder="Enter your email"
           />
-          
+
           <div>
-            <label className="block text-sm font-medium text-primary mb-2">
+            <label className="block text-sm font-medium text-text-primary mb-2">
               Special Notes
             </label>
             <textarea
@@ -414,7 +414,7 @@ export const BookingFlow: React.FC = () => {
               onChange={(e) => handleInputChange('notes', e.target.value)}
               placeholder="Any special requests or notes..."
               rows={3}
-              className="input-telegram resize-none"
+              className="w-full bg-bg-secondary border border-white/5 rounded-xl px-4 py-3 text-text-primary placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-accent-primary resize-none"
             />
           </div>
         </div>
@@ -424,62 +424,62 @@ export const BookingFlow: React.FC = () => {
 
   const renderPaymentStep = () => (
     <div className="p-4 space-y-4">
-      <Card>
-        <h3 className="font-semibold text-primary mb-3">Booking Summary</h3>
-        
+      <div className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
+        <h3 className="font-semibold text-text-primary mb-3">Booking Summary</h3>
+
         <div className="space-y-3">
           <div className="flex justify-between">
-            <span className="text-secondary">Service:</span>
-            <span className="font-medium text-primary">{mockService.name}</span>
+            <span className="text-text-secondary">Service:</span>
+            <span className="font-medium text-text-primary">{mockService.name}</span>
           </div>
-          
+
           <div className="flex justify-between">
-            <span className="text-secondary">Specialist:</span>
-            <span className="font-medium text-primary">{mockService.specialist.name}</span>
+            <span className="text-text-secondary">Specialist:</span>
+            <span className="font-medium text-text-primary">{mockService.specialist.name}</span>
           </div>
-          
+
           <div className="flex justify-between">
-            <span className="text-secondary">Date & Time:</span>
-            <span className="font-medium text-primary">
+            <span className="text-text-secondary">Date & Time:</span>
+            <span className="font-medium text-text-primary">
               {selectedDate && formatDate(selectedDate)} at {selectedTime}
             </span>
           </div>
-          
+
           <div className="flex justify-between">
-            <span className="text-secondary">Duration:</span>
-            <span className="font-medium text-primary">{mockService.duration} min</span>
+            <span className="text-text-secondary">Duration:</span>
+            <span className="font-medium text-text-primary">{mockService.duration} min</span>
           </div>
-          
-          <div className="border-t pt-3 mt-3">
+
+          <div className="border-t border-white/5 pt-3 mt-3">
             <div className="flex justify-between text-lg font-semibold">
-              <span className="text-primary">Total:</span>
-              <span className="text-accent">${mockService.price}</span>
+              <span className="text-text-primary">Total:</span>
+              <span className="text-accent-primary">${mockService.price}</span>
             </div>
           </div>
         </div>
-      </Card>
+      </div>
 
-      <Card>
-        <h4 className="font-medium text-primary mb-3">Payment Method</h4>
+      <div className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
+        <h4 className="font-medium text-text-primary mb-3">Payment Method</h4>
         <div className="space-y-2">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-accent-primary/10 border border-accent-primary">
+            <div className="w-8 h-8 rounded-full bg-accent-primary flex items-center justify-center">
               <span className="text-white text-sm font-bold">T</span>
             </div>
             <div className="flex-1">
-              <p className="font-medium text-blue-800">Telegram Payments</p>
-              <p className="text-sm text-blue-600">Secure payment via Telegram</p>
+              <p className="font-medium text-text-primary">Telegram Payments</p>
+              <p className="text-sm text-accent-primary">Secure payment via Telegram</p>
             </div>
-            <div className="w-4 h-4 rounded-full bg-blue-600" />
+            <div className="w-4 h-4 rounded-full bg-accent-primary" />
           </div>
         </div>
-      </Card>
+      </div>
 
       {bookingDetails.notes && (
-        <Card>
-          <h4 className="font-medium text-primary mb-2">Special Notes</h4>
-          <p className="text-secondary">{bookingDetails.notes}</p>
-        </Card>
+        <div className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
+          <h4 className="font-medium text-text-primary mb-2">Special Notes</h4>
+          <p className="text-text-secondary">{bookingDetails.notes}</p>
+        </div>
       )}
     </div>
   );
@@ -501,12 +501,12 @@ export const BookingFlow: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col min-h-screen bg-primary">
+      <div className="flex flex-col min-h-screen bg-bg-primary">
         <Header title="Processing..." />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <LoadingSpinner size="lg" className="mb-4 mx-auto" />
-            <p className="text-secondary">Processing your booking...</p>
+            <p className="text-text-secondary">Processing your booking...</p>
           </div>
         </div>
       </div>
@@ -514,12 +514,12 @@ export const BookingFlow: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-primary">
+    <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header title="Book Appointment" />
-      
+
       {renderStepIndicator()}
-      
-      <div className="flex-1 overflow-y-auto pb-20">
+
+      <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {renderCurrentStep()}
       </div>
     </div>

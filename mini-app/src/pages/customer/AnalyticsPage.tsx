@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAppSelector } from '@/hooks/redux';
-import { Card } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTelegramWebApp } from '@/hooks/useTelegramWebApp';
 
@@ -53,7 +52,7 @@ export const AnalyticsPage: React.FC = () => {
           { name: 'Education', bookings: 2, spent: 1400 }
         ]
       };
-      
+
       setAnalytics(mockAnalytics);
     } catch (error) {
       console.error('Failed to fetch analytics:', error);
@@ -65,7 +64,7 @@ export const AnalyticsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center h-64">
         <LoadingSpinner />
       </div>
     );
@@ -73,107 +72,109 @@ export const AnalyticsPage: React.FC = () => {
 
   if (!analytics) {
     return (
-      <div className="text-center text-secondary p-8">
+      <div className="min-h-screen bg-bg-primary text-center text-text-secondary p-8">
         <p>No analytics data available</p>
       </div>
     );
   }
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-primary">Your Analytics</h1>
-        <p className="text-secondary">Track your booking activity and spending</p>
-      </div>
+    <div className="min-h-screen bg-bg-primary pb-20">
+      <div className="p-4 space-y-4 page-stagger">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-text-primary">Your Analytics</h1>
+          <p className="text-text-secondary">Track your booking activity and spending</p>
+        </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="p-4 text-center">
-          <div className="text-2xl font-bold text-primary">{analytics.totalBookings}</div>
-          <div className="text-sm text-secondary">Total Bookings</div>
-        </Card>
-        
-        <Card className="p-4 text-center">
-          <div className="text-2xl font-bold text-primary">${analytics.totalSpent}</div>
-          <div className="text-sm text-secondary">Total Spent</div>
-        </Card>
-        
-        <Card className="p-4 text-center">
-          <div className="text-2xl font-bold text-primary">{analytics.averageRating}</div>
-          <div className="text-sm text-secondary">Avg Rating Given</div>
-        </Card>
-        
-        <Card className="p-4 text-center">
-          <div className="text-2xl font-bold text-primary">{analytics.completionRate}%</div>
-          <div className="text-sm text-secondary">Completion Rate</div>
-        </Card>
-      </div>
+        {/* Key Metrics */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-bg-card rounded-2xl border border-white/5 shadow-card p-4 text-center">
+            <div className="text-2xl font-bold text-accent-primary">{analytics.totalBookings}</div>
+            <div className="text-sm text-text-secondary">Total Bookings</div>
+          </div>
 
-      {/* Monthly Spending Chart */}
-      <Card className="p-4">
-        <h3 className="font-semibold mb-4">Monthly Spending</h3>
-        <div className="space-y-2">
-          {analytics.monthlyStats.labels.map((month, index) => {
-            const spending = analytics.monthlyStats.spending[index];
-            const maxSpending = Math.max(...analytics.monthlyStats.spending);
-            const percentage = (spending / maxSpending) * 100;
-            
-            return (
-              <div key={month} className="flex items-center space-x-3">
-                <div className="w-8 text-xs text-secondary">{month}</div>
-                <div className="flex-1 bg-bg-secondary rounded h-3 relative">
-                  <div 
-                    className="bg-accent rounded h-3 transition-all duration-500"
-                    style={{ width: `${percentage}%` }}
-                  />
+          <div className="bg-bg-card rounded-2xl border border-white/5 shadow-card p-4 text-center">
+            <div className="text-2xl font-bold text-accent-primary">${analytics.totalSpent}</div>
+            <div className="text-sm text-text-secondary">Total Spent</div>
+          </div>
+
+          <div className="bg-bg-card rounded-2xl border border-white/5 shadow-card p-4 text-center">
+            <div className="text-2xl font-bold text-accent-primary">{analytics.averageRating}</div>
+            <div className="text-sm text-text-secondary">Avg Rating Given</div>
+          </div>
+
+          <div className="bg-bg-card rounded-2xl border border-white/5 shadow-card p-4 text-center">
+            <div className="text-2xl font-bold text-accent-primary">{analytics.completionRate}%</div>
+            <div className="text-sm text-text-secondary">Completion Rate</div>
+          </div>
+        </div>
+
+        {/* Monthly Spending Chart */}
+        <div className="bg-bg-card rounded-2xl border border-white/5 shadow-card p-4">
+          <h3 className="font-semibold text-text-primary mb-4">Monthly Spending</h3>
+          <div className="space-y-2">
+            {analytics.monthlyStats.labels.map((month, index) => {
+              const spending = analytics.monthlyStats.spending[index];
+              const maxSpending = Math.max(...analytics.monthlyStats.spending);
+              const percentage = (spending / maxSpending) * 100;
+
+              return (
+                <div key={month} className="flex items-center space-x-3">
+                  <div className="w-8 text-xs text-text-muted">{month}</div>
+                  <div className="flex-1 bg-bg-secondary rounded h-3 relative">
+                    <div
+                      className="bg-accent-primary rounded h-3 transition-all duration-500"
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                  <div className="text-xs font-medium text-text-secondary w-12 text-right">${spending}</div>
                 </div>
-                <div className="text-xs font-medium w-12 text-right">${spending}</div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </Card>
 
-      {/* Service Categories */}
-      <Card className="p-4">
-        <h3 className="font-semibold mb-4">Spending by Category</h3>
-        <div className="space-y-3">
-          {analytics.serviceCategories.map((category) => (
-            <div key={category.name} className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">{category.name}</div>
-                <div className="text-xs text-secondary">{category.bookings} bookings</div>
-              </div>
-              <div className="font-semibold">${category.spent}</div>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      {/* Monthly Bookings Chart */}
-      <Card className="p-4">
-        <h3 className="font-semibold mb-4">Monthly Bookings</h3>
-        <div className="space-y-2">
-          {analytics.monthlyStats.labels.map((month, index) => {
-            const bookings = analytics.monthlyStats.bookings[index];
-            const maxBookings = Math.max(...analytics.monthlyStats.bookings);
-            const percentage = maxBookings > 0 ? (bookings / maxBookings) * 100 : 0;
-            
-            return (
-              <div key={`bookings-${month}`} className="flex items-center space-x-3">
-                <div className="w-8 text-xs text-secondary">{month}</div>
-                <div className="flex-1 bg-bg-secondary rounded h-3 relative">
-                  <div 
-                    className="bg-primary rounded h-3 transition-all duration-500"
-                    style={{ width: `${percentage}%` }}
-                  />
+        {/* Service Categories */}
+        <div className="bg-bg-card rounded-2xl border border-white/5 shadow-card p-4">
+          <h3 className="font-semibold text-text-primary mb-4">Spending by Category</h3>
+          <div className="space-y-3 divide-y divide-white/5">
+            {analytics.serviceCategories.map((category) => (
+              <div key={category.name} className="flex items-center justify-between pt-3 first:pt-0">
+                <div>
+                  <div className="font-medium text-text-primary">{category.name}</div>
+                  <div className="text-xs text-text-muted">{category.bookings} bookings</div>
                 </div>
-                <div className="text-xs font-medium w-12 text-right">{bookings}</div>
+                <div className="font-semibold text-text-primary">${category.spent}</div>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
-      </Card>
+
+        {/* Monthly Bookings Chart */}
+        <div className="bg-bg-card rounded-2xl border border-white/5 shadow-card p-4">
+          <h3 className="font-semibold text-text-primary mb-4">Monthly Bookings</h3>
+          <div className="space-y-2">
+            {analytics.monthlyStats.labels.map((month, index) => {
+              const bookings = analytics.monthlyStats.bookings[index];
+              const maxBookings = Math.max(...analytics.monthlyStats.bookings);
+              const percentage = maxBookings > 0 ? (bookings / maxBookings) * 100 : 0;
+
+              return (
+                <div key={`bookings-${month}`} className="flex items-center space-x-3">
+                  <div className="w-8 text-xs text-text-muted">{month}</div>
+                  <div className="flex-1 bg-bg-secondary rounded h-3 relative">
+                    <div
+                      className="bg-accent-primary rounded h-3 transition-all duration-500"
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                  <div className="text-xs font-medium text-text-secondary w-12 text-right">{bookings}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

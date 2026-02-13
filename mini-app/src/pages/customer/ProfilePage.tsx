@@ -109,7 +109,7 @@ export const ProfilePage: React.FC = () => {
       booking => booking.status === 'completed' && booking.review
     );
     if (completedWithReviews.length === 0) return 0;
-    
+
     const totalRating = completedWithReviews.reduce(
       (sum, booking) => sum + (booking.review?.rating || 0), 0
     );
@@ -125,12 +125,12 @@ export const ProfilePage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-primary">
+    <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header title="Profile" />
 
-      <div className="flex-1 overflow-y-auto pb-20">
+      <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {/* Profile Header */}
-        <div className="px-4 py-6 bg-gradient-to-b from-accent to-accent-dark text-white">
+        <div className="px-4 py-6 bg-gradient-to-b from-accent-primary to-accent-primary/80 text-white">
           <div className="flex items-center gap-4">
             <div className="relative">
               <div className="w-20 h-20 rounded-full overflow-hidden bg-white bg-opacity-20">
@@ -144,7 +144,7 @@ export const ProfilePage: React.FC = () => {
                 onClick={handleAvatarUpload}
                 className="absolute bottom-0 right-0 w-6 h-6 bg-white bg-opacity-90 rounded-full flex items-center justify-center"
               >
-                <Camera size={12} className="text-accent" />
+                <Camera size={12} className="text-accent-primary" />
               </button>
             </div>
             <div className="flex-1">
@@ -183,64 +183,64 @@ export const ProfilePage: React.FC = () => {
 
         {/* Quick Actions */}
         <div className="px-4 py-4">
-          <h2 className="text-lg font-semibold text-primary mb-3">Quick Actions</h2>
+          <h2 className="text-lg font-semibold text-text-primary mb-3">Quick Actions</h2>
           <div className="grid grid-cols-2 gap-3">
             <Card hover onClick={() => navigate('/bookings')}>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Calendar size={20} className="text-blue-600" />
+                <div className="w-10 h-10 bg-accent-primary/10 rounded-lg flex items-center justify-center">
+                  <Calendar size={20} className="text-accent-primary" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-primary">My Bookings</h3>
-                  <p className="text-xs text-secondary">{bookings.length} total</p>
+                  <h3 className="font-medium text-text-primary">My Bookings</h3>
+                  <p className="text-xs text-text-secondary">{bookings.length} total</p>
                 </div>
               </div>
             </Card>
 
             <Card hover onClick={() => navigate('/wallet')}>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Wallet size={20} className="text-green-600" />
+                <div className="w-10 h-10 bg-accent-green/15 rounded-lg flex items-center justify-center">
+                  <Wallet size={20} className="text-accent-green" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-primary">Wallet</h3>
-                  <p className="text-xs text-secondary">Balance & payments</p>
+                  <h3 className="font-medium text-text-primary">Wallet</h3>
+                  <p className="text-xs text-text-secondary">Balance & payments</p>
                 </div>
               </div>
             </Card>
 
             <Card hover onClick={() => navigate('/favorites')}>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <Heart size={20} className="text-red-600" />
+                <div className="w-10 h-10 bg-accent-red/15 rounded-lg flex items-center justify-center">
+                  <Heart size={20} className="text-accent-red" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-primary">Favorites</h3>
-                  <p className="text-xs text-secondary">Saved services</p>
+                  <h3 className="font-medium text-text-primary">Favorites</h3>
+                  <p className="text-xs text-text-secondary">Saved services</p>
                 </div>
               </div>
             </Card>
 
             <Card hover onClick={() => navigate('/loyalty')}>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Award size={20} className="text-purple-600" />
+                <div className="w-10 h-10 bg-accent-purple/15 rounded-lg flex items-center justify-center">
+                  <Award size={20} className="text-accent-purple" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-primary">Rewards</h3>
-                  <p className="text-xs text-secondary">Loyalty points</p>
+                  <h3 className="font-medium text-text-primary">Rewards</h3>
+                  <p className="text-xs text-text-secondary">Loyalty points</p>
                 </div>
               </div>
             </Card>
 
             <Card hover onClick={() => navigate('/reviews')}>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                  <Star size={20} className="text-yellow-600" />
+                <div className="w-10 h-10 bg-accent-yellow/15 rounded-lg flex items-center justify-center">
+                  <Star size={20} className="text-accent-yellow" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-primary">Reviews</h3>
-                  <p className="text-xs text-secondary">My reviews</p>
+                  <h3 className="font-medium text-text-primary">Reviews</h3>
+                  <p className="text-xs text-text-secondary">My reviews</p>
                 </div>
               </div>
             </Card>
@@ -251,8 +251,8 @@ export const ProfilePage: React.FC = () => {
                   <Users size={20} className="text-indigo-600" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-primary">Community</h3>
-                  <p className="text-xs text-secondary">Posts & tips</p>
+                  <h3 className="font-medium text-text-primary">Community</h3>
+                  <p className="text-xs text-text-secondary">Posts & tips</p>
                 </div>
               </div>
             </Card>
@@ -262,10 +262,10 @@ export const ProfilePage: React.FC = () => {
         {/* Recent Bookings */}
         <div className="px-4 py-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-primary">Recent Bookings</h2>
+            <h2 className="text-lg font-semibold text-text-primary">Recent Bookings</h2>
             <button
               onClick={() => navigate('/bookings')}
-              className="text-accent text-sm"
+              className="text-accent-primary text-sm"
             >
               View All
             </button>
@@ -274,8 +274,8 @@ export const ProfilePage: React.FC = () => {
           {bookings.length === 0 ? (
             <Card>
               <div className="text-center py-6">
-                <Calendar size={32} className="text-secondary mx-auto mb-2" />
-                <p className="text-secondary">No bookings yet</p>
+                <Calendar size={32} className="text-text-secondary mx-auto mb-2" />
+                <p className="text-text-secondary">No bookings yet</p>
                 <Button
                   size="sm"
                   onClick={() => navigate('/search')}
@@ -290,7 +290,7 @@ export const ProfilePage: React.FC = () => {
               {bookings.slice(0, 3).map((booking) => (
                 <Card key={booking.id} hover>
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-200">
+                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-bg-hover">
                       <img
                         src={booking.specialist.avatar || '/api/placeholder/48/48'}
                         alt={booking.specialist.name}
@@ -298,9 +298,9 @@ export const ProfilePage: React.FC = () => {
                       />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-medium text-primary">{booking.service.name}</h3>
-                      <p className="text-sm text-secondary">{booking.specialist.name}</p>
-                      <p className="text-xs text-secondary">
+                      <h3 className="font-medium text-text-primary">{booking.service.name}</h3>
+                      <p className="text-sm text-text-secondary">{booking.specialist.name}</p>
+                      <p className="text-xs text-text-secondary">
                         {new Date(booking.startTime).toLocaleDateString()}
                       </p>
                     </div>
@@ -308,12 +308,12 @@ export const ProfilePage: React.FC = () => {
                       <span
                         className={`px-2 py-1 rounded-full text-xs ${
                           booking.status === 'completed'
-                            ? 'bg-green-100 text-green-800'
+                            ? 'bg-accent-green/15 text-accent-green'
                             : booking.status === 'confirmed'
-                            ? 'bg-blue-100 text-blue-800'
+                            ? 'bg-accent-primary/10 text-accent-primary'
                             : booking.status === 'pending'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-red-100 text-red-800'
+                            ? 'bg-accent-yellow/15 text-accent-yellow'
+                            : 'bg-accent-red/15 text-accent-red'
                         }`}
                       >
                         {booking.status}
@@ -328,32 +328,32 @@ export const ProfilePage: React.FC = () => {
 
         {/* Settings */}
         <div className="px-4 py-4">
-          <h2 className="text-lg font-semibold text-primary mb-3">Settings</h2>
+          <h2 className="text-lg font-semibold text-text-primary mb-3">Settings</h2>
           <div className="space-y-1">
             <Card hover onClick={() => { hapticFeedback.impactLight(); navigate('/settings'); }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Settings size={20} className="text-secondary" />
-                  <span className="text-primary">Settings & Preferences</span>
+                  <Settings size={20} className="text-text-secondary" />
+                  <span className="text-text-primary">Settings & Preferences</span>
                 </div>
-                <ChevronRight size={18} className="text-secondary" />
+                <ChevronRight size={18} className="text-text-secondary" />
               </div>
             </Card>
 
             <Card hover onClick={() => { hapticFeedback.impactLight(); navigate('/analytics'); }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <MapPin size={20} className="text-secondary" />
-                  <span className="text-primary">Analytics</span>
+                  <MapPin size={20} className="text-text-secondary" />
+                  <span className="text-text-primary">Analytics</span>
                 </div>
-                <ChevronRight size={18} className="text-secondary" />
+                <ChevronRight size={18} className="text-text-secondary" />
               </div>
             </Card>
 
             <Card hover onClick={handleLogout}>
               <div className="flex items-center gap-3">
-                <LogOut size={20} className="text-red-500" />
-                <span className="text-red-500">Sign Out</span>
+                <LogOut size={20} className="text-accent-red" />
+                <span className="text-accent-red">Sign Out</span>
               </div>
             </Card>
           </div>

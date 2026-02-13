@@ -50,7 +50,7 @@ export const SpecialistProfilePage: React.FC = () => {
   };
 
   const language = getLanguage();
-  
+
   const t = (key: string) => {
     const translations: Record<string, Record<string, string>> = {
       'portfolio.noItems': {
@@ -82,7 +82,7 @@ export const SpecialistProfilePage: React.FC = () => {
 
   if (!selectedSpecialist) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-bg-primary">
         <LoadingSpinner />
       </div>
     );
@@ -90,7 +90,7 @@ export const SpecialistProfilePage: React.FC = () => {
 
   const handleContact = (method: 'phone' | 'email' | 'message') => {
     hapticFeedback.impactLight();
-    
+
     switch (method) {
       case 'phone':
         if (selectedSpecialist.phone) {
@@ -148,8 +148,8 @@ export const SpecialistProfilePage: React.FC = () => {
       onClick={() => setActiveTab(tab)}
       className={`flex-1 flex items-center justify-center gap-1 py-3 px-2 border-b-2 transition-colors ${
         activeTab === tab
-          ? 'border-accent text-accent'
-          : 'border-transparent text-secondary'
+          ? 'border-accent-primary text-accent-primary'
+          : 'border-transparent text-text-secondary'
       }`}
     >
       {icon}
@@ -158,7 +158,7 @@ export const SpecialistProfilePage: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-primary">
+    <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header
         showBackButton
         rightContent={
@@ -170,7 +170,7 @@ export const SpecialistProfilePage: React.FC = () => {
               <Heart
                 size={20}
                 className={`${
-                  isFavorite ? 'text-red-500 fill-current' : 'text-secondary'
+                  isFavorite ? 'text-accent-red fill-current' : 'text-text-secondary'
                 }`}
               />
             </button>
@@ -178,15 +178,15 @@ export const SpecialistProfilePage: React.FC = () => {
               onClick={handleShare}
               className="p-2 touch-manipulation"
             >
-              <Share size={20} className="text-secondary" />
+              <Share size={20} className="text-text-secondary" />
             </button>
           </div>
         }
       />
 
-      <div className="flex-1 overflow-y-auto pb-20">
+      <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {/* Profile Header */}
-        <div className="px-4 py-6 bg-gradient-to-b from-accent to-accent-dark text-white">
+        <div className="px-4 py-6 bg-gradient-to-b from-accent-primary to-accent-primary/80 text-white">
           <div className="flex items-center gap-4">
             <div className="w-20 h-20 rounded-full overflow-hidden bg-white bg-opacity-20">
               <img
@@ -242,7 +242,7 @@ export const SpecialistProfilePage: React.FC = () => {
         </div>
 
         {/* Contact Actions */}
-        <div className="px-4 py-4 bg-header">
+        <div className="px-4 py-4 bg-bg-secondary">
           <div className="grid grid-cols-3 gap-3">
             <Button
               variant="secondary"
@@ -272,7 +272,7 @@ export const SpecialistProfilePage: React.FC = () => {
         </div>
 
         {/* Tabs */}
-        <div className="bg-header border-b border-gray-200 sticky top-0 z-10">
+        <div className="bg-bg-secondary border-b border-white/5 sticky top-0 z-10">
           <div className="flex">
             <TabButton
               tab="about"
@@ -304,7 +304,7 @@ export const SpecialistProfilePage: React.FC = () => {
               {/* Bio */}
               <Card>
                 <h3 className="font-semibold mb-2">About</h3>
-                <p className="text-secondary leading-relaxed">
+                <p className="text-text-secondary leading-relaxed">
                   {selectedSpecialist.bio}
                 </p>
               </Card>
@@ -317,7 +317,7 @@ export const SpecialistProfilePage: React.FC = () => {
                     {selectedSpecialist.specialties.map((specialty, index) => (
                       <span
                         key={index}
-                        className="px-3 py-1 bg-accent bg-opacity-10 text-accent rounded-full text-sm"
+                        className="px-3 py-1 bg-accent-primary/10 text-accent-primary rounded-full text-sm"
                       >
                         {specialty}
                       </span>
@@ -333,8 +333,8 @@ export const SpecialistProfilePage: React.FC = () => {
                   <div className="space-y-2">
                     {selectedSpecialist.certifications.map((cert, index) => (
                       <div key={index} className="flex items-center gap-2">
-                        <Award size={16} className="text-accent" />
-                        <span className="text-secondary">{cert}</span>
+                        <Award size={16} className="text-accent-primary" />
+                        <span className="text-text-secondary">{cert}</span>
                       </div>
                     ))}
                   </div>
@@ -345,8 +345,8 @@ export const SpecialistProfilePage: React.FC = () => {
               <Card>
                 <h3 className="font-semibold mb-2">Location</h3>
                 <div className="flex items-start gap-2">
-                  <MapPin size={16} className="text-secondary mt-1" />
-                  <div className="text-secondary">
+                  <MapPin size={16} className="text-text-secondary mt-1" />
+                  <div className="text-text-secondary">
                     <p>{selectedSpecialist.location.address}</p>
                     <p>
                       {selectedSpecialist.location.city}, {selectedSpecialist.location.state}{' '}
@@ -364,10 +364,10 @@ export const SpecialistProfilePage: React.FC = () => {
                 <Card key={service.id} hover>
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-primary mb-1">
+                      <h3 className="font-semibold text-text-primary mb-1">
                         {service.name}
                       </h3>
-                      <div className="flex items-center gap-3 text-sm text-secondary">
+                      <div className="flex items-center gap-3 text-sm text-text-secondary">
                         <div className="flex items-center gap-1">
                           <Clock size={14} />
                           {service.duration}min
@@ -387,7 +387,7 @@ export const SpecialistProfilePage: React.FC = () => {
                   </div>
                 </Card>
               )) || (
-                <p className="text-center text-secondary py-8">
+                <p className="text-center text-text-secondary py-8">
                   No services available
                 </p>
               )}
@@ -405,7 +405,7 @@ export const SpecialistProfilePage: React.FC = () => {
                       onClick={() => setShowPortfolioItem(item)}
                       className="p-0 overflow-hidden"
                     >
-                      <div className="aspect-square bg-gray-200">
+                      <div className="aspect-square bg-bg-hover">
                         <img
                           src={item.image}
                           alt={item.title}
@@ -415,7 +415,7 @@ export const SpecialistProfilePage: React.FC = () => {
                       <div className="p-3">
                         <h4 className="font-medium text-sm">{item.title}</h4>
                         {item.description && (
-                          <p className="text-xs text-secondary mt-1 line-clamp-2">
+                          <p className="text-xs text-text-secondary mt-1 line-clamp-2">
                             {item.description}
                           </p>
                         )}
@@ -424,7 +424,7 @@ export const SpecialistProfilePage: React.FC = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-center text-secondary py-8">
+                <p className="text-center text-text-secondary py-8">
                   {t('portfolio.noItems')}
                 </p>
               )}
@@ -438,13 +438,13 @@ export const SpecialistProfilePage: React.FC = () => {
                   <LoadingSpinner />
                 </div>
               ) : reviews.length === 0 ? (
-                <p className="text-center text-secondary py-8">No reviews yet</p>
+                <p className="text-center text-text-secondary py-8">No reviews yet</p>
               ) : (
                 <div className="space-y-4">
                   {reviews.map((review) => (
                     <Card key={review.id}>
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                        <div className="w-10 h-10 rounded-full bg-bg-hover overflow-hidden">
                           <img
                             src={review.customer.avatar || '/api/placeholder/40/40'}
                             alt={`${review.customer.firstName} ${review.customer.lastName}`}
@@ -463,18 +463,18 @@ export const SpecialistProfilePage: React.FC = () => {
                                   size={12}
                                   className={
                                     i < review.rating
-                                      ? 'text-yellow-400 fill-current'
-                                      : 'text-gray-300'
+                                      ? 'text-accent-yellow fill-current'
+                                      : 'text-text-muted'
                                   }
                                 />
                               ))}
                             </div>
                           </div>
-                          <p className="text-xs text-secondary mb-2">
+                          <p className="text-xs text-text-secondary mb-2">
                             {review.service.name} • {new Date(review.createdAt).toLocaleDateString()}
                           </p>
                           {review.comment && (
-                            <p className="text-secondary leading-relaxed">{review.comment}</p>
+                            <p className="text-text-secondary leading-relaxed">{review.comment}</p>
                           )}
                         </div>
                       </div>
@@ -484,7 +484,7 @@ export const SpecialistProfilePage: React.FC = () => {
                   {reviews.length >= 10 && (
                     <button
                       onClick={() => setShowAllReviews(true)}
-                      className="w-full py-3 text-accent text-center"
+                      className="w-full py-3 text-accent-primary text-center"
                     >
                       View all reviews
                     </button>
@@ -504,7 +504,7 @@ export const SpecialistProfilePage: React.FC = () => {
       >
         {showPortfolioItem && (
           <div>
-            <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden mb-4">
+            <div className="aspect-video bg-bg-hover rounded-lg overflow-hidden mb-4">
               <img
                 src={showPortfolioItem.image}
                 alt={showPortfolioItem.title}
@@ -512,7 +512,7 @@ export const SpecialistProfilePage: React.FC = () => {
               />
             </div>
             {showPortfolioItem.description && (
-              <p className="text-secondary leading-relaxed">
+              <p className="text-text-secondary leading-relaxed">
                 {showPortfolioItem.description}
               </p>
             )}
@@ -521,7 +521,7 @@ export const SpecialistProfilePage: React.FC = () => {
       </Sheet>
 
       {/* Fixed Bottom Action */}
-      <div className="fixed bottom-0 left-0 right-0 bg-header border-t border-gray-200 p-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-bg-secondary border-t border-white/5 p-4">
         <Button
           onClick={() => {
             if (selectedSpecialist.services && selectedSpecialist.services.length > 0) {

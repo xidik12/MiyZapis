@@ -63,7 +63,7 @@ export const MessagingPage: React.FC = () => {
   const fetchConversations = async () => {
     try {
       setLoading(true);
-      
+
       // Mock data - replace with actual API call
       const mockConversations: Conversation[] = [
         {
@@ -128,7 +128,7 @@ export const MessagingPage: React.FC = () => {
           id: '3',
           senderId: '2',
           senderName: 'Dr. Elena Melnik',
-          content: 'That\'s wonderful to hear! Keep up the great work. 💪',
+          content: 'That\'s wonderful to hear! Keep up the great work.',
           timestamp: '2025-08-18T10:30:00Z',
           isRead: true
         }
@@ -146,7 +146,7 @@ export const MessagingPage: React.FC = () => {
 
     try {
       setSending(true);
-      
+
       const message: Message = {
         id: Date.now().toString(),
         senderId: user?.id || '1',
@@ -160,7 +160,7 @@ export const MessagingPage: React.FC = () => {
       setNewMessage('');
 
       // Update conversation last message
-      setConversations(prev => prev.map(conv => 
+      setConversations(prev => prev.map(conv =>
         conv.id === selectedConversation
           ? { ...conv, lastMessage: message.content, lastMessageTime: message.timestamp }
           : conv
@@ -181,7 +181,7 @@ export const MessagingPage: React.FC = () => {
     const date = new Date(timestamp);
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-    
+
     if (diffInHours < 24) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } else {
@@ -200,48 +200,48 @@ export const MessagingPage: React.FC = () => {
   return (
     <div className="flex h-screen bg-bg-primary">
       {/* Conversations List */}
-      <div className="w-full max-w-sm border-r border-border bg-bg-secondary">
-        <div className="p-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-primary">Messages</h2>
+      <div className="w-full max-w-sm border-r border-white/5 bg-bg-secondary">
+        <div className="p-4 border-b border-white/5">
+          <h2 className="text-lg font-semibold text-text-primary">Messages</h2>
         </div>
-        
+
         <div className="overflow-y-auto">
           {conversations.map((conversation) => (
             <div
               key={conversation.id}
               onClick={() => setSelectedConversation(conversation.id)}
-              className={`p-4 border-b border-border cursor-pointer hover:bg-bg-primary transition-colors ${
-                selectedConversation === conversation.id ? 'bg-accent/20' : ''
+              className={`p-4 border-b border-white/5 cursor-pointer hover:bg-bg-hover transition-colors ${
+                selectedConversation === conversation.id ? 'bg-accent-primary/20' : ''
               }`}
             >
               <div className="flex items-center space-x-3">
                 <div className="relative">
-                  <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-accent-primary rounded-full flex items-center justify-center">
                     <span className="text-white font-semibold">
                       {conversation.participantName.charAt(0)}
                     </span>
                   </div>
                   {conversation.isOnline && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-accent-green rounded-full border-2 border-bg-secondary"></div>
                   )}
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-medium text-primary truncate">
+                    <h3 className="font-medium text-text-primary truncate">
                       {conversation.participantName}
                     </h3>
-                    <span className="text-xs text-secondary">
+                    <span className="text-xs text-text-secondary">
                       {formatTime(conversation.lastMessageTime)}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-secondary truncate">
+                    <p className="text-sm text-text-secondary truncate">
                       {conversation.lastMessage}
                     </p>
                     {conversation.unreadCount > 0 && (
-                      <span className="ml-2 px-2 py-1 text-xs bg-accent text-white rounded-full">
+                      <span className="ml-2 px-2 py-1 text-xs bg-accent-primary text-white rounded-full">
                         {conversation.unreadCount}
                       </span>
                     )}
@@ -258,18 +258,18 @@ export const MessagingPage: React.FC = () => {
         {selectedConversation ? (
           <>
             {/* Messages Header */}
-            <div className="p-4 border-b border-border bg-bg-secondary">
+            <div className="p-4 border-b border-white/5 bg-bg-secondary">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-accent-primary rounded-full flex items-center justify-center">
                   <span className="text-white text-sm font-semibold">
                     {conversations.find(c => c.id === selectedConversation)?.participantName.charAt(0)}
                   </span>
                 </div>
                 <div>
-                  <h3 className="font-medium text-primary">
+                  <h3 className="font-medium text-text-primary">
                     {conversations.find(c => c.id === selectedConversation)?.participantName}
                   </h3>
-                  <p className="text-xs text-secondary">
+                  <p className="text-xs text-text-secondary">
                     {conversations.find(c => c.id === selectedConversation)?.isOnline ? 'Online' : 'Last seen recently'}
                   </p>
                 </div>
@@ -288,13 +288,13 @@ export const MessagingPage: React.FC = () => {
                     <div
                       className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
                         isOwnMessage
-                          ? 'bg-accent text-white rounded-br-sm'
-                          : 'bg-bg-secondary text-primary rounded-bl-sm'
+                          ? 'bg-accent-primary text-white rounded-br-sm'
+                          : 'bg-bg-secondary text-text-primary rounded-bl-sm'
                       }`}
                     >
                       <p className="text-sm">{message.content}</p>
                       <p className={`text-xs mt-1 ${
-                        isOwnMessage ? 'text-white/70' : 'text-secondary'
+                        isOwnMessage ? 'text-white/70' : 'text-text-secondary'
                       }`}>
                         {formatTime(message.timestamp)}
                       </p>
@@ -306,7 +306,7 @@ export const MessagingPage: React.FC = () => {
             </div>
 
             {/* Message Input */}
-            <div className="p-4 border-t border-border bg-bg-secondary">
+            <div className="p-4 border-t border-white/5 bg-bg-secondary">
               <div className="flex items-center space-x-2">
                 <Input
                   value={newMessage}
@@ -329,10 +329,10 @@ export const MessagingPage: React.FC = () => {
           <div className="flex-1 flex items-center justify-center text-center">
             <div>
               <div className="text-6xl mb-4">💬</div>
-              <h3 className="text-lg font-semibold text-primary mb-2">
+              <h3 className="text-lg font-semibold text-text-primary mb-2">
                 Select a conversation
               </h3>
-              <p className="text-secondary">
+              <p className="text-text-secondary">
                 Choose a conversation from the list to start messaging
               </p>
             </div>

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
-import { useTelegramTheme } from '@/components/telegram/TelegramThemeProvider';
 
 // Telegram-optimized List Item
 interface TelegramListItemProps {
@@ -20,7 +19,7 @@ export const TelegramListItem: React.FC<TelegramListItemProps> = ({
   rightContent,
   leftIcon,
   showChevron = true,
-  disabled = false
+  disabled = false,
 }) => {
   const { hapticFeedback } = useTelegram();
 
@@ -36,32 +35,28 @@ export const TelegramListItem: React.FC<TelegramListItemProps> = ({
       onClick={handleClick}
       className={`
         list-item
-        ${onClick && !disabled ? 'cursor-pointer hover:bg-secondary' : ''}
+        ${onClick && !disabled ? 'cursor-pointer hover:bg-bg-hover' : ''}
         ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
       `}
     >
       {leftIcon && (
-        <div className="mr-3 flex-shrink-0">
-          {leftIcon}
-        </div>
+        <div className="mr-3 flex-shrink-0">{leftIcon}</div>
       )}
-      
+
       <div className="flex-1 min-w-0">
-        <div className="text-primary font-medium">{children}</div>
+        <div className="text-text-primary font-medium">{children}</div>
         {subtitle && (
-          <div className="text-secondary text-sm mt-1">{subtitle}</div>
+          <div className="text-text-secondary text-sm mt-1">{subtitle}</div>
         )}
       </div>
-      
+
       {rightContent && (
-        <div className="ml-3 flex-shrink-0">
-          {rightContent}
-        </div>
+        <div className="ml-3 flex-shrink-0">{rightContent}</div>
       )}
-      
+
       {showChevron && onClick && !disabled && (
         <div className="ml-2">
-          <svg className="w-5 h-5 text-hint" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </div>
@@ -82,21 +77,12 @@ export const TelegramSwitch: React.FC<TelegramSwitchProps> = ({
   checked,
   onChange,
   disabled = false,
-  size = 'md'
+  size = 'md',
 }) => {
   const { hapticFeedback } = useTelegram();
 
-  const sizeClasses = {
-    sm: 'w-8 h-5',
-    md: 'w-10 h-6',
-    lg: 'w-12 h-7'
-  };
-
-  const thumbClasses = {
-    sm: 'w-3 h-3',
-    md: 'w-4 h-4',
-    lg: 'w-5 h-5'
-  };
+  const sizeClasses = { sm: 'w-8 h-5', md: 'w-10 h-6', lg: 'w-12 h-7' };
+  const thumbClasses = { sm: 'w-3 h-3', md: 'w-4 h-4', lg: 'w-5 h-5' };
 
   const handleToggle = () => {
     if (!disabled) {
@@ -113,7 +99,7 @@ export const TelegramSwitch: React.FC<TelegramSwitchProps> = ({
       className={`
         ${sizeClasses[size]}
         relative inline-flex rounded-full transition-colors duration-200 focus:outline-none touch-manipulation
-        ${checked ? 'bg-accent' : 'bg-gray-300'}
+        ${checked ? 'bg-accent-primary' : 'bg-bg-hover'}
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
       `}
     >
@@ -123,6 +109,7 @@ export const TelegramSwitch: React.FC<TelegramSwitchProps> = ({
           inline-block bg-white rounded-full shadow transform transition-transform duration-200
           ${checked ? 'translate-x-full' : 'translate-x-0'}
         `}
+        style={{ margin: '4px' }}
       />
     </button>
   );
@@ -140,7 +127,7 @@ export const TelegramSegmentControl: React.FC<TelegramSegmentControlProps> = ({
   options,
   value,
   onChange,
-  fullWidth = true
+  fullWidth = true,
 }) => {
   const { hapticFeedback } = useTelegram();
 
@@ -152,16 +139,16 @@ export const TelegramSegmentControl: React.FC<TelegramSegmentControlProps> = ({
   };
 
   return (
-    <div className={`flex bg-secondary rounded-lg p-1 ${fullWidth ? 'w-full' : ''}`}>
+    <div className={`flex bg-bg-secondary rounded-xl p-1 ${fullWidth ? 'w-full' : ''}`}>
       {options.map((option) => (
         <button
           key={option.value}
           onClick={() => handleChange(option.value)}
           className={`
-            flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 touch-manipulation
+            flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 touch-manipulation
             ${value === option.value
-              ? 'bg-white text-primary shadow-sm'
-              : 'text-secondary hover:text-primary'
+              ? 'bg-accent-primary text-white shadow-sm'
+              : 'text-text-muted hover:text-text-secondary'
             }
           `}
         >
@@ -192,7 +179,7 @@ export const TelegramActionSheet: React.FC<TelegramActionSheetProps> = ({
   onClose,
   title,
   actions,
-  cancelLabel = 'Cancel'
+  cancelLabel = 'Cancel',
 }) => {
   const { hapticFeedback } = useTelegram();
 
@@ -211,24 +198,21 @@ export const TelegramActionSheet: React.FC<TelegramActionSheetProps> = ({
 
   return (
     <div className="fixed inset-0 z-50">
-      <div 
-        className="absolute inset-0 bg-black bg-opacity-30"
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={handleCancel}
       />
-      
-      <div className="absolute bottom-0 left-0 right-0 bg-section rounded-t-3xl safe-bottom animate-slide-up">
+
+      <div className="absolute bottom-0 left-0 right-0 bg-bg-secondary rounded-t-3xl safe-bottom animate-slide-up border-t border-accent-primary/10">
         <div className="p-4">
-          {/* Handle */}
-          <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
-          
-          {/* Title */}
+          <div className="w-10 h-1 bg-text-muted/20 rounded-full mx-auto mb-4" />
+
           {title && (
             <div className="text-center mb-4">
-              <h3 className="text-lg font-semibold text-primary">{title}</h3>
+              <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
             </div>
           )}
-          
-          {/* Actions */}
+
           <div className="space-y-2">
             {actions.map((action, index) => (
               <button
@@ -237,27 +221,24 @@ export const TelegramActionSheet: React.FC<TelegramActionSheetProps> = ({
                 disabled={action.disabled}
                 className={`
                   w-full flex items-center gap-3 p-4 rounded-xl transition-colors touch-manipulation
-                  ${action.destructive 
-                    ? 'text-destructive hover:bg-red-50' 
-                    : 'text-primary hover:bg-secondary'
+                  ${action.destructive
+                    ? 'text-accent-red hover:bg-accent-red/10'
+                    : 'text-text-primary hover:bg-bg-hover'
                   }
-                  ${action.disabled ? 'opacity-50 cursor-not-allowed' : 'active:bg-gray-100'}
+                  ${action.disabled ? 'opacity-50 cursor-not-allowed' : 'active:bg-bg-hover'}
                 `}
               >
                 {action.icon && (
-                  <div className="flex-shrink-0">
-                    {action.icon}
-                  </div>
+                  <div className="flex-shrink-0">{action.icon}</div>
                 )}
                 <span className="font-medium">{action.label}</span>
               </button>
             ))}
           </div>
-          
-          {/* Cancel */}
+
           <button
             onClick={handleCancel}
-            className="w-full mt-4 p-4 bg-secondary text-primary font-semibold rounded-xl touch-manipulation active:bg-gray-200"
+            className="w-full mt-4 p-4 bg-bg-hover text-text-primary font-semibold rounded-xl touch-manipulation active:bg-bg-card"
           >
             {cancelLabel}
           </button>
@@ -277,7 +258,7 @@ interface TelegramTabBarProps {
 export const TelegramTabBar: React.FC<TelegramTabBarProps> = ({
   tabs,
   activeTab,
-  onChange
+  onChange,
 }) => {
   const { hapticFeedback } = useTelegram();
 
@@ -289,21 +270,21 @@ export const TelegramTabBar: React.FC<TelegramTabBarProps> = ({
   };
 
   return (
-    <div className="flex bg-header border-t border-gray-200 safe-bottom">
+    <div className="flex bg-bg-secondary border-t border-white/5 safe-bottom">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => handleTabPress(tab.id)}
           className={`
             flex-1 flex flex-col items-center justify-center py-2 px-1 transition-colors touch-manipulation
-            ${activeTab === tab.id ? 'text-accent' : 'text-hint'}
+            ${activeTab === tab.id ? 'text-accent-primary' : 'text-text-muted'}
           `}
         >
           {tab.icon && (
             <div className="relative mb-1">
               {tab.icon}
               {tab.badge && tab.badge > 0 && (
-                <div className="absolute -top-2 -right-2 bg-destructive text-white text-xs rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+                <div className="absolute -top-2 -right-2 bg-accent-red text-white text-xs rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
                   {tab.badge > 99 ? '99+' : tab.badge}
                 </div>
               )}
@@ -318,7 +299,7 @@ export const TelegramTabBar: React.FC<TelegramTabBarProps> = ({
 
 // Telegram-styled Progress Bar
 interface TelegramProgressBarProps {
-  progress: number; // 0-100
+  progress: number;
   showPercentage?: boolean;
   height?: 'sm' | 'md' | 'lg';
   color?: 'primary' | 'success' | 'warning' | 'error';
@@ -328,46 +309,31 @@ export const TelegramProgressBar: React.FC<TelegramProgressBarProps> = ({
   progress,
   showPercentage = false,
   height = 'md',
-  color = 'primary'
+  color = 'primary',
 }) => {
-  const heightClasses = {
-    sm: 'h-1',
-    md: 'h-2',
-    lg: 'h-3'
-  };
-
+  const heightClasses = { sm: 'h-1', md: 'h-2', lg: 'h-3' };
   const colorClasses = {
-    primary: 'bg-accent',
-    success: 'bg-green-500',
-    warning: 'bg-yellow-500',
-    error: 'bg-destructive'
+    primary: 'bg-accent-primary',
+    success: 'bg-accent-green',
+    warning: 'bg-accent-yellow',
+    error: 'bg-accent-red',
   };
 
   const clampedProgress = Math.max(0, Math.min(100, progress));
 
   return (
     <div>
-      <div className={`w-full bg-secondary rounded-full overflow-hidden ${heightClasses[height]}`}>
+      <div className={`w-full bg-bg-hover rounded-full overflow-hidden ${heightClasses[height]}`}>
         <div
           className={`${heightClasses[height]} ${colorClasses[color]} transition-all duration-300 ease-out`}
           style={{ width: `${clampedProgress}%` }}
         />
       </div>
       {showPercentage && (
-        <div className="text-xs text-secondary mt-1 text-right">
+        <div className="text-xs text-text-muted mt-1 text-right">
           {Math.round(clampedProgress)}%
         </div>
       )}
     </div>
   );
-};
-
-// Export all components
-export {
-  TelegramListItem,
-  TelegramSwitch,
-  TelegramSegmentControl,
-  TelegramActionSheet,
-  TelegramTabBar,
-  TelegramProgressBar
 };

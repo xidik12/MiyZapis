@@ -40,7 +40,7 @@ export const SpecialistDashboardPage: React.FC = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      
+
       // Mock data - replace with actual API calls
       const mockStats: SpecialistStats = {
         totalBookings: 342,
@@ -95,16 +95,16 @@ export const SpecialistDashboardPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'confirmed': return 'text-green-600 bg-green-100';
-      case 'pending': return 'text-yellow-600 bg-yellow-100';
-      case 'completed': return 'text-blue-600 bg-blue-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'confirmed': return 'text-accent-green bg-accent-green/15';
+      case 'pending': return 'text-accent-yellow bg-accent-yellow/15';
+      case 'completed': return 'text-accent-primary bg-accent-primary/10';
+      default: return 'text-text-secondary bg-bg-secondary';
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center h-64">
         <LoadingSpinner />
       </div>
     );
@@ -112,7 +112,7 @@ export const SpecialistDashboardPage: React.FC = () => {
 
   if (!stats) {
     return (
-      <div className="text-center text-secondary p-8">
+      <div className="min-h-screen bg-bg-primary text-center text-text-secondary p-8">
         <p>Unable to load dashboard data</p>
         <Button onClick={fetchDashboardData} className="mt-4">
           Retry
@@ -122,124 +122,126 @@ export const SpecialistDashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="p-4 space-y-6">
-      {/* Welcome Header */}
-      <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-primary">
-          Welcome back, {user?.firstName || 'Specialist'}!
-        </h1>
-        <p className="text-secondary">Here's your business overview</p>
-      </div>
+    <div className="min-h-screen bg-bg-primary pb-20">
+      <div className="p-4 space-y-6 page-stagger">
+        {/* Welcome Header */}
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-text-primary">
+            Welcome back, {user?.firstName || 'Specialist'}!
+          </h1>
+          <p className="text-text-secondary">Here's your business overview</p>
+        </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="p-4 text-center">
-          <div className="text-2xl font-bold text-primary">{stats.totalBookings}</div>
-          <div className="text-sm text-secondary">Total Bookings</div>
-        </Card>
-        
-        <Card className="p-4 text-center">
-          <div className="text-2xl font-bold text-primary">${stats.totalRevenue}</div>
-          <div className="text-sm text-secondary">Total Revenue</div>
-        </Card>
-        
-        <Card className="p-4 text-center">
-          <div className="text-2xl font-bold text-primary">{stats.rating}</div>
-          <div className="text-sm text-secondary">Rating ({stats.reviewCount} reviews)</div>
-        </Card>
-        
-        <Card className="p-4 text-center">
-          <div className="text-2xl font-bold text-primary">{stats.completionRate}%</div>
-          <div className="text-sm text-secondary">Completion Rate</div>
-        </Card>
-      </div>
-
-      {/* Monthly Performance */}
-      <Card className="p-4">
-        <h3 className="font-semibold mb-4">This Month</h3>
+        {/* Key Metrics */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="text-center">
-            <div className="text-xl font-bold text-primary">{stats.monthlyBookings}</div>
-            <div className="text-sm text-secondary">Bookings</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xl font-bold text-primary">${stats.monthlyRevenue}</div>
-            <div className="text-sm text-secondary">Revenue</div>
-          </div>
-        </div>
-      </Card>
+          <Card className="bg-bg-card rounded-2xl border-white/5 shadow-card p-4 text-center">
+            <div className="text-2xl font-bold text-text-primary">{stats.totalBookings}</div>
+            <div className="text-sm text-text-secondary">Total Bookings</div>
+          </Card>
 
-      {/* Recent Bookings */}
-      <Card className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold">Recent Bookings</h3>
-          <Button variant="outline" size="sm">
-            View All
-          </Button>
+          <Card className="bg-bg-card rounded-2xl border-white/5 shadow-card p-4 text-center">
+            <div className="text-2xl font-bold text-text-primary">${stats.totalRevenue}</div>
+            <div className="text-sm text-text-secondary">Total Revenue</div>
+          </Card>
+
+          <Card className="bg-bg-card rounded-2xl border-white/5 shadow-card p-4 text-center">
+            <div className="text-2xl font-bold text-text-primary">{stats.rating}</div>
+            <div className="text-sm text-text-secondary">Rating ({stats.reviewCount} reviews)</div>
+          </Card>
+
+          <Card className="bg-bg-card rounded-2xl border-white/5 shadow-card p-4 text-center">
+            <div className="text-2xl font-bold text-text-primary">{stats.completionRate}%</div>
+            <div className="text-sm text-text-secondary">Completion Rate</div>
+          </Card>
         </div>
-        
-        <div className="space-y-3">
-          {recentBookings.map((booking) => (
-            <div key={booking.id} className="flex items-center justify-between p-3 bg-bg-secondary rounded-lg">
-              <div className="flex-1">
-                <div className="font-medium">{booking.customerName}</div>
-                <div className="text-sm text-secondary">{booking.serviceName}</div>
-                <div className="text-xs text-secondary">
-                  {new Date(booking.date).toLocaleDateString()} at {booking.time}
-                </div>
-              </div>
-              
-              <div className="text-right">
-                <div className="font-semibold">${booking.amount}</div>
-                <div className={`text-xs px-2 py-1 rounded-full ${getStatusColor(booking.status)}`}>
-                  {booking.status}
-                </div>
-              </div>
+
+        {/* Monthly Performance */}
+        <Card className="bg-bg-card rounded-2xl border-white/5 shadow-card p-4">
+          <h3 className="font-semibold text-text-primary mb-4">This Month</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <div className="text-xl font-bold text-text-primary">{stats.monthlyBookings}</div>
+              <div className="text-sm text-text-secondary">Bookings</div>
             </div>
-          ))}
-        </div>
-      </Card>
-
-      {/* Quick Actions */}
-      <Card className="p-4">
-        <h3 className="font-semibold mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <Button className="h-12">
-            📅 Schedule
-          </Button>
-          <Button variant="outline" className="h-12">
-            💰 Earnings
-          </Button>
-          <Button variant="outline" className="h-12">
-            📊 Analytics
-          </Button>
-          <Button variant="outline" className="h-12">
-            ⭐ Reviews
-          </Button>
-        </div>
-      </Card>
-
-      {/* Performance Insights */}
-      <Card className="p-4">
-        <h3 className="font-semibold mb-4">Performance</h3>
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-secondary">Response Time</span>
-            <span className="font-medium">{stats.responseTime} min</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-secondary">Completion Rate</span>
-            <span className="font-medium text-green-600">{stats.completionRate}%</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-secondary">Average Rating</span>
-            <div className="flex items-center">
-              <span className="font-medium mr-1">{stats.rating}</span>
-              <span className="text-yellow-500">⭐</span>
+            <div className="text-center">
+              <div className="text-xl font-bold text-text-primary">${stats.monthlyRevenue}</div>
+              <div className="text-sm text-text-secondary">Revenue</div>
             </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+
+        {/* Recent Bookings */}
+        <Card className="bg-bg-card rounded-2xl border-white/5 shadow-card p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-text-primary">Recent Bookings</h3>
+            <Button variant="ghost" size="sm">
+              View All
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {recentBookings.map((booking) => (
+              <div key={booking.id} className="flex items-center justify-between p-3 bg-bg-secondary rounded-lg border border-white/5">
+                <div className="flex-1">
+                  <div className="font-medium text-text-primary">{booking.customerName}</div>
+                  <div className="text-sm text-text-secondary">{booking.serviceName}</div>
+                  <div className="text-xs text-text-muted">
+                    {new Date(booking.date).toLocaleDateString()} at {booking.time}
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <div className="font-semibold text-text-primary">${booking.amount}</div>
+                  <div className={`text-xs px-2 py-1 rounded-full ${getStatusColor(booking.status)}`}>
+                    {booking.status}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Quick Actions */}
+        <Card className="bg-bg-card rounded-2xl border-white/5 shadow-card p-4">
+          <h3 className="font-semibold text-text-primary mb-4">Quick Actions</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <Button className="h-12">
+              Schedule
+            </Button>
+            <Button variant="secondary" className="h-12">
+              Earnings
+            </Button>
+            <Button variant="secondary" className="h-12">
+              Analytics
+            </Button>
+            <Button variant="secondary" className="h-12">
+              Reviews
+            </Button>
+          </div>
+        </Card>
+
+        {/* Performance Insights */}
+        <Card className="bg-bg-card rounded-2xl border-white/5 shadow-card p-4">
+          <h3 className="font-semibold text-text-primary mb-4">Performance</h3>
+          <div className="space-y-3 divide-y divide-white/5">
+            <div className="flex justify-between items-center">
+              <span className="text-text-secondary">Response Time</span>
+              <span className="font-medium text-text-primary">{stats.responseTime} min</span>
+            </div>
+            <div className="flex justify-between items-center pt-3">
+              <span className="text-text-secondary">Completion Rate</span>
+              <span className="font-medium text-accent-green">{stats.completionRate}%</span>
+            </div>
+            <div className="flex justify-between items-center pt-3">
+              <span className="text-text-secondary">Average Rating</span>
+              <div className="flex items-center">
+                <span className="font-medium text-text-primary mr-1">{stats.rating}</span>
+                <span className="text-accent-yellow">&#11088;</span>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 };

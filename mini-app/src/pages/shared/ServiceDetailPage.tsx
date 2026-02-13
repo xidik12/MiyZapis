@@ -54,7 +54,7 @@ export const ServiceDetailPage: React.FC = () => {
 
   if (!selectedService) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-bg-primary">
         <LoadingSpinner />
       </div>
     );
@@ -76,7 +76,7 @@ export const ServiceDetailPage: React.FC = () => {
 
   const handleContact = (method: 'phone' | 'email' | 'message') => {
     hapticFeedback.impactLight();
-    
+
     switch (method) {
       case 'phone':
         if (selectedService.specialist.phone) {
@@ -125,7 +125,7 @@ export const ServiceDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-primary">
+    <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header
         showBackButton
         rightContent={
@@ -137,7 +137,7 @@ export const ServiceDetailPage: React.FC = () => {
               <Heart
                 size={20}
                 className={`${
-                  isFavorite ? 'text-red-500 fill-current' : 'text-secondary'
+                  isFavorite ? 'text-accent-red fill-current' : 'text-text-secondary'
                 }`}
               />
             </button>
@@ -145,15 +145,15 @@ export const ServiceDetailPage: React.FC = () => {
               onClick={handleShare}
               className="p-2 touch-manipulation"
             >
-              <Share size={20} className="text-secondary" />
+              <Share size={20} className="text-text-secondary" />
             </button>
           </div>
         }
       />
 
-      <div className="flex-1 overflow-y-auto pb-20">
+      <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {/* Image Gallery */}
-        <div className="relative h-64 bg-gray-200">
+        <div className="relative h-64 bg-bg-hover">
           {selectedService.images.length > 0 ? (
             <>
               <img
@@ -192,7 +192,7 @@ export const ServiceDetailPage: React.FC = () => {
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <span className="text-secondary">No image available</span>
+              <span className="text-text-secondary">No image available</span>
             </div>
           )}
         </div>
@@ -202,18 +202,18 @@ export const ServiceDetailPage: React.FC = () => {
           <div className="mb-4">
             <div className="flex items-start justify-between mb-2">
               <div className="flex-1">
-                <h1 className="text-xl font-bold text-primary">
+                <h1 className="text-xl font-bold text-text-primary">
                   {selectedService.name}
                 </h1>
-                <p className="text-sm text-secondary">
+                <p className="text-sm text-text-secondary">
                   {selectedService.category}
                 </p>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-accent">
+                <div className="text-2xl font-bold text-accent-primary">
                   ${selectedService.price}
                 </div>
-                <div className="flex items-center gap-1 text-sm text-secondary">
+                <div className="flex items-center gap-1 text-sm text-text-secondary">
                   <Clock size={14} />
                   {selectedService.duration}min
                 </div>
@@ -222,11 +222,11 @@ export const ServiceDetailPage: React.FC = () => {
 
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
-                <Star size={16} className="text-yellow-400 fill-current" />
+                <Star size={16} className="text-accent-yellow fill-current" />
                 <span className="font-medium">
                   {selectedService.specialist.rating}
                 </span>
-                <span className="text-secondary">
+                <span className="text-text-secondary">
                   ({selectedService.specialist.reviewCount} reviews)
                 </span>
               </div>
@@ -236,7 +236,7 @@ export const ServiceDetailPage: React.FC = () => {
           {/* Description */}
           <Card className="mb-4">
             <h3 className="font-semibold mb-2">Description</h3>
-            <p className="text-secondary leading-relaxed">
+            <p className="text-text-secondary leading-relaxed">
               {showFullDescription
                 ? selectedService.description
                 : `${selectedService.description.slice(0, 150)}${
@@ -246,7 +246,7 @@ export const ServiceDetailPage: React.FC = () => {
             {selectedService.description.length > 150 && (
               <button
                 onClick={() => setShowFullDescription(!showFullDescription)}
-                className="text-accent mt-2 text-sm"
+                className="text-accent-primary mt-2 text-sm"
               >
                 {showFullDescription ? 'Show less' : 'Read more'}
               </button>
@@ -260,7 +260,7 @@ export const ServiceDetailPage: React.FC = () => {
                 {selectedService.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-secondary bg-opacity-10 rounded-full text-sm text-secondary"
+                    className="px-3 py-1 bg-bg-secondary rounded-full text-sm text-text-secondary"
                   >
                     {tag}
                   </span>
@@ -272,7 +272,7 @@ export const ServiceDetailPage: React.FC = () => {
           {/* Specialist Info */}
           <Card className="mb-4">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200">
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-bg-hover">
                 <img
                   src={selectedService.specialist.avatar || '/api/placeholder/64/64'}
                   alt={selectedService.specialist.name}
@@ -282,22 +282,22 @@ export const ServiceDetailPage: React.FC = () => {
               <div className="flex-1">
                 <h3 className="font-semibold">{selectedService.specialist.name}</h3>
                 <div className="flex items-center gap-1 mb-1">
-                  <Star size={14} className="text-yellow-400 fill-current" />
+                  <Star size={14} className="text-accent-yellow fill-current" />
                   <span className="text-sm font-medium">
                     {selectedService.specialist.rating}
                   </span>
-                  <span className="text-sm text-secondary">
+                  <span className="text-sm text-text-secondary">
                     ({selectedService.specialist.reviewCount} reviews)
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <CheckCircle size={14} className="text-green-500" />
-                  <span className="text-sm text-secondary">Verified specialist</span>
+                  <CheckCircle size={14} className="text-accent-green" />
+                  <span className="text-sm text-text-secondary">Verified specialist</span>
                 </div>
               </div>
               <button
                 onClick={() => navigate(`/specialist/${selectedService.specialistId}`)}
-                className="text-accent text-sm"
+                className="text-accent-primary text-sm"
               >
                 View Profile
               </button>
@@ -332,7 +332,7 @@ export const ServiceDetailPage: React.FC = () => {
               <h3 className="font-semibold">Reviews</h3>
               <button
                 onClick={() => setShowAllReviews(true)}
-                className="text-accent text-sm"
+                className="text-accent-primary text-sm"
               >
                 View all
               </button>
@@ -343,13 +343,13 @@ export const ServiceDetailPage: React.FC = () => {
                 <LoadingSpinner size="sm" />
               </div>
             ) : reviews.length === 0 ? (
-              <p className="text-secondary text-sm">No reviews yet</p>
+              <p className="text-text-secondary text-sm">No reviews yet</p>
             ) : (
               <div className="space-y-3">
                 {reviews.slice(0, 3).map((review) => (
-                  <div key={review.id} className="border-b border-gray-100 pb-3 last:border-b-0">
+                  <div key={review.id} className="border-b border-white/5 pb-3 last:border-b-0">
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
+                      <div className="w-8 h-8 rounded-full bg-bg-hover overflow-hidden">
                         <img
                           src={review.customer.avatar || '/api/placeholder/32/32'}
                           alt={`${review.customer.firstName} ${review.customer.lastName}`}
@@ -368,15 +368,15 @@ export const ServiceDetailPage: React.FC = () => {
                                 size={12}
                                 className={
                                   i < review.rating
-                                    ? 'text-yellow-400 fill-current'
-                                    : 'text-gray-300'
+                                    ? 'text-accent-yellow fill-current'
+                                    : 'text-text-muted'
                                 }
                               />
                             ))}
                           </div>
                         </div>
                         {review.comment && (
-                          <p className="text-sm text-secondary">{review.comment}</p>
+                          <p className="text-sm text-text-secondary">{review.comment}</p>
                         )}
                       </div>
                     </div>
@@ -389,7 +389,7 @@ export const ServiceDetailPage: React.FC = () => {
       </div>
 
       {/* Fixed Bottom Action */}
-      <div className="fixed bottom-0 left-0 right-0 bg-header border-t border-gray-200 p-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-bg-secondary border-t border-white/5 p-4">
         <Button onClick={handleBookNow} size="lg" className="w-full">
           <Calendar size={18} className="mr-2" />
           Book Now - ${selectedService.price}
@@ -404,9 +404,9 @@ export const ServiceDetailPage: React.FC = () => {
       >
         <div className="space-y-4">
           {reviews.map((review) => (
-            <div key={review.id} className="border-b border-gray-100 pb-4 last:border-b-0">
+            <div key={review.id} className="border-b border-white/5 pb-4 last:border-b-0">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                <div className="w-10 h-10 rounded-full bg-bg-hover overflow-hidden">
                   <img
                     src={review.customer.avatar || '/api/placeholder/40/40'}
                     alt={`${review.customer.firstName} ${review.customer.lastName}`}
@@ -425,18 +425,18 @@ export const ServiceDetailPage: React.FC = () => {
                           size={14}
                           className={
                             i < review.rating
-                              ? 'text-yellow-400 fill-current'
-                              : 'text-gray-300'
+                              ? 'text-accent-yellow fill-current'
+                              : 'text-text-muted'
                           }
                         />
                       ))}
                     </div>
                   </div>
-                  <p className="text-sm text-secondary mb-2">
+                  <p className="text-sm text-text-secondary mb-2">
                     {new Date(review.createdAt).toLocaleDateString()}
                   </p>
                   {review.comment && (
-                    <p className="text-secondary leading-relaxed">{review.comment}</p>
+                    <p className="text-text-secondary leading-relaxed">{review.comment}</p>
                   )}
                 </div>
               </div>

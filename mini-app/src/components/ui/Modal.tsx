@@ -68,14 +68,14 @@ export const Modal: React.FC<ModalProps> = ({
       <div className={`modal-content animate-scale-in ${sizeClasses[size]}`}>
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-primary">{title}</h3>
+          <div className="flex items-center justify-between p-4 border-b border-white/5">
+            <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
             <button
               onClick={handleClose}
-              className="p-1 rounded-full hover:bg-secondary transition-colors touch-manipulation"
+              className="p-1 rounded-full hover:bg-bg-hover transition-colors touch-manipulation"
               type="button"
             >
-              <X size={20} className="text-secondary" />
+              <X size={20} className="text-text-muted" />
             </button>
           </div>
         )}

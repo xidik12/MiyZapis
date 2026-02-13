@@ -1,22 +1,23 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { BottomNavigation } from './BottomNavigation';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 
 export const MainLayout: React.FC = () => {
   const { viewportHeight } = useTelegram();
+  const location = useLocation();
 
   return (
-    <div 
-      className="flex flex-col bg-primary min-h-screen"
+    <div
+      className="flex flex-col bg-bg-primary min-h-screen text-text-primary"
       style={{ minHeight: `${viewportHeight}px` }}
     >
-      {/* Main content area */}
-      <main className="flex-1 relative overflow-hidden">
-        <Outlet />
+      <main className="flex-1 relative overflow-hidden pb-16">
+        <div key={location.pathname} className="page-enter">
+          <Outlet />
+        </div>
       </main>
 
-      {/* Bottom navigation - only show for authenticated users */}
       <BottomNavigation />
     </div>
   );
