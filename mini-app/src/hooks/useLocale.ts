@@ -1,0 +1,60 @@
+import { useState, useEffect } from 'react';
+import type { Locale } from '@/utils/categories';
+
+/**
+ * Reads the user's language from Telegram WebApp or browser,
+ * and returns one of the supported locales: 'en' | 'uk' | 'ru'.
+ */
+export function useLocale(): Locale {
+  const [locale, setLocale] = useState<Locale>(() => detectLocale());
+
+  useEffect(() => {
+    // Re-check when Telegram theme/language changes
+    const webApp = window.Telegram?.WebApp;
+    if (webApp) {
+      const handler = () => setLocale(detectLocale());
+      webApp.onEvent('themeChanged', handler);
+      return () => webApp.offEvent('themeChanged', handler);
+    }
+  }, []);
+
+  return locale;
+}
+
+function detectLocale(): Locale {
+  // 1. Telegram WebApp language code (most reliable inside Telegram)
+  const tgLang = window.Telegram?.WebApp?.initDataUnsafe?.user?.language_code;
+  if (tgLang) {
+    return mapToLocale(tgLang);
+  }
+
+  // 2. localStorage override (for settings page)
+  const stored = localStorage.getItem('miyzapis_locale');
+  if (stored) {
+    return mapToLocale(stored);
+  }
+
+  // 3. Browser language
+  const browserLang = navigator.language || (navigator as any).userLanguage || '';
+  return mapToLocale(browserLang);
+}
+
+function mapToLocale(code: string): Locale {
+  const lower = code.toLowerCase();
+  if (lower.startsWith('uk')) return 'uk';
+  if (lower.startsWith('ru')) return 'ru';
+  return 'en';
+}
+
+/**
+ * Simple translation helper — looks up a key in a string map for the given locale.
+ */
+export function t(
+  strings: Record<string, Record<Locale, string>>,
+  key: string,
+  locale: Locale
+): string {
+  const entry = strings[key];
+  if (!entry) return key;
+  return entry[locale] || entry.en || key;
+}

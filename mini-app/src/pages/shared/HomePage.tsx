@@ -13,6 +13,7 @@ import {
   Wallet,
   Award,
   Users,
+  Briefcase,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
@@ -22,94 +23,34 @@ import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { RootState, AppDispatch } from '@/store';
 import { fetchServicesAsync, fetchCategoriesAsync } from '@/store/slices/servicesSlice';
 import { fetchSpecialistsAsync } from '@/store/slices/specialistsSlice';
-
-// Mock data - replace with actual API calls
-const categories = [
-  { id: '1', name: 'Beauty', icon: '💄', color: '#F59E0B', count: 45 },
-  { id: '2', name: 'Wellness', icon: '🧘', color: '#10B981', count: 32 },
-  { id: '3', name: 'Fitness', icon: '💪', color: '#EF4444', count: 28 },
-  { id: '4', name: 'Health', icon: '🏥', color: '#3B82F6', count: 51 },
-  { id: '5', name: 'Education', icon: '📚', color: '#8B5CF6', count: 23 },
-  { id: '6', name: 'Repair', icon: '🔧', color: '#F97316', count: 19 }
-];
-
-const popularServices = [
-  {
-    id: '1',
-    name: 'Hair Styling & Color',
-    specialist: 'Sarah Johnson',
-    rating: 4.9,
-    reviews: 127,
-    price: 85,
-    duration: 120,
-    image: '/api/placeholder/300/200',
-    category: 'Beauty'
-  },
-  {
-    id: '2',
-    name: 'Deep Tissue Massage',
-    specialist: 'Michael Chen',
-    rating: 4.8,
-    reviews: 89,
-    price: 120,
-    duration: 60,
-    image: '/api/placeholder/300/200',
-    category: 'Wellness'
-  },
-  {
-    id: '3',
-    name: 'Personal Training',
-    specialist: 'Emma Rodriguez',
-    rating: 4.9,
-    reviews: 203,
-    price: 75,
-    duration: 45,
-    image: '/api/placeholder/300/200',
-    category: 'Fitness'
-  }
-];
-
-const nearbySpecialists = [
-  {
-    id: '1',
-    name: 'Beauty Studio Downtown',
-    specialist: 'Lisa Park',
-    rating: 4.7,
-    distance: '0.3 km',
-    specialties: ['Hair', 'Nails', 'Makeup'],
-    image: '/api/placeholder/100/100',
-    isOnline: true
-  },
-  {
-    id: '2',
-    name: 'Zen Wellness Center',
-    specialist: 'David Kumar',
-    rating: 4.8,
-    distance: '0.8 km',
-    specialties: ['Massage', 'Yoga', 'Meditation'],
-    image: '/api/placeholder/100/100',
-    isOnline: false
-  }
-];
+import { processCategories, homeStrings, getCategoryInfo } from '@/utils/categories';
+import { useLocale, t } from '@/hooks/useLocale';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const locale = useLocale();
   const { user, isAuthenticated, hapticFeedback } = useTelegram();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { services, categories: apiCategories, isLoading } = useSelector(
+  const { services, categories: apiCategories, isLoading, categoriesLoading } = useSelector(
     (state: RootState) => state.services
   );
-  const { specialists } = useSelector((state: RootState) => state.specialists);
+  const { specialists, isLoading: specialistsLoading } = useSelector(
+    (state: RootState) => state.specialists
+  );
   const { isAuthenticated: authState } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    // Fetch initial data
     dispatch(fetchCategoriesAsync());
     dispatch(fetchServicesAsync({ limit: 6, sort: 'popular' }));
     dispatch(fetchSpecialistsAsync({ limit: 4 }));
   }, [dispatch]);
+
+  const s = (key: string) => t(homeStrings, key, locale);
+
+  // Process categories through registry for proper names/icons/colors
+  const displayCategories = processCategories(apiCategories as any[], locale);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -121,7 +62,7 @@ export const HomePage: React.FC = () => {
   };
 
   const handleCategoryPress = (category: any) => {
-    navigate(`/search?category=${encodeURIComponent(category.name)}`);
+    navigate(`/search?category=${encodeURIComponent(category.id)}`);
     hapticFeedback.selectionChanged();
   };
 
@@ -135,7 +76,8 @@ export const HomePage: React.FC = () => {
     hapticFeedback.impactLight();
   };
 
-  const handleBookNowPress = () => {
+  const handleBookNowPress = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!isAuthenticated && !authState) {
       navigate('/auth');
     } else {
@@ -144,16 +86,11 @@ export const HomePage: React.FC = () => {
     hapticFeedback.impactMedium();
   };
 
-  // Use API data if available, fallback to mock data
-  const displayCategories = apiCategories.length > 0 ? apiCategories : categories;
-  const displayServices = services.length > 0 ? services : popularServices;
-  const displaySpecialists = specialists.length > 0 ? specialists : nearbySpecialists;
-
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header
-        title={user ? `Hi, ${user.firstName}!` : 'Welcome'}
-        subtitle="Find your perfect service"
+        title={user ? `${s('hi')}, ${user.firstName}!` : s('welcome')}
+        subtitle={s('findService')}
         rightContent={
           <button
             onClick={() => navigate('/search')}
@@ -170,7 +107,7 @@ export const HomePage: React.FC = () => {
           <div className="flex gap-2">
             <div className="flex-1">
               <Input
-                placeholder="Search services, specialists..."
+                placeholder={s('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 icon={<Search size={18} />}
@@ -188,10 +125,10 @@ export const HomePage: React.FC = () => {
           <div className="px-4 py-4">
             <div className="grid grid-cols-4 gap-2">
               {[
-                { icon: <Calendar size={20} className="text-accent-primary" />, label: 'Bookings', path: '/bookings' },
-                { icon: <Wallet size={20} className="text-accent-green" />, label: 'Wallet', path: '/wallet' },
-                { icon: <Heart size={20} className="text-accent-red" />, label: 'Favorites', path: '/favorites' },
-                { icon: <Award size={20} className="text-purple-500" />, label: 'Rewards', path: '/loyalty' },
+                { icon: <Calendar size={20} className="text-accent-primary" />, label: s('bookings'), path: '/bookings' },
+                { icon: <Wallet size={20} className="text-accent-green" />, label: s('wallet'), path: '/wallet' },
+                { icon: <Heart size={20} className="text-accent-red" />, label: s('favorites'), path: '/favorites' },
+                { icon: <Award size={20} className="text-purple-500" />, label: s('rewards'), path: '/loyalty' },
               ].map(item => (
                 <button
                   key={item.path}
@@ -210,14 +147,14 @@ export const HomePage: React.FC = () => {
         <div className="px-4 pb-2">
           <Card hover onClick={() => { hapticFeedback.impactLight(); navigate('/community'); }}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-                <Users size={20} className="text-indigo-600" />
+              <div className="w-10 h-10 bg-indigo-500/15 rounded-xl flex items-center justify-center">
+                <Users size={20} className="text-indigo-400" />
               </div>
               <div className="flex-1">
-                <h3 className="text-sm font-semibold text-text-primary">Community</h3>
-                <p className="text-xs text-text-secondary">Share tips, ask questions & connect</p>
+                <h3 className="text-sm font-semibold text-text-primary">{s('community')}</h3>
+                <p className="text-xs text-text-secondary">{s('communityDesc')}</p>
               </div>
-              <span className="text-xs text-accent-primary font-medium">Explore →</span>
+              <span className="text-xs text-accent-primary font-medium">{s('explore')} →</span>
             </div>
           </Card>
         </div>
@@ -225,39 +162,59 @@ export const HomePage: React.FC = () => {
         {/* Categories */}
         <div className="px-4 py-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-text-primary">Categories</h2>
+            <h2 className="text-lg font-semibold text-text-primary">{s('categories')}</h2>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/categories')}
             >
-              View All
+              {s('viewAll')}
             </Button>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            {displayCategories.map((category) => (
-              <Card
-                key={category.id}
-                hover
-                onClick={() => handleCategoryPress(category)}
-                className="text-center"
-              >
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 text-xl"
-                  style={{ backgroundColor: `${category.color}20` }}
-                >
-                  {category.icon}
+          {categoriesLoading ? (
+            <div className="grid grid-cols-3 gap-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="bg-bg-card rounded-2xl border border-white/5 p-4 text-center animate-pulse">
+                  <div className="w-12 h-12 rounded-full bg-bg-hover mx-auto mb-2" />
+                  <div className="h-3 w-16 bg-bg-hover rounded mx-auto mb-1" />
+                  <div className="h-2 w-10 bg-bg-hover rounded mx-auto" />
                 </div>
-                <h3 className="font-medium text-sm text-text-primary mb-1">
-                  {category.name}
-                </h3>
-                <p className="text-xs text-text-secondary">
-                  {category.serviceCount || category.count} services
-                </p>
-              </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : displayCategories.length > 0 ? (
+            <div className="grid grid-cols-3 gap-3">
+              {displayCategories.slice(0, 6).map((category) => (
+                <Card
+                  key={category.id}
+                  hover
+                  onClick={() => handleCategoryPress(category)}
+                  className="text-center"
+                >
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 text-xl"
+                    style={{ backgroundColor: `${category.color}20` }}
+                  >
+                    {category.icon}
+                  </div>
+                  <h3 className="font-medium text-sm text-text-primary mb-1 line-clamp-1">
+                    {category.name}
+                  </h3>
+                  <p className="text-xs text-text-secondary">
+                    {category.count} {s('services')}
+                  </p>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-bg-card rounded-2xl border border-white/5 p-8 text-center">
+              <div className="w-14 h-14 rounded-full bg-bg-hover flex items-center justify-center mx-auto mb-3">
+                <Briefcase size={24} className="text-text-muted" />
+              </div>
+              <p className="text-sm text-text-secondary">{s('noCategories')}</p>
+              <p className="text-xs text-text-muted mt-1">{s('beFirstSpecialist')}</p>
+            </div>
+          )}
         </div>
 
         {/* Popular Services */}
@@ -265,63 +222,100 @@ export const HomePage: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <TrendingUp size={18} className="text-accent-primary" />
-              <h2 className="text-lg font-semibold text-text-primary">Popular Services</h2>
+              <h2 className="text-lg font-semibold text-text-primary">{s('popularServices')}</h2>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/search?sort=popular')}
             >
-              View All
+              {s('viewAll')}
             </Button>
           </div>
 
-          <div className="flex gap-4 overflow-x-auto pb-2">
-            {displayServices.map((service) => (
-              <Card
-                key={service.id}
-                hover
-                onClick={() => handleServicePress(service)}
-                className="min-w-[280px] flex-shrink-0"
-              >
-                <div className="aspect-video bg-bg-hover rounded-2xl mb-3 overflow-hidden">
-                  <img
-                    src={service.images?.[0] || service.image || '/api/placeholder/300/200'}
-                    alt={service.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <div>
-                    <h3 className="font-semibold text-text-primary">{service.name}</h3>
-                    <p className="text-sm text-text-secondary">{service.specialist?.name || service.specialist}</p>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1">
-                      <Star size={14} className="text-accent-yellow fill-current" />
-                      <span className="text-sm font-medium">{service.specialist?.rating || service.rating}</span>
-                      <span className="text-sm text-text-secondary">({service.specialist?.reviewCount || service.reviews})</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock size={14} className="text-text-secondary" />
-                      <span className="text-sm text-text-secondary">{service.duration}min</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-accent-primary">
-                      ${service.price}
-                    </span>
-                    <Button size="sm" onClick={handleBookNowPress}>
-                      Book Now
-                    </Button>
+          {isLoading ? (
+            <div className="flex gap-4 overflow-x-auto pb-2">
+              {[1, 2].map((i) => (
+                <div key={i} className="min-w-[280px] flex-shrink-0 bg-bg-card rounded-2xl border border-white/5 p-4 animate-pulse">
+                  <div className="aspect-video bg-bg-hover rounded-2xl mb-3" />
+                  <div className="h-4 w-40 bg-bg-hover rounded mb-2" />
+                  <div className="h-3 w-24 bg-bg-hover rounded mb-3" />
+                  <div className="flex justify-between">
+                    <div className="h-5 w-16 bg-bg-hover rounded" />
+                    <div className="h-8 w-20 bg-bg-hover rounded-lg" />
                   </div>
                 </div>
-              </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : services.length > 0 ? (
+            <div className="flex gap-4 overflow-x-auto pb-2">
+              {services.map((service: any) => (
+                <Card
+                  key={service.id}
+                  hover
+                  onClick={() => handleServicePress(service)}
+                  className="min-w-[280px] flex-shrink-0"
+                >
+                  <div className="aspect-video bg-bg-hover rounded-2xl mb-3 overflow-hidden">
+                    {service.images?.[0] ? (
+                      <img
+                        src={service.images[0]}
+                        alt={service.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-4xl">{getCategoryInfo(service.category).icon}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <div>
+                      <h3 className="font-semibold text-text-primary line-clamp-1">{service.name}</h3>
+                      <p className="text-sm text-text-secondary line-clamp-1">
+                        {service.specialist?.user
+                          ? `${service.specialist.user.firstName} ${service.specialist.user.lastName}`.trim()
+                          : service.specialist?.name || service.specialist}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1">
+                        <Star size={14} className="text-accent-yellow fill-current" />
+                        <span className="text-sm font-medium text-text-primary">
+                          {service.specialist?.rating || 0}
+                        </span>
+                        <span className="text-sm text-text-secondary">
+                          ({service.specialist?.reviewCount || 0})
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock size={14} className="text-text-secondary" />
+                        <span className="text-sm text-text-secondary">{service.duration}{s('min')}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-bold text-accent-primary">
+                        {service.price} {service.currency || 'UAH'}
+                      </span>
+                      <Button size="sm" onClick={handleBookNowPress}>
+                        {s('bookNow')}
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-bg-card rounded-2xl border border-white/5 p-8 text-center">
+              <div className="w-14 h-14 rounded-full bg-bg-hover flex items-center justify-center mx-auto mb-3">
+                <TrendingUp size={24} className="text-text-muted" />
+              </div>
+              <p className="text-sm text-text-secondary">{s('noServices')}</p>
+            </div>
+          )}
         </div>
 
         {/* Nearby Specialists */}
@@ -329,85 +323,103 @@ export const HomePage: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <MapPin size={18} className="text-accent-primary" />
-              <h2 className="text-lg font-semibold text-text-primary">Nearby Specialists</h2>
+              <h2 className="text-lg font-semibold text-text-primary">{s('nearbySpecialists')}</h2>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/search?nearby=true')}
             >
-              View All
+              {s('viewAll')}
             </Button>
           </div>
 
-          <div className="space-y-3">
-            {displaySpecialists.map((specialist) => (
-              <Card
-                key={specialist.id}
-                hover
-                onClick={() => handleSpecialistPress(specialist)}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <div className="w-16 h-16 rounded-full overflow-hidden bg-bg-hover">
-                      <img
-                        src={specialist.avatar || specialist.image || '/api/placeholder/100/100'}
-                        alt={specialist.name}
-                        className="w-full h-full object-cover"
-                      />
+          {specialistsLoading ? (
+            <div className="space-y-3">
+              {[1, 2].map((i) => (
+                <div key={i} className="bg-bg-card rounded-2xl border border-white/5 p-4 animate-pulse">
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 h-16 rounded-full bg-bg-hover" />
+                    <div className="flex-1">
+                      <div className="h-4 w-32 bg-bg-hover rounded mb-2" />
+                      <div className="h-3 w-24 bg-bg-hover rounded mb-2" />
+                      <div className="h-3 w-40 bg-bg-hover rounded" />
                     </div>
-                    {specialist.isOnline && (
-                      <div className="absolute bottom-0 right-0 w-4 h-4 bg-accent-green rounded-full border-2 border-white/5" />
-                    )}
                   </div>
+                </div>
+              ))}
+            </div>
+          ) : specialists.length > 0 ? (
+            <div className="space-y-3">
+              {specialists.map((specialist: any) => (
+                <Card
+                  key={specialist.id}
+                  hover
+                  onClick={() => handleSpecialistPress(specialist)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="w-16 h-16 rounded-full overflow-hidden bg-bg-hover">
+                        {specialist.avatar ? (
+                          <img
+                            src={specialist.avatar}
+                            alt={specialist.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-text-muted text-lg font-semibold">
+                            {(specialist.name || '?').charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      {specialist.isOnline && (
+                        <div className="absolute bottom-0 right-0 w-4 h-4 bg-accent-green rounded-full border-2 border-bg-card" />
+                      )}
+                    </div>
 
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-text-primary">{specialist.name}</h3>
-                    <p className="text-sm text-text-secondary mb-1">{specialist.specialist}</p>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-text-primary truncate">{specialist.name}</h3>
+                      <p className="text-sm text-text-secondary truncate">
+                        {specialist.businessName || specialist.city || ''}
+                      </p>
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 mt-1">
                         <div className="flex items-center gap-1">
                           <Star size={12} className="text-accent-yellow fill-current" />
-                          <span className="text-sm font-medium">{specialist.rating}</span>
+                          <span className="text-sm font-medium text-text-primary">{specialist.rating || 0}</span>
                         </div>
-                        <span className="text-sm text-text-secondary">• {specialist.distance || specialist.location?.city}</span>
-                      </div>
-
-                      <div className="flex flex-wrap gap-1">
-                        {(specialist.specialties || []).slice(0, 2).map((specialty) => (
-                          <span
-                            key={specialty}
-                            className="px-2 py-1 bg-bg-secondary text-xs rounded-lg text-text-secondary font-medium"
-                          >
-                            {specialty}
-                          </span>
-                        ))}
-                        {(specialist.specialties || []).length > 2 && (
-                          <span className="text-xs text-text-secondary">+{specialist.specialties.length - 2}</span>
+                        {specialist.city && (
+                          <span className="text-sm text-text-secondary">• {specialist.city}</span>
                         )}
                       </div>
                     </div>
                   </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-bg-card rounded-2xl border border-white/5 p-8 text-center">
+              <div className="w-14 h-14 rounded-full bg-bg-hover flex items-center justify-center mx-auto mb-3">
+                <MapPin size={24} className="text-text-muted" />
+              </div>
+              <p className="text-sm text-text-secondary">{s('noSpecialists')}</p>
+            </div>
+          )}
         </div>
 
         {/* CTA Section */}
         {!isAuthenticated && !authState && (
           <div className="px-4 py-6 mx-4 my-4 bg-gradient-to-r from-accent-primary to-purple-600 rounded-2xl text-white">
-            <h3 className="text-xl font-bold mb-2">Ready to get started?</h3>
-            <p className="text-blue-100 mb-4">
-              Sign up now and get 10% off your first booking!
+            <h3 className="text-xl font-bold mb-2">{s('readyToStart')}</h3>
+            <p className="text-teal-100 mb-4">
+              {s('signUpOffer')}
             </p>
             <Button
               variant="secondary"
               onClick={() => navigate('/auth')}
               className="bg-bg-card text-accent-primary hover:bg-bg-hover"
             >
-              Get Started
+              {s('getStarted')}
             </Button>
           </div>
         )}

@@ -78,7 +78,21 @@ export const fetchServicesAsync = createAsyncThunk(
     search?: string;
     sort?: string;
   }) => {
-    return await apiService.getServices(params);
+    const response: any = await apiService.getServices(params);
+    // API returns { services: [...], total, page, totalPages }
+    // Normalize to { items, pagination }
+    if (response?.services) {
+      return {
+        items: response.services,
+        pagination: {
+          page: response.page || 1,
+          limit: params?.limit || 10,
+          total: response.total || response.services.length,
+          totalPages: response.totalPages || 1,
+        },
+      };
+    }
+    return response;
   }
 );
 
@@ -92,7 +106,9 @@ export const fetchServiceAsync = createAsyncThunk(
 export const fetchCategoriesAsync = createAsyncThunk(
   'services/fetchCategories',
   async () => {
-    return await apiService.getServiceCategories();
+    const response: any = await apiService.getServiceCategories();
+    // API returns { categories: [...] } — extract the array
+    return Array.isArray(response) ? response : response?.categories || [];
   }
 );
 

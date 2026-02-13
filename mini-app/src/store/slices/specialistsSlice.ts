@@ -91,7 +91,24 @@ export const fetchSpecialistsAsync = createAsyncThunk(
     location?: string;
     rating?: number;
   }) => {
-    return await apiService.getSpecialists(params);
+    const response: any = await apiService.getSpecialists(params);
+    // API returns { specialists: [...], total, page, totalPages }
+    if (response?.specialists) {
+      return {
+        items: response.specialists.map((s: any) => ({
+          ...s,
+          name: s.user ? `${s.user.firstName} ${s.user.lastName}`.trim() : s.name || '',
+          avatar: s.user?.avatar || s.avatar,
+        })),
+        pagination: {
+          page: response.page || 1,
+          limit: params?.limit || 10,
+          total: response.total || response.specialists.length,
+          totalPages: response.totalPages || 1,
+        },
+      };
+    }
+    return response;
   }
 );
 
