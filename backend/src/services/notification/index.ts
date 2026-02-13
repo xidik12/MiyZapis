@@ -203,19 +203,19 @@ export class NotificationService {
         telegramNotifications: user.telegramNotifications
       });
 
-      // Resolve i18n keys for notification record
+      // Resolve i18n keys early so all downstream channels get translated text
       const userLang = user.language || 'en';
       const interpolateVars = data.data?._interpolate || {};
-      const resolvedRecordTitle = this.resolveNotificationText(data.title, userLang, interpolateVars);
-      const resolvedRecordMessage = this.resolveNotificationText(data.message, userLang, interpolateVars);
+      data.title = this.resolveNotificationText(data.title, userLang, interpolateVars);
+      data.message = this.resolveNotificationText(data.message, userLang, interpolateVars);
 
       // Create notification record with resolved text
       const notification = await this.prisma.notification.create({
         data: {
           userId,
           type: data.type,
-          title: resolvedRecordTitle,
-          message: resolvedRecordMessage,
+          title: data.title,
+          message: data.message,
           data: data.data ? JSON.stringify(data.data) : null,
         }
       });

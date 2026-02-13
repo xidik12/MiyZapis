@@ -873,7 +873,7 @@ const SpecialistBookings: React.FC = () => {
 
       // Use the new booking service method
       const { bookingService } = await import('../../services/booking.service');
-      const result = await bookingService.completeBookingWithPayment(bookingId, {
+      await bookingService.completeBookingWithPayment(bookingId, {
         paymentConfirmed,
         completionNotes: notes,
       });
@@ -1267,8 +1267,7 @@ const SpecialistBookings: React.FC = () => {
             onStatusChange={(bookingId, newStatus) => {
               dispatch(updateBookingStatus({
                 bookingId,
-                status: newStatus as BookingStatus,
-                userType: activeTab === 'provider' ? 'specialist' : 'customer'
+                status: newStatus as BookingStatus
               }));
             }}
             userRole={activeTab === 'provider' ? 'specialist' : 'customer'}

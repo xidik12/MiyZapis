@@ -465,6 +465,8 @@ export class EnhancedAuthService {
           emailNotifications: true,
           pushNotifications: true,
           telegramNotifications: true,
+          passwordLastChanged: true,
+          authProvider: true,
           createdAt: true,
           updatedAt: true,
           specialist: {
