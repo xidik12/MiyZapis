@@ -1,0 +1,1152 @@
+{
+  "Dashboard Stats (30d)": {
+    "url": "/api/v1/admin/dashboard/stats?period=30d",
+    "description": "Get overall dashboard statistics including user counts, bookings, revenue, and growth metrics",
+    "status": 200,
+    "success": true,
+    "data": {
+      "stats": {
+        "overview": {
+          "totalUsers": 30,
+          "totalSpecialists": 10,
+          "totalServices": 7,
+          "totalBookings": 10,
+          "totalRevenue": 360,
+          "activeUsers": 10,
+          "completedBookings": 3,
+          "conversionRate": 33.33333333333333
+        },
+        "growth": {
+          "newUsers": {
+            "current": 10,
+            "previous": 16,
+            "growthRate": -37.5
+          },
+          "newBookings": {
+            "current": 8,
+            "previous": 2,
+            "growthRate": 300
+          },
+          "revenue": {
+            "current": 360,
+            "previous": 0,
+            "growthRate": 100
+          }
+        },
+        "recentActivity": {
+          "bookings": [
+            {
+              "id": "cml7p728z0001o60c2e3qig86",
+              "customerId": "cmh4su75c0000pf0cyxu55fpc",
+              "specialistId": "cmksamhv9001gpa0chqxjchz3",
+              "serviceId": "cmksciosg002gpa0cvclpy4xy",
+              "promoCodeId": null,
+              "status": "PENDING",
+              "scheduledAt": "2026-02-05T09:00:00.000Z",
+              "duration": 150,
+              "totalAmount": 500,
+              "depositAmount": 100,
+              "remainingAmount": 400,
+              "loyaltyPointsUsed": 0,
+              "paidWithLoyaltyPoints": false,
+              "depositStatus": "PENDING",
+              "depositPaidAt": null,
+              "depositRefundedAt": null,
+              "depositCurrency": "USD",
+              "walletAmountUsed": 0,
+              "customerNotes": "Дуже цікаво)",
+              "specialistNotes": null,
+              "preparationNotes": null,
+              "completionNotes": null,
+              "deliverables": "[]",
+              "participantCount": 1,
+              "groupSessionId": null,
+              "confirmedAt": null,
+              "startedAt": null,
+              "completedAt": null,
+              "cancelledAt": null,
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "refundAmount": null,
+              "createdAt": "2026-02-04T07:20:22.307Z",
+              "updatedAt": "2026-02-04T07:20:22.307Z",
+              "customer": {
+                "firstName": "Slava",
+                "lastName": "Skat",
+                "email": "dzxdzx17@gmail.com"
+              },
+              "specialist": {
+                "firstName": "Just",
+                "lastName": "HeGGo",
+                "specialist": {
+                  "businessName": "veterinarian"
+                }
+              },
+              "service": {
+                "name": "Варю борщ"
+              }
+            },
+            {
+              "id": "cml2e3z6n0005n40cmgomuqm1",
+              "customerId": "cml2c39tq000cmd0c1s5amnp6",
+              "specialistId": "cmj0u6psx0000o20c12cdyse9",
+              "serviceId": "cmj0u7sy60004o20cu2ik6uwr",
+              "promoCodeId": null,
+              "status": "PENDING",
+              "scheduledAt": "2026-02-03T08:45:00.000Z",
+              "duration": 90,
+              "totalAmount": 120,
+              "depositAmount": 24,
+              "remainingAmount": 96,
+              "loyaltyPointsUsed": 0,
+              "paidWithLoyaltyPoints": false,
+              "depositStatus": "PENDING",
+              "depositPaidAt": null,
+              "depositRefundedAt": null,
+              "depositCurrency": "USD",
+              "walletAmountUsed": 0,
+              "customerNotes": null,
+              "specialistNotes": null,
+              "preparationNotes": null,
+              "completionNotes": null,
+              "deliverables": "[]",
+              "participantCount": 1,
+              "groupSessionId": null,
+              "confirmedAt": null,
+              "startedAt": null,
+              "completedAt": null,
+              "cancelledAt": null,
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "refundAmount": null,
+              "createdAt": "2026-01-31T14:11:11.711Z",
+              "updatedAt": "2026-01-31T14:11:11.711Z",
+              "customer": {
+                "firstName": "Vitalii",
+                "lastName": "Yuta",
+                "email": "vitempty@gmail.com"
+              },
+              "specialist": {
+                "firstName": "Khidayotullo",
+                "lastName": "Salakhitdinov",
+                "specialist": {
+                  "businessName": "hair-colorist"
+                }
+              },
+              "service": {
+                "name": "kiki"
+              }
+            },
+            {
+              "id": "cml0v3i85003hpa0c4dg815jk",
+              "customerId": "cmh4t5ny20005pf0cx4llhetb",
+              "specialistId": "cmj0u6psx0000o20c12cdyse9",
+              "serviceId": "cmj0u7sy60004o20cu2ik6uwr",
+              "promoCodeId": null,
+              "status": "PENDING",
+              "scheduledAt": "2026-02-02T07:15:00.000Z",
+              "duration": 90,
+              "totalAmount": 120,
+              "depositAmount": 24,
+              "remainingAmount": 96,
+              "loyaltyPointsUsed": 0,
+              "paidWithLoyaltyPoints": false,
+              "depositStatus": "PENDING",
+              "depositPaidAt": null,
+              "depositRefundedAt": null,
+              "depositCurrency": "USD",
+              "walletAmountUsed": 0,
+              "customerNotes": "Salam",
+              "specialistNotes": null,
+              "preparationNotes": null,
+              "completionNotes": null,
+              "deliverables": "[]",
+              "participantCount": 1,
+              "groupSessionId": null,
+              "confirmedAt": null,
+              "startedAt": null,
+              "completedAt": null,
+              "cancelledAt": null,
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "refundAmount": null,
+              "createdAt": "2026-01-30T12:31:10.853Z",
+              "updatedAt": "2026-01-30T12:31:10.853Z",
+              "customer": {
+                "firstName": "Angkor",
+                "lastName": "Chernihiv",
+                "email": "angkorchernihiv@gmail.com"
+              },
+              "specialist": {
+                "firstName": "Khidayotullo",
+                "lastName": "Salakhitdinov",
+                "specialist": {
+                  "businessName": "hair-colorist"
+                }
+              },
+              "service": {
+                "name": "kiki"
+              }
+            },
+            {
+              "id": "cmksb3gfz001upa0ck20ontpl",
+              "customerId": "cmjd8yk1f000hqk0cuzvc8s26",
+              "specialistId": "cmj0u6psx0000o20c12cdyse9",
+              "serviceId": "cmj0u7sy60004o20cu2ik6uwr",
+              "promoCodeId": null,
+              "status": "PENDING",
+              "scheduledAt": "2026-02-09T07:15:00.000Z",
+              "duration": 90,
+              "totalAmount": 120,
+              "depositAmount": 24,
+              "remainingAmount": 96,
+              "loyaltyPointsUsed": 0,
+              "paidWithLoyaltyPoints": false,
+              "depositStatus": "PENDING",
+              "depositPaidAt": null,
+              "depositRefundedAt": null,
+              "depositCurrency": "USD",
+              "walletAmountUsed": 0,
+              "customerNotes": "теееест",
+              "specialistNotes": null,
+              "preparationNotes": null,
+              "completionNotes": null,
+              "deliverables": "[]",
+              "participantCount": 1,
+              "groupSessionId": null,
+              "confirmedAt": null,
+              "startedAt": null,
+              "completedAt": null,
+              "cancelledAt": null,
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "refundAmount": null,
+              "createdAt": "2026-01-24T12:49:06.816Z",
+              "updatedAt": "2026-01-24T12:49:06.816Z",
+              "customer": {
+                "firstName": "Віталій",
+                "lastName": "Ющенко",
+                "email": "vit.empty@gmail.com"
+              },
+              "specialist": {
+                "firstName": "Khidayotullo",
+                "lastName": "Salakhitdinov",
+                "specialist": {
+                  "businessName": "hair-colorist"
+                }
+              },
+              "service": {
+                "name": "kiki"
+              }
+            },
+            {
+              "id": "cmko6mgf40001l50c1ggd4gf6",
+              "customerId": "cmiy71hc70000rx0c69ygnuzf",
+              "specialistId": "cmj0u6psx0000o20c12cdyse9",
+              "serviceId": "cmj0u7sy60004o20cu2ik6uwr",
+              "promoCodeId": null,
+              "status": "PENDING",
+              "scheduledAt": "2026-01-27T03:00:00.000Z",
+              "duration": 90,
+              "totalAmount": 120,
+              "depositAmount": 24,
+              "remainingAmount": 96,
+              "loyaltyPointsUsed": 0,
+              "paidWithLoyaltyPoints": false,
+              "depositStatus": "PENDING",
+              "depositPaidAt": null,
+              "depositRefundedAt": null,
+              "depositCurrency": "USD",
+              "walletAmountUsed": 0,
+              "customerNotes": null,
+              "specialistNotes": null,
+              "preparationNotes": null,
+              "completionNotes": null,
+              "deliverables": "[]",
+              "participantCount": 1,
+              "groupSessionId": null,
+              "confirmedAt": null,
+              "startedAt": null,
+              "completedAt": null,
+              "cancelledAt": null,
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "refundAmount": null,
+              "createdAt": "2026-01-21T15:32:50.464Z",
+              "updatedAt": "2026-01-21T15:32:50.464Z",
+              "customer": {
+                "firstName": "Khidayotullo",
+                "lastName": "Salakhitdinov",
+                "email": "xidik12@gmail.com"
+              },
+              "specialist": {
+                "firstName": "Khidayotullo",
+                "lastName": "Salakhitdinov",
+                "specialist": {
+                  "businessName": "hair-colorist"
+                }
+              },
+              "service": {
+                "name": "kiki"
+              }
+            },
+            {
+              "id": "cmko5zfko0003oz0cp9f7zefo",
+              "customerId": "cmiy71hc70000rx0c69ygnuzf",
+              "specialistId": "cmj0u6psx0000o20c12cdyse9",
+              "serviceId": "cmj0u7sy60004o20cu2ik6uwr",
+              "promoCodeId": null,
+              "status": "PENDING",
+              "scheduledAt": "2026-01-22T05:30:00.000Z",
+              "duration": 90,
+              "totalAmount": 120,
+              "depositAmount": 24,
+              "remainingAmount": 96,
+              "loyaltyPointsUsed": 0,
+              "paidWithLoyaltyPoints": false,
+              "depositStatus": "PENDING",
+              "depositPaidAt": null,
+              "depositRefundedAt": null,
+              "depositCurrency": "USD",
+              "walletAmountUsed": 0,
+              "customerNotes": null,
+              "specialistNotes": null,
+              "preparationNotes": null,
+              "completionNotes": null,
+              "deliverables": "[]",
+              "participantCount": 1,
+              "groupSessionId": null,
+              "confirmedAt": null,
+              "startedAt": null,
+              "completedAt": null,
+              "cancelledAt": null,
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "refundAmount": null,
+              "createdAt": "2026-01-21T15:14:56.280Z",
+              "updatedAt": "2026-01-21T15:14:56.280Z",
+              "customer": {
+                "firstName": "Khidayotullo",
+                "lastName": "Salakhitdinov",
+                "email": "xidik12@gmail.com"
+              },
+              "specialist": {
+                "firstName": "Khidayotullo",
+                "lastName": "Salakhitdinov",
+                "specialist": {
+                  "businessName": "hair-colorist"
+                }
+              },
+              "service": {
+                "name": "kiki"
+              }
+            },
+            {
+              "id": "cmko42w7b001jms0cg52yyilu",
+              "customerId": "cmh4su75c0000pf0cyxu55fpc",
+              "specialistId": "cmj0u6psx0000o20c12cdyse9",
+              "serviceId": "cmj0u7sy60004o20cu2ik6uwr",
+              "promoCodeId": null,
+              "status": "PENDING",
+              "scheduledAt": "2026-02-05T11:15:00.000Z",
+              "duration": 90,
+              "totalAmount": 120,
+              "depositAmount": 24,
+              "remainingAmount": 96,
+              "loyaltyPointsUsed": 0,
+              "paidWithLoyaltyPoints": false,
+              "depositStatus": "PENDING",
+              "depositPaidAt": null,
+              "depositRefundedAt": null,
+              "depositCurrency": "USD",
+              "walletAmountUsed": 0,
+              "customerNotes": "Салам",
+              "specialistNotes": null,
+              "preparationNotes": null,
+              "completionNotes": null,
+              "deliverables": "[]",
+              "participantCount": 1,
+              "groupSessionId": null,
+              "confirmedAt": null,
+              "startedAt": null,
+              "completedAt": null,
+              "cancelledAt": null,
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "refundAmount": null,
+              "createdAt": "2026-01-21T14:21:38.567Z",
+              "updatedAt": "2026-01-21T14:21:38.567Z",
+              "customer": {
+                "firstName": "Slava",
+                "lastName": "Skat",
+                "email": "dzxdzx17@gmail.com"
+              },
+              "specialist": {
+                "firstName": "Khidayotullo",
+                "lastName": "Salakhitdinov",
+                "specialist": {
+                  "businessName": "hair-colorist"
+                }
+              },
+              "service": {
+                "name": "kiki"
+              }
+            },
+            {
+              "id": "cmk2qsz370005qq0cksfd743x",
+              "customerId": "cmh4t5ny20005pf0cx4llhetb",
+              "specialistId": "cmj0u6psx0000o20c12cdyse9",
+              "serviceId": "cmj0u7sy60004o20cu2ik6uwr",
+              "promoCodeId": null,
+              "status": "COMPLETED",
+              "scheduledAt": "2026-01-07T08:00:00.000Z",
+              "duration": 90,
+              "totalAmount": 120,
+              "depositAmount": 24,
+              "remainingAmount": 96,
+              "loyaltyPointsUsed": 0,
+              "paidWithLoyaltyPoints": false,
+              "depositStatus": "PENDING",
+              "depositPaidAt": null,
+              "depositRefundedAt": null,
+              "depositCurrency": "USD",
+              "walletAmountUsed": 0,
+              "customerNotes": "Делаем красиво?",
+              "specialistNotes": null,
+              "preparationNotes": null,
+              "completionNotes": "",
+              "deliverables": "[]",
+              "participantCount": 1,
+              "groupSessionId": null,
+              "confirmedAt": "2026-01-06T16:19:48.431Z",
+              "startedAt": null,
+              "completedAt": "2026-01-19T11:37:27.541Z",
+              "cancelledAt": null,
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "refundAmount": null,
+              "createdAt": "2026-01-06T15:26:51.043Z",
+              "updatedAt": "2026-01-19T11:37:27.541Z",
+              "customer": {
+                "firstName": "Angkor",
+                "lastName": "Chernihiv",
+                "email": "angkorchernihiv@gmail.com"
+              },
+              "specialist": {
+                "firstName": "Khidayotullo",
+                "lastName": "Salakhitdinov",
+                "specialist": {
+                  "businessName": "hair-colorist"
+                }
+              },
+              "service": {
+                "name": "kiki"
+              }
+            },
+            {
+              "id": "cmj4z0gvp0001qk0c5z040h48",
+              "customerId": "cmh4t5ny20005pf0cx4llhetb",
+              "specialistId": "cmj0u6psx0000o20c12cdyse9",
+              "serviceId": "cmj0u7sy60004o20cu2ik6uwr",
+              "promoCodeId": null,
+              "status": "COMPLETED",
+              "scheduledAt": "2025-12-16T12:00:00.000Z",
+              "duration": 90,
+              "totalAmount": 120,
+              "depositAmount": 24,
+              "remainingAmount": 96,
+              "loyaltyPointsUsed": 0,
+              "paidWithLoyaltyPoints": false,
+              "depositStatus": "PENDING",
+              "depositPaidAt": null,
+              "depositRefundedAt": null,
+              "depositCurrency": "USD",
+              "walletAmountUsed": 0,
+              "customerNotes": "Ьеру",
+              "specialistNotes": null,
+              "preparationNotes": null,
+              "completionNotes": "",
+              "deliverables": "[]",
+              "participantCount": 1,
+              "groupSessionId": null,
+              "confirmedAt": "2026-01-06T16:19:38.756Z",
+              "startedAt": null,
+              "completedAt": "2026-01-19T11:37:33.114Z",
+              "cancelledAt": null,
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "refundAmount": null,
+              "createdAt": "2025-12-14T00:12:27.637Z",
+              "updatedAt": "2026-01-19T11:37:33.114Z",
+              "customer": {
+                "firstName": "Angkor",
+                "lastName": "Chernihiv",
+                "email": "angkorchernihiv@gmail.com"
+              },
+              "specialist": {
+                "firstName": "Khidayotullo",
+                "lastName": "Salakhitdinov",
+                "specialist": {
+                  "businessName": "hair-colorist"
+                }
+              },
+              "service": {
+                "name": "kiki"
+              }
+            },
+            {
+              "id": "cmj0uxxho00ipr00ccle7p3hb",
+              "customerId": "cmiy71hc70000rx0c69ygnuzf",
+              "specialistId": "cmj0u6psx0000o20c12cdyse9",
+              "serviceId": "cmj0u7sy60004o20cu2ik6uwr",
+              "promoCodeId": null,
+              "status": "COMPLETED",
+              "scheduledAt": "2025-12-12T02:30:00.000Z",
+              "duration": 90,
+              "totalAmount": 120,
+              "depositAmount": 24,
+              "remainingAmount": 96,
+              "loyaltyPointsUsed": 0,
+              "paidWithLoyaltyPoints": false,
+              "depositStatus": "PENDING",
+              "depositPaidAt": null,
+              "depositRefundedAt": null,
+              "depositCurrency": "USD",
+              "walletAmountUsed": 0,
+              "customerNotes": null,
+              "specialistNotes": null,
+              "preparationNotes": null,
+              "completionNotes": "",
+              "deliverables": "[]",
+              "participantCount": 1,
+              "groupSessionId": null,
+              "confirmedAt": "2026-01-19T11:37:36.219Z",
+              "startedAt": null,
+              "completedAt": "2026-01-19T11:37:40.198Z",
+              "cancelledAt": null,
+              "cancellationReason": null,
+              "cancelledBy": null,
+              "refundAmount": null,
+              "createdAt": "2025-12-11T03:07:26.028Z",
+              "updatedAt": "2026-01-19T11:37:40.198Z",
+              "customer": {
+                "firstName": "Khidayotullo",
+                "lastName": "Salakhitdinov",
+                "email": "xidik12@gmail.com"
+              },
+              "specialist": {
+                "firstName": "Khidayotullo",
+                "lastName": "Salakhitdinov",
+                "specialist": {
+                  "businessName": "hair-colorist"
+                }
+              },
+              "service": {
+                "name": "kiki"
+              }
+            }
+          ],
+          "users": [
+            {
+              "id": "cml3hkfyr0000lz8kod2oexx0",
+              "firstName": "System",
+              "lastName": "Administrator",
+              "email": "admin@miyzapis.com",
+              "userType": "admin",
+              "createdAt": "2026-02-01T08:35:44.979Z",
+              "isActive": true
+            },
+            {
+              "id": "cml2c39tq000cmd0c1s5amnp6",
+              "firstName": "Vitalii",
+              "lastName": "Yuta",
+              "email": "vitempty@gmail.com",
+              "userType": "CUSTOMER",
+              "createdAt": "2026-01-31T13:14:39.613Z",
+              "isActive": true
+            },
+            {
+              "id": "cml2bzqgb0007md0c1n3prx2f",
+              "firstName": "Vitalii",
+              "lastName": "Yuqos",
+              "email": "vit12s1y@gma.co",
+              "userType": "SPECIALIST",
+              "createdAt": "2026-01-31T13:11:54.539Z",
+              "isActive": true
+            },
+            {
+              "id": "cml2aykxr0000md0c9nalslyj",
+              "firstName": "Khidayotullo",
+              "lastName": "Salakhitdinov",
+              "email": "incognitogen@gmail.com",
+              "userType": "SPECIALIST",
+              "createdAt": "2026-01-31T12:43:01.119Z",
+              "isActive": true
+            },
+            {
+              "id": "cmktohcpz0031pa0cy53xule2",
+              "firstName": "segj",
+              "lastName": "berj",
+              "email": "asd@sa.com",
+              "userType": "SPECIALIST",
+              "createdAt": "2026-01-25T11:51:36.359Z",
+              "isActive": true
+            },
+            {
+              "id": "cmksamhv9001gpa0chqxjchz3",
+              "firstName": "Just",
+              "lastName": "HeGGo",
+              "email": "just.heggo@gmail.com",
+              "userType": "SPECIALIST",
+              "createdAt": "2026-01-24T12:35:55.509Z",
+              "isActive": true
+            },
+            {
+              "id": "cmksa0qg9001dpa0cowsbudmu",
+              "firstName": "Борис",
+              "lastName": "Булгуров",
+              "email": "jut.heg@gml.com",
+              "userType": "CUSTOMER",
+              "createdAt": "2026-01-24T12:19:00.201Z",
+              "isActive": true
+            },
+            {
+              "id": "cmks9u6rr001apa0ctprj3sqp",
+              "firstName": "Борис",
+              "lastName": "Булгуров",
+              "email": "just.heg@gml.com",
+              "userType": "CUSTOMER",
+              "createdAt": "2026-01-24T12:13:54.759Z",
+              "isActive": true
+            },
+            {
+              "id": "cmks9sqau0017pa0cognj50jj",
+              "firstName": "Борис",
+              "lastName": "Булгуров",
+              "email": "just.hgo@gil.com",
+              "userType": "CUSTOMER",
+              "createdAt": "2026-01-24T12:12:46.758Z",
+              "isActive": true
+            },
+            {
+              "id": "cmks9sghx0014pa0cu3eiujup",
+              "firstName": "Борис",
+              "lastName": "Булгуров",
+              "email": "justheggo@gmail.com",
+              "userType": "CUSTOMER",
+              "createdAt": "2026-01-24T12:12:34.053Z",
+              "isActive": true
+            }
+          ]
+        },
+        "analytics": {
+          "categoryStats": [
+            {
+              "_count": {
+                "id": 1
+              },
+              "_avg": {
+                "basePrice": 500
+              },
+              "category": "language-lessons"
+            },
+            {
+              "_count": {
+                "id": 1
+              },
+              "_avg": {
+                "basePrice": 120
+              },
+              "category": "hair-styling"
+            },
+            {
+              "_count": {
+                "id": 1
+              },
+              "_avg": {
+                "basePrice": 300
+              },
+              "category": ""
+            },
+            {
+              "_count": {
+                "id": 1
+              },
+              "_avg": {
+                "basePrice": 300
+              },
+              "category": "Пекарь"
+            },
+            {
+              "_count": {
+                "id": 1
+              },
+              "_avg": {
+                "basePrice": 500
+              },
+              "category": "home-services"
+            },
+            {
+              "_count": {
+                "id": 1
+              },
+              "_avg": {
+                "basePrice": 700
+              },
+              "category": "manicure-pedicure"
+            },
+            {
+              "_count": {
+                "id": 1
+              },
+              "_avg": {
+                "basePrice": 100
+              },
+              "category": "education-tutoring"
+            }
+          ],
+          "topSpecialists": [
+            {
+              "id": "cmj0u6ptf0002o20canq8vxp6",
+              "name": "Khidayotullo Salakhitdinov",
+              "email": "info@incognitogeneration.com",
+              "businessName": "hair-colorist",
+              "rating": 5,
+              "reviewCount": 1,
+              "servicesCount": 1,
+              "isVerified": false
+            },
+            {
+              "id": "cmh4vrjp6000epf0clsqrx9f9",
+              "name": "Наталія Троценко",
+              "email": "ntrocenko2@gmail.com",
+              "businessName": "",
+              "rating": 0,
+              "reviewCount": 0,
+              "servicesCount": 1,
+              "isVerified": false
+            },
+            {
+              "id": "cmh4su75s0002pf0cou74jys7",
+              "name": "Slava Skat",
+              "email": "dzxdzx17@gmail.com",
+              "businessName": "",
+              "rating": 0,
+              "reviewCount": 0,
+              "servicesCount": 2,
+              "isVerified": false
+            },
+            {
+              "id": "cmksamhvn001ipa0cctqtpcml",
+              "name": "Just HeGGo",
+              "email": "just.heggo@gmail.com",
+              "businessName": "veterinarian",
+              "rating": 0,
+              "reviewCount": 0,
+              "servicesCount": 3,
+              "isVerified": false
+            },
+            {
+              "id": "cmktohcqb0033pa0cf0tr6rjb",
+              "name": "segj berj",
+              "email": "asd@sa.com",
+              "businessName": "",
+              "rating": 0,
+              "reviewCount": 0,
+              "servicesCount": 0,
+              "isVerified": false
+            },
+            {
+              "id": "cml2bzqgs0009md0cjiwgj2v2",
+              "name": "Vitalii Yuqos",
+              "email": "vit12s1y@gma.co",
+              "businessName": "",
+              "rating": 0,
+              "reviewCount": 0,
+              "servicesCount": 0,
+              "isVerified": false
+            },
+            {
+              "id": "cmjermwrj0018qk0c89nlt33g",
+              "name": "<img src=x alert(document.cookie)> 2",
+              "email": "testuser20533bt@gmail.com",
+              "businessName": "",
+              "rating": 0,
+              "reviewCount": 0,
+              "servicesCount": 0,
+              "isVerified": false
+            },
+            {
+              "id": "cmjermnbu0013qk0cqe4bybq1",
+              "name": "<Test> 2",
+              "email": "testuser2053bt@gmail.com",
+              "businessName": "",
+              "rating": 0,
+              "reviewCount": 0,
+              "servicesCount": 0,
+              "isVerified": false
+            },
+            {
+              "id": "cml2aykyh0002md0cyhiqc9zb",
+              "name": "Khidayotullo Salakhitdinov",
+              "email": "incognitogen@gmail.com",
+              "businessName": "",
+              "rating": 0,
+              "reviewCount": 0,
+              "servicesCount": 0,
+              "isVerified": false
+            },
+            {
+              "id": "cmjerq7u5001dqk0cmobghst5",
+              "name": "<img src=x alert(document.cookie)> 2",
+              "email": "testuser205353bt@gmail.com",
+              "businessName": "",
+              "rating": 0,
+              "reviewCount": 0,
+              "servicesCount": 0,
+              "isVerified": false
+            }
+          ]
+        }
+      }
+    },
+    "timestamp": "2026-02-05T10:01:07.223Z"
+  },
+  "User Analytics": {
+    "url": "/api/v1/admin/analytics/users?period=30d",
+    "description": "Get detailed user analytics including registration trends, engagement stats, and geographic distribution",
+    "status": 200,
+    "success": true,
+    "data": {
+      "userTrends": [
+        {
+          "date": {},
+          "userType": "CUSTOMER",
+          "count": 4
+        },
+        {
+          "date": {},
+          "userType": "SPECIALIST",
+          "count": 1
+        },
+        {
+          "date": {},
+          "userType": "SPECIALIST",
+          "count": 1
+        },
+        {
+          "date": {},
+          "userType": "CUSTOMER",
+          "count": 1
+        },
+        {
+          "date": {},
+          "userType": "SPECIALIST",
+          "count": 2
+        },
+        {
+          "date": {},
+          "userType": "admin",
+          "count": 1
+        }
+      ],
+      "engagementStats": [
+        {
+          "_count": {
+            "id": 4
+          },
+          "userType": "CUSTOMER"
+        },
+        {
+          "_count": {
+            "id": 5
+          },
+          "userType": "SPECIALIST"
+        },
+        {
+          "_count": {
+            "id": 1
+          },
+          "userType": "admin"
+        }
+      ],
+      "geographicStats": [
+        {
+          "_count": {
+            "id": 30
+          },
+          "timezone": "UTC"
+        }
+      ],
+      "platformStats": []
+    },
+    "timestamp": "2026-02-05T10:01:07.375Z"
+  },
+  "Booking Analytics": {
+    "url": "/api/v1/admin/analytics/bookings?period=30d",
+    "description": "Get booking statistics including status distribution, trends, popular services, and peak hours",
+    "status": 200,
+    "success": true,
+    "data": {
+      "statusStats": [
+        {
+          "_count": {
+            "id": 7
+          },
+          "_sum": {
+            "totalAmount": 1220
+          },
+          "status": "PENDING"
+        },
+        {
+          "_count": {
+            "id": 1
+          },
+          "_sum": {
+            "totalAmount": 120
+          },
+          "status": "COMPLETED"
+        }
+      ],
+      "bookingTrends": [
+        {
+          "date": {},
+          "status": "COMPLETED",
+          "count": 1,
+          "avg_amount": 120
+        },
+        {
+          "date": {},
+          "status": "PENDING",
+          "count": 3,
+          "avg_amount": 120
+        },
+        {
+          "date": {},
+          "status": "PENDING",
+          "count": 1,
+          "avg_amount": 120
+        },
+        {
+          "date": {},
+          "status": "PENDING",
+          "count": 1,
+          "avg_amount": 120
+        },
+        {
+          "date": {},
+          "status": "PENDING",
+          "count": 1,
+          "avg_amount": 120
+        },
+        {
+          "date": {},
+          "status": "PENDING",
+          "count": 1,
+          "avg_amount": 500
+        }
+      ],
+      "popularServices": [
+        {
+          "_count": {
+            "id": 7
+          },
+          "serviceId": "cmj0u7sy60004o20cu2ik6uwr",
+          "service": {
+            "id": "cmj0u7sy60004o20cu2ik6uwr",
+            "name": "kiki",
+            "category": "hair-styling",
+            "basePrice": 120,
+            "currency": "USD"
+          }
+        },
+        {
+          "_count": {
+            "id": 1
+          },
+          "serviceId": "cmksciosg002gpa0cvclpy4xy",
+          "service": {
+            "id": "cmksciosg002gpa0cvclpy4xy",
+            "name": "Варю борщ",
+            "category": "home-services",
+            "basePrice": 500,
+            "currency": "UAH"
+          }
+        }
+      ],
+      "hourlyStats": [
+        {
+          "hour": {
+            "s": 1,
+            "e": 0,
+            "d": [
+              8
+            ]
+          },
+          "count": 1
+        }
+      ],
+      "categoryRevenue": [
+        {
+          "category": "hair-styling",
+          "booking_count": 1,
+          "avg_amount": 120,
+          "total_revenue": 120
+        }
+      ]
+    },
+    "timestamp": "2026-02-05T10:01:07.495Z"
+  },
+  "Financial Analytics": {
+    "url": "/api/v1/admin/analytics/financial?period=30d",
+    "description": "Get financial data including revenue trends, payment methods, currency distribution, and top earners",
+    "status": 200,
+    "success": true,
+    "data": {
+      "revenueTrends": [
+        {
+          "date": {},
+          "type": "FULL_PAYMENT",
+          "total_amount": 360,
+          "transaction_count": 3
+        }
+      ],
+      "paymentMethodStats": [
+        {
+          "_count": {
+            "id": 3
+          },
+          "_sum": {
+            "amount": 360
+          },
+          "paymentMethodType": "cash"
+        }
+      ],
+      "currencyStats": [
+        {
+          "_count": {
+            "id": 3
+          },
+          "_sum": {
+            "amount": 360
+          },
+          "currency": "USD"
+        }
+      ],
+      "topEarningSpecialists": [
+        {
+          "id": "cmj0u6ptf0002o20canq8vxp6",
+          "businessName": "hair-colorist",
+          "firstName": "Khidayotullo",
+          "lastName": "Salakhitdinov",
+          "email": "info@incognitogeneration.com",
+          "total_earnings": 360,
+          "transaction_count": 3,
+          "avg_transaction": 120
+        }
+      ],
+      "refundStats": {
+        "_count": {
+          "id": 0
+        },
+        "_sum": {
+          "amount": null
+        },
+        "refundRate": 0
+      }
+    },
+    "timestamp": "2026-02-05T10:01:07.627Z"
+  },
+  "Referral Analytics": {
+    "url": "/api/v1/admin/analytics/referrals",
+    "description": "Get referral program performance including conversion rates, rewards distributed, and top referrers",
+    "status": 200,
+    "success": true,
+    "data": {
+      "referralAnalytics": {
+        "overview": {
+          "totalReferrals": 3,
+          "completedReferrals": 0,
+          "pendingReferrals": 3,
+          "expiredReferrals": 0,
+          "conversionRate": 0
+        },
+        "byType": {
+          "SPECIALIST_TO_CUSTOMER": 1,
+          "CUSTOMER_TO_CUSTOMER": 1,
+          "CUSTOMER_TO_SPECIALIST": 1
+        },
+        "recentActivity": {
+          "newReferrals": 0,
+          "completedReferrals": 0
+        },
+        "topReferrers": []
+      }
+    },
+    "timestamp": "2026-02-05T10:01:07.764Z"
+  },
+  "System Health": {
+    "url": "/api/v1/admin/system/health",
+    "description": "Get system health status including database, Redis, system metrics, and application metrics",
+    "status": 200,
+    "success": true,
+    "data": {
+      "healthChecks": [
+        {
+          "name": "Database",
+          "status": "healthy",
+          "responseTime": "good"
+        },
+        {
+          "name": "Redis",
+          "status": "healthy",
+          "responseTime": "good"
+        }
+      ],
+      "systemMetrics": {
+        "uptime": 206524.869710288,
+        "memory": {
+          "rss": 150261760,
+          "heapTotal": 60792832,
+          "heapUsed": 57665856,
+          "external": 3595565,
+          "arrayBuffers": 554643
+        },
+        "cpuUsage": {
+          "user": 73010158,
+          "system": 13048489
+        },
+        "version": "v18.20.8",
+        "platform": "linux",
+        "environment": "production"
+      },
+      "appMetrics": {
+        "totalUsers": 30,
+        "activeUsers": 1,
+        "totalBookings": 10,
+        "todayBookings": 0
+      },
+      "timestamp": "2026-02-05T10:01:07.887Z",
+      "overallStatus": "healthy"
+    },
+    "timestamp": "2026-02-05T10:01:07.894Z"
+  },
+  "Audit Logs": {
+    "url": "/api/v1/admin/audit-logs",
+    "description": "Get audit logs of administrative actions",
+    "status": 200,
+    "success": true,
+    "data": {
+      "auditLogs": [],
+      "pagination": {
+        "currentPage": 1,
+        "totalPages": 0,
+        "totalItems": 0,
+        "itemsPerPage": 50,
+        "hasNext": false,
+        "hasPrev": false
+      }
+    },
+    "timestamp": "2026-02-05T10:01:07.991Z"
+  }
+}

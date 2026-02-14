@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import {
   Calendar,
   Clock,
@@ -18,6 +18,13 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import { useLocale, t } from '@/hooks/useLocale';
+import { bookingFlowStrings, commonStrings } from '@/utils/translations';
+import { createBookingAsync } from '@/store/slices/bookingsSlice';
+import { fetchServiceAsync } from '@/store/slices/servicesSlice';
+import { apiService } from '@/services/api.service';
+import type { Service } from '@/store/slices/servicesSlice';
 
 interface BookingStep {
   id: string;
@@ -25,39 +32,17 @@ interface BookingStep {
   completed: boolean;
 }
 
-const bookingSteps: BookingStep[] = [
-  { id: 'service', title: 'Select Service', completed: false },
-  { id: 'datetime', title: 'Date & Time', completed: false },
-  { id: 'details', title: 'Details', completed: false },
-  { id: 'payment', title: 'Payment', completed: false }
-];
-
-// Mock data - replace with actual API calls
-const mockService = {
-  id: '1',
-  name: 'Hair Styling & Color',
-  description: 'Professional hair styling and coloring service',
-  duration: 120,
-  price: 85,
-  specialist: {
-    id: '1',
-    name: 'Sarah Johnson',
-    avatar: '/api/placeholder/100/100',
-    rating: 4.9,
-    reviews: 127,
-    location: 'Downtown Beauty Studio, 123 Main St'
-  }
-};
-
-const mockAvailableSlots = [
-  { date: '2024-01-15', slots: ['09:00', '10:30', '14:00', '15:30', '17:00'] },
-  { date: '2024-01-16', slots: ['09:00', '11:00', '13:30', '16:00'] },
-  { date: '2024-01-17', slots: ['10:00', '12:00', '14:30', '17:30'] }
-];
+interface TimeSlot {
+  date: string;
+  slots: string[];
+}
 
 export const BookingFlow: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
+  const dispatch = useAppDispatch();
+  const locale = useLocale();
   const {
     user,
     mainButton,
@@ -67,10 +52,17 @@ export const BookingFlow: React.FC = () => {
     showConfirm
   } = useTelegram();
 
+  // Redux state
+  const { selectedService, isLoading: serviceLoading } = useAppSelector((state) => state.services);
+  const { isCreating } = useAppSelector((state) => state.bookings);
+
+  // Component state
   const [currentStep, setCurrentStep] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
+  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
+  const [loadingAvailability, setLoadingAvailability] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
   const [bookingDetails, setBookingDetails] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
@@ -79,8 +71,73 @@ export const BookingFlow: React.FC = () => {
     notes: ''
   });
 
-  const serviceId = searchParams.get('serviceId');
-  const specialistId = searchParams.get('specialistId');
+  const serviceId = searchParams.get('serviceId') || location.state?.serviceId;
+  const specialistId = searchParams.get('specialistId') || location.state?.specialistId;
+
+  // Dynamic booking steps with translations
+  const bookingSteps: BookingStep[] = [
+    { id: 'service', title: t(bookingFlowStrings, 'selectService', locale), completed: false },
+    { id: 'datetime', title: t(bookingFlowStrings, 'dateTime', locale), completed: false },
+    { id: 'details', title: t(bookingFlowStrings, 'details', locale), completed: false },
+    { id: 'payment', title: t(bookingFlowStrings, 'payment', locale), completed: false }
+  ];
+
+  // Load service data on mount
+  useEffect(() => {
+    if (serviceId && !selectedService) {
+      dispatch(fetchServiceAsync(serviceId));
+    }
+  }, [serviceId, selectedService, dispatch]);
+
+  // Load availability when service is loaded
+  useEffect(() => {
+    if (selectedService && specialistId) {
+      loadAvailability();
+    }
+  }, [selectedService, specialistId]);
+
+  const loadAvailability = async () => {
+    if (!specialistId) return;
+
+    setLoadingAvailability(true);
+    setAvailabilityError(null);
+
+    try {
+      // Get availability for the next 7 days
+      const slots: TimeSlot[] = [];
+      const today = new Date();
+
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        const dateStr = date.toISOString().split('T')[0];
+
+        try {
+          const availability = await apiService.getSpecialistAvailability(specialistId, dateStr);
+          if (availability && Array.isArray(availability) && availability.length > 0) {
+            slots.push({
+              date: dateStr,
+              slots: availability
+            });
+          }
+        } catch (err) {
+          // Continue to next date if this one fails
+          console.error(`Failed to load availability for ${dateStr}:`, err);
+        }
+      }
+
+      if (slots.length === 0) {
+        setAvailabilityError(t(bookingFlowStrings, 'noSlotsAvailable', locale));
+      }
+
+      setAvailableSlots(slots);
+    } catch (error) {
+      console.error('Failed to load availability:', error);
+      setAvailabilityError(t(commonStrings, 'error', locale));
+    } finally {
+      setLoadingAvailability(false);
+    }
+  };
 
   // Configure Telegram UI
   useEffect(() => {
@@ -97,7 +154,7 @@ export const BookingFlow: React.FC = () => {
   // Update main button based on current step
   useEffect(() => {
     updateMainButton();
-  }, [currentStep, selectedDate, selectedTime, bookingDetails]);
+  }, [currentStep, selectedDate, selectedTime, bookingDetails, locale]);
 
   const handleBack = () => {
     if (currentStep > 0) {
@@ -113,14 +170,14 @@ export const BookingFlow: React.FC = () => {
 
     switch (step.id) {
       case 'service':
-        mainButton.setText('Continue');
+        mainButton.setText(t(commonStrings, 'continue', locale));
         mainButton.show();
         mainButton.onClick(handleServiceNext);
         break;
 
       case 'datetime':
         if (selectedDate && selectedTime) {
-          mainButton.setText('Continue');
+          mainButton.setText(t(commonStrings, 'continue', locale));
           mainButton.show();
           mainButton.onClick(handleDateTimeNext);
         } else {
@@ -130,7 +187,7 @@ export const BookingFlow: React.FC = () => {
 
       case 'details':
         if (bookingDetails.firstName && bookingDetails.phone) {
-          mainButton.setText('Continue');
+          mainButton.setText(t(commonStrings, 'continue', locale));
           mainButton.show();
           mainButton.onClick(handleDetailsNext);
         } else {
@@ -139,7 +196,7 @@ export const BookingFlow: React.FC = () => {
         break;
 
       case 'payment':
-        mainButton.setText('Book & Pay');
+        mainButton.setText(t(bookingFlowStrings, 'bookAndPay', locale));
         mainButton.show();
         mainButton.onClick(handlePayment);
         break;
@@ -163,25 +220,38 @@ export const BookingFlow: React.FC = () => {
 
   const handlePayment = async () => {
     const confirmed = await showConfirm(
-      `Confirm booking for ${selectedDate} at ${selectedTime}?`
+      `${t(commonStrings, 'confirm', locale)} ${formatDate(selectedDate)} ${t(commonStrings, 'at', locale) || 'at'} ${selectedTime}?`
     );
 
     if (confirmed) {
-      setIsLoading(true);
       mainButton.showProgress();
 
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        if (!selectedService || !specialistId) {
+          throw new Error('Missing service or specialist information');
+        }
 
-        await showAlert('Booking confirmed! You will receive a confirmation message.');
+        // Calculate end time based on service duration
+        const startDateTime = new Date(`${selectedDate}T${selectedTime}`);
+        const endDateTime = new Date(startDateTime.getTime() + selectedService.duration * 60000);
+
+        // Create booking via Redux
+        const result = await dispatch(createBookingAsync({
+          serviceId: selectedService.id,
+          specialistId: specialistId,
+          startTime: startDateTime.toISOString(),
+          endTime: endDateTime.toISOString(),
+          notes: bookingDetails.notes
+        })).unwrap();
+
+        await showAlert(t(bookingFlowStrings, 'bookingSuccess', locale));
         hapticFeedback.notificationSuccess();
         navigate('/bookings');
       } catch (error) {
-        await showAlert('Booking failed. Please try again.');
+        console.error('Booking failed:', error);
+        await showAlert(t(bookingFlowStrings, 'bookingFailed', locale));
         hapticFeedback.notificationError();
       } finally {
-        setIsLoading(false);
         mainButton.hideProgress();
       }
     }
@@ -202,11 +272,15 @@ export const BookingFlow: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+    const options: Intl.DateTimeFormatOptions = {
       weekday: 'long',
       month: 'long',
       day: 'numeric'
-    });
+    };
+
+    // Use appropriate locale for date formatting
+    const localeMap = { en: 'en-US', uk: 'uk-UA', ru: 'ru-RU' };
+    return date.toLocaleDateString(localeMap[locale], options);
   };
 
   const renderStepIndicator = () => (
@@ -244,117 +318,164 @@ export const BookingFlow: React.FC = () => {
     </div>
   );
 
-  const renderServiceStep = () => (
-    <div className="p-4 space-y-4">
-      <div className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
-        <div className="flex gap-4">
-          <div className="w-20 h-20 rounded-lg bg-bg-hover flex-shrink-0">
-            <img
-              src="/api/placeholder/80/80"
-              alt={mockService.name}
-              className="w-full h-full object-cover rounded-lg"
-            />
-          </div>
+  const renderServiceStep = () => {
+    if (!selectedService) {
+      return (
+        <div className="p-4 flex items-center justify-center min-h-[200px]">
+          <LoadingSpinner size="lg" />
+        </div>
+      );
+    }
 
-          <div className="flex-1">
-            <h3 className="font-semibold text-text-primary mb-1">
-              {mockService.name}
-            </h3>
-            <p className="text-sm text-text-secondary mb-2">
-              {mockService.description}
-            </p>
-            <div className="flex items-center gap-3 text-sm">
-              <div className="flex items-center gap-1">
-                <Clock size={14} className="text-text-secondary" />
-                <span className="text-text-secondary">{mockService.duration}min</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="font-semibold text-accent-primary">${mockService.price}</span>
+    return (
+      <div className="p-4 space-y-4">
+        <div className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
+          <div className="flex gap-4">
+            <div className="w-20 h-20 rounded-lg bg-bg-hover flex-shrink-0">
+              {selectedService.images && selectedService.images[0] ? (
+                <img
+                  src={selectedService.images[0]}
+                  alt={selectedService.name}
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-text-muted">
+                  <Calendar size={32} />
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1">
+              <h3 className="font-semibold text-text-primary mb-1">
+                {selectedService.name}
+              </h3>
+              <p className="text-sm text-text-secondary mb-2">
+                {selectedService.description}
+              </p>
+              <div className="flex items-center gap-3 text-sm">
+                <div className="flex items-center gap-1">
+                  <Clock size={14} className="text-text-secondary" />
+                  <span className="text-text-secondary">
+                    {selectedService.duration}{t(commonStrings, 'min', locale)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="font-semibold text-accent-primary">${selectedService.price}</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full overflow-hidden">
-            <img
-              src={mockService.specialist.avatar}
-              alt={mockService.specialist.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-
-          <div className="flex-1">
-            <h4 className="font-semibold text-text-primary">
-              {mockService.specialist.name}
-            </h4>
-            <div className="flex items-center gap-2 text-sm">
-              <div className="flex items-center gap-1">
-                <Star size={12} className="text-yellow-400 fill-current" />
-                <span className="text-text-primary">{mockService.specialist.rating}</span>
-                <span className="text-text-secondary">({mockService.specialist.reviews})</span>
+        {selectedService.specialist && (
+          <div className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-bg-hover">
+                {selectedService.specialist.avatar ? (
+                  <img
+                    src={selectedService.specialist.avatar}
+                    alt={selectedService.specialist.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-text-muted">
+                    <User size={24} />
+                  </div>
+                )}
               </div>
-            </div>
-            <div className="flex items-center gap-1 text-sm text-text-secondary mt-1">
-              <MapPin size={12} />
-              <span>{mockService.specialist.location}</span>
+
+              <div className="flex-1">
+                <h4 className="font-semibold text-text-primary">
+                  {selectedService.specialist.name}
+                </h4>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="flex items-center gap-1">
+                    <Star size={12} className="text-yellow-400 fill-current" />
+                    <span className="text-text-primary">{selectedService.specialist.rating}</span>
+                    <span className="text-text-secondary">({selectedService.specialist.reviewCount})</span>
+                  </div>
+                </div>
+              </div>
+
+              <ChevronRight size={18} className="text-text-secondary" />
             </div>
           </div>
-
-          <ChevronRight size={18} className="text-text-secondary" />
-        </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderDateTimeStep = () => (
     <div className="p-4 space-y-4">
       <div>
-        <h3 className="font-semibold text-text-primary mb-3">Select Date & Time</h3>
+        <h3 className="font-semibold text-text-primary mb-3">
+          {t(bookingFlowStrings, 'selectDate', locale)}
+        </h3>
 
-        <div className="space-y-4">
-          {mockAvailableSlots.map((daySlots) => (
-            <div key={daySlots.date} className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
-              <div className="mb-3">
-                <h4 className="font-medium text-text-primary">
-                  {formatDate(daySlots.date)}
-                </h4>
-              </div>
+        {loadingAvailability ? (
+          <div className="flex items-center justify-center py-8">
+            <LoadingSpinner size="lg" />
+          </div>
+        ) : availabilityError ? (
+          <div className="bg-bg-card rounded-2xl p-6 text-center border border-white/5">
+            <p className="text-text-secondary">{availabilityError}</p>
+            <Button
+              variant="outline"
+              onClick={loadAvailability}
+              className="mt-4"
+            >
+              {t(commonStrings, 'retry', locale) || 'Retry'}
+            </Button>
+          </div>
+        ) : availableSlots.length === 0 ? (
+          <div className="bg-bg-card rounded-2xl p-6 text-center border border-white/5">
+            <p className="text-text-secondary">
+              {t(bookingFlowStrings, 'noSlotsAvailable', locale)}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {availableSlots.map((daySlots) => (
+              <div key={daySlots.date} className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
+                <div className="mb-3">
+                  <h4 className="font-medium text-text-primary">
+                    {formatDate(daySlots.date)}
+                  </h4>
+                </div>
 
-              <div className="grid grid-cols-3 gap-2">
-                {daySlots.slots.map((time) => (
-                  <button
-                    key={`${daySlots.date}-${time}`}
-                    onClick={() => handleTimeSlotSelect(daySlots.date, time)}
-                    className={`
-                      py-2 px-3 rounded-lg text-sm font-medium transition-colors touch-manipulation
-                      ${selectedDate === daySlots.date && selectedTime === time
-                        ? 'bg-accent-primary text-white'
-                        : 'bg-bg-secondary text-text-primary hover:bg-accent-primary hover:text-white'
-                      }
-                    `}
-                  >
-                    {time}
-                  </button>
-                ))}
+                <div className="grid grid-cols-3 gap-2">
+                  {daySlots.slots.map((time) => (
+                    <button
+                      key={`${daySlots.date}-${time}`}
+                      onClick={() => handleTimeSlotSelect(daySlots.date, time)}
+                      className={`
+                        py-2 px-3 rounded-lg text-sm font-medium transition-colors touch-manipulation
+                        ${selectedDate === daySlots.date && selectedTime === time
+                          ? 'bg-accent-primary text-white'
+                          : 'bg-bg-secondary text-text-primary hover:bg-accent-primary hover:text-white'
+                        }
+                      `}
+                    >
+                      {time}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {selectedDate && selectedTime && (
+      {selectedDate && selectedTime && selectedService && (
         <div className="bg-accent-green/15 rounded-2xl p-4 shadow-card border border-white/5">
           <div className="flex items-center gap-2">
             <Calendar size={18} className="text-accent-green" />
             <div>
               <p className="font-medium text-accent-green">
-                {formatDate(selectedDate)} at {selectedTime}
+                {formatDate(selectedDate)} {t(commonStrings, 'at', locale) || 'at'} {selectedTime}
               </p>
               <p className="text-sm text-accent-green/80">
-                Duration: {mockService.duration} minutes
+                {t(bookingFlowStrings, 'duration', locale)}: {selectedService.duration} {t(commonStrings, 'min', locale)}
               </p>
             </div>
           </div>
@@ -366,53 +487,55 @@ export const BookingFlow: React.FC = () => {
   const renderDetailsStep = () => (
     <div className="p-4 space-y-4">
       <div>
-        <h3 className="font-semibold text-text-primary mb-3">Contact Information</h3>
+        <h3 className="font-semibold text-text-primary mb-3">
+          {t(bookingFlowStrings, 'contactInfo', locale)}
+        </h3>
 
         <div className="space-y-4">
           <Input
-            label="First Name *"
+            label={`${t(bookingFlowStrings, 'firstName', locale)} *`}
             value={bookingDetails.firstName}
             onChange={(e) => handleInputChange('firstName', e.target.value)}
             icon={<User size={18} />}
-            placeholder="Enter your first name"
+            placeholder={t(bookingFlowStrings, 'firstName', locale)}
             required
           />
 
           <Input
-            label="Last Name"
+            label={t(bookingFlowStrings, 'lastName', locale)}
             value={bookingDetails.lastName}
             onChange={(e) => handleInputChange('lastName', e.target.value)}
             icon={<User size={18} />}
-            placeholder="Enter your last name"
+            placeholder={t(bookingFlowStrings, 'lastName', locale)}
           />
 
           <Input
-            label="Phone Number *"
+            label={`${t(bookingFlowStrings, 'phoneNumber', locale)} *`}
             type="tel"
             value={bookingDetails.phone}
             onChange={(e) => handleInputChange('phone', e.target.value)}
             icon={<Phone size={18} />}
-            placeholder="Enter your phone number"
+            placeholder={t(bookingFlowStrings, 'phoneNumber', locale)}
             required
           />
 
           <Input
-            label="Email"
+            label={t(bookingFlowStrings, 'email', locale)}
             type="email"
             value={bookingDetails.email}
             onChange={(e) => handleInputChange('email', e.target.value)}
             icon={<Mail size={18} />}
-            placeholder="Enter your email"
+            placeholder={t(bookingFlowStrings, 'email', locale)}
           />
 
           <div>
             <label className="block text-sm font-medium text-text-primary mb-2">
-              Special Notes
+              {t(bookingFlowStrings, 'specialNotes', locale)}
             </label>
             <textarea
               value={bookingDetails.notes}
               onChange={(e) => handleInputChange('notes', e.target.value)}
-              placeholder="Any special requests or notes..."
+              placeholder={t(bookingFlowStrings, 'specialNotes', locale)}
               rows={3}
               className="w-full bg-bg-secondary border border-white/5 rounded-xl px-4 py-3 text-text-primary placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-accent-primary resize-none"
             />
@@ -422,67 +545,83 @@ export const BookingFlow: React.FC = () => {
     </div>
   );
 
-  const renderPaymentStep = () => (
-    <div className="p-4 space-y-4">
-      <div className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
-        <h3 className="font-semibold text-text-primary mb-3">Booking Summary</h3>
+  const renderPaymentStep = () => {
+    if (!selectedService) return null;
 
-        <div className="space-y-3">
-          <div className="flex justify-between">
-            <span className="text-text-secondary">Service:</span>
-            <span className="font-medium text-text-primary">{mockService.name}</span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="text-text-secondary">Specialist:</span>
-            <span className="font-medium text-text-primary">{mockService.specialist.name}</span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="text-text-secondary">Date & Time:</span>
-            <span className="font-medium text-text-primary">
-              {selectedDate && formatDate(selectedDate)} at {selectedTime}
-            </span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="text-text-secondary">Duration:</span>
-            <span className="font-medium text-text-primary">{mockService.duration} min</span>
-          </div>
-
-          <div className="border-t border-white/5 pt-3 mt-3">
-            <div className="flex justify-between text-lg font-semibold">
-              <span className="text-text-primary">Total:</span>
-              <span className="text-accent-primary">${mockService.price}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
-        <h4 className="font-medium text-text-primary mb-3">Payment Method</h4>
-        <div className="space-y-2">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-accent-primary/10 border border-accent-primary">
-            <div className="w-8 h-8 rounded-full bg-accent-primary flex items-center justify-center">
-              <span className="text-white text-sm font-bold">T</span>
-            </div>
-            <div className="flex-1">
-              <p className="font-medium text-text-primary">Telegram Payments</p>
-              <p className="text-sm text-accent-primary">Secure payment via Telegram</p>
-            </div>
-            <div className="w-4 h-4 rounded-full bg-accent-primary" />
-          </div>
-        </div>
-      </div>
-
-      {bookingDetails.notes && (
+    return (
+      <div className="p-4 space-y-4">
         <div className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
-          <h4 className="font-medium text-text-primary mb-2">Special Notes</h4>
-          <p className="text-text-secondary">{bookingDetails.notes}</p>
+          <h3 className="font-semibold text-text-primary mb-3">
+            {t(bookingFlowStrings, 'bookingSummary', locale)}
+          </h3>
+
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-text-secondary">{t(bookingFlowStrings, 'service', locale)}:</span>
+              <span className="font-medium text-text-primary">{selectedService.name}</span>
+            </div>
+
+            {selectedService.specialist && (
+              <div className="flex justify-between">
+                <span className="text-text-secondary">{t(bookingFlowStrings, 'specialist', locale)}:</span>
+                <span className="font-medium text-text-primary">{selectedService.specialist.name}</span>
+              </div>
+            )}
+
+            <div className="flex justify-between">
+              <span className="text-text-secondary">{t(bookingFlowStrings, 'dateTime', locale)}:</span>
+              <span className="font-medium text-text-primary">
+                {selectedDate && formatDate(selectedDate)} {selectedTime}
+              </span>
+            </div>
+
+            <div className="flex justify-between">
+              <span className="text-text-secondary">{t(bookingFlowStrings, 'duration', locale)}:</span>
+              <span className="font-medium text-text-primary">
+                {selectedService.duration} {t(commonStrings, 'min', locale)}
+              </span>
+            </div>
+
+            <div className="border-t border-white/5 pt-3 mt-3">
+              <div className="flex justify-between text-lg font-semibold">
+                <span className="text-text-primary">{t(bookingFlowStrings, 'total', locale)}:</span>
+                <span className="text-accent-primary">${selectedService.price}</span>
+              </div>
+            </div>
+          </div>
         </div>
-      )}
-    </div>
-  );
+
+        <div className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
+          <h4 className="font-medium text-text-primary mb-3">
+            {t(bookingFlowStrings, 'paymentMethod', locale)}
+          </h4>
+          <div className="space-y-2">
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-accent-primary/10 border border-accent-primary">
+              <div className="w-8 h-8 rounded-full bg-accent-primary flex items-center justify-center">
+                <span className="text-white text-sm font-bold">T</span>
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-text-primary">
+                  {t(bookingFlowStrings, 'telegramPayments', locale)}
+                </p>
+                <p className="text-sm text-accent-primary">Secure payment via Telegram</p>
+              </div>
+              <div className="w-4 h-4 rounded-full bg-accent-primary" />
+            </div>
+          </div>
+        </div>
+
+        {bookingDetails.notes && (
+          <div className="bg-bg-card rounded-2xl p-4 shadow-card border border-white/5">
+            <h4 className="font-medium text-text-primary mb-2">
+              {t(bookingFlowStrings, 'specialNotes', locale)}
+            </h4>
+            <p className="text-text-secondary">{bookingDetails.notes}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderCurrentStep = () => {
     switch (bookingSteps[currentStep].id) {
@@ -499,14 +638,16 @@ export const BookingFlow: React.FC = () => {
     }
   };
 
-  if (isLoading) {
+  if (isCreating) {
     return (
       <div className="flex flex-col min-h-screen bg-bg-primary">
-        <Header title="Processing..." />
+        <Header title={t(bookingFlowStrings, 'processing', locale)} />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <LoadingSpinner size="lg" className="mb-4 mx-auto" />
-            <p className="text-text-secondary">Processing your booking...</p>
+            <p className="text-text-secondary">
+              {t(bookingFlowStrings, 'processing', locale)}
+            </p>
           </div>
         </div>
       </div>
@@ -515,7 +656,7 @@ export const BookingFlow: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
-      <Header title="Book Appointment" />
+      <Header title={t(bookingFlowStrings, 'bookAppointment', locale)} />
 
       {renderStepIndicator()}
 

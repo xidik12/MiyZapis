@@ -27,6 +27,7 @@ export const commonStrings: Record<string, Record<Locale, string>> = {
   noResults: { en: 'No results found', uk: 'Результатів не знайдено', ru: 'Результатов не найдено' },
   error: { en: 'Error', uk: 'Помилка', ru: 'Ошибка' },
   success: { en: 'Success', uk: 'Успішно', ru: 'Успешно' },
+  retry: { en: 'Retry', uk: 'Повторити', ru: 'Повторить' },
 
   // Time
   min: { en: 'min', uk: 'хв', ru: 'мин' },
@@ -34,6 +35,7 @@ export const commonStrings: Record<string, Record<Locale, string>> = {
   hours: { en: 'hours', uk: 'годин', ru: 'часов' },
   day: { en: 'day', uk: 'день', ru: 'день' },
   days: { en: 'days', uk: 'днів', ru: 'дней' },
+  at: { en: 'at', uk: 'о', ru: 'в' },
 
   // Status
   pending: { en: 'Pending', uk: 'Очікує', ru: 'Ожидает' },
@@ -46,6 +48,9 @@ export const commonStrings: Record<string, Record<Locale, string>> = {
   // Empty states
   noDataYet: { en: 'No data yet', uk: 'Даних поки немає', ru: 'Данных пока нет' },
   comingSoon: { en: 'Coming Soon', uk: 'Незабаром', ru: 'Скоро' },
+
+  // Other
+  bookings: { en: 'bookings', uk: 'записів', ru: 'записей' },
 };
 
 // Bookings page
