@@ -42,7 +42,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className }) => {
     <img
       src={sources[fallbackLevel]}
       alt="МійЗапис Logo"
-      className={clsx(sizeClasses[size], className)}
+      className={clsx(sizeClasses[size], 'object-contain', className)}
       onError={() => setFallbackLevel(prev => prev + 1)}
     />
   );

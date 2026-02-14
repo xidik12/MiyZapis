@@ -99,15 +99,15 @@ export type MessageKey =
 export const messages: Record<MessageKey, LocalizedText> = {
   // Welcome messages
   'welcome.new_user': {
-    uk: '🎉 Ласкаво просимо до BookingBot, {firstName}!\n\nВаш обліковий запис створено і ви можете:\n• 📅 Переглядати та бронювати послуги\n• 🔍 Знаходити спеціалістів поруч\n• ⭐ Залишати відгуки та оцінки\n• 🎁 Заробляти бали лояльності\n\nРозпочнемо!',
-    ru: '🎉 Добро пожаловать в BookingBot, {firstName}!\n\nВаш аккаунт создан и вы можете:\n• 📅 Просматривать и бронировать услуги\n• 🔍 Находить специалистов рядом\n• ⭐ Оставлять отзывы и оценки\n• 🎁 Зарабатывать баллы лояльности\n\nДавайте начнем!',
-    en: '🎉 Welcome to BookingBot, {firstName}!\n\nYour account has been created and you can now:\n• 📅 Browse and book services\n• 🔍 Find specialists near you\n• ⭐ Leave reviews and ratings\n• 🎁 Earn loyalty points\n\nLet\'s get started!'
+    uk: '👋 Вітаємо в МійЗапис, {firstName}!\n\nВаш акаунт створено. Тепер ви можете:\n\n📅 Бронювати послуги у перевірених спеціалістів\n🔍 Знаходити майстрів поруч із вами\n⭐ Читати відгуки та залишати оцінки\n🎁 Отримувати бонуси за лояльність\n\nОберіть дію нижче, щоб розпочати 👇',
+    ru: '👋 Добро пожаловать в МояЗапись, {firstName}!\n\nВаш аккаунт создан. Теперь вы можете:\n\n📅 Бронировать услуги у проверенных специалистов\n🔍 Находить мастеров рядом с вами\n⭐ Читать отзывы и оставлять оценки\n🎁 Получать бонусы за лояльность\n\nВыберите действие ниже, чтобы начать 👇',
+    en: '👋 Welcome to MiyZapys, {firstName}!\n\nYour account is ready. You can now:\n\n📅 Book services from verified specialists\n🔍 Find professionals near you\n⭐ Read reviews and leave ratings\n🎁 Earn loyalty rewards\n\nChoose an action below to get started 👇'
   },
 
   'welcome.returning_user': {
-    uk: 'З поверненням, {firstName}! 👋\n\nЩо ви хочете зробити сьогодні?',
-    ru: 'С возвращением, {firstName}! 👋\n\nЧто вы хотите сделать сегодня?',
-    en: 'Welcome back, {firstName}! 👋\n\nWhat would you like to do today?'
+    uk: 'Раді бачити вас знову, {firstName}! 👋\n\nЩо хочете зробити?',
+    ru: 'Рады видеть вас снова, {firstName}! 👋\n\nЧто хотите сделать?',
+    en: 'Good to see you again, {firstName}! 👋\n\nWhat would you like to do?'
   },
 
   // Main menu
@@ -497,9 +497,9 @@ export const messages: Record<MessageKey, LocalizedText> = {
   },
 
   'help.main': {
-    uk: '❓ Довідка\n\n🔍 /start - Почати роботу з ботом\n📅 /bookings - Мої записи\n👤 /profile - Мій профіль\n⚙️ /settings - Налаштування\n📍 /location - Поділитися місцезнаходженням\n❌ /cancel - Скасувати поточну дію\n\nДля додаткової допомоги зверніться до підтримки.',
-    ru: '❓ Справка\n\n🔍 /start - Начать работу с ботом\n📅 /bookings - Мои записи\n👤 /profile - Мой профиль\n⚙️ /settings - Настройки\n📍 /location - Поделиться местоположением\n❌ /cancel - Отменить текущее действие\n\nДля дополнительной помощи обратитесь в поддержку.',
-    en: '❓ Help\n\n🔍 /start - Start using the bot\n📅 /bookings - My bookings\n👤 /profile - My profile\n⚙️ /settings - Settings\n📍 /location - Share location\n❌ /cancel - Cancel current action\n\nFor additional help, contact support.'
+    uk: '❓ Довідка МійЗапис\n\n/start — Головне меню\n/bookings — Мої записи\n/services — Каталог послуг\n/search — Пошук спеціалістів\n/profile — Мій профіль\n/settings — Налаштування\n/location — Спеціалісти поруч\n/cancel — Скасувати дію\n\n🌐 Веб-платформа: miyzapis.com\n📩 Підтримка: /help → Написати підтримці',
+    ru: '❓ Справка МояЗапись\n\n/start — Главное меню\n/bookings — Мои записи\n/services — Каталог услуг\n/search — Поиск специалистов\n/profile — Мой профиль\n/settings — Настройки\n/location — Специалисты рядом\n/cancel — Отменить действие\n\n🌐 Веб-платформа: miyzapis.com\n📩 Поддержка: /help → Написать в поддержку',
+    en: '❓ MiyZapys Help\n\n/start — Main menu\n/bookings — My bookings\n/services — Browse services\n/search — Find specialists\n/profile — My profile\n/settings — Settings\n/location — Specialists nearby\n/cancel — Cancel action\n\n🌐 Web platform: miyzapis.com\n📩 Support: /help → Contact support'
   },
 
   // Bookings
