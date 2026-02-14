@@ -15,6 +15,17 @@ import {
   Users,
   Briefcase,
   Bell,
+  MessageCircle,
+  Gift,
+  User,
+  LayoutDashboard,
+  Settings,
+  HelpCircle,
+  CreditCard,
+  BarChart3,
+  CalendarClock,
+  DollarSign,
+  UserCheck,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
@@ -40,7 +51,8 @@ export const HomePage: React.FC = () => {
   const { specialists, isLoading: specialistsLoading } = useSelector(
     (state: RootState) => state.specialists
   );
-  const { isAuthenticated: authState } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated: authState, user: authUser } = useSelector((state: RootState) => state.auth);
+  const userRole = authUser?.role;
   const notifUnread = useSelector((state: RootState) => state.notifications?.unreadCount ?? 0);
 
   useEffect(() => {
@@ -137,44 +149,107 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Quick Actions */}
+        {/* Dashboard Grid — BTC Seer style */}
         {(isAuthenticated || authState) && (
-          <div className="px-4 py-4">
-            <div className="grid grid-cols-4 gap-2">
-              {[
-                { icon: <Calendar size={20} className="text-accent-primary" />, label: s('bookings'), path: '/bookings' },
-                { icon: <Wallet size={20} className="text-accent-green" />, label: s('wallet'), path: '/wallet' },
-                { icon: <Heart size={20} className="text-accent-red" />, label: s('favorites'), path: '/favorites' },
-                { icon: <Award size={20} className="text-purple-500" />, label: s('rewards'), path: '/loyalty' },
-              ].map(item => (
-                <button
-                  key={item.path}
-                  onClick={() => { hapticFeedback.selectionChanged(); navigate(item.path); }}
-                  className="flex flex-col items-center gap-1 py-3 rounded-xl bg-bg-secondary hover:bg-bg-hover transition-colors"
-                >
-                  {item.icon}
-                  <span className="text-xs text-text-primary font-medium">{item.label}</span>
-                </button>
-              ))}
+          <div className="px-4 py-3 space-y-3">
+            {/* My Services */}
+            <div>
+              <h3 className="text-accent-primary text-[10px] font-semibold uppercase tracking-wider mb-1.5 px-1">{s('catMyServices')}</h3>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { icon: <Calendar size={18} />, label: s('bookings'), path: '/bookings', color: 'text-accent-primary' },
+                  { icon: <Search size={18} />, label: s('explore'), path: '/search', color: 'text-blue-400' },
+                  { icon: <Heart size={18} />, label: s('favorites'), path: '/favorites', color: 'text-accent-red' },
+                  { icon: <Wallet size={18} />, label: s('wallet'), path: '/wallet', color: 'text-accent-green' },
+                  { icon: <Award size={18} />, label: s('loyalty'), path: '/loyalty', color: 'text-purple-400' },
+                  { icon: <Star size={18} />, label: s('reviews'), path: '/reviews', color: 'text-accent-yellow' },
+                  { icon: <CreditCard size={18} />, label: s('payments'), path: '/payment-methods', color: 'text-sky-400' },
+                  { icon: <LayoutDashboard size={18} />, label: s('dashboard'), path: '/dashboard', color: 'text-indigo-400' },
+                ].map(item => (
+                  <button
+                    key={item.path}
+                    onClick={() => { hapticFeedback.selectionChanged(); navigate(item.path); }}
+                    className="bg-bg-card rounded-xl border border-white/5 p-3 flex flex-col items-center gap-1.5 hover:border-accent-primary/25 active:scale-95 transition-all"
+                  >
+                    <span className={`w-5 h-5 ${item.color}`}>{item.icon}</span>
+                    <span className="text-[10px] text-text-secondary font-medium leading-tight text-center">{item.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {/* Social */}
+            <div>
+              <h3 className="text-accent-primary text-[10px] font-semibold uppercase tracking-wider mb-1.5 px-1">{s('catSocial')}</h3>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { icon: <Users size={18} />, label: s('community'), path: '/community', color: 'text-indigo-400' },
+                  { icon: <MessageCircle size={18} />, label: s('messages'), path: '/messages', color: 'text-blue-400' },
+                  { icon: <Bell size={18} />, label: s('notifications'), path: '/notifications', color: 'text-amber-400' },
+                  { icon: <Gift size={18} />, label: s('referrals'), path: '/referrals', color: 'text-pink-400' },
+                ].map(item => (
+                  <button
+                    key={item.path}
+                    onClick={() => { hapticFeedback.selectionChanged(); navigate(item.path); }}
+                    className="bg-bg-card rounded-xl border border-white/5 p-3 flex flex-col items-center gap-1.5 hover:border-accent-primary/25 active:scale-95 transition-all"
+                  >
+                    <span className={`w-5 h-5 ${item.color}`}>{item.icon}</span>
+                    <span className="text-[10px] text-text-secondary font-medium leading-tight text-center">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Account */}
+            <div>
+              <h3 className="text-accent-primary text-[10px] font-semibold uppercase tracking-wider mb-1.5 px-1">{s('catAccount')}</h3>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { icon: <User size={18} />, label: s('profile'), path: '/profile', color: 'text-accent-primary' },
+                  { icon: <Settings size={18} />, label: s('settings'), path: '/settings', color: 'text-gray-400' },
+                  { icon: <HelpCircle size={18} />, label: s('help'), path: '/help', color: 'text-cyan-400' },
+                ].map(item => (
+                  <button
+                    key={item.path}
+                    onClick={() => { hapticFeedback.selectionChanged(); navigate(item.path); }}
+                    className="bg-bg-card rounded-xl border border-white/5 p-3 flex flex-col items-center gap-1.5 hover:border-accent-primary/25 active:scale-95 transition-all"
+                  >
+                    <span className={`w-5 h-5 ${item.color}`}>{item.icon}</span>
+                    <span className="text-[10px] text-text-secondary font-medium leading-tight text-center">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Specialist Business — only if specialist */}
+            {userRole === 'specialist' && (
+              <div>
+                <h3 className="text-accent-primary text-[10px] font-semibold uppercase tracking-wider mb-1.5 px-1">{s('catSpecialist')}</h3>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { icon: <LayoutDashboard size={18} />, label: s('specDashboard'), path: '/specialist-dashboard', color: 'text-accent-primary' },
+                    { icon: <Calendar size={18} />, label: s('specBookings'), path: '/specialist-bookings', color: 'text-blue-400' },
+                    { icon: <CalendarClock size={18} />, label: s('specSchedule'), path: '/specialist/schedule', color: 'text-orange-400' },
+                    { icon: <DollarSign size={18} />, label: s('specEarnings'), path: '/specialist/earnings', color: 'text-accent-green' },
+                    { icon: <BarChart3 size={18} />, label: s('specAnalytics'), path: '/specialist/analytics', color: 'text-purple-400' },
+                    { icon: <Star size={18} />, label: s('specReviews'), path: '/specialist/reviews', color: 'text-accent-yellow' },
+                    { icon: <UserCheck size={18} />, label: s('specClients'), path: '/specialist/clients', color: 'text-pink-400' },
+                    { icon: <Briefcase size={18} />, label: s('specSettings'), path: '/specialist/settings', color: 'text-gray-400' },
+                  ].map(item => (
+                    <button
+                      key={item.path}
+                      onClick={() => { hapticFeedback.selectionChanged(); navigate(item.path); }}
+                      className="bg-bg-card rounded-xl border border-white/5 p-3 flex flex-col items-center gap-1.5 hover:border-accent-primary/25 active:scale-95 transition-all"
+                    >
+                      <span className={`w-5 h-5 ${item.color}`}>{item.icon}</span>
+                      <span className="text-[10px] text-text-secondary font-medium leading-tight text-center">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
-
-        {/* Community Banner */}
-        <div className="px-4 pb-2">
-          <Card hover onClick={() => { hapticFeedback.impactLight(); navigate('/community'); }}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-500/15 rounded-xl flex items-center justify-center">
-                <Users size={20} className="text-indigo-400" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-semibold text-text-primary">{s('community')}</h3>
-                <p className="text-xs text-text-secondary">{s('communityDesc')}</p>
-              </div>
-              <span className="text-xs text-accent-primary font-medium">{s('explore')} →</span>
-            </div>
-          </Card>
-        </div>
 
         {/* Categories */}
         <div className="px-4 py-4">
