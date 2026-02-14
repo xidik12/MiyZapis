@@ -21,6 +21,8 @@ import { addToast } from '@/store/slices/uiSlice';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import apiService from '@/services/api.service';
+import { useLocale, t } from '@/hooks/useLocale';
+import { walletStrings, commonStrings, analyticsStrings } from '@/utils/translations';
 
 interface WalletData {
   balance: number;
@@ -43,6 +45,7 @@ export const WalletPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { hapticFeedback } = useTelegram();
+  const locale = useLocale();
 
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -130,10 +133,17 @@ export const WalletPage: React.FC = () => {
     const diffMs = now.getTime() - date.getTime();
     const diffHrs = diffMs / (1000 * 60 * 60);
 
-    if (diffHrs < 1) return 'Just now';
-    if (diffHrs < 24) return `${Math.floor(diffHrs)}h ago`;
-    if (diffHrs < 48) return 'Yesterday';
-    return date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' });
+    if (diffHrs < 1) {
+      return locale === 'uk' ? 'Щойно' : locale === 'ru' ? 'Только что' : 'Just now';
+    }
+    if (diffHrs < 24) {
+      const hrs = Math.floor(diffHrs);
+      return locale === 'uk' ? `${hrs}г тому` : locale === 'ru' ? `${hrs}ч назад` : `${hrs}h ago`;
+    }
+    if (diffHrs < 48) {
+      return locale === 'uk' ? 'Вчора' : locale === 'ru' ? 'Вчера' : 'Yesterday';
+    }
+    return date.toLocaleDateString(locale === 'uk' ? 'uk-UA' : locale === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'short' });
   };
 
   if (loading) {
@@ -146,14 +156,14 @@ export const WalletPage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
-      <Header title="Wallet" />
+      <Header title={t(walletStrings, 'title', locale)} />
 
       <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {/* Balance Card */}
         <div className="px-4 pt-4 pb-2">
           <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-5 text-white shadow-card">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm opacity-80">Available Balance</span>
+              <span className="text-sm opacity-80">{t(walletStrings, 'availableBalance', locale)}</span>
               <div className="flex items-center gap-2">
                 <button onClick={() => setBalanceHidden(!balanceHidden)} className="opacity-80">
                   {balanceHidden ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -192,7 +202,7 @@ export const WalletPage: React.FC = () => {
                     : 'text-text-secondary'
                 }`}
               >
-                {tab === 'overview' ? 'Overview' : 'Transactions'}
+                {tab === 'overview' ? t(walletStrings, 'overview', locale) : t(walletStrings, 'transactions', locale)}
               </button>
             ))}
           </div>
@@ -202,19 +212,19 @@ export const WalletPage: React.FC = () => {
           <div className="px-4 space-y-4">
             {/* Quick Actions */}
             <div>
-              <h3 className="text-sm font-semibold text-text-secondary mb-2">Quick Actions</h3>
+              <h3 className="text-sm font-semibold text-text-secondary mb-2">{t(walletStrings, 'quickActions', locale)}</h3>
               <div className="grid grid-cols-3 gap-3">
                 <Card hover onClick={() => navigate('/bookings')} className="text-center py-4">
                   <CreditCard size={24} className="text-accent-primary mx-auto mb-1" />
-                  <span className="text-xs text-text-primary">Pay</span>
+                  <span className="text-xs text-text-primary">{t(walletStrings, 'pay', locale)}</span>
                 </Card>
                 <Card hover onClick={() => navigate('/analytics')} className="text-center py-4">
                   <TrendingUp size={24} className="text-accent-green mx-auto mb-1" />
-                  <span className="text-xs text-text-primary">Analytics</span>
+                  <span className="text-xs text-text-primary">{t(analyticsStrings, 'title', locale)}</span>
                 </Card>
                 <Card hover onClick={() => { setActiveTab('transactions'); hapticFeedback.impactLight(); }} className="text-center py-4">
                   <Clock size={24} className="text-accent-purple mx-auto mb-1" />
-                  <span className="text-xs text-text-primary">History</span>
+                  <span className="text-xs text-text-primary">{t(walletStrings, 'history', locale)}</span>
                 </Card>
               </div>
             </div>
@@ -222,18 +232,18 @@ export const WalletPage: React.FC = () => {
             {/* Recent Transactions */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-semibold text-text-secondary">Recent Activity</h3>
+                <h3 className="text-sm font-semibold text-text-secondary">{t(walletStrings, 'recentActivity', locale)}</h3>
                 <button
                   onClick={() => setActiveTab('transactions')}
                   className="text-xs text-accent-primary"
                 >
-                  View All
+                  {t(commonStrings, 'viewAll', locale)}
                 </button>
               </div>
               {transactions.length === 0 ? (
                 <Card className="text-center py-8">
                   <Wallet size={32} className="text-text-secondary mx-auto mb-2" />
-                  <p className="text-text-secondary text-sm">No transactions yet</p>
+                  <p className="text-text-secondary text-sm">{t(walletStrings, 'noTransactions', locale)}</p>
                 </Card>
               ) : (
                 <div className="space-y-2">
@@ -262,8 +272,8 @@ export const WalletPage: React.FC = () => {
             {transactions.length === 0 && !txLoading ? (
               <Card className="text-center py-12">
                 <Clock size={40} className="text-text-secondary mx-auto mb-3" />
-                <p className="text-text-secondary">No transactions yet</p>
-                <p className="text-xs text-text-secondary mt-1">Your transaction history will appear here</p>
+                <p className="text-text-secondary">{t(walletStrings, 'noTransactions', locale)}</p>
+                <p className="text-xs text-text-secondary mt-1">{t(walletStrings, 'transactionHistory', locale)}</p>
               </Card>
             ) : (
               <>
@@ -293,7 +303,7 @@ export const WalletPage: React.FC = () => {
                     disabled={txLoading}
                     className="w-full mt-2"
                   >
-                    {txLoading ? 'Loading...' : 'Load More'}
+                    {txLoading ? t(commonStrings, 'loading', locale) : t(commonStrings, 'viewAll', locale)}
                   </Button>
                 )}
               </>

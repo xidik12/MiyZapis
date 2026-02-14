@@ -30,37 +30,15 @@ import {
   fetchSpecialistServicesAsync,
 } from '@/store/slices/specialistsSlice';
 import { fetchReviewsAsync } from '@/store/slices/reviewsSlice';
+import { useLocale, t } from '@/hooks/useLocale';
+import { specialistProfileStrings, commonStrings } from '@/utils/translations';
 
 export const SpecialistProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { hapticFeedback, user, isAuthenticated } = useTelegram();
-
-  // Simple language detection based on browser/user language
-  const getLanguage = () => {
-    if (user?.language_code) {
-      if (user.language_code.startsWith('uk')) return 'uk';
-      if (user.language_code.startsWith('ru')) return 'ru';
-    }
-    const browserLang = navigator.language.toLowerCase();
-    if (browserLang.startsWith('uk')) return 'uk';
-    if (browserLang.startsWith('ru')) return 'ru';
-    return 'en';
-  };
-
-  const language = getLanguage();
-
-  const t = (key: string) => {
-    const translations: Record<string, Record<string, string>> = {
-      'portfolio.noItems': {
-        en: 'No portfolio items available',
-        uk: 'Немає елементів портфоліо',
-        ru: 'Нет элементов портфолио'
-      }
-    };
-    return translations[key]?.[language] || key;
-  };
+  const locale = useLocale();
 
   const { selectedSpecialist } = useSelector((state: RootState) => state.specialists);
   const { reviews, isLoading: reviewsLoading } = useSelector(
@@ -219,7 +197,7 @@ export const SpecialistProfilePage: React.FC = () => {
             <div className="text-center">
               <div className="w-3 h-3 rounded-full bg-green-400 mx-auto mb-1"></div>
               <span className="text-xs opacity-80">
-                {selectedSpecialist.isOnline ? 'Online' : 'Offline'}
+                {selectedSpecialist.isOnline ? t(specialistProfileStrings, 'online', locale) : t(specialistProfileStrings, 'offline', locale)}
               </span>
             </div>
           </div>
@@ -228,15 +206,15 @@ export const SpecialistProfilePage: React.FC = () => {
           <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-white border-opacity-20">
             <div className="text-center">
               <div className="text-lg font-bold">{selectedSpecialist.experience}</div>
-              <div className="text-xs opacity-80">Years Experience</div>
+              <div className="text-xs opacity-80">{t(specialistProfileStrings, 'yearsExperience', locale)}</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-bold">{selectedSpecialist.services?.length || 0}</div>
-              <div className="text-xs opacity-80">Services</div>
+              <div className="text-xs opacity-80">{t(specialistProfileStrings, 'services', locale)}</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-bold">{selectedSpecialist.reviewCount}</div>
-              <div className="text-xs opacity-80">Reviews</div>
+              <div className="text-xs opacity-80">{t(specialistProfileStrings, 'reviews', locale)}</div>
             </div>
           </div>
         </div>
@@ -250,7 +228,7 @@ export const SpecialistProfilePage: React.FC = () => {
               onClick={() => handleContact('message')}
             >
               <MessageCircle size={16} className="mr-1" />
-              Message
+              {t(specialistProfileStrings, 'message', locale)}
             </Button>
             <Button
               variant="secondary"
@@ -258,7 +236,7 @@ export const SpecialistProfilePage: React.FC = () => {
               onClick={() => handleContact('phone')}
             >
               <Phone size={16} className="mr-1" />
-              Call
+              {t(specialistProfileStrings, 'call', locale)}
             </Button>
             <Button
               variant="secondary"
@@ -266,7 +244,7 @@ export const SpecialistProfilePage: React.FC = () => {
               onClick={() => handleContact('email')}
             >
               <Mail size={16} className="mr-1" />
-              Email
+              {t(specialistProfileStrings, 'email', locale)}
             </Button>
           </div>
         </div>
@@ -276,22 +254,22 @@ export const SpecialistProfilePage: React.FC = () => {
           <div className="flex">
             <TabButton
               tab="about"
-              label="About"
+              label={t(specialistProfileStrings, 'about', locale)}
               icon={<User size={16} />}
             />
             <TabButton
               tab="services"
-              label="Services"
+              label={t(specialistProfileStrings, 'services', locale)}
               icon={<Calendar size={16} />}
             />
             <TabButton
               tab="portfolio"
-              label="Portfolio"
+              label={t(specialistProfileStrings, 'portfolio', locale)}
               icon={<Grid3X3 size={16} />}
             />
             <TabButton
               tab="reviews"
-              label="Reviews"
+              label={t(specialistProfileStrings, 'reviews', locale)}
               icon={<Star size={16} />}
             />
           </div>
@@ -303,7 +281,7 @@ export const SpecialistProfilePage: React.FC = () => {
             <div className="space-y-4">
               {/* Bio */}
               <Card>
-                <h3 className="font-semibold mb-2">About</h3>
+                <h3 className="font-semibold mb-2">{t(specialistProfileStrings, 'about', locale)}</h3>
                 <p className="text-text-secondary leading-relaxed">
                   {selectedSpecialist.bio}
                 </p>
@@ -312,7 +290,7 @@ export const SpecialistProfilePage: React.FC = () => {
               {/* Specialties */}
               {selectedSpecialist.specialties && selectedSpecialist.specialties.length > 0 && (
                 <Card>
-                  <h3 className="font-semibold mb-3">Specialties</h3>
+                  <h3 className="font-semibold mb-3">{t(specialistProfileStrings, 'specialties', locale)}</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedSpecialist.specialties.map((specialty, index) => (
                       <span
@@ -329,7 +307,7 @@ export const SpecialistProfilePage: React.FC = () => {
               {/* Certifications */}
               {selectedSpecialist.certifications && selectedSpecialist.certifications.length > 0 && (
                 <Card>
-                  <h3 className="font-semibold mb-3">Certifications</h3>
+                  <h3 className="font-semibold mb-3">{t(specialistProfileStrings, 'certifications', locale)}</h3>
                   <div className="space-y-2">
                     {selectedSpecialist.certifications.map((cert, index) => (
                       <div key={index} className="flex items-center gap-2">
@@ -343,7 +321,7 @@ export const SpecialistProfilePage: React.FC = () => {
 
               {/* Location */}
               <Card>
-                <h3 className="font-semibold mb-2">Location</h3>
+                <h3 className="font-semibold mb-2">{t(specialistProfileStrings, 'location', locale)}</h3>
                 <div className="flex items-start gap-2">
                   <MapPin size={16} className="text-text-secondary mt-1" />
                   <div className="text-text-secondary">
@@ -382,13 +360,13 @@ export const SpecialistProfilePage: React.FC = () => {
                       size="sm"
                       onClick={() => handleBookService(service)}
                     >
-                      Book
+                      {locale === 'uk' ? 'Забронювати' : locale === 'ru' ? 'Забронировать' : 'Book'}
                     </Button>
                   </div>
                 </Card>
               )) || (
                 <p className="text-center text-text-secondary py-8">
-                  No services available
+                  {locale === 'uk' ? 'Немає доступних послуг' : locale === 'ru' ? 'Нет доступных услуг' : 'No services available'}
                 </p>
               )}
             </div>
@@ -425,7 +403,7 @@ export const SpecialistProfilePage: React.FC = () => {
                 </div>
               ) : (
                 <p className="text-center text-text-secondary py-8">
-                  {t('portfolio.noItems')}
+                  {locale === 'uk' ? 'Немає елементів портфоліо' : locale === 'ru' ? 'Нет элементов портфолио' : 'No portfolio items available'}
                 </p>
               )}
             </div>
@@ -438,7 +416,9 @@ export const SpecialistProfilePage: React.FC = () => {
                   <LoadingSpinner />
                 </div>
               ) : reviews.length === 0 ? (
-                <p className="text-center text-text-secondary py-8">No reviews yet</p>
+                <p className="text-center text-text-secondary py-8">
+                  {locale === 'uk' ? 'Відгуків поки немає' : locale === 'ru' ? 'Отзывов пока нет' : 'No reviews yet'}
+                </p>
               ) : (
                 <div className="space-y-4">
                   {reviews.map((review) => (
@@ -486,7 +466,7 @@ export const SpecialistProfilePage: React.FC = () => {
                       onClick={() => setShowAllReviews(true)}
                       className="w-full py-3 text-accent-primary text-center"
                     >
-                      View all reviews
+                      {locale === 'uk' ? 'Переглянути всі відгуки' : locale === 'ru' ? 'Посмотреть все отзывы' : 'View all reviews'}
                     </button>
                   )}
                 </div>
@@ -533,7 +513,7 @@ export const SpecialistProfilePage: React.FC = () => {
           disabled={!selectedSpecialist.services || selectedSpecialist.services.length === 0}
         >
           <Calendar size={18} className="mr-2" />
-          Book an Appointment
+          {locale === 'uk' ? 'Забронювати візит' : locale === 'ru' ? 'Забронировать визит' : 'Book an Appointment'}
         </Button>
       </div>
     </div>

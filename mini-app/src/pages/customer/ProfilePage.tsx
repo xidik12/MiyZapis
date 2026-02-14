@@ -33,11 +33,14 @@ import { RootState, AppDispatch } from '@/store';
 import { updateProfileAsync, logout } from '@/store/slices/authSlice';
 import { fetchBookingsAsync } from '@/store/slices/bookingsSlice';
 import { addToast } from '@/store/slices/uiSlice';
+import { useLocale, t } from '@/hooks/useLocale';
+import { profileStrings, commonStrings, serviceDetailStrings, specialistDashboardStrings, bookingFlowStrings } from '@/utils/translations';
 
 export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { hapticFeedback, showAlert, showConfirm } = useTelegram();
+  const locale = useLocale();
 
   const { user, isLoading } = useSelector((state: RootState) => state.auth);
   const { bookings } = useSelector((state: RootState) => state.bookings);
@@ -66,23 +69,23 @@ export const ProfilePage: React.FC = () => {
       await dispatch(updateProfileAsync(profileData)).unwrap();
       dispatch(addToast({
         type: 'success',
-        title: 'Profile Updated',
-        message: 'Your profile has been updated successfully.',
+        title: t(commonStrings, 'success', locale),
+        message: t(profileStrings, 'editProfile', locale),
       }));
       setShowEditProfile(false);
       hapticFeedback.notificationSuccess();
     } catch (error) {
       dispatch(addToast({
         type: 'error',
-        title: 'Update Failed',
-        message: 'Failed to update profile. Please try again.',
+        title: t(commonStrings, 'error', locale),
+        message: t(commonStrings, 'retry', locale),
       }));
       hapticFeedback.notificationError();
     }
   };
 
   const handleLogout = async () => {
-    const confirmed = await showConfirm('Are you sure you want to log out?');
+    const confirmed = await showConfirm(t(profileStrings, 'signOut', locale) + '?');
     if (confirmed) {
       dispatch(logout());
       hapticFeedback.impactMedium();
@@ -95,8 +98,8 @@ export const ProfilePage: React.FC = () => {
     hapticFeedback.impactLight();
     dispatch(addToast({
       type: 'info',
-      title: 'Coming Soon',
-      message: 'Avatar upload feature will be available soon.',
+      title: t(commonStrings, 'comingSoon', locale),
+      message: t(profileStrings, 'avatarUpload', locale),
     }));
   };
 
@@ -126,7 +129,7 @@ export const ProfilePage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
-      <Header title="Profile" />
+      <Header title={t(profileStrings, 'profile', locale)} />
 
       <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {/* Profile Header */}
@@ -168,22 +171,22 @@ export const ProfilePage: React.FC = () => {
           <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-white border-opacity-20">
             <div className="text-center">
               <div className="text-lg font-bold">{bookings.length}</div>
-              <div className="text-xs opacity-80">Total Bookings</div>
+              <div className="text-xs opacity-80">{t(profileStrings, 'totalBookings', locale)}</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-bold">{getCompletedBookingsCount()}</div>
-              <div className="text-xs opacity-80">Completed</div>
+              <div className="text-xs opacity-80">{t(profileStrings, 'completedBookings', locale)}</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-bold">{getAverageRating()}</div>
-              <div className="text-xs opacity-80">Avg Rating</div>
+              <div className="text-xs opacity-80">{t(profileStrings, 'avgRating', locale)}</div>
             </div>
           </div>
         </div>
 
         {/* Quick Actions */}
         <div className="px-4 py-4">
-          <h2 className="text-lg font-semibold text-text-primary mb-3">Quick Actions</h2>
+          <h2 className="text-lg font-semibold text-text-primary mb-3">{t(profileStrings, 'quickActions', locale)}</h2>
           <div className="grid grid-cols-2 gap-3">
             <Card hover onClick={() => navigate('/bookings')}>
               <div className="flex items-center gap-3">
@@ -191,8 +194,8 @@ export const ProfilePage: React.FC = () => {
                   <Calendar size={20} className="text-accent-primary" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-text-primary">My Bookings</h3>
-                  <p className="text-xs text-text-secondary">{bookings.length} total</p>
+                  <h3 className="font-medium text-text-primary">{t(commonStrings, 'bookings', locale)}</h3>
+                  <p className="text-xs text-text-secondary">{bookings.length} {t(profileStrings, 'totalBookings', locale).toLowerCase()}</p>
                 </div>
               </div>
             </Card>
@@ -203,8 +206,8 @@ export const ProfilePage: React.FC = () => {
                   <Wallet size={20} className="text-accent-green" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-text-primary">Wallet</h3>
-                  <p className="text-xs text-text-secondary">Balance & payments</p>
+                  <h3 className="font-medium text-text-primary">{t(profileStrings, 'wallet', locale)}</h3>
+                  <p className="text-xs text-text-secondary">{t(profileStrings, 'balance', locale)}</p>
                 </div>
               </div>
             </Card>
@@ -215,8 +218,8 @@ export const ProfilePage: React.FC = () => {
                   <Heart size={20} className="text-accent-red" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-text-primary">Favorites</h3>
-                  <p className="text-xs text-text-secondary">Saved services</p>
+                  <h3 className="font-medium text-text-primary">{t(profileStrings, 'favorites', locale)}</h3>
+                  <p className="text-xs text-text-secondary">{t(profileStrings, 'savedServices', locale)}</p>
                 </div>
               </div>
             </Card>
@@ -227,8 +230,8 @@ export const ProfilePage: React.FC = () => {
                   <Award size={20} className="text-accent-purple" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-text-primary">Rewards</h3>
-                  <p className="text-xs text-text-secondary">Loyalty points</p>
+                  <h3 className="font-medium text-text-primary">{t(profileStrings, 'rewards', locale)}</h3>
+                  <p className="text-xs text-text-secondary">{t(profileStrings, 'loyaltyPoints', locale)}</p>
                 </div>
               </div>
             </Card>
@@ -239,8 +242,8 @@ export const ProfilePage: React.FC = () => {
                   <Star size={20} className="text-accent-yellow" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-text-primary">Reviews</h3>
-                  <p className="text-xs text-text-secondary">My reviews</p>
+                  <h3 className="font-medium text-text-primary">{t(serviceDetailStrings, 'reviews', locale)}</h3>
+                  <p className="text-xs text-text-secondary">{t(profileStrings, 'myReviews', locale)}</p>
                 </div>
               </div>
             </Card>
@@ -251,8 +254,8 @@ export const ProfilePage: React.FC = () => {
                   <Users size={20} className="text-indigo-600" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-text-primary">Community</h3>
-                  <p className="text-xs text-text-secondary">Posts & tips</p>
+                  <h3 className="font-medium text-text-primary">{t(profileStrings, 'community', locale)}</h3>
+                  <p className="text-xs text-text-secondary">{t(profileStrings, 'postsAndTips', locale)}</p>
                 </div>
               </div>
             </Card>
@@ -262,12 +265,12 @@ export const ProfilePage: React.FC = () => {
         {/* Recent Bookings */}
         <div className="px-4 py-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-text-primary">Recent Bookings</h2>
+            <h2 className="text-lg font-semibold text-text-primary">{t(profileStrings, 'recentBookings', locale)}</h2>
             <button
               onClick={() => navigate('/bookings')}
               className="text-accent-primary text-sm"
             >
-              View All
+              {t(commonStrings, 'viewAll', locale)}
             </button>
           </div>
 
@@ -275,13 +278,13 @@ export const ProfilePage: React.FC = () => {
             <Card>
               <div className="text-center py-6">
                 <Calendar size={32} className="text-text-secondary mx-auto mb-2" />
-                <p className="text-text-secondary">No bookings yet</p>
+                <p className="text-text-secondary">{t(profileStrings, 'noBookingsYet', locale)}</p>
                 <Button
                   size="sm"
                   onClick={() => navigate('/search')}
                   className="mt-3"
                 >
-                  Book Your First Service
+                  {t(profileStrings, 'bookFirstService', locale)}
                 </Button>
               </div>
             </Card>
@@ -328,13 +331,13 @@ export const ProfilePage: React.FC = () => {
 
         {/* Settings */}
         <div className="px-4 py-4">
-          <h2 className="text-lg font-semibold text-text-primary mb-3">Settings</h2>
+          <h2 className="text-lg font-semibold text-text-primary mb-3">{t(profileStrings, 'settings', locale)}</h2>
           <div className="space-y-1">
             <Card hover onClick={() => { hapticFeedback.impactLight(); navigate('/settings'); }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Settings size={20} className="text-text-secondary" />
-                  <span className="text-text-primary">Settings & Preferences</span>
+                  <span className="text-text-primary">{t(profileStrings, 'settings', locale)}</span>
                 </div>
                 <ChevronRight size={18} className="text-text-secondary" />
               </div>
@@ -344,7 +347,7 @@ export const ProfilePage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <MapPin size={20} className="text-text-secondary" />
-                  <span className="text-text-primary">Analytics</span>
+                  <span className="text-text-primary">{t(specialistDashboardStrings, 'analytics', locale)}</span>
                 </div>
                 <ChevronRight size={18} className="text-text-secondary" />
               </div>
@@ -353,7 +356,7 @@ export const ProfilePage: React.FC = () => {
             <Card hover onClick={handleLogout}>
               <div className="flex items-center gap-3">
                 <LogOut size={20} className="text-accent-red" />
-                <span className="text-accent-red">Sign Out</span>
+                <span className="text-accent-red">{t(profileStrings, 'signOut', locale)}</span>
               </div>
             </Card>
           </div>
@@ -364,41 +367,41 @@ export const ProfilePage: React.FC = () => {
       <Sheet
         isOpen={showEditProfile}
         onClose={() => setShowEditProfile(false)}
-        title="Edit Profile"
+        title={t(profileStrings, 'editProfile', locale)}
       >
         <div className="space-y-4">
           <Input
-            label="First Name"
+            label={t(bookingFlowStrings, 'firstName', locale)}
             value={profileData.firstName}
             onChange={(e) => setProfileData(prev => ({ ...prev, firstName: e.target.value }))}
             icon={<User size={18} />}
-            placeholder="Enter first name"
+            placeholder={t(bookingFlowStrings, 'firstName', locale)}
           />
 
           <Input
-            label="Last Name"
+            label={t(bookingFlowStrings, 'lastName', locale)}
             value={profileData.lastName}
             onChange={(e) => setProfileData(prev => ({ ...prev, lastName: e.target.value }))}
             icon={<User size={18} />}
-            placeholder="Enter last name"
+            placeholder={t(bookingFlowStrings, 'lastName', locale)}
           />
 
           <Input
-            label="Phone"
+            label={t(bookingFlowStrings, 'phoneNumber', locale)}
             type="tel"
             value={profileData.phone}
             onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
             icon={<Phone size={18} />}
-            placeholder="Enter phone number"
+            placeholder={t(bookingFlowStrings, 'phoneNumber', locale)}
           />
 
           <Input
-            label="Email"
+            label={t(bookingFlowStrings, 'email', locale)}
             type="email"
             value={profileData.email}
             onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
             icon={<Mail size={18} />}
-            placeholder="Enter email address"
+            placeholder={t(bookingFlowStrings, 'email', locale)}
           />
 
           <div className="flex gap-3 pt-4">
@@ -407,14 +410,14 @@ export const ProfilePage: React.FC = () => {
               onClick={() => setShowEditProfile(false)}
               className="flex-1"
             >
-              Cancel
+              {t(commonStrings, 'cancel', locale)}
             </Button>
             <Button
               onClick={handleSaveProfile}
               className="flex-1"
               disabled={isLoading}
             >
-              {isLoading ? 'Saving...' : 'Save Changes'}
+              {isLoading ? t(commonStrings, 'loading', locale) : t(commonStrings, 'saveChanges', locale)}
             </Button>
           </div>
         </div>

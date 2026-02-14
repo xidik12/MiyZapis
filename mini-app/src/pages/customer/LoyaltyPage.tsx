@@ -22,6 +22,8 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
+import { useLocale, t } from '@/hooks/useLocale';
+import { loyaltyStrings, commonStrings } from '@/utils/translations';
 
 interface LoyaltyStatus {
   points: number;
@@ -56,6 +58,7 @@ const TIERS = [
 export const LoyaltyPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { hapticFeedback, showConfirm } = useTelegram();
+  const locale = useLocale();
 
   const [status, setStatus] = useState<LoyaltyStatus | null>(null);
   const [history, setHistory] = useState<LoyaltyTransaction[]>([]);
@@ -92,21 +95,26 @@ export const LoyaltyPage: React.FC = () => {
 
   const handleRedeem = async (reward: LoyaltyReward) => {
     if ((status?.points || 0) < reward.pointsCost) {
-      dispatch(addToast({ type: 'warning', title: 'Not enough points', message: `You need ${reward.pointsCost - (status?.points || 0)} more points` }));
+      const needed = reward.pointsCost - (status?.points || 0);
+      const msg = locale === 'uk' ? `Вам потрібно ще ${needed} балів` : locale === 'ru' ? `Вам нужно ещё ${needed} баллов` : `You need ${needed} more points`;
+      dispatch(addToast({ type: 'warning', title: t(commonStrings, 'error', locale), message: msg }));
       hapticFeedback.notificationWarning();
       return;
     }
 
-    const confirmed = await showConfirm(`Redeem "${reward.title}" for ${reward.pointsCost} points?`);
+    const confirmMsg = locale === 'uk' ? `Обміняти "${reward.title}" за ${reward.pointsCost} балів?` : locale === 'ru' ? `Обменять "${reward.title}" за ${reward.pointsCost} баллов?` : `Redeem "${reward.title}" for ${reward.pointsCost} points?`;
+    const confirmed = await showConfirm(confirmMsg);
     if (!confirmed) return;
 
     try {
       await apiService.redeemReward(reward.id);
-      dispatch(addToast({ type: 'success', title: 'Redeemed!', message: reward.title }));
+      const successMsg = locale === 'uk' ? 'Обмінено!' : locale === 'ru' ? 'Обменено!' : 'Redeemed!';
+      dispatch(addToast({ type: 'success', title: successMsg, message: reward.title }));
       hapticFeedback.notificationSuccess();
       fetchData();
     } catch {
-      dispatch(addToast({ type: 'error', title: 'Error', message: 'Failed to redeem reward' }));
+      const errorMsg = locale === 'uk' ? 'Не вдалося обміняти винагороду' : locale === 'ru' ? 'Не удалось обменять награду' : 'Failed to redeem reward';
+      dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: errorMsg }));
       hapticFeedback.notificationError();
     }
   };
@@ -127,7 +135,7 @@ export const LoyaltyPage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
-      <Header title="Loyalty & Rewards" />
+      <Header title={t(loyaltyStrings, 'title', locale)} />
 
       <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {/* Points Banner */}
@@ -135,14 +143,20 @@ export const LoyaltyPage: React.FC = () => {
           <div className={`bg-gradient-to-br ${currentTier.color} rounded-2xl p-5 text-white shadow-card`}>
             <div className="flex items-center gap-2 mb-1">
               <currentTier.icon size={20} />
-              <span className="text-sm font-medium opacity-90">{currentTier.name} Member</span>
+              <span className="text-sm font-medium opacity-90">
+                {currentTier.name} {locale === 'uk' ? 'Учасник' : locale === 'ru' ? 'Участник' : 'Member'}
+              </span>
             </div>
-            <div className="text-3xl font-bold">{(status?.points || 0).toLocaleString()} pts</div>
+            <div className="text-3xl font-bold">
+              {(status?.points || 0).toLocaleString()} {locale === 'uk' ? 'балів' : locale === 'ru' ? 'баллов' : 'pts'}
+            </div>
             {nextTier && (
               <div className="mt-3">
                 <div className="flex items-center justify-between text-xs opacity-80 mb-1">
                   <span>{currentTier.name}</span>
-                  <span>{status?.pointsToNextTier || 0} pts to {nextTier.name}</span>
+                  <span>
+                    {status?.pointsToNextTier || 0} {locale === 'uk' ? 'балів до' : locale === 'ru' ? 'баллов до' : 'pts to'} {nextTier.name}
+                  </span>
                 </div>
                 <div className="h-2 bg-white/20 rounded-full overflow-hidden">
                   <div
@@ -181,22 +195,22 @@ export const LoyaltyPage: React.FC = () => {
                 <Card className="text-center py-4">
                   <Zap size={24} className="text-accent-yellow mx-auto mb-1" />
                   <div className="text-lg font-bold text-text-primary">{status?.points || 0}</div>
-                  <div className="text-xs text-text-secondary">Current Points</div>
+                  <div className="text-xs text-text-secondary">{t(loyaltyStrings, 'currentPoints', locale)}</div>
                 </Card>
                 <Card className="text-center py-4">
                   <Award size={24} className={`${currentTier.textColor} mx-auto mb-1`} />
                   <div className="text-lg font-bold text-text-primary">{currentTier.name}</div>
-                  <div className="text-xs text-text-secondary">Current Tier</div>
+                  <div className="text-xs text-text-secondary">{t(loyaltyStrings, 'currentTier', locale)}</div>
                 </Card>
               </div>
 
               <Card>
-                <h3 className="font-semibold text-text-primary mb-3">How to earn points</h3>
+                <h3 className="font-semibold text-text-primary mb-3">{t(loyaltyStrings, 'howToEarn', locale)}</h3>
                 <div className="space-y-2.5">
                   {[
-                    { icon: <Star size={16} className="text-accent-yellow" />, text: 'Complete a booking', pts: '+10 pts' },
-                    { icon: <Users size={16} className="text-accent-primary" />, text: 'Refer a friend', pts: '+50 pts' },
-                    { icon: <TrendingUp size={16} className="text-accent-green" />, text: 'Leave a review', pts: '+5 pts' },
+                    { icon: <Star size={16} className="text-accent-yellow" />, text: t(loyaltyStrings, 'completeBooking', locale), pts: '+10 ' + (locale === 'uk' ? 'балів' : locale === 'ru' ? 'баллов' : 'pts') },
+                    { icon: <Users size={16} className="text-accent-primary" />, text: t(loyaltyStrings, 'referFriend', locale), pts: '+50 ' + (locale === 'uk' ? 'балів' : locale === 'ru' ? 'баллов' : 'pts') },
+                    { icon: <TrendingUp size={16} className="text-accent-green" />, text: t(loyaltyStrings, 'leaveReview', locale), pts: '+5 ' + (locale === 'uk' ? 'балів' : locale === 'ru' ? 'баллов' : 'pts') },
                   ].map((item, i) => (
                     <div key={i} className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-bg-secondary rounded-lg flex items-center justify-center">{item.icon}</div>
@@ -209,7 +223,7 @@ export const LoyaltyPage: React.FC = () => {
 
               {history.length > 0 && (
                 <div>
-                  <h3 className="font-semibold text-text-primary mb-2">Recent Activity</h3>
+                  <h3 className="font-semibold text-text-primary mb-2">{t(loyaltyStrings, 'recentActivity', locale)}</h3>
                   {history.slice(0, 5).map(tx => (
                     <Card key={tx.id} className="mb-2">
                       <div className="flex items-center gap-3">
@@ -235,7 +249,7 @@ export const LoyaltyPage: React.FC = () => {
             history.length === 0 ? (
               <Card className="text-center py-12">
                 <Clock size={40} className="text-text-secondary mx-auto mb-3" />
-                <p className="text-text-secondary">No loyalty activity yet</p>
+                <p className="text-text-secondary">{t(loyaltyStrings, 'noActivity', locale)}</p>
               </Card>
             ) : (
               history.map(tx => (
@@ -298,8 +312,8 @@ export const LoyaltyPage: React.FC = () => {
             rewards.length === 0 ? (
               <Card className="text-center py-12">
                 <Gift size={40} className="text-text-secondary mx-auto mb-3" />
-                <p className="text-text-primary font-medium">No rewards available</p>
-                <p className="text-text-secondary text-sm mt-1">Keep earning points to unlock rewards</p>
+                <p className="text-text-primary font-medium">{t(loyaltyStrings, 'noRewards', locale)}</p>
+                <p className="text-text-secondary text-sm mt-1">{t(loyaltyStrings, 'keepEarning', locale)}</p>
               </Card>
             ) : (
               rewards.map(reward => (
@@ -318,7 +332,7 @@ export const LoyaltyPage: React.FC = () => {
                       onClick={() => handleRedeem(reward)}
                       disabled={!reward.isAvailable || (status?.points || 0) < reward.pointsCost}
                     >
-                      Redeem
+                      {locale === 'uk' ? 'Обміняти' : locale === 'ru' ? 'Обменять' : 'Redeem'}
                     </Button>
                   </div>
                 </Card>

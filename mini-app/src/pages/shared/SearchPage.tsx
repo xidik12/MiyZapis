@@ -27,12 +27,15 @@ import {
   setFilters,
   clearFilters,
 } from '@/store/slices/servicesSlice';
+import { useLocale, t } from '@/hooks/useLocale';
+import { searchStrings, commonStrings, serviceDetailStrings, specialistServicesStrings } from '@/utils/translations';
 
 export const SearchPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { hapticFeedback } = useTelegram();
+  const locale = useLocale();
 
   const {
     services,
@@ -158,12 +161,12 @@ export const SearchPage: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock size={12} className="text-text-secondary" />
-                  <span className="text-sm text-text-secondary">{service.duration}min</span>
+                  <span className="text-sm text-text-secondary">{service.duration}{t(commonStrings, 'min', locale)}</span>
                 </div>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-lg font-bold text-accent-primary">${service.price}</span>
-                <Button size="sm">Book</Button>
+                <Button size="sm">{t(serviceDetailStrings, 'bookNow', locale)}</Button>
               </div>
             </div>
           </div>
@@ -196,12 +199,12 @@ export const SearchPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-1">
               <Clock size={10} className="text-text-secondary" />
-              <span className="text-xs text-text-secondary">{service.duration}min</span>
+              <span className="text-xs text-text-secondary">{service.duration}{t(commonStrings, 'min', locale)}</span>
             </div>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-accent-primary">${service.price}</span>
-            <Button size="sm" className="text-xs px-2 py-1">Book</Button>
+            <Button size="sm" className="text-xs px-2 py-1">{t(serviceDetailStrings, 'bookNow', locale)}</Button>
           </div>
         </div>
       </Card>
@@ -211,7 +214,7 @@ export const SearchPage: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header
-        title="Search Services"
+        title={t(searchStrings, 'searchServices', locale)}
         showBackButton
         rightContent={
           <button
@@ -232,7 +235,7 @@ export const SearchPage: React.FC = () => {
           <div className="flex gap-2 items-center">
             <div className="flex-1">
               <Input
-                placeholder="Search services..."
+                placeholder={t(searchStrings, 'searchServices', locale)}
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 icon={<Search size={18} />}
@@ -276,7 +279,7 @@ export const SearchPage: React.FC = () => {
                 onClick={handleClearFilters}
                 className="text-xs text-accent-primary underline"
               >
-                Clear all
+                {t(commonStrings, 'clearAll', locale)}
               </button>
             </div>
           </div>
@@ -290,16 +293,16 @@ export const SearchPage: React.FC = () => {
             </div>
           ) : services.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-text-secondary mb-2">No services found</p>
+              <p className="text-text-secondary mb-2">{t(searchStrings, 'noServices', locale)}</p>
               <p className="text-sm text-text-secondary">
-                Try adjusting your search or filters
+                {t(searchStrings, 'tryDifferent', locale)}
               </p>
             </div>
           ) : (
             <>
               <div className="flex items-center justify-between mb-4">
                 <p className="text-sm text-text-secondary">
-                  {pagination.total} services found
+                  {pagination.total} {t(searchStrings, 'resultsFound', locale)}
                 </p>
               </div>
 
@@ -325,12 +328,12 @@ export const SearchPage: React.FC = () => {
       <Sheet
         isOpen={showFilters}
         onClose={() => setShowFilters(false)}
-        title="Filters"
+        title={t(searchStrings, 'filters', locale)}
       >
         <div className="space-y-6">
           {/* Categories */}
           <div>
-            <h3 className="font-semibold mb-3">Category</h3>
+            <h3 className="font-semibold mb-3">{t(searchStrings, 'category', locale)}</h3>
             <div className="grid grid-cols-2 gap-2">
               {categories.map((category) => (
                 <button
@@ -353,10 +356,10 @@ export const SearchPage: React.FC = () => {
 
           {/* Price Range */}
           <div>
-            <h3 className="font-semibold mb-3">Price Range</h3>
+            <h3 className="font-semibold mb-3">{t(searchStrings, 'priceRange', locale)}</h3>
             <div className="grid grid-cols-2 gap-2">
               <Input
-                placeholder="Min price"
+                placeholder={t(specialistServicesStrings, 'price', locale) + ' (min)'}
                 type="number"
                 value={localFilters.minPrice}
                 onChange={(e) =>
@@ -365,7 +368,7 @@ export const SearchPage: React.FC = () => {
                 icon={<DollarSign size={18} />}
               />
               <Input
-                placeholder="Max price"
+                placeholder={t(specialistServicesStrings, 'price', locale) + ' (max)'}
                 type="number"
                 value={localFilters.maxPrice}
                 onChange={(e) =>
@@ -378,14 +381,14 @@ export const SearchPage: React.FC = () => {
 
           {/* Sort By */}
           <div>
-            <h3 className="font-semibold mb-3">Sort By</h3>
+            <h3 className="font-semibold mb-3">{t(searchStrings, 'sortBy', locale)}</h3>
             <div className="space-y-2">
               {[
-                { value: 'popular', label: 'Most Popular' },
-                { value: 'price_asc', label: 'Price: Low to High' },
-                { value: 'price_desc', label: 'Price: High to Low' },
-                { value: 'rating', label: 'Highest Rated' },
-                { value: 'newest', label: 'Newest' },
+                { value: 'popular', label: t(searchStrings, 'mostPopular', locale) },
+                { value: 'price_asc', label: t(searchStrings, 'priceLowToHigh', locale) },
+                { value: 'price_desc', label: t(searchStrings, 'priceHighToLow', locale) },
+                { value: 'rating', label: t(searchStrings, 'highestRated', locale) },
+                { value: 'newest', label: t(searchStrings, 'newest', locale) },
               ].map((option) => (
                 <button
                   key={option.value}
@@ -406,7 +409,7 @@ export const SearchPage: React.FC = () => {
 
           {/* Rating */}
           <div>
-            <h3 className="font-semibold mb-3">Minimum Rating</h3>
+            <h3 className="font-semibold mb-3">{t(searchStrings, 'minimumRating', locale)}</h3>
             <div className="flex gap-2">
               {[4, 4.5, 5].map((rating) => (
                 <button
@@ -434,10 +437,10 @@ export const SearchPage: React.FC = () => {
               onClick={handleClearFilters}
               className="flex-1"
             >
-              Clear All
+              {t(commonStrings, 'clearAll', locale)}
             </Button>
             <Button onClick={handleApplyFilters} className="flex-1">
-              Apply Filters
+              {t(searchStrings, 'applyFilters', locale)}
             </Button>
           </div>
         </div>

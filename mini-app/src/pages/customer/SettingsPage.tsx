@@ -29,6 +29,8 @@ import { RootState, AppDispatch } from '@/store';
 import { updateProfileAsync, logout } from '@/store/slices/authSlice';
 import { addToast, setTheme } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
+import { useLocale, t } from '@/hooks/useLocale';
+import { settingsStrings, commonStrings, bookingFlowStrings, profileStrings } from '@/utils/translations';
 
 interface NotificationPrefs {
   email: boolean;
@@ -43,6 +45,7 @@ export const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { hapticFeedback, showConfirm, colorScheme } = useTelegram();
+  const locale = useLocale();
 
   const { user, isLoading } = useSelector((state: RootState) => state.auth);
   const { theme } = useSelector((state: RootState) => state.ui);
@@ -50,7 +53,7 @@ export const SettingsPage: React.FC = () => {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showLanguage, setShowLanguage] = useState(false);
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState(locale);
   const [profileData, setProfileData] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
@@ -87,11 +90,19 @@ export const SettingsPage: React.FC = () => {
   const handleSaveProfile = async () => {
     try {
       await dispatch(updateProfileAsync(profileData)).unwrap();
-      dispatch(addToast({ type: 'success', title: 'Updated', message: 'Profile updated successfully' }));
+      dispatch(addToast({
+        type: 'success',
+        title: t(commonStrings, 'success', locale),
+        message: t(profileStrings, 'editProfile', locale) + ' ' + t(commonStrings, 'success', locale).toLowerCase()
+      }));
       setShowEditProfile(false);
       hapticFeedback.notificationSuccess();
     } catch {
-      dispatch(addToast({ type: 'error', title: 'Error', message: 'Failed to update profile' }));
+      dispatch(addToast({
+        type: 'error',
+        title: t(commonStrings, 'error', locale),
+        message: t(commonStrings, 'error', locale)
+      }));
       hapticFeedback.notificationError();
     }
   };
@@ -100,11 +111,19 @@ export const SettingsPage: React.FC = () => {
     try {
       setSavingNotifs(true);
       await apiService.updateNotificationPreferences(notifPrefs);
-      dispatch(addToast({ type: 'success', title: 'Saved', message: 'Notification preferences updated' }));
+      dispatch(addToast({
+        type: 'success',
+        title: t(commonStrings, 'success', locale),
+        message: t(settingsStrings, 'savePreferences', locale)
+      }));
       setShowNotifications(false);
       hapticFeedback.notificationSuccess();
     } catch {
-      dispatch(addToast({ type: 'error', title: 'Error', message: 'Failed to save preferences' }));
+      dispatch(addToast({
+        type: 'error',
+        title: t(commonStrings, 'error', locale),
+        message: t(commonStrings, 'error', locale)
+      }));
       hapticFeedback.notificationError();
     } finally {
       setSavingNotifs(false);
@@ -112,7 +131,7 @@ export const SettingsPage: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    const confirmed = await showConfirm('Are you sure you want to log out?');
+    const confirmed = await showConfirm(t(profileStrings, 'signOut', locale) + '?');
     if (confirmed) {
       dispatch(logout());
       hapticFeedback.impactMedium();
@@ -137,7 +156,7 @@ export const SettingsPage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
-      <Header title="Settings" />
+      <Header title={t(settingsStrings, 'title', locale)} />
 
       <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {/* Profile Section */}
@@ -164,7 +183,7 @@ export const SettingsPage: React.FC = () => {
 
         {/* Preferences */}
         <div className="px-4 py-2">
-          <h3 className="text-sm font-semibold text-text-secondary mb-2 px-1">Preferences</h3>
+          <h3 className="text-sm font-semibold text-text-secondary mb-2 px-1">{t(settingsStrings, 'preferences', locale)}</h3>
           <div className="space-y-1">
             <Card hover onClick={() => { setShowNotifications(true); hapticFeedback.impactLight(); }}>
               <div className="flex items-center justify-between">
@@ -172,7 +191,7 @@ export const SettingsPage: React.FC = () => {
                   <div className="w-9 h-9 bg-accent-red/15 rounded-lg flex items-center justify-center">
                     <Bell size={18} className="text-accent-red" />
                   </div>
-                  <span className="text-sm text-text-primary">Notifications</span>
+                  <span className="text-sm text-text-primary">{t(settingsStrings, 'notifications', locale)}</span>
                 </div>
                 <ChevronRight size={18} className="text-text-secondary" />
               </div>
@@ -184,7 +203,7 @@ export const SettingsPage: React.FC = () => {
                   <div className="w-9 h-9 bg-accent-primary/10 rounded-lg flex items-center justify-center">
                     <Globe size={18} className="text-accent-primary" />
                   </div>
-                  <span className="text-sm text-text-primary">Language</span>
+                  <span className="text-sm text-text-primary">{t(settingsStrings, 'language', locale)}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-text-secondary">{language === 'uk' ? 'Українська' : language === 'ru' ? 'Русский' : 'English'}</span>
@@ -199,7 +218,7 @@ export const SettingsPage: React.FC = () => {
                   <div className="w-9 h-9 bg-accent-purple/15 rounded-lg flex items-center justify-center">
                     {theme === 'dark' ? <Moon size={18} className="text-accent-purple" /> : <Sun size={18} className="text-accent-yellow" />}
                   </div>
-                  <span className="text-sm text-text-primary">Dark Mode</span>
+                  <span className="text-sm text-text-primary">{t(settingsStrings, 'darkMode', locale)}</span>
                 </div>
                 <Toggle value={theme === 'dark'} onChange={toggleTheme} />
               </div>
@@ -209,7 +228,7 @@ export const SettingsPage: React.FC = () => {
 
         {/* Support */}
         <div className="px-4 py-2">
-          <h3 className="text-sm font-semibold text-text-secondary mb-2 px-1">Support</h3>
+          <h3 className="text-sm font-semibold text-text-secondary mb-2 px-1">{t(settingsStrings, 'support', locale)}</h3>
           <div className="space-y-1">
             <Card hover>
               <div className="flex items-center justify-between">
@@ -217,7 +236,7 @@ export const SettingsPage: React.FC = () => {
                   <div className="w-9 h-9 bg-accent-green/15 rounded-lg flex items-center justify-center">
                     <Shield size={18} className="text-accent-green" />
                   </div>
-                  <span className="text-sm text-text-primary">Privacy & Security</span>
+                  <span className="text-sm text-text-primary">{t(settingsStrings, 'privacySecurity', locale)}</span>
                 </div>
                 <ChevronRight size={18} className="text-text-secondary" />
               </div>
@@ -229,7 +248,7 @@ export const SettingsPage: React.FC = () => {
                   <div className="w-9 h-9 bg-accent-yellow/15 rounded-lg flex items-center justify-center">
                     <HelpCircle size={18} className="text-accent-yellow" />
                   </div>
-                  <span className="text-sm text-text-primary">Help & Support</span>
+                  <span className="text-sm text-text-primary">{t(settingsStrings, 'helpSupport', locale)}</span>
                 </div>
                 <ChevronRight size={18} className="text-text-secondary" />
               </div>
@@ -242,65 +261,67 @@ export const SettingsPage: React.FC = () => {
           <Card hover onClick={handleLogout}>
             <div className="flex items-center gap-3 justify-center">
               <LogOut size={18} className="text-accent-red" />
-              <span className="text-accent-red font-medium">Sign Out</span>
+              <span className="text-accent-red font-medium">{t(profileStrings, 'signOut', locale)}</span>
             </div>
           </Card>
         </div>
       </div>
 
       {/* Edit Profile Sheet */}
-      <Sheet isOpen={showEditProfile} onClose={() => setShowEditProfile(false)} title="Edit Profile">
+      <Sheet isOpen={showEditProfile} onClose={() => setShowEditProfile(false)} title={t(profileStrings, 'editProfile', locale)}>
         <div className="space-y-4">
           <Input
-            label="First Name"
+            label={t(bookingFlowStrings, 'firstName', locale)}
             value={profileData.firstName}
             onChange={e => setProfileData(prev => ({ ...prev, firstName: e.target.value }))}
             icon={<User size={18} />}
-            placeholder="First name"
+            placeholder={t(bookingFlowStrings, 'firstName', locale)}
           />
           <Input
-            label="Last Name"
+            label={t(bookingFlowStrings, 'lastName', locale)}
             value={profileData.lastName}
             onChange={e => setProfileData(prev => ({ ...prev, lastName: e.target.value }))}
             icon={<User size={18} />}
-            placeholder="Last name"
+            placeholder={t(bookingFlowStrings, 'lastName', locale)}
           />
           <Input
-            label="Phone"
+            label={t(bookingFlowStrings, 'phoneNumber', locale)}
             type="tel"
             value={profileData.phone}
             onChange={e => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
             icon={<Phone size={18} />}
-            placeholder="Phone number"
+            placeholder={t(bookingFlowStrings, 'phoneNumber', locale)}
           />
           <Input
-            label="Email"
+            label={t(bookingFlowStrings, 'email', locale)}
             type="email"
             value={profileData.email}
             onChange={e => setProfileData(prev => ({ ...prev, email: e.target.value }))}
             icon={<Mail size={18} />}
-            placeholder="Email address"
+            placeholder={t(bookingFlowStrings, 'email', locale)}
           />
           <div className="flex gap-3 pt-4">
-            <Button variant="secondary" onClick={() => setShowEditProfile(false)} className="flex-1">Cancel</Button>
+            <Button variant="secondary" onClick={() => setShowEditProfile(false)} className="flex-1">
+              {t(commonStrings, 'cancel', locale)}
+            </Button>
             <Button onClick={handleSaveProfile} className="flex-1" disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save'}
+              {isLoading ? t(commonStrings, 'loading', locale) : t(commonStrings, 'save', locale)}
             </Button>
           </div>
         </div>
       </Sheet>
 
       {/* Notifications Sheet */}
-      <Sheet isOpen={showNotifications} onClose={() => setShowNotifications(false)} title="Notifications">
+      <Sheet isOpen={showNotifications} onClose={() => setShowNotifications(false)} title={t(settingsStrings, 'notifications', locale)}>
         <div className="space-y-4">
           <div>
-            <h4 className="text-sm font-semibold text-text-primary mb-3">Channels</h4>
+            <h4 className="text-sm font-semibold text-text-primary mb-3">{t(settingsStrings, 'channels', locale)}</h4>
             <div className="space-y-3">
               {[
-                { key: 'email' as const, label: 'Email', icon: <Mail size={16} /> },
-                { key: 'sms' as const, label: 'SMS', icon: <MessageSquare size={16} /> },
-                { key: 'push' as const, label: 'Push Notifications', icon: <Smartphone size={16} /> },
-                { key: 'telegram' as const, label: 'Telegram', icon: <Send size={16} /> },
+                { key: 'email' as const, label: t(bookingFlowStrings, 'email', locale), icon: <Mail size={16} /> },
+                { key: 'sms' as const, label: t(settingsStrings, 'sms', locale), icon: <MessageSquare size={16} /> },
+                { key: 'push' as const, label: t(settingsStrings, 'pushNotifications', locale), icon: <Smartphone size={16} /> },
+                { key: 'telegram' as const, label: t(settingsStrings, 'telegram', locale), icon: <Send size={16} /> },
               ].map(ch => (
                 <div key={ch.key} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -317,17 +338,17 @@ export const SettingsPage: React.FC = () => {
           </div>
 
           <div>
-            <h4 className="text-sm font-semibold text-text-primary mb-3">Types</h4>
+            <h4 className="text-sm font-semibold text-text-primary mb-3">{t(settingsStrings, 'types', locale)}</h4>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-text-primary">Booking Reminders</span>
+                <span className="text-sm text-text-primary">{t(settingsStrings, 'bookingReminders', locale)}</span>
                 <Toggle
                   value={notifPrefs.bookingReminders}
                   onChange={v => setNotifPrefs(p => ({ ...p, bookingReminders: v }))}
                 />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-text-primary">Promotions</span>
+                <span className="text-sm text-text-primary">{t(settingsStrings, 'promotions', locale)}</span>
                 <Toggle
                   value={notifPrefs.promotions}
                   onChange={v => setNotifPrefs(p => ({ ...p, promotions: v }))}
@@ -337,13 +358,13 @@ export const SettingsPage: React.FC = () => {
           </div>
 
           <Button onClick={handleSaveNotifications} className="w-full" disabled={savingNotifs}>
-            {savingNotifs ? 'Saving...' : 'Save Preferences'}
+            {savingNotifs ? t(commonStrings, 'loading', locale) : t(settingsStrings, 'savePreferences', locale)}
           </Button>
         </div>
       </Sheet>
 
       {/* Language Sheet */}
-      <Sheet isOpen={showLanguage} onClose={() => setShowLanguage(false)} title="Language">
+      <Sheet isOpen={showLanguage} onClose={() => setShowLanguage(false)} title={t(settingsStrings, 'language', locale)}>
         <div className="space-y-2">
           {[
             { code: 'en', label: 'English', flag: '🇬🇧' },
@@ -354,9 +375,15 @@ export const SettingsPage: React.FC = () => {
               key={lang.code}
               onClick={() => {
                 setLanguage(lang.code);
+                localStorage.setItem('miyzapis_locale', lang.code);
                 hapticFeedback.selectionChanged();
                 setShowLanguage(false);
-                dispatch(addToast({ type: 'success', title: 'Language changed', message: lang.label }));
+                dispatch(addToast({
+                  type: 'success',
+                  title: t(settingsStrings, 'languageChanged', locale),
+                  message: lang.label
+                }));
+                window.location.reload();
               }}
               className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${
                 language === lang.code
@@ -367,7 +394,7 @@ export const SettingsPage: React.FC = () => {
               <span className="text-xl">{lang.flag}</span>
               <span className="text-sm font-medium text-text-primary">{lang.label}</span>
               {language === lang.code && (
-                <span className="ml-auto text-accent-primary text-xs font-medium">Selected</span>
+                <span className="ml-auto text-accent-primary text-xs font-medium">{t(commonStrings, 'active', locale)}</span>
               )}
             </button>
           ))}

@@ -25,11 +25,14 @@ import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { RootState, AppDispatch } from '@/store';
 import { fetchServiceAsync } from '@/store/slices/servicesSlice';
 import { fetchReviewsAsync } from '@/store/slices/reviewsSlice';
+import { useLocale, t } from '@/hooks/useLocale';
+import { serviceDetailStrings, commonStrings } from '@/utils/translations';
 
 export const ServiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const locale = useLocale();
   const { hapticFeedback, user, isAuthenticated } = useTelegram();
 
   const { selectedService } = useSelector((state: RootState) => state.services);
@@ -51,6 +54,9 @@ export const ServiceDetailPage: React.FC = () => {
       dispatch(fetchReviewsAsync({ serviceId: id, limit: 5 }));
     }
   }, [id, dispatch]);
+
+  const s = (key: string) => t(serviceDetailStrings, key, locale);
+  const c = (key: string) => t(commonStrings, key, locale);
 
   if (!selectedService) {
     return (
@@ -192,7 +198,7 @@ export const ServiceDetailPage: React.FC = () => {
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <span className="text-text-secondary">No image available</span>
+              <span className="text-text-secondary">{s('noImage')}</span>
             </div>
           )}
         </div>
@@ -215,7 +221,7 @@ export const ServiceDetailPage: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-1 text-sm text-text-secondary">
                   <Clock size={14} />
-                  {selectedService.duration}min
+                  {selectedService.duration}{c('min')}
                 </div>
               </div>
             </div>
@@ -235,7 +241,7 @@ export const ServiceDetailPage: React.FC = () => {
 
           {/* Description */}
           <Card className="mb-4">
-            <h3 className="font-semibold mb-2">Description</h3>
+            <h3 className="font-semibold mb-2">{s('description')}</h3>
             <p className="text-text-secondary leading-relaxed">
               {showFullDescription
                 ? selectedService.description
@@ -248,7 +254,7 @@ export const ServiceDetailPage: React.FC = () => {
                 onClick={() => setShowFullDescription(!showFullDescription)}
                 className="text-accent-primary mt-2 text-sm"
               >
-                {showFullDescription ? 'Show less' : 'Read more'}
+                {showFullDescription ? s('showLess') : s('readMore')}
               </button>
             )}
           </Card>
@@ -292,14 +298,14 @@ export const ServiceDetailPage: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-1">
                   <CheckCircle size={14} className="text-accent-green" />
-                  <span className="text-sm text-text-secondary">Verified specialist</span>
+                  <span className="text-sm text-text-secondary">{s('verifiedSpecialist')}</span>
                 </div>
               </div>
               <button
                 onClick={() => navigate(`/specialist/${selectedService.specialistId}`)}
                 className="text-accent-primary text-sm"
               >
-                View Profile
+                {s('viewProfile')}
               </button>
             </div>
 
@@ -312,7 +318,7 @@ export const ServiceDetailPage: React.FC = () => {
                 className="flex-1"
               >
                 <MessageCircle size={16} className="mr-1" />
-                Message
+                {s('message')}
               </Button>
               <Button
                 variant="secondary"
@@ -321,7 +327,7 @@ export const ServiceDetailPage: React.FC = () => {
                 className="flex-1"
               >
                 <Phone size={16} className="mr-1" />
-                Call
+                {s('call')}
               </Button>
             </div>
           </Card>
@@ -329,12 +335,12 @@ export const ServiceDetailPage: React.FC = () => {
           {/* Reviews Section */}
           <Card className="mb-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold">Reviews</h3>
+              <h3 className="font-semibold">{s('reviews')}</h3>
               <button
                 onClick={() => setShowAllReviews(true)}
                 className="text-accent-primary text-sm"
               >
-                View all
+                {c('viewAll')}
               </button>
             </div>
 
@@ -343,7 +349,7 @@ export const ServiceDetailPage: React.FC = () => {
                 <LoadingSpinner size="sm" />
               </div>
             ) : reviews.length === 0 ? (
-              <p className="text-text-secondary text-sm">No reviews yet</p>
+              <p className="text-text-secondary text-sm">{s('noReviews')}</p>
             ) : (
               <div className="space-y-3">
                 {reviews.slice(0, 3).map((review) => (
@@ -392,7 +398,7 @@ export const ServiceDetailPage: React.FC = () => {
       <div className="fixed bottom-0 left-0 right-0 bg-bg-secondary border-t border-white/5 p-4">
         <Button onClick={handleBookNow} size="lg" className="w-full">
           <Calendar size={18} className="mr-2" />
-          Book Now - ${selectedService.price}
+          {s('bookNow')} - ${selectedService.price}
         </Button>
       </div>
 
@@ -400,7 +406,7 @@ export const ServiceDetailPage: React.FC = () => {
       <Sheet
         isOpen={showAllReviews}
         onClose={() => setShowAllReviews(false)}
-        title="All Reviews"
+        title={s('allReviews')}
       >
         <div className="space-y-4">
           {reviews.map((review) => (

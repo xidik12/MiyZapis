@@ -19,6 +19,8 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
+import { useLocale, t } from '@/hooks/useLocale';
+import { favoritesStrings, commonStrings } from '@/utils/translations';
 
 interface FavoriteItem {
   id: string;
@@ -50,6 +52,7 @@ export const FavoritesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { hapticFeedback, showConfirm } = useTelegram();
+  const locale = useLocale();
 
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,7 +85,7 @@ export const FavoritesPage: React.FC = () => {
   }, [activeTab, fetchFavorites]);
 
   const handleRemove = async (fav: FavoriteItem) => {
-    const confirmed = await showConfirm('Remove from favorites?');
+    const confirmed = await showConfirm(t(favoritesStrings, 'confirmRemove', locale));
     if (!confirmed) return;
 
     hapticFeedback.impactMedium();
@@ -90,10 +93,13 @@ export const FavoritesPage: React.FC = () => {
 
     try {
       await apiService.removeFavorite(fav.id);
-      dispatch(addToast({ type: 'success', title: 'Removed', message: 'Removed from favorites' }));
+      const successMsg = locale === 'uk' ? 'Видалено' : locale === 'ru' ? 'Удалено' : 'Removed';
+      const msg = locale === 'uk' ? 'Видалено з обраного' : locale === 'ru' ? 'Удалено из избранного' : 'Removed from favorites';
+      dispatch(addToast({ type: 'success', title: successMsg, message: msg }));
     } catch {
       setFavorites(prev => [...prev, fav]);
-      dispatch(addToast({ type: 'error', title: 'Error', message: 'Failed to remove favorite' }));
+      const errorMsg = locale === 'uk' ? 'Не вдалося видалити' : locale === 'ru' ? 'Не удалось удалить' : 'Failed to remove favorite';
+      dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: errorMsg }));
       hapticFeedback.notificationError();
     }
   };
@@ -125,7 +131,7 @@ export const FavoritesPage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
-      <Header title="Favorites" />
+      <Header title={t(favoritesStrings, 'title', locale)} />
 
       <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {/* Tabs */}
@@ -141,7 +147,7 @@ export const FavoritesPage: React.FC = () => {
                     : 'text-text-secondary'
                 }`}
               >
-                {tab === 'specialist' ? 'Specialists' : 'Services'}
+                {tab === 'specialist' ? t(favoritesStrings, 'specialists', locale) : t(favoritesStrings, 'services', locale)}
               </button>
             ))}
           </div>
@@ -155,7 +161,7 @@ export const FavoritesPage: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder={`Search ${activeTab === 'specialist' ? 'specialists' : 'services'}...`}
+              placeholder={activeTab === 'specialist' ? t(favoritesStrings, 'searchSpecialists', locale) : t(favoritesStrings, 'searchServices', locale)}
               className="input-telegram w-full pl-10 pr-4 py-2.5 rounded-xl text-sm"
             />
           </div>
@@ -170,14 +176,14 @@ export const FavoritesPage: React.FC = () => {
           ) : filtered.length === 0 ? (
             <Card className="text-center py-12">
               <Heart size={40} className="text-text-secondary mx-auto mb-3" />
-              <p className="text-text-primary font-medium">No favorites yet</p>
+              <p className="text-text-primary font-medium">{t(favoritesStrings, 'noFavorites', locale)}</p>
               <p className="text-text-secondary text-sm mt-1">
                 {activeTab === 'specialist'
-                  ? 'Save your favorite specialists for quick access'
-                  : 'Save services you want to book later'}
+                  ? t(favoritesStrings, 'saveSpecialists', locale)
+                  : t(favoritesStrings, 'saveServices', locale)}
               </p>
               <Button size="sm" onClick={() => navigate('/search')} className="mt-4">
-                Explore {activeTab === 'specialist' ? 'Specialists' : 'Services'}
+                {activeTab === 'specialist' ? t(favoritesStrings, 'exploreSpecialists', locale) : t(favoritesStrings, 'exploreServices', locale)}
               </Button>
             </Card>
           ) : (
@@ -262,7 +268,7 @@ export const FavoritesPage: React.FC = () => {
                   onClick={() => { const n = page + 1; setPage(n); fetchFavorites(n, true); }}
                   className="w-full"
                 >
-                  Load More
+                  {locale === 'uk' ? 'Завантажити ще' : locale === 'ru' ? 'Загрузить ещё' : 'Load More'}
                 </Button>
               )}
             </>

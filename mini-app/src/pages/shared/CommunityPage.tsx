@@ -22,6 +22,8 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
+import { useLocale, t } from '@/hooks/useLocale';
+import { communityStrings, commonStrings } from '@/utils/translations';
 
 interface CommunityPost {
   id: string;
@@ -49,6 +51,7 @@ export const CommunityPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { hapticFeedback } = useTelegram();
   const { isAuthenticated } = useAppSelector(state => state.auth);
+  const locale = useLocale();
 
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,20 +125,24 @@ export const CommunityPage: React.FC = () => {
 
   const handleCreatePost = async () => {
     if (!newPost.title.trim() || !newPost.content.trim()) {
-      dispatch(addToast({ type: 'warning', title: 'Missing fields', message: 'Title and content are required' }));
+      const msg = locale === 'uk' ? 'Заголовок та вміст обов\'язкові' : locale === 'ru' ? 'Заголовок и содержание обязательны' : 'Title and content are required';
+      dispatch(addToast({ type: 'warning', title: t(communityStrings, 'missingFields', locale), message: msg }));
       return;
     }
 
     try {
       setCreating(true);
       await apiService.createCommunityPost(newPost);
-      dispatch(addToast({ type: 'success', title: 'Posted!', message: 'Your post has been published' }));
+      const successTitle = locale === 'uk' ? 'Опубліковано!' : locale === 'ru' ? 'Опубликовано!' : 'Posted!';
+      const successMsg = locale === 'uk' ? 'Ваш пост опубліковано' : locale === 'ru' ? 'Ваш пост опубликован' : 'Your post has been published';
+      dispatch(addToast({ type: 'success', title: successTitle, message: successMsg }));
       hapticFeedback.notificationSuccess();
       setShowCreatePost(false);
       setNewPost({ title: '', content: '', type: 'DISCUSSION' });
       fetchPosts(1);
     } catch {
-      dispatch(addToast({ type: 'error', title: 'Error', message: 'Failed to create post' }));
+      const errorMsg = locale === 'uk' ? 'Не вдалося створити пост' : locale === 'ru' ? 'Не удалось создать пост' : 'Failed to create post';
+      dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: errorMsg }));
       hapticFeedback.notificationError();
     } finally {
       setCreating(false);
@@ -148,16 +155,23 @@ export const CommunityPage: React.FC = () => {
     const diffMs = now.getTime() - date.getTime();
     const diffHrs = diffMs / (1000 * 60 * 60);
 
-    if (diffHrs < 1) return 'Just now';
-    if (diffHrs < 24) return `${Math.floor(diffHrs)}h ago`;
-    if (diffHrs < 48) return 'Yesterday';
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (diffHrs < 1) {
+      return locale === 'uk' ? 'Щойно' : locale === 'ru' ? 'Только что' : 'Just now';
+    }
+    if (diffHrs < 24) {
+      const hrs = Math.floor(diffHrs);
+      return locale === 'uk' ? `${hrs}г тому` : locale === 'ru' ? `${hrs}ч назад` : `${hrs}h ago`;
+    }
+    if (diffHrs < 48) {
+      return locale === 'uk' ? 'Вчора' : locale === 'ru' ? 'Вчера' : 'Yesterday';
+    }
+    return date.toLocaleDateString(locale === 'uk' ? 'uk-UA' : locale === 'ru' ? 'ru-RU' : 'en-US', { month: 'short', day: 'numeric' });
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header
-        title="Community"
+        title={t(communityStrings, 'title', locale)}
         rightContent={
           isAuthenticated ? (
             <button
@@ -180,7 +194,7 @@ export const CommunityPage: React.FC = () => {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
-              placeholder="Search posts..."
+              placeholder={t(communityStrings, 'searchPosts', locale)}
               className="input-telegram w-full pl-10 pr-4 py-2.5 rounded-xl text-sm"
             />
           </div>
@@ -214,11 +228,11 @@ export const CommunityPage: React.FC = () => {
           ) : posts.length === 0 ? (
             <Card className="text-center py-12">
               <MessageCircle size={40} className="text-text-secondary mx-auto mb-3" />
-              <p className="text-text-primary font-medium">No posts yet</p>
-              <p className="text-text-secondary text-sm mt-1">Be the first to share something!</p>
+              <p className="text-text-primary font-medium">{t(communityStrings, 'noPosts', locale)}</p>
+              <p className="text-text-secondary text-sm mt-1">{t(communityStrings, 'beFirst', locale)}</p>
               {isAuthenticated && (
                 <Button size="sm" onClick={() => setShowCreatePost(true)} className="mt-4">
-                  Create Post
+                  {t(communityStrings, 'createPost', locale)}
                 </Button>
               )}
             </Card>
@@ -288,7 +302,7 @@ export const CommunityPage: React.FC = () => {
                   onClick={() => { const n = page + 1; setPage(n); fetchPosts(n, true); }}
                   className="w-full"
                 >
-                  Load More
+                  {locale === 'uk' ? 'Завантажити ще' : locale === 'ru' ? 'Загрузить ещё' : 'Load More'}
                 </Button>
               )}
             </>
@@ -297,28 +311,28 @@ export const CommunityPage: React.FC = () => {
       </div>
 
       {/* Create Post Sheet */}
-      <Sheet isOpen={showCreatePost} onClose={() => setShowCreatePost(false)} title="Create Post">
+      <Sheet isOpen={showCreatePost} onClose={() => setShowCreatePost(false)} title={t(communityStrings, 'createPost', locale)}>
         <div className="space-y-4">
           <Input
-            label="Title"
+            label={t(communityStrings, 'postTitle', locale)}
             value={newPost.title}
             onChange={e => setNewPost(p => ({ ...p, title: e.target.value }))}
-            placeholder="Post title"
+            placeholder={locale === 'uk' ? 'Заголовок посту' : locale === 'ru' ? 'Заголовок поста' : 'Post title'}
           />
 
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">Content</label>
+            <label className="block text-sm font-medium text-text-primary mb-1.5">{t(communityStrings, 'content', locale)}</label>
             <textarea
               value={newPost.content}
               onChange={e => setNewPost(p => ({ ...p, content: e.target.value }))}
               rows={4}
               className="input-telegram w-full rounded-xl text-sm resize-none"
-              placeholder="What's on your mind?"
+              placeholder={t(communityStrings, 'whatsOnMind', locale)}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">Type</label>
+            <label className="block text-sm font-medium text-text-primary mb-1.5">{t(communityStrings, 'type', locale)}</label>
             <div className="flex flex-wrap gap-2">
               {POST_TYPES.filter(t => t !== 'ALL').map(type => (
                 <button
@@ -338,7 +352,10 @@ export const CommunityPage: React.FC = () => {
 
           <Button onClick={handleCreatePost} className="w-full" disabled={creating}>
             <Send size={16} className="mr-2" />
-            {creating ? 'Publishing...' : 'Publish Post'}
+            {creating
+              ? (locale === 'uk' ? 'Публікація...' : locale === 'ru' ? 'Публикация...' : 'Publishing...')
+              : t(communityStrings, 'publishPost', locale)
+            }
           </Button>
         </div>
       </Sheet>

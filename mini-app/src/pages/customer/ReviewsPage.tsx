@@ -14,6 +14,8 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { useAppSelector } from '@/hooks/redux';
 import apiService from '@/services/api.service';
+import { useLocale, t } from '@/hooks/useLocale';
+import { reviewsStrings, commonStrings } from '@/utils/translations';
 
 interface ReviewItem {
   id: string;
@@ -34,6 +36,7 @@ export const ReviewsPage: React.FC = () => {
   const navigate = useNavigate();
   const { hapticFeedback } = useTelegram();
   const { user } = useAppSelector(state => state.auth);
+  const locale = useLocale();
 
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,7 +86,7 @@ export const ReviewsPage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
-      <Header title="My Reviews" />
+      <Header title={t(reviewsStrings, 'title', locale)} />
 
       <div className="flex-1 overflow-y-auto pb-20 page-stagger">
         {/* Stats */}
@@ -92,19 +95,19 @@ export const ReviewsPage: React.FC = () => {
             <div className="grid grid-cols-3 gap-3">
               <Card className="text-center py-3">
                 <div className="text-xl font-bold text-text-primary">{reviews.length}</div>
-                <div className="text-xs text-text-secondary">Total</div>
+                <div className="text-xs text-text-secondary">{t(reviewsStrings, 'total', locale)}</div>
               </Card>
               <Card className="text-center py-3">
                 <div className="text-xl font-bold text-text-primary">
                   {(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)}
                 </div>
-                <div className="text-xs text-text-secondary">Avg Rating</div>
+                <div className="text-xs text-text-secondary">{t(reviewsStrings, 'avgRating', locale)}</div>
               </Card>
               <Card className="text-center py-3">
                 <div className="text-xl font-bold text-text-primary">
                   {reviews.filter(r => r.response).length}
                 </div>
-                <div className="text-xs text-text-secondary">Responses</div>
+                <div className="text-xs text-text-secondary">{t(reviewsStrings, 'responses', locale)}</div>
               </Card>
             </div>
           </div>
@@ -115,12 +118,12 @@ export const ReviewsPage: React.FC = () => {
           {reviews.length === 0 ? (
             <Card className="text-center py-12">
               <Star size={40} className="text-text-secondary mx-auto mb-3" />
-              <p className="text-text-primary font-medium">No reviews yet</p>
+              <p className="text-text-primary font-medium">{t(reviewsStrings, 'noReviews', locale)}</p>
               <p className="text-text-secondary text-sm mt-1">
-                After completing a booking, you can leave a review
+                {t(reviewsStrings, 'leaveReview', locale)}
               </p>
               <Button size="sm" onClick={() => navigate('/bookings')} className="mt-4">
-                View Bookings
+                {t(reviewsStrings, 'viewBookings', locale)}
               </Button>
             </Card>
           ) : (
@@ -146,7 +149,9 @@ export const ReviewsPage: React.FC = () => {
                       <p className="text-xs text-text-secondary truncate">{review.booking.service.name}</p>
                     </div>
                     {review.isVerified && (
-                      <span className="px-2 py-0.5 bg-accent-green/15 text-accent-green text-xs rounded-full">Verified</span>
+                      <span className="px-2 py-0.5 bg-accent-green/15 text-accent-green text-xs rounded-full">
+                        {locale === 'uk' ? 'Підтверджено' : locale === 'ru' ? 'Подтверждено' : 'Verified'}
+                      </span>
                     )}
                   </div>
 
@@ -165,7 +170,9 @@ export const ReviewsPage: React.FC = () => {
                     <div className="bg-bg-secondary rounded-xl p-3 mt-2">
                       <div className="flex items-center gap-1.5 mb-1">
                         <MessageCircle size={12} className="text-accent-primary" />
-                        <span className="text-xs font-medium text-accent-primary">Specialist Response</span>
+                        <span className="text-xs font-medium text-accent-primary">
+                          {locale === 'uk' ? 'Відповідь спеціаліста' : locale === 'ru' ? 'Ответ специалиста' : 'Specialist Response'}
+                        </span>
                       </div>
                       <p className="text-xs text-text-primary">{review.response.response}</p>
                     </div>
@@ -179,7 +186,7 @@ export const ReviewsPage: React.FC = () => {
                   onClick={() => { const n = page + 1; setPage(n); fetchReviews(n, true); }}
                   className="w-full"
                 >
-                  Load More
+                  {locale === 'uk' ? 'Завантажити ще' : locale === 'ru' ? 'Загрузить ещё' : 'Load More'}
                 </Button>
               )}
             </>

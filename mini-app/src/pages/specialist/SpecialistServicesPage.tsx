@@ -21,6 +21,8 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { addToast } from '@/store/slices/uiSlice';
 import apiService from '@/services/api.service';
+import { useLocale, t } from '@/hooks/useLocale';
+import { specialistServicesStrings, commonStrings } from '@/utils/translations';
 
 interface SpecialistService {
   id: string;
@@ -45,6 +47,7 @@ interface ServiceFormData {
 export const SpecialistServicesPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { hapticFeedback, showConfirm } = useTelegram();
+  const locale = useLocale();
 
   const [services, setServices] = useState<SpecialistService[]>([]);
   const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
@@ -99,7 +102,7 @@ export const SpecialistServicesPage: React.FC = () => {
 
   const handleSave = async () => {
     if (!formData.name.trim() || !formData.categoryId || formData.price <= 0) {
-      dispatch(addToast({ type: 'warning', title: 'Missing fields', message: 'Please fill all required fields' }));
+      dispatch(addToast({ type: 'warning', title: t(specialistServicesStrings, 'missingFields', locale), message: t(specialistServicesStrings, 'fillRequired', locale) }));
       return;
     }
 
@@ -107,16 +110,16 @@ export const SpecialistServicesPage: React.FC = () => {
       setSaving(true);
       if (editingService) {
         await apiService.updateService(editingService.id, formData);
-        dispatch(addToast({ type: 'success', title: 'Updated', message: 'Service updated successfully' }));
+        dispatch(addToast({ type: 'success', title: t(commonStrings, 'success', locale), message: t(specialistServicesStrings, 'serviceUpdated', locale) }));
       } else {
         await apiService.createService(formData);
-        dispatch(addToast({ type: 'success', title: 'Created', message: 'Service created successfully' }));
+        dispatch(addToast({ type: 'success', title: t(commonStrings, 'success', locale), message: t(specialistServicesStrings, 'serviceCreated', locale) }));
       }
       hapticFeedback.notificationSuccess();
       setShowForm(false);
       fetchData();
     } catch {
-      dispatch(addToast({ type: 'error', title: 'Error', message: 'Failed to save service' }));
+      dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: t(specialistServicesStrings, 'saveFailed', locale) }));
       hapticFeedback.notificationError();
     } finally {
       setSaving(false);
@@ -124,16 +127,18 @@ export const SpecialistServicesPage: React.FC = () => {
   };
 
   const handleDelete = async (service: SpecialistService) => {
-    const confirmed = await showConfirm(`Delete "${service.name}"?`);
+    const confirmMsg = locale === 'uk' ? `Видалити "${service.name}"?` : locale === 'ru' ? `Удалить "${service.name}"?` : `Delete "${service.name}"?`;
+    const confirmed = await showConfirm(confirmMsg);
     if (!confirmed) return;
 
     try {
       await apiService.deleteService(service.id);
       setServices(prev => prev.filter(s => s.id !== service.id));
-      dispatch(addToast({ type: 'success', title: 'Deleted', message: 'Service deleted' }));
+      const successMsg = locale === 'uk' ? 'Видалено' : locale === 'ru' ? 'Удалено' : 'Deleted';
+      dispatch(addToast({ type: 'success', title: successMsg, message: t(specialistServicesStrings, 'serviceDeleted', locale) }));
       hapticFeedback.notificationSuccess();
     } catch {
-      dispatch(addToast({ type: 'error', title: 'Error', message: 'Failed to delete service' }));
+      dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: t(specialistServicesStrings, 'deleteFailed', locale) }));
       hapticFeedback.notificationError();
     }
   };
@@ -147,7 +152,8 @@ export const SpecialistServicesPage: React.FC = () => {
       await apiService.updateService(service.id, { isActive: !service.isActive });
     } catch {
       setServices(prev => prev.map(s => s.id === service.id ? service : s));
-      dispatch(addToast({ type: 'error', title: 'Error', message: 'Failed to update service' }));
+      const errorMsg = locale === 'uk' ? 'Не вдалося оновити послугу' : locale === 'ru' ? 'Не удалось обновить услугу' : 'Failed to update service';
+      dispatch(addToast({ type: 'error', title: t(commonStrings, 'error', locale), message: errorMsg }));
     }
   };
 
@@ -158,7 +164,7 @@ export const SpecialistServicesPage: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
       <Header
-        title="My Services"
+        title={t(specialistServicesStrings, 'title', locale)}
         rightContent={
           <button
             onClick={() => handleOpenForm()}
@@ -174,10 +180,10 @@ export const SpecialistServicesPage: React.FC = () => {
           {services.length === 0 ? (
             <Card className="text-center py-12">
               <Briefcase size={40} className="text-text-secondary mx-auto mb-3" />
-              <p className="text-text-primary font-medium">No services yet</p>
-              <p className="text-text-secondary text-sm mt-1">Add your first service to start receiving bookings</p>
+              <p className="text-text-primary font-medium">{t(specialistServicesStrings, 'noServices', locale)}</p>
+              <p className="text-text-secondary text-sm mt-1">{t(specialistServicesStrings, 'addFirst', locale)}</p>
               <Button size="sm" onClick={() => handleOpenForm()} className="mt-4">
-                <Plus size={16} className="mr-1" /> Add Service
+                <Plus size={16} className="mr-1" /> {t(specialistServicesStrings, 'addService', locale)}
               </Button>
             </Card>
           ) : (
@@ -193,7 +199,9 @@ export const SpecialistServicesPage: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-semibold text-text-primary truncate">{service.name}</h3>
                       {!service.isActive && (
-                        <span className="px-1.5 py-0.5 bg-bg-hover text-text-secondary text-xs rounded">Inactive</span>
+                        <span className="px-1.5 py-0.5 bg-bg-hover text-text-secondary text-xs rounded">
+                          {t(commonStrings, 'inactive', locale)}
+                        </span>
                       )}
                     </div>
                     <p className="text-xs text-text-secondary truncate mt-0.5">{service.description}</p>
@@ -247,35 +255,35 @@ export const SpecialistServicesPage: React.FC = () => {
       <Sheet
         isOpen={showForm}
         onClose={() => setShowForm(false)}
-        title={editingService ? 'Edit Service' : 'Add Service'}
+        title={editingService ? t(specialistServicesStrings, 'editService', locale) : t(specialistServicesStrings, 'addService', locale)}
       >
         <div className="space-y-4">
           <Input
-            label="Service Name *"
+            label={t(specialistServicesStrings, 'serviceName', locale) + ' *'}
             value={formData.name}
             onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
-            placeholder="e.g. Haircut, Massage, Consultation"
+            placeholder={locale === 'uk' ? 'напр. Стрижка, Масаж, Консультація' : locale === 'ru' ? 'напр. Стрижка, Массаж, Консультация' : 'e.g. Haircut, Massage, Consultation'}
           />
 
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">Description</label>
+            <label className="block text-sm font-medium text-text-primary mb-1.5">{t(specialistServicesStrings, 'description', locale)}</label>
             <textarea
               value={formData.description}
               onChange={e => setFormData(p => ({ ...p, description: e.target.value }))}
               rows={3}
               className="input-telegram w-full rounded-xl text-sm resize-none"
-              placeholder="Describe your service..."
+              placeholder={locale === 'uk' ? 'Опишіть вашу послугу...' : locale === 'ru' ? 'Опишите вашу услугу...' : 'Describe your service...'}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">Category *</label>
+            <label className="block text-sm font-medium text-text-primary mb-1.5">{t(specialistServicesStrings, 'category', locale)} *</label>
             <select
               value={formData.categoryId}
               onChange={e => setFormData(p => ({ ...p, categoryId: e.target.value }))}
               className="input-telegram w-full rounded-xl text-sm"
             >
-              <option value="">Select category</option>
+              <option value="">{t(specialistServicesStrings, 'selectCategory', locale)}</option>
               {categories.map(cat => (
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
@@ -284,14 +292,14 @@ export const SpecialistServicesPage: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <Input
-              label="Duration (min)"
+              label={t(specialistServicesStrings, 'durationMin', locale)}
               type="number"
               value={formData.duration.toString()}
               onChange={e => setFormData(p => ({ ...p, duration: parseInt(e.target.value) || 0 }))}
               icon={<Clock size={16} />}
             />
             <Input
-              label="Price (&#8372;) *"
+              label={t(specialistServicesStrings, 'price', locale) + ' (₴) *'}
               type="number"
               value={formData.price.toString()}
               onChange={e => setFormData(p => ({ ...p, price: parseFloat(e.target.value) || 0 }))}
@@ -300,9 +308,9 @@ export const SpecialistServicesPage: React.FC = () => {
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button variant="secondary" onClick={() => setShowForm(false)} className="flex-1">Cancel</Button>
+            <Button variant="secondary" onClick={() => setShowForm(false)} className="flex-1">{t(commonStrings, 'cancel', locale)}</Button>
             <Button onClick={handleSave} className="flex-1" disabled={saving}>
-              {saving ? 'Saving...' : editingService ? 'Update' : 'Create'}
+              {saving ? t(specialistServicesStrings, 'saving', locale) : editingService ? t(specialistServicesStrings, 'update', locale) : t(specialistServicesStrings, 'create', locale)}
             </Button>
           </div>
         </div>

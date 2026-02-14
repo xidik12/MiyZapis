@@ -136,6 +136,10 @@ export const serviceDetailStrings: Record<string, Record<Locale, string>> = {
   noImage: { en: 'No image available', uk: 'Зображення недоступне', ru: 'Изображение недоступно' },
   noReviews: { en: 'No reviews yet', uk: 'Відгуків поки немає', ru: 'Отзывов пока нет' },
   beFirst: { en: 'Be the first to review', uk: 'Будьте першим, хто залишить відгук', ru: 'Будьте первым, кто оставит отзыв' },
+  readMore: { en: 'Read more', uk: 'Читати далі', ru: 'Читать далее' },
+  showLess: { en: 'Show less', uk: 'Показати менше', ru: 'Показать меньше' },
+  viewProfile: { en: 'View Profile', uk: 'Переглянути профіль', ru: 'Посмотреть профиль' },
+  allReviews: { en: 'All Reviews', uk: 'Всі відгуки', ru: 'Все отзывы' },
 };
 
 // Profile page
