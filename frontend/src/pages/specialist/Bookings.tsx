@@ -675,13 +675,15 @@ const getBookingCurrency = (booking: Booking): 'USD' | 'EUR' | 'UAH' => {
 
 // Helper function to map Booking to BookingData for Kanban
 const mapBookingToBookingData = (booking: Booking): BookingData => {
-  const scheduledDate = new Date(booking.scheduledAt);
+  const rawDate = booking.scheduledAt || (booking as any).date;
+  const scheduledDate = rawDate ? new Date(rawDate) : null;
+  const isValidDate = scheduledDate && !isNaN(scheduledDate.getTime());
 
   return {
     id: booking.id,
     status: booking.status,
-    scheduledDate: scheduledDate.toISOString().split('T')[0], // YYYY-MM-DD
-    scheduledTime: scheduledDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+    scheduledDate: isValidDate ? scheduledDate.toISOString().split('T')[0] : 'N/A',
+    scheduledTime: isValidDate ? scheduledDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) : '',
     customer: booking.customer ? {
       id: booking.customer.id,
       firstName: booking.customer.firstName,
@@ -800,8 +802,8 @@ const SpecialistBookings: React.FC = () => {
       
       switch (sortBy) {
         case 'date':
-          aVal = new Date(a.scheduledAt);
-          bVal = new Date(b.scheduledAt);
+          aVal = a.scheduledAt ? new Date(a.scheduledAt).getTime() : 0;
+          bVal = b.scheduledAt ? new Date(b.scheduledAt).getTime() : 0;
           break;
         case 'amount':
           aVal = a.totalAmount;
