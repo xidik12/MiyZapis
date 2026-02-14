@@ -251,16 +251,35 @@ app.get('/robots.txt', (req, res) => {
   res.type('text/plain').send(robots);
 });
 
-// Root endpoint
-app.get('/', (req, res) => {
-  res.json({
-    name: 'Booking Platform API',
-    version: config.apiVersion,
-    environment: config.env,
-    status: 'running',
-    timestamp: new Date().toISOString(),
+// Serve frontend static files (built by Vite into ../frontend/dist)
+const frontendDist = path.resolve(__dirname, '../../frontend/dist');
+const fs = require('fs');
+if (fs.existsSync(frontendDist)) {
+  logger.info('Serving frontend from', { frontendDist });
+  app.use(express.static(frontendDist, {
+    maxAge: '1d',
+    etag: true,
+    index: 'index.html',
+  }));
+  // SPA catch-all: any non-API, non-upload route → index.html
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) {
+      return next();
+    }
+    res.sendFile(path.join(frontendDist, 'index.html'));
   });
-});
+} else {
+  // No frontend build available — serve API root info
+  app.get('/', (req, res) => {
+    res.json({
+      name: 'Booking Platform API',
+      version: config.apiVersion,
+      environment: config.env,
+      status: 'running',
+      timestamp: new Date().toISOString(),
+    });
+  });
+}
 
 // Error handling
 app.use(notFoundHandler);
