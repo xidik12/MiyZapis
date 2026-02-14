@@ -239,7 +239,7 @@ export const CommunityPage: React.FC = () => {
           ) : (
             <>
               {posts.map(post => (
-                <Card key={post.id}>
+                <Card key={post.id} hover onClick={() => { hapticFeedback.impactLight(); navigate(`/community/post/${post.id}`); }}>
                   {/* Author */}
                   <div className="flex items-center gap-2.5 mb-3">
                     <div className="w-9 h-9 rounded-full overflow-hidden bg-bg-secondary flex-shrink-0">

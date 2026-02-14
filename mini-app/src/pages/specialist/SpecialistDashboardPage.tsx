@@ -223,7 +223,7 @@ export const SpecialistDashboardPage: React.FC = () => {
               size="sm"
               onClick={() => {
                 hapticFeedback.impactLight();
-                navigate('/bookings');
+                navigate('/specialist-bookings');
               }}
             >
               {c('viewAll')}
@@ -243,7 +243,7 @@ export const SpecialistDashboardPage: React.FC = () => {
                   className="flex items-center justify-between p-3 bg-bg-secondary/50 rounded-xl border border-white/5 hover:bg-bg-hover/50 transition-all cursor-pointer"
                   onClick={() => {
                     hapticFeedback.impactLight();
-                    navigate(`/booking/${booking.id}`);
+                    navigate('/specialist-bookings');
                   }}
                 >
                   <div className="flex-1 min-w-0">
@@ -301,7 +301,7 @@ export const SpecialistDashboardPage: React.FC = () => {
               className="h-12"
               onClick={() => {
                 hapticFeedback.impactLight();
-                navigate('/analytics');
+                navigate('/specialist/analytics');
               }}
             >
               {s('analytics')}
@@ -311,7 +311,7 @@ export const SpecialistDashboardPage: React.FC = () => {
               className="h-12"
               onClick={() => {
                 hapticFeedback.impactLight();
-                navigate('/reviews');
+                navigate('/specialist/reviews');
               }}
             >
               {c('reviews')}

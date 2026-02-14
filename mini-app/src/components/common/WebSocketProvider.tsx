@@ -5,6 +5,8 @@ import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { RootState } from '@/store';
 import { updateBookingStatus } from '@/store/slices/bookingsSlice';
 import { addToast } from '@/store/slices/uiSlice';
+import { addNotification, fetchUnreadCountAsync } from '@/store/slices/notificationsSlice';
+import { addMessage, fetchMessageUnreadCountAsync } from '@/store/slices/messagesSlice';
 
 interface WebSocketContextType {
   isConnected: boolean;
@@ -121,6 +123,33 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     webSocketService.on('booking_confirmed', handleBookingConfirmed);
     webSocketService.on('booking_cancelled', handleBookingCancelled);
     
+    // Handle new notification events
+    const handleNotification = (data: any) => {
+      dispatch(addNotification(data));
+      dispatch(fetchUnreadCountAsync() as any);
+      dispatch(addToast({
+        type: 'info',
+        title: data.title || 'New Notification',
+        message: data.message || ''
+      }));
+      handleMessage(data);
+    };
+
+    // Handle new message events
+    const handleNewMessage = (data: any) => {
+      dispatch(addMessage(data));
+      dispatch(fetchMessageUnreadCountAsync() as any);
+      dispatch(addToast({
+        type: 'info',
+        title: 'New Message',
+        message: data.content ? data.content.substring(0, 50) : 'You have a new message'
+      }));
+      handleMessage(data);
+    };
+
+    webSocketService.on('notification', handleNotification);
+    webSocketService.on('new_message', handleNewMessage);
+
     // Subscribe to other message types for general handling
     const generalMessageTypes: WebSocketEventType[] = [
       'booking_reminder',
@@ -128,7 +157,6 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       'payment_failed',
       'specialist_online',
       'specialist_offline',
-      'new_message',
       'system_notification'
     ];
 
@@ -141,12 +169,14 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       webSocketService.off('connection_status', handleConnectionStatus);
       webSocketService.off('connection_error', handleConnectionError);
       webSocketService.off('reconnected', handleReconnected);
-      
+
       // Clean up specific handlers
       webSocketService.off('booking_updated', handleBookingUpdate);
       webSocketService.off('booking_confirmed', handleBookingConfirmed);
       webSocketService.off('booking_cancelled', handleBookingCancelled);
-      
+      webSocketService.off('notification', handleNotification);
+      webSocketService.off('new_message', handleNewMessage);
+
       generalMessageTypes.forEach(type => {
         webSocketService.off(type, handleMessage);
       });

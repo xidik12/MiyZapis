@@ -10,6 +10,8 @@ import specialistsSlice from './slices/specialistsSlice';
 import bookingsSlice from './slices/bookingsSlice';
 import reviewsSlice from './slices/reviewsSlice';
 import uiSlice from './slices/uiSlice';
+import notificationsSlice from './slices/notificationsSlice';
+import messagesSlice from './slices/messagesSlice';
 
 const persistConfig = {
   key: 'root',
@@ -24,6 +26,8 @@ const rootReducer = combineReducers({
   bookings: bookingsSlice,
   reviews: reviewsSlice,
   ui: uiSlice,
+  notifications: notificationsSlice,
+  messages: messagesSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

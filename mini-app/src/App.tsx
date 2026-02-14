@@ -28,6 +28,37 @@ import { ReviewsPage } from '@/pages/customer/ReviewsPage';
 import { SpecialistDashboardPage } from '@/pages/specialist/SpecialistDashboardPage';
 import { SpecialistServicesPage } from '@/pages/specialist/SpecialistServicesPage';
 
+// Phase 1: Notifications, Chat, Customer Dashboard
+import { NotificationsPage } from '@/pages/customer/NotificationsPage';
+import { ChatPage } from '@/pages/shared/ChatPage';
+import { DashboardPage } from '@/pages/customer/DashboardPage';
+
+// Phase 2: Specialist Business Management
+import { SpecialistBookingsPage } from '@/pages/specialist/SpecialistBookingsPage';
+import { SchedulePage } from '@/pages/specialist/SchedulePage';
+import { EarningsPage } from '@/pages/specialist/EarningsPage';
+
+// Phase 3: Community Enhancement + Payments
+import { PostDetailPage } from '@/pages/shared/PostDetailPage';
+import { CreatePostPage } from '@/pages/shared/CreatePostPage';
+import { PaymentProcessingPage } from '@/pages/booking/PaymentProcessingPage';
+
+// Phase 4: Specialist Profile & Analytics
+import { SpecialistProfileEditPage } from '@/pages/specialist/SpecialistProfileEditPage';
+import { SpecialistAnalyticsPage } from '@/pages/specialist/SpecialistAnalyticsPage';
+import { SpecialistReviewsPage } from '@/pages/specialist/SpecialistReviewsPage';
+import { ClientsPage } from '@/pages/specialist/ClientsPage';
+
+// Phase 5: Settings, Help, Referrals
+import { PaymentMethodsPage } from '@/pages/customer/PaymentMethodsPage';
+import { HelpSupportPage } from '@/pages/shared/HelpSupportPage';
+import { ReferralsPage } from '@/pages/customer/ReferralsPage';
+import { SpecialistSettingsPage } from '@/pages/specialist/SpecialistSettingsPage';
+import { SpecialistWalletPage } from '@/pages/specialist/SpecialistWalletPage';
+
+// Phase 6: Specialist Onboarding
+import { OnboardingPage } from '@/pages/specialist/OnboardingPage';
+
 function App() {
   return (
     <TelegramThemeProvider>
@@ -156,6 +187,172 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <SpecialistServicesPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Phase 1: Notifications, Chat, Dashboard */}
+                <Route
+                  path="/notifications"
+                  element={
+                    <ProtectedRoute>
+                      <NotificationsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/messages/:conversationId"
+                  element={
+                    <ProtectedRoute>
+                      <ChatPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <DashboardPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Phase 2: Specialist Business Management */}
+                <Route
+                  path="/specialist-bookings"
+                  element={
+                    <ProtectedRoute>
+                      <SpecialistBookingsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/specialist/schedule"
+                  element={
+                    <ProtectedRoute>
+                      <SchedulePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/specialist/earnings"
+                  element={
+                    <ProtectedRoute>
+                      <EarningsPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Phase 3: Community + Payments */}
+                <Route path="/community/post/:id" element={<PostDetailPage />} />
+                <Route
+                  path="/community/create"
+                  element={
+                    <ProtectedRoute>
+                      <CreatePostPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/payment/:bookingId"
+                  element={
+                    <ProtectedRoute>
+                      <PaymentProcessingPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Phase 4: Specialist Profile & Analytics */}
+                <Route
+                  path="/specialist/profile/edit"
+                  element={
+                    <ProtectedRoute>
+                      <SpecialistProfileEditPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/specialist/analytics"
+                  element={
+                    <ProtectedRoute>
+                      <SpecialistAnalyticsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/specialist/reviews"
+                  element={
+                    <ProtectedRoute>
+                      <SpecialistReviewsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/specialist/clients"
+                  element={
+                    <ProtectedRoute>
+                      <ClientsPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Phase 5: Settings, Help, Referrals */}
+                <Route
+                  path="/payment-methods"
+                  element={
+                    <ProtectedRoute>
+                      <PaymentMethodsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/help" element={<HelpSupportPage />} />
+                <Route
+                  path="/referrals"
+                  element={
+                    <ProtectedRoute>
+                      <ReferralsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/specialist/settings"
+                  element={
+                    <ProtectedRoute>
+                      <SpecialistSettingsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/specialist/notifications"
+                  element={
+                    <ProtectedRoute>
+                      <NotificationsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/specialist/wallet"
+                  element={
+                    <ProtectedRoute>
+                      <SpecialistWalletPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/specialist/referrals"
+                  element={
+                    <ProtectedRoute>
+                      <ReferralsPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Phase 6: Specialist Onboarding */}
+                <Route
+                  path="/specialist/onboarding"
+                  element={
+                    <ProtectedRoute>
+                      <OnboardingPage />
                     </ProtectedRoute>
                   }
                 />

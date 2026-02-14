@@ -2807,6 +2807,311 @@ const translations: Translations = {
   'contact.info.email': { en: 'support@miyzapys.com', uk: 'support@miyzapys.com', ru: 'support@miyzapys.com' },
   'contact.info.telegram': { en: '@MiyZapysBot', uk: '@MiyZapysBot', ru: '@MiyZapysBot' },
 
+  // ========================================
+  // MISSING KEYS — Onboarding (specialist)
+  // ========================================
+  'onboarding.professionRequired': { en: 'Profession is required', uk: 'Професія обов\'язкова', ru: 'Профессия обязательна' },
+  'onboarding.bioRequired': { en: 'Bio is required', uk: 'Біографія обов\'язкова', ru: 'Биография обязательна' },
+  'onboarding.phoneRequired': { en: 'Phone number is required', uk: 'Номер телефону обов\'язковий', ru: 'Номер телефона обязателен' },
+  'onboarding.serviceNameRequired': { en: 'Service name is required', uk: 'Назва послуги обов\'язкова', ru: 'Название услуги обязательно' },
+  'onboarding.serviceDescRequired': { en: 'Service description is required', uk: 'Опис послуги обов\'язковий', ru: 'Описание услуги обязательно' },
+  'onboarding.durationMin': { en: 'Duration must be at least 15 minutes', uk: 'Тривалість має бути не менше 15 хвилин', ru: 'Продолжительность должна быть не менее 15 минут' },
+  'onboarding.priceRequired': { en: 'Price is required', uk: 'Ціна обов\'язкова', ru: 'Цена обязательна' },
+  'onboarding.categoryRequired': { en: 'Category is required', uk: 'Категорія обов\'язкова', ru: 'Категория обязательна' },
+  'onboarding.scheduleRequired': { en: 'At least one working day is required', uk: 'Потрібен хоча б один робочий день', ru: 'Требуется хотя бы один рабочий день' },
+  'onboarding.invalidImageType': { en: 'Please upload an image file (JPEG, PNG, GIF, WebP)', uk: 'Завантажте зображення (JPEG, PNG, GIF, WebP)', ru: 'Загрузите изображение (JPEG, PNG, GIF, WebP)' },
+  'onboarding.imageTooLarge': { en: 'Image size must be less than 5MB', uk: 'Розмір зображення має бути менше 5 МБ', ru: 'Размер изображения должен быть менее 5 МБ' },
+  'onboarding.step': { en: 'Step', uk: 'Крок', ru: 'Шаг' },
+  'onboarding.stepInfo': { en: 'Basic Info', uk: 'Основна інформація', ru: 'Основная информация' },
+  'onboarding.stepService': { en: 'First Service', uk: 'Перша послуга', ru: 'Первая услуга' },
+  'onboarding.stepSchedule': { en: 'Schedule', uk: 'Розклад', ru: 'Расписание' },
+  'onboarding.stepPhoto': { en: 'Profile Photo', uk: 'Фото профілю', ru: 'Фото профиля' },
+  'onboarding.stepDone': { en: 'Done!', uk: 'Готово!', ru: 'Готово!' },
+  'onboarding.welcomeTitle': { en: 'Welcome! Let\'s set up your profile', uk: 'Ласкаво просимо! Налаштуймо ваш профіль', ru: 'Добро пожаловать! Давайте настроим ваш профиль' },
+  'onboarding.welcomeSubtitle': { en: 'Tell us about yourself so clients can find you', uk: 'Розкажіть про себе, щоб клієнти могли вас знайти', ru: 'Расскажите о себе, чтобы клиенты могли вас найти' },
+  'onboarding.profession': { en: 'Profession', uk: 'Професія', ru: 'Профессия' },
+  'onboarding.selectProfession': { en: 'Select your profession', uk: 'Оберіть вашу професію', ru: 'Выберите вашу профессию' },
+  'onboarding.bio': { en: 'Bio', uk: 'Біографія', ru: 'Биография' },
+  'onboarding.bioPlaceholder': { en: 'Tell clients about your experience and skills...', uk: 'Розкажіть клієнтам про ваш досвід та навички...', ru: 'Расскажите клиентам о вашем опыте и навыках...' },
+  'onboarding.phone': { en: 'Phone Number', uk: 'Номер телефону', ru: 'Номер телефона' },
+  'onboarding.phonePlaceholder': { en: '+380 XX XXX XX XX', uk: '+380 XX XXX XX XX', ru: '+380 XX XXX XX XX' },
+  'onboarding.serviceTitle': { en: 'Add Your First Service', uk: 'Додайте вашу першу послугу', ru: 'Добавьте вашу первую услугу' },
+  'onboarding.serviceSubtitle': { en: 'You can add more services later', uk: 'Ви зможете додати більше послуг пізніше', ru: 'Вы сможете добавить больше услуг позже' },
+  'onboarding.scheduleTitle': { en: 'Set Your Schedule', uk: 'Встановіть ваш розклад', ru: 'Установите ваше расписание' },
+  'onboarding.scheduleSubtitle': { en: 'Choose your working hours for each day', uk: 'Оберіть робочі години на кожен день', ru: 'Выберите рабочие часы на каждый день' },
+  'onboarding.presetWeekdays': { en: 'Mon-Fri 9-18', uk: 'Пн-Пт 9-18', ru: 'Пн-Пт 9-18' },
+  'onboarding.presetAllDays': { en: 'Every Day 9-18', uk: 'Щодня 9-18', ru: 'Каждый день 9-18' },
+  'onboarding.photoTitle': { en: 'Add a Profile Photo', uk: 'Додайте фото профілю', ru: 'Добавьте фото профиля' },
+  'onboarding.photoSubtitle': { en: 'A photo helps clients recognize you', uk: 'Фото допомагає клієнтам впізнати вас', ru: 'Фото помогает клиентам узнать вас' },
+  'onboarding.changePhoto': { en: 'Change Photo', uk: 'Змінити фото', ru: 'Изменить фото' },
+  'onboarding.uploadPhoto': { en: 'Upload Photo', uk: 'Завантажити фото', ru: 'Загрузить фото' },
+  'onboarding.doneTitle': { en: 'You\'re All Set!', uk: 'Все готово!', ru: 'Всё готово!' },
+  'onboarding.doneSubtitle': { en: 'Your profile is ready. Start accepting bookings!', uk: 'Ваш профіль готовий. Починайте приймати бронювання!', ru: 'Ваш профиль готов. Начинайте принимать бронирования!' },
+  'onboarding.profileLabel': { en: 'Profile', uk: 'Профіль', ru: 'Профиль' },
+  'onboarding.serviceLabel': { en: 'Service', uk: 'Послуга', ru: 'Услуга' },
+  'onboarding.scheduleLabel': { en: 'Schedule', uk: 'Розклад', ru: 'Расписание' },
+  'onboarding.goToDashboard': { en: 'Go to Dashboard', uk: 'Перейти до панелі', ru: 'Перейти к панели' },
+  'onboarding.manageServices': { en: 'Manage Services', uk: 'Керувати послугами', ru: 'Управлять услугами' },
+  'onboarding.viewSchedule': { en: 'View Schedule', uk: 'Переглянути розклад', ru: 'Просмотреть расписание' },
+  'onboarding.uploadAndContinue': { en: 'Upload & Continue', uk: 'Завантажити та продовжити', ru: 'Загрузить и продолжить' },
+  'onboarding.footerHint': { en: 'You can update all settings from your dashboard later', uk: 'Ви зможете оновити всі налаштування з панелі пізніше', ru: 'Вы сможете обновить все настройки с панели позже' },
+
+  // ========================================
+  // MISSING KEYS — Clients (specialist)
+  // ========================================
+  'clients.title': { en: 'Clients', uk: 'Клієнти', ru: 'Клиенты' },
+  'clients.subtitle': { en: 'Manage your client relationships', uk: 'Керуйте відносинами з клієнтами', ru: 'Управляйте отношениями с клиентами' },
+  'clients.client': { en: 'client', uk: 'клієнт', ru: 'клиент' },
+  'clients.clientsPlural': { en: 'clients', uk: 'клієнтів', ru: 'клиентов' },
+  'clients.searchPlaceholder': { en: 'Search clients...', uk: 'Пошук клієнтів...', ru: 'Поиск клиентов...' },
+  'clients.resultSingular': { en: 'result', uk: 'результат', ru: 'результат' },
+  'clients.resultPlural': { en: 'results', uk: 'результатів', ru: 'результатов' },
+  'clients.foundFor': { en: 'found for', uk: 'знайдено для', ru: 'найдено для' },
+  'clients.clearSearch': { en: 'Clear search', uk: 'Очистити пошук', ru: 'Очистить поиск' },
+  'clients.stats.total': { en: 'Total Clients', uk: 'Усього клієнтів', ru: 'Всего клиентов' },
+  'clients.stats.active': { en: 'Active', uk: 'Активних', ru: 'Активных' },
+  'clients.stats.avgBookings': { en: 'Avg. Bookings', uk: 'Сер. бронювань', ru: 'Сред. бронирований' },
+  'clients.stats.repeatRate': { en: 'Repeat Rate', uk: 'Повторність', ru: 'Повторяемость' },
+  'clients.status.active': { en: 'Active', uk: 'Активний', ru: 'Активный' },
+  'clients.status.inactive': { en: 'Inactive', uk: 'Неактивний', ru: 'Неактивный' },
+  'clients.lastVisit': { en: 'Last visit', uk: 'Останній візит', ru: 'Последний визит' },
+  'clients.bookings': { en: 'Bookings', uk: 'Бронювання', ru: 'Бронирования' },
+  'clients.totalSpent': { en: 'Total Spent', uk: 'Усього витрачено', ru: 'Всего потрачено' },
+  'clients.avgSpent': { en: 'Avg. Spent', uk: 'Сер. витрати', ru: 'Сред. расходы' },
+  'clients.viewBookings': { en: 'View Bookings', uk: 'Переглянути бронювання', ru: 'Просмотреть бронирования' },
+  'clients.sendMessage': { en: 'Send Message', uk: 'Надіслати повідомлення', ru: 'Отправить сообщение' },
+  'clients.bookingHistory': { en: 'Booking History', uk: 'Історія бронювань', ru: 'История бронирований' },
+  'clients.noBookings': { en: 'No booking history', uk: 'Немає історії бронювань', ru: 'Нет истории бронирований' },
+  'clients.empty.title': { en: 'No clients yet', uk: 'Ще немає клієнтів', ru: 'Ещё нет клиентов' },
+  'clients.empty.description': { en: 'Your clients will appear here once they book your services', uk: 'Ваші клієнти з\'являться тут після бронювання ваших послуг', ru: 'Ваши клиенты появятся здесь после бронирования ваших услуг' },
+  'clients.noResults.title': { en: 'No clients found', uk: 'Клієнтів не знайдено', ru: 'Клиентов не найдено' },
+  'clients.noResults.description': { en: 'Try a different search term', uk: 'Спробуйте інший пошуковий запит', ru: 'Попробуйте другой поисковый запрос' },
+  'clients.sort.name': { en: 'Name', uk: 'Ім\'я', ru: 'Имя' },
+  'clients.sort.bookings': { en: 'Bookings', uk: 'Бронювання', ru: 'Бронирования' },
+  'clients.sort.lastVisit': { en: 'Last Visit', uk: 'Останній візит', ru: 'Последний визит' },
+  'clients.sort.totalSpent': { en: 'Total Spent', uk: 'Усього витрачено', ru: 'Всего потрачено' },
+
+  // ========================================
+  // MISSING KEYS — Booking flow
+  // ========================================
+  'booking.timeUpdated': { en: 'Time updated', uk: 'Час оновлено', ru: 'Время обновлено' },
+  'booking.morning': { en: 'Morning', uk: 'Ранок', ru: 'Утро' },
+  'booking.afternoon': { en: 'Afternoon', uk: 'День', ru: 'День' },
+  'booking.evening': { en: 'Evening', uk: 'Вечір', ru: 'Вечер' },
+  'booking.makeRecurring': { en: 'Make Recurring', uk: 'Зробити повторюваним', ru: 'Сделать повторяющимся' },
+  'booking.makeRecurringDesc': { en: 'Automatically rebook this service at regular intervals', uk: 'Автоматично повторювати бронювання з регулярним інтервалом', ru: 'Автоматически повторять бронирование с регулярным интервалом' },
+  'booking.configureRecurrence': { en: 'Configure Recurrence', uk: 'Налаштувати повторення', ru: 'Настроить повторение' },
+  'booking.selectReward': { en: 'Select Reward', uk: 'Обрати винагороду', ru: 'Выбрать награду' },
+  'booking.recurrence': { en: 'Recurrence', uk: 'Повторення', ru: 'Повторение' },
+  'booking.originalPrice': { en: 'Original Price', uk: 'Початкова ціна', ru: 'Первоначальная цена' },
+  'booking.bookingConfirmed': { en: 'Booking confirmed!', uk: 'Бронювання підтверджено!', ru: 'Бронирование подтверждено!' },
+  'booking.autoBookingConfirmed': { en: 'Your booking has been automatically confirmed', uk: 'Ваше бронювання було автоматично підтверджено', ru: 'Ваше бронирование было автоматически подтверждено' },
+  'booking.recurringCreated': { en: 'Recurring booking created!', uk: 'Повторюване бронювання створено!', ru: 'Повторяющееся бронирование создано!' },
+  'booking.confirmed': { en: 'Confirmed', uk: 'Підтверджено', ru: 'Подтверждено' },
+
+  // ========================================
+  // MISSING KEYS — Waitlist
+  // ========================================
+  'waitlist.title': { en: 'Waitlist', uk: 'Список очікування', ru: 'Список ожидания' },
+  'waitlist.joinWaitlist': { en: 'Join Waitlist', uk: 'Стати в чергу', ru: 'Встать в очередь' },
+  'waitlist.joinDescription': { en: 'Get notified when a slot becomes available', uk: 'Отримайте сповіщення, коли з\'явиться місце', ru: 'Получите уведомление, когда появится место' },
+  'waitlist.alreadyJoined': { en: 'Already on waitlist', uk: 'Вже в черзі', ru: 'Уже в очереди' },
+  'waitlist.joinedSuccess': { en: 'Added to waitlist!', uk: 'Додано до списку очікування!', ru: 'Добавлено в список ожидания!' },
+  'waitlist.preferredTime': { en: 'Preferred Time', uk: 'Бажаний час', ru: 'Предпочтительное время' },
+  'waitlist.anyTime': { en: 'Any Time', uk: 'Будь-який час', ru: 'Любое время' },
+  'waitlist.notes': { en: 'Notes', uk: 'Примітки', ru: 'Примечания' },
+  'waitlist.notesPlaceholder': { en: 'Any preferences or notes...', uk: 'Будь-які побажання або примітки...', ru: 'Любые пожелания или примечания...' },
+  'waitlist.joining': { en: 'Joining...', uk: 'Приєднання...', ru: 'Присоединение...' },
+  'waitlist.loadFailed': { en: 'Failed to load waitlist', uk: 'Не вдалося завантажити список очікування', ru: 'Не удалось загрузить список ожидания' },
+  'waitlist.cancelledSuccess': { en: 'Removed from waitlist', uk: 'Видалено зі списку очікування', ru: 'Удалено из списка ожидания' },
+  'waitlist.cancelFailed': { en: 'Failed to cancel waitlist entry', uk: 'Не вдалося скасувати запис', ru: 'Не удалось отменить запись' },
+  'waitlist.loading': { en: 'Loading waitlist...', uk: 'Завантаження списку очікування...', ru: 'Загрузка списка ожидания...' },
+  'waitlist.empty': { en: 'No waitlist entries', uk: 'Немає записів в очікуванні', ru: 'Нет записей в ожидании' },
+  'waitlist.emptyDescription': { en: 'You haven\'t joined any waitlists yet', uk: 'Ви ще не стали в жодну чергу', ru: 'Вы ещё не встали ни в одну очередь' },
+  'waitlist.unknownSpecialist': { en: 'Unknown Specialist', uk: 'Невідомий спеціаліст', ru: 'Неизвестный специалист' },
+  'waitlist.slotAvailable': { en: 'Slot Available!', uk: 'Місце доступне!', ru: 'Место доступно!' },
+  'waitlist.statusNotified': { en: 'Notified', uk: 'Повідомлено', ru: 'Уведомлён' },
+  'waitlist.statusWaiting': { en: 'Waiting', uk: 'Очікування', ru: 'Ожидание' },
+  'waitlist.bookNow': { en: 'Book Now', uk: 'Забронювати', ru: 'Забронировать' },
+  'waitlist.cancel': { en: 'Cancel', uk: 'Скасувати', ru: 'Отменить' },
+
+  // ========================================
+  // MISSING KEYS — Bookings (detail / contact / location)
+  // ========================================
+  'bookings.cancelledSuccessfully': { en: 'Booking cancelled successfully', uk: 'Бронювання скасовано успішно', ru: 'Бронирование отменено успешно' },
+  'bookings.listView': { en: 'List View', uk: 'Список', ru: 'Список' },
+  'bookings.calendarView': { en: 'Calendar View', uk: 'Календар', ru: 'Календарь' },
+  'bookings.serviceLocation': { en: 'Service Location', uk: 'Місце надання послуги', ru: 'Место оказания услуги' },
+  'bookings.address': { en: 'Address', uk: 'Адреса', ru: 'Адрес' },
+  'bookings.instructions': { en: 'Instructions', uk: 'Інструкції', ru: 'Инструкции' },
+  'bookings.openInGoogleMaps': { en: 'Open in Google Maps', uk: 'Відкрити в Google Maps', ru: 'Открыть в Google Maps' },
+  'bookings.locationInfoNote': { en: 'Location information provided by the specialist', uk: 'Інформація про місцезнаходження від спеціаліста', ru: 'Информация о местоположении от специалиста' },
+  'bookings.contactInformation': { en: 'Contact Information', uk: 'Контактна інформація', ru: 'Контактная информация' },
+  'bookings.phone': { en: 'Phone', uk: 'Телефон', ru: 'Телефон' },
+  'bookings.whatsapp': { en: 'WhatsApp', uk: 'WhatsApp', ru: 'WhatsApp' },
+  'bookings.contactInfoNote': { en: 'Contact information is visible after booking is confirmed', uk: 'Контактна інформація видима після підтвердження бронювання', ru: 'Контактная информация видна после подтверждения бронирования' },
+  'bookings.specialistNotes': { en: 'Specialist Notes', uk: 'Примітки спеціаліста', ru: 'Примечания специалиста' },
+  'bookings.locationNotes': { en: 'Location Notes', uk: 'Примітки про місце', ru: 'Примечания о месте' },
+  'bookings.parking': { en: 'Parking', uk: 'Парковка', ru: 'Парковка' },
+  'bookings.accessInstructions': { en: 'Access Instructions', uk: 'Інструкції з доступу', ru: 'Инструкции по доступу' },
+
+  // ========================================
+  // MISSING KEYS — Recurring booking modal
+  // ========================================
+  'recurring.title': { en: 'Recurring Booking', uk: 'Повторюване бронювання', ru: 'Повторяющееся бронирование' },
+  'recurring.frequency': { en: 'Frequency', uk: 'Частота', ru: 'Частота' },
+  'recurring.repeatOn': { en: 'Repeat On', uk: 'Повторювати в', ru: 'Повторять в' },
+  'recurring.monthlyType': { en: 'Monthly Type', uk: 'Тип місячного повторення', ru: 'Тип месячного повторения' },
+  'recurring.sameDayOfMonth': { en: 'Same day of month', uk: 'Той самий день місяця', ru: 'Тот же день месяца' },
+  'recurring.sameWeekdayOfMonth': { en: 'Same weekday of month', uk: 'Той самий день тижня місяця', ru: 'Тот же день недели месяца' },
+  'recurring.ends': { en: 'Ends', uk: 'Закінчення', ru: 'Окончание' },
+  'recurring.never': { en: 'Never', uk: 'Ніколи', ru: 'Никогда' },
+  'recurring.after': { en: 'After', uk: 'Після', ru: 'После' },
+  'recurring.occurrences': { en: 'occurrences', uk: 'повторень', ru: 'повторений' },
+  'recurring.on': { en: 'On date', uk: 'На дату', ru: 'На дату' },
+  'recurring.summary': { en: 'Summary', uk: 'Підсумок', ru: 'Итого' },
+
+  // ========================================
+  // MISSING KEYS — Trial info page
+  // ========================================
+  'trial.info.hero.subtitle': { en: 'Try all features free for 14 days', uk: 'Спробуйте всі функції безкоштовно протягом 14 днів', ru: 'Попробуйте все функции бесплатно в течение 14 дней' },
+  'trial.info.whatIs.description': { en: 'Our trial period gives you full access to all platform features so you can experience the benefits before committing.', uk: 'Наш пробний період дає вам повний доступ до всіх функцій платформи, щоб ви могли оцінити переваги перед прийняттям рішення.', ru: 'Наш пробный период даёт вам полный доступ ко всем функциям платформы, чтобы вы могли оценить преимущества перед принятием решения.' },
+  'trial.info.features.duration.description': { en: 'Full 14 days to explore all features', uk: 'Повних 14 днів для дослідження всіх функцій', ru: 'Полных 14 дней для исследования всех функций' },
+  'trial.info.features.automatic.description': { en: 'No manual activation needed', uk: 'Не потрібна ручна активація', ru: 'Не требуется ручная активация' },
+  'trial.info.features.fullAccess.description': { en: 'Access to all premium features', uk: 'Доступ до всіх преміум-функцій', ru: 'Доступ ко всем премиум-функциям' },
+  'trial.info.customerBenefits.noDeposits.description': { en: 'Book services without any upfront deposits', uk: 'Бронюйте послуги без передплати', ru: 'Бронируйте услуги без предоплаты' },
+  'trial.info.customerBenefits.fullAccess.description': { en: 'Access all specialists and premium features', uk: 'Доступ до всіх спеціалістів та преміум-функцій', ru: 'Доступ ко всем специалистам и премиум-функциям' },
+  'trial.info.customerBenefits.noCommitment.description': { en: 'Cancel anytime during the trial', uk: 'Скасуйте в будь-який час протягом пробного періоду', ru: 'Отмените в любое время в течение пробного периода' },
+  'trial.info.specialistBenefits.noFees.description': { en: 'Zero platform fees during trial period', uk: 'Нульова комісія платформи протягом пробного періоду', ru: 'Нулевая комиссия платформы в течение пробного периода' },
+  'trial.info.specialistBenefits.buildClientele.description': { en: 'Build your client base risk-free', uk: 'Формуйте базу клієнтів без ризику', ru: 'Формируйте базу клиентов без риска' },
+  'trial.info.specialistBenefits.growBusiness.description': { en: 'Grow your business with our tools', uk: 'Розвивайте свій бізнес з нашими інструментами', ru: 'Развивайте свой бизнес с нашими инструментами' },
+  'trial.info.afterTrial.description': { en: 'After your trial ends, choose a plan that fits your needs', uk: 'Після закінчення пробного періоду оберіть план, що відповідає вашим потребам', ru: 'После окончания пробного периода выберите план, соответствующий вашим потребностям' },
+  'trial.info.afterTrial.specialists.item1': { en: 'Competitive commission rates', uk: 'Конкурентні комісійні ставки', ru: 'Конкурентные комиссионные ставки' },
+  'trial.info.cta.subtitle': { en: 'Join thousands of professionals on MiyZapys', uk: 'Приєднуйтеся до тисяч професіоналів на МійЗапис', ru: 'Присоединяйтесь к тысячам профессионалов на МояЗапись' },
+
+  // ========================================
+  // MISSING KEYS — Review response modal
+  // ========================================
+  'reviews.response.emptyError': { en: 'Response cannot be empty', uk: 'Відповідь не може бути порожньою', ru: 'Ответ не может быть пустым' },
+  'reviews.response.success': { en: 'Response posted successfully', uk: 'Відповідь опубліковано успішно', ru: 'Ответ опубликован успешно' },
+  'reviews.response.error': { en: 'Failed to post response', uk: 'Не вдалося опублікувати відповідь', ru: 'Не удалось опубликовать ответ' },
+  'reviews.response.title': { en: 'Respond to Review', uk: 'Відповісти на відгук', ru: 'Ответить на отзыв' },
+  'reviews.response.subtitle': { en: 'Your response will be visible to everyone', uk: 'Ваша відповідь буде видимою для всіх', ru: 'Ваш ответ будет виден всем' },
+  'reviews.response.label': { en: 'Your Response', uk: 'Ваша відповідь', ru: 'Ваш ответ' },
+  'reviews.response.placeholder': { en: 'Write your response...', uk: 'Напишіть вашу відповідь...', ru: 'Напишите ваш ответ...' },
+  'reviews.response.hint': { en: 'Be professional and courteous in your response', uk: 'Будьте професійними та ввічливими у відповіді', ru: 'Будьте профессиональны и вежливы в ответе' },
+  'reviews.response.submitting': { en: 'Submitting...', uk: 'Відправлення...', ru: 'Отправка...' },
+  'reviews.response.submit': { en: 'Submit Response', uk: 'Надіслати відповідь', ru: 'Отправить ответ' },
+  'reviews.anonymousUser': { en: 'Anonymous User', uk: 'Анонімний користувач', ru: 'Анонимный пользователь' },
+  'reviews.alreadyExists': { en: 'You have already reviewed this booking', uk: 'Ви вже залишили відгук на це бронювання', ru: 'Вы уже оставили отзыв на это бронирование' },
+
+  // ========================================
+  // MISSING KEYS — Notifications
+  // ========================================
+  'notifications.unread': { en: 'Unread', uk: 'Непрочитані', ru: 'Непрочитанные' },
+  'notifications.error.title': { en: 'Failed to load notifications', uk: 'Не вдалося завантажити сповіщення', ru: 'Не удалось загрузить уведомления' },
+  'notifications.error.loadFailed': { en: 'Failed to load notifications', uk: 'Не вдалося завантажити сповіщення', ru: 'Не удалось загрузить уведомления' },
+  'notifications.markAsRead': { en: 'Mark as Read', uk: 'Позначити як прочитане', ru: 'Отметить как прочитанное' },
+
+  // ========================================
+  // MISSING KEYS — Pagination
+  // ========================================
+  'pagination.showing': { en: 'Showing', uk: 'Показано', ru: 'Показано' },
+  'pagination.to': { en: 'to', uk: 'до', ru: 'до' },
+  'pagination.of': { en: 'of', uk: 'з', ru: 'из' },
+  'pagination.results': { en: 'results', uk: 'результатів', ru: 'результатов' },
+
+  // ========================================
+  // MISSING KEYS — Common
+  // ========================================
+  'common.skip': { en: 'Skip', uk: 'Пропустити', ru: 'Пропустить' },
+  'common.saving': { en: 'Saving...', uk: 'Збереження...', ru: 'Сохранение...' },
+  'common.next': { en: 'Next', uk: 'Далі', ru: 'Далее' },
+  'common.previous': { en: 'Previous', uk: 'Назад', ru: 'Назад' },
+  'common.refresh': { en: 'Refresh', uk: 'Оновити', ru: 'Обновить' },
+  'common.dismiss': { en: 'Dismiss', uk: 'Закрити', ru: 'Закрыть' },
+  'common.deleting': { en: 'Deleting...', uk: 'Видалення...', ru: 'Удаление...' },
+  'common.posting': { en: 'Posting...', uk: 'Публікація...', ru: 'Публикация...' },
+
+  // ========================================
+  // MISSING KEYS — Errors / Actions
+  // ========================================
+  'errors.serviceNotFound': { en: 'Service not found', uk: 'Послугу не знайдено', ru: 'Услуга не найдена' },
+  'errors.loadingFailed': { en: 'Failed to load data', uk: 'Не вдалося завантажити дані', ru: 'Не удалось загрузить данные' },
+  'actions.retry': { en: 'Retry', uk: 'Повторити', ru: 'Повторить' },
+
+  // ========================================
+  // MISSING KEYS — Help & Support
+  // ========================================
+  'help.noFAQsAvailable': { en: 'No FAQs available yet', uk: 'Часті запитання ще недоступні', ru: 'Часто задаваемые вопросы ещё недоступны' },
+  'help.faqsWillBeAddedSoon': { en: 'FAQs will be added soon', uk: 'Часті запитання будуть додані незабаром', ru: 'Часто задаваемые вопросы будут добавлены в ближайшее время' },
+  'help.noContactMethodsAvailable': { en: 'No contact methods available', uk: 'Способи зв\'язку недоступні', ru: 'Способы связи недоступны' },
+  'help.contactMethodsWillBeAddedSoon': { en: 'Contact methods will be added soon', uk: 'Способи зв\'язку будуть додані незабаром', ru: 'Способы связи будут добавлены в ближайшее время' },
+
+  // ========================================
+  // MISSING KEYS — Wallet
+  // ========================================
+  'wallet.transactions.filters.credit': { en: 'Credit', uk: 'Поповнення', ru: 'Пополнение' },
+  'wallet.transactions.filters.debit': { en: 'Debit', uk: 'Списання', ru: 'Списание' },
+  'wallet.transactions.filters.refund': { en: 'Refund', uk: 'Повернення', ru: 'Возврат' },
+  'wallet.transactions.filters.forfeiture': { en: 'Forfeiture', uk: 'Конфіскація', ru: 'Конфискация' },
+  'wallet.balance.pendingTransactions': { en: 'Pending Transactions', uk: 'Очікувані транзакції', ru: 'Ожидающие транзакции' },
+  'wallet.balance.lastTransaction': { en: 'Last Transaction', uk: 'Остання транзакція', ru: 'Последняя транзакция' },
+
+  // ========================================
+  // MISSING KEYS — Calendar
+  // ========================================
+  'calendar.today': { en: 'Today', uk: 'Сьогодні', ru: 'Сегодня' },
+
+  // ========================================
+  // MISSING KEYS — Specialty form
+  // ========================================
+  'specialtyForm.searchSpecialties': { en: 'Search specialties...', uk: 'Пошук спеціальностей...', ru: 'Поиск специальностей...' },
+  'specialtyForm.addCustomSpecialty': { en: 'Add custom specialty', uk: 'Додати власну спеціальність', ru: 'Добавить свою специальность' },
+  'specialtyForm.enterCustomSpecialty': { en: 'Enter custom specialty...', uk: 'Введіть власну спеціальність...', ru: 'Введите свою специальность...' },
+  'specialtyForm.customSpecialtyHint': { en: 'Press Enter to add', uk: 'Натисніть Enter щоб додати', ru: 'Нажмите Enter чтобы добавить' },
+  'specialtyForm.maxSelectionsReached': { en: 'Maximum selections reached', uk: 'Досягнуто максимальну кількість виборів', ru: 'Достигнуто максимальное количество выборов' },
+
+  // ========================================
+  // MISSING KEYS — Community / Auth
+  // ========================================
+  'auth.login': { en: 'Log In', uk: 'Увійти', ru: 'Войти' },
+  'auth.register': { en: 'Register', uk: 'Зареєструватися', ru: 'Зарегистрироваться' },
+  'auth.error.passwordsNotMatch': { en: 'Passwords do not match', uk: 'Паролі не співпадають', ru: 'Пароли не совпадают' },
+  'auth.setPasswordModal.info': { en: 'Set a password to enable email login alongside your social account', uk: 'Встановіть пароль для входу за email поряд з соціальним акаунтом', ru: 'Установите пароль для входа по email наряду с социальным аккаунтом' },
+
+  // ========================================
+  // MISSING KEYS — Settings
+  // ========================================
+  'settings.profilePhoto': { en: 'Profile Photo', uk: 'Фото профілю', ru: 'Фото профиля' },
+  'customer.settings.setPasswordDescription': { en: 'Set a password to enable email login', uk: 'Встановіть пароль для входу за email', ru: 'Установите пароль для входа по email' },
+
+  // ========================================
+  // MISSING KEYS — Schedule
+  // ========================================
+  'schedule.generatePromptMessage': { en: 'Generate schedule for the next 30 days?', uk: 'Згенерувати розклад на наступні 30 днів?', ru: 'Сгенерировать расписание на следующие 30 дней?' },
+
+  // ========================================
+  // MISSING KEYS — Services
+  // ========================================
+  'services.loadingCategories': { en: 'Loading categories...', uk: 'Завантаження категорій...', ru: 'Загрузка категорий...' },
+  'services.categoriesError': { en: 'Failed to load categories', uk: 'Не вдалося завантажити категорії', ru: 'Не удалось загрузить категории' },
+
+  // ========================================
+  // MISSING KEYS — Filters
+  // ========================================
+  'filters.ascending': { en: 'Ascending', uk: 'За зростанням', ru: 'По возрастанию' },
+
+  // ========================================
+  // MISSING KEYS — Privacy page
+  // ========================================
+  'privacy.contactInfo.text': { en: 'For privacy-related questions, contact us at privacy@miyzapys.com', uk: 'Для питань щодо конфіденційності зв\'яжіться з нами за адресою privacy@miyzapys.com', ru: 'По вопросам конфиденциальности свяжитесь с нами по адресу privacy@miyzapys.com' },
+
+  // ========================================
+  // MISSING KEYS — Featured specialists
+  // ========================================
+  'featuredSpecialists.noSpecialists': { en: 'No specialists available yet', uk: 'Ще немає доступних спеціалістів', ru: 'Ещё нет доступных специалистов' },
+
   // Admin translations (imported from separate file)
   ...adminTranslations,
 };
