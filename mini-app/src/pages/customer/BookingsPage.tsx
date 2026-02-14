@@ -105,7 +105,7 @@ export const BookingsPage: React.FC = () => {
               }}
               className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all ${
                 activeTab === 'upcoming'
-                  ? 'bg-accent-primary text-white shadow-glow-teal'
+                  ? 'bg-accent-primary text-white shadow-glow-blue'
                   : 'bg-bg-secondary text-text-secondary hover:bg-bg-hover'
               }`}
             >
@@ -118,7 +118,7 @@ export const BookingsPage: React.FC = () => {
               }}
               className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all ${
                 activeTab === 'past'
-                  ? 'bg-accent-primary text-white shadow-glow-teal'
+                  ? 'bg-accent-primary text-white shadow-glow-blue'
                   : 'bg-bg-secondary text-text-secondary hover:bg-bg-hover'
               }`}
             >

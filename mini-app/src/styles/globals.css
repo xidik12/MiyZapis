@@ -78,9 +78,9 @@ nav[class*="fixed"][class*="bottom-0"] {
   backdrop-filter: blur(20px) saturate(1.4);
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
   background: rgba(12, 15, 22, 0.8) !important;
-  border-top: 1px solid rgba(20, 184, 166, 0.12);
+  border-top: 1px solid rgba(59, 151, 242, 0.12);
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3),
-              0 -1px 0 rgba(20, 184, 166, 0.06);
+              0 -1px 0 rgba(59, 151, 242, 0.06);
 }
 
 /* ============================================================
@@ -166,9 +166,9 @@ b, strong, [class*="font-bold"], [class*="font-semibold"] {
 }
 
 /* ============================================================
-   #7 — Teal Shimmer Header (brand version of gold shimmer)
+   #7 — Brand Shimmer Header (sky blue + yellow)
    ============================================================ */
-@keyframes teal-shimmer {
+@keyframes brand-shimmer {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
 }
@@ -176,17 +176,17 @@ b, strong, [class*="font-bold"], [class*="font-semibold"] {
 .text-shimmer-brand {
   background: linear-gradient(
     90deg,
-    #0d9488 0%,
-    #2dd4bf 25%,
-    #5eead4 50%,
-    #2dd4bf 75%,
-    #0d9488 100%
+    #2678e7 0%,
+    #5db7f8 25%,
+    #ffc41f 50%,
+    #5db7f8 75%,
+    #2678e7 100%
   );
   background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: teal-shimmer 4s linear infinite;
+  animation: brand-shimmer 4s linear infinite;
 }
 
 /* ============================================================
@@ -227,11 +227,11 @@ button:active {
   padding: 1px;
   background: linear-gradient(
     135deg,
-    rgba(20, 184, 166, 0.4) 0%,
-    rgba(20, 184, 166, 0.08) 30%,
-    rgba(14, 165, 233, 0.3) 50%,
-    rgba(20, 184, 166, 0.08) 70%,
-    rgba(20, 184, 166, 0.4) 100%
+    rgba(59, 151, 242, 0.4) 0%,
+    rgba(59, 151, 242, 0.08) 30%,
+    rgba(255, 196, 31, 0.3) 50%,
+    rgba(59, 151, 242, 0.08) 70%,
+    rgba(59, 151, 242, 0.4) 100%
   );
   background-size: 300% 300%;
   animation: gradient-border-shimmer 6s linear infinite;
@@ -252,18 +252,18 @@ button:active {
    #10 — Teal Glow
    ============================================================ */
 .teal-glow {
-  text-shadow: 0 0 12px rgba(20, 184, 166, 0.35),
-               0 0 4px rgba(20, 184, 166, 0.2);
+  text-shadow: 0 0 12px rgba(59, 151, 242, 0.35),
+               0 0 4px rgba(59, 151, 242, 0.2);
 }
 
 @keyframes pulse-glow {
   0%, 100% {
     opacity: 1;
-    text-shadow: 0 0 6px rgba(20, 184, 166, 0.3);
+    text-shadow: 0 0 6px rgba(59, 151, 242, 0.3);
   }
   50% {
     opacity: 0.7;
-    text-shadow: 0 0 10px rgba(20, 184, 166, 0.5);
+    text-shadow: 0 0 10px rgba(59, 151, 242, 0.5);
   }
 }
 
@@ -290,7 +290,7 @@ button:active {
   /* Buttons */
   .btn-telegram {
     @apply px-4 py-3 rounded-xl font-medium transition-all duration-200 touch-manipulation;
-    background-color: var(--mz-accent-primary, #14b8a6);
+    background-color: var(--mz-accent-primary, #3b97f2);
     color: #ffffff;
     border: none;
     cursor: pointer;
@@ -336,8 +336,8 @@ button:active {
 
   .input-telegram:focus {
     outline: none;
-    border-color: var(--mz-accent-primary, #14b8a6);
-    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+    border-color: var(--mz-accent-primary, #3b97f2);
+    box-shadow: 0 0 0 3px rgba(59, 151, 242, 0.1);
   }
 
   .input-telegram::placeholder {
@@ -375,7 +375,7 @@ button:active {
   }
 
   .nav-item.active {
-    color: var(--mz-accent-primary, #14b8a6);
+    color: var(--mz-accent-primary, #3b97f2);
   }
 
   .nav-item:active {
@@ -392,7 +392,7 @@ button:active {
   }
 
   .text-accent {
-    color: var(--mz-accent-primary, #14b8a6);
+    color: var(--mz-accent-primary, #3b97f2);
   }
 
   .text-destructive {
@@ -441,8 +441,8 @@ button:active {
   /* Badges */
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-    background-color: rgba(20, 184, 166, 0.15);
-    color: #14b8a6;
+    background-color: rgba(59, 151, 242, 0.15);
+    color: #3b97f2;
   }
 
   .badge-success {
@@ -513,7 +513,7 @@ button:active {
   .sheet-content {
     @apply fixed bottom-0 left-0 right-0 rounded-t-3xl z-50 transform transition-transform duration-300;
     background-color: var(--mz-bg-secondary, #141820);
-    border-top: 1px solid rgba(20, 184, 166, 0.1);
+    border-top: 1px solid rgba(59, 151, 242, 0.1);
     padding-bottom: env(safe-area-inset-bottom);
   }
 
@@ -528,7 +528,7 @@ button:active {
   }
 
   .swiper-pagination-bullet-active {
-    background-color: var(--mz-accent-primary, #14b8a6);
+    background-color: var(--mz-accent-primary, #3b97f2);
   }
 }
 

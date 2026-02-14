@@ -154,7 +154,7 @@ export const HomePage: React.FC = () => {
           <div className="px-4 py-3 space-y-3">
             {/* My Services */}
             <div>
-              <h3 className="text-accent-primary text-[10px] font-semibold uppercase tracking-wider mb-1.5 px-1">{s('catMyServices')}</h3>
+              <h3 className="text-accent-yellow text-[10px] font-semibold uppercase tracking-wider mb-1.5 px-1">{s('catMyServices')}</h3>
               <div className="grid grid-cols-4 gap-2">
                 {[
                   { icon: <Calendar size={18} />, label: s('bookings'), path: '/bookings', color: 'text-accent-primary' },
@@ -180,7 +180,7 @@ export const HomePage: React.FC = () => {
 
             {/* Social */}
             <div>
-              <h3 className="text-accent-primary text-[10px] font-semibold uppercase tracking-wider mb-1.5 px-1">{s('catSocial')}</h3>
+              <h3 className="text-accent-yellow text-[10px] font-semibold uppercase tracking-wider mb-1.5 px-1">{s('catSocial')}</h3>
               <div className="grid grid-cols-4 gap-2">
                 {[
                   { icon: <Users size={18} />, label: s('community'), path: '/community', color: 'text-indigo-400' },
@@ -202,7 +202,7 @@ export const HomePage: React.FC = () => {
 
             {/* Account */}
             <div>
-              <h3 className="text-accent-primary text-[10px] font-semibold uppercase tracking-wider mb-1.5 px-1">{s('catAccount')}</h3>
+              <h3 className="text-accent-yellow text-[10px] font-semibold uppercase tracking-wider mb-1.5 px-1">{s('catAccount')}</h3>
               <div className="grid grid-cols-4 gap-2">
                 {[
                   { icon: <User size={18} />, label: s('profile'), path: '/profile', color: 'text-accent-primary' },
@@ -224,7 +224,7 @@ export const HomePage: React.FC = () => {
             {/* Specialist Business — only if specialist */}
             {userRole === 'specialist' && (
               <div>
-                <h3 className="text-accent-primary text-[10px] font-semibold uppercase tracking-wider mb-1.5 px-1">{s('catSpecialist')}</h3>
+                <h3 className="text-accent-yellow text-[10px] font-semibold uppercase tracking-wider mb-1.5 px-1">{s('catSpecialist')}</h3>
                 <div className="grid grid-cols-4 gap-2">
                   {[
                     { icon: <LayoutDashboard size={18} />, label: s('specDashboard'), path: '/specialist-dashboard', color: 'text-accent-primary' },

@@ -13,13 +13,13 @@ export default {
           hover: 'var(--mz-bg-hover, #1e2530)',
           input: 'var(--mz-bg-input, #1a2030)',
         },
-        // MiyZapis accent palette (teal/emerald as primary, warm accents)
+        // MiyZapis accent palette (sky blue primary, bright yellow secondary)
         accent: {
-          primary: 'var(--mz-accent-primary, #14b8a6)',    // teal-500
-          secondary: 'var(--mz-accent-secondary, #0ea5e9)', // sky-500
+          primary: 'var(--mz-accent-primary, #3b97f2)',    // sky blue
+          secondary: 'var(--mz-accent-secondary, #ffc41f)', // bright yellow
           green: '#00d68f',
           red: '#ff4d6a',
-          yellow: '#ffb800',
+          yellow: '#ffc41f',
           orange: '#ff8c42',
           purple: '#a78bfa',
         },
@@ -47,7 +47,7 @@ export default {
       boxShadow: {
         'card': '0 4px 24px rgba(0, 0, 0, 0.4), 0 1px 8px rgba(0, 0, 0, 0.3), 0 0 1px rgba(0, 0, 0, 0.2)',
         'card-hover': '0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 12px rgba(0, 0, 0, 0.35), 0 0 1px rgba(0, 0, 0, 0.2)',
-        'glow-teal': '0 0 20px rgba(20, 184, 166, 0.15), 0 0 6px rgba(20, 184, 166, 0.1)',
+        'glow-blue': '0 0 20px rgba(59, 151, 242, 0.15), 0 0 6px rgba(59, 151, 242, 0.1)',
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in-out',
@@ -81,8 +81,8 @@ export default {
           '100%': { backgroundPosition: '200% 0' },
         },
         pulseGlow: {
-          '0%, 100%': { opacity: '1', textShadow: '0 0 6px rgba(20, 184, 166, 0.3)' },
-          '50%': { opacity: '0.7', textShadow: '0 0 10px rgba(20, 184, 166, 0.5)' },
+          '0%, 100%': { opacity: '1', textShadow: '0 0 6px rgba(59, 151, 242, 0.3)' },
+          '50%': { opacity: '0.7', textShadow: '0 0 10px rgba(59, 151, 242, 0.5)' },
         },
       },
       spacing: {

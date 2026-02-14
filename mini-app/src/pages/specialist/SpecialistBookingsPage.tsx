@@ -239,7 +239,7 @@ export const SpecialistBookingsPage: React.FC = () => {
                 }}
                 className={`flex-shrink-0 py-2.5 px-4 rounded-xl font-medium text-sm transition-all ${
                   activeFilter === tab.key
-                    ? 'bg-accent-primary text-white shadow-glow-teal'
+                    ? 'bg-accent-primary text-white shadow-glow-blue'
                     : 'bg-bg-secondary text-text-secondary hover:bg-bg-hover'
                 }`}
               >
