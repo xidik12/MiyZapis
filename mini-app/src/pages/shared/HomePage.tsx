@@ -14,6 +14,7 @@ import {
   Award,
   Users,
   Briefcase,
+  Bell,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
@@ -40,6 +41,7 @@ export const HomePage: React.FC = () => {
     (state: RootState) => state.specialists
   );
   const { isAuthenticated: authState } = useSelector((state: RootState) => state.auth);
+  const notifUnread = useSelector((state: RootState) => state.notifications?.unreadCount ?? 0);
 
   useEffect(() => {
     dispatch(fetchCategoriesAsync());
@@ -92,12 +94,27 @@ export const HomePage: React.FC = () => {
         title={user ? `${s('hi')}, ${user.firstName}!` : s('welcome')}
         subtitle={s('findService')}
         rightContent={
-          <button
-            onClick={() => navigate('/search')}
-            className="p-2 touch-manipulation"
-          >
-            <Filter size={20} className="text-text-secondary" />
-          </button>
+          <div className="flex items-center gap-1">
+            {(isAuthenticated || authState) && (
+              <button
+                onClick={() => { hapticFeedback.impactLight(); navigate('/notifications'); }}
+                className="relative p-2 touch-manipulation"
+              >
+                <Bell size={20} className="text-text-secondary" />
+                {notifUnread > 0 && (
+                  <span className="absolute top-1 right-1 bg-accent-red text-white text-[8px] font-bold min-w-[14px] h-3.5 rounded-full flex items-center justify-center px-0.5">
+                    {notifUnread > 99 ? '99+' : notifUnread}
+                  </span>
+                )}
+              </button>
+            )}
+            <button
+              onClick={() => navigate('/search')}
+              className="p-2 touch-manipulation"
+            >
+              <Filter size={20} className="text-text-secondary" />
+            </button>
+          </div>
         }
       />
 

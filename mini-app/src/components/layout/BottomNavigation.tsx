@@ -7,6 +7,7 @@ import {
   Calendar,
   User,
   MessageCircle,
+  LayoutDashboard,
 } from 'lucide-react';
 import { useTelegram } from '@/components/telegram/TelegramProvider';
 import { RootState } from '@/store';
@@ -21,7 +22,7 @@ interface NavItem {
   badgeKey?: 'messages' | 'notifications';
 }
 
-const navItems: NavItem[] = [
+const customerNavItems: NavItem[] = [
   {
     id: 'home',
     label: 'Home',
@@ -63,13 +64,59 @@ const navItems: NavItem[] = [
   },
 ];
 
+const specialistNavItems: NavItem[] = [
+  {
+    id: 'home',
+    label: 'Home',
+    icon: <Home size={20} strokeWidth={1.5} />,
+    activeIcon: <Home size={22} strokeWidth={2} />,
+    path: '/',
+  },
+  {
+    id: 'dashboard',
+    label: 'Dashboard',
+    icon: <LayoutDashboard size={20} strokeWidth={1.5} />,
+    activeIcon: <LayoutDashboard size={22} strokeWidth={2} />,
+    path: '/specialist-dashboard',
+    requiresAuth: true,
+  },
+  {
+    id: 'bookings',
+    label: 'Bookings',
+    icon: <Calendar size={20} strokeWidth={1.5} />,
+    activeIcon: <Calendar size={22} strokeWidth={2} />,
+    path: '/specialist-bookings',
+    requiresAuth: true,
+  },
+  {
+    id: 'messages',
+    label: 'Messages',
+    icon: <MessageCircle size={20} strokeWidth={1.5} />,
+    activeIcon: <MessageCircle size={22} strokeWidth={2} />,
+    path: '/messages',
+    requiresAuth: true,
+    badgeKey: 'messages',
+  },
+  {
+    id: 'profile',
+    label: 'Profile',
+    icon: <User size={20} strokeWidth={1.5} />,
+    activeIcon: <User size={22} strokeWidth={2} />,
+    path: '/profile',
+    requiresAuth: true,
+  },
+];
+
 export const BottomNavigation: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, hapticFeedback } = useTelegram();
 
+  const userRole = useSelector((state: RootState) => state.auth?.user?.role);
   const messageUnread = useSelector((state: RootState) => state.messages?.unreadCount ?? 0);
   const notifUnread = useSelector((state: RootState) => state.notifications?.unreadCount ?? 0);
+
+  const navItems = userRole === 'specialist' ? specialistNavItems : customerNavItems;
 
   const getBadgeCount = (key?: 'messages' | 'notifications') => {
     if (key === 'messages') return messageUnread;

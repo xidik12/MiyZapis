@@ -34,8 +34,8 @@ interface MenuItem {
 const MENU_ITEMS: MenuItem[] = [
   { key: 'profile', labelKey: 'profile', icon: User, iconColor: 'text-accent-primary', iconBg: 'bg-accent-primary/10', route: '/specialist/profile/edit' },
   { key: 'schedule', labelKey: 'schedule', icon: Calendar, iconColor: 'text-accent-green', iconBg: 'bg-accent-green/10', route: '/specialist/schedule' },
-  { key: 'services', labelKey: 'services', icon: Briefcase, iconColor: 'text-accent-purple', iconBg: 'bg-accent-purple/10', route: '/specialist/services' },
-  { key: 'notifications', labelKey: 'notifications', icon: Bell, iconColor: 'text-accent-red', iconBg: 'bg-accent-red/10', route: '/settings' },
+  { key: 'services', labelKey: 'services', icon: Briefcase, iconColor: 'text-accent-purple', iconBg: 'bg-accent-purple/10', route: '/specialist-services' },
+  { key: 'notifications', labelKey: 'notifications', icon: Bell, iconColor: 'text-accent-red', iconBg: 'bg-accent-red/10', route: '/specialist/notifications' },
   { key: 'wallet', labelKey: 'wallet', icon: Wallet, iconColor: 'text-blue-400', iconBg: 'bg-blue-400/10', route: '/specialist/wallet' },
   { key: 'analytics', labelKey: 'analytics', icon: BarChart3, iconColor: 'text-accent-yellow', iconBg: 'bg-accent-yellow/10', route: '/specialist/analytics' },
   { key: 'reviews', labelKey: 'reviews', icon: Star, iconColor: 'text-yellow-400', iconBg: 'bg-yellow-400/10', route: '/specialist/reviews' },

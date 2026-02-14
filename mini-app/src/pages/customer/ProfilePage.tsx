@@ -21,6 +21,10 @@ import {
   Wallet,
   MessageCircle,
   Users,
+  LayoutDashboard,
+  CreditCard,
+  Gift,
+  Briefcase,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Card } from '@/components/ui/Card';
@@ -44,6 +48,7 @@ export const ProfilePage: React.FC = () => {
 
   const { user, isLoading } = useSelector((state: RootState) => state.auth);
   const { bookings } = useSelector((state: RootState) => state.bookings);
+  const isSpecialist = user?.role === 'specialist';
 
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [profileData, setProfileData] = useState({
@@ -259,8 +264,64 @@ export const ProfilePage: React.FC = () => {
                 </div>
               </div>
             </Card>
+
+            <Card hover onClick={() => navigate('/referrals')}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-pink-500/15 rounded-lg flex items-center justify-center">
+                  <Gift size={20} className="text-pink-500" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-text-primary">{locale === 'uk' ? 'Реферали' : locale === 'ru' ? 'Рефералы' : 'Referrals'}</h3>
+                  <p className="text-xs text-text-secondary">{locale === 'uk' ? 'Запросіть друзів' : locale === 'ru' ? 'Пригласите друзей' : 'Invite friends'}</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card hover onClick={() => navigate('/payment-methods')}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-500/15 rounded-lg flex items-center justify-center">
+                  <CreditCard size={20} className="text-blue-500" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-text-primary">{locale === 'uk' ? 'Оплата' : locale === 'ru' ? 'Оплата' : 'Payment'}</h3>
+                  <p className="text-xs text-text-secondary">{locale === 'uk' ? 'Методи оплати' : locale === 'ru' ? 'Методы оплаты' : 'Payment methods'}</p>
+                </div>
+              </div>
+            </Card>
           </div>
         </div>
+
+        {/* Specialist Section */}
+        {isSpecialist && (
+          <div className="px-4 py-4">
+            <h2 className="text-lg font-semibold text-text-primary mb-3">{locale === 'uk' ? 'Для спеціаліста' : locale === 'ru' ? 'Для специалиста' : 'Specialist'}</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <Card hover onClick={() => navigate('/specialist-dashboard')}>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-accent-primary/10 rounded-lg flex items-center justify-center">
+                    <LayoutDashboard size={20} className="text-accent-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-text-primary">{locale === 'uk' ? 'Панель' : locale === 'ru' ? 'Панель' : 'Dashboard'}</h3>
+                    <p className="text-xs text-text-secondary">{locale === 'uk' ? 'Ваш бізнес' : locale === 'ru' ? 'Ваш бизнес' : 'Your business'}</p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card hover onClick={() => navigate('/specialist/settings')}>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-accent-purple/15 rounded-lg flex items-center justify-center">
+                    <Briefcase size={20} className="text-accent-purple" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-text-primary">{locale === 'uk' ? 'Налаштування' : locale === 'ru' ? 'Настройки' : 'Settings'}</h3>
+                    <p className="text-xs text-text-secondary">{locale === 'uk' ? 'Бізнес профіль' : locale === 'ru' ? 'Бизнес профиль' : 'Business profile'}</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        )}
 
         {/* Recent Bookings */}
         <div className="px-4 py-4">
@@ -343,11 +404,31 @@ export const ProfilePage: React.FC = () => {
               </div>
             </Card>
 
-            <Card hover onClick={() => { hapticFeedback.impactLight(); navigate('/analytics'); }}>
+            <Card hover onClick={() => { hapticFeedback.impactLight(); navigate('/notifications'); }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <MapPin size={20} className="text-text-secondary" />
-                  <span className="text-text-primary">{t(specialistDashboardStrings, 'analytics', locale)}</span>
+                  <Bell size={20} className="text-text-secondary" />
+                  <span className="text-text-primary">{locale === 'uk' ? 'Сповіщення' : locale === 'ru' ? 'Уведомления' : 'Notifications'}</span>
+                </div>
+                <ChevronRight size={18} className="text-text-secondary" />
+              </div>
+            </Card>
+
+            <Card hover onClick={() => { hapticFeedback.impactLight(); navigate('/dashboard'); }}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <LayoutDashboard size={20} className="text-text-secondary" />
+                  <span className="text-text-primary">{locale === 'uk' ? 'Дашборд' : locale === 'ru' ? 'Дашборд' : 'Dashboard'}</span>
+                </div>
+                <ChevronRight size={18} className="text-text-secondary" />
+              </div>
+            </Card>
+
+            <Card hover onClick={() => { hapticFeedback.impactLight(); navigate('/help'); }}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <HelpCircle size={20} className="text-text-secondary" />
+                  <span className="text-text-primary">{locale === 'uk' ? 'Допомога' : locale === 'ru' ? 'Помощь' : 'Help & Support'}</span>
                 </div>
                 <ChevronRight size={18} className="text-text-secondary" />
               </div>

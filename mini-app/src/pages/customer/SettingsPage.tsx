@@ -242,7 +242,7 @@ export const SettingsPage: React.FC = () => {
               </div>
             </Card>
 
-            <Card hover>
+            <Card hover onClick={() => { hapticFeedback.impactLight(); navigate('/help'); }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 bg-accent-yellow/15 rounded-lg flex items-center justify-center">
