@@ -109,7 +109,7 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
               {displayName}
             </h3>
             <p className="text-xs text-gray-600 dark:text-gray-400 truncate leading-tight mt-0.5">
-              {booking.service.name}
+              {booking.service?.name || 'Service'}
             </p>
           </div>
         </div>
@@ -129,13 +129,15 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
         <div className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
           <CalendarIcon className="w-4 h-4 text-primary-600 dark:text-primary-400 flex-shrink-0" />
           <span className="font-medium leading-none">
-            {format(new Date(booking.scheduledDate), 'MMM d, yyyy')}
+            {booking.scheduledDate && booking.scheduledDate !== 'N/A'
+              ? format(new Date(booking.scheduledDate), 'MMM d, yyyy')
+              : 'No date'}
           </span>
         </div>
         <div className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
           <ClockIcon className="w-4 h-4 text-primary-600 dark:text-primary-400 flex-shrink-0" />
           <span className="font-medium leading-none">{booking.scheduledTime}</span>
-          {booking.service.duration && (
+          {booking.service?.duration && (
             <span className="text-gray-500 dark:text-gray-500 leading-none">
               ({booking.service.duration} min)
             </span>
@@ -154,11 +156,11 @@ const BookingCardComponent: React.FC<BookingCardProps> = ({
         <div className="flex items-center gap-1.5">
           <CurrencyDollarIcon className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
           <span className="font-bold text-sm text-gray-900 dark:text-white leading-none">
-            ${booking.totalPrice.toFixed(2)}
+            ${(booking.totalPrice ?? 0).toFixed(2)}
           </span>
         </div>
         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border leading-none ${statusColor}`}>
-          {booking.status.replace('_', ' ')}
+          {(booking.status || 'PENDING').replace('_', ' ')}
         </span>
       </div>
     </motion.div>
