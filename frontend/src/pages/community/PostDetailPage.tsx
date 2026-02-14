@@ -32,6 +32,7 @@ const PostDetailPage: React.FC = () => {
   const [activeReply, setActiveReply] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [lightbox, setLightbox] = useState<{ open: boolean; images: string[]; index: number }>({ open: false, images: [], index: 0 });
 
   const isOwner = post && user ? post.authorId === user.id : false;
 
@@ -328,7 +329,8 @@ const PostDetailPage: React.FC = () => {
                   key={`${post.id}-image-${index}`}
                   src={getAbsoluteImageUrl(image)}
                   alt={`${post.title} ${index + 1}`}
-                  className="w-full h-32 object-cover rounded-lg"
+                  className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => setLightbox({ open: true, images: post.images!, index })}
                 />
               ))}
             </div>
@@ -443,6 +445,48 @@ const PostDetailPage: React.FC = () => {
                   : t('common.delete') || 'Delete'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {lightbox.open && lightbox.images.length > 0 && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setLightbox({ ...lightbox, open: false })}
+        >
+          <div className="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="absolute -top-10 right-0 text-white/80 hover:text-white text-2xl font-bold z-10"
+              onClick={() => setLightbox({ ...lightbox, open: false })}
+            >
+              ✕
+            </button>
+            <img
+              src={getAbsoluteImageUrl(lightbox.images[lightbox.index])}
+              alt={`Image ${lightbox.index + 1}`}
+              className="max-w-full max-h-[80vh] object-contain rounded-xl shadow-2xl"
+            />
+            {lightbox.images.length > 1 && (
+              <div className="flex justify-between w-full mt-4 px-4">
+                <button
+                  className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+                  onClick={() => setLightbox({ ...lightbox, index: (lightbox.index - 1 + lightbox.images.length) % lightbox.images.length })}
+                >
+                  ← {t('common.previous') || 'Previous'}
+                </button>
+                <span className="text-white/60 self-center">
+                  {lightbox.index + 1} / {lightbox.images.length}
+                </span>
+                <button
+                  className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+                  onClick={() => setLightbox({ ...lightbox, index: (lightbox.index + 1) % lightbox.images.length })}
+                >
+                  {t('common.next') || 'Next'} →
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
