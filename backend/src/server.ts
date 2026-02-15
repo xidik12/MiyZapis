@@ -444,28 +444,25 @@ const startServer = async () => {
       logger.info(`🌍 Environment: ${config.env}`);
       logger.info(`🔌 WebSocket server running on port ${config.port}`);
       
-      // Start Telegram bots in development mode
-      if (config.env === 'development') {
-        // Start basic bot
-        if (bot) {
-          bot.launch().then(() => {
-            logger.info('🤖 Basic Telegram bot started in polling mode');
-          }).catch((error) => {
-            logger.warn('Failed to start basic Telegram bot:', error.message);
-          });
-        }
-        
-        // Initialize and start enhanced bot
-        try {
-          enhancedTelegramBot.initialize();
-          enhancedTelegramBot.launch().then(() => {
-            logger.info('🚀 Enhanced Telegram bot started in polling mode');
-          }).catch((error) => {
-            logger.warn('Failed to start enhanced Telegram bot:', error.message);
-          });
-        } catch (error) {
-          logger.warn('Failed to initialize enhanced Telegram bot:', error instanceof Error ? error.message : error);
-        }
+      // Start Telegram bots (polling mode)
+      if (bot) {
+        bot.launch().then(() => {
+          logger.info('🤖 Basic Telegram bot started in polling mode');
+        }).catch((error) => {
+          logger.warn('Failed to start basic Telegram bot:', error.message);
+        });
+      }
+
+      // Initialize and start enhanced bot
+      try {
+        enhancedTelegramBot.initialize();
+        enhancedTelegramBot.launch().then(() => {
+          logger.info('🚀 Enhanced Telegram bot started in polling mode');
+        }).catch((error) => {
+          logger.warn('Failed to start enhanced Telegram bot:', error.message);
+        });
+      } catch (error) {
+        logger.warn('Failed to initialize enhanced Telegram bot:', error instanceof Error ? error.message : error);
       }
 
       // Start background workers (stateless, safe to run once per instance)
