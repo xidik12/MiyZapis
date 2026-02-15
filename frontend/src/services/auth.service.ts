@@ -122,6 +122,28 @@ export class AuthService {
     }
   }
 
+  // Get Google OAuth redirect URL for full-page sign-in flow
+  async getGoogleAuthUrl(userType?: string): Promise<string> {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      throw new Error('Google OAuth is not configured');
+    }
+    const apiUrl = (import.meta.env.VITE_API_URL || 'https://miyzapis-backend-production.up.railway.app').replace(/\/+$/, '');
+    const redirectUri = `${apiUrl}/api/v1/oauth/google`;
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      response_type: 'code',
+      scope: 'openid email profile',
+      access_type: 'offline',
+      prompt: 'consent',
+    });
+    if (userType) {
+      params.set('state', userType);
+    }
+    return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+  }
+
   // Telegram authentication
   async telegramAuth(data: TelegramAuthRequest): Promise<{ user: User; tokens: AuthTokens; isNewUser: boolean }> {
     try {
