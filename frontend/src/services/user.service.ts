@@ -128,6 +128,34 @@ export class UserService {
     }
   }
 
+  // Link Telegram account
+  async linkTelegram(data: { telegramId: string; firstName: string; lastName?: string; username?: string; authDate: number; hash: string }): Promise<any> {
+    try {
+      const response = await apiClient.post<any>(API_ENDPOINTS.USERS.TELEGRAM_LINK, data);
+      if (!response.success) {
+        throw new Error(response.error?.message || 'Failed to link Telegram account');
+      }
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to link Telegram account';
+      throw new Error(errorMessage);
+    }
+  }
+
+  // Unlink Telegram account
+  async unlinkTelegram(): Promise<any> {
+    try {
+      const response = await apiClient.post<any>(API_ENDPOINTS.USERS.TELEGRAM_UNLINK, {});
+      if (!response.success) {
+        throw new Error(response.error?.message || 'Failed to unlink Telegram account');
+      }
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.apiError?.message || error.response?.data?.error?.message || error.message || 'Failed to unlink Telegram account';
+      throw new Error(errorMessage);
+    }
+  }
+
   // Delete user account
   async deleteAccount(): Promise<{ message: string }> {
     try {

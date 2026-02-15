@@ -1143,6 +1143,18 @@ const translations: Translations = {
   'customer.settings.noAddresses': { en: 'No addresses added yet', uk: 'Ще не додано адрес', ru: 'Еще не добавлено адресов' },
   'customer.settings.addFirstAddress': { en: 'Add Your First Address', uk: 'Додайте свою першу адресу', ru: 'Добавьте свой первый адрес' },
 
+  // Customer Settings - Connected Accounts
+  'customer.settings.connectedAccounts': { en: 'Connected Accounts', uk: 'Підключені акаунти', ru: 'Подключенные аккаунты' },
+  'customer.settings.connectedAccountsDescription': { en: 'Manage your linked accounts', uk: 'Керуйте підключеними акаунтами', ru: 'Управляйте подключенными аккаунтами' },
+  'customer.settings.telegramConnected': { en: 'Telegram Connected', uk: 'Telegram підключено', ru: 'Telegram подключен' },
+  'customer.settings.telegramNotConnected': { en: 'Telegram Not Connected', uk: 'Telegram не підключено', ru: 'Telegram не подключен' },
+  'customer.settings.linkTelegram': { en: 'Link Telegram', uk: 'Підключити Telegram', ru: 'Подключить Telegram' },
+  'customer.settings.unlinkTelegram': { en: 'Unlink Telegram', uk: 'Відключити Telegram', ru: 'Отключить Telegram' },
+  'customer.settings.telegramLinkDescription': { en: 'Link your Telegram account to receive notifications and login via Telegram', uk: 'Підключіть свій Telegram акаунт для отримання сповіщень та входу через Telegram', ru: 'Подключите свой Telegram аккаунт для получения уведомлений и входа через Telegram' },
+  'customer.settings.telegramUnlinkConfirm': { en: 'Are you sure you want to unlink your Telegram account?', uk: 'Ви впевнені, що хочете відключити Telegram акаунт?', ru: 'Вы уверены, что хотите отключить Telegram аккаунт?' },
+  'customer.settings.googleConnected': { en: 'Signed in with Google', uk: 'Вхід через Google', ru: 'Вход через Google' },
+  'customer.settings.emailConnected': { en: 'Email & Password', uk: 'Електронна пошта та пароль', ru: 'Электронная почта и пароль' },
+
   // Trial Period
   'trial.banner.title': { en: 'Free Trial Active', uk: 'Активний безкоштовний пробний період', ru: 'Активен бесплатный пробный период' },
   'trial.banner.customerMessage': { en: 'You\'re enjoying our free trial -', uk: 'Ви користуєтеся безкоштовним пробним періодом -', ru: 'Вы пользуетесь бесплатным пробным периодом -' },

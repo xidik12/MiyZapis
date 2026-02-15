@@ -52,6 +52,8 @@ export const API_ENDPOINTS = {
     UPLOAD_AVATAR: '/files/upload',
     PREFERENCES: '/users/preferences',
     DELETE_ACCOUNT: '/users',
+    TELEGRAM_LINK: '/users/telegram/link',
+    TELEGRAM_UNLINK: '/users/telegram/unlink',
   },
   
   // Specialists
