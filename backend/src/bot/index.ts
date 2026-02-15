@@ -13,7 +13,21 @@ if (bot) {
   // Start command
   bot.start(async (ctx) => {
     const user = ctx.from;
-    
+    const payload = (ctx as any).startPayload || ctx.message?.text?.split(' ')[1] || '';
+
+    // Handle /start link — account linking from web Settings page
+    if (payload === 'link') {
+      const telegramId = user.id.toString();
+      await ctx.reply(
+        `🔗 Telegram Account Linking\n\nYour Telegram ID: ${telegramId}\n\nTo link this Telegram account to your MiyZapis profile, use the Telegram Login widget on the website.`,
+        Markup.inlineKeyboard([
+          [Markup.button.url('🌐 Open Settings', 'https://miyzapis.com/settings')],
+          [Markup.button.callback('🏠 Main Menu', 'main_menu')]
+        ])
+      );
+      return;
+    }
+
     try {
       // Check if user exists in database
       let dbUser = await prisma.user.findUnique({

@@ -346,7 +346,28 @@ export class EnhancedTelegramBot {
     // Start command - handles new users and existing users
     this.bot.command('start', async (ctx) => {
       const lang = this.getUserLanguage(ctx);
-      
+      const payload = ctx.message?.text?.split(' ')[1]; // e.g. "link" from /start link
+
+      // Handle /start link — account linking from web Settings page
+      if (payload === 'link') {
+        const telegramId = ctx.from?.id?.toString();
+        const firstName = ctx.from?.first_name || '';
+        const settingsUrl = `${config.frontend?.url || 'https://miyzapis.com'}/settings`;
+
+        await ctx.reply(
+          lang === 'uk'
+            ? `🔗 Підключення Telegram акаунту\n\nВаш Telegram ID: ${telegramId}\n\nЩоб підключити цей Telegram акаунт до вашого профілю MiyZapis, використайте Telegram Login віджет на сайті.`
+            : lang === 'ru'
+            ? `🔗 Подключение Telegram аккаунта\n\nВаш Telegram ID: ${telegramId}\n\nЧтобы подключить этот Telegram аккаунт к вашему профилю MiyZapis, используйте Telegram Login виджет на сайте.`
+            : `🔗 Telegram Account Linking\n\nYour Telegram ID: ${telegramId}\n\nTo link this Telegram account to your MiyZapis profile, use the Telegram Login widget on the website.`,
+          Markup.inlineKeyboard([
+            [Markup.button.url('🌐 Open Settings', settingsUrl)],
+            [Markup.button.callback('🏠 Main Menu', 'main_menu')]
+          ])
+        );
+        return;
+      }
+
       if (!ctx.session.user) {
         await this.handleNewUser(ctx);
         return;
