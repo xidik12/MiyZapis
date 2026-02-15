@@ -732,7 +732,7 @@ const mapBookingToBookingData = (booking: Booking): BookingData => {
       address: spec.location.address,
       city: spec.location.city
     } : undefined,
-    totalPrice: booking.totalAmount,
+    totalPrice: Number(booking.totalAmount) || 0,
     paymentStatus: booking.depositPaid ? 'paid' : 'pending'
   };
 };
