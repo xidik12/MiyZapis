@@ -1179,7 +1179,7 @@ const CustomerSettings: React.FC = () => {
                 city: formData.get('city') || newAddressLocation.city,
                 region: formData.get('region') || newAddressLocation.region,
                 postalCode: formData.get('postalCode') || newAddressLocation.postalCode,
-                country: formData.get('country') || newAddressLocation.country || 'Ukraine'
+                country: formData.get('country') || newAddressLocation.country || 'Cambodia'
               });
             }}>
               <div className="space-y-5">
@@ -1290,10 +1290,10 @@ const CustomerSettings: React.FC = () => {
                   </label>
                   <select 
                     name="country"
-                    defaultValue={newAddressLocation.country || 'Ukraine'}
+                    defaultValue={newAddressLocation.country || 'Cambodia'}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                   >
-                    <option value="Ukraine">{t('addresses.country.ukraine')}</option>
+                    <option value="Cambodia">{t('addresses.country.cambodia')}</option>
                     <option value="Poland">{t('addresses.country.poland')}</option>
                     <option value="Germany">{t('addresses.country.germany')}</option>
                     <option value="Other">{t('common.other')}</option>

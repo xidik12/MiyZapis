@@ -6,7 +6,7 @@ import { specialistService } from '../../services/specialist.service';
 import { serviceService } from '../../services/service.service';
 import { isFeatureEnabled } from '../../config/features';
 // Removed SpecialistPageWrapper - layout is handled by SpecialistLayout
-import { FloatingElements, UkrainianOrnament } from '../../components/ui/UkrainianElements';
+
 import { CategoryDropdown } from '../../components/ui/CategoryDropdown';
 import { getCategoryName } from '@/data/serviceCategories';
 import { normalizeCurrency } from '@/utils/currency';
@@ -754,8 +754,8 @@ const SpecialistServices: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
-        <FloatingElements />
-      
+
+
       <div className="relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
@@ -782,7 +782,7 @@ const SpecialistServices: React.FC = () => {
               </div>
             </div>
             
-            <UkrainianOrnament className="mb-6" />
+
           </div>
 
           {/* Stats Cards */}

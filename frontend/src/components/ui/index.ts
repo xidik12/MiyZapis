@@ -6,4 +6,3 @@ export { CurrencyToggle } from './CurrencyToggle';
 export { LanguageToggle } from './LanguageToggle';
 export { LoadingSpinner } from './LoadingSpinner';
 export { ThemeToggle } from './ThemeToggle';
-export { UkrainianElements } from './UkrainianElements';

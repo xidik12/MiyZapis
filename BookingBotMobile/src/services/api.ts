@@ -56,11 +56,25 @@ api.interceptors.request.use(
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
+    // Increase timeout for file upload requests (mobile networks need more time)
+    if (config.url?.includes('/files/upload') ||
+        config.url?.includes('/files/presigned') ||
+        config.url?.includes('/files/confirm') ||
+        config.url?.includes('/upload-base64')) {
+      config.timeout = 120000; // 120 seconds for mobile uploads
+    }
+
+    // Let React Native set multipart boundary automatically for FormData
+    if (config.data instanceof FormData && config.headers) {
+      delete config.headers['Content-Type'];
+      delete config.headers['content-type'];
+    }
+
     if (environment.DEBUG) {
       console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`);
     }
-    
+
     return config;
   },
   (error) => {
@@ -204,32 +218,32 @@ class ApiClient {
 
   // File upload method for React Native
   async upload<T>(url: string, fileUri: string, additionalData?: Record<string, any>): Promise<ApiResponse<T>> {
-    const FormData = require('form-data');
+    // Use React Native's built-in global FormData (NOT the 'form-data' npm package)
     const formData = new FormData();
-    
+
     // Extract filename from URI
     const filename = fileUri.split('/').pop() || 'image.jpg';
     const match = /\.(\w+)$/.exec(filename);
-    const type = match ? `image/${match[1]}` : 'image/jpeg';
-    
+    const type = match ? `image/${match[1].toLowerCase()}` : 'image/jpeg';
+
     formData.append('files', {
       uri: fileUri,
       type,
       name: filename,
     } as any);
-    
+
     if (additionalData) {
       Object.keys(additionalData).forEach(key => {
         formData.append(key, additionalData[key]);
       });
     }
 
+    // Don't set Content-Type manually — the interceptor strips it so
+    // React Native can set it automatically with the multipart boundary.
     const response = await api.post<ApiResponse<T>>(url, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      timeout: 120000, // 120 seconds for mobile uploads
     });
-    
+
     return response.data;
   }
 }

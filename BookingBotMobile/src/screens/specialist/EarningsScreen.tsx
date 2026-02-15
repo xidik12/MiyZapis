@@ -19,6 +19,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { specialistService } from '../../services/specialist.service';
+import { walletService, WalletTransaction } from '../../services/wallet.service';
 import { format } from 'date-fns';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -75,10 +76,27 @@ export const EarningsScreen: React.FC = () => {
   const loadEarnings = async () => {
     try {
       setLoading(true);
-      const earningsData = await specialistService.getRevenue(period);
-      setEarnings(earningsData);
-      // TODO: Load transactions from API
-      setTransactions([]);
+      const [earningsData, txHistory] = await Promise.allSettled([
+        specialistService.getRevenue(period),
+        walletService.getTransactionHistory({ limit: 50 }),
+      ]);
+
+      if (earningsData.status === 'fulfilled') {
+        setEarnings(earningsData.value);
+      }
+
+      if (txHistory.status === 'fulfilled') {
+        const mapped: Transaction[] = txHistory.value.transactions.map((tx: WalletTransaction) => ({
+          id: tx.id,
+          amount: tx.amount,
+          description: tx.description || tx.reason,
+          type: tx.type === 'REFUND' ? 'DEBIT' : tx.type,
+          status: tx.status,
+          createdAt: tx.createdAt,
+          bookingId: tx.referenceId,
+        }));
+        setTransactions(mapped);
+      }
     } catch (error) {
       console.error('Failed to load earnings:', error);
     } finally {

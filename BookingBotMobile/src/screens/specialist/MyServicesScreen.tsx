@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { selectUser } from '../../store/slices/authSlice';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -44,6 +45,7 @@ export const MyServicesScreen: React.FC = () => {
   const { colors, isDark } = useTheme();
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
+  const user = useAppSelector(selectUser);
 
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,13 +53,14 @@ export const MyServicesScreen: React.FC = () => {
 
   useEffect(() => {
     loadServices();
-  }, []);
+  }, [user]);
 
   const loadServices = async () => {
+    if (!user) return;
     try {
       setLoading(true);
-      // TODO: Implement serviceService.getSpecialistServices()
-      setServices([]);
+      const data = await serviceService.getSpecialistServices(user.id);
+      setServices(data);
     } catch (error) {
       console.error('Failed to load services:', error);
     } finally {

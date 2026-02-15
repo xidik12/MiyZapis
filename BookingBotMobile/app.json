@@ -54,8 +54,8 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "apiUrl": "https://huddle-backend-production.up.railway.app/api/v1",
-      "wsUrl": "wss://huddle-backend-production.up.railway.app",
+      "apiUrl": "https://panhaha-website-production.up.railway.app/api/v1",
+      "wsUrl": "wss://panhaha-website-production.up.railway.app",
       "environment": "production",
       "googleClientId": null
     },
