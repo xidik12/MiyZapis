@@ -257,7 +257,7 @@ class TelegramAuthService {
    */
   getToken(): string | null {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('booking_app_token');
+      return localStorage.getItem('authToken');
     }
     return null;
   }
@@ -267,7 +267,7 @@ class TelegramAuthService {
    */
   getRefreshToken(): string | null {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('booking_app_refresh_token');
+      return localStorage.getItem('refreshToken');
     }
     return null;
   }
@@ -277,8 +277,8 @@ class TelegramAuthService {
    */
   private setTokens(token: string, refreshToken: string): void {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('booking_app_token', token);
-      localStorage.setItem('booking_app_refresh_token', refreshToken);
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('refreshToken', refreshToken);
     }
   }
 
@@ -287,8 +287,8 @@ class TelegramAuthService {
    */
   private clearTokens(): void {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('booking_app_token');
-      localStorage.removeItem('booking_app_refresh_token');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('refreshToken');
     }
   }
 

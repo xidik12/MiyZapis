@@ -335,7 +335,7 @@ class TelegramPaymentService {
    * Get auth token from storage
    */
   private getAuthToken(): string {
-    return localStorage.getItem('booking_app_token') || '';
+    return localStorage.getItem('authToken') || '';
   }
 
   /**
