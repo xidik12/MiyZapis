@@ -1,17 +1,15 @@
 #!/bin/bash
-# Script to run Prisma migrations on NEW Panhaha Railway database
+# Script to run Prisma migrations on Railway database
 
-echo "🚀 Running Prisma migrations on Panhaha database..."
-echo ""
+echo "🚀 Running Prisma migrations..."
 
-# Run migrations on NEW Panhaha database
-DATABASE_URL="postgresql://postgres:hNAJSsKnZmhQDAKZJbvZmKIvEVnVbACA@yamabiko.proxy.rlwy.net:22742/railway" npx prisma migrate deploy
+if [ -z "$DATABASE_URL" ]; then
+  echo "❌ DATABASE_URL environment variable is not set"
+  exit 1
+fi
+
+npx prisma migrate deploy
 
 echo ""
 echo "✅ Migrations completed!"
-echo ""
-echo "📝 IMPORTANT: Update Railway environment variables:"
-echo "   DATABASE_URL=postgresql://postgres:hNAJSsKnZmhQDAKZJbvZmKIvEVnVbACA@yamabiko.proxy.rlwy.net:22742/railway"
-echo "   REDIS_URL=redis://default:SPfDOFacFwXrYWFIPqwcFzTlWAWPKhFP@switchback.proxy.rlwy.net:59070"
-echo ""
-echo "🔄 Then restart your Railway backend service"
+echo "🔄 Restart your Railway backend service if needed"
